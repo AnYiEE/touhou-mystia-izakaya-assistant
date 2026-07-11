@@ -8,7 +8,10 @@ import {
 	checkSameOriginRouteResponse,
 	createAccountAuthErrorRouteResponse,
 } from '@/lib/account/server/routeResponses';
-import { createNoStoreJsonResponse } from '@/lib/api/routeResponses';
+import {
+	createNoStoreErrorResponse,
+	createNoStoreJsonResponse,
+} from '@/lib/api/routeResponses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -52,9 +55,15 @@ export async function GET(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const { listSsoUserClientGrantsForUser } =
+	const { listSsoUserClientGrantsForActiveUserSession } =
 		await import('@/lib/account/server/sso');
-	const grants = await listSsoUserClientGrantsForUser(auth.data.user.id);
+	const grants = await listSsoUserClientGrantsForActiveUserSession(
+		auth.data.user.id,
+		{ id: auth.data.session.id, token_hash: auth.data.session.token_hash }
+	);
+	if (grants.status === 'unauthorized') {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
 
-	return createNoStoreJsonResponse({ grants });
+	return createNoStoreJsonResponse({ grants: grants.grants });
 }

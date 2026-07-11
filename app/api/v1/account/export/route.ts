@@ -62,10 +62,17 @@ export async function GET(request: NextRequest) {
 			import('@/lib/account/server/accountAuditService'),
 		]
 	);
-	const snapshot = await userStateModule.getUserStateSnapshot(
-		auth.data.user.id
+	const snapshot = await userStateModule.getActiveUserStateSnapshotForSession(
+		{
+			namespaces: null,
+			session: {
+				id: auth.data.session.id,
+				token_hash: auth.data.session.token_hash,
+			},
+			userId: auth.data.user.id,
+		}
 	);
-	if (snapshot === null) {
+	if (snapshot.status === 'unauthorized') {
 		return createNoStoreErrorResponse('unauthorized', 401);
 	}
 
@@ -74,7 +81,7 @@ export async function GET(request: NextRequest) {
 			action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
 				.accountDataExported,
 			metadata: {
-				namespace_count: snapshot.state.length,
+				namespace_count: snapshot.records.length,
 				nickname: snapshot.user.nickname,
 				state_epoch: snapshot.user.state_epoch,
 				username: snapshot.user.username,
@@ -85,7 +92,7 @@ export async function GET(request: NextRequest) {
 	);
 
 	return createNoStoreJsonResponse({
-		state: snapshot.state,
+		state: snapshot.records,
 		state_epoch: snapshot.user.state_epoch,
 		user: userModule.createAccountUserProfile(snapshot.user),
 	});

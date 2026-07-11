@@ -2,6 +2,10 @@ import { type Transaction, sql } from 'kysely';
 import { createHash, randomBytes } from 'node:crypto';
 
 import { getAccountDatabase } from '@/lib/account/server/db';
+import {
+	type TAuthenticatedSessionIdentity,
+	lockActiveUserSessionInTransaction,
+} from '@/lib/account/server/repositories/sessions';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
 	TDatabase,
@@ -1685,6 +1689,34 @@ export async function deleteSsoUserClientGrant(
 		await writeAuditLog?.(trx, now);
 
 		return true;
+	});
+}
+
+export async function deleteSsoUserClientGrantForActiveSession(
+	userId: TUser['id'],
+	clientId: TSsoClient['id'],
+	session: TAuthenticatedSessionIdentity,
+	writeAuditLog: TSsoAuditTransactionCallback
+) {
+	const db = await getAccountDatabase();
+	const now = Date.now();
+
+	return db.transaction().execute(async (trx) => {
+		if (!(await lockActiveUserSessionInTransaction(trx, userId, session))) {
+			return { status: 'unauthorized' as const };
+		}
+		const deletedCount = await deleteSsoUserClientGrantsInTransaction(
+			trx,
+			[{ client_id: clientId, user_id: userId }],
+			{ actorId: userId, actorType: 'user', reason: 'user-revoke-grant' },
+			now
+		);
+		if (deletedCount !== 1) {
+			return { status: 'not-found' as const };
+		}
+		await writeAuditLog(trx, now);
+
+		return { status: 'ok' as const };
 	});
 }
 

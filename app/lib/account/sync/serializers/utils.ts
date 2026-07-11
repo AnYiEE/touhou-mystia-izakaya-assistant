@@ -72,6 +72,19 @@ export function checkSnapshotEqual(left: unknown, right: unknown) {
 	return stableJson(left) === stableJson(right);
 }
 
+export function checkSyncMergeCanApplyAutomatically<T>(
+	mergeResult: ISyncMergeResult<T>,
+	cloud: T | null
+) {
+	return (
+		mergeResult.conflict === null &&
+		!mergeResult.requiresConfirmation &&
+		(cloud === null ||
+			mergeResult.shouldUpload ||
+			checkSnapshotEqual(mergeResult.data, cloud))
+	);
+}
+
 export function createSerializerConflict<T>({
 	cloud,
 	local,
@@ -89,13 +102,15 @@ export function createSerializerConflict<T>({
 export function createMergeResult<T>({
 	conflict = null,
 	data,
+	requiresConfirmation = false,
 	shouldUpload,
 }: {
 	conflict?: ISyncConflictItem<T> | null;
 	data: T;
+	requiresConfirmation?: boolean;
 	shouldUpload: boolean;
 }): ISyncMergeResult<T> {
-	return { conflict, data, shouldUpload };
+	return { conflict, data, requiresConfirmation, shouldUpload };
 }
 
 function mergeFieldValue({
@@ -219,6 +234,7 @@ export function mergeFieldMap<T extends object>({
 		return {
 			conflict: null,
 			data: sanitizedLocal.data,
+			requiresConfirmation: false,
 			shouldUpload: !checkSnapshotEqual(sanitizedLocal.data, defaults),
 		};
 	}
@@ -238,6 +254,7 @@ export function mergeFieldMap<T extends object>({
 				userId: '',
 			}),
 			data: cloud,
+			requiresConfirmation: false,
 			shouldUpload: false,
 		};
 	}
@@ -256,6 +273,7 @@ export function mergeFieldMap<T extends object>({
 				userId: '',
 			}),
 			data: cloud,
+			requiresConfirmation: false,
 			shouldUpload: false,
 		};
 	}
@@ -263,6 +281,12 @@ export function mergeFieldMap<T extends object>({
 	return {
 		conflict: null,
 		data: merged.data,
+		requiresConfirmation:
+			base === null &&
+			allowBaseNullAutoMerge &&
+			!checkSnapshotEqual(local, defaults) &&
+			!checkSnapshotEqual(cloud, defaults) &&
+			!checkSnapshotEqual(local, cloud),
 		shouldUpload: merged.shouldUpload,
 	};
 }

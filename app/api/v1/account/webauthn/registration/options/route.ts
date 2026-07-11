@@ -87,14 +87,29 @@ export async function POST(request: NextRequest) {
 
 	const now = Date.now();
 	const challengeId = randomUUID();
-	await challengesModule.createChallenge({
-		challenge: options.challenge,
-		created_at: now,
-		expires_at: now + WEBAUTHN_CHALLENGE_TTL_MS,
-		id: challengeId,
-		purpose: 'registration',
-		user_id: auth.data.user.id,
-	});
+	const createResult =
+		await challengesModule.createRegistrationChallengeForActiveSession(
+			{
+				challenge: options.challenge,
+				created_at: now,
+				expires_at: now + WEBAUTHN_CHALLENGE_TTL_MS,
+				id: challengeId,
+				purpose: 'registration',
+				user_id: auth.data.user.id,
+			},
+			auth.data.user.id,
+			{
+				id: auth.data.session.id,
+				token_hash: auth.data.sessionTokenHash,
+			},
+			WEBAUTHN_MAX_CREDENTIALS_PER_USER
+		);
+	if (createResult.status === 'unauthorized') {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
+	if (createResult.status === 'too-many') {
+		return createNoStoreErrorResponse('too-many-passkeys', 409);
+	}
 
 	const response = createNoStoreJsonResponse({ options });
 	webauthnModule.setWebauthnChallengeCookie(response, challengeId, request);

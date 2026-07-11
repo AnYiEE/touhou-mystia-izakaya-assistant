@@ -151,19 +151,13 @@ export async function POST(request: NextRequest) {
 	}
 
 	const now = Date.now();
-	await webauthnCredentialsModule.updateCredentialOnUse(
-		credential.id,
-		verification.authenticationInfo.newCounter,
-		now
-	);
-
 	const passwordCredential = await credentialsModule.getCredentialByUserId(
 		user.id
 	);
 	const hasPassword = passwordCredential?.password_set === 1;
 	const passwordMustChange = passwordCredential?.password_must_change === 1;
 
-	const session = await authModule.createAccountSessionForActiveUser(
+	const sessionResult = await authModule.createAccountSessionForActiveUser(
 		user.id,
 		request,
 		{ last_login_at: now, updated_at: now },
@@ -184,9 +178,16 @@ export async function POST(request: NextRequest) {
 					userId: user.id,
 				}),
 				auditNow
-			)
+			),
+		{
+			credentialId: credential.credential_id,
+			expectedCounter: credential.counter,
+			id: credential.id,
+			lastUsedAt: now,
+			nextCounter: verification.authenticationInfo.newCounter,
+		}
 	);
-	if (session === null) {
+	if (sessionResult.status !== 'ok') {
 		return respondInvalid('session-create-failed', user.id);
 	}
 
@@ -195,7 +196,7 @@ export async function POST(request: NextRequest) {
 			hasPassword,
 			passwordMustChange,
 			request,
-			session,
+			session: sessionResult,
 			user: userModule.createAccountUserProfile({
 				...user,
 				last_login_at: now,

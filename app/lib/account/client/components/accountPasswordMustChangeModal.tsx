@@ -30,12 +30,16 @@ import { Button, Card, Input, Modal, cn } from '@/design/ui/components';
 import { trackEvent } from '@/components/analytics';
 import Heading from '@/components/heading';
 
+import { publishAccountRuntimeInvalidation } from '@/lib/account/client/accountRuntimeInvalidation';
 import { changeAccountPassword, logoutAccount } from '@/lib/account/client/api';
 import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
 import {
 	applyAccountAuthSuccessResponse,
 	checkCurrentAccountAuthContext,
 	refreshAccountState,
+	refreshAccountStateFromInvalidation,
+	resetAccountStateAfterSessionExpired,
+	resetAccountStateForUnauthorizedError,
 	resetAccountStateIfCurrent,
 } from '@/lib/account/client/session';
 import {
@@ -184,11 +188,48 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 		)
 			.then((result) => {
 				if (result.status === 'error') {
+					if (result.message === 'credential-changed') {
+						setMessage(result.message);
+						void publishAccountRuntimeInvalidation({
+							reason: 'credential-changed',
+							stateEpoch: user.state_epoch,
+							userId: user.id,
+						});
+						void refreshAccountStateFromInvalidation().catch(
+							(error: unknown) => {
+								if (
+									resetAccountStateForUnauthorizedError(
+										error,
+										expectedAuthContext
+									) ||
+									!checkCurrentAccountAuthContext(
+										expectedAuthContext
+									)
+								) {
+									return;
+								}
+								setMessage(
+									getAccountClientErrorMessage(
+										error instanceof Error
+											? error.message
+											: '',
+										'账号状态刷新失败，请稍后重试'
+									)
+								);
+							}
+						);
+						return;
+					}
 					if (
 						result.httpStatus === 401 &&
 						result.message !== 'invalid-password'
 					) {
-						if (resetAccountStateIfCurrent(expectedAuthContext)) {
+						if (
+							resetAccountStateAfterSessionExpired({
+								...expectedAuthContext,
+								stateEpoch: user.state_epoch,
+							})
+						) {
 							clearPasswordFields();
 						}
 						return;
@@ -217,6 +258,13 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 
 				clearPasswordFields();
 				setMessage(null);
+
+				void publishAccountRuntimeInvalidation({
+					reason: 'password-changed',
+					stateEpoch: data.user.state_epoch,
+					userId: data.user.id,
+				});
+
 				if (shouldResumeSso) {
 					globalThis.location.assign(
 						createMainSiteUrl('/sso/authorize').toString()
@@ -289,7 +337,12 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 			.then((result) => {
 				if (result.status === 'error') {
 					if (result.httpStatus === 401) {
-						if (resetAccountStateIfCurrent(expectedAuthContext)) {
+						if (
+							resetAccountStateAfterSessionExpired({
+								...expectedAuthContext,
+								stateEpoch: user.state_epoch,
+							})
+						) {
 							clearPasswordFields();
 							if (shouldResumeSso) {
 								trackEvent(
@@ -297,9 +350,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 									'Modal',
 									'Account From SSO Force Logout'
 								);
-								accountStore.shared.accountModal.isOpen.set(
-									true
-								);
+								accountStore.openAccountModal();
 							}
 						}
 						return;
@@ -313,6 +364,11 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 				}
 
 				if (resetAccountStateIfCurrent(expectedAuthContext)) {
+					void publishAccountRuntimeInvalidation({
+						reason: 'logout',
+						stateEpoch: user.state_epoch,
+						userId: user.id,
+					});
 					clearPasswordFields();
 					if (shouldResumeSso) {
 						trackEvent(
@@ -320,7 +376,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 							'Modal',
 							'Account From SSO Force Logout'
 						);
-						accountStore.shared.accountModal.isOpen.set(true);
+						accountStore.openAccountModal();
 					}
 				}
 			})
@@ -340,7 +396,18 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 	]);
 
 	if (!isOpen) {
-		return null;
+		return (
+			<Modal
+				aria-label="更新账号密码"
+				coordination={{
+					id: 'account.password-required',
+					requestOwnership: 'external',
+				}}
+				isOpen={false}
+			>
+				<div />
+			</Modal>
+		);
 	}
 
 	const messageText =
@@ -357,7 +424,13 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 
 	return (
 		<Modal
-			coordination={{ id: 'account.password-required' }}
+			aria-label={
+				shouldResumeSso ? 'SSO授权 - 更新账号密码' : '更新账号密码'
+			}
+			coordination={{
+				id: 'account.password-required',
+				requestOwnership: 'external',
+			}}
 			hideCloseButton
 			isKeyboardDismissDisabled
 			isOpen
@@ -412,6 +485,16 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 								className="space-y-3"
 								onSubmit={handlePasswordChangeSubmit}
 							>
+								<input
+									readOnly
+									aria-label="账号用户名"
+									autoComplete="username"
+									className="sr-only"
+									name="username"
+									tabIndex={-1}
+									type="text"
+									value={user?.username ?? ''}
+								/>
 								<Input
 									autoComplete="current-password"
 									errorMessage={

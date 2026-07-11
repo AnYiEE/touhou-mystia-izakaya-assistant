@@ -2,6 +2,7 @@ import { PASSWORD_RULE_DESCRIPTION } from '@/lib/account/shared/constants';
 
 const ACCOUNT_CLIENT_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'account-disabled-offline': '离线包不支持账号功能',
+	'account-sync-reset-incomplete': '本地同步重置尚未完成，系统会自动重试',
 	'backup-code-already-imported': '这个旧备份码已被导入',
 	'backup-code-lock-lost': '旧备份码正在被处理，请稍后重试',
 	'backup-code-lock-timeout': '旧备份码处理超时，请重试',
@@ -12,6 +13,7 @@ const ACCOUNT_CLIENT_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'challenge-expired': '通行密钥操作已超时，请重试',
 	'challenge-not-found': '通行密钥操作已失效，请重试',
 	conflict: '数据冲突，请在冲突解决面板中处理',
+	'credential-changed': '账号凭据已在其他页面更新，请重新确认账号状态',
 	'credential-state-stale': '登录状态刚刚变化，请刷新后重试',
 	forbidden: '登录状态已变化，请刷新后重试',
 	'invalid-api-response': '服务器响应异常，请重试',
@@ -33,13 +35,31 @@ const ACCOUNT_CLIENT_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'password-must-change': '需要先更新密码后才能继续同步',
 	'password-not-set': '请先设置登录密码',
 	'payload-too-large': '提交内容过大，请检查输入',
+	'quarantine-storage-failed':
+		'本地存储空间不足，无法安全隔离同步数据；原始数据已保留，请先释放空间后重试',
+	'remote-conflict-source-unavailable':
+		'产生冲突的标签页暂时不可用，请回到该标签页或刷新后重试',
 	'server-misconfigured': '服务器账号配置异常',
 	'session-not-found': '登录设备已失效，请刷新后重试',
 	'session-revoked': '已下线登录设备',
 	'state-epoch-mismatch': '账号数据刚刚变化，请刷新后重试',
+	'sync-account-capacity-exceeded':
+		'账号同步数据已超过服务端总容量，请先缩减套餐或其他同步数据',
+	'sync-account-restore-incomplete':
+		'账号已恢复，但本地同步状态尚未安全重置，请刷新页面后重试',
+	'sync-client-update-required':
+		'当前版本无法处理部分云同步状态，请刷新页面或更新应用',
 	'sync-conflict': '账号数据存在冲突，请先处理冲突后重试',
 	'sync-failed': '同步失败，请刷新页面重试',
 	'sync-refresh-failed': '刷新同步状态失败，请刷新页面重试',
+	'sync-request-too-large':
+		'单次同步请求过大，请缩减对应类别的同步数据后重试',
+	'sync-reset-marker-future':
+		'本地存在更高版本的同步重置状态，请更新客户端后再继续',
+	'sync-reset-marker-invalid':
+		'本地同步重置状态已损坏，请先导出本地数据并明确清理后再继续',
+	'sync-schema-update-required':
+		'云端数据由更新版本创建，请刷新页面或更新应用后再同步',
 	'too-many-passkeys': '通行密钥数量已达上限，请先删除部分通行密钥',
 	'too-many-requests': '尝试次数过多，请稍后再试',
 	unauthorized: '登录已过期，请重新登录',
@@ -61,6 +81,7 @@ const LEGACY_BACKUP_IMPORT_ERROR_CODES = new Set<string>([
 	'invalid-backup-code',
 	'invalid-backup-file',
 	'legacy-import-failed',
+	'sync-account-capacity-exceeded',
 	'sync-conflict',
 ]);
 

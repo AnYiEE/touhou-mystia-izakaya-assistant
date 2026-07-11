@@ -7,6 +7,7 @@ import { type TUserStatus } from '@/lib/account/shared/types';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
 	TDatabase,
+	TSession,
 	TSessionNew,
 	TUser,
 	TUserCredential,
@@ -25,6 +26,7 @@ type TUpdateActiveUserProfileResult =
 	| { retryAfter: number; status: 'credential-locked' }
 	| { status: 'credential-stale' }
 	| { status: 'ok'; user: TUser }
+	| { status: 'unauthorized' }
 	| { status: 'username-conflict' };
 
 function getCredentialRetryAfter(lockedUntil: number, now: number) {
@@ -308,6 +310,7 @@ export async function updateActiveUserProfile({
 	now = Date.now(),
 	oldNickname,
 	oldUsername,
+	session,
 	userId,
 	username,
 	usernameNormalized,
@@ -318,6 +321,7 @@ export async function updateActiveUserProfile({
 	now?: number;
 	oldNickname?: TUser['nickname'];
 	oldUsername?: TUser['username'];
+	session: Pick<TSession, 'id' | 'token_hash'>;
 	userId: TUser['id'];
 	writeAuditLog?: (
 		trx: Transaction<TDatabase>,
@@ -330,6 +334,17 @@ export async function updateActiveUserProfile({
 	const db = await getAccountDatabase();
 
 	return db.transaction().execute(async (trx) => {
+		const sessionLockResult = await trx
+			.updateTable(SESSION_TABLE_NAME)
+			.set({ last_seen_at: sql<TSession['last_seen_at']>`last_seen_at` })
+			.where('id', '=', session.id)
+			.where('user_id', '=', userId)
+			.where('token_hash', '=', session.token_hash)
+			.executeTakeFirst();
+		if (sessionLockResult.numUpdatedRows !== 1n) {
+			return { status: 'unauthorized' };
+		}
+
 		if (credentialPasswordHash !== undefined) {
 			const credential = await trx
 				.selectFrom(CREDENTIAL_TABLE_NAME)
@@ -546,71 +561,67 @@ export async function setUserStatusIfCurrentStatus(
 	});
 }
 
-export async function setUserStatusAndDeleteSessions(
+export async function deleteActiveUserIfSessionCurrentWithAudit(
 	id: TUser['id'],
-	status: TUserStatus
-) {
-	const db = await getAccountDatabase();
-	const now = Date.now();
-
-	await db.transaction().execute(async (trx) => {
-		const result = await trx
-			.updateTable(TABLE_NAME)
-			.set({
-				deleted_at: status === 'deleted' ? now : null,
-				state_epoch:
-					status === 'deleted'
-						? sql<TUser['state_epoch']>`state_epoch + 1`
-						: sql<TUser['state_epoch']>`state_epoch`,
-				status,
-				updated_at: now,
-			})
-			.where('id', '=', id)
-			.executeTakeFirst();
-		if (result.numUpdatedRows !== 1n) {
-			throw new Error('user-not-found');
-		}
-
-		await trx
-			.deleteFrom(SESSION_TABLE_NAME)
-			.where('user_id', '=', id)
-			.execute();
-
-		if (status === 'deleted') {
-			await enqueueSsoCallbacksForUserEventInTransaction(
-				trx,
-				id,
-				'user_deleted',
-				now
-			);
-		}
-	});
-}
-
-export async function setUserStatusAndDeleteSessionsWithAudit(
-	id: TUser['id'],
-	status: TUserStatus,
+	session: Pick<TSession, 'id' | 'token_hash'>,
 	writeAuditLog: (trx: Transaction<TDatabase>, now: number) => Promise<void>
 ) {
 	const db = await getAccountDatabase();
-	const now = Date.now();
 
-	await db.transaction().execute(async (trx) => {
-		const result = await trx
+	return db.transaction().execute(async (trx) => {
+		const user = await trx
+			.selectFrom(TABLE_NAME)
+			.select(['state_epoch', 'status'])
+			.where('id', '=', id)
+			.executeTakeFirst();
+		if (user?.status !== 'active') {
+			return { status: 'unauthorized' as const };
+		}
+		if (
+			!Number.isSafeInteger(user.state_epoch) ||
+			user.state_epoch < 0 ||
+			user.state_epoch >= Number.MAX_SAFE_INTEGER
+		) {
+			throw new Error('invalid-user-state-epoch');
+		}
+
+		const lockResult = await trx
+			.updateTable(TABLE_NAME)
+			.set({ updated_at: sql<TUser['updated_at']>`updated_at` })
+			.where('id', '=', id)
+			.where('status', '=', 'active')
+			.where('state_epoch', '=', user.state_epoch)
+			.executeTakeFirst();
+		if (lockResult.numUpdatedRows !== 1n) {
+			return { status: 'unauthorized' as const };
+		}
+
+		const currentSession = await trx
+			.selectFrom(SESSION_TABLE_NAME)
+			.select('id')
+			.where('id', '=', session.id)
+			.where('user_id', '=', id)
+			.where('token_hash', '=', session.token_hash)
+			.executeTakeFirst();
+		if (currentSession === undefined) {
+			return { status: 'unauthorized' as const };
+		}
+
+		const now = Date.now();
+		const deleteResult = await trx
 			.updateTable(TABLE_NAME)
 			.set({
-				deleted_at: status === 'deleted' ? now : null,
-				state_epoch:
-					status === 'deleted'
-						? sql<TUser['state_epoch']>`state_epoch + 1`
-						: sql<TUser['state_epoch']>`state_epoch`,
-				status,
+				deleted_at: now,
+				state_epoch: sql<TUser['state_epoch']>`state_epoch + 1`,
+				status: 'deleted',
 				updated_at: now,
 			})
 			.where('id', '=', id)
+			.where('status', '=', 'active')
+			.where('state_epoch', '=', user.state_epoch)
 			.executeTakeFirst();
-		if (result.numUpdatedRows !== 1n) {
-			throw new Error('user-not-found');
+		if (deleteResult.numUpdatedRows !== 1n) {
+			throw new Error('account-delete-lock-lost');
 		}
 
 		await trx
@@ -618,16 +629,16 @@ export async function setUserStatusAndDeleteSessionsWithAudit(
 			.where('user_id', '=', id)
 			.execute();
 
-		if (status === 'deleted') {
-			await deleteCredentialsByUserIdInTransaction(trx, id);
-			await enqueueSsoCallbacksForUserEventInTransaction(
-				trx,
-				id,
-				'user_deleted',
-				now
-			);
-		}
+		await deleteCredentialsByUserIdInTransaction(trx, id);
+		await enqueueSsoCallbacksForUserEventInTransaction(
+			trx,
+			id,
+			'user_deleted',
+			now
+		);
 		await writeAuditLog(trx, now);
+
+		return { status: 'ok' as const };
 	});
 }
 

@@ -15,6 +15,7 @@ import type {
 	IOverlayRegistration,
 	IOverlayShortcutDispatchResult,
 	ITutorialLease,
+	ITutorialLeaseOptions,
 	TOverlayId,
 	TOverlayPresentationState,
 	TOverlayRequestResult,
@@ -45,6 +46,8 @@ let blockingTransitionVersion = 0;
 let taskTransitionTimer: null | ReturnType<typeof setTimeout> = null;
 let taskTransitionSourceId: null | TOverlayId = null;
 let taskTransitionVersion = 0;
+let activeTutorialLease: { onPreempt?: () => void; token: symbol } | null =
+	null;
 
 const listeners = new Set<TListener>();
 const registrations = new Map<TOverlayId, IRegisteredOverlay>();
@@ -81,6 +84,17 @@ function emit(nextSnapshot: IOverlayCoordinatorSnapshot) {
 
 function patchSnapshot(patch: Partial<IOverlayCoordinatorSnapshot>) {
 	emit({ ...snapshot, ...patch });
+}
+
+function preemptTutorial() {
+	const lease = activeTutorialLease;
+	if (lease === null) {
+		return;
+	}
+
+	activeTutorialLease = null;
+	patchSnapshot({ isTutorialActive: false });
+	lease.onPreempt?.();
 }
 
 function checkCanActivate(id: TOverlayId) {
@@ -202,6 +216,30 @@ function cancelTaskTransition() {
 		clearTimeout(taskTransitionTimer);
 		taskTransitionTimer = null;
 	}
+}
+
+function cancelTaskTransitionForBlocker() {
+	if (!snapshot.isTaskTransition) {
+		return null;
+	}
+
+	const { pendingTaskId, taskStack } = snapshot;
+	const sourceId = taskTransitionSourceId;
+	cancelTaskTransition();
+	if (pendingTaskId !== null && !taskStack.includes(pendingTaskId)) {
+		requestedOverlayIds.delete(pendingTaskId);
+	}
+
+	const sourceIndex =
+		sourceId === null ? -1 : taskStack.lastIndexOf(sourceId);
+	patchSnapshot({
+		isTaskTransition: false,
+		pendingTaskId: null,
+		taskStack:
+			sourceIndex === -1 ? taskStack : taskStack.slice(0, sourceIndex),
+	});
+
+	return sourceId;
 }
 
 function getPresentedRootId() {
@@ -421,8 +459,10 @@ export function requestOverlayOpen(
 ): TOverlayRequestResult {
 	const priority = getOverlayPriority(id);
 	if (priority === 'blocking') {
+		preemptTutorial();
+		const interruptedTaskId = cancelTaskTransitionForBlocker();
 		requestedOverlayIds.add(id);
-		reconcileBlockingOverlay();
+		reconcileBlockingOverlay(interruptedTaskId);
 		options.onActivate?.();
 		return { status: 'activated' };
 	}
@@ -548,7 +588,10 @@ export function registerOverlay(registration: IOverlayRegistration) {
 
 	return () => {
 		if (registrations.get(registration.id)?.token === token) {
-			if (!cancelTaskTransitionForUnmountedSource(registration.id)) {
+			if (
+				registration.requestOwnership !== 'external' &&
+				!cancelTaskTransitionForUnmountedSource(registration.id)
+			) {
 				requestOverlayClose(registration.id);
 			}
 			registrations.delete(registration.id);
@@ -559,12 +602,20 @@ export function registerOverlay(registration: IOverlayRegistration) {
 export function syncOverlayRequested(id: TOverlayId, isRequested: boolean) {
 	if (isRequested) {
 		if (!requestedOverlayIds.has(id)) {
-			requestOverlayOpen(id);
+			return requestOverlayOpen(id);
 		}
-		return;
+		return { status: 'activated' } as const;
 	}
 
 	requestOverlayClose(id);
+	return { status: 'stale' } as const;
+}
+
+export function setExternallyOwnedOverlayRequested(
+	id: TOverlayId,
+	isRequested: boolean
+) {
+	return syncOverlayRequested(id, isRequested);
 }
 
 export function handoffOverlay({
@@ -671,12 +722,19 @@ export function pushOverlayChild({
 	return { status: 'activated' };
 }
 
-export function tryAcquireTutorial(): ITutorialLease | null {
+export function tryAcquireTutorial({
+	onPreempt,
+}: ITutorialLeaseOptions = {}): ITutorialLease | null {
 	if (!canAcquireTutorial(snapshot)) {
 		return null;
 	}
 
 	patchSnapshot({ isTutorialActive: true });
+	const token = Symbol('tutorial-lease');
+	activeTutorialLease = {
+		token,
+		...(onPreempt === undefined ? {} : { onPreempt }),
+	};
 	let isReleased = false;
 
 	return {
@@ -686,6 +744,10 @@ export function tryAcquireTutorial(): ITutorialLease | null {
 			}
 
 			isReleased = true;
+			if (activeTutorialLease?.token !== token) {
+				return;
+			}
+			activeTutorialLease = null;
 			patchSnapshot({ isTutorialActive: false });
 			flushPassiveQueue();
 		},

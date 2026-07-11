@@ -70,6 +70,7 @@ import { trackEvent } from '@/components/analytics';
 import Heading from '@/components/heading';
 import TimeAgo from '@/components/timeAgo';
 
+import { publishAccountRuntimeInvalidation } from '@/lib/account/client/accountRuntimeInvalidation';
 import {
 	AccountApiError,
 	type IWebauthnCredentialSummary,
@@ -96,17 +97,26 @@ import {
 	startWebAuthnLogin,
 	startWebAuthnRegistration,
 } from '@/lib/account/client/api';
+import { removeAccountSyncBaseSnapshotsForAccountDeletion } from '@/lib/account/client/baseSnapshot';
 import {
 	postAccountSyncBroadcastMessage,
 	postAccountWebauthnBroadcastMessage,
 	subscribeAccountWebauthnBroadcastMessage,
 } from '@/lib/account/client/broadcast';
+import { removeAccountSyncConflictResolutionJournals } from '@/lib/account/client/conflictResolutionJournal';
 import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
+import { removeDirtyQueueEntries } from '@/lib/account/client/queue';
 import { createAccountClientId } from '@/lib/account/client/random';
+import {
+	markAccountSyncResetGenerationDeleted,
+	withAccountSyncResetGenerationLock,
+} from '@/lib/account/client/resetGeneration';
 import {
 	applyAccountAuthSuccessResponse,
 	checkCurrentAccountAuthContext,
 	refreshAccountState,
+	refreshAccountStateFromInvalidation,
+	resetAccountStateForUnauthorizedError,
 	resetAccountStateIfCurrent,
 } from '@/lib/account/client/session';
 import {
@@ -114,6 +124,12 @@ import {
 	resetAccountSyncCloudStateAfterDelete,
 	scheduleAccountSyncFlush,
 } from '@/lib/account/client/syncClient';
+import {
+	removeAccountSyncOperationForAccountDeletion,
+	withAccountSyncOperationLease,
+} from '@/lib/account/client/syncOperationLease';
+import { removeAccountSyncLeaseForAccountDeletion } from '@/lib/account/client/lease';
+import { removeAccountSyncMetaForAccountDeletion } from '@/lib/account/client/snapshot';
 import {
 	NICKNAME_RULE_DESCRIPTION,
 	PASSWORD_RULE_DESCRIPTION,
@@ -443,12 +459,7 @@ function handleUnauthorizedAccountError(
 	error: unknown,
 	context: TAccountAuthContext = {}
 ) {
-	if (error instanceof AccountApiError && error.status === 401) {
-		resetAccountStateIfCurrent(context);
-		return true;
-	}
-
-	return false;
+	return resetAccountStateForUnauthorizedError(error, context);
 }
 
 function handleUnauthorizedAccountActionError(
@@ -456,7 +467,14 @@ function handleUnauthorizedAccountActionError(
 	context: TAccountAuthContext = {}
 ) {
 	if (error.httpStatus === 401) {
-		resetAccountStateIfCurrent(context);
+		const user = accountStore.shared.user.get();
+		if (resetAccountStateIfCurrent(context) && user !== null) {
+			void publishAccountRuntimeInvalidation({
+				reason: 'session-expired',
+				stateEpoch: user.state_epoch,
+				userId: user.id,
+			});
+		}
 		return true;
 	}
 
@@ -609,6 +627,7 @@ export default memo<IProps>(function AccountManager() {
 	const [renamingPasskeyId, setRenamingPasskeyId] = useState<string | null>(
 		null
 	);
+	const accountManagerRootRef = useRef<HTMLElement>(null);
 	const webauthnBroadcastTabIdRef = useRef<string | null>(null);
 	const authTermsCheckboxRef = useRef<HTMLInputElement>(null);
 	const isWebauthnAutofillRequestActiveRef = useRef(false);
@@ -619,6 +638,31 @@ export default memo<IProps>(function AccountManager() {
 	const sessionListUpdatedAtRef = useRef(0);
 	const sessionListRequestIdRef = useRef(0);
 	const sessionsFetchRequestedUserIdRef = useRef<string | null>(null);
+
+	const stabilizeFocusBeforeAuthStateChange = useCallback(
+		(expectedAuthContext: TAccountAuthContext) => {
+			if (
+				!checkCurrentAccountAuthContext(expectedAuthContext) ||
+				accountStore.shared.user.get() !== null ||
+				!accountStore.shared.accountModal.isOpen.get()
+			) {
+				return;
+			}
+
+			const rootElement = accountManagerRootRef.current;
+			const { activeElement } = document;
+			if (
+				rootElement !== null &&
+				activeElement instanceof HTMLElement &&
+				activeElement !== rootElement &&
+				rootElement.contains(activeElement)
+			) {
+				rootElement.focus({ preventScroll: true });
+			}
+		},
+		[]
+	);
+
 	const ssoGrantListUpdatedAtRef = useRef(0);
 	const ssoGrantListRequestIdRef = useRef(0);
 	const ssoGrantsFetchRequestedUserIdRef = useRef<string | null>(null);
@@ -841,6 +885,7 @@ export default memo<IProps>(function AccountManager() {
 				}
 
 				const { redirect_to: redirectTo, ...data } = result.data;
+				stabilizeFocusBeforeAuthStateChange(expectedAuthContext);
 				if (
 					!applyAccountAuthSuccessResponse(data, expectedAuthContext)
 				) {
@@ -849,6 +894,13 @@ export default memo<IProps>(function AccountManager() {
 
 				setPassword('');
 				setMessage(authMode === 'login' ? '登录成功' : '注册成功');
+
+				void publishAccountRuntimeInvalidation({
+					reason: 'login',
+					stateEpoch: data.user.state_epoch,
+					userId: data.user.id,
+				});
+
 				if (redirectTo !== undefined) {
 					globalThis.location.assign(redirectTo);
 					return;
@@ -891,6 +943,7 @@ export default memo<IProps>(function AccountManager() {
 		password,
 		registrationNickname,
 		router,
+		stabilizeFocusBeforeAuthStateChange,
 		username,
 		vibrate,
 	]);
@@ -1059,6 +1112,46 @@ export default memo<IProps>(function AccountManager() {
 		void request
 			.then((result) => {
 				if (result.status === 'error') {
+					if (
+						result.message === 'credential-changed' ||
+						result.message === 'password-already-set'
+					) {
+						if (
+							!checkCurrentAccountAuthContext(expectedAuthContext)
+						) {
+							return;
+						}
+						setMessage(result.message);
+						void publishAccountRuntimeInvalidation({
+							reason: 'credential-changed',
+							stateEpoch: user.state_epoch,
+							userId: user.id,
+						});
+						void refreshAccountStateFromInvalidation().catch(
+							(error: unknown) => {
+								if (
+									handleUnauthorizedAccountError(
+										error,
+										expectedAuthContext
+									) ||
+									!checkCurrentAccountAuthContext(
+										expectedAuthContext
+									)
+								) {
+									return;
+								}
+								setMessage(
+									getAccountClientErrorMessage(
+										error instanceof Error
+											? error.message
+											: '',
+										'账号状态刷新失败，请稍后重试'
+									)
+								);
+							}
+						);
+						return;
+					}
 					if (result.message === 'invalid-password') {
 						if (
 							!checkCurrentAccountAuthContext(expectedAuthContext)
@@ -1098,12 +1191,9 @@ export default memo<IProps>(function AccountManager() {
 				setMessage(
 					isInitialPasswordSetup ? '登录密码已设置' : '密码已更新'
 				);
-				void postAccountSyncBroadcastMessage({
-					namespaces: [],
-					operationId: createAccountClientId(),
-					state_epoch: data.user.state_epoch,
-					tabId: createAccountClientId(),
-					type: 'account-updated',
+				void publishAccountRuntimeInvalidation({
+					reason: 'password-changed',
+					stateEpoch: data.user.state_epoch,
 					userId: data.user.id,
 				});
 
@@ -1229,6 +1319,45 @@ export default memo<IProps>(function AccountManager() {
 		)
 			.then((result) => {
 				if (result.status === 'error') {
+					if (result.message === 'credential-changed') {
+						if (
+							!checkCurrentAccountAuthContext(expectedAuthContext)
+						) {
+							return;
+						}
+						setProfileError(null);
+						setMessage(result.message);
+						void publishAccountRuntimeInvalidation({
+							reason: 'credential-changed',
+							stateEpoch: user.state_epoch,
+							userId: user.id,
+						});
+						void refreshAccountStateFromInvalidation().catch(
+							(error: unknown) => {
+								if (
+									handleUnauthorizedAccountError(
+										error,
+										expectedAuthContext
+									) ||
+									!checkCurrentAccountAuthContext(
+										expectedAuthContext
+									)
+								) {
+									return;
+								}
+								setProfileError(null);
+								setMessage(
+									getAccountClientErrorMessage(
+										error instanceof Error
+											? error.message
+											: '',
+										'账号状态刷新失败，请稍后重试'
+									)
+								);
+							}
+						);
+						return;
+					}
 					if (result.message === 'invalid-password') {
 						if (
 							!checkCurrentAccountAuthContext(expectedAuthContext)
@@ -1396,14 +1525,29 @@ export default memo<IProps>(function AccountManager() {
 						return;
 					}
 
-					resetAccountStateIfCurrent(expectedAuthContext);
+					if (resetAccountStateIfCurrent(expectedAuthContext)) {
+						void publishAccountRuntimeInvalidation({
+							reason:
+								trackName === 'Logout All'
+									? 'logout-all'
+									: 'logout',
+							stateEpoch: user.state_epoch,
+							userId: user.id,
+						});
+					}
 				})
 				.catch((error: unknown) => {
 					if (
 						error instanceof AccountApiError &&
 						error.status === 401
 					) {
-						resetAccountStateIfCurrent(expectedAuthContext);
+						if (resetAccountStateIfCurrent(expectedAuthContext)) {
+							void publishAccountRuntimeInvalidation({
+								reason: 'session-expired',
+								stateEpoch: user.state_epoch,
+								userId: user.id,
+							});
+						}
 						return;
 					}
 
@@ -1548,8 +1692,34 @@ export default memo<IProps>(function AccountManager() {
 		};
 		const expectedUserContext = { expectedUserId: user.id };
 
-		void deleteAccountData(csrfToken)
-			.then((result) => {
+		void withAccountSyncOperationLease(
+			user.id,
+			'delete-data',
+			async (operationId) => {
+				const result = await deleteAccountData(
+					csrfToken,
+					user.state_epoch
+				);
+				if (result.status === 'error') {
+					return { operationId, resetResult: null, result };
+				}
+				const resetResult = await resetAccountSyncCloudStateAfterDelete(
+					{
+						deleteStartedAt,
+						operationId,
+						stateEpoch: result.data.state_epoch,
+						userId: user.id,
+					}
+				);
+				return { operationId, resetResult, result };
+			}
+		)
+			.then(async (leaseResult) => {
+				if (leaseResult === null) {
+					setMessage('账号数据操作正在其他标签页进行，请稍后重试');
+					return;
+				}
+				const { operationId, resetResult, result } = leaseResult;
 				if (result.status === 'error') {
 					if (
 						handleUnauthorizedAccountActionError(
@@ -1564,6 +1734,39 @@ export default memo<IProps>(function AccountManager() {
 					) {
 						return;
 					}
+					if (
+						result.httpStatus === 409 &&
+						result.message === 'state-epoch-mismatch'
+					) {
+						setMessage('云端数据已发生变化，正在刷新账号状态…');
+						try {
+							await refreshAccountState();
+						} catch (error) {
+							if (
+								handleUnauthorizedAccountError(
+									error,
+									expectedSessionContext
+								) ||
+								!checkCurrentAccountAuthContext(
+									expectedSessionContext
+								)
+							) {
+								return;
+							}
+							setMessage('账号状态刷新失败，请稍后重试');
+							return;
+						}
+						if (
+							checkCurrentAccountAuthContext(
+								expectedSessionContext
+							)
+						) {
+							setMessage(
+								'云端数据已发生变化，请重新确认后再清空'
+							);
+						}
+						return;
+					}
 
 					setMessage(result.message);
 					return;
@@ -1574,38 +1777,31 @@ export default memo<IProps>(function AccountManager() {
 
 				const { state_epoch } = result.data;
 
-				const shouldFlushPreservedDirty =
-					resetAccountSyncCloudStateAfterDelete({
-						deleteStartedAt,
-						stateEpoch: state_epoch,
-						userId: user.id,
-					});
+				const shouldFlushPreservedDirty = resetResult;
+				if (shouldFlushPreservedDirty === null) {
+					throw new Error('account-sync-reset-incomplete');
+				}
 
 				if (shouldFlushPreservedDirty) {
 					scheduleAccountSyncFlush();
 				}
-
 				return postAccountSyncBroadcastMessage({
 					deleteStartedAt,
 					namespaces: [],
-					operationId: createAccountClientId(),
+					operationId,
 					state_epoch,
 					tabId: 'local',
 					type: 'data-deleted',
 					userId: user.id,
 				})
-					.then((didBroadcast) => {
+					.then(() => {
 						if (
 							!checkCurrentAccountAuthContext(expectedUserContext)
 						) {
 							return;
 						}
 
-						setMessage(
-							didBroadcast
-								? '云端数据已清空'
-								: '云端数据已清空，其他标签页可能需要手动刷新'
-						);
+						setMessage('云端数据已清空');
 					})
 					.catch((error: unknown) => {
 						console.warn(
@@ -1618,9 +1814,7 @@ export default memo<IProps>(function AccountManager() {
 							return;
 						}
 
-						setMessage(
-							'云端数据已清空，其他标签页可能需要手动刷新'
-						);
+						setMessage('云端数据已清空');
 					});
 			})
 			.catch((error: unknown) => {
@@ -1660,7 +1854,7 @@ export default memo<IProps>(function AccountManager() {
 		const expectedUserContext = { expectedUserId: user.id };
 
 		void deleteAccount(csrfToken)
-			.then((result) => {
+			.then(async (result) => {
 				if (result.status === 'error') {
 					if (
 						handleUnauthorizedAccountActionError(
@@ -1680,9 +1874,54 @@ export default memo<IProps>(function AccountManager() {
 					return;
 				}
 
-				resetAccountStateIfCurrent(expectedUserContext);
+				void publishAccountRuntimeInvalidation({
+					reason: 'account-deleted',
+					stateEpoch: user.state_epoch,
+					userId: user.id,
+				});
+
+				try {
+					const didCleanUp = await withAccountSyncResetGenerationLock(
+						user.id,
+						() => {
+							const deletedMarker =
+								markAccountSyncResetGenerationDeleted({
+									operationId: createAccountClientId(),
+									stateEpoch: user.state_epoch,
+									userId: user.id,
+								});
+							if (deletedMarker === null) {
+								return false;
+							}
+							removeAccountSyncOperationForAccountDeletion(
+								user.id
+							);
+							removeDirtyQueueEntries(user.id);
+							removeAccountSyncBaseSnapshotsForAccountDeletion(
+								user.id
+							);
+							removeAccountSyncConflictResolutionJournals(
+								user.id
+							);
+							removeAccountSyncMetaForAccountDeletion(user.id);
+							removeAccountSyncLeaseForAccountDeletion(user.id);
+							return true;
+						},
+						{ ifAvailable: false }
+					);
+					if (didCleanUp !== true) {
+						throw new Error(
+							'account-deletion-local-cleanup-failed'
+						);
+					}
+				} finally {
+					resetAccountStateIfCurrent(expectedUserContext);
+				}
 			})
 			.catch((error: unknown) => {
+				console.warn('Failed to delete or clean up account state.', {
+					errorCode: getLogSafeErrorCode(error),
+				});
 				if (!checkCurrentAccountAuthContext(expectedSessionContext)) {
 					return;
 				}
@@ -2429,11 +2668,19 @@ export default memo<IProps>(function AccountManager() {
 			}
 
 			const { redirect_to: redirectTo, ...data } = result.data;
+			stabilizeFocusBeforeAuthStateChange(expectedAuthContext);
 			if (!applyAccountAuthSuccessResponse(data, expectedAuthContext)) {
 				return;
 			}
 
 			setMessage('登录成功');
+
+			void publishAccountRuntimeInvalidation({
+				reason: 'login',
+				stateEpoch: data.user.state_epoch,
+				userId: data.user.id,
+			});
+
 			if (redirectTo !== undefined) {
 				globalThis.location.assign(redirectTo);
 				return;
@@ -2460,7 +2707,7 @@ export default memo<IProps>(function AccountManager() {
 				);
 			});
 		},
-		[isSsoContext, router]
+		[isSsoContext, router, stabilizeFocusBeforeAuthStateChange]
 	);
 
 	const startWebAuthnAutofillLogin = useCallback(() => {
@@ -2671,6 +2918,7 @@ export default memo<IProps>(function AccountManager() {
 				}
 
 				const { redirect_to: redirectTo, ...data } = result.data;
+				stabilizeFocusBeforeAuthStateChange(expectedAuthContext);
 				if (
 					!applyAccountAuthSuccessResponse(data, expectedAuthContext)
 				) {
@@ -2680,6 +2928,13 @@ export default memo<IProps>(function AccountManager() {
 				setPassword('');
 				setIsPasskeyRegistrationPromptVisible(false);
 				setMessage('注册成功');
+
+				void publishAccountRuntimeInvalidation({
+					reason: 'login',
+					stateEpoch: data.user.state_epoch,
+					userId: data.user.id,
+				});
+
 				if (redirectTo !== undefined) {
 					globalThis.location.assign(redirectTo);
 					return;
@@ -2725,6 +2980,7 @@ export default memo<IProps>(function AccountManager() {
 		isWebauthnAccountRegistrationPending,
 		isWebauthnLoginPending,
 		router,
+		stabilizeFocusBeforeAuthStateChange,
 		vibrate,
 	]);
 
@@ -3151,7 +3407,12 @@ export default memo<IProps>(function AccountManager() {
 	) : null;
 
 	return (
-		<div className="space-y-4 p-1.5">
+		<section
+			ref={accountManagerRootRef}
+			aria-label={user === null ? '账号登录' : '账号管理'}
+			tabIndex={-1}
+			className="space-y-4 rounded-small p-1.5 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+		>
 			<Heading
 				as="h2"
 				isFirst
@@ -4634,6 +4895,6 @@ export default memo<IProps>(function AccountManager() {
 			>
 				<LegalStatement />
 			</Modal>
-		</div>
+		</section>
 	);
 });

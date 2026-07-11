@@ -119,10 +119,30 @@ export async function POST(request: NextRequest) {
 	);
 	if (!isValidPassword) {
 		const failureState =
-			await credentialsModule.recordFailedCredentialAttempt(
-				auth.data.user.id,
-				now
+			await credentialsModule.recordFailedCredentialAttempt({
+				expectedPasswordHash: auth.data.credential.password_hash,
+				now,
+				session: {
+					id: auth.data.session.id,
+					token_hash: auth.data.sessionTokenHash,
+				},
+				userId: auth.data.user.id,
+			});
+		if (failureState.status === 'unauthorized') {
+			return createNoStoreErrorResponse('unauthorized', 401);
+		}
+		if (failureState.status === 'stale') {
+			await accountAuditModule.writeAccountAuditLogBestEffort(
+				accountAuditModule.createAccountUserAuditLogInput({
+					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+						.passwordChanged,
+					metadata: { result: 'credential-changed' },
+					request,
+					userId: auth.data.user.id,
+				})
 			);
+			return createNoStoreErrorResponse('credential-changed', 409);
+		}
 		if (failureState.status === 'locked') {
 			return createNoStoreErrorResponse(
 				'too-many-requests',
@@ -161,8 +181,10 @@ export async function POST(request: NextRequest) {
 				password_set: 1,
 				updated_at: now,
 			},
+			expectedPasswordHash: auth.data.credential.password_hash,
 			lastSeenAt: now,
 			sessionId: auth.data.session.id,
+			sessionTokenHash: auth.data.sessionTokenHash,
 			userId: auth.data.user.id,
 			writeAuditLog: (trx, auditNow) =>
 				accountAuditModule.writeAccountAuditLogInTransaction(
@@ -183,6 +205,18 @@ export async function POST(request: NextRequest) {
 		});
 	} catch (error) {
 		if (error instanceof Error) {
+			if (error.message === 'credential-changed') {
+				await accountAuditModule.writeAccountAuditLogBestEffort(
+					accountAuditModule.createAccountUserAuditLogInput({
+						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+							.passwordChanged,
+						metadata: { result: 'credential-changed' },
+						request,
+						userId: auth.data.user.id,
+					})
+				);
+				return createNoStoreErrorResponse('credential-changed', 409);
+			}
 			if (error.message === 'invalid-user-status') {
 				return createNoStoreErrorResponse('invalid-user-status', 403);
 			}

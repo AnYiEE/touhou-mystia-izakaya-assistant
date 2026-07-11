@@ -9,7 +9,10 @@ import {
 	createAccountAuthErrorRouteResponse,
 } from '@/lib/account/server/routeResponses';
 import { type IWebauthnCredentialListData } from '@/lib/account/shared/types';
-import { createNoStoreJsonResponse } from '@/lib/api/routeResponses';
+import {
+	createNoStoreErrorResponse,
+	createNoStoreJsonResponse,
+} from '@/lib/api/routeResponses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -61,13 +64,21 @@ export async function GET(request: NextRequest) {
 			import('@/lib/account/server/webauthnPresentation'),
 			import('@/lib/account/server/webauthn'),
 		]);
-	const credentials = await credentialsModule.listCredentialsByUserId(
-		auth.data.user.id
-	);
+	const credentials =
+		await credentialsModule.listCredentialsForActiveUserSession(
+			auth.data.user.id,
+			{
+				id: auth.data.session.id,
+				token_hash: auth.data.session.token_hash,
+			}
+		);
+	if (credentials.status === 'unauthorized') {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
 	const { rpID } = webauthnModule.getWebAuthnRelyingParty();
 
 	return createNoStoreJsonResponse({
-		credentials: credentials.map((credential) =>
+		credentials: credentials.credentials.map((credential) =>
 			presentationModule.createWebauthnCredentialSummary(credential)
 		),
 		rp_id: rpID,

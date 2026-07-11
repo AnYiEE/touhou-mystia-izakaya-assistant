@@ -8,7 +8,6 @@ import {
 	checkSameOriginRouteResponse,
 	createAccountAuthErrorRouteResponse,
 } from '@/lib/account/server/routeResponses';
-import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -64,29 +63,36 @@ export async function DELETE(request: NextRequest) {
 		import('@/lib/account/server/repositories/users'),
 		import('@/lib/account/server/accountAuditService'),
 	]);
-	await usersModule.setUserStatusAndDeleteSessionsWithAudit(
-		auth.data.user.id,
-		USER_STATUS_MAP.deleted,
-		(trx, auditNow) =>
-			accountAuditModule.writeAccountAuditLogInTransaction(
-				trx,
-				accountAuditModule.createAccountUserAuditLogInput({
-					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
-						.accountDeleted,
-					metadata: {
-						auth_record_digest:
-							accountAuditModule.createAccountAuditValueDigest(
-								auth.data.session.id
-							),
-						nickname: auth.data.user.nickname,
-						username: auth.data.user.username,
-					},
-					request,
-					userId: auth.data.user.id,
-				}),
-				auditNow
-			)
-	);
+	const deleteResult =
+		await usersModule.deleteActiveUserIfSessionCurrentWithAudit(
+			auth.data.user.id,
+			{
+				id: auth.data.session.id,
+				token_hash: auth.data.session.token_hash,
+			},
+			(trx, auditNow) =>
+				accountAuditModule.writeAccountAuditLogInTransaction(
+					trx,
+					accountAuditModule.createAccountUserAuditLogInput({
+						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+							.accountDeleted,
+						metadata: {
+							auth_record_digest:
+								accountAuditModule.createAccountAuditValueDigest(
+									auth.data.session.id
+								),
+							nickname: auth.data.user.nickname,
+							username: auth.data.user.username,
+						},
+						request,
+						userId: auth.data.user.id,
+					}),
+					auditNow
+				)
+		);
+	if (deleteResult.status === 'unauthorized') {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
 
 	const response = createNoStoreJsonResponse({ message: 'user-deleted' });
 	authModule.clearAccountSessionCookie(response, request);

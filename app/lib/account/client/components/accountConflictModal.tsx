@@ -36,6 +36,7 @@ import {
 	type TSyncConflictResolution,
 	resolveAccountSyncConflict,
 } from '@/lib/account/client/conflict';
+import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
 import { createSnapshotHash } from '@/lib/account/client/queue';
 import {
 	type ISyncConflictItem,
@@ -459,6 +460,8 @@ function checkConflictSnapshotUnchanged(
 			createSnapshotHash(conflict.cloud) &&
 		createSnapshotHash(currentConflict.local) ===
 			createSnapshotHash(conflict.local) &&
+		createSnapshotHash(currentConflict.localCollision) ===
+			createSnapshotHash(conflict.localCollision) &&
 		createSnapshotHash(currentConflict.merged) ===
 			createSnapshotHash(conflict.merged)
 	);
@@ -471,6 +474,7 @@ function createConflictSnapshotKey(conflict: ISyncConflictItem) {
 		conflict.revision,
 		createSnapshotHash(conflict.cloud),
 		createSnapshotHash(conflict.local),
+		createSnapshotHash(conflict.localCollision),
 		createSnapshotHash(conflict.merged),
 	]);
 }
@@ -479,7 +483,15 @@ const CONFLICT_RESOLUTION_TRACK_NAME_MAP = {
 	cloud: 'Use Cloud',
 	local: 'Use Local',
 	merged: 'Use Merged',
-} as const satisfies Record<TSyncConflictResolution, string>;
+} as const;
+
+function getConflictResolutionTrackName(resolution: TSyncConflictResolution) {
+	return resolution.startsWith('collision:')
+		? 'Use Local Collision Candidate'
+		: CONFLICT_RESOLUTION_TRACK_NAME_MAP[
+				resolution as 'cloud' | 'local' | 'merged'
+			];
+}
 
 interface IProps {}
 
@@ -488,15 +500,17 @@ export default memo<IProps>(function AccountConflictModal() {
 	const vibrate = useVibrate();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
+	const autoResolvingNamespaces =
+		accountStore.shared.sync.autoResolvingNamespaces.use();
 	const conflicts = accountStore.shared.sync.conflicts.use();
-	const passwordMustChange = accountStore.shared.passwordMustChange.use();
+	const hasIsolatedState = accountStore.shared.sync.hasIsolatedState.use();
+	const lastError = accountStore.shared.sync.lastError.use();
+	const remoteConflictNamespaces =
+		accountStore.shared.sync.remoteConflictNamespaces.use();
 	const user = accountStore.shared.user.use();
 
 	const [resolvingResolution, setResolvingResolution] =
 		useState<TSyncConflictResolution | null>(null);
-	const [resolvedConflictKeys, setResolvedConflictKeys] = useState<
-		ReadonlySet<string>
-	>(() => new Set());
 	const [displayedConflict, setDisplayedConflict] =
 		useState<ISyncConflictItem | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
@@ -504,16 +518,18 @@ export default memo<IProps>(function AccountConflictModal() {
 		useState<TSyncConflictResolution | null>(null);
 	const [isTechnicalDetailsOpen, setIsTechnicalDetailsOpen] = useState(false);
 
-	const isResolvingRef = useRef(false);
+	const resolvingTokenRef = useRef<symbol | null>(null);
 	const technicalDetailsRef = useRef<HTMLDivElement>(null);
 
-	const conflict = conflicts.find(
-		(item) =>
-			item.userId === user?.id &&
-			!resolvedConflictKeys.has(createConflictSnapshotKey(item))
-	);
+	const conflict = conflicts.find((item) => item.userId === user?.id);
+	const conflictSnapshotKey =
+		conflict === undefined ? null : createConflictSnapshotKey(conflict);
 	const isModalOpen =
-		conflict !== undefined && user !== null && !passwordMustChange;
+		user !== null &&
+		(autoResolvingNamespaces.length > 0 ||
+			conflict !== undefined ||
+			hasIsolatedState ||
+			remoteConflictNamespaces.length > 0);
 	const visibleConflict = conflict ?? displayedConflict;
 	const visibleConflictKey =
 		visibleConflict === null
@@ -521,46 +537,33 @@ export default memo<IProps>(function AccountConflictModal() {
 			: createConflictSnapshotKey(visibleConflict);
 
 	useEffect(() => {
-		setResolvedConflictKeys(new Set());
+		setDisplayedConflict(null);
 	}, [user?.id]);
 
 	useEffect(() => {
-		if (isModalOpen) {
+		if (conflict !== undefined) {
 			setDisplayedConflict(conflict);
+		} else if (
+			autoResolvingNamespaces.length > 0 ||
+			hasIsolatedState ||
+			remoteConflictNamespaces.length > 0
+		) {
+			setDisplayedConflict(null);
 		}
-	}, [conflict, isModalOpen]);
+	}, [
+		autoResolvingNamespaces.length,
+		conflict,
+		hasIsolatedState,
+		remoteConflictNamespaces.length,
+	]);
 
 	useEffect(() => {
-		setResolvedConflictKeys((currentKeys) => {
-			if (currentKeys.size === 0) {
-				return currentKeys;
-			}
-
-			const activeKeys = new Set(
-				conflicts.map(createConflictSnapshotKey)
-			);
-			const nextKeys = new Set<string>();
-			let didChange = false;
-
-			for (const key of currentKeys) {
-				if (activeKeys.has(key)) {
-					nextKeys.add(key);
-				} else {
-					didChange = true;
-				}
-			}
-
-			return didChange ? nextKeys : currentKeys;
-		});
-	}, [conflicts]);
-
-	useEffect(() => {
-		isResolvingRef.current = false;
+		resolvingTokenRef.current = null;
 		setResolvingResolution(null);
 		setMessage(null);
 		setPendingResolution(null);
 		setIsTechnicalDetailsOpen(false);
-	}, [conflict]);
+	}, [conflictSnapshotKey]);
 
 	useEffect(() => {
 		if (isModalOpen && visibleConflictKey !== null) {
@@ -569,9 +572,9 @@ export default memo<IProps>(function AccountConflictModal() {
 	}, [isModalOpen, visibleConflictKey]);
 
 	const resolveConflict = useCallback(
-		(resolution: TSyncConflictResolution) => {
+		async (resolution: TSyncConflictResolution) => {
 			if (
-				isResolvingRef.current ||
+				resolvingTokenRef.current !== null ||
 				conflict === undefined ||
 				user === null
 			) {
@@ -583,10 +586,11 @@ export default memo<IProps>(function AccountConflictModal() {
 			trackEvent(
 				trackEvent.category.click,
 				'Account Conflict Button',
-				CONFLICT_RESOLUTION_TRACK_NAME_MAP[resolution]
+				getConflictResolutionTrackName(resolution)
 			);
 
-			isResolvingRef.current = true;
+			const resolvingToken = Symbol('conflict-resolution');
+			resolvingTokenRef.current = resolvingToken;
 			setResolvingResolution(resolution);
 			setMessage(null);
 
@@ -607,7 +611,7 @@ export default memo<IProps>(function AccountConflictModal() {
 					return;
 				}
 
-				const didResolve = resolveAccountSyncConflict({
+				const didResolve = await resolveAccountSyncConflict({
 					conflict: currentConflict,
 					resolution,
 					userId: user.id,
@@ -618,17 +622,6 @@ export default memo<IProps>(function AccountConflictModal() {
 					return;
 				}
 
-				setResolvedConflictKeys((currentKeys) => {
-					if (currentKeys.has(conflictKey)) {
-						return currentKeys;
-					}
-
-					const nextKeys = new Set(currentKeys);
-					nextKeys.add(conflictKey);
-
-					return nextKeys;
-				});
-
 				scheduleAccountSyncFlush();
 			} catch (error) {
 				console.error('Failed to resolve conflict.', {
@@ -636,8 +629,10 @@ export default memo<IProps>(function AccountConflictModal() {
 				});
 				setMessage('冲突保存失败，请稍后重试');
 			} finally {
-				isResolvingRef.current = false;
-				setResolvingResolution(null);
+				if (resolvingTokenRef.current === resolvingToken) {
+					resolvingTokenRef.current = null;
+					setResolvingResolution(null);
+				}
 			}
 		},
 		[conflict, user, vibrate]
@@ -654,7 +649,7 @@ export default memo<IProps>(function AccountConflictModal() {
 	}, []);
 
 	const handleUseMerged = useCallback(() => {
-		resolveConflict('merged');
+		void resolveConflict('merged');
 	}, [resolveConflict]);
 
 	const handleCancelResolution = useCallback(() => {
@@ -666,7 +661,7 @@ export default memo<IProps>(function AccountConflictModal() {
 			return;
 		}
 
-		resolveConflict(pendingResolution);
+		void resolveConflict(pendingResolution);
 	}, [pendingResolution, resolveConflict]);
 
 	const handleToggleTechnicalDetails = useCallback(() => {
@@ -699,46 +694,239 @@ export default memo<IProps>(function AccountConflictModal() {
 	}, [isTechnicalDetailsOpen, scrollTechnicalDetailsToBottom]);
 
 	if (visibleConflict === null) {
-		return null;
+		if (autoResolvingNamespaces.length > 0) {
+			return (
+				<Modal
+					aria-label="正在协调云同步状态"
+					coordination={{
+						id: 'account.sync-conflict',
+						requestOwnership: 'external',
+					}}
+					hideCloseButton
+					isDismissable={false}
+					isKeyboardDismissDisabled
+					isOpen={isModalOpen}
+				>
+					<div className="space-y-4 p-1.5">
+						<Heading
+							as="h2"
+							isFirst
+							subTitle="正在根据共同版本安全合并，无需手动选择。"
+						>
+							正在协调云同步状态
+						</Heading>
+						<p className="text-small text-foreground-600">
+							涉及：
+							{autoResolvingNamespaces
+								.map(
+									(namespace) =>
+										SYNC_NAMESPACE_LABEL_MAP[namespace]
+								)
+								.join('、')}
+						</p>
+					</div>
+				</Modal>
+			);
+		}
+		if (remoteConflictNamespaces.length > 0) {
+			return (
+				<Modal
+					aria-label="云同步冲突待处理"
+					coordination={{
+						id: 'account.sync-conflict',
+						requestOwnership: 'external',
+					}}
+					hideCloseButton
+					isDismissable={false}
+					isKeyboardDismissDisabled
+					isOpen={isModalOpen}
+				>
+					<div className="space-y-4 p-1.5">
+						<Heading
+							as="h2"
+							isFirst
+							subTitle="冲突内容保存在另一个标签页中。请回到产生冲突的标签页完成处理；解决后此处会自动恢复。"
+						>
+							云同步冲突待处理
+						</Heading>
+						<p className="text-small text-foreground-600">
+							涉及：
+							{remoteConflictNamespaces
+								.map(
+									(namespace) =>
+										SYNC_NAMESPACE_LABEL_MAP[namespace]
+								)
+								.join('、')}
+						</p>
+					</div>
+				</Modal>
+			);
+		}
+		if (hasIsolatedState) {
+			const isolatedStateMessage = getAccountClientErrorMessage(
+				lastError ?? 'sync-client-update-required'
+			);
+			const isInvalidResetMarker =
+				lastError === 'sync-reset-marker-invalid';
+			const isQuarantineStorageFailed =
+				lastError === 'quarantine-storage-failed';
+			const isolatedStateTitle = isInvalidResetMarker
+				? '本地同步状态需要处理'
+				: isQuarantineStorageFailed
+					? '本地同步数据无法安全隔离'
+					: '需要更新同步客户端';
+
+			return (
+				<Modal
+					aria-label={isolatedStateTitle}
+					coordination={{
+						id: 'account.sync-conflict',
+						requestOwnership: 'external',
+					}}
+					hideCloseButton
+					isDismissable={false}
+					isKeyboardDismissDisabled
+					isOpen={isModalOpen}
+				>
+					<div className="space-y-4 p-1.5">
+						<Heading
+							as="h2"
+							isFirst
+							subTitle={isolatedStateMessage}
+						>
+							{isolatedStateTitle}
+						</Heading>
+						<p className="text-small text-foreground-600">
+							{isInvalidResetMarker
+								? '原始数据仍保留在当前浏览器中。请先导出需要保留的数据，再通过明确的数据清理操作重置此状态。'
+								: isQuarantineStorageFailed
+									? '原始数据仍保留在当前浏览器中。请释放本地存储空间后刷新页面重试。'
+									: '请刷新页面确认已加载最新版本；若仍然出现此提示，请更新应用后重试。'}
+						</p>
+					</div>
+				</Modal>
+			);
+		}
+		return (
+			<Modal
+				aria-label="云同步冲突"
+				coordination={{
+					id: 'account.sync-conflict',
+					requestOwnership: 'external',
+				}}
+				isOpen={false}
+			>
+				<div />
+			</Modal>
+		);
 	}
 
-	const differences = getConflictDifferences(
-		visibleConflict.cloud,
-		visibleConflict.local,
-		visibleConflict.merged
-	);
-	const namespaceLabel = SYNC_NAMESPACE_LABEL_MAP[visibleConflict.namespace];
+	const { cloud, local, localCollision, merged, namespace } = visibleConflict;
+	const differences = getConflictDifferences(cloud, local, merged);
+	const namespaceLabel = SYNC_NAMESPACE_LABEL_MAP[namespace];
 	const unresolvedConflictCount = conflicts.filter(
-		(item) =>
-			item.userId === user?.id &&
-			!resolvedConflictKeys.has(createConflictSnapshotKey(item))
+		(item) => item.userId === user?.id
 	).length;
 	const isResolving = resolvingResolution !== null;
-	const canUseMergedResult = visibleConflict.merged !== null;
+	const canUseMergedResult = merged !== null;
 	const confirmationText =
 		pendingResolution === 'cloud'
 			? `保留云端版本后，当前设备上的${namespaceLabel}修改将被替换。`
 			: `保留当前设备版本后，它会上传到云端并替换云端的${namespaceLabel}修改。`;
 	const technicalDetailsContent = (
 		<div className="grid gap-4 border-t border-default-200/70 p-4 lg:grid-cols-3">
-			<ConflictPreview
-				label="云端原始数据"
-				value={visibleConflict.cloud}
-			/>
-			<ConflictPreview
-				label="当前设备原始数据"
-				value={visibleConflict.local}
-			/>
+			<ConflictPreview label="云端原始数据" value={cloud} />
+			<ConflictPreview label="当前设备原始数据" value={local} />
 			<ConflictPreview
 				label="合并后的原始数据"
-				value={visibleConflict.merged ?? '无法自动合并'}
+				value={merged ?? '无法自动合并'}
 			/>
 		</div>
 	);
+	if (localCollision !== undefined) {
+		return (
+			<Modal
+				aria-label="跨标签页同步冲突"
+				coordination={{
+					id: 'account.sync-conflict',
+					requestOwnership: 'external',
+				}}
+				hideCloseButton
+				isDismissable={false}
+				isKeyboardDismissDisabled
+				isOpen={isModalOpen}
+				motionProps={CONFLICT_MODAL_MOTION_PROPS}
+				scrollMode="mask"
+				size="5xl"
+			>
+				<div className="w-full space-y-4">
+					<Heading
+						as="h2"
+						classNames={{ subTitle: 'mb-0' }}
+						isFirst
+						subTitle={`多个标签页同时修改了“${namespaceLabel}”。所有候选都已保留，请明确选择一个版本。`}
+					>
+						跨标签页同步冲突
+					</Heading>
+					<div className="rounded-medium border border-warning/30 bg-warning/10 px-4 py-3 text-small leading-6 text-warning-800 dark:text-warning-500">
+						选择前不会上传任何候选。选择后，系统会先保存选择结果，再继续与云端版本比较。
+						{localCollision.invalidEvidenceCount > 0 &&
+							` 另有 ${localCollision.invalidEvidenceCount} 份无法解析的旧证据仍会保留。`}
+					</div>
+					<div className="grid gap-4 md:grid-cols-2">
+						{localCollision.candidates.map((candidate, index) => {
+							const resolution =
+								`collision:${candidate.id}` as TSyncConflictResolution;
+							return (
+								<div
+									key={candidate.id}
+									className="space-y-3 rounded-medium border border-default-200/70 bg-content1/50 p-4"
+								>
+									<div>
+										<h3 className="font-medium text-foreground-700">
+											候选 {index + 1}
+										</h3>
+										<p className="text-small text-foreground-500">
+											{candidate.label}
+										</p>
+									</div>
+									<ConflictPreview
+										label="候选原始数据"
+										value={candidate.data}
+									/>
+									<Button
+										className="w-full"
+										color="primary"
+										isDisabled={isResolving}
+										isLoading={
+											resolvingResolution === resolution
+										}
+										variant="flat"
+										onPress={() => {
+											void resolveConflict(resolution);
+										}}
+									>
+										保留此候选
+									</Button>
+								</div>
+							);
+						})}
+					</div>
+					{message !== null && (
+						<p className="text-small text-danger">{message}</p>
+					)}
+				</div>
+			</Modal>
+		);
+	}
 
 	return (
 		<Modal
-			coordination={{ id: 'account.sync-conflict' }}
+			aria-label="云同步冲突"
+			coordination={{
+				id: 'account.sync-conflict',
+				requestOwnership: 'external',
+			}}
 			hideCloseButton
 			isDismissable={false}
 			isKeyboardDismissDisabled
@@ -749,7 +937,7 @@ export default memo<IProps>(function AccountConflictModal() {
 		>
 			<FadeMotionDiv
 				className="w-full space-y-4"
-				target={visibleConflictKey ?? visibleConflict.namespace}
+				target={visibleConflictKey ?? namespace}
 			>
 				<div className="flex items-start justify-between gap-4">
 					<div className="min-w-0">

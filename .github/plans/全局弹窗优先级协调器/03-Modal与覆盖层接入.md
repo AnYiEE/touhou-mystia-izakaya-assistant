@@ -10,6 +10,7 @@
 interface IModalCoordinationProps {
 	canActivate?: () => boolean;
 	id: TOverlayId;
+	requestOwnership?: 'component' | 'external';
 	shortcuts?: ReadonlyArray<IOverlayShortcutDefinition>;
 }
 
@@ -25,6 +26,8 @@ interface IModalProps {
 3. 保留现有 HeroUI props、portal、focus trap、scroll mode、ScrollMask 和高外观样式。
 4. 向全局 Host 登记根元素和可关闭状态；已展开的 Select、Autocomplete、Popover、Dropdown、Tooltip 等局部浮层仍通过触发器关联优先消费 Escape。
 5. 普通 Modal 子任务沿用底层 Modal 的背景模糊；营业预设 Drawer 的模糊层位于抽屉内容下方，因此它的直接上层保留自身背景模糊。
+6. 默认由组件同步业务 `isOpen` 与协调 request；P0 使用 external ownership，组件只注册展示适配，mount/unmount 不得撤销业务 request。
+7. 组件所有模式下，如果一个此前未 requested 的新 P1 业务状态绕过入口变为 open，而协调请求被 P0/tutorial/其他任务拒绝，立即调用业务 close 回滚；已在栈中并被 P0 covered 的任务不回滚。
 
 基础 Modal 不负责：
 
@@ -33,6 +36,14 @@ interface IModalProps {
 - 替业务组件写入或清除 store。
 - 统一重写 Modal 内部动画。
 - 改动基础组件的样式和内边距。
+
+## P0 期间的应用交互边界
+
+`app/layout.tsx` 保持原有结构，`#modal-portal-container` 仍是 `<main>` 的第一个子节点。`OverlayCoordinatorHost` 在 P0 requested/pending/active/transition 期间从 portal 向 `body` 遍历祖先链，只对每一级不包含 portal 的兄弟子树设置 inert；portal 和祖先链本身不设 inert。Host 同时只观察这些祖先的直接子节点变化，使 hydration 替换出的新页面根也立即进入 inert，但不观察 Modal 内部动画 DOM，避免 mutation/render 回环。P0 关闭时按节点原值恢复 inert。
+
+这层 inert 是全局交互边界，不替代协调请求决策。所有 P1 入口仍必须先得到 `activated`，所有局部 portaled Popover/Dropdown 还必须验证位于 P0 backdrop 下且不可聚焦。
+
+底层交互不得在没有可见说明时保持 inert。blocker transition 或 external blocker 已 requested 但对应 P0 根尚未出现时，Host 使用项目基础 `Modal` 在原 portal 中展示不可关闭的准备层；该准备层不登记协调 ID，避免与真实 P0 争抢槽位。1 秒后仍未出现则显示刷新/更新提示并记录脱敏错误码。准备层只解释阻断，不提供丢弃冲突或绕过 P0 的按钮，业务代码不直接调用 `createPortal()` 或另写 backdrop/层级样式。
 
 ### 不可直接全量自动注册
 
@@ -48,16 +59,23 @@ interface IModalProps {
 
 ### 强制修改密码
 
+- 适配组件始终挂载和注册，业务条件为 false 时只传 `isOpen=false`，不通过 `return null` 卸载协调 registration。
 - `requestedOpen` 仍由 `isLoggedIn && passwordMustChange` 决定。
+- 所有业务写入通过统一 `accountStore.setPasswordMustChange()` action，在 boolean 变化的同一调用链登记或撤销 `account.password-required`；Modal 使用 external request ownership，只登记和读取展示状态。
 - 作为 `blocking` 登记，不开放普通关闭请求。
 - 激活时覆盖当前 P1 任务栈。
-- SSO 强制登出后需要打开账号 Modal 时，等待 P0 业务状态解除后再提交 `account.main` 请求。
+- 任一标签从权威账号响应发现强制改密，或完成注册/登录/切号/改密/退出/删除账号、确认 session 401 时，发布现有 `account-updated` 和无业务数据的 storage 失效信号；监听在匿名/旧账号状态也常驻，账号事件在 userId 过滤前触发权威刷新，再由每个标签各自推导 blocker。事件不能携带密码、CSRF 或协调器 snapshot，接收刷新不能再次广播。
+- 两个标签并发提交改密时由服务端预期旧 password hash 的条件更新裁决，只有一个成功；`409 credential-changed` 触发刷新，不重试旧表单。
+- SSO 强制登出后需要打开账号 Modal 时，等待全部 P0 业务状态解除后再提交普通 P1 请求；不得直接写 `accountModal.isOpen` 绕过全局协调。
 
 ### 同步冲突
 
-- 保留现有 `conflict !== undefined && user !== null && !passwordMustChange` 条件。
+- 适配组件始终挂载和注册；无冲突时基础 Modal 关闭，但 external request owner 不依赖组件 mount/effect。
+- `requestedOpen` 只由“当前用户存在未解决冲突”决定，不再包含 `!passwordMustChange`。强制改密和冲突同时成立时两个请求都保留，由协调器只展示 rank 更高的强制改密。
 - 作为 `blocking` 登记，不增加关闭按钮，不改变现有处理中状态。
 - 多个 namespace 冲突仍在冲突 Modal 内顺序处理，不将每个冲突分区登记成单独覆盖层。
+- 冲突写入账号运行时 store 的同一调用链就向协调器请求 blocker；Modal 使用 external request ownership，组件 effect 和 registration cleanup 都不能开关该 request。
+- 删除组件本地 `resolvedConflictKeys` 对业务列表的过滤；退出动画可保留最后展示快照，但相同 snapshot key 再次进入 store 时必须重新展示。
 
 ## 全局搜索
 
@@ -106,6 +124,7 @@ interface IModalProps {
 
 - 账号 Modal 从 Navbar、SSO 页面或旧备份导入打开时是根任务。
 - 从设置中打开时是显式子任务。
+- 账号 Modal 与搜索、设置、顾客信息和 Drawer 一样服从通用 P1 门禁；不能把账号 action 的单独判断当成 P0 安全边界。
 - 法律声明只是账号子 Modal，不允许独立根打开。
 - 账号内部的删除数据、删除账号、撤销会话等确认 Popover 保持局部状态。
 - 账号 Modal 失活或关闭时，这些局部 Popover 必须关闭，但无需全局登记。

@@ -188,6 +188,29 @@ export async function putSyncStateChanges({
 			});
 			continue;
 		}
+		if (result.status === 'capacity-exceeded') {
+			results.push({
+				candidate_bytes: result.candidate_bytes,
+				candidate_namespace_bytes: result.candidate_namespace_bytes,
+				current_bytes: result.current_bytes,
+				current_namespace_bytes: result.current_namespace_bytes,
+				limit_bytes: result.limit_bytes,
+				message: 'sync-account-capacity-exceeded',
+				namespace: preparedChange.change.namespace,
+				namespaces: result.namespaces,
+				status: 'error',
+			});
+			continue;
+		}
+		if (result.status === 'schema-version-downgrade') {
+			results.push({
+				current_schema_version: result.current_schema_version,
+				message: 'sync-schema-update-required',
+				namespace: preparedChange.change.namespace,
+				status: 'error',
+			});
+			continue;
+		}
 		if (result.status === 'conflict') {
 			try {
 				results.push(

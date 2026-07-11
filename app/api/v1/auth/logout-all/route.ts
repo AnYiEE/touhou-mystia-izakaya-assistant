@@ -64,34 +64,42 @@ export async function POST(request: NextRequest) {
 		import('@/lib/account/server/repositories/sessions'),
 		import('@/lib/account/server/accountAuditService'),
 	]);
-	const deletedSessionCount =
-		await sessionsModule.deleteSessionsByUserIdWithAudit(
-			auth.data.user.id,
-			{ createdBefore: requestStartedAt },
-			(trx, auditNow, deletedSessionCount) =>
-				accountAuditModule.writeAccountAuditLogInTransaction(
-					trx,
-					accountAuditModule.createAccountUserAuditLogInput({
-						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
-							.logoutAll,
-						metadata: {
-							auth_record_digest:
-								accountAuditModule.createAccountAuditValueDigest(
-									auth.data.session.id
-								),
-							deleted_record_count: deletedSessionCount,
-							nickname: auth.data.user.nickname,
-							username: auth.data.user.username,
-						},
-						request,
-						userId: auth.data.user.id,
-					}),
-					auditNow
-				)
-		);
+	const deleteResult = await sessionsModule.deleteSessionsByUserIdWithAudit(
+		auth.data.user.id,
+		{
+			createdBefore: requestStartedAt,
+			initiatingSession: {
+				id: auth.data.session.id,
+				token_hash: auth.data.sessionTokenHash,
+			},
+		},
+		(trx, auditNow, deletedSessionCount) =>
+			accountAuditModule.writeAccountAuditLogInTransaction(
+				trx,
+				accountAuditModule.createAccountUserAuditLogInput({
+					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+						.logoutAll,
+					metadata: {
+						auth_record_digest:
+							accountAuditModule.createAccountAuditValueDigest(
+								auth.data.session.id
+							),
+						deleted_record_count: deletedSessionCount,
+						nickname: auth.data.user.nickname,
+						username: auth.data.user.username,
+					},
+					request,
+					userId: auth.data.user.id,
+				}),
+				auditNow
+			)
+	);
+	if (deleteResult.status === 'unauthorized') {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
 
 	return createNoStoreJsonResponse({
-		deleted_current_session: deletedSessionCount > 0,
+		deleted_current_session: deleteResult.deletedSessionCount > 0,
 		message: 'logged-out-all',
 	});
 }

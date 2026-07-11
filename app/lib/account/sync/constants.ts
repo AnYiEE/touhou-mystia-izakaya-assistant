@@ -14,7 +14,7 @@ export type TSyncNamespace =
 export const SYNC_SCHEMA_VERSION_MAP = {
 	[SYNC_NAMESPACE_MAP.customerNormalMeals]: 1,
 	[SYNC_NAMESPACE_MAP.customerRareMeals]: 1,
-	[SYNC_NAMESPACE_MAP.customerRarePlans]: 2,
+	[SYNC_NAMESPACE_MAP.customerRarePlans]: 3,
 	[SYNC_NAMESPACE_MAP.customerRareSettings]: 1,
 	[SYNC_NAMESPACE_MAP.globalPreferences]: 1,
 	[SYNC_NAMESPACE_MAP.theme]: 1,

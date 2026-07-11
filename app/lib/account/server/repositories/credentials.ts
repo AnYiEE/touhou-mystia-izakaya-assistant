@@ -12,7 +12,11 @@ import type {
 	TUserCredentialNew,
 	TUserCredentialUpdate,
 } from '@/lib/db/types';
-import { type TSessionMutablePatch } from './sessions';
+import {
+	type TAuthenticatedSessionIdentity,
+	type TSessionMutablePatch,
+	lockActiveUserSessionInTransaction,
+} from './sessions';
 
 const TABLE_NAME = TABLE_NAME_MAP.userCredential;
 const SESSION_TABLE_NAME = TABLE_NAME_MAP.session;
@@ -177,12 +181,14 @@ export async function updateCredentialAndDeleteSessionsWithAudit(
 
 export async function updateCredentialAndRotateSession({
 	credential,
+	expectedSessionTokenHash,
 	session,
 	sessionId,
 	userId,
 	writeAuditLog,
 }: {
 	credential: TUserCredentialUpdate;
+	expectedSessionTokenHash: TSession['token_hash'];
 	session: TSessionMutablePatch;
 	sessionId: TSession['id'];
 	userId: TUser['id'];
@@ -193,6 +199,15 @@ export async function updateCredentialAndRotateSession({
 	const now = Date.now();
 
 	await db.transaction().execute(async (trx) => {
+		if (
+			!(await lockActiveUserSessionInTransaction(trx, userId, {
+				id: sessionId,
+				token_hash: expectedSessionTokenHash,
+			}))
+		) {
+			throw new Error('session-not-found');
+		}
+
 		const updateCredentialResult = await trx
 			.updateTable(TABLE_NAME)
 			.set(credential)
@@ -239,6 +254,7 @@ export async function updateCredentialAndRotateSession({
 			}))
 			.where('id', '=', sessionId)
 			.where('user_id', '=', userId)
+			.where('token_hash', '=', expectedSessionTokenHash)
 			.executeTakeFirst();
 
 		if (updateSessionResult.numUpdatedRows !== 1n) {
@@ -256,14 +272,18 @@ export async function updateCredentialAndRotateSession({
 
 export async function updateCredentialAndKeepCurrentSession({
 	credential,
+	expectedPasswordHash,
 	lastSeenAt,
 	sessionId,
+	sessionTokenHash,
 	userId,
 	writeAuditLog,
 }: {
 	credential: TUserCredentialUpdate;
+	expectedPasswordHash: TUserCredential['password_hash'];
 	lastSeenAt: TSession['last_seen_at'];
 	sessionId: TSession['id'];
+	sessionTokenHash: TSession['token_hash'];
 	userId: TUser['id'];
 	writeAuditLog?: (trx: Transaction<TDatabase>, now: number) => Promise<void>;
 }) {
@@ -271,10 +291,20 @@ export async function updateCredentialAndKeepCurrentSession({
 	const now = Date.now();
 
 	await db.transaction().execute(async (trx) => {
+		if (
+			!(await lockActiveUserSessionInTransaction(trx, userId, {
+				id: sessionId,
+				token_hash: sessionTokenHash,
+			}))
+		) {
+			throw new Error('session-not-found');
+		}
+
 		const updateCredentialResult = await trx
 			.updateTable(TABLE_NAME)
 			.set(credential)
 			.where('user_id', '=', userId)
+			.where('password_hash', '=', expectedPasswordHash)
 			.where(
 				'user_id',
 				'in',
@@ -300,7 +330,16 @@ export async function updateCredentialAndKeepCurrentSession({
 				throw new Error('invalid-user-status');
 			}
 
-			throw new Error('credential-not-found');
+			const currentCredential = await trx
+				.selectFrom(TABLE_NAME)
+				.select('password_hash')
+				.where('user_id', '=', userId)
+				.executeTakeFirst();
+			if (currentCredential === undefined) {
+				throw new Error('credential-not-found');
+			}
+
+			throw new Error('credential-changed');
 		}
 
 		const deleteOtherSessionsCreatedBefore = Date.now() + 1;
@@ -313,6 +352,7 @@ export async function updateCredentialAndKeepCurrentSession({
 			}))
 			.where('id', '=', sessionId)
 			.where('user_id', '=', userId)
+			.where('token_hash', '=', sessionTokenHash)
 			.executeTakeFirst();
 
 		if (updateSessionResult.numUpdatedRows !== 1n) {
@@ -348,57 +388,88 @@ export async function incrementFailedAttempts(userId: TUser['id']) {
 	return record.failed_attempts;
 }
 
-export async function recordFailedCredentialAttempt(
-	userId: TUser['id'],
-	now = Date.now()
-): Promise<Extract<TCredentialAttemptState, { status: 'failed' | 'locked' }>> {
+export async function recordFailedCredentialAttempt({
+	expectedPasswordHash,
+	now = Date.now(),
+	session,
+	userId,
+}: {
+	expectedPasswordHash: TUserCredential['password_hash'];
+	now?: number;
+	session?: TAuthenticatedSessionIdentity;
+	userId: TUser['id'];
+}): Promise<
+	| Extract<
+			TCredentialAttemptState,
+			{ status: 'failed' | 'locked' | 'stale' }
+	  >
+	| { status: 'unauthorized' }
+> {
 	const db = await getAccountDatabase();
 	const lockedUntil = now + CREDENTIAL_LOCK_MS;
-	const record = await db
-		.updateTable(TABLE_NAME)
-		.set(({ ref }) => {
-			const nextFailedAttempts = sql<
-				TUserCredential['failed_attempts']
-			>`case when ${ref('locked_until')} is not null and ${ref('locked_until')} <= ${now} then 1 else ${ref('failed_attempts')} + 1 end`;
-
-			return {
-				failed_attempts: nextFailedAttempts,
-				locked_until: sql<
-					TUserCredential['locked_until']
-				>`case when ${nextFailedAttempts} >= ${CREDENTIAL_FAILED_ATTEMPT_LIMIT} then ${lockedUntil} else null end`,
-				updated_at: now,
-			};
-		})
-		.where('user_id', '=', userId)
-		.where((eb) =>
-			eb.or([
-				eb('locked_until', 'is', null),
-				eb('locked_until', '<=', now),
-			])
-		)
-		.returning(['failed_attempts', 'locked_until'])
-		.executeTakeFirst();
-
-	if (record === undefined) {
-		const credential = await getCredentialByUserId(userId);
-		if (credential === null) {
-			throw new Error('credential-not-found');
+	return db.transaction().execute(async (trx) => {
+		if (
+			session !== undefined &&
+			!(await lockActiveUserSessionInTransaction(trx, userId, session))
+		) {
+			return { status: 'unauthorized' as const };
 		}
 
-		const lockState = getCredentialLockState(credential, now);
+		const record = await trx
+			.updateTable(TABLE_NAME)
+			.set(({ ref }) => {
+				const nextFailedAttempts = sql<
+					TUserCredential['failed_attempts']
+				>`case when ${ref('locked_until')} is not null and ${ref('locked_until')} <= ${now} then 1 else ${ref('failed_attempts')} + 1 end`;
+
+				return {
+					failed_attempts: nextFailedAttempts,
+					locked_until: sql<
+						TUserCredential['locked_until']
+					>`case when ${nextFailedAttempts} >= ${CREDENTIAL_FAILED_ATTEMPT_LIMIT} then ${lockedUntil} else null end`,
+					updated_at: now,
+				};
+			})
+			.where('user_id', '=', userId)
+			.where('password_hash', '=', expectedPasswordHash)
+			.where((eb) =>
+				eb.or([
+					eb('locked_until', 'is', null),
+					eb('locked_until', '<=', now),
+				])
+			)
+			.returning(['failed_attempts', 'locked_until'])
+			.executeTakeFirst();
+
+		if (record === undefined) {
+			const credential = await trx
+				.selectFrom(TABLE_NAME)
+				.selectAll()
+				.where('user_id', '=', userId)
+				.executeTakeFirst();
+			if (credential === undefined) {
+				throw new Error('credential-not-found');
+			}
+
+			if (credential.password_hash !== expectedPasswordHash) {
+				return { status: 'stale' as const };
+			}
+
+			const lockState = getCredentialLockState(credential, now);
+			if (lockState.status === 'locked') {
+				return lockState;
+			}
+
+			throw new Error('credential-update-conflict');
+		}
+
+		const lockState = getCredentialLockState(record, now);
 		if (lockState.status === 'locked') {
 			return lockState;
 		}
 
-		throw new Error('credential-update-conflict');
-	}
-
-	const lockState = getCredentialLockState(record, now);
-	if (lockState.status === 'locked') {
-		return lockState;
-	}
-
-	return { status: 'failed' };
+		return { status: 'failed' as const };
+	});
 }
 
 export async function resetFailedAttemptsForCredential({

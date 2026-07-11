@@ -218,7 +218,27 @@ export async function POST(request: NextRequest) {
 	);
 	if (!isValidPassword) {
 		const failureState =
-			await credentialsModule.recordFailedCredentialAttempt(user.id, now);
+			await credentialsModule.recordFailedCredentialAttempt({
+				expectedPasswordHash: credential.password_hash,
+				now,
+				userId: user.id,
+			});
+		if (failureState.status === 'stale') {
+			await accountAuditModule.writeAccountAuditLogBestEffort(
+				accountAuditModule.createAccountSystemAuditLogInput({
+					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+						.loginFailed,
+					metadata: createLoginFailureMetadata(
+						'credential-state-stale',
+						username,
+						usernameNormalized
+					),
+					request,
+					targetId: user.id,
+				})
+			);
+			return createCredentialStateStaleResponse();
+		}
 		if (failureState.status === 'locked') {
 			await accountAuditModule.writeAccountAuditLogBestEffort(
 				accountAuditModule.createAccountSystemAuditLogInput({
@@ -258,16 +278,43 @@ export async function POST(request: NextRequest) {
 		{ now, passwordHash: credential.password_hash, userId: user.id }
 	);
 	if (resetState.status === 'locked') {
+		await accountAuditModule.writeAccountAuditLogBestEffort(
+			accountAuditModule.createAccountSystemAuditLogInput({
+				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
+				metadata: {
+					...createLoginFailureMetadata(
+						'credential-locked-after-verify',
+						username,
+						usernameNormalized
+					),
+					retry_after: resetState.retryAfter,
+				},
+				request,
+				targetId: user.id,
+			})
+		);
 		return createCredentialLockedResponse(resetState.retryAfter);
 	}
 	if (resetState.status === 'stale') {
+		await accountAuditModule.writeAccountAuditLogBestEffort(
+			accountAuditModule.createAccountSystemAuditLogInput({
+				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
+				metadata: createLoginFailureMetadata(
+					'credential-state-stale-after-verify',
+					username,
+					usernameNormalized
+				),
+				request,
+				targetId: user.id,
+			})
+		);
 		return createCredentialStateStaleResponse();
 	}
 
 	const userUpdate = { last_login_at: now, updated_at: now };
 
 	const currentUser = { ...user, last_login_at: now, updated_at: now };
-	const session = await authModule.createAccountSessionForActiveUser(
+	const sessionResult = await authModule.createAccountSessionForActiveUser(
 		user.id,
 		request,
 		userUpdate,
@@ -291,7 +338,22 @@ export async function POST(request: NextRequest) {
 				auditNow
 			)
 	);
-	if (session === null) {
+	if (sessionResult.status === 'credential-stale') {
+		await accountAuditModule.writeAccountAuditLogBestEffort(
+			accountAuditModule.createAccountSystemAuditLogInput({
+				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
+				metadata: createLoginFailureMetadata(
+					'credential-state-stale-before-session',
+					username,
+					usernameNormalized
+				),
+				request,
+				targetId: user.id,
+			})
+		);
+		return createCredentialStateStaleResponse();
+	}
+	if (sessionResult.status === 'user-unavailable') {
 		await accountAuditModule.writeAccountAuditLogBestEffort(
 			accountAuditModule.createAccountSystemAuditLogInput({
 				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.loginFailed,
@@ -306,7 +368,6 @@ export async function POST(request: NextRequest) {
 		);
 		return createInvalidLoginResponse();
 	}
-
 	const loginResponseModule =
 		await import('@/lib/account/server/loginResponse');
 
@@ -314,7 +375,7 @@ export async function POST(request: NextRequest) {
 		hasPassword: true,
 		passwordMustChange: credential.password_must_change === 1,
 		request,
-		session,
+		session: sessionResult,
 		user: userModule.createAccountUserProfile(currentUser),
 	});
 }

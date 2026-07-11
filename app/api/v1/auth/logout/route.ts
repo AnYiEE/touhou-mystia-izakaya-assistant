@@ -62,8 +62,9 @@ export async function POST(request: NextRequest) {
 		import('@/lib/account/server/repositories/sessions'),
 		import('@/lib/account/server/accountAuditService'),
 	]);
-	await sessionsModule.deleteSessionByIdWithAudit(
-		auth.data.session.id,
+	const didLogout = await sessionsModule.deleteSessionByIdWithAudit(
+		auth.data.user.id,
+		{ id: auth.data.session.id, token_hash: auth.data.sessionTokenHash },
 		(trx, auditNow) =>
 			accountAuditModule.writeAccountAuditLogInTransaction(
 				trx,
@@ -83,6 +84,9 @@ export async function POST(request: NextRequest) {
 				auditNow
 			)
 	);
+	if (!didLogout) {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
 
 	const response = createNoStoreJsonResponse({ message: 'logged-out' });
 	authModule.clearAccountSessionCookie(response, request);

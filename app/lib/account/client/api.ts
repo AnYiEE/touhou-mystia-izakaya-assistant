@@ -383,10 +383,10 @@ export function exportAccountData() {
 	return fetchAccountApiResult<IAccountExportData>('/api/v1/account/export');
 }
 
-export function deleteAccountData(csrfToken: string) {
+export function deleteAccountData(csrfToken: string, stateEpoch: number) {
 	return fetchAccountApiResult<{ state_epoch: number }>(
 		'/api/v1/account/delete-data',
-		createCsrfRequestInit('DELETE', csrfToken)
+		createJsonRequestInit('DELETE', { state_epoch: stateEpoch }, csrfToken)
 	);
 }
 

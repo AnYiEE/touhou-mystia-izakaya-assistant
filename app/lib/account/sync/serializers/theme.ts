@@ -1,12 +1,8 @@
+import { mergeThemeSnapshots } from './themeMerge';
 import { STORAGE_KEY, THEME_MAP, applyTheme, parseTheme } from '@/design/hooks';
 import { type TTheme } from '@/design/hooks/use-theme/types';
 import { type ISyncNamespaceSerializer } from '@/lib/account/sync';
 import { safeStorage } from '@/utilities/safeStorage';
-import {
-	checkSnapshotEqual,
-	createMergeResult,
-	createSerializerConflict,
-} from './utils';
 
 export type TThemeSnapshot = TTheme;
 
@@ -22,75 +18,12 @@ export const themeSerializer = {
 	getLocalSnapshot() {
 		return parseTheme(safeStorage.getItem(STORAGE_KEY));
 	},
-	merge({ allowBaseNullAutoMerge = false, base, cloud, local, namespace }) {
-		const defaultSnapshot = this.getDefaultSnapshot();
-
-		if (cloud === null) {
-			return createMergeResult({
-				data: local,
-				shouldUpload: !checkSnapshotEqual(local, defaultSnapshot),
-			});
-		}
-		if (checkSnapshotEqual(local, cloud)) {
-			return createMergeResult({ data: cloud, shouldUpload: false });
-		}
-		if (base === null) {
-			if (checkSnapshotEqual(local, defaultSnapshot)) {
-				if (allowBaseNullAutoMerge) {
-					return createMergeResult({
-						data: cloud,
-						shouldUpload: false,
-					});
-				}
-
-				return createMergeResult({
-					conflict: createSerializerConflict({
-						cloud,
-						local,
-						namespace,
-						userId: '',
-					}),
-					data: cloud,
-					shouldUpload: false,
-				});
-			}
-			if (checkSnapshotEqual(cloud, defaultSnapshot)) {
-				return createMergeResult({ data: local, shouldUpload: true });
-			}
-			if (allowBaseNullAutoMerge) {
-				return createMergeResult({ data: cloud, shouldUpload: false });
-			}
-
-			return createMergeResult({
-				conflict: createSerializerConflict({
-					cloud,
-					local,
-					namespace,
-					userId: '',
-				}),
-				data: cloud,
-				shouldUpload: false,
-			});
-		}
-
-		const hasLocalChange = !checkSnapshotEqual(local, base);
-		const hasCloudChange = !checkSnapshotEqual(cloud, base);
-		if (!hasLocalChange) {
-			return createMergeResult({ data: cloud, shouldUpload: false });
-		}
-		if (!hasCloudChange) {
-			return createMergeResult({ data: local, shouldUpload: true });
-		}
-
-		return createMergeResult({
-			conflict: createSerializerConflict({
-				cloud,
-				local,
-				namespace,
-				userId: '',
-			}),
-			data: cloud,
-			shouldUpload: false,
+	merge({ base, cloud, local }) {
+		return mergeThemeSnapshots({
+			base,
+			cloud,
+			defaultSnapshot: this.getDefaultSnapshot(),
+			local,
 		});
 	},
 	migrate(data, version) {

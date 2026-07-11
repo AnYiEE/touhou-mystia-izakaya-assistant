@@ -10,7 +10,14 @@ import {
 	IS_VERCEL,
 	getSha,
 } from './scripts/utils';
-import { SERVER_ACTION_BODY_SIZE_LIMIT } from './app/lib/account/shared/requestLimits';
+import {
+	ACCOUNT_SYNC_REQUEST_MAX_BYTES,
+	getServerActionBodySizeLimit,
+} from './app/lib/account/shared/requestLimits';
+
+const serverActionBodySizeLimit = getServerActionBodySizeLimit(
+	ACCOUNT_SYNC_REQUEST_MAX_BYTES
+);
 
 const exportMode = IS_OFFLINE || (!IS_SELF_HOSTED && !IS_VERCEL);
 const skipLint =
@@ -47,7 +54,7 @@ const nextConfig: NextConfig = {
 	typescript: { ignoreBuildErrors: skipLint },
 
 	experimental: {
-		serverActions: { bodySizeLimit: SERVER_ACTION_BODY_SIZE_LIMIT },
+		serverActions: { bodySizeLimit: serverActionBodySizeLimit },
 		webpackMemoryOptimizations: skipLint,
 	},
 };

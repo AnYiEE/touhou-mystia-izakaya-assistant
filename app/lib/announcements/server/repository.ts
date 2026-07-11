@@ -317,9 +317,10 @@ export async function listAnnouncementDismissalsForUser(
 }
 
 export async function upsertAnnouncementDismissal(
-	dismissal: TAnnouncementDismissalNew
+	dismissal: TAnnouncementDismissalNew,
+	database?: TAnnouncementDatabase
 ) {
-	const db = await getAccountDatabase();
+	const db = await getAnnouncementDatabase(database);
 
 	await db
 		.insertInto(DISMISSAL_TABLE_NAME)

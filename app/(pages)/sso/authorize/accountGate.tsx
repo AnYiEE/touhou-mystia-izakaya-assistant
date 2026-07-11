@@ -22,12 +22,14 @@ export default memo<IProps>(function SsoAuthorizeAccountGate() {
 			!isLoggedIn &&
 			!store.shared.accountModal.isOpen.get()
 		) {
-			trackEvent(
-				trackEvent.category.show,
-				'Modal',
-				'Account From SSO Authorize'
-			);
-			store.shared.accountModal.isOpen.set(true);
+			const result = store.openAccountModal();
+			if (result.status === 'activated') {
+				trackEvent(
+					trackEvent.category.show,
+					'Modal',
+					'Account From SSO Authorize'
+				);
+			}
 		}
 	}, [bootstrapStatus, isLoggedIn]);
 

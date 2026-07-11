@@ -34,6 +34,12 @@ import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
 import { MAX_BACKUP_DATA_BYTES } from '@/lib/account/shared/requestLimits';
 import { getAccountDatabase } from '@/lib/account/server/db';
 import { maskBackupCode } from '@/lib/account/server/backupCode';
+import {
+	AccountSyncCapacityExceededError,
+	calculateAccountSyncCapacity,
+	checkAccountSyncCapacityAllowed,
+	getAccountSyncCapacityConfiguration,
+} from '@/lib/account/server/syncCapacity';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import { type TDatabase, type TSession, type TUserState } from '@/lib/db/types';
 import { getLogSafeErrorCode } from '@/lib/logging';
@@ -601,16 +607,18 @@ export async function importBackupData({
 			);
 		}
 
-		const results: IImportBackupResult[] = [];
-		for (const item of importNamespaceData) {
+		const currentEntries = await trx
+			.selectFrom(TABLE_NAME_MAP.userState)
+			.selectAll()
+			.where('user_id', '=', userId)
+			.execute();
+		const currentEntryMap = new Map(
+			currentEntries.map((entry) => [entry.namespace, entry])
+		);
+		const preparedEntries = importNamespaceData.map((item) => {
 			lockModule.throwIfBackupCodeLockLost(signal);
 
-			const current = await trx
-				.selectFrom(TABLE_NAME_MAP.userState)
-				.selectAll()
-				.where('user_id', '=', userId)
-				.where('namespace', '=', item.namespace)
-				.executeTakeFirst();
+			const current = currentEntryMap.get(item.namespace);
 			if (
 				current !== undefined &&
 				!canIncrementSyncRevision(current.revision)
@@ -627,18 +635,45 @@ export async function importBackupData({
 				parseCloudMealRecord(current ?? null, item.namespace),
 				item.data
 			);
+			return {
+				current,
+				entry: {
+					data: JSON.stringify(mergedData),
+					namespace: item.namespace,
+					revision,
+					schema_version: SYNC_SCHEMA_VERSION_MAP[item.namespace],
+					updated_at: updatedAt,
+					user_id: userId,
+				},
+			};
+		});
+		const capacityConfiguration = getAccountSyncCapacityConfiguration();
+		const capacity = calculateAccountSyncCapacity({
+			currentEntries,
+			replacements: preparedEntries.map(({ entry }) => entry),
+		});
+		if (
+			!checkAccountSyncCapacityAllowed({
+				candidateBytes: capacity.candidateBytes,
+				currentBytes: capacity.currentBytes,
+				limitBytes: capacityConfiguration.stateTotalMaxBytes,
+			})
+		) {
+			throw new AccountSyncCapacityExceededError({
+				candidateBytes: capacity.candidateBytes,
+				currentBytes: capacity.currentBytes,
+				limitBytes: capacityConfiguration.stateTotalMaxBytes,
+				namespaces: preparedEntries.map(({ entry }) => entry.namespace),
+			});
+		}
 
+		const results: IImportBackupResult[] = [];
+		for (const { current, entry } of preparedEntries) {
+			lockModule.throwIfBackupCodeLockLost(signal);
 			if (current === undefined) {
 				const insertResult = await trx
 					.insertInto(TABLE_NAME_MAP.userState)
-					.values({
-						data: JSON.stringify(mergedData),
-						namespace: item.namespace,
-						revision,
-						schema_version: SYNC_SCHEMA_VERSION_MAP[item.namespace],
-						updated_at: updatedAt,
-						user_id: userId,
-					})
+					.values(entry)
 					.onConflict((oc) =>
 						oc.columns(['user_id', 'namespace']).doNothing()
 					)
@@ -651,13 +686,13 @@ export async function importBackupData({
 				const updateResult = await trx
 					.updateTable(TABLE_NAME_MAP.userState)
 					.set({
-						data: JSON.stringify(mergedData),
-						revision,
-						schema_version: SYNC_SCHEMA_VERSION_MAP[item.namespace],
-						updated_at: updatedAt,
+						data: entry.data,
+						revision: entry.revision,
+						schema_version: entry.schema_version,
+						updated_at: entry.updated_at,
 					})
 					.where('user_id', '=', userId)
-					.where('namespace', '=', item.namespace)
+					.where('namespace', '=', entry.namespace)
 					.where('revision', '=', current.revision)
 					.executeTakeFirst();
 
@@ -667,8 +702,8 @@ export async function importBackupData({
 			}
 
 			results.push({
-				namespace: item.namespace,
-				revision,
+				namespace: entry.namespace,
+				revision: entry.revision,
 				status: 'ok' as const,
 			});
 		}

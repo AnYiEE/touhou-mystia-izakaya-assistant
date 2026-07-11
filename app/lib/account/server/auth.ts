@@ -17,22 +17,16 @@ import {
 	createSessionToken,
 	hashSessionToken,
 } from './session';
-import { USER_STATUS_MAP } from '../shared/constants';
 import {
 	type TActiveUserSessionPatch,
+	authenticateSessionSnapshot,
 	cleanupExpiredSessions,
 	createSession,
 	createSessionForActiveUser as createSessionForActiveUserRecord,
-	deleteSessionById,
-	getSessionByTokenHash,
 	updateSessionAndDeleteOtherSessions,
 	updateSessionLastSeen,
 } from '@/lib/account/server/repositories/sessions';
-import { findUserById } from '@/lib/account/server/repositories/users';
-import {
-	getCredentialByUserId,
-	updateCredentialAndRotateSession,
-} from '@/lib/account/server/repositories/credentials';
+import { updateCredentialAndRotateSession } from '@/lib/account/server/repositories/credentials';
 import {
 	type TDatabase,
 	type TSession,
@@ -40,6 +34,7 @@ import {
 	type TUser,
 	type TUserCredential,
 	type TUserCredentialUpdate,
+	type TUserWebauthnCredential,
 } from '@/lib/db/types';
 import { getLogSafeErrorCode } from '@/lib/logging';
 
@@ -142,28 +137,37 @@ export async function createAccountSessionForActiveUser(
 	request: NextRequest,
 	user: TActiveUserSessionPatch,
 	credentialPasswordHash?: TUserCredential['password_hash'],
-	writeAuditLog?: (trx: Transaction<TDatabase>, now: number) => Promise<void>
+	writeAuditLog?: (trx: Transaction<TDatabase>, now: number) => Promise<void>,
+	webauthnCredential?: {
+		credentialId: TUserWebauthnCredential['credential_id'];
+		expectedCounter: TUserWebauthnCredential['counter'];
+		id: TUserWebauthnCredential['id'];
+		lastUsedAt: TUserWebauthnCredential['last_used_at'];
+		nextCounter: TUserWebauthnCredential['counter'];
+	}
 ) {
 	const draft = createAccountSessionDraft(userId, request);
 	const { user_id: _userId, ...session } = draft.record;
 
-	const didCreate = await createSessionForActiveUserRecord({
+	const createResult = await createSessionForActiveUserRecord({
 		...(credentialPasswordHash === undefined
 			? {}
 			: { credentialPasswordHash }),
 		session,
 		user,
 		userId,
+		...(webauthnCredential === undefined ? {} : { webauthnCredential }),
 		...(writeAuditLog === undefined ? {} : { writeAuditLog }),
 	});
-	if (!didCreate) {
-		return null;
+	if (createResult.status !== 'ok') {
+		return createResult;
 	}
 	void cleanupExpiredAccountSessionsBestEffort();
 
 	return {
 		cookieOptions: draft.cookieOptions,
 		csrfToken: draft.csrfToken,
+		status: 'ok' as const,
 		token: draft.token,
 		tokenHash: draft.tokenHash,
 	};
@@ -207,82 +211,65 @@ export async function authenticateAccountFromRequest(
 	}
 
 	const sessionTokenHash = hashSessionToken(token);
-	const session = await getSessionByTokenHash(sessionTokenHash);
-	if (session === null) {
-		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
-	}
-
 	const now = Date.now();
 	void cleanupExpiredAccountSessionsBestEffort(now);
-	const isSessionExpired =
-		session.created_at + SESSION_ABSOLUTE_TIMEOUT_MS <= now ||
-		session.last_seen_at + SESSION_IDLE_TIMEOUT_MS <= now;
-	if (isSessionExpired) {
-		try {
-			await deleteSessionById(session.id);
-		} catch (error) {
-			console.warn('Failed to delete expired account session.', error);
-		}
-
+	const snapshot = await authenticateSessionSnapshot({
+		absoluteTimeoutMs: SESSION_ABSOLUTE_TIMEOUT_MS,
+		allowPasswordMustChange,
+		idleTimeoutMs: SESSION_IDLE_TIMEOUT_MS,
+		lastSeenUpdateIntervalMs: SESSION_LAST_SEEN_UPDATE_INTERVAL,
+		now,
+		tokenHash: sessionTokenHash,
+	});
+	if (snapshot.status === 'session-not-found') {
 		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
 	}
-
-	const [user, credential] = await Promise.all([
-		findUserById(session.user_id),
-		getCredentialByUserId(session.user_id),
-	]);
-
-	if (user === null || credential === null) {
-		try {
-			await deleteSessionById(session.id);
-		} catch (error) {
-			console.warn('Failed to delete orphaned account session.', error);
+	if (snapshot.status === 'session-expired') {
+		if (snapshot.cleanupFailed) {
+			console.warn('Failed to delete expired account session.');
 		}
-
+		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
+	}
+	if (snapshot.status === 'orphaned') {
+		if (snapshot.cleanupFailed) {
+			console.warn('Failed to delete orphaned account session.');
+		}
 		return {
 			httpStatus: 500,
 			message: 'server-misconfigured',
 			status: 'error',
 		};
 	}
-
-	const userStatus: string = user.status;
-	if (userStatus === USER_STATUS_MAP.disabled) {
-		try {
-			await deleteSessionById(session.id);
-		} catch (error) {
-			console.warn('Failed to delete disabled account session.', error);
+	if (snapshot.status === 'user-disabled') {
+		if (snapshot.cleanupFailed) {
+			console.warn('Failed to delete disabled account session.');
 		}
-
 		return { httpStatus: 403, message: 'user-disabled', status: 'error' };
 	}
-	if (userStatus === USER_STATUS_MAP.deleted) {
-		try {
-			await deleteSessionById(session.id);
-		} catch (error) {
-			console.warn('Failed to delete deleted account session.', error);
+	if (snapshot.status === 'user-deleted') {
+		if (snapshot.cleanupFailed) {
+			console.warn('Failed to delete deleted account session.');
 		}
-
 		return { httpStatus: 403, message: 'user-deleted', status: 'error' };
 	}
-	if (userStatus !== USER_STATUS_MAP.active) {
-		return {
-			httpStatus: 500,
-			message: 'server-misconfigured',
-			status: 'error',
-		};
-	}
-	if (credential.password_must_change === 1 && !allowPasswordMustChange) {
+	if (snapshot.status === 'password-must-change') {
 		return {
 			httpStatus: 403,
 			message: 'password-must-change',
 			status: 'error',
 		};
 	}
-
-	if (session.last_seen_at + SESSION_LAST_SEEN_UPDATE_INTERVAL < now) {
+	if (snapshot.status !== 'ok') {
+		return {
+			httpStatus: 500,
+			message: 'server-misconfigured',
+			status: 'error',
+		};
+	}
+	const { credential, session, shouldUpdateLastSeen, user } = snapshot;
+	if (shouldUpdateLastSeen) {
 		try {
-			await updateSessionLastSeen(session.id, now);
+			await updateSessionLastSeen(session.id, sessionTokenHash, now);
 		} catch (error) {
 			console.error('Failed to update account session last seen.', error);
 		}
@@ -329,6 +316,7 @@ export async function rotateAccountSession(
 			user_agent: getRequestUserAgent(request),
 		},
 		sessionId: session.id,
+		sessionTokenHash: session.token_hash,
 		userId: session.user_id,
 	});
 
@@ -347,6 +335,7 @@ export async function rotateAccountSessionWithCredentialUpdate(
 
 	await updateCredentialAndRotateSession({
 		credential,
+		expectedSessionTokenHash: session.token_hash,
 		session: {
 			ip_address: getRequestIp(request),
 			last_seen_at: now,

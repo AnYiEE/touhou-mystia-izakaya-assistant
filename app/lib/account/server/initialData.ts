@@ -15,7 +15,7 @@ import {
 	type TAccountMeResponse,
 } from '../shared/types';
 import { getLogSafeErrorCode } from '@/lib/logging';
-import { getUserStateSnapshot } from '@/lib/account/server/repositories/userState';
+import { getActiveUserStateSnapshotForSession } from '@/lib/account/server/repositories/userState';
 import { createAccountSessionRecord } from '@/lib/account/server/sessionPresentation';
 
 export interface IAccountFeatureInitialData {
@@ -39,28 +39,43 @@ function createAccountAnonymousInitialData(): TAccountMeResponse {
 }
 
 export async function createAccountSsoGrantInitialDataForUser(
-	userId: string
-): Promise<IAccountSsoGrantInitialData> {
+	userId: string,
+	session: { id: string; token_hash: string }
+): Promise<IAccountSsoGrantInitialData | null> {
 	const ssoModule = await import('./sso');
-	const grants = await ssoModule.listSsoUserClientGrantsForUser(userId);
+	const grants = await ssoModule.listSsoUserClientGrantsForActiveUserSession(
+		userId,
+		session
+	);
+	if (grants.status === 'unauthorized') {
+		return null;
+	}
 
-	return { grants, rendered_at: Date.now(), user_id: userId };
+	return { grants: grants.grants, rendered_at: Date.now(), user_id: userId };
 }
 
 export async function createAccountSessionInitialDataForAuthenticatedRequest({
 	sessionId,
+	sessionTokenHash,
 	userId,
 }: {
 	sessionId: string;
+	sessionTokenHash: string;
 	userId: string;
-}): Promise<IAccountSessionInitialData> {
+}): Promise<IAccountSessionInitialData | null> {
 	const sessionsModule =
 		await import('@/lib/account/server/repositories/sessions');
-	const sessions = await sessionsModule.listSessionsByUserId(userId);
+	const sessions = await sessionsModule.listSessionsForActiveUserSession(
+		userId,
+		{ id: sessionId, token_hash: sessionTokenHash }
+	);
+	if (sessions.status === 'unauthorized') {
+		return null;
+	}
 
 	return {
 		rendered_at: Date.now(),
-		sessions: sessions.map((session) =>
+		sessions: sessions.sessions.map((session) =>
 			createAccountSessionRecord(session, sessionId)
 		),
 		user_id: userId,
@@ -68,18 +83,26 @@ export async function createAccountSessionInitialDataForAuthenticatedRequest({
 }
 
 export async function createAccountWebauthnInitialDataForUser(
-	userId: string
-): Promise<IAccountWebauthnInitialData> {
+	userId: string,
+	session: { id: string; token_hash: string }
+): Promise<IAccountWebauthnInitialData | null> {
 	const [credentialsModule, presentationModule] = await Promise.all([
 		import('@/lib/account/server/repositories/webauthnCredentials'),
 		import('@/lib/account/server/webauthnPresentation'),
 	]);
 	const webauthnModule = await import('@/lib/account/server/webauthn');
-	const credentials = await credentialsModule.listCredentialsByUserId(userId);
+	const credentials =
+		await credentialsModule.listCredentialsForActiveUserSession(
+			userId,
+			session
+		);
+	if (credentials.status === 'unauthorized') {
+		return null;
+	}
 	const { rpID } = webauthnModule.getWebAuthnRelyingParty();
 
 	return {
-		credentials: credentials.map((credential) =>
+		credentials: credentials.credentials.map((credential) =>
 			presentationModule.createWebauthnCredentialSummary(credential)
 		),
 		rendered_at: Date.now(),
@@ -89,20 +112,24 @@ export async function createAccountWebauthnInitialDataForUser(
 }
 
 export async function createAccountMeInitialDataForAuthenticatedRequest({
-	hasPassword = true,
+	sessionId,
 	sessionTokenHash,
 	userId,
 }: {
-	hasPassword?: boolean;
+	sessionId: string;
 	sessionTokenHash: string;
 	userId: string;
 }): Promise<IAccountMeSuccessResponse | null> {
-	const stateSnapshot = await getUserStateSnapshot(userId);
-	if (stateSnapshot === null) {
+	const stateSnapshot = await getActiveUserStateSnapshotForSession({
+		namespaces: null,
+		session: { id: sessionId, token_hash: sessionTokenHash },
+		userId,
+	});
+	if (stateSnapshot.status === 'unauthorized') {
 		return null;
 	}
 
-	const revisions = stateSnapshot.state.reduce<Record<string, number>>(
+	const revisions = stateSnapshot.records.reduce<Record<string, number>>(
 		(result, namespace) => {
 			result[namespace.namespace] = namespace.revision;
 			return result;
@@ -113,9 +140,10 @@ export async function createAccountMeInitialDataForAuthenticatedRequest({
 	return {
 		csrf_token: createAccountCsrfToken(sessionTokenHash),
 		featureEnabled: true,
-		has_password: hasPassword,
+		has_password: stateSnapshot.credential.password_set === 1,
 		isLoggedIn: true,
-		password_must_change: false,
+		password_must_change:
+			stateSnapshot.credential.password_must_change === 1,
 		state_epoch: stateSnapshot.user.state_epoch,
 		syncMeta: {
 			lastAppliedRemoteHash: {},
@@ -130,12 +158,13 @@ export async function readAccountSsoGrantInitialData(
 	pathname = '/account/sso/grants/initial'
 ): Promise<IAccountSsoGrantInitialData | null> {
 	try {
+		const request = await createCurrentRequest(pathname);
+
 		const accountFeatureResult = await checkAccountFeatureGuard();
 		if (accountFeatureResult.status === 'error') {
 			return null;
 		}
 
-		const request = await createCurrentRequest(pathname);
 		const cookieSecurityResult = checkAccountCookieSecurityGuard(request);
 		if (cookieSecurityResult.status === 'error') {
 			return null;
@@ -146,7 +175,10 @@ export async function readAccountSsoGrantInitialData(
 			return null;
 		}
 
-		return await createAccountSsoGrantInitialDataForUser(auth.data.user.id);
+		return await createAccountSsoGrantInitialDataForUser(
+			auth.data.user.id,
+			{ id: auth.data.session.id, token_hash: auth.data.sessionTokenHash }
+		);
 	} catch (error) {
 		unstable_rethrow(error);
 
@@ -162,12 +194,13 @@ export async function readAccountFeatureInitialData(
 	pathname = '/account/initial'
 ): Promise<IAccountFeatureInitialData | null> {
 	try {
+		const request = await createCurrentRequest(pathname);
+
 		const accountFeatureResult = await checkAccountFeatureGuard();
 		if (accountFeatureResult.status === 'error') {
 			return null;
 		}
 
-		const request = await createCurrentRequest(pathname);
 		const cookieSecurityResult = checkAccountCookieSecurityGuard(request);
 		if (cookieSecurityResult.status === 'error') {
 			return null;
@@ -187,7 +220,7 @@ export async function readAccountFeatureInitialData(
 
 		const account = await createAccountMeInitialDataForAuthenticatedRequest(
 			{
-				hasPassword: auth.data.credential.password_set === 1,
+				sessionId: auth.data.session.id,
 				sessionTokenHash: auth.data.sessionTokenHash,
 				userId: auth.data.user.id,
 			}
@@ -196,27 +229,34 @@ export async function readAccountFeatureInitialData(
 			return null;
 		}
 
-		const passwordMustChange =
-			auth.data.credential.password_must_change === 1;
+		const passwordMustChange = account.password_must_change;
 		const sessions = passwordMustChange
 			? null
 			: await createAccountSessionInitialDataForAuthenticatedRequest({
 					sessionId: auth.data.session.id,
+					sessionTokenHash: auth.data.sessionTokenHash,
 					userId: auth.data.user.id,
 				});
 		const ssoGrants = passwordMustChange
 			? null
-			: await createAccountSsoGrantInitialDataForUser(auth.data.user.id);
+			: await createAccountSsoGrantInitialDataForUser(auth.data.user.id, {
+					id: auth.data.session.id,
+					token_hash: auth.data.sessionTokenHash,
+				});
 		const webauthn = passwordMustChange
 			? null
-			: await createAccountWebauthnInitialDataForUser(auth.data.user.id);
+			: await createAccountWebauthnInitialDataForUser(auth.data.user.id, {
+					id: auth.data.session.id,
+					token_hash: auth.data.sessionTokenHash,
+				});
+		if (
+			!passwordMustChange &&
+			(sessions === null || ssoGrants === null || webauthn === null)
+		) {
+			return null;
+		}
 
-		return {
-			account: { ...account, password_must_change: passwordMustChange },
-			sessions,
-			ssoGrants,
-			webauthn,
-		};
+		return { account, sessions, ssoGrants, webauthn };
 	} catch (error) {
 		unstable_rethrow(error);
 

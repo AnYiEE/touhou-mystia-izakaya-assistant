@@ -82,27 +82,40 @@ export async function DELETE(
 		import('@/lib/account/server/repositories/webauthnCredentials'),
 		import('@/lib/account/server/accountAuditService'),
 	]);
-	const didDelete = await credentialsModule.deleteCredentialByIdForUser(
-		id,
-		auth.data.user.id
-	);
-	if (!didDelete) {
+	const deleteResult =
+		await credentialsModule.deleteCredentialForActiveSession(
+			id,
+			auth.data.user.id,
+			{
+				id: auth.data.session.id,
+				token_hash: auth.data.sessionTokenHash,
+			},
+			(trx, auditNow) =>
+				accountAuditModule.writeAccountAuditLogInTransaction(
+					trx,
+					accountAuditModule.createAccountUserAuditLogInput({
+						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+							.passkeyDeleted,
+						metadata: {
+							nickname: auth.data.user.nickname,
+							target_record_digest:
+								accountAuditModule.createAccountAuditValueDigest(
+									id
+								),
+							username: auth.data.user.username,
+						},
+						request,
+						userId: auth.data.user.id,
+					}),
+					auditNow
+				)
+		);
+	if (deleteResult.status === 'unauthorized') {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
+	if (deleteResult.status === 'not-found') {
 		return createNoStoreErrorResponse('passkey-not-found', 404);
 	}
-
-	await accountAuditModule.writeAccountAuditLogBestEffort(
-		accountAuditModule.createAccountUserAuditLogInput({
-			action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP.passkeyDeleted,
-			metadata: {
-				nickname: auth.data.user.nickname,
-				target_record_digest:
-					accountAuditModule.createAccountAuditValueDigest(id),
-				username: auth.data.user.username,
-			},
-			request,
-			userId: auth.data.user.id,
-		})
-	);
 
 	return createNoStoreJsonResponse({ message: 'passkey-deleted' });
 }
@@ -176,22 +189,23 @@ export async function PATCH(
 			import('@/lib/account/server/webauthnPresentation'),
 			import('@/lib/account/server/webauthn'),
 		]);
-	const didRename = await credentialsModule.renameCredentialForUser(
-		id,
-		auth.data.user.id,
-		name
-	);
-	if (!didRename) {
+	const renameResult =
+		await credentialsModule.renameCredentialForActiveSession(
+			id,
+			auth.data.user.id,
+			name,
+			{ id: auth.data.session.id, token_hash: auth.data.sessionTokenHash }
+		);
+	if (renameResult.status === 'unauthorized') {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
+	if (renameResult.status === 'not-found') {
 		return createNoStoreErrorResponse('passkey-not-found', 404);
 	}
-
-	const credentials = await credentialsModule.listCredentialsByUserId(
-		auth.data.user.id
-	);
 	const { rpID } = webauthnModule.getWebAuthnRelyingParty();
 
 	return createNoStoreJsonResponse({
-		credentials: credentials.map((credential) =>
+		credentials: renameResult.credentials.map((credential) =>
 			presentationModule.createWebauthnCredentialSummary(credential)
 		),
 		rp_id: rpID,

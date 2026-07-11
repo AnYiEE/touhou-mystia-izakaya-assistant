@@ -25,6 +25,7 @@ interface IOptions {
 	isOpen: boolean;
 	keepOpenWhenCovered?: boolean | undefined;
 	onRequestClose?: (() => void) | undefined;
+	requestOwnership?: 'component' | 'external' | undefined;
 	shortcuts?: ReadonlyArray<IOverlayShortcutDefinition> | undefined;
 }
 
@@ -47,6 +48,7 @@ export function useCoordinatedOverlay({
 	isOpen,
 	keepOpenWhenCovered = false,
 	onRequestClose,
+	requestOwnership = 'component',
 	shortcuts = EMPTY_SHORTCUTS,
 }: IOptions) {
 	const canActivateRef = useRef(canActivate);
@@ -75,32 +77,43 @@ export function useCoordinatedOverlay({
 			onRequestClose: () => {
 				onRequestCloseRef.current?.();
 			},
+			requestOwnership,
 			get shortcuts() {
 				return shortcutsRef.current;
 			},
 			...(exitDelayMs === undefined ? {} : { exitDelayMs }),
 		});
-	}, [exitDelayMs, id]);
+	}, [exitDelayMs, id, requestOwnership]);
 
 	useEffect(() => {
 		if (id === undefined) {
 			return;
 		}
 
-		syncOverlayRequested(id, isOpen);
+		if (requestOwnership === 'external') {
+			return;
+		}
+
+		const result = syncOverlayRequested(id, isOpen);
+		if (
+			isOpen &&
+			(result.status === 'rejected' || result.status === 'stale')
+		) {
+			onRequestCloseRef.current?.();
+		}
 
 		return () => {
 			if (isOpen) {
 				syncOverlayRequested(id, false);
 			}
 		};
-	}, [id, isOpen]);
+	}, [id, isOpen, requestOwnership]);
 
 	useEffect(() => {
-		if (id !== undefined && isOpen) {
+		if (id !== undefined && isOpen && requestOwnership === 'component') {
 			syncOverlayRequested(id, true);
 		}
-	}, [canActivate, id, isOpen, snapshot]);
+	}, [canActivate, id, isOpen, requestOwnership, snapshot]);
 
 	useEffect(() => {
 		if (id !== undefined) {

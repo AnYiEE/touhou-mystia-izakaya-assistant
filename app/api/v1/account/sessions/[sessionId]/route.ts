@@ -75,6 +75,7 @@ export async function DELETE(
 	const didDelete = await sessionsModule.deleteOtherSessionByUserIdWithAudit(
 		{
 			currentSessionId: auth.data.session.id,
+			currentSessionTokenHash: auth.data.sessionTokenHash,
 			sessionId,
 			userId: auth.data.user.id,
 		},
@@ -98,7 +99,10 @@ export async function DELETE(
 				auditNow
 			)
 	);
-	if (!didDelete) {
+	if (didDelete.status === 'unauthorized') {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
+	if (didDelete.status === 'not-found') {
 		return createNoStoreErrorResponse('session-not-found', 404);
 	}
 

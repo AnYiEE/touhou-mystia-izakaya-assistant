@@ -1,5 +1,5 @@
 import { type Key } from 'react';
-import { computed, store } from '@davstack/store';
+import { store } from '@davstack/store';
 
 import { type Selection } from '@heroui/table';
 
@@ -32,6 +32,7 @@ import {
 } from '@/stores/middlewares';
 import {
 	applyTableSortChange,
+	createComputedAccessor as computed,
 	createNamesCache,
 	keepLastTag,
 	reverseVisibilityState,

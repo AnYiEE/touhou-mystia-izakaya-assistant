@@ -108,11 +108,15 @@ async function submitSsoAuthorizeAgree(
 			return createAuthorizePageJsonResponse('invalid');
 		}
 
-		const ticket = await ssoModule.createSsoTicket(
+		const ticketResult = await ssoModule.createSsoTicket(
 			context.client_id,
 			auth.data.user.id,
 			context.redirect_uri,
 			context.code_challenge,
+			{
+				id: auth.data.session.id,
+				token_hash: auth.data.sessionTokenHash,
+			},
 			(trx, auditNow) =>
 				accountAuditModule.writeAccountAuditLogInTransaction(
 					trx,
@@ -134,10 +138,13 @@ async function submitSsoAuthorizeAgree(
 					auditNow
 				)
 		);
+		if (ticketResult.status === 'unauthorized') {
+			return createAuthorizePageJsonResponse();
+		}
 		const response = createNoStoreJsonResponse({
 			redirect_url: createSsoRedirectUrl(
 				context.redirect_uri,
-				ticket,
+				ticketResult.ticket,
 				context.state
 			),
 		});

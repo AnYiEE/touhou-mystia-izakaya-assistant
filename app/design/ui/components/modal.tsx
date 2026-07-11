@@ -46,6 +46,7 @@ interface IProps extends Omit<ModalProps, 'children'> {
 interface IModalCoordinationProps {
 	canActivate?: () => boolean;
 	id: TOverlayId;
+	requestOwnership?: 'component' | 'external';
 	shortcuts?: ReadonlyArray<IOverlayShortcutDefinition>;
 }
 
@@ -280,6 +281,7 @@ export default memo<IProps>(function Modal({
 		isOpen,
 		keepOpenWhenCovered: coordination !== undefined,
 		onRequestClose: requestBusinessClose,
+		requestOwnership: coordination?.requestOwnership,
 		shortcuts: coordination?.shortcuts,
 	});
 

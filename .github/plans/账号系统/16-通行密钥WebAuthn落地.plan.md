@@ -147,7 +147,7 @@ isProject: false
 
 ### 阶段 B：仓储
 
-4. `webauthnCredentials.ts`：`listCredentialsByUserId`、`getCredentialByCredentialId`、`countCredentialsByUserId`、`createCredential`、`deleteCredentialByIdForUser`（按 `id` + `user_id` 双条件，防越权）、`deleteCredentialsByUserId`、`updateCredentialOnUse(counter,last_used_at)`。删除全部需提供“可在外部事务内执行”的变体（供生命周期联动复用）。
+4. `webauthnCredentials.ts`：`listCredentialsByUserId`、`getCredentialByCredentialId`、`countCredentialsByUserId`、`createCredential`、`deleteCredentialByIdForUser`（按 `id` + `user_id` 双条件，防越权）、`deleteCredentialsByUserId`。删除全部需提供“可在外部事务内执行”的变体（供生命周期联动复用）；认证成功后的 counter/last-used 更新不得暴露为可绕过登录事务的独立写入口。
 5. `webauthnChallenges.ts`：`createChallenge`、`consumeChallenge(id, purpose)`（取出并删除、校验过期与用途、返回 `challenge`/`user_id`）、`deleteExpiredChallenges`。
 
 ### 阶段 C：WebAuthn 封装
@@ -164,7 +164,7 @@ isProject: false
 ### 阶段 E：免用户名登录 API（匿名）
 
 11. `authentication/options`：feature gate → same-origin → cookie 安全 → **请求维度限流**（无用户名）；`buildAuthenticationOptions`（allowCredentials 空，开启 discoverable）；落挑战（purpose=authentication、user_id=null），下发 `mystia-webauthn` cookie，返回 options。**只设置挑战 cookie，绝不清除/覆盖 `mystia-sso-context` cookie**，以保证 SSO 登录上下文在 ceremony 期间存活（P8）。
-12. `authentication/verify`：取并消费挑战；据断言 `credentialId`（base64url）`getCredentialByCredentialId` → 取 `user_id`；查 `users`，**校验 `status==='active'`**（disabled/deleted 一律拒绝且不泄露存在性）；`verifyAuthentication`（带 `counter`）；通过则 `updateCredentialOnUse`（新计数、last_used_at）；调用**共享登录收尾**：`createAccountSessionForActiveUser`（事务内写 `loginSucceeded`，metadata `method:'passkey'`）→ 读取 `getSsoContextCookie` → `setAccountSessionCookie`；失败 best-effort 审计 `loginFailed`（metadata `method:'passkey'`、reason，不扩大用户枚举面）。**SSO 收尾（P8）**：通行密钥 verify 始终是 fetch/JSON 请求，故走 JSON 分支——SSO context 存在时在响应体返回 `redirect_to: ssoAuthorizeUrl`（与口令登录 JSON 分支一致），由客户端导航到授权页；无 SSO context 则普通成功响应。不需要 302 分支。**响应须与口令登录一致地携带 `password_must_change`**（读取该用户 `user_credentials.password_must_change`）：通行密钥登录**不**因强制改密被拒（登录本身放行），而是返回 `password_must_change: true` 由客户端弹出强制改密弹窗，与口令登录行为一致；正常情况下管理员重置密码已吊销通行密钥故此分支少见，仍按此实现以防自助改密未吊销等场景。共享收尾函数统一产出 `IAuthLoginSuccessResponse`（含 `csrf_token`、`password_must_change`、`user`、可选 `redirect_to`）。
+12. `authentication/verify`：取并消费挑战；据断言 `credentialId`（base64url）`getCredentialByCredentialId` → 取 `user_id`；查 `users`，**校验 `status==='active'`**（disabled/deleted 一律拒绝且不泄露存在性）；`verifyAuthentication`（带 `counter`）。验证通过后把 credential id、credential_id、已验证的旧 counter、新 counter 与 last-used 交给**共享登录收尾**：`createAccountSessionForActiveUser` 必须在同一数据库事务内完成 active user 条件更新、凭据仍存在且旧 counter 一致的 CAS、counter/last-used 更新、session 插入和 `loginSucceeded` 审计。任一条件失效必须回滚全部写入：撤销先提交时不得创建新 session；登录先提交时，随后执行的管理员重置仍会删除该 session 和通行密钥。事务成功后再读取 `getSsoContextCookie` → `setAccountSessionCookie`；失败 best-effort 审计 `loginFailed`（metadata `method:'passkey'`、reason，不扩大用户枚举面）。**SSO 收尾（P8）**：通行密钥 verify 始终是 fetch/JSON 请求，故走 JSON 分支——SSO context 存在时在响应体返回 `redirect_to: ssoAuthorizeUrl`（与口令登录 JSON 分支一致），由客户端导航到授权页；无 SSO context 则普通成功响应。不需要 302 分支。**响应须与口令登录一致地携带 `password_must_change`**（读取该用户 `user_credentials.password_must_change`）：通行密钥登录**不**因强制改密被拒（登录本身放行），而是返回 `password_must_change: true` 由客户端弹出强制改密弹窗，与口令登录行为一致；正常情况下管理员重置密码已吊销通行密钥故此分支少见，仍按此实现以防自助改密未吊销等场景。共享收尾函数统一产出 `IAuthLoginSuccessResponse`（含 `csrf_token`、`password_must_change`、`user`、可选 `redirect_to`）。
 
 ### 阶段 F：账号生命周期联动
 

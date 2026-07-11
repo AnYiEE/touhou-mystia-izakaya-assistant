@@ -477,7 +477,14 @@ export default function CustomerRareTutorial() {
 						return;
 					}
 
-					const tutorialLease = tryAcquireTutorial();
+					const tutorialLease = tryAcquireTutorial({
+						onPreempt: () => {
+							shouldSkipCompletionOnDestroy.current = true;
+							clearTimeout(delayedMoveNextHandler.current);
+							delayedMoveNextHandler.current = undefined;
+							driverRef.current.destroy();
+						},
+					});
 					if (tutorialLease === null) {
 						return;
 					}

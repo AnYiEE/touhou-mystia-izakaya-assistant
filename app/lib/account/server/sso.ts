@@ -14,6 +14,10 @@ import {
 	writeSsoCallbackDelivery,
 } from './repositories/ssoCallbackDeliveries';
 import {
+	type TAuthenticatedSessionIdentity,
+	lockActiveUserSessionInTransaction,
+} from './repositories/sessions';
+import {
 	SSO_CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT,
 	cleanupFinalFailedSsoCallbackQueue,
 } from './repositories/sso';
@@ -512,6 +516,7 @@ export async function createSsoTicket(
 	userId: string,
 	redirectUri: string,
 	codeChallenge: string,
+	session: TAuthenticatedSessionIdentity,
 	writeAuditLog?: (trx: Transaction<TDatabase>, now: number) => Promise<void>
 ) {
 	if (
@@ -527,7 +532,10 @@ export async function createSsoTicket(
 	const ticket = createSsoTicketToken();
 	const ticketHash = hashSsoTicket(ticket);
 
-	await db.transaction().execute(async (trx) => {
+	const didCreate = await db.transaction().execute(async (trx) => {
+		if (!(await lockActiveUserSessionInTransaction(trx, userId, session))) {
+			return false;
+		}
 		await trx
 			.insertInto(TICKET_TABLE_NAME)
 			.values({
@@ -543,9 +551,12 @@ export async function createSsoTicket(
 			.execute();
 
 		await writeAuditLog?.(trx, now);
+		return true;
 	});
 
-	return ticket;
+	return didCreate
+		? { status: 'ok' as const, ticket }
+		: { status: 'unauthorized' as const };
 }
 
 export function getSsoUserStatusError(user: TUser) {
@@ -599,6 +610,46 @@ export async function listSsoUserClientGrantsForUser(userId: TUser['id']) {
 		created_at: record.created_at,
 		updated_at: record.updated_at,
 	}));
+}
+
+export async function listSsoUserClientGrantsForActiveUserSession(
+	userId: TUser['id'],
+	session: TAuthenticatedSessionIdentity
+) {
+	const db = await getAccountDatabase();
+
+	return db.transaction().execute(async (trx) => {
+		if (!(await lockActiveUserSessionInTransaction(trx, userId, session))) {
+			return { status: 'unauthorized' as const };
+		}
+
+		const records = await trx
+			.selectFrom(GRANT_TABLE_NAME)
+			.innerJoin(
+				CLIENT_TABLE_NAME,
+				`${GRANT_TABLE_NAME}.client_id`,
+				`${CLIENT_TABLE_NAME}.id`
+			)
+			.select([
+				`${CLIENT_TABLE_NAME}.id as client_id`,
+				`${CLIENT_TABLE_NAME}.name as client_name`,
+				`${GRANT_TABLE_NAME}.created_at`,
+				`${GRANT_TABLE_NAME}.updated_at`,
+			])
+			.where(`${GRANT_TABLE_NAME}.user_id`, '=', userId)
+			.orderBy(`${GRANT_TABLE_NAME}.updated_at`, 'desc')
+			.orderBy(`${CLIENT_TABLE_NAME}.id`, 'asc')
+			.execute();
+
+		return {
+			grants: records.map((record) => ({
+				client: { id: record.client_id, name: record.client_name },
+				created_at: record.created_at,
+				updated_at: record.updated_at,
+			})),
+			status: 'ok' as const,
+		};
+	});
 }
 
 async function validateSsoTicketInTransaction(

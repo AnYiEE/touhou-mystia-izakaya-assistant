@@ -6,6 +6,11 @@ type TSafeStorageMode = TSafeStorageFallbackMode | 'local';
 const fallbackModeKey = '__safeStorageFallbackMode';
 const managedKeysKey = '__safeStorageManagedKeys';
 const internalKeys = new Set([fallbackModeKey, managedKeysKey]);
+export const OPTIONAL_LOCAL_CACHE_PREFIX = '__optional-local-cache__:';
+
+function checkReservedStorageKey(key: string) {
+	return internalKeys.has(key) || key.startsWith(OPTIONAL_LOCAL_CACHE_PREFIX);
+}
 
 class SafeStorage implements Storage {
 	private static _instance: SafeStorage | undefined;
@@ -62,7 +67,7 @@ class SafeStorage implements Storage {
 			}
 
 			parsed.forEach((key) => {
-				if (typeof key === 'string' && !internalKeys.has(key)) {
+				if (typeof key === 'string' && !checkReservedStorageKey(key)) {
 					keys.add(key);
 				}
 			});
@@ -120,7 +125,7 @@ class SafeStorage implements Storage {
 	}
 
 	private markManagedKey(key: string) {
-		if (internalKeys.has(key) || this._managedKeys.has(key)) {
+		if (checkReservedStorageKey(key) || this._managedKeys.has(key)) {
 			return;
 		}
 
@@ -147,7 +152,7 @@ class SafeStorage implements Storage {
 		const staleStorage = this._staleStorage;
 		if (
 			!this.checkCanInvalidateStorage(staleStorage) ||
-			internalKeys.has(key)
+			checkReservedStorageKey(key)
 		) {
 			return;
 		}
@@ -174,7 +179,7 @@ class SafeStorage implements Storage {
 	}
 
 	private checkStorageHasKey(storage: Storage | null, key: string) {
-		if (storage === null || internalKeys.has(key)) {
+		if (storage === null || checkReservedStorageKey(key)) {
 			return false;
 		}
 
@@ -200,7 +205,7 @@ class SafeStorage implements Storage {
 	) {
 		const migrationValues = new Map<string, string | null>();
 		for (const key of this._managedKeys) {
-			if (internalKeys.has(key)) {
+			if (checkReservedStorageKey(key)) {
 				continue;
 			}
 
@@ -306,7 +311,7 @@ class SafeStorage implements Storage {
 		try {
 			for (let i = 0; i < this._storage.length; i++) {
 				const key = this._storage.key(i);
-				if (key !== null && !internalKeys.has(key)) {
+				if (key !== null && !checkReservedStorageKey(key)) {
 					const value = this._storage.getItem(key);
 					if (value !== null) {
 						this._memoryStorage.set(key, value);
@@ -338,7 +343,7 @@ class SafeStorage implements Storage {
 		try {
 			const restoreValues = new Map<string, string | null>();
 			for (const key of this._managedKeys) {
-				if (internalKeys.has(key)) {
+				if (checkReservedStorageKey(key)) {
 					continue;
 				}
 
@@ -346,7 +351,7 @@ class SafeStorage implements Storage {
 				restoreValues.set(key, value ?? null);
 			}
 			this._memoryStorage.forEach((value, key) => {
-				if (!internalKeys.has(key)) {
+				if (!checkReservedStorageKey(key)) {
 					restoreValues.set(key, value);
 				}
 			});
@@ -411,7 +416,7 @@ class SafeStorage implements Storage {
 
 			try {
 				this._memoryStorage.forEach((storedValue, storedKey) => {
-					if (!internalKeys.has(storedKey)) {
+					if (!checkReservedStorageKey(storedKey)) {
 						setSessionItem(storedKey, storedValue);
 					}
 				});
@@ -447,7 +452,7 @@ class SafeStorage implements Storage {
 			try {
 				for (let i = 0; i < this._storage.length; i++) {
 					const key = this._storage.key(i);
-					if (key !== null && !internalKeys.has(key)) {
+					if (key !== null && !checkReservedStorageKey(key)) {
 						storageKeys.push(key);
 					}
 				}
@@ -496,7 +501,7 @@ class SafeStorage implements Storage {
 
 	// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 	public getItem<T extends string = string>(key: string): T | null {
-		if (internalKeys.has(key)) {
+		if (checkReservedStorageKey(key)) {
 			return null;
 		}
 
@@ -522,7 +527,7 @@ class SafeStorage implements Storage {
 	}
 
 	public removeItem(key: string) {
-		if (internalKeys.has(key)) {
+		if (checkReservedStorageKey(key)) {
 			return;
 		}
 
@@ -542,7 +547,7 @@ class SafeStorage implements Storage {
 	}
 
 	public setItem(key: string, value: string) {
-		if (internalKeys.has(key)) {
+		if (checkReservedStorageKey(key)) {
 			return;
 		}
 
@@ -566,4 +571,37 @@ export const safeStorage = SafeStorage.getInstance();
 
 export function getSafeStorageMode() {
 	return safeStorage.mode;
+}
+
+export function readOptionalLocalCache(key: string) {
+	if (safeStorage.mode !== 'local') {
+		return null;
+	}
+
+	try {
+		return localStorage.getItem(`${OPTIONAL_LOCAL_CACHE_PREFIX}${key}`);
+	} catch {
+		return null;
+	}
+}
+
+export function writeOptionalLocalCache(key: string, value: string) {
+	if (safeStorage.mode !== 'local') {
+		return false;
+	}
+
+	try {
+		localStorage.setItem(`${OPTIONAL_LOCAL_CACHE_PREFIX}${key}`, value);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+export function removeOptionalLocalCache(key: string) {
+	try {
+		localStorage.removeItem(`${OPTIONAL_LOCAL_CACHE_PREFIX}${key}`);
+	} catch {
+		/* best-effort cache cleanup */
+	}
 }

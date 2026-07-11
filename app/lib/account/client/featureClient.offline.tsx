@@ -1,27 +1,28 @@
 'use client';
 
-import { accountStore } from '@/stores/account';
+import { clearAccountSyncRuntimeConflicts } from './syncRuntimeState';
+import { accountStore as store } from '@/stores/account';
 
 export function startAccountFeatureClients() {
-	accountStore.shared.bootstrapStatus.set('disabled');
-	accountStore.shared.adminCsrfToken.set(null);
-	accountStore.shared.csrfToken.set(null);
-	accountStore.shared.hasPassword.set(false);
-	accountStore.shared.isBootstrapped.set(true);
-	accountStore.shared.isLoggedIn.set(false);
-	accountStore.shared.passwordMustChange.set(false);
-	accountStore.shared.sessionInitialData.set(null);
-	accountStore.shared.ssoGrantInitialData.set(null);
-	accountStore.shared.sync.canRetry.set(false);
-	accountStore.shared.sync.conflicts.set([]);
-	accountStore.shared.sync.failedAttempts.set(0);
-	accountStore.shared.sync.isSyncing.set(false);
-	accountStore.shared.sync.lastError.set(null);
-	accountStore.shared.sync.lastResult.set(null);
-	accountStore.shared.sync.lastSyncedAt.set(null);
-	accountStore.shared.sync.meta.set(null);
-	accountStore.shared.sync.pendingCount.set(0);
-	accountStore.shared.user.set(null);
+	store.shared.bootstrapStatus.set('disabled');
+	store.shared.adminCsrfToken.set(null);
+	store.shared.csrfToken.set(null);
+	store.shared.hasPassword.set(false);
+	store.shared.isBootstrapped.set(true);
+	store.shared.isLoggedIn.set(false);
+	store.setPasswordMustChange(false);
+	store.shared.sessionInitialData.set(null);
+	store.shared.ssoGrantInitialData.set(null);
+	store.shared.sync.canRetry.set(false);
+	clearAccountSyncRuntimeConflicts();
+	store.shared.sync.failedAttempts.set(0);
+	store.shared.sync.isSyncing.set(false);
+	store.shared.sync.lastError.set(null);
+	store.shared.sync.lastResult.set(null);
+	store.shared.sync.lastSyncedAt.set(null);
+	store.shared.sync.meta.set(null);
+	store.shared.sync.pendingCount.set(0);
+	store.shared.user.set(null);
 
 	return () => {};
 }

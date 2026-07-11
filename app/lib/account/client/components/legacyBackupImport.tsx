@@ -21,14 +21,14 @@ import {
 } from '@/lib/account/client/errorMessage';
 import {
 	checkCurrentAccountAuthContext,
-	resetAccountStateIfCurrent,
+	resetAccountStateAfterSessionExpired,
 } from '@/lib/account/client/session';
-import { withAccountSyncPaused } from '@/lib/account/client/stateGuards';
 import {
 	flushAccountSyncQueueUntilIdle,
 	scheduleAccountSyncFlush,
 	takeOverLocalAccountData,
 } from '@/lib/account/client/syncClient';
+import { withAccountSyncOperationLease } from '@/lib/account/client/syncOperationLease';
 import { accountStore, globalStore } from '@/stores';
 
 function clearPendingLegacyBackupImportError() {
@@ -100,26 +100,42 @@ export default function LegacyBackupImport() {
 					throw new Error('当前账号同步尚未完成，请稍后重试');
 				}
 
-				await withAccountSyncPaused(async () => {
-					await importBackupCode(normalizedCode, csrfToken);
+				const operationResult = await withAccountSyncOperationLease(
+					user.id,
+					'import-backup',
+					async () => {
+						await importBackupCode(normalizedCode, csrfToken);
 
-					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
-						return;
+						if (
+							!checkCurrentAccountAuthContext(expectedAuthContext)
+						) {
+							return;
+						}
+
+						hasTakenOverLocalData =
+							await takeOverLocalAccountData();
+
+						if (
+							!checkCurrentAccountAuthContext(expectedAuthContext)
+						) {
+							return;
+						}
+						if (!hasTakenOverLocalData) {
+							throw new Error(
+								'本地数据接管失败，请刷新页面后重试'
+							);
+						}
+
+						globalStore.persistence.cloudCode.set(null);
+						setCode('');
+						hasCompletedImport = true;
 					}
-
-					hasTakenOverLocalData = await takeOverLocalAccountData();
-
-					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
-						return;
-					}
-					if (!hasTakenOverLocalData) {
-						throw new Error('本地数据接管失败，请刷新页面后重试');
-					}
-
-					globalStore.persistence.cloudCode.set(null);
-					setCode('');
-					hasCompletedImport = true;
-				});
+				);
+				if (operationResult === null) {
+					throw new Error(
+						'账号数据操作正在其他标签页进行，请稍后重试'
+					);
+				}
 			})
 			.then(() => {
 				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
@@ -145,7 +161,10 @@ export default function LegacyBackupImport() {
 						: '导入失败，请稍后重试'
 				);
 				if (error instanceof AccountApiError && error.status === 401) {
-					resetAccountStateIfCurrent(expectedAuthContext);
+					resetAccountStateAfterSessionExpired({
+						...expectedAuthContext,
+						stateEpoch: user.state_epoch,
+					});
 				}
 			})
 			.finally(() => {

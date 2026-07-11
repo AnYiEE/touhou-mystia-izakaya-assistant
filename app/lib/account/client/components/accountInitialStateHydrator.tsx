@@ -4,16 +4,16 @@ import { memo, useEffect } from 'react';
 
 import { readAccountSyncMeta } from '@/lib/account/client/snapshot';
 import {
-	advanceAccountStateRequestGeneration,
-	completeAccountPostLoginBootstrap,
+	refreshAccountState,
 	resetAccountSyncRuntime,
 } from '@/lib/account/client/session';
+import { getLogSafeErrorCode } from '@/lib/logging';
 import {
 	invalidateAccountSyncClientRuns,
 	restoreAccountSyncRuntimeState,
 } from '@/lib/account/client/syncClient';
 import { type TAccountMeResponse } from '@/lib/account/shared/types';
-import { accountStore } from '@/stores/account';
+import { accountStore as store } from '@/stores/account';
 
 interface IProps {
 	data: TAccountMeResponse;
@@ -21,8 +21,8 @@ interface IProps {
 
 export default memo<IProps>(function AccountInitialStateHydrator({ data }) {
 	useEffect(() => {
-		const previousUser = accountStore.shared.user.get();
-		const previousCsrfToken = accountStore.shared.csrfToken.get();
+		const previousUser = store.shared.user.get();
+		const previousCsrfToken = store.shared.csrfToken.get();
 
 		if (!data.isLoggedIn) {
 			if (previousUser !== null || previousCsrfToken !== null) {
@@ -32,16 +32,21 @@ export default memo<IProps>(function AccountInitialStateHydrator({ data }) {
 				resetAccountSyncRuntime();
 			}
 
-			accountStore.shared.bootstrapStatus.set('anonymous');
-			accountStore.shared.csrfToken.set(null);
-			accountStore.shared.hasPassword.set(false);
-			accountStore.shared.isBootstrapped.set(true);
-			accountStore.shared.isLoggedIn.set(false);
-			accountStore.shared.passwordMustChange.set(false);
-			accountStore.shared.sessionInitialData.set(null);
-			accountStore.shared.sync.lastError.set(null);
-			accountStore.shared.sync.meta.set(data.syncMeta);
-			accountStore.shared.user.set(null);
+			store.shared.bootstrapStatus.set('anonymous');
+			store.shared.csrfToken.set(null);
+			store.shared.hasPassword.set(false);
+			store.shared.isBootstrapped.set(true);
+			store.shared.isLoggedIn.set(false);
+			store.setPasswordMustChange(false);
+			store.shared.sessionInitialData.set(null);
+			store.shared.sync.lastError.set(null);
+			store.shared.sync.meta.set(data.syncMeta);
+			store.shared.user.set(null);
+			void refreshAccountState().catch((error: unknown) => {
+				console.warn('Post-hydration account refresh failed.', {
+					errorCode: getLogSafeErrorCode(error),
+				});
+			});
 
 			return;
 		}
@@ -56,25 +61,22 @@ export default memo<IProps>(function AccountInitialStateHydrator({ data }) {
 			resetAccountSyncRuntime();
 		}
 
-		accountStore.shared.bootstrapStatus.set('loggedIn');
-		accountStore.shared.csrfToken.set(data.csrf_token);
-		accountStore.shared.hasPassword.set(data.has_password);
-		accountStore.shared.isBootstrapped.set(true);
-		accountStore.shared.isLoggedIn.set(true);
-		accountStore.shared.passwordMustChange.set(data.password_must_change);
-		accountStore.shared.sync.lastError.set(null);
-		accountStore.shared.sync.meta.set(
+		store.shared.bootstrapStatus.set('loggedIn');
+		store.shared.csrfToken.set(data.csrf_token);
+		store.shared.hasPassword.set(data.has_password);
+		store.shared.isBootstrapped.set(true);
+		store.shared.isLoggedIn.set(true);
+		store.shared.sync.lastError.set(null);
+		store.shared.sync.meta.set(
 			readAccountSyncMeta(data.user.id) ?? data.syncMeta
 		);
-		accountStore.shared.user.set(data.user);
+		store.shared.user.set(data.user);
+		store.setPasswordMustChange(data.password_must_change);
 		restoreAccountSyncRuntimeState(data.user.id);
-		const generation = advanceAccountStateRequestGeneration();
-
-		void completeAccountPostLoginBootstrap({
-			csrfToken: data.csrf_token,
-			generation,
-			passwordMustChange: data.password_must_change,
-			userId: data.user.id,
+		void refreshAccountState().catch((error: unknown) => {
+			console.warn('Post-hydration account refresh failed.', {
+				errorCode: getLogSafeErrorCode(error),
+			});
 		});
 	}, [data]);
 

@@ -1,3 +1,10 @@
+import {
+	checkSnapshotEqual,
+	createMergeResult,
+	createSerializerConflict,
+	isPlainObject,
+	stableJson,
+} from './utils';
 import { SYNC_NAMESPACE_MAP } from '@/lib/account/sync';
 import { type IMealRecipe } from '@/types';
 import {
@@ -7,13 +14,6 @@ import {
 	Ingredient,
 	Recipe,
 } from '@/utils';
-import {
-	checkSnapshotEqual,
-	createMergeResult,
-	createSerializerConflict,
-	isPlainObject,
-	stableJson,
-} from './utils';
 
 type TMealSyncNamespace =
 	| typeof SYNC_NAMESPACE_MAP.customerNormalMeals
@@ -215,6 +215,12 @@ function mergeMealList<TMeal>({
 	if (stableJson(cloudMeals) === stableJson(localMeals)) {
 		return [...cloudMeals];
 	}
+	if (stableJson(localMeals) === stableJson(baseMeals)) {
+		return [...cloudMeals];
+	}
+	if (stableJson(cloudMeals) === stableJson(baseMeals)) {
+		return [...localMeals];
+	}
 	if (
 		hasDeletedBaseMeal(baseMeals, cloudMeals) ||
 		hasDeletedBaseMeal(baseMeals, localMeals) ||
@@ -230,7 +236,6 @@ function mergeMealList<TMeal>({
 }
 
 export function mergeMealSnapshot<TMeal>({
-	allowBaseNullAutoMerge = false,
 	base,
 	cloud,
 	local,
@@ -270,19 +275,12 @@ export function mergeMealSnapshot<TMeal>({
 				shouldUpload: false,
 			});
 		}
-		if (!allowBaseNullAutoMerge) {
+		if (checkSnapshotEqual(cloudSnapshot, {})) {
 			return createMergeResult({
-				conflict: createSerializerConflict({
-					cloud: cloudSnapshot,
-					local: localSnapshot,
-					namespace,
-					userId: '',
-				}),
-				data: cloudSnapshot,
-				shouldUpload: false,
+				data: localSnapshot,
+				shouldUpload: true,
 			});
 		}
-
 		const customerNames = new Set([
 			...Object.keys(cloudSnapshot),
 			...Object.keys(localSnapshot),
@@ -306,6 +304,7 @@ export function mergeMealSnapshot<TMeal>({
 
 		return createMergeResult({
 			data,
+			requiresConfirmation: true,
 			shouldUpload: !checkSnapshotEqual(data, cloudSnapshot),
 		});
 	}

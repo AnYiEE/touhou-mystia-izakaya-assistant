@@ -72,48 +72,63 @@ export async function DELETE(
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
-	const { deleteSsoUserClientGrant } =
-		await import('@/lib/account/server/repositories/sso');
-	const deleted = await deleteSsoUserClientGrant(auth.data.user.id, clientId);
-	if (!deleted) {
-		return createNoStoreErrorResponse('sso-grant-not-found', 404);
-	}
-
-	const [auditModule, accountAuditModule] = await Promise.all([
+	const [ssoRepository, auditModule, accountAuditModule] = await Promise.all([
+		import('@/lib/account/server/repositories/sso'),
 		import('@/lib/account/server/adminAuditService'),
 		import('@/lib/account/server/accountAuditService'),
 	]);
-	await Promise.all([
-		auditModule.writeAdminAuditLogBestEffort({
-			action: 'user-revoke-sso-grant',
-			actorId: auth.data.user.id,
-			actorType: 'user',
-			metadata: {
-				client_id: clientId,
-				nickname: auth.data.user.nickname,
-				reason: 'user-revoke-grant',
-				user_id: auth.data.user.id,
-				username: auth.data.user.username,
+	const deleteResult =
+		await ssoRepository.deleteSsoUserClientGrantForActiveSession(
+			auth.data.user.id,
+			clientId,
+			{
+				id: auth.data.session.id,
+				token_hash: auth.data.sessionTokenHash,
 			},
-			scope: 'sso',
-			targetId: `${clientId}:${auth.data.user.id}`,
-			targetType: 'sso_grant',
-			...getRequestAuditContext(request),
-		}),
-		accountAuditModule.writeAccountAuditLogBestEffort(
-			accountAuditModule.createAccountUserAuditLogInput({
-				action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
-					.ssoGrantRevoked,
-				metadata: {
-					client_id: clientId,
-					nickname: auth.data.user.nickname,
-					username: auth.data.user.username,
-				},
-				request,
-				userId: auth.data.user.id,
-			})
-		),
-	]);
+			async (trx, auditNow) => {
+				await auditModule.writeAdminAuditLogInTransaction(
+					trx,
+					{
+						action: 'user-revoke-sso-grant',
+						actorId: auth.data.user.id,
+						actorType: 'user',
+						metadata: {
+							client_id: clientId,
+							nickname: auth.data.user.nickname,
+							reason: 'user-revoke-grant',
+							user_id: auth.data.user.id,
+							username: auth.data.user.username,
+						},
+						scope: 'sso',
+						targetId: `${clientId}:${auth.data.user.id}`,
+						targetType: 'sso_grant',
+						...getRequestAuditContext(request),
+					},
+					auditNow
+				);
+				await accountAuditModule.writeAccountAuditLogInTransaction(
+					trx,
+					accountAuditModule.createAccountUserAuditLogInput({
+						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+							.ssoGrantRevoked,
+						metadata: {
+							client_id: clientId,
+							nickname: auth.data.user.nickname,
+							username: auth.data.user.username,
+						},
+						request,
+						userId: auth.data.user.id,
+					}),
+					auditNow
+				);
+			}
+		);
+	if (deleteResult.status === 'unauthorized') {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
+	if (deleteResult.status === 'not-found') {
+		return createNoStoreErrorResponse('sso-grant-not-found', 404);
+	}
 
 	return createNoStoreJsonResponse({ message: 'sso-grant-revoked' });
 }

@@ -7,7 +7,6 @@ import {
 	type TSyncNamespace,
 	checkSupportedSyncSchemaVersion,
 } from '@/lib/account/sync';
-import { MAX_SYNC_CHANGE_BYTES } from '@/lib/account/shared/requestLimits';
 import {
 	checkBeverageTag,
 	checkPopularTag,
@@ -420,17 +419,6 @@ export function parseSyncStatePutBody(
 		if (!validateSyncStateData(parsedChange)) {
 			return null;
 		}
-		try {
-			if (
-				new Blob([JSON.stringify(parsedChange.data)]).size >
-				MAX_SYNC_CHANGE_BYTES
-			) {
-				return null;
-			}
-		} catch {
-			return null;
-		}
-
 		changes.push(parsedChange);
 	}
 

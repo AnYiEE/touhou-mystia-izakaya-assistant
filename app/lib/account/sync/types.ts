@@ -40,14 +40,42 @@ export interface IDirtyQueueEntry {
 	lastError: string | null;
 	namespace: TSyncNamespace;
 	paused: TSyncPausedReason | null;
+	queueOperationId?: string;
 	schema_version: number;
 	snapshotHash: string;
 }
 
 export interface IAccountSyncBroadcastMessage {
+	accountRuntime?: {
+		createdAt: number;
+		reason:
+			| 'account-deleted'
+			| 'credential-changed'
+			| 'login'
+			| 'logout'
+			| 'logout-all'
+			| 'password-changed'
+			| 'password-required'
+			| 'session-expired';
+		version: 1;
+	};
 	deleteStartedAt?: number;
 	namespaces: TSyncNamespace[];
 	operationId: string;
+	runtimeMutationId?: string;
+	runtimeReason?:
+		| 'conflict-changed'
+		| 'conflict-created'
+		| 'conflict-heartbeat'
+		| 'conflict-resolved'
+		| 'queue-changed';
+	syncOperation?: {
+		expiresAt: number;
+		kind: 'delete-data' | 'import-backup';
+		ownerTabId: string;
+		startedAt: number;
+		status: 'ended' | 'renewed' | 'started';
+	};
 	state_epoch: number;
 	tabId: string;
 	type:
@@ -61,9 +89,31 @@ export interface IAccountSyncBroadcastMessage {
 	userId: string;
 }
 
+export interface IAccountSyncBaseSnapshot {
+	data: unknown;
+	namespace: TSyncNamespace;
+	revision: number;
+	resetGeneration?: string | null;
+	schema_version: number;
+	snapshotHash: string;
+}
+
 export interface ISyncConflictItem<T = unknown> {
 	cloud: T;
 	local: T;
+	localCollision?: {
+		candidates: Array<{
+			baseRevision: number;
+			data: T;
+			id: string;
+			label: string;
+			schemaVersion: number;
+			snapshotHash: string;
+		}>;
+		invalidEvidenceCount: number;
+		token: string;
+		version: 1;
+	};
 	merged: T | null;
 	namespace: TSyncNamespace;
 	revision: number;
@@ -86,7 +136,28 @@ export interface ISyncStateItemConflict {
 	updated_at: number;
 }
 
+export interface ISyncStateItemCapacityError {
+	candidate_bytes: number;
+	candidate_namespace_bytes: number;
+	current_bytes: number;
+	current_namespace_bytes: number;
+	limit_bytes: number;
+	message: 'sync-account-capacity-exceeded';
+	namespace: TSyncNamespace;
+	namespaces: TSyncNamespace[];
+	status: 'error';
+}
+
+export interface ISyncStateItemSchemaUpdateRequiredError {
+	current_schema_version: number;
+	message: 'sync-schema-update-required';
+	namespace: TSyncNamespace;
+	status: 'error';
+}
+
 export type TSyncStatePutResult =
+	| ISyncStateItemCapacityError
+	| ISyncStateItemSchemaUpdateRequiredError
 	| ISyncStateItemConflict
 	| ISyncStateItemSuccess
 	| { message: string; namespace: TSyncNamespace; status: 'error' };
@@ -128,6 +199,7 @@ export interface ISyncMergeParams<T> {
 export interface ISyncMergeResult<T> {
 	conflict: ISyncConflictItem<T> | null;
 	data: T;
+	requiresConfirmation: boolean;
 	shouldUpload: boolean;
 }
 

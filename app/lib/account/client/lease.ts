@@ -33,6 +33,10 @@ export function createAccountSyncLeaseKey(userId: string) {
 	return createAccountStorageKey(ACCOUNT_STORAGE_KEY_MAP.lease, userId);
 }
 
+export function removeAccountSyncLeaseForAccountDeletion(userId: string) {
+	removeAccountStorage(createAccountSyncLeaseKey(userId));
+}
+
 function checkAccountSyncLease(value: unknown): value is IAccountSyncLease {
 	return (
 		value !== null &&
@@ -56,13 +60,14 @@ function checkAccountSyncLease(value: unknown): value is IAccountSyncLease {
 }
 
 export function readAccountSyncLease(userId: string) {
-	const key = createAccountSyncLeaseKey(userId);
-	const lease = readAccountJsonStorage<unknown>(key, null);
+	const lease = readAccountJsonStorage<unknown>(
+		createAccountSyncLeaseKey(userId),
+		null
+	);
 	if (lease === null) {
 		return null;
 	}
 	if (!checkAccountSyncLease(lease)) {
-		removeAccountStorage(key);
 		return null;
 	}
 

@@ -1,5 +1,5 @@
 import { type Key } from 'react';
-import { computed, store } from '@davstack/store';
+import { store } from '@davstack/store';
 
 import { type Selection } from '@heroui/table';
 
@@ -13,6 +13,10 @@ import {
 	type TPinyinSortState,
 	pinyinSortStateMap,
 } from '@/components/sidePinyinSortIconButton';
+import {
+	requestOverlayClose,
+	requestOverlayOpen,
+} from '@/lib/overlayCoordinator/store';
 
 import {
 	DARK_MATTER_META_MAP,
@@ -35,6 +39,7 @@ import {
 } from '@/stores/middlewares';
 import {
 	applyTableSortChange,
+	createComputedAccessor as computed,
 	createNamesCache,
 	keepLastTag,
 	reverseVisibilityState,
@@ -71,6 +76,7 @@ import {
 	Partner,
 	Recipe,
 } from '@/utils';
+import { migrateCustomerRarePlansSnapshot } from '@/lib/account/sync/serializers/customerRarePlansMerge';
 import {
 	type ITableSortDescriptor,
 	type TBeverageTableSortKey,
@@ -78,16 +84,18 @@ import {
 	buildBeverageSuitabilityRows,
 	buildRecipeSuitabilityRows,
 	buildSelectionTip,
+	checkCustomerRarePlansStateVirtual,
 	copyCustomerRarePlan,
 	createCustomerRarePlan,
 	dedupeCustomerRarePlanValues,
-	ensureActiveCustomerRarePlan,
 	evaluateRareSavedMeal,
-	getActiveCustomerRarePlanFromState,
 	getBondRewards,
+	getDisplayedCustomerRarePlan,
 	getIngredientScoreChanges,
 	getVisibleSavedMeals,
+	materializeActiveCustomerRarePlan,
 	normalizeCustomerRarePlanName,
+	removeCustomerRarePlanFromState,
 	resolveCustomerRarePlan,
 	updateActiveCustomerRarePlan,
 } from '@/utils/customer/shared';
@@ -136,6 +144,7 @@ const storeVersion = {
 	removeCustomerSearchValue: 21, // eslint-disable-next-line sort-keys
 	plans: 22, // eslint-disable-next-line sort-keys
 	planCustomerSort: 23,
+	virtualPlans: 24,
 } as const;
 
 function trackCustomerRarePlanFilterChange(
@@ -310,7 +319,7 @@ export const customerRareStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.planCustomerSort,
+			version: storeVersion.virtualPlans,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -566,8 +575,39 @@ export const customerRareStore = store(state, {
 					oldState.persistence.plans = { activeId: null, items: [] };
 				}
 				if (version < storeVersion.planCustomerSort) {
-					for (const plan of oldState.persistence.plans.items) {
-						plan.customerSort = 'default';
+					const plans: unknown = oldState?.persistence?.plans;
+					if (
+						plans !== null &&
+						typeof plans === 'object' &&
+						!Array.isArray(plans) &&
+						'items' in plans &&
+						Array.isArray(plans.items)
+					) {
+						for (const plan of plans.items) {
+							if (
+								plan !== null &&
+								typeof plan === 'object' &&
+								!Array.isArray(plan)
+							) {
+								Object.assign(plan, {
+									customerSort: 'default',
+								});
+							}
+						}
+					}
+				}
+				if (version < storeVersion.virtualPlans) {
+					const persistence: unknown = oldState?.persistence;
+					if (
+						persistence !== null &&
+						typeof persistence === 'object' &&
+						!Array.isArray(persistence) &&
+						'plans' in persistence
+					) {
+						persistence.plans = migrateCustomerRarePlansSnapshot(
+							persistence.plans,
+							2
+						);
 					}
 				}
 				return persistedState as typeof state;
@@ -996,21 +1036,12 @@ export const customerRareStore = store(state, {
 			}));
 		});
 
-		const activeCustomerRarePlan = computed((getOrUse) => {
-			const plans =
-				getOrUse === 'get'
-					? currentStore.persistence.plans.get()
-					: currentStore.persistence.plans.use();
-
-			return getActiveCustomerRarePlanFromState(plans);
-		});
-
 		const resolvedCustomerRarePlan = computed((getOrUse) => {
 			const shouldGet = getOrUse === 'get';
 			const plans = shouldGet
 				? currentStore.persistence.plans.get()
 				: currentStore.persistence.plans.use();
-			const activePlan = getActiveCustomerRarePlanFromState(plans);
+			const activePlan = getDisplayedCustomerRarePlan(plans);
 
 			return resolveCustomerRarePlan({
 				hiddenBeverages: shouldGet
@@ -1284,7 +1315,6 @@ export const customerRareStore = store(state, {
 			recipeTablePagedRows: () => recipeTableRows.use().pagedRows,
 			recipeTableSortedRows: () => recipeTableRows.use().sortedRows,
 
-			activeCustomerRarePlan: () => activeCustomerRarePlan.use(),
 			bondRewards: () => bondRewards.use(),
 			currentMealPrice: () => currentMealPrice.use(),
 			customerRarePlanSummary: () => customerRarePlanSummary.use(),
@@ -1298,9 +1328,11 @@ export const customerRareStore = store(state, {
 	.actions((currentStore) => ({
 		closeCustomerRarePlanDrawer() {
 			if (!currentStore.shared.planDrawer.isOpen.get()) {
+				requestOverlayClose('customer-rare.plan-drawer');
 				return;
 			}
 			currentStore.shared.planDrawer.isOpen.set(false);
+			requestOverlayClose('customer-rare.plan-drawer');
 			trackEvent(
 				trackEvent.category.click,
 				'Customer Rare Plan Drawer Button',
@@ -1308,9 +1340,11 @@ export const customerRareStore = store(state, {
 			);
 		},
 		copyCustomerRarePlan(planId: string) {
-			const sourcePlan = currentStore.persistence.plans
-				.get()
-				.items.find(({ id }) => id === planId);
+			const plans = currentStore.persistence.plans.get();
+			if (checkCustomerRarePlansStateVirtual(plans)) {
+				return;
+			}
+			const sourcePlan = plans.items.find(({ id }) => id === planId);
 			if (sourcePlan === undefined) {
 				return;
 			}
@@ -1341,38 +1375,21 @@ export const customerRareStore = store(state, {
 			return createdPlanId;
 		},
 		deleteCustomerRarePlan(planId: string) {
+			const plans = currentStore.persistence.plans.get();
 			if (
-				!currentStore.persistence.plans
-					.get()
-					.items.some(({ id }) => id === planId)
+				checkCustomerRarePlansStateVirtual(plans) ||
+				!plans.items.some(({ id }) => id === planId)
 			) {
 				return;
 			}
 			currentStore.persistence.plans.set((prev) => {
-				const nextItems = prev.items.filter(({ id }) => id !== planId);
-				prev.items = nextItems;
-				if (prev.activeId === planId) {
-					prev.activeId = nextItems[0]?.id ?? null;
-				}
-				ensureActiveCustomerRarePlan(prev);
+				removeCustomerRarePlanFromState(prev, planId);
 			});
 			trackEvent(
 				trackEvent.category.click,
 				'Customer Rare Plan Button',
 				'Delete'
 			);
-		},
-		ensureCustomerRarePlan() {
-			const plans = currentStore.persistence.plans.get();
-			const activePlan = getActiveCustomerRarePlanFromState(plans);
-			if (activePlan !== null) {
-				return activePlan.id;
-			}
-			let activePlanId: string | null = null;
-			currentStore.persistence.plans.set((prev) => {
-				activePlanId = ensureActiveCustomerRarePlan(prev);
-			});
-			return activePlanId;
 		},
 		openCustomerRarePlanCustomer(
 			customerName: TCustomerRareName,
@@ -1386,6 +1403,7 @@ export const customerRareStore = store(state, {
 			currentStore.shared.customer.filterVisibility.set(true);
 			if (closeDrawer) {
 				currentStore.shared.planDrawer.isOpen.set(false);
+				requestOverlayClose('customer-rare.plan-drawer');
 			}
 			trackEvent(
 				trackEvent.category.click,
@@ -1395,39 +1413,32 @@ export const customerRareStore = store(state, {
 		},
 		openCustomerRarePlanDrawer() {
 			const wasOpen = currentStore.shared.planDrawer.isOpen.get();
-			if (
-				getActiveCustomerRarePlanFromState(
-					currentStore.persistence.plans.get()
-				) === null
-			) {
-				currentStore.persistence.plans.set((prev) => {
-					ensureActiveCustomerRarePlan(prev);
-				});
-			}
 			if (wasOpen) {
 				return;
 			}
-			currentStore.shared.planDrawer.isOpen.set(true);
-			trackEvent(
-				trackEvent.category.click,
-				'Customer Rare Plan Drawer Button',
-				'Open'
-			);
+			requestOverlayOpen('customer-rare.plan-drawer', {
+				onActivate: () => {
+					currentStore.shared.planDrawer.isOpen.set(true);
+					trackEvent(
+						trackEvent.category.click,
+						'Customer Rare Plan Drawer Button',
+						'Open'
+					);
+				},
+			});
 		},
 		renameCustomerRarePlan(planId: string, name: string) {
 			const nextName = normalizeCustomerRarePlanName(name);
-			const currentPlan = currentStore.persistence.plans
-				.get()
-				.items.find(({ id }) => id === planId);
-			if (currentPlan === undefined || currentPlan.name === nextName) {
+			const plans = currentStore.persistence.plans.get();
+			const displayedPlan = getDisplayedCustomerRarePlan(plans);
+			if (
+				displayedPlan.id !== planId ||
+				displayedPlan.name === nextName
+			) {
 				return;
 			}
 			currentStore.persistence.plans.set((prev) => {
-				const plan = prev.items.find(({ id }) => id === planId);
-				if (plan === undefined) {
-					return;
-				}
-
+				const plan = materializeActiveCustomerRarePlan(prev);
 				plan.name = nextName;
 				plan.updatedAt = Date.now();
 			});
@@ -1440,6 +1451,7 @@ export const customerRareStore = store(state, {
 		setActiveCustomerRarePlan(planId: string) {
 			const plans = currentStore.persistence.plans.get();
 			if (
+				checkCustomerRarePlansStateVirtual(plans) ||
 				plans.activeId === planId ||
 				!plans.items.some(({ id }) => id === planId)
 			) {
@@ -1457,14 +1469,14 @@ export const customerRareStore = store(state, {
 		setCustomerRarePlanCustomerSort(
 			customerSort: TCustomerRarePlanCustomerSort
 		) {
-			const activePlan = getActiveCustomerRarePlanFromState(
+			const activePlan = getDisplayedCustomerRarePlan(
 				currentStore.persistence.plans.get()
 			);
-			if (activePlan?.customerSort === customerSort) {
+			if (activePlan.customerSort === customerSort) {
 				return;
 			}
 			currentStore.persistence.plans.set((prev) => {
-				ensureActiveCustomerRarePlan(prev);
+				materializeActiveCustomerRarePlan(prev);
 				updateActiveCustomerRarePlan(prev, (plan) => {
 					plan.customerSort = customerSort;
 					return true;
@@ -1474,17 +1486,14 @@ export const customerRareStore = store(state, {
 		},
 		setCustomerRarePlanExcludes(values: ReadonlyArray<TCustomerRareName>) {
 			const nextValues = dedupeCustomerRarePlanValues(values);
-			const activePlan = getActiveCustomerRarePlanFromState(
+			const activePlan = getDisplayedCustomerRarePlan(
 				currentStore.persistence.plans.get()
 			);
-			if (
-				activePlan !== null &&
-				checkArrayEqualOf(activePlan.excludes, nextValues)
-			) {
+			if (checkArrayEqualOf(activePlan.excludes, nextValues)) {
 				return;
 			}
 			currentStore.persistence.plans.set((prev) => {
-				ensureActiveCustomerRarePlan(prev);
+				materializeActiveCustomerRarePlan(prev);
 				updateActiveCustomerRarePlan(prev, (plan) => {
 					plan.excludes = nextValues;
 					return true;
@@ -1501,17 +1510,14 @@ export const customerRareStore = store(state, {
 		},
 		setCustomerRarePlanIncludes(values: ReadonlyArray<TCustomerRareName>) {
 			const nextValues = dedupeCustomerRarePlanValues(values);
-			const activePlan = getActiveCustomerRarePlanFromState(
+			const activePlan = getDisplayedCustomerRarePlan(
 				currentStore.persistence.plans.get()
 			);
-			if (
-				activePlan !== null &&
-				checkArrayEqualOf(activePlan.includes, nextValues)
-			) {
+			if (checkArrayEqualOf(activePlan.includes, nextValues)) {
 				return;
 			}
 			currentStore.persistence.plans.set((prev) => {
-				ensureActiveCustomerRarePlan(prev);
+				materializeActiveCustomerRarePlan(prev);
 				updateActiveCustomerRarePlan(prev, (plan) => {
 					plan.includes = nextValues;
 					return true;
@@ -1523,17 +1529,14 @@ export const customerRareStore = store(state, {
 			values: ReadonlyArray<TCustomerRareName>
 		) {
 			const nextValues = dedupeCustomerRarePlanValues(values);
-			const activePlan = getActiveCustomerRarePlanFromState(
+			const activePlan = getDisplayedCustomerRarePlan(
 				currentStore.persistence.plans.get()
 			);
-			if (
-				activePlan !== null &&
-				checkArrayEqualOf(activePlan.manualCustomers, nextValues)
-			) {
+			if (checkArrayEqualOf(activePlan.manualCustomers, nextValues)) {
 				return;
 			}
 			currentStore.persistence.plans.set((prev) => {
-				ensureActiveCustomerRarePlan(prev);
+				materializeActiveCustomerRarePlan(prev);
 				updateActiveCustomerRarePlan(prev, (plan) => {
 					plan.manualCustomers = nextValues;
 					return true;
@@ -1545,14 +1548,14 @@ export const customerRareStore = store(state, {
 			);
 		},
 		setCustomerRarePlanMealSource(source: TCustomerRarePlanMealSource) {
-			const activePlan = getActiveCustomerRarePlanFromState(
+			const activePlan = getDisplayedCustomerRarePlan(
 				currentStore.persistence.plans.get()
 			);
-			if (activePlan?.mealSource === source) {
+			if (activePlan.mealSource === source) {
 				return;
 			}
 			currentStore.persistence.plans.set((prev) => {
-				ensureActiveCustomerRarePlan(prev);
+				materializeActiveCustomerRarePlan(prev);
 				updateActiveCustomerRarePlan(prev, (plan) => {
 					plan.mealSource = source;
 					return true;
@@ -1561,14 +1564,14 @@ export const customerRareStore = store(state, {
 			trackCustomerRarePlanMealSourceChange(source);
 		},
 		setCustomerRarePlanMode(mode: TCustomerRarePlanMode) {
-			const activePlan = getActiveCustomerRarePlanFromState(
+			const activePlan = getDisplayedCustomerRarePlan(
 				currentStore.persistence.plans.get()
 			);
-			if (activePlan?.mode === mode) {
+			if (activePlan.mode === mode) {
 				return;
 			}
 			currentStore.persistence.plans.set((prev) => {
-				ensureActiveCustomerRarePlan(prev);
+				materializeActiveCustomerRarePlan(prev);
 				updateActiveCustomerRarePlan(prev, (plan) => {
 					plan.mode = mode;
 					return true;
@@ -1582,17 +1585,14 @@ export const customerRareStore = store(state, {
 		},
 		setCustomerRarePlanPlaces(values: ReadonlyArray<TPlace>) {
 			const nextValues = dedupeCustomerRarePlanValues(values);
-			const activePlan = getActiveCustomerRarePlanFromState(
+			const activePlan = getDisplayedCustomerRarePlan(
 				currentStore.persistence.plans.get()
 			);
-			if (
-				activePlan !== null &&
-				checkArrayEqualOf(activePlan.places, nextValues)
-			) {
+			if (checkArrayEqualOf(activePlan.places, nextValues)) {
 				return;
 			}
 			currentStore.persistence.plans.set((prev) => {
-				ensureActiveCustomerRarePlan(prev);
+				materializeActiveCustomerRarePlan(prev);
 				updateActiveCustomerRarePlan(prev, (plan) => {
 					plan.places = nextValues;
 					return true;

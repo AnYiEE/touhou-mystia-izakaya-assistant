@@ -115,16 +115,22 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('challenge-not-found', 400);
 	}
 
-	const challenge = await challengesModule.consumeChallenge(
-		challengeCookie,
-		'registration'
-	);
-	if (challenge?.user_id !== auth.data.user.id) {
+	const challengeResult =
+		await challengesModule.consumeRegistrationChallengeForActiveSession(
+			challengeCookie,
+			auth.data.user.id,
+			{ id: auth.data.session.id, token_hash: auth.data.sessionTokenHash }
+		);
+	if (challengeResult.status === 'unauthorized') {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
+	if (challengeResult.status === 'not-found') {
 		const response = createNoStoreErrorResponse('challenge-expired', 400);
 		webauthnModule.clearWebauthnChallengeCookie(response, request);
 
 		return response;
 	}
+	const { challenge } = challengeResult;
 
 	let verification;
 	try {
@@ -152,60 +158,66 @@ export async function POST(request: NextRequest) {
 		return response;
 	}
 
-	const existingCount = await credentialsModule.countCredentialsByUserId(
-		auth.data.user.id
-	);
-	if (existingCount >= WEBAUTHN_MAX_CREDENTIALS_PER_USER) {
+	const { registrationInfo } = verification;
+	const now = Date.now();
+	const accountAuditModule =
+		await import('@/lib/account/server/accountAuditService');
+	const createResult =
+		await credentialsModule.createCredentialForActiveSession(
+			{
+				aaguid: registrationInfo.aaguid || null,
+				backed_up: registrationInfo.credentialBackedUp ? 1 : 0,
+				counter: registrationInfo.credential.counter,
+				created_at: now,
+				credential_id: registrationInfo.credential.id,
+				device_type: registrationInfo.credentialDeviceType,
+				id: randomUUID(),
+				last_used_at: null,
+				name,
+				public_key: webauthnModule.encodePublicKey(
+					registrationInfo.credential.publicKey
+				),
+				transports: webauthnModule.serializeTransports(
+					registrationResponse.response.transports
+				),
+				user_id: auth.data.user.id,
+			},
+			WEBAUTHN_MAX_CREDENTIALS_PER_USER,
+			{
+				id: auth.data.session.id,
+				token_hash: auth.data.sessionTokenHash,
+			},
+			(trx, auditNow) =>
+				accountAuditModule.writeAccountAuditLogInTransaction(
+					trx,
+					accountAuditModule.createAccountUserAuditLogInput({
+						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+							.passkeyRegistered,
+						metadata: {
+							backed_up: registrationInfo.credentialBackedUp,
+							device_type: registrationInfo.credentialDeviceType,
+							nickname: auth.data.user.nickname,
+							username: auth.data.user.username,
+						},
+						request,
+						userId: auth.data.user.id,
+					}),
+					auditNow
+				)
+		);
+	if (createResult.status === 'unauthorized') {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
+	if (createResult.status === 'too-many') {
 		const response = createNoStoreErrorResponse('too-many-passkeys', 409);
 		webauthnModule.clearWebauthnChallengeCookie(response, request);
 
 		return response;
 	}
 
-	const { registrationInfo } = verification;
-	const now = Date.now();
-	await credentialsModule.createCredential({
-		aaguid: registrationInfo.aaguid || null,
-		backed_up: registrationInfo.credentialBackedUp ? 1 : 0,
-		counter: registrationInfo.credential.counter,
-		created_at: now,
-		credential_id: registrationInfo.credential.id,
-		device_type: registrationInfo.credentialDeviceType,
-		id: randomUUID(),
-		last_used_at: null,
-		name,
-		public_key: webauthnModule.encodePublicKey(
-			registrationInfo.credential.publicKey
-		),
-		transports: webauthnModule.serializeTransports(
-			registrationResponse.response.transports
-		),
-		user_id: auth.data.user.id,
-	});
-
-	const accountAuditModule =
-		await import('@/lib/account/server/accountAuditService');
-	await accountAuditModule.writeAccountAuditLogBestEffort(
-		accountAuditModule.createAccountUserAuditLogInput({
-			action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
-				.passkeyRegistered,
-			metadata: {
-				backed_up: registrationInfo.credentialBackedUp,
-				device_type: registrationInfo.credentialDeviceType,
-				nickname: auth.data.user.nickname,
-				username: auth.data.user.username,
-			},
-			request,
-			userId: auth.data.user.id,
-		})
-	);
-
-	const credentials = await credentialsModule.listCredentialsByUserId(
-		auth.data.user.id
-	);
 	const { rpID } = webauthnModule.getWebAuthnRelyingParty();
 	const response = createNoStoreJsonResponse({
-		credentials: credentials.map((credential) =>
+		credentials: createResult.credentials.map((credential) =>
 			presentationModule.createWebauthnCredentialSummary(credential)
 		),
 		rp_id: rpID,

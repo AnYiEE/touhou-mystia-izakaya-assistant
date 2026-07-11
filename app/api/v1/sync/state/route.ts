@@ -13,12 +13,12 @@ import {
 	checkSyncNamespace,
 	parseSyncStatePutBody,
 } from '@/lib/account/sync/validation';
+import { getAccountSyncCapacityConfiguration } from '@/lib/account/server/syncCapacity';
 import {
 	parseUserStateRecord,
 	putSyncStateChanges,
 } from '@/lib/account/server/syncState';
 import { type ISyncStatePutBody } from '@/lib/account/sync';
-import { MAX_SYNC_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -80,18 +80,24 @@ export async function GET(request: NextRequest) {
 		return createNoStoreErrorResponse('unknown-namespace', 400);
 	}
 
-	const records =
-		namespaces.length === 0
-			? await userStateModule.listUserState(auth.data.user.id)
-			: await userStateModule.listUserStateByNamespaces(
-					auth.data.user.id,
-					namespaces
-				);
+	const snapshot = await userStateModule.getActiveUserStateSnapshotForSession(
+		{
+			namespaces: namespaces.length === 0 ? null : namespaces,
+			session: {
+				id: auth.data.session.id,
+				token_hash: auth.data.session.token_hash,
+			},
+			userId: auth.data.user.id,
+		}
+	);
+	if (snapshot.status === 'unauthorized') {
+		return createNoStoreErrorResponse('unauthorized', 401);
+	}
 
 	try {
 		return createNoStoreJsonResponse({
-			records: records.map(parseUserStateRecord),
-			state_epoch: auth.data.user.state_epoch,
+			records: snapshot.records.map(parseUserStateRecord),
+			state_epoch: snapshot.state_epoch,
 		});
 	} catch (error) {
 		console.warn('Failed to parse stored sync state.', {
@@ -144,12 +150,15 @@ export async function PUT(request: NextRequest) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
+	const capacityConfiguration = getAccountSyncCapacityConfiguration();
 	const bodyResult = await readJsonBodyResult<ISyncStatePutBody>(
 		request,
-		MAX_SYNC_JSON_BODY_BYTES
+		capacityConfiguration.requestMaxBytes
 	);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse('sync-request-too-large', 413, {
+			limit_bytes: capacityConfiguration.requestMaxBytes,
+		});
 	}
 
 	const body = parseSyncStatePutBody(

@@ -54,6 +54,7 @@ export interface IOverlayRegistration {
 	getRootElement?: () => HTMLElement | null;
 	id: TOverlayId;
 	onRequestClose?: (reason: TOverlayCloseReason) => void;
+	requestOwnership?: 'component' | 'external';
 	shortcuts?: ReadonlyArray<IOverlayShortcutDefinition>;
 }
 
@@ -100,4 +101,8 @@ export interface IOverlayPushChildOptions {
 
 export interface ITutorialLease {
 	release: () => void;
+}
+
+export interface ITutorialLeaseOptions {
+	onPreempt?: () => void;
 }

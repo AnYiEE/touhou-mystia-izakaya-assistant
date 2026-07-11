@@ -131,8 +131,12 @@ export async function POST(request: NextRequest) {
 	const result = await announcementModule.dismissAnnouncementForUser(
 		body.id,
 		body.updatedAt,
-		auth.data.user.id
+		auth.data.user.id,
+		{ id: auth.data.session.id, token_hash: auth.data.sessionTokenHash }
 	);
+	if (result.status === 'unauthorized') {
+		return createNoStoreJsonResponse({ message: 'announcement-dismissed' });
+	}
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,

@@ -221,6 +221,7 @@ export async function POST(request: NextRequest) {
 		passwordModule,
 		credentialsModule,
 		authModule,
+		sessionsModule,
 		userModule,
 		usersModule,
 		accountAuditModule,
@@ -228,6 +229,7 @@ export async function POST(request: NextRequest) {
 		import('@/lib/account/server/password'),
 		import('@/lib/account/server/repositories/credentials'),
 		import('@/lib/account/server/auth'),
+		import('@/lib/account/server/repositories/sessions'),
 		import('@/lib/account/server/user'),
 		import('@/lib/account/server/repositories/users'),
 		import('@/lib/account/server/accountAuditService'),
@@ -273,6 +275,13 @@ export async function POST(request: NextRequest) {
 	}
 
 	if (!willChangeUsername && !willChangeNickname) {
+		const isSessionCurrent = await sessionsModule.checkActiveUserSession(
+			auth.data.user.id,
+			{ id: auth.data.session.id, token_hash: auth.data.sessionTokenHash }
+		);
+		if (!isSessionCurrent) {
+			return createNoStoreErrorResponse('unauthorized', 401);
+		}
 		return createNoStoreJsonResponse({
 			csrf_token: authModule.createAccountCsrfToken(
 				auth.data.sessionTokenHash
@@ -358,10 +367,34 @@ export async function POST(request: NextRequest) {
 		);
 		if (!isValidPassword) {
 			const failureState =
-				await credentialsModule.recordFailedCredentialAttempt(
-					auth.data.user.id,
-					now
-				);
+				await credentialsModule.recordFailedCredentialAttempt({
+					expectedPasswordHash: auth.data.credential.password_hash,
+					now,
+					session: {
+						id: auth.data.session.id,
+						token_hash: auth.data.sessionTokenHash,
+					},
+					userId: auth.data.user.id,
+				});
+			if (failureState.status === 'unauthorized') {
+				return createNoStoreErrorResponse('unauthorized', 401);
+			}
+			if (failureState.status === 'stale') {
+				await writeProfileAuditLogsBestEffort({
+					accountAuditModule,
+					request,
+					userId: auth.data.user.id,
+					usernameMetadata: createUsernameAuditMetadata({
+						newUsername: nextUsername,
+						newUsernameNormalized: nextUsernameNormalized,
+						oldNickname,
+						oldUsername,
+						oldUsernameNormalized,
+						result: 'credential-changed',
+					}),
+				});
+				return createNoStoreErrorResponse('credential-changed', 409);
+			}
 			if (failureState.status === 'locked') {
 				await writeProfileAuditLogsBestEffort({
 					accountAuditModule,
@@ -410,7 +443,16 @@ export async function POST(request: NextRequest) {
 	try {
 		const profileUpdateInput: Parameters<
 			typeof usersModule.updateActiveUserProfile
-		>[0] = { now, oldNickname, oldUsername, userId: auth.data.user.id };
+		>[0] = {
+			now,
+			oldNickname,
+			oldUsername,
+			session: {
+				id: auth.data.session.id,
+				token_hash: auth.data.session.token_hash,
+			},
+			userId: auth.data.user.id,
+		};
 		if (willChangeUsername) {
 			profileUpdateInput.credentialPasswordHash =
 				auth.data.credential.password_hash;
@@ -462,13 +504,13 @@ export async function POST(request: NextRequest) {
 			if (usernameMetadata !== undefined) {
 				staleAuditInput.usernameMetadata = {
 					...usernameMetadata,
-					result: 'credential-stale-after-verify',
+					result: 'credential-changed',
 				};
 			}
 
 			await writeProfileAuditLogsBestEffort(staleAuditInput);
 
-			return createNoStoreErrorResponse('invalid-password', 401);
+			return createNoStoreErrorResponse('credential-changed', 409);
 		}
 		if (user.status === 'username-conflict') {
 			const conflictAuditInput: Parameters<
@@ -484,6 +526,9 @@ export async function POST(request: NextRequest) {
 			await writeProfileAuditLogsBestEffort({ ...conflictAuditInput });
 
 			return createNoStoreErrorResponse('username-conflict', 409);
+		}
+		if (user.status === 'unauthorized') {
+			return createNoStoreErrorResponse('unauthorized', 401);
 		}
 
 		return createNoStoreJsonResponse({

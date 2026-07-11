@@ -1,10 +1,19 @@
 import { postAccountSyncBroadcastMessage } from './broadcast';
 import {
+	reconcileAccountSyncPausedConflictLocalChange,
+	withAccountSyncNamespaceTransitionLock,
+} from './conflict';
+import {
 	checkSnapshotHashMatches,
 	markAccountSyncDirty,
-	removeDirtyQueueEntry,
+	readDirtyQueueEntry,
+	removeDirtyQueueEntryIfCurrent,
 } from './queue';
 import { createAccountClientId } from './random';
+import {
+	captureAccountSyncResetGeneration,
+	checkAccountSyncResetWriteAllowed,
+} from './resetGeneration';
 import { getAccountSyncSerializer } from './snapshot';
 import {
 	checkAccountSyncPaused,
@@ -12,16 +21,26 @@ import {
 	subscribeAccountSyncResume,
 } from './stateGuards';
 import { scheduleAccountSyncFlush } from './syncClient';
+import { refreshAccountSyncQueueRuntime } from './syncRuntimeState';
 import { STORAGE_KEY, addThemeChangeListener } from '@/design/hooks';
 import { SYNC_NAMESPACE_MAP, type TSyncNamespace } from '@/lib/account/sync';
-import { accountStore } from '@/stores/account';
-import { customerNormalStore } from '@/stores/customer-normal';
-import { customerRareStore } from '@/stores/customer-rare';
-import { globalStore } from '@/stores/global';
+import {
+	accountStore,
+	customerNormalStore,
+	customerRareStore,
+	globalStore,
+} from '@/stores';
 
 type TUnsubscribe = () => void;
 
 let stopWatchers: TUnsubscribe | null = null;
+let watcherGeneration = 0;
+const localSnapshotReconcileQueue = new Map<string, Promise<void>>();
+const localSnapshotReconcileRetries = new Map<
+	string,
+	{ attempts: number; timer: null | ReturnType<typeof setTimeout> }
+>();
+const MAX_LOCAL_SNAPSHOT_RECONCILE_RETRIES = 6;
 
 function getLoggedInContext() {
 	const meta = accountStore.shared.sync.meta.get();
@@ -38,63 +57,318 @@ function getLoggedInContext() {
 	return { meta, user };
 }
 
-function markNamespaceDirty(namespace: TSyncNamespace) {
-	const context = getLoggedInContext();
-	if (context === null) {
+function scheduleAccountSyncLocalSnapshotReconcileRetry(
+	generation: number,
+	generationToken: string | null,
+	userId: string,
+	namespace: TSyncNamespace,
+	reason: 'contention' | 'stale'
+) {
+	const key = `${userId}:${namespace}`;
+	const previous = localSnapshotReconcileRetries.get(key);
+	if (previous?.timer !== null && previous?.timer !== undefined) {
 		return;
 	}
+	const attempts = (previous?.attempts ?? 0) + 1;
+	if (attempts > MAX_LOCAL_SNAPSHOT_RECONCILE_RETRIES) {
+		localSnapshotReconcileRetries.delete(key);
+		if (getLoggedInContext()?.user.id === userId) {
+			accountStore.shared.sync.lastError.set(
+				reason === 'contention'
+					? 'conflict-reconcile-busy'
+					: 'conflict-reconcile-stale'
+			);
+			refreshAccountSyncQueueRuntime(userId);
+		}
+		return;
+	}
+	const delay = Math.min(50 * 2 ** (attempts - 1), 2000);
+
+	const timer = setTimeout(() => {
+		localSnapshotReconcileRetries.set(key, { attempts, timer: null });
+		if (
+			stopWatchers === null ||
+			generation !== watcherGeneration ||
+			getLoggedInContext()?.user.id !== userId
+		) {
+			return;
+		}
+		// eslint-disable-next-line @typescript-eslint/no-use-before-define
+		enqueueAccountSyncLocalSnapshotReconcile(namespace, generationToken);
+	}, delay);
+	localSnapshotReconcileRetries.set(key, { attempts, timer });
+}
+
+function clearAccountSyncLocalSnapshotReconcileRetry(
+	userId: string,
+	namespace: TSyncNamespace
+) {
+	const key = `${userId}:${namespace}`;
+	const retry = localSnapshotReconcileRetries.get(key);
+	if (retry?.timer !== null && retry?.timer !== undefined) {
+		clearTimeout(retry.timer);
+	}
+	localSnapshotReconcileRetries.delete(key);
+}
+
+async function reconcileNamespaceLocalSnapshot(
+	generation: number,
+	generationToken: string | null,
+	userId: string,
+	namespace: TSyncNamespace
+) {
+	const context = getLoggedInContext();
+	if (generation !== watcherGeneration || context?.user.id !== userId) {
+		return;
+	}
+	if (
+		!checkAccountSyncResetWriteAllowed({
+			expectedGeneration: generationToken,
+			userId,
+		})
+	) {
+		return;
+	}
+
 	if (checkAccountSyncPaused()) {
+		clearAccountSyncLocalSnapshotReconcileRetry(userId, namespace);
 		recordPausedAccountSyncDirtyNamespace(namespace);
 		return;
 	}
 
-	const serializer = getAccountSyncSerializer(namespace);
-	const data = serializer.getLocalSnapshot();
-	if (
-		checkSnapshotHashMatches(
-			data,
-			context.meta.lastAppliedRemoteHash[namespace]
-		)
-	) {
-		removeDirtyQueueEntry(context.user.id, namespace);
-		return;
-	}
-	if (
-		namespace === SYNC_NAMESPACE_MAP.tutorialCustomerRare &&
-		typeof data === 'object' &&
-		data !== null &&
-		'completed' in data &&
-		data.completed !== true
-	) {
+	const currentEntry = readDirtyQueueEntry(userId, namespace);
+
+	if (currentEntry?.paused === 'conflict') {
+		const result = await reconcileAccountSyncPausedConflictLocalChange({
+			generationToken,
+			namespace,
+			userId,
+		});
+		if (result === 'busy' || result === 'not-conflict') {
+			scheduleAccountSyncLocalSnapshotReconcileRetry(
+				generation,
+				generationToken,
+				userId,
+				namespace,
+				'contention'
+			);
+			return;
+		}
+		if (result === 'stale') {
+			scheduleAccountSyncLocalSnapshotReconcileRetry(
+				generation,
+				generationToken,
+				userId,
+				namespace,
+				'stale'
+			);
+			return;
+		}
+		clearAccountSyncLocalSnapshotReconcileRetry(userId, namespace);
+		if (result === 'rebased' || result === 'resolved') {
+			scheduleAccountSyncFlush();
+		}
 		return;
 	}
 
-	const entry = markAccountSyncDirty({
-		baseRevision: context.meta.revisions[namespace] ?? 0,
-		data,
+	const result = await withAccountSyncNamespaceTransitionLock(
+		userId,
 		namespace,
-		userId: context.user.id,
-	});
+		() => {
+			const lockedContext = getLoggedInContext();
+			if (
+				generation !== watcherGeneration ||
+				lockedContext?.user.id !== userId
+			) {
+				return { kind: 'stale' as const };
+			}
+			if (checkAccountSyncPaused()) {
+				clearAccountSyncLocalSnapshotReconcileRetry(userId, namespace);
+				recordPausedAccountSyncDirtyNamespace(namespace);
+				return { kind: 'unchanged' as const };
+			}
 
-	if (entry === null) {
+			const serializer = getAccountSyncSerializer(namespace);
+			const data = serializer.getLocalSnapshot();
+			const lockedEntry = readDirtyQueueEntry(userId, namespace);
+			if (lockedEntry?.paused === 'conflict') {
+				return { kind: 'conflict' as const };
+			}
+
+			if (
+				checkSnapshotHashMatches(
+					data,
+					lockedContext.meta.lastAppliedRemoteHash[namespace]
+				)
+			) {
+				if (lockedEntry === null) {
+					return { kind: 'unchanged' as const };
+				}
+				return removeDirtyQueueEntryIfCurrent({
+					expectedEntry: lockedEntry,
+					generationToken,
+					userId,
+				})
+					? {
+							kind: 'removed' as const,
+							mutationId: lockedEntry.clientMutationId,
+							stateEpoch: lockedContext.meta.state_epoch,
+						}
+					: { kind: 'stale' as const };
+			}
+
+			if (
+				namespace === SYNC_NAMESPACE_MAP.tutorialCustomerRare &&
+				typeof data === 'object' &&
+				data !== null &&
+				'completed' in data &&
+				data.completed !== true
+			) {
+				return { kind: 'unchanged' as const };
+			}
+
+			const entry = markAccountSyncDirty({
+				baseRevision: lockedContext.meta.revisions[namespace] ?? 0,
+				data,
+				generationToken,
+				namespace,
+				userId,
+			});
+
+			return entry?.paused === null
+				? {
+						kind: 'dirty' as const,
+						mutationId: entry.clientMutationId,
+						stateEpoch: lockedContext.meta.state_epoch,
+					}
+				: { kind: 'stale' as const };
+		}
+	);
+
+	if (result === null) {
+		scheduleAccountSyncLocalSnapshotReconcileRetry(
+			generation,
+			generationToken,
+			userId,
+			namespace,
+			'contention'
+		);
+		return;
+	}
+	if (result.kind === 'conflict') {
+		const conflictResult =
+			await reconcileAccountSyncPausedConflictLocalChange({
+				generationToken,
+				namespace,
+				userId,
+			});
+		if (conflictResult === 'busy' || conflictResult === 'not-conflict') {
+			scheduleAccountSyncLocalSnapshotReconcileRetry(
+				generation,
+				generationToken,
+				userId,
+				namespace,
+				'contention'
+			);
+			return;
+		}
+		if (conflictResult === 'stale') {
+			scheduleAccountSyncLocalSnapshotReconcileRetry(
+				generation,
+				generationToken,
+				userId,
+				namespace,
+				'stale'
+			);
+			return;
+		}
+		clearAccountSyncLocalSnapshotReconcileRetry(userId, namespace);
+		if (conflictResult === 'rebased' || conflictResult === 'resolved') {
+			scheduleAccountSyncFlush();
+		}
+		return;
+	}
+	if (result.kind === 'stale') {
+		scheduleAccountSyncLocalSnapshotReconcileRetry(
+			generation,
+			generationToken,
+			userId,
+			namespace,
+			'stale'
+		);
+		return;
+	}
+	if (result.kind === 'unchanged') {
+		clearAccountSyncLocalSnapshotReconcileRetry(userId, namespace);
 		return;
 	}
 
+	clearAccountSyncLocalSnapshotReconcileRetry(userId, namespace);
+	refreshAccountSyncQueueRuntime(userId);
 	void postAccountSyncBroadcastMessage({
 		namespaces: [namespace],
 		operationId: createAccountClientId(),
-		state_epoch: context.meta.state_epoch,
+		runtimeMutationId: result.mutationId,
+		runtimeReason: 'queue-changed',
+		state_epoch: result.stateEpoch,
 		tabId: 'local',
 		type: 'dirty',
-		userId: context.user.id,
+		userId,
 	});
 	scheduleAccountSyncFlush();
+}
+
+export function enqueueAccountSyncLocalSnapshotReconcile(
+	namespace: TSyncNamespace,
+	providedGenerationToken?: string | null
+) {
+	const userId = getLoggedInContext()?.user.id;
+	if (userId === undefined) {
+		return;
+	}
+	const generationToken =
+		providedGenerationToken === undefined
+			? captureAccountSyncResetGeneration(userId)
+			: providedGenerationToken;
+
+	const key = `${userId}:${namespace}`;
+	const generation = watcherGeneration;
+	const previous = localSnapshotReconcileQueue.get(key) ?? Promise.resolve();
+	const next = previous
+		.catch(() => {
+			/* The next run re-reads the authoritative local snapshot. */
+		})
+		.then(() =>
+			reconcileNamespaceLocalSnapshot(
+				generation,
+				generationToken,
+				userId,
+				namespace
+			)
+		)
+		.catch(() => {
+			if (accountStore.shared.user.get()?.id === userId) {
+				accountStore.shared.sync.lastError.set(
+					'conflict-reconcile-failed'
+				);
+			}
+		});
+
+	localSnapshotReconcileQueue.set(key, next);
+
+	void next.then(() => {
+		if (localSnapshotReconcileQueue.get(key) === next) {
+			localSnapshotReconcileQueue.delete(key);
+		}
+	});
 }
 
 export function startAccountStoreSyncWatchers() {
 	if (stopWatchers !== null) {
 		return stopWatchers;
 	}
+
+	watcherGeneration += 1;
 
 	const unsubscribers: TUnsubscribe[] = [];
 	const watch = (unsubscribe: TUnsubscribe) => {
@@ -103,148 +377,200 @@ export function startAccountStoreSyncWatchers() {
 
 	watch(
 		subscribeAccountSyncResume((namespaces) => {
-			namespaces.forEach(markNamespaceDirty);
+			namespaces.forEach((namespace) => {
+				enqueueAccountSyncLocalSnapshotReconcile(namespace);
+			});
 		})
 	);
 
 	watch(
 		customerNormalStore.persistence.meals.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.customerNormalMeals);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.customerNormalMeals
+			);
 		})
 	);
 	watch(
 		customerRareStore.persistence.meals.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.customerRareMeals);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.customerRareMeals
+			);
 		})
 	);
 	watch(
 		customerRareStore.persistence.plans.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.customerRarePlans);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.customerRarePlans
+			);
 		})
 	);
 	watch(
 		customerRareStore.persistence.customer.orderLinkedFilter.onChange(
 			() => {
-				markNamespaceDirty(SYNC_NAMESPACE_MAP.customerRareSettings);
+				enqueueAccountSyncLocalSnapshotReconcile(
+					SYNC_NAMESPACE_MAP.customerRareSettings
+				);
 			}
 		)
 	);
 	watch(
 		customerRareStore.persistence.customer.showTagDescription.onChange(
 			() => {
-				markNamespaceDirty(SYNC_NAMESPACE_MAP.customerRareSettings);
+				enqueueAccountSyncLocalSnapshotReconcile(
+					SYNC_NAMESPACE_MAP.customerRareSettings
+				);
 			}
 		)
 	);
 
 	watch(
 		globalStore.persistence.customerCardTagsTooltip.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.donationModal.lastMilestoneShown.onChange(
 			() => {
-				markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+				enqueueAccountSyncLocalSnapshotReconcile(
+					SYNC_NAMESPACE_MAP.globalPreferences
+				);
 			}
 		)
 	);
 	watch(
 		globalStore.persistence.donationModal.lastShown.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.hiddenItems.dlcs.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.suggestMeals.enabled.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.suggestMeals.maxExtraIngredients.onChange(
 			() => {
-				markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+				enqueueAccountSyncLocalSnapshotReconcile(
+					SYNC_NAMESPACE_MAP.globalPreferences
+				);
 			}
 		)
 	);
 	watch(
 		globalStore.persistence.suggestMeals.maxRating.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.suggestMeals.maxResults.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.table.columns.beverage.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.table.columns.recipe.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.table.hiddenItems.beverages.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.table.hiddenItems.ingredients.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.table.hiddenItems.recipes.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.table.row.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.famousShop.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.popularTrend.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.highAppearance.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.tachie.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.vibrate.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.globalPreferences);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
 		})
 	);
 	watch(
 		globalStore.persistence.dirver.onChange(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.tutorialCustomerRare);
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.tutorialCustomerRare
+			);
 		})
 	);
 
 	watch(
 		addThemeChangeListener(() => {
-			markNamespaceDirty(SYNC_NAMESPACE_MAP.theme);
+			enqueueAccountSyncLocalSnapshotReconcile(SYNC_NAMESPACE_MAP.theme);
 		})
 	);
 
@@ -253,7 +579,7 @@ export function startAccountStoreSyncWatchers() {
 			return;
 		}
 
-		markNamespaceDirty(SYNC_NAMESPACE_MAP.theme);
+		enqueueAccountSyncLocalSnapshotReconcile(SYNC_NAMESPACE_MAP.theme);
 	};
 
 	globalThis.addEventListener('storage', handleThemeStorageChange);
@@ -269,6 +595,14 @@ export function startAccountStoreSyncWatchers() {
 
 		const currentUnsubscribers = [...unsubscribers];
 		unsubscribers.length = 0;
+		watcherGeneration += 1;
+		localSnapshotReconcileQueue.clear();
+		localSnapshotReconcileRetries.forEach(({ timer }) => {
+			if (timer !== null) {
+				clearTimeout(timer);
+			}
+		});
+		localSnapshotReconcileRetries.clear();
 		stopWatchers = null;
 		currentUnsubscribers.forEach((unsubscribe) => {
 			unsubscribe();

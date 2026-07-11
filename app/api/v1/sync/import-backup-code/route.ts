@@ -10,6 +10,7 @@ import {
 	createAccountAuthErrorRouteResponse,
 	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
+import { AccountSyncCapacityExceededError } from '@/lib/account/server/syncCapacity';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -23,6 +24,18 @@ interface IImportBackupCodeBody {
 }
 
 function createImportBackupErrorResponse(error: unknown) {
+	if (error instanceof AccountSyncCapacityExceededError) {
+		return createNoStoreErrorResponse(
+			'sync-account-capacity-exceeded',
+			409,
+			{
+				candidate_bytes: error.details.candidateBytes,
+				current_bytes: error.details.currentBytes,
+				limit_bytes: error.details.limitBytes,
+				namespaces: error.details.namespaces,
+			}
+		);
+	}
 	if (!(error instanceof Error)) {
 		return null;
 	}

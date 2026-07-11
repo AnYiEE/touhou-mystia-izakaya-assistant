@@ -107,8 +107,10 @@ export async function POST(request: NextRequest) {
 				password_set: 1,
 				updated_at: now,
 			},
+			expectedPasswordHash: auth.data.credential.password_hash,
 			lastSeenAt: now,
 			sessionId: auth.data.session.id,
+			sessionTokenHash: auth.data.sessionTokenHash,
 			userId: auth.data.user.id,
 			writeAuditLog: (trx, auditNow) =>
 				accountAuditModule.writeAccountAuditLogInTransaction(
@@ -130,6 +132,18 @@ export async function POST(request: NextRequest) {
 		});
 	} catch (error) {
 		if (error instanceof Error) {
+			if (error.message === 'credential-changed') {
+				await accountAuditModule.writeAccountAuditLogBestEffort(
+					accountAuditModule.createAccountUserAuditLogInput({
+						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+							.passwordInitialized,
+						metadata: { result: 'password-already-set' },
+						request,
+						userId: auth.data.user.id,
+					})
+				);
+				return createNoStoreErrorResponse('password-already-set', 409);
+			}
 			if (error.message === 'invalid-user-status') {
 				return createNoStoreErrorResponse('invalid-user-status', 403);
 			}

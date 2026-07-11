@@ -10,9 +10,9 @@ import {
 	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
 import { parseSyncStatePutBody } from '@/lib/account/sync/validation';
+import { getAccountSyncCapacityConfiguration } from '@/lib/account/server/syncCapacity';
 import { putSyncStateChanges } from '@/lib/account/server/syncState';
 import { type ISyncStatePingBody } from '@/lib/account/sync';
-import { MAX_SYNC_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -60,12 +60,15 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
+	const capacityConfiguration = getAccountSyncCapacityConfiguration();
 	const bodyResult = await readJsonBodyResult<ISyncStatePingBody>(
 		request,
-		MAX_SYNC_JSON_BODY_BYTES
+		capacityConfiguration.requestMaxBytes
 	);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse('sync-request-too-large', 413, {
+			limit_bytes: capacityConfiguration.requestMaxBytes,
+		});
 	}
 
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;

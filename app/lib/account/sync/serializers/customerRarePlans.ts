@@ -1,5 +1,20 @@
+import {
+	mergeCustomerRarePlansSnapshots,
+	migrateCustomerRarePlansSnapshot,
+} from './customerRarePlansMerge';
+import {
+	checkSnapshotEqual,
+	createMergeResult,
+	createSerializerConflict,
+	hasExactKeys,
+	isPlainObject,
+} from './utils';
 import { ALL_PLACES_SET, type TCustomerRareName, type TPlace } from '@/data';
-import { type ISyncNamespaceSerializer } from '@/lib/account/sync';
+import {
+	type ISyncNamespaceSerializer,
+	SYNC_NAMESPACE_MAP,
+	SYNC_SCHEMA_VERSION_MAP,
+} from '@/lib/account/sync';
 import { customerRareStore } from '@/stores/customer-rare';
 import type {
 	ICustomerRarePlan,
@@ -11,13 +26,6 @@ import type {
 import { cloneJsonObject } from '@/utilities';
 import { CustomerRare } from '@/utils';
 import { CUSTOMER_RARE_PLAN_MAX_NAME_LENGTH } from '@/utils/customer/shared/customerRarePlanConstants';
-import {
-	checkSnapshotEqual,
-	createMergeResult,
-	createSerializerConflict,
-	hasExactKeys,
-	isPlainObject,
-} from './utils';
 
 export type TCustomerRarePlansSnapshot = ICustomerRarePlansState;
 
@@ -180,215 +188,12 @@ function sanitizeCustomerRarePlansSnapshot(data: unknown) {
 	});
 }
 
-function migrateCustomerRarePlansSnapshot(data: unknown, version: number) {
-	if (version !== 1 && version !== 2) {
-		throw new Error('unsupported-customer-rare-plans-schema-version');
-	}
-	if (version === 2) {
-		return data;
-	}
-	if (!isPlainObject(data) || !Array.isArray(data['items'])) {
-		return data;
-	}
-
-	return {
-		...data,
-		items: data['items'].map((item) =>
-			isPlainObject(item) && !('customerSort' in item)
-				? { ...item, customerSort: 'default' }
-				: item
-		),
-	};
-}
-
-function createPlanMap(snapshot: TCustomerRarePlansSnapshot) {
-	return new Map(snapshot.items.map((plan) => [plan.id, plan]));
-}
-
-function omitCustomerSort(plan: ICustomerRarePlan) {
-	const { customerSort: _customerSort, ...rest } = plan;
-
-	return rest;
-}
-
-function checkPlanEqualExceptCustomerSort(
-	left: ICustomerRarePlan,
-	right: ICustomerRarePlan
-) {
-	return checkSnapshotEqual(omitCustomerSort(left), omitCustomerSort(right));
-}
-
-function mergeCustomerSortOnlyPlanChange({
-	cloudPlan,
-	localPlan,
-}: {
-	cloudPlan: ICustomerRarePlan | undefined;
-	localPlan: ICustomerRarePlan | undefined;
-}) {
-	if (
-		cloudPlan === undefined ||
-		localPlan === undefined ||
-		!checkPlanEqualExceptCustomerSort(cloudPlan, localPlan)
-	) {
-		return null;
-	}
-
-	return localPlan;
-}
-
-function mergeActivePlanId({
-	base,
-	cloud,
-	local,
-	mergedPlanIds,
-}: {
-	base: string | null;
-	cloud: string | null;
-	local: string | null;
-	mergedPlanIds: Set<string>;
-}) {
-	const normalizedBase =
-		base !== null && mergedPlanIds.has(base) ? base : null;
-	const normalizedCloud =
-		cloud !== null && mergedPlanIds.has(cloud) ? cloud : null;
-	const normalizedLocal =
-		local !== null && mergedPlanIds.has(local) ? local : null;
-
-	if (normalizedCloud === normalizedLocal) {
-		return { activeId: normalizedCloud, hasConflict: false };
-	}
-	if (normalizedBase === normalizedLocal) {
-		return { activeId: normalizedCloud, hasConflict: false };
-	}
-	if (normalizedBase === normalizedCloud) {
-		return { activeId: normalizedLocal, hasConflict: false };
-	}
-
-	return { activeId: normalizedCloud, hasConflict: true };
-}
-
-function mergeCustomerRarePlans({
-	base,
-	cloud,
-	local,
-}: {
-	base: TCustomerRarePlansSnapshot | null;
-	cloud: TCustomerRarePlansSnapshot;
-	local: TCustomerRarePlansSnapshot;
-}) {
-	const baseMap =
-		base === null
-			? new Map<string, ICustomerRarePlan>()
-			: createPlanMap(base);
-	const cloudMap = createPlanMap(cloud);
-	const localMap = createPlanMap(local);
-	const planIds = new Set([
-		...baseMap.keys(),
-		...cloudMap.keys(),
-		...localMap.keys(),
-	]);
-	const items: ICustomerRarePlan[] = [];
-	let hasConflict = false;
-
-	for (const planId of planIds) {
-		const basePlan = baseMap.get(planId);
-		const cloudPlan = cloudMap.get(planId);
-		const localPlan = localMap.get(planId);
-
-		if (cloudPlan === undefined && localPlan === undefined) {
-			continue;
-		}
-		if (basePlan === undefined) {
-			if (cloudPlan === undefined) {
-				items.push(localPlan as ICustomerRarePlan);
-				continue;
-			}
-			if (localPlan === undefined) {
-				items.push(cloudPlan);
-				continue;
-			}
-			if (checkSnapshotEqual(cloudPlan, localPlan)) {
-				items.push(cloudPlan);
-				continue;
-			}
-			const mergedPlan = mergeCustomerSortOnlyPlanChange({
-				cloudPlan,
-				localPlan,
-			});
-			if (mergedPlan !== null) {
-				items.push(mergedPlan);
-				continue;
-			}
-			hasConflict = true;
-			items.push(cloudPlan);
-			continue;
-		}
-
-		const hasCloudChange = !checkSnapshotEqual(cloudPlan, basePlan);
-		const hasLocalChange = !checkSnapshotEqual(localPlan, basePlan);
-
-		if (!hasCloudChange && !hasLocalChange) {
-			items.push(basePlan);
-			continue;
-		}
-		if (!hasLocalChange) {
-			if (cloudPlan !== undefined) {
-				items.push(cloudPlan);
-			}
-			continue;
-		}
-		if (!hasCloudChange) {
-			if (localPlan !== undefined) {
-				items.push(localPlan);
-			}
-			continue;
-		}
-		if (
-			cloudPlan !== undefined &&
-			localPlan !== undefined &&
-			checkSnapshotEqual(cloudPlan, localPlan)
-		) {
-			items.push(cloudPlan);
-			continue;
-		}
-		const mergedPlan = mergeCustomerSortOnlyPlanChange({
-			cloudPlan,
-			localPlan,
-		});
-		if (mergedPlan !== null) {
-			items.push(mergedPlan);
-			continue;
-		}
-
-		hasConflict = true;
-		if (cloudPlan !== undefined) {
-			items.push(cloudPlan);
-		}
-	}
-
-	const mergedPlanIds = new Set(items.map(({ id }) => id));
-	const activeId = mergeActivePlanId({
-		base: base?.activeId ?? null,
-		cloud: cloud.activeId,
-		local: local.activeId,
-		mergedPlanIds,
-	});
-	const sortedItems = items.sort(
-		(left, right) => left.createdAt - right.createdAt
-	);
-
-	return {
-		data: normalizeCustomerRarePlansSnapshot({
-			activeId: activeId.activeId,
-			items: sortedItems,
-		}),
-		hasConflict: hasConflict || activeId.hasConflict,
-	};
-}
-
 export const customerRarePlansSerializer = {
 	deserialize(data) {
-		return this.migrate(data, 1);
+		return this.migrate(
+			data,
+			SYNC_SCHEMA_VERSION_MAP[SYNC_NAMESPACE_MAP.customerRarePlans]
+		);
 	},
 	getDefaultSnapshot() {
 		return defaultSnapshot;
@@ -432,7 +237,7 @@ export const customerRarePlansSerializer = {
 
 		const baseSnapshot =
 			base === null ? null : normalizeCustomerRarePlansSnapshot(base);
-		const merged = mergeCustomerRarePlans({
+		const merged = mergeCustomerRarePlansSnapshots({
 			base: baseSnapshot,
 			cloud: cloudSnapshot,
 			local: localSnapshot,
@@ -453,6 +258,7 @@ export const customerRarePlansSerializer = {
 
 		return createMergeResult({
 			data: merged.data,
+			requiresConfirmation: merged.requiresConfirmation,
 			shouldUpload: !checkSnapshotEqual(merged.data, cloudSnapshot),
 		});
 	},

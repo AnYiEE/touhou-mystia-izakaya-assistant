@@ -42,6 +42,10 @@ import {
 	sanitizeAnnouncementHtml,
 } from './sanitize';
 import type { IAuditLogWriteInput } from '@/lib/account/server/repositories/auditLogs';
+import {
+	type TAuthenticatedSessionIdentity,
+	lockActiveUserSessionInTransaction,
+} from '@/lib/account/server/repositories/sessions';
 import type {
 	TAnnouncement,
 	TAnnouncementNew,
@@ -919,36 +923,70 @@ export async function restoreAdminAnnouncement(
 export async function dismissAnnouncementForUser(
 	announcementId: string,
 	announcementUpdatedAt: number,
-	userId: TUser['id']
-): Promise<TAnnouncementServiceResult<{ message: 'announcement-dismissed' }>> {
-	const announcement = await getAnnouncementById(announcementId);
-	if (announcement === null) {
-		return { error: 'announcement-not-found', status: 'error' };
-	}
-	if (
-		announcement.updated_at !== announcementUpdatedAt ||
-		announcement.dismissible !== 1
-	) {
-		return { error: 'announcement-not-visible', status: 'error' };
-	}
-	if (
-		getComputedAnnouncementStatus(announcement) !== 'active' ||
-		!checkAnnouncementMatchesRequestContext(announcement, {
-			isAuthenticated: true,
-			userId,
-		})
-	) {
-		return { error: 'announcement-not-visible', status: 'error' };
-	}
+	userId: TUser['id'],
+	session: TAuthenticatedSessionIdentity
+): Promise<
+	| TAnnouncementServiceResult<{ message: 'announcement-dismissed' }>
+	| { status: 'unauthorized' }
+> {
+	return runAnnouncementTransaction(async (database) => {
+		if (
+			!(await lockActiveUserSessionInTransaction(
+				database,
+				userId,
+				session
+			))
+		) {
+			return { status: 'unauthorized' as const };
+		}
 
-	await upsertAnnouncementDismissal({
-		announcement_id: announcement.id,
-		announcement_updated_at: announcement.updated_at,
-		dismissed_at: Date.now(),
-		user_id: userId,
+		const announcement = await getAnnouncementById(
+			announcementId,
+			database
+		);
+		if (announcement === null) {
+			return {
+				error: 'announcement-not-found' as const,
+				status: 'error' as const,
+			};
+		}
+		if (
+			announcement.updated_at !== announcementUpdatedAt ||
+			announcement.dismissible !== 1
+		) {
+			return {
+				error: 'announcement-not-visible' as const,
+				status: 'error' as const,
+			};
+		}
+		if (
+			getComputedAnnouncementStatus(announcement) !== 'active' ||
+			!checkAnnouncementMatchesRequestContext(announcement, {
+				isAuthenticated: true,
+				userId,
+			})
+		) {
+			return {
+				error: 'announcement-not-visible' as const,
+				status: 'error' as const,
+			};
+		}
+
+		await upsertAnnouncementDismissal(
+			{
+				announcement_id: announcement.id,
+				announcement_updated_at: announcement.updated_at,
+				dismissed_at: Date.now(),
+				user_id: userId,
+			},
+			database
+		);
+
+		return {
+			data: { message: 'announcement-dismissed' as const },
+			status: 'ok' as const,
+		};
 	});
-
-	return { data: { message: 'announcement-dismissed' }, status: 'ok' };
 }
 
 export async function listAdminAnnouncementVersions(

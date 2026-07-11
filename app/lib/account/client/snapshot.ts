@@ -1,11 +1,15 @@
+import { writeAccountSyncBaseSnapshot } from './baseSnapshot';
+import { createSnapshotHash } from './queue';
+import { checkAccountSyncResetWriteAllowed } from './resetGeneration';
+
+import { withApplyingRemoteState as runWithApplyingRemoteState } from './stateGuards';
 import {
 	ACCOUNT_STORAGE_KEY_MAP,
 	createAccountStorageKey,
 	readAccountJsonStorage,
+	removeAccountStorage,
 	writeAccountJsonStorage,
 } from './storage';
-import { createSnapshotHash } from './queue';
-import { withApplyingRemoteState as runWithApplyingRemoteState } from './stateGuards';
 import {
 	type IAccountSyncMeta,
 	type ISyncNamespaceSerializer,
@@ -14,6 +18,7 @@ import {
 	type TSyncNamespace,
 } from '@/lib/account/sync';
 import { accountStore } from '@/stores/account';
+import { withCrossTabLock } from '@/utilities/crossTabLock';
 import { customerNormalMealsSerializer } from '@/lib/account/sync/serializers/customerNormalMeals';
 import { customerRareMealsSerializer } from '@/lib/account/sync/serializers/customerRareMeals';
 import { customerRarePlansSerializer } from '@/lib/account/sync/serializers/customerRarePlans';
@@ -74,6 +79,33 @@ export function createLocalAccountSnapshot() {
 
 export function createAccountSyncMetaStorageKey(userId: string) {
 	return createAccountStorageKey(ACCOUNT_STORAGE_KEY_MAP.syncMeta, userId);
+}
+
+/** Only call after the server has permanently deleted this account. */
+export function removeAccountSyncMetaForAccountDeletion(userId: string) {
+	removeAccountStorage(createAccountSyncMetaStorageKey(userId));
+}
+
+export function withAccountSyncMetaTransitionLock<T>(
+	userId: string,
+	generationToken: string | null,
+	callback: () => Promise<T> | T
+) {
+	return withCrossTabLock(
+		`account-sync-meta-transition:${userId}`,
+		() => {
+			if (
+				!checkAccountSyncResetWriteAllowed({
+					expectedGeneration: generationToken,
+					userId,
+				})
+			) {
+				return null;
+			}
+			return callback();
+		},
+		{ fallbackTtl: 5 * 1000, ifAvailable: true }
+	);
 }
 
 function readStoredSyncMetaMap<T>(
@@ -151,20 +183,62 @@ export function readAccountSyncMeta(userId: string) {
 	return sanitizedMeta;
 }
 
-export function writeAccountSyncMeta(userId: string, meta: IAccountSyncMeta) {
+export function writeAccountSyncMeta(
+	userId: string,
+	meta: IAccountSyncMeta,
+	{
+		generationToken,
+		resetOperationId,
+		suppressRuntime = false,
+	}: {
+		generationToken: string | null;
+		resetOperationId?: string;
+		suppressRuntime?: boolean;
+	}
+) {
+	const checkGeneration = () =>
+		checkAccountSyncResetWriteAllowed({
+			expectedGeneration: generationToken,
+			...(resetOperationId === undefined ? {} : { resetOperationId }),
+			userId,
+		});
+	if (!checkGeneration()) {
+		throw new Error('account-sync-reset-generation-changed');
+	}
 	writeAccountJsonStorage(createAccountSyncMetaStorageKey(userId), meta);
-	if (accountStore.shared.user.get()?.id === userId) {
+	if (!checkGeneration()) {
+		throw new Error('account-sync-reset-generation-changed');
+	}
+	if (!suppressRuntime && accountStore.shared.user.get()?.id === userId) {
 		accountStore.shared.sync.meta.set(meta);
 	}
 }
 
+export function removeAccountSyncMetaIfCurrent(
+	userId: string,
+	generationToken: string | null
+) {
+	const checkGeneration = () =>
+		checkAccountSyncResetWriteAllowed({
+			expectedGeneration: generationToken,
+			userId,
+		});
+	if (!checkGeneration()) {
+		return false;
+	}
+	removeAccountStorage(createAccountSyncMetaStorageKey(userId));
+	return checkGeneration();
+}
+
 export function applyRemoteAccountRecords({
+	generationToken,
 	preserveNamespaces = [],
 	records,
 	replaceMeta = true,
 	stateEpoch,
 	userId,
 }: {
+	generationToken: string | null;
 	preserveNamespaces?: TSyncNamespace[];
 	records: ISyncStateRecord[];
 	replaceMeta?: boolean;
@@ -205,6 +279,7 @@ export function applyRemoteAccountRecords({
 					revisions: {},
 					state_epoch: stateEpoch,
 				};
+
 	if (records.length > 0) {
 		delete meta.clearedStateEpoch;
 	} else if (previousClearedStateEpoch !== undefined) {
@@ -252,6 +327,7 @@ export function applyRemoteAccountRecords({
 			record.serializer.getLocalSnapshot(),
 		])
 	);
+
 	function rollbackAppliedRecords() {
 		runWithApplyingRemoteState(() => {
 			preparedRecords.forEach((record) => {
@@ -268,7 +344,7 @@ export function applyRemoteAccountRecords({
 
 		if (previousMeta !== null) {
 			try {
-				writeAccountSyncMeta(userId, previousMeta);
+				writeAccountSyncMeta(userId, previousMeta, { generationToken });
 			} catch (writeError) {
 				console.warn(
 					'Failed to restore account sync meta after rollback.',
@@ -277,6 +353,7 @@ export function applyRemoteAccountRecords({
 			}
 		}
 	}
+
 	if (accountStore.shared.user.get()?.id !== currentUser.id) {
 		return meta;
 	}
@@ -291,6 +368,7 @@ export function applyRemoteAccountRecords({
 				appliedRecordCount += 1;
 			});
 		});
+
 		if (accountStore.shared.user.get()?.id !== currentUser.id) {
 			if (appliedRecordCount > 0) {
 				rollbackAppliedRecords();
@@ -298,7 +376,16 @@ export function applyRemoteAccountRecords({
 			return meta;
 		}
 
-		writeAccountSyncMeta(userId, meta);
+		writeAccountSyncMeta(userId, meta, { generationToken });
+		preparedRecords.forEach((record) => {
+			writeAccountSyncBaseSnapshot({
+				data: record.data,
+				generationToken,
+				namespace: record.namespace,
+				revision: record.revision,
+				userId,
+			});
+		});
 	} catch (error) {
 		if (appliedRecordCount > 0) {
 			rollbackAppliedRecords();

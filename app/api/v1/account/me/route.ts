@@ -64,14 +64,20 @@ export async function GET(request: NextRequest) {
 
 		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
 	}
-	const stateSnapshot = await userStateModule.getUserStateSnapshot(
-		auth.data.user.id
-	);
-	if (stateSnapshot === null) {
+	const stateSnapshot =
+		await userStateModule.getActiveUserStateSnapshotForSession({
+			namespaces: null,
+			session: {
+				id: auth.data.session.id,
+				token_hash: auth.data.session.token_hash,
+			},
+			userId: auth.data.user.id,
+		});
+	if (stateSnapshot.status === 'unauthorized') {
 		return createNoStoreErrorResponse('unauthorized', 401);
 	}
 
-	const revisions = stateSnapshot.state.reduce<Record<string, number>>(
+	const revisions = stateSnapshot.records.reduce<Record<string, number>>(
 		(result, namespace) => {
 			result[namespace.namespace] = namespace.revision;
 			return result;
@@ -84,9 +90,10 @@ export async function GET(request: NextRequest) {
 			auth.data.sessionTokenHash
 		),
 		featureEnabled: true,
-		has_password: auth.data.credential.password_set === 1,
+		has_password: stateSnapshot.credential.password_set === 1,
 		isLoggedIn: true,
-		password_must_change: auth.data.credential.password_must_change === 1,
+		password_must_change:
+			stateSnapshot.credential.password_must_change === 1,
 		state_epoch: stateSnapshot.user.state_epoch,
 		syncMeta: {
 			lastAppliedRemoteHash: {},

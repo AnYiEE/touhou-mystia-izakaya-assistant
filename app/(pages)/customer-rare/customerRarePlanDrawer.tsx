@@ -99,7 +99,11 @@ import {
 	pinyinSort,
 } from '@/utilities';
 import { resolveRecommendedCustomerRarePlanMealBatch } from '@/utils/customer/shared';
-import { normalizeCustomerRarePlanName } from '@/utils/customer/shared/customerRarePlanState';
+import {
+	checkCustomerRarePlansStateVirtual,
+	getDisplayedCustomerRarePlan,
+	normalizeCustomerRarePlanName,
+} from '@/utils/customer/shared/customerRarePlanState';
 
 const DRAWER_CONTENT_READY_DELAY = 360;
 const DRAWER_RECOMMENDED_MEAL_BATCH_SIZE = 1;
@@ -1221,10 +1225,11 @@ function CustomerGroup({
 }
 
 function CustomerRarePlanSummaryText() {
-	const activePlan = customerStore.activeCustomerRarePlan.use();
+	const plans = customerStore.persistence.plans.use();
+	const activePlan = getDisplayedCustomerRarePlan(plans);
 	const summary = customerStore.customerRarePlanSummary.use();
 
-	if (activePlan?.mealSource === 'recommended') {
+	if (activePlan.mealSource === 'recommended') {
 		return <>{summary.customerCount} 稀客 / 自动推荐</>;
 	}
 
@@ -1549,11 +1554,12 @@ export default function CustomerRarePlanDrawer() {
 	const isControlsCollapsed =
 		customerStore.shared.planDrawer.isControlsCollapsed.use();
 	const plans = customerStore.persistence.plans.use();
-	const activePlan = customerStore.activeCustomerRarePlan.use();
+	const activePlan = getDisplayedCustomerRarePlan(plans);
+	const isVirtualPlans = checkCustomerRarePlansStateVirtual(plans);
 	const availableCustomerNames = customerStore.availableCustomerNames.use();
 	const availableCustomerPlaces = customerStore.availableCustomerPlaces.use();
 	const [isShellOpen, setIsShellOpen] = useState(isStoreOpen);
-	const [draftName, setDraftName] = useState(activePlan?.name ?? '');
+	const [draftName, setDraftName] = useState(activePlan.name);
 	const [isContentReady, setIsContentReady] = useState(false);
 	const [isDeletePlanPopoverOpen, setIsDeletePlanPopoverOpen] =
 		useState(false);
@@ -1563,11 +1569,10 @@ export default function CustomerRarePlanDrawer() {
 		'auto'
 	);
 	const normalizedDraftName = normalizeCustomerRarePlanName(draftName);
-	const activePlanCustomerSort = activePlan?.customerSort ?? 'default';
-	const activePlanMealSource = activePlan?.mealSource ?? 'saved';
-	const activePlanMode = activePlan?.mode ?? 'region';
-	const isRenameDisabled =
-		activePlan === null || normalizedDraftName === activePlan.name;
+	const activePlanCustomerSort = activePlan.customerSort;
+	const activePlanMealSource = activePlan.mealSource;
+	const activePlanMode = activePlan.mode;
+	const isRenameDisabled = normalizedDraftName === activePlan.name;
 
 	const requestDrawerBusinessClose = useCallback(() => {
 		helpPopoverDismissLockedRef.current = false;
@@ -1604,8 +1609,8 @@ export default function CustomerRarePlanDrawer() {
 	}, []);
 
 	useEffect(() => {
-		setDraftName(activePlan?.name ?? '');
-	}, [activePlan?.id, activePlan?.name]);
+		setDraftName(activePlan.name);
+	}, [activePlan.id, activePlan.name]);
 
 	useEffect(() => {
 		if (!isShellOpen) {
@@ -1613,10 +1618,10 @@ export default function CustomerRarePlanDrawer() {
 			setIsHelpPopoverOpen(false);
 		}
 
-		if (!isShellOpen || activePlan === null) {
+		if (!isShellOpen || isVirtualPlans) {
 			setIsDeletePlanPopoverOpen(false);
 		}
-	}, [activePlan, isShellOpen]);
+	}, [isShellOpen, isVirtualPlans]);
 
 	useLayoutEffect(() => {
 		if (!isContentReady) {
@@ -1644,10 +1649,10 @@ export default function CustomerRarePlanDrawer() {
 			window.removeEventListener('resize', updateModePanelHeight);
 		};
 	}, [
-		activePlan?.excludes,
-		activePlan?.includes,
-		activePlan?.manualCustomers,
-		activePlan?.places,
+		activePlan.excludes,
+		activePlan.includes,
+		activePlan.manualCustomers,
+		activePlan.places,
 		activePlanMode,
 		isContentReady,
 	]);
@@ -1859,14 +1864,18 @@ export default function CustomerRarePlanDrawer() {
 	const handlePlanSelect = useCallback(
 		(selection: Selection) => {
 			const [planId] = selectionToValues<string>(selection);
-			if (planId === undefined || plans.activeId === planId) {
+			if (
+				isVirtualPlans ||
+				planId === undefined ||
+				activePlan.id === planId
+			) {
 				return;
 			}
 
 			vibrate();
 			customerStore.setActiveCustomerRarePlan(planId);
 		},
-		[plans.activeId, vibrate]
+		[activePlan.id, isVirtualPlans, vibrate]
 	);
 
 	const handleCreatePlan = useCallback(() => {
@@ -1875,31 +1884,32 @@ export default function CustomerRarePlanDrawer() {
 	}, [vibrate]);
 
 	const handleCopyPlan = useCallback(() => {
-		if (activePlan === null) {
+		if (isVirtualPlans) {
 			return;
 		}
 
 		vibrate();
 		customerStore.copyCustomerRarePlan(activePlan.id);
-	}, [activePlan, vibrate]);
+	}, [activePlan, isVirtualPlans, vibrate]);
 
 	const handleDeletePlan = useCallback(() => {
-		if (activePlan === null) {
+		if (isVirtualPlans) {
 			return;
 		}
 
 		vibrate();
 		customerStore.deleteCustomerRarePlan(activePlan.id);
-	}, [activePlan, vibrate]);
+	}, [activePlan, isVirtualPlans, vibrate]);
 
 	const handleDeletePlanPopoverOpenChange = useCallback(
 		(isOpen: boolean) => {
-			setIsDeletePlanPopoverOpen(activePlan !== null && isOpen);
-			if (activePlan !== null && isOpen) {
+			const canDelete = !isVirtualPlans;
+			setIsDeletePlanPopoverOpen(canDelete && isOpen);
+			if (canDelete && isOpen) {
 				vibrate();
 			}
 		},
-		[activePlan, vibrate]
+		[isVirtualPlans, vibrate]
 	);
 
 	const handleCancelDeletePlan = useCallback(() => {
@@ -1912,10 +1922,6 @@ export default function CustomerRarePlanDrawer() {
 	}, [handleDeletePlan]);
 
 	const handleRenamePlan = useCallback(() => {
-		if (activePlan === null) {
-			return;
-		}
-
 		vibrate();
 		customerStore.renameCustomerRarePlan(
 			activePlan.id,
@@ -1925,7 +1931,7 @@ export default function CustomerRarePlanDrawer() {
 
 	const handleMealSourceChange = useCallback(
 		(source: TCustomerRarePlanMealSource) => {
-			if (activePlan === null || activePlan.mealSource === source) {
+			if (activePlan.mealSource === source) {
 				return;
 			}
 
@@ -1937,7 +1943,7 @@ export default function CustomerRarePlanDrawer() {
 
 	const handleModeChange = useCallback(
 		(mode: TCustomerRarePlanMode) => {
-			if (activePlan === null || activePlan.mode === mode) {
+			if (activePlan.mode === mode) {
 				return;
 			}
 
@@ -1960,7 +1966,6 @@ export default function CustomerRarePlanDrawer() {
 				selectionToValues<TCustomerRarePlanCustomerSort>(selection);
 			if (
 				customerSort === undefined ||
-				activePlan === null ||
 				activePlan.customerSort === customerSort
 			) {
 				return;
@@ -1977,7 +1982,9 @@ export default function CustomerRarePlanDrawer() {
 		customerStore.toggleCustomerRarePlanControlsCollapsed();
 	}, [vibrate]);
 
-	const planOptions = plans.items.map(({ id, name }) => ({ id, name }));
+	const planOptions = isVirtualPlans
+		? [{ id: activePlan.id, name: activePlan.name }]
+		: plans.items.map(({ id, name }) => ({ id, name }));
 	const drawerPortalContainerProps = useMemo(
 		() =>
 			drawerPortalContainer === null
@@ -2201,8 +2208,7 @@ export default function CustomerRarePlanDrawer() {
 															)}
 														>
 															{isControlsCollapsed
-																? (activePlan?.name ??
-																	'营业预设')
+																? activePlan.name
 																: '预设管理'}
 														</p>
 														<p
@@ -2306,14 +2312,9 @@ export default function CustomerRarePlanDrawer() {
 																	isReducedMotion
 																}
 																label="当前预设"
-																selectedKeys={
-																	plans.activeId ===
-																	null
-																		? []
-																		: [
-																				plans.activeId,
-																			]
-																}
+																selectedKeys={[
+																	activePlan.id,
+																]}
 																size="sm"
 																onSelectionChange={
 																	handlePlanSelect
@@ -2379,8 +2380,7 @@ export default function CustomerRarePlanDrawer() {
 																		}
 																	)}
 																	isDisabled={
-																		activePlan ===
-																		null
+																		isVirtualPlans
 																	}
 																	onPress={
 																		handleCopyPlan
@@ -2420,8 +2420,7 @@ export default function CustomerRarePlanDrawer() {
 																				}
 																			)}
 																			isDisabled={
-																				activePlan ===
-																				null
+																				isVirtualPlans
 																			}
 																			startContent={
 																				<FontAwesomeIcon
@@ -2656,8 +2655,7 @@ export default function CustomerRarePlanDrawer() {
 																	}
 																	label="手动选择稀客"
 																	selectedKeys={
-																		activePlan?.manualCustomers ??
-																		[]
+																		activePlan.manualCustomers
 																	}
 																	selectionMode="multiple"
 																	size="sm"
@@ -2720,8 +2718,7 @@ export default function CustomerRarePlanDrawer() {
 																	}
 																	label="出没地区"
 																	selectedKeys={
-																		activePlan?.places ??
-																		[]
+																		activePlan.places
 																	}
 																	selectionMode="multiple"
 																	size="sm"
@@ -2767,8 +2764,7 @@ export default function CustomerRarePlanDrawer() {
 																	}
 																	label="额外包含"
 																	selectedKeys={
-																		activePlan?.includes ??
-																		[]
+																		activePlan.includes
 																	}
 																	selectionMode="multiple"
 																	size="sm"
@@ -2808,8 +2804,7 @@ export default function CustomerRarePlanDrawer() {
 																	}
 																	label="额外排除"
 																	selectedKeys={
-																		activePlan?.excludes ??
-																		[]
+																		activePlan.excludes
 																	}
 																	selectionMode="multiple"
 																	size="sm"

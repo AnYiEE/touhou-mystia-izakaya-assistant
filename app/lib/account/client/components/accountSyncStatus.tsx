@@ -21,7 +21,7 @@ import TimeAgo from '@/components/timeAgo';
 import { checkAccountSyncBroadcastSupported } from '@/lib/account/client/broadcast';
 import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
 import { readDirtyQueueEntries } from '@/lib/account/client/queue';
-import { flushAccountSyncQueue } from '@/lib/account/client/syncClient';
+import { retryAccountSyncQueue } from '@/lib/account/client/syncClient';
 import { SYNC_NAMESPACE_MAP, type TSyncNamespace } from '@/lib/account/sync';
 import { getLogSafeErrorCode } from '@/lib/logging';
 import { accountStore as store } from '@/stores/account';
@@ -62,16 +62,9 @@ export default memo<IProps>(function AccountSyncStatus() {
 	const storageMode = getSafeStorageMode();
 	const supportsNativeLock = checkCrossTabNativeLockSupported();
 	const supportsBroadcast = checkAccountSyncBroadcastSupported();
-	const dirtyEntries = useMemo(
-		() => (user === null ? [] : readDirtyQueueEntries(user.id)),
-		[user]
-	);
-	const dirtyEntryMap = useMemo(
-		() =>
-			new Map(
-				dirtyEntries.map((entry) => [entry.namespace, entry] as const)
-			),
-		[dirtyEntries]
+	const dirtyEntries = user === null ? [] : readDirtyQueueEntries(user.id);
+	const dirtyEntryMap = new Map(
+		dirtyEntries.map((entry) => [entry.namespace, entry] as const)
 	);
 	const conflictNamespaceSet = useMemo(
 		() =>
@@ -106,7 +99,7 @@ export default memo<IProps>(function AccountSyncStatus() {
 			'Account Sync Button',
 			'Manual Sync'
 		);
-		void flushAccountSyncQueue().catch((error: unknown) => {
+		void retryAccountSyncQueue().catch((error: unknown) => {
 			console.warn('Manual account sync failed.', {
 				errorCode: getLogSafeErrorCode(error),
 			});
@@ -285,24 +278,40 @@ export default memo<IProps>(function AccountSyncStatus() {
 					<div className="space-y-2">
 						{syncNamespaces.map((namespace) => {
 							const dirtyEntry = dirtyEntryMap.get(namespace);
+							const terminalError =
+								dirtyEntry?.lastError ===
+									'sync-account-capacity-exceeded' ||
+								dirtyEntry?.lastError ===
+									'sync-request-too-large'
+									? dirtyEntry.lastError
+									: null;
 							const hasNamespaceConflict =
 								conflictNamespaceSet.has(namespace) ||
 								dirtyEntry?.paused === 'conflict';
 							const statusLabel = hasNamespaceConflict
 								? '冲突待处理'
-								: dirtyEntry === undefined
-									? '已同步'
-									: '待上传';
+								: terminalError ===
+									  'sync-account-capacity-exceeded'
+									? '容量超限'
+									: terminalError === 'sync-request-too-large'
+										? '请求过大'
+										: dirtyEntry === undefined
+											? '已同步'
+											: '待上传';
 							const statusClassName = hasNamespaceConflict
 								? 'bg-warning/10 text-warning-700 dark:text-warning'
-								: dirtyEntry === undefined
-									? 'bg-default-100 text-foreground-500 dark:bg-default-50/20'
-									: 'bg-primary/10 text-primary-700 dark:text-primary';
+								: terminalError === null
+									? dirtyEntry === undefined
+										? 'bg-default-100 text-foreground-500 dark:bg-default-50/20'
+										: 'bg-primary/10 text-primary-700 dark:text-primary'
+									: 'bg-danger/10 text-danger-700 dark:text-danger';
 							const rowClassName = hasNamespaceConflict
 								? 'border-warning/40 bg-warning/5'
-								: dirtyEntry === undefined
-									? 'border-default-200 bg-default-50/40'
-									: 'border-primary/30 bg-primary/5';
+								: terminalError === null
+									? dirtyEntry === undefined
+										? 'border-default-200 bg-default-50/40'
+										: 'border-primary/30 bg-primary/5'
+									: 'border-danger/40 bg-danger/5';
 							return (
 								<div
 									key={namespace}

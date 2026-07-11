@@ -1,4 +1,6 @@
+import { publishAccountRuntimeInvalidation } from './accountRuntimeInvalidation';
 import { AccountApiError, fetchAccountMe, importBackupCode } from './api';
+import { readAccountSyncResetGeneration } from './resetGeneration';
 import {
 	type IAuthLoginSuccessResponse,
 	type TAccountMeResponse,
@@ -11,12 +13,41 @@ import {
 	takeOverLocalAccountData,
 } from './syncClient';
 import { withAccountSyncPaused } from './stateGuards';
+import { withAccountSyncOperationLease } from './syncOperationLease';
+import { clearAccountSyncRuntimeConflicts } from './syncRuntimeState';
 import { accountStore, globalStore } from '@/stores';
 
 let accountStateRequestGeneration = 0;
+let activeAccountStateRefresh: Promise<TAccountMeResponse | null> | null = null;
+let accountStateRefreshPending = false;
+let activePostLoginBootstrap: {
+	promise: Promise<boolean>;
+	userId: string;
+} | null = null;
+let completedPostLoginBootstrapUserId: string | null = null;
+
+function requestAccountStateTrailingRefresh() {
+	accountStateRefreshPending = true;
+}
+
+function consumeAccountStateTrailingRefreshRequest() {
+	accountStateRefreshPending = false;
+}
+
+function checkAccountStateTrailingRefreshRequested() {
+	return accountStateRefreshPending;
+}
+
+function resetPostLoginBootstrapState() {
+	activePostLoginBootstrap = null;
+	completedPostLoginBootstrapUserId = null;
+}
 
 export function advanceAccountStateRequestGeneration() {
 	accountStateRequestGeneration += 1;
+	if (activeAccountStateRefresh !== null) {
+		requestAccountStateTrailingRefresh();
+	}
 
 	return accountStateRequestGeneration;
 }
@@ -31,7 +62,7 @@ export function invalidateAccountStateRequests() {
 
 export function resetAccountSyncRuntime() {
 	accountStore.shared.sync.canRetry.set(false);
-	accountStore.shared.sync.conflicts.set([]);
+	clearAccountSyncRuntimeConflicts();
 	accountStore.shared.sync.failedAttempts.set(0);
 	accountStore.shared.sync.isSyncing.set(false);
 	accountStore.shared.sync.lastError.set(null);
@@ -40,7 +71,22 @@ export function resetAccountSyncRuntime() {
 	accountStore.shared.sync.pendingCount.set(0);
 }
 
+function checkRestoredAccountSyncCanBootstrap(user: {
+	id: string;
+	state_epoch: number;
+}) {
+	const resetGeneration = readAccountSyncResetGeneration(user.id);
+	if (resetGeneration.status !== 'current') {
+		return true;
+	}
+	return (
+		resetGeneration.marker.phase !== 'deleted' ||
+		user.state_epoch > resetGeneration.marker.state_epoch
+	);
+}
+
 export function resetAccountState() {
+	resetPostLoginBootstrapState();
 	invalidateAccountStateRequests();
 	invalidateAccountSyncClientRuns();
 	resetAccountSyncRuntime();
@@ -48,7 +94,7 @@ export function resetAccountState() {
 	accountStore.shared.csrfToken.set(null);
 	accountStore.shared.hasPassword.set(false);
 	accountStore.shared.isLoggedIn.set(false);
-	accountStore.shared.passwordMustChange.set(false);
+	accountStore.setPasswordMustChange(false);
 	accountStore.shared.sessionInitialData.set(null);
 	accountStore.shared.ssoGrantInitialData.set(null);
 	accountStore.shared.sync.meta.set(null);
@@ -86,6 +132,53 @@ export function resetAccountStateIfCurrent(
 	return true;
 }
 
+export function resetAccountStateAfterSessionExpired({
+	expectedCsrfToken,
+	expectedUserId,
+	stateEpoch,
+}: {
+	expectedCsrfToken: string | null;
+	expectedUserId: string;
+	stateEpoch: number;
+}) {
+	const expectedAuthContext = { expectedCsrfToken, expectedUserId };
+	if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
+		return false;
+	}
+
+	void publishAccountRuntimeInvalidation({
+		reason: 'session-expired',
+		stateEpoch,
+		userId: expectedUserId,
+	});
+
+	return resetAccountStateIfCurrent(expectedAuthContext);
+}
+
+export function resetAccountStateForUnauthorizedError(
+	error: unknown,
+	context: Parameters<typeof checkCurrentAccountAuthContext>[0] = {}
+) {
+	if (!(error instanceof AccountApiError) || error.status !== 401) {
+		return false;
+	}
+
+	const user = accountStore.shared.user.get();
+	if (user === null) {
+		resetAccountStateIfCurrent(context);
+		return true;
+	}
+
+	resetAccountStateAfterSessionExpired({
+		expectedCsrfToken:
+			context.expectedCsrfToken ?? accountStore.shared.csrfToken.get(),
+		expectedUserId: context.expectedUserId ?? user.id,
+		stateEpoch: user.state_epoch,
+	});
+
+	return true;
+}
+
 export function applyAccountAuthSuccessResponse(
 	data: IAuthLoginSuccessResponse,
 	options: {
@@ -97,11 +190,16 @@ export function applyAccountAuthSuccessResponse(
 	if (!checkCurrentAccountAuthContext(options)) {
 		return false;
 	}
+	const canUseAccountSync = checkRestoredAccountSyncCanBootstrap(data.user);
 
 	advanceAccountStateRequestGeneration();
 	invalidateAccountSyncClientRuns();
 	const previousUser = currentUser;
-	if (previousUser?.id !== data.user.id) {
+	if (
+		previousUser?.id !== data.user.id ||
+		previousUser.state_epoch !== data.user.state_epoch
+	) {
+		resetPostLoginBootstrapState();
 		resetAccountSyncRuntime();
 	}
 
@@ -110,26 +208,33 @@ export function applyAccountAuthSuccessResponse(
 	accountStore.shared.hasPassword.set(data.has_password);
 	accountStore.shared.isBootstrapped.set(true);
 	accountStore.shared.isLoggedIn.set(true);
-	accountStore.shared.passwordMustChange.set(data.password_must_change);
 	accountStore.shared.sync.lastError.set(null);
 	accountStore.shared.sync.meta.set(readAccountSyncMeta(data.user.id));
 	accountStore.shared.user.set(data.user);
+	accountStore.setPasswordMustChange(data.password_must_change);
 	restoreAccountSyncRuntimeState(data.user.id);
+	if (!canUseAccountSync) {
+		accountStore.shared.sync.lastError.set(
+			'sync-account-restore-incomplete'
+		);
+		accountStore.shared.sync.lastResult.set('failed');
+	}
 
 	return true;
 }
 
 export async function importPendingLegacyBackupCode(
 	csrfToken: string,
-	checkCurrentRequest = () => true
+	checkCurrentRequest = () => true,
+	userId?: string
 ) {
 	const cloudCode = globalStore.persistence.cloudCode.get();
 	const normalizedCode = cloudCode?.trim() ?? '';
+
 	if (normalizedCode === '') {
 		if (cloudCode !== null && checkCurrentRequest()) {
 			globalStore.persistence.cloudCode.set(null);
 		}
-
 		return false;
 	}
 
@@ -138,7 +243,17 @@ export async function importPendingLegacyBackupCode(
 			return false;
 		}
 
-		await importBackupCode(normalizedCode, csrfToken);
+		const result =
+			userId === undefined
+				? await importBackupCode(normalizedCode, csrfToken)
+				: await withAccountSyncOperationLease(
+						userId,
+						'import-backup',
+						() => importBackupCode(normalizedCode, csrfToken)
+					);
+		if (result === null) {
+			throw new Error('backup-code-lock-lost');
+		}
 		if (!checkCurrentRequest()) {
 			return false;
 		}
@@ -170,7 +285,7 @@ export async function completeAccountPostLoginBootstrap({
 	userId: string | null;
 }) {
 	if (userId === null || csrfToken === null || passwordMustChange) {
-		return;
+		return false;
 	}
 
 	const checkCurrentRequest = () =>
@@ -190,7 +305,8 @@ export async function completeAccountPostLoginBootstrap({
 			didImportPendingLegacyBackupCode =
 				await importPendingLegacyBackupCode(
 					csrfToken,
-					checkCurrentRequest
+					checkCurrentRequest,
+					userId
 				);
 		} catch (error) {
 			if (checkCurrentRequest()) {
@@ -229,13 +345,59 @@ export async function completeAccountPostLoginBootstrap({
 	if (checkCurrentRequest()) {
 		scheduleAccountSyncFlush();
 	}
+
+	return didTakeOverLocalAccountData;
 }
 
-export async function refreshAccountState() {
-	const generation = advanceAccountStateRequestGeneration();
+function ensureAccountPostLoginBootstrap(options: {
+	csrfToken: string;
+	generation: number;
+	passwordMustChange: false;
+	userId: string;
+}) {
+	if (completedPostLoginBootstrapUserId === options.userId) {
+		return Promise.resolve(true);
+	}
+	if (activePostLoginBootstrap?.userId === options.userId) {
+		return activePostLoginBootstrap.promise;
+	}
+
+	const promise = completeAccountPostLoginBootstrap(options).then(
+		(didComplete) => {
+			if (
+				didComplete &&
+				checkCurrentAccountStateRequest(options.generation) &&
+				checkCurrentAccountAuthContext({
+					expectedCsrfToken: options.csrfToken,
+					expectedUserId: options.userId,
+				})
+			) {
+				completedPostLoginBootstrapUserId = options.userId;
+			}
+
+			return didComplete;
+		}
+	);
+
+	activePostLoginBootstrap = { promise, userId: options.userId };
+
+	const clearActiveBootstrap = () => {
+		if (activePostLoginBootstrap?.promise === promise) {
+			activePostLoginBootstrap = null;
+		}
+	};
+
+	void promise.then(clearActiveBootstrap, clearActiveBootstrap);
+
+	return promise;
+}
+
+async function runAccountStateRefresh() {
+	const generation = ++accountStateRequestGeneration;
 	const previousUser = accountStore.shared.user.get();
 	const previousCsrfToken = accountStore.shared.csrfToken.get();
 	let result: TAccountMeResponse;
+
 	try {
 		const accountMeResult = await fetchAccountMe();
 		if (accountMeResult.status === 'error') {
@@ -254,12 +416,12 @@ export async function refreshAccountState() {
 		if (!checkCurrentAccountStateRequest(generation)) {
 			return null;
 		}
-
 		throw error;
 	}
 	if (!checkCurrentAccountStateRequest(generation)) {
 		return null;
 	}
+
 	const {
 		csrf_token: csrfToken,
 		has_password: hasPassword,
@@ -272,6 +434,7 @@ export async function refreshAccountState() {
 	let accountCsrfToken: string | null = null;
 	let accountPasswordMustChange = false;
 	let accountHasPassword = false;
+
 	if (responseIsLoggedIn) {
 		accountUser = user;
 		accountCsrfToken = csrfToken;
@@ -281,15 +444,27 @@ export async function refreshAccountState() {
 
 	const isLoggedIn = accountUser !== null;
 	const accountSyncMeta = syncMeta;
+	const canUseAccountSync =
+		accountUser === null ||
+		checkRestoredAccountSyncCanBootstrap(accountUser);
+
 	if (
 		previousUser?.id !== accountUser?.id ||
 		previousCsrfToken !== accountCsrfToken
 	) {
 		invalidateAccountSyncClientRuns();
 	}
-	if (previousUser?.id !== accountUser?.id) {
+
+	if (
+		previousUser?.id !== accountUser?.id ||
+		(previousUser !== null &&
+			accountUser !== null &&
+			previousUser.state_epoch !== accountUser.state_epoch)
+	) {
+		resetPostLoginBootstrapState();
 		resetAccountSyncRuntime();
 	}
+
 	accountStore.shared.bootstrapStatus.set(
 		isLoggedIn ? 'loggedIn' : 'anonymous'
 	);
@@ -297,7 +472,6 @@ export async function refreshAccountState() {
 	accountStore.shared.hasPassword.set(accountHasPassword);
 	accountStore.shared.isBootstrapped.set(true);
 	accountStore.shared.isLoggedIn.set(isLoggedIn);
-	accountStore.shared.passwordMustChange.set(accountPasswordMustChange);
 	accountStore.shared.sync.lastError.set(null);
 	accountStore.shared.sync.meta.set(
 		accountUser === null
@@ -305,16 +479,69 @@ export async function refreshAccountState() {
 			: (readAccountSyncMeta(accountUser.id) ?? accountSyncMeta)
 	);
 	accountStore.shared.user.set(accountUser);
-	if (accountUser !== null) {
+	accountStore.setPasswordMustChange(accountPasswordMustChange);
+
+	if (accountUser !== null && canUseAccountSync) {
 		restoreAccountSyncRuntimeState(accountUser.id);
+	} else if (accountUser !== null) {
+		accountStore.shared.sync.lastError.set(
+			'sync-account-restore-incomplete'
+		);
+		accountStore.shared.sync.lastResult.set('failed');
 	}
 
-	await completeAccountPostLoginBootstrap({
-		csrfToken: accountCsrfToken,
-		generation,
-		passwordMustChange: accountPasswordMustChange,
-		userId: accountUser?.id ?? null,
-	});
+	if (
+		accountUser !== null &&
+		accountCsrfToken !== null &&
+		!accountPasswordMustChange &&
+		canUseAccountSync
+	) {
+		await ensureAccountPostLoginBootstrap({
+			csrfToken: accountCsrfToken,
+			generation,
+			passwordMustChange: false,
+			userId: accountUser.id,
+		});
+	}
 
 	return result;
+}
+
+export function refreshAccountState() {
+	if (activeAccountStateRefresh !== null) {
+		return activeAccountStateRefresh;
+	}
+
+	const promise = (async () => {
+		let result: TAccountMeResponse | null = null;
+		do {
+			consumeAccountStateTrailingRefreshRequest();
+			try {
+				result = await runAccountStateRefresh();
+			} catch (error) {
+				if (!checkAccountStateTrailingRefreshRequested()) {
+					throw error;
+				}
+			}
+		} while (checkAccountStateTrailingRefreshRequested());
+
+		return result;
+	})().finally(() => {
+		if (activeAccountStateRefresh === promise) {
+			activeAccountStateRefresh = null;
+		}
+	});
+
+	activeAccountStateRefresh = promise;
+
+	return promise;
+}
+
+export function refreshAccountStateFromInvalidation() {
+	if (activeAccountStateRefresh !== null) {
+		advanceAccountStateRequestGeneration();
+		return activeAccountStateRefresh;
+	}
+
+	return refreshAccountState();
 }

@@ -9,6 +9,7 @@ import {
 	copyArray,
 	memoize,
 } from '@/utilities';
+import { getSafeStorageMode } from '@/utilities/safeStorage';
 
 type TPlainObject = Record<string, unknown>;
 
@@ -171,7 +172,7 @@ function postStoreBroadcastMessage(
 	channel: BroadcastChannel<unknown> | null,
 	message: unknown
 ) {
-	if (channel === null) {
+	if (channel === null || getSafeStorageMode() !== 'local') {
 		return;
 	}
 
@@ -193,7 +194,11 @@ function subscribeStoreBroadcastMessage(
 	}
 
 	try {
-		channel.addEventListener('message', callback);
+		channel.addEventListener('message', (message) => {
+			if (getSafeStorageMode() === 'local') {
+				callback(message);
+			}
+		});
 	} catch (error) {
 		console.warn('Store broadcast subscription failed.', error);
 	}

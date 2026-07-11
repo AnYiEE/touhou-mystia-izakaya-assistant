@@ -139,25 +139,19 @@ export default async function SsoAuthorizePage({
 
 			return <SsoAuthorizeMessage status="invalid" />;
 		}
-		if (auth.data.credential.password_must_change === 1) {
-			const accountInitialData =
-				await createAccountMeInitialDataForAuthenticatedRequest({
-					hasPassword: auth.data.credential.password_set === 1,
-					sessionTokenHash: auth.data.sessionTokenHash,
-					userId: auth.data.user.id,
-				});
-			if (accountInitialData === null) {
-				return <SsoAuthorizeMessage status="invalid" />;
-			}
-
+		const accountInitialData =
+			await createAccountMeInitialDataForAuthenticatedRequest({
+				sessionId: auth.data.session.id,
+				sessionTokenHash: auth.data.sessionTokenHash,
+				userId: auth.data.user.id,
+			});
+		if (accountInitialData === null) {
+			return <SsoAuthorizeMessage status="invalid" />;
+		}
+		if (accountInitialData.password_must_change) {
 			return (
 				<>
-					<AccountInitialStateHydrator
-						data={{
-							...accountInitialData,
-							password_must_change: true,
-						}}
-					/>
+					<AccountInitialStateHydrator data={accountInitialData} />
 					<SsoAuthorizePasswordChangeRequired />
 				</>
 			);
@@ -177,14 +171,11 @@ export default async function SsoAuthorizePage({
 		}
 
 		const accountSsoGrantInitialData =
-			await createAccountSsoGrantInitialDataForUser(auth.data.user.id);
-		const accountInitialData =
-			await createAccountMeInitialDataForAuthenticatedRequest({
-				hasPassword: auth.data.credential.password_set === 1,
-				sessionTokenHash: auth.data.sessionTokenHash,
-				userId: auth.data.user.id,
+			await createAccountSsoGrantInitialDataForUser(auth.data.user.id, {
+				id: auth.data.session.id,
+				token_hash: auth.data.sessionTokenHash,
 			});
-		if (accountInitialData === null) {
+		if (accountSsoGrantInitialData === null) {
 			return <SsoAuthorizeMessage status="invalid" />;
 		}
 
