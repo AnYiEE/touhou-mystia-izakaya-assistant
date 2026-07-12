@@ -980,6 +980,7 @@ export async function reconcileAccountSyncPausedConflictLocalChange({
 			const { baseRevision, conflict } = entry;
 			if (checkAccountSyncOperationActive(userId)) {
 				const nextConflict = { ...conflict, local, merged: null };
+				delete nextConflict.automaticResolution;
 				const nextEntry = updatePausedConflictEntryIfCurrent({
 					conflict: nextConflict,
 					data: local,

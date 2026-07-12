@@ -135,6 +135,11 @@ function checkDirtyQueueConflict(
 ): value is ISyncConflictItem {
 	return (
 		isPlainObject(value) &&
+		(value['automaticResolution'] === undefined ||
+			(value['localCollision'] === undefined &&
+				(value['automaticResolution'] === 'cloud' ||
+					(value['automaticResolution'] === 'merged' &&
+						value['merged'] !== null)))) &&
 		'cloud' in value &&
 		'local' in value &&
 		'merged' in value &&

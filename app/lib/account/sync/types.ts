@@ -99,6 +99,7 @@ export interface IAccountSyncBaseSnapshot {
 }
 
 export interface ISyncConflictItem<T = unknown> {
+	automaticResolution?: 'cloud' | 'merged';
 	cloud: T;
 	local: T;
 	localCollision?: {

@@ -46,8 +46,7 @@ function checkCurrentSyncUser(userId: string) {
 function reconcileConflictBlocker(userId: string) {
 	const hasConflict =
 		checkCurrentSyncUser(userId) &&
-		(store.shared.sync.autoResolvingNamespaces.get().length > 0 ||
-			store.shared.sync.hasIsolatedState.get() ||
+		(store.shared.sync.hasIsolatedState.get() ||
 			store.shared.sync.remoteConflictNamespaces.get().length > 0 ||
 			store.shared.sync.conflicts
 				.get()
@@ -64,7 +63,6 @@ function reconcileAccountSyncConflictLastError(
 	}
 
 	const hasConflict =
-		store.shared.sync.autoResolvingNamespaces.get().length > 0 ||
 		store.shared.sync.remoteConflictNamespaces.get().length > 0 ||
 		store.shared.sync.conflicts
 			.get()
@@ -297,33 +295,15 @@ export function replaceAccountSyncConflicts(
 	}
 
 	store.shared.sync.conflicts.set(
-		conflicts.filter((conflict) => conflict.userId === userId)
+		conflicts.filter(
+			(conflict) =>
+				conflict.userId === userId &&
+				conflict.automaticResolution === undefined
+		)
 	);
 
 	reconcileAccountSyncConflictLastError(userId);
 	reconcileConflictBlocker(userId);
-
-	return true;
-}
-
-export function upsertAccountSyncConflict(conflict: ISyncConflictItem) {
-	if (!checkCurrentSyncUser(conflict.userId)) {
-		return false;
-	}
-
-	store.shared.sync.conflicts.set([
-		...store.shared.sync.conflicts
-			.get()
-			.filter(
-				(item) =>
-					item.userId !== conflict.userId ||
-					item.namespace !== conflict.namespace
-			),
-		conflict,
-	]);
-
-	reconcileAccountSyncConflictLastError(conflict.userId);
-	reconcileConflictBlocker(conflict.userId);
 
 	return true;
 }
@@ -348,6 +328,31 @@ export function removeAccountSyncConflict(
 
 	reconcileAccountSyncConflictLastError(userId);
 	reconcileConflictBlocker(userId);
+
+	return true;
+}
+
+export function upsertAccountSyncConflict(conflict: ISyncConflictItem) {
+	if (!checkCurrentSyncUser(conflict.userId)) {
+		return false;
+	}
+	if (conflict.automaticResolution !== undefined) {
+		return removeAccountSyncConflict(conflict.userId, conflict.namespace);
+	}
+
+	store.shared.sync.conflicts.set([
+		...store.shared.sync.conflicts
+			.get()
+			.filter(
+				(item) =>
+					item.userId !== conflict.userId ||
+					item.namespace !== conflict.namespace
+			),
+		conflict,
+	]);
+
+	reconcileAccountSyncConflictLastError(conflict.userId);
+	reconcileConflictBlocker(conflict.userId);
 
 	return true;
 }

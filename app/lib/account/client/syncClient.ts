@@ -57,6 +57,7 @@ import {
 	recordAccountSyncDirtyQueueExternalMutation,
 	removeDirtyQueueEntryIfCurrent,
 	setDirtyQueueEntryError,
+	updatePausedConflictEntryIfCurrent,
 	writeDirtyQueueEntryIfCurrent,
 	writeDirtyQueueNullTombstoneIfCurrent,
 } from './queue';
@@ -116,6 +117,7 @@ import {
 import {
 	checkSnapshotEqual,
 	checkSyncMergeCanApplyAutomatically,
+	getSyncMergeAutomaticResolution,
 } from '@/lib/account/sync/serializers/utils';
 import { SEND_BEACON_SYNC_BODY_BYTES } from '@/lib/account/shared/requestLimits';
 import {
@@ -134,6 +136,7 @@ const LEASE_BUSY_RETRY_DELAY = QUIET_FLUSH_DELAY;
 const EXPLICIT_FLUSH_MAX_PASSES = 8;
 const MAX_RATE_LIMIT_RETRY_DELAY = 5 * 60 * 1000;
 const CONFLICT_HEARTBEAT_INTERVAL = 5 * 1000;
+const AUTOMATIC_CONFLICT_REVEAL_DELAY = 5 * 1000;
 const REMOTE_CONFLICT_NOTICE_REASONS: ReadonlySet<
 	IAccountSyncBroadcastMessage['runtimeReason']
 > = new Set(['conflict-changed', 'conflict-created', 'conflict-heartbeat']);
@@ -1038,6 +1041,129 @@ function getInteractionCountOnlyCloudConflict(
 	};
 }
 
+function checkConflictSnapshotsEqual(
+	left: ISyncConflictItem | null,
+	right: ISyncConflictItem
+) {
+	return (
+		left !== null &&
+		left.revision === right.revision &&
+		createSnapshotHash(left.cloud) === createSnapshotHash(right.cloud) &&
+		createSnapshotHash(left.local) === createSnapshotHash(right.local) &&
+		createSnapshotHash(left.merged) === createSnapshotHash(right.merged)
+	);
+}
+
+function exposeAutomaticConflictForUser(
+	conflict: ISyncConflictItem,
+	userId: string
+) {
+	const visibleConflict = { ...conflict };
+	delete visibleConflict.automaticResolution;
+	const entry = readDirtyQueueEntry(userId, conflict.namespace);
+	if (
+		entry?.paused !== 'conflict' ||
+		entry.conflict === null ||
+		(entry.conflict.automaticResolution !== undefined &&
+			entry.conflict.automaticResolution !==
+				conflict.automaticResolution) ||
+		!checkConflictSnapshotsEqual(entry.conflict, conflict)
+	) {
+		return false;
+	}
+	let mutationId = entry.clientMutationId;
+	if (
+		entry.conflict.automaticResolution !== undefined &&
+		readAccountSyncConflictResolutionJournal(userId, conflict.namespace) ===
+			null
+	) {
+		const nextEntry = updatePausedConflictEntryIfCurrent({
+			conflict: visibleConflict,
+			data: entry.data,
+			expectedEntry: entry,
+			generationToken: captureAccountSyncResetGeneration(userId),
+			userId,
+		});
+		if (nextEntry === null) {
+			return false;
+		}
+		mutationId = nextEntry.clientMutationId;
+	}
+	upsertAccountSyncConflict(visibleConflict);
+	const user = accountStore.shared.user.get();
+	if (user?.id === userId) {
+		void postAccountSyncBroadcastMessage({
+			namespaces: [conflict.namespace],
+			operationId: createAccountClientId(),
+			runtimeMutationId: mutationId,
+			runtimeReason: 'conflict-created',
+			state_epoch: user.state_epoch,
+			tabId,
+			type: 'dirty',
+			userId,
+		});
+	}
+	return true;
+}
+
+function tryResolveStoredAutomaticConflict(
+	conflict: ISyncConflictItem,
+	userId: string,
+	generationToken?: string | null
+) {
+	const resolution = conflict.automaticResolution;
+	if (resolution === undefined) {
+		return false;
+	}
+	if (checkAccountSyncAutoResolutionActive(userId, conflict.namespace)) {
+		return true;
+	}
+	if (!beginAccountSyncAutoResolution(userId, conflict.namespace)) {
+		return false;
+	}
+
+	void resolveAccountSyncConflict({
+		conflict,
+		...(generationToken === undefined ? {} : { generationToken }),
+		resolution,
+		userId,
+	})
+		.then((didResolve) => {
+			if (didResolve) {
+				if (resolution === 'merged') {
+					// eslint-disable-next-line @typescript-eslint/no-use-before-define
+					scheduleAccountSyncFlush();
+				}
+				return;
+			}
+			if (!checkCurrentAccountUser(userId)) {
+				return;
+			}
+			setTimeout(() => {
+				if (checkCurrentAccountUser(userId)) {
+					exposeAutomaticConflictForUser(conflict, userId);
+				}
+			}, AUTOMATIC_CONFLICT_REVEAL_DELAY);
+		})
+		.catch((error: unknown) => {
+			if (!checkCurrentAccountUser(userId)) {
+				return;
+			}
+			console.warn('Failed to apply automatic account sync resolution.', {
+				errorCode: getLogSafeErrorCode(error),
+			});
+			accountStore.shared.sync.lastError.set(
+				'conflict-auto-resolution-failed'
+			);
+			exposeAutomaticConflictForUser(conflict, userId);
+		})
+		.finally(() => {
+			endAccountSyncAutoResolution(userId, conflict.namespace);
+		});
+
+	return true;
+}
+
 function tryResolveInteractionCountOnlyConflict(
 	conflict: ISyncConflictItem,
 	userId: string
@@ -1046,41 +1172,10 @@ function tryResolveInteractionCountOnlyConflict(
 	if (cloudConflict === null) {
 		return false;
 	}
-	if (checkAccountSyncAutoResolutionActive(userId, cloudConflict.namespace)) {
-		return true;
-	}
-	if (!beginAccountSyncAutoResolution(userId, cloudConflict.namespace)) {
-		return false;
-	}
-
-	void resolveAccountSyncConflict({
-		conflict: cloudConflict,
-		resolution: 'cloud',
-		userId,
-	})
-		.then((didResolve) => {
-			if (!didResolve && checkCurrentAccountUser(userId)) {
-				upsertAccountSyncConflict(cloudConflict);
-			}
-		})
-		.catch((error: unknown) => {
-			if (!checkCurrentAccountUser(userId)) {
-				return;
-			}
-			console.warn(
-				'Failed to auto-resolve interactionCount-only account sync conflict.',
-				{ errorCode: getLogSafeErrorCode(error) }
-			);
-			accountStore.shared.sync.lastError.set(
-				'conflict-auto-resolution-failed'
-			);
-			upsertAccountSyncConflict(cloudConflict);
-		})
-		.finally(() => {
-			endAccountSyncAutoResolution(userId, cloudConflict.namespace);
-		});
-
-	return true;
+	return tryResolveStoredAutomaticConflict(
+		{ ...cloudConflict, automaticResolution: 'cloud' },
+		userId
+	);
 }
 
 function normalizeRestoredAccountSyncConflict(conflict: ISyncConflictItem) {
@@ -1101,6 +1196,9 @@ function restoreAccountSyncConflict(
 	conflict: ISyncConflictItem,
 	userId: string
 ) {
+	if (tryResolveStoredAutomaticConflict(conflict, userId)) {
+		return null;
+	}
 	if (tryResolveInteractionCountOnlyConflict(conflict, userId)) {
 		return null;
 	}
@@ -1164,19 +1262,6 @@ function mergeConflictFromDirtyEntry({
 	return { cloud, conflict, mergeResult, serializer };
 }
 
-function checkConflictSnapshotsEqual(
-	left: ISyncConflictItem | null,
-	right: ISyncConflictItem
-) {
-	return (
-		left !== null &&
-		left.revision === right.revision &&
-		createSnapshotHash(left.cloud) === createSnapshotHash(right.cloud) &&
-		createSnapshotHash(left.local) === createSnapshotHash(right.local) &&
-		createSnapshotHash(left.merged) === createSnapshotHash(right.merged)
-	);
-}
-
 function pauseDirtyEntryWithConflict({
 	allowMissing = false,
 	conflict,
@@ -1203,6 +1288,8 @@ function pauseDirtyEntryWithConflict({
 	const entryToPause = currentEntry ?? entry;
 	const hasConflictChanged =
 		entryToPause.paused !== 'conflict' ||
+		entryToPause.conflict?.automaticResolution !==
+			conflict.automaticResolution ||
 		!checkConflictSnapshotsEqual(entryToPause.conflict, conflict);
 	const nextEntry = {
 		...entryToPause,
@@ -1234,7 +1321,10 @@ function pauseDirtyEntryWithConflict({
 			namespaces: [entry.namespace],
 			operationId: createAccountClientId(),
 			runtimeMutationId: nextEntry.clientMutationId,
-			runtimeReason: 'conflict-created',
+			runtimeReason:
+				conflict.automaticResolution === undefined
+					? 'conflict-created'
+					: 'queue-changed',
 			state_epoch: user.state_epoch,
 			tabId,
 			type: 'dirty',
@@ -1266,10 +1356,19 @@ function routePausedConflictMergeResult({
 	record: ISyncStateRecord | undefined;
 	userId: string;
 }) {
+	const automaticResolution = getSyncMergeAutomaticResolution(
+		mergeResult,
+		cloud
+	);
+	const conflictCloud =
+		cloud ?? getAccountSyncSerializer(entry.namespace).getDefaultSnapshot();
 	const conflict =
 		mergeResult.conflict === null
 			? {
-					cloud,
+					...(automaticResolution === null
+						? {}
+						: { automaticResolution }),
+					cloud: conflictCloud,
 					local,
 					merged: mergeResult.data,
 					namespace: entry.namespace,
@@ -1290,44 +1389,12 @@ function routePausedConflictMergeResult({
 	if (pausedEntry === false) {
 		return false;
 	}
-	if (!checkSyncMergeCanApplyAutomatically(mergeResult, cloud)) {
+	if (automaticResolution === null) {
 		return true;
 	}
 
 	const resolveAutomatically = () => {
-		beginAccountSyncAutoResolution(userId, entry.namespace);
-		void resolveAccountSyncConflict({
-			conflict,
-			generationToken,
-			resolution: mergeResult.shouldUpload ? 'merged' : 'cloud',
-			userId,
-		})
-			.then((didResolve) => {
-				if (!didResolve && checkCurrentAccountUser(userId)) {
-					upsertAccountSyncConflict(conflict);
-					return;
-				}
-				if (didResolve && mergeResult.shouldUpload) {
-					// eslint-disable-next-line @typescript-eslint/no-use-before-define
-					scheduleAccountSyncFlush();
-				}
-			})
-			.catch((error: unknown) => {
-				if (!checkCurrentAccountUser(userId)) {
-					return;
-				}
-				console.warn(
-					'Failed to apply automatic account sync resolution.',
-					{ errorCode: getLogSafeErrorCode(error) }
-				);
-				accountStore.shared.sync.lastError.set(
-					'conflict-auto-resolution-failed'
-				);
-				upsertAccountSyncConflict(conflict);
-			})
-			.finally(() => {
-				endAccountSyncAutoResolution(userId, entry.namespace);
-			});
+		tryResolveStoredAutomaticConflict(conflict, userId, generationToken);
 	};
 	if (deferredAutoResolutions === undefined) {
 		resolveAutomatically();

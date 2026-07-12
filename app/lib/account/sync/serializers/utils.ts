@@ -72,17 +72,29 @@ export function checkSnapshotEqual(left: unknown, right: unknown) {
 	return stableJson(left) === stableJson(right);
 }
 
-export function checkSyncMergeCanApplyAutomatically<T>(
+export function getSyncMergeAutomaticResolution<T>(
 	mergeResult: ISyncMergeResult<T>,
 	cloud: T | null
-) {
-	return (
+): 'cloud' | 'merged' | null {
+	const canApplyAutomatically =
 		mergeResult.conflict === null &&
 		!mergeResult.requiresConfirmation &&
 		(cloud === null ||
 			mergeResult.shouldUpload ||
-			checkSnapshotEqual(mergeResult.data, cloud))
-	);
+			checkSnapshotEqual(mergeResult.data, cloud));
+
+	if (!canApplyAutomatically) {
+		return null;
+	}
+
+	return mergeResult.shouldUpload ? 'merged' : 'cloud';
+}
+
+export function checkSyncMergeCanApplyAutomatically<T>(
+	mergeResult: ISyncMergeResult<T>,
+	cloud: T | null
+) {
+	return getSyncMergeAutomaticResolution(mergeResult, cloud) !== null;
 }
 
 export function createSerializerConflict<T>({

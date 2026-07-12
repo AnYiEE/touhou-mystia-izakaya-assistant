@@ -278,6 +278,10 @@ export default memo<IProps>(function AccountSyncStatus() {
 					<div className="space-y-2">
 						{syncNamespaces.map((namespace) => {
 							const dirtyEntry = dirtyEntryMap.get(namespace);
+							const isAutomaticResolution =
+								dirtyEntry?.paused === 'conflict' &&
+								dirtyEntry.conflict?.automaticResolution !==
+									undefined;
 							const terminalError =
 								dirtyEntry?.lastError ===
 									'sync-account-capacity-exceeded' ||
@@ -287,17 +291,21 @@ export default memo<IProps>(function AccountSyncStatus() {
 									: null;
 							const hasNamespaceConflict =
 								conflictNamespaceSet.has(namespace) ||
-								dirtyEntry?.paused === 'conflict';
-							const statusLabel = hasNamespaceConflict
-								? '冲突待处理'
-								: terminalError ===
-									  'sync-account-capacity-exceeded'
-									? '容量超限'
-									: terminalError === 'sync-request-too-large'
-										? '请求过大'
-										: dirtyEntry === undefined
-											? '已同步'
-											: '待上传';
+								(dirtyEntry?.paused === 'conflict' &&
+									!isAutomaticResolution);
+							const statusLabel = isAutomaticResolution
+								? '正在协调'
+								: hasNamespaceConflict
+									? '冲突待处理'
+									: terminalError ===
+										  'sync-account-capacity-exceeded'
+										? '容量超限'
+										: terminalError ===
+											  'sync-request-too-large'
+											? '请求过大'
+											: dirtyEntry === undefined
+												? '已同步'
+												: '待上传';
 							const statusClassName = hasNamespaceConflict
 								? 'bg-warning/10 text-warning-700 dark:text-warning'
 								: terminalError === null
@@ -355,11 +363,12 @@ export default memo<IProps>(function AccountSyncStatus() {
 											{dirtyEntry.paused !== null && (
 												<span>
 													暂停：
-													{
-														pausedReasonLabelMap[
-															dirtyEntry.paused
-														]
-													}
+													{isAutomaticResolution
+														? '自动协调中'
+														: pausedReasonLabelMap[
+																dirtyEntry
+																	.paused
+															]}
 												</span>
 											)}
 										</div>

@@ -500,8 +500,6 @@ export default memo<IProps>(function AccountConflictModal() {
 	const vibrate = useVibrate();
 
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
-	const autoResolvingNamespaces =
-		accountStore.shared.sync.autoResolvingNamespaces.use();
 	const conflicts = accountStore.shared.sync.conflicts.use();
 	const hasIsolatedState = accountStore.shared.sync.hasIsolatedState.use();
 	const lastError = accountStore.shared.sync.lastError.use();
@@ -526,8 +524,7 @@ export default memo<IProps>(function AccountConflictModal() {
 		conflict === undefined ? null : createConflictSnapshotKey(conflict);
 	const isModalOpen =
 		user !== null &&
-		(autoResolvingNamespaces.length > 0 ||
-			conflict !== undefined ||
+		(conflict !== undefined ||
 			hasIsolatedState ||
 			remoteConflictNamespaces.length > 0);
 	const visibleConflict = conflict ?? displayedConflict;
@@ -543,19 +540,10 @@ export default memo<IProps>(function AccountConflictModal() {
 	useEffect(() => {
 		if (conflict !== undefined) {
 			setDisplayedConflict(conflict);
-		} else if (
-			autoResolvingNamespaces.length > 0 ||
-			hasIsolatedState ||
-			remoteConflictNamespaces.length > 0
-		) {
+		} else if (hasIsolatedState || remoteConflictNamespaces.length > 0) {
 			setDisplayedConflict(null);
 		}
-	}, [
-		autoResolvingNamespaces.length,
-		conflict,
-		hasIsolatedState,
-		remoteConflictNamespaces.length,
-	]);
+	}, [conflict, hasIsolatedState, remoteConflictNamespaces.length]);
 
 	useEffect(() => {
 		resolvingTokenRef.current = null;
@@ -694,40 +682,6 @@ export default memo<IProps>(function AccountConflictModal() {
 	}, [isTechnicalDetailsOpen, scrollTechnicalDetailsToBottom]);
 
 	if (visibleConflict === null) {
-		if (autoResolvingNamespaces.length > 0) {
-			return (
-				<Modal
-					aria-label="正在协调云同步状态"
-					coordination={{
-						id: 'account.sync-conflict',
-						requestOwnership: 'external',
-					}}
-					hideCloseButton
-					isDismissable={false}
-					isKeyboardDismissDisabled
-					isOpen={isModalOpen}
-				>
-					<div className="space-y-4 p-1.5">
-						<Heading
-							as="h2"
-							isFirst
-							subTitle="正在根据共同版本安全合并，无需手动选择。"
-						>
-							正在协调云同步状态
-						</Heading>
-						<p className="text-small text-foreground-600">
-							涉及：
-							{autoResolvingNamespaces
-								.map(
-									(namespace) =>
-										SYNC_NAMESPACE_LABEL_MAP[namespace]
-								)
-								.join('、')}
-						</p>
-					</div>
-				</Modal>
-			);
-		}
 		if (remoteConflictNamespaces.length > 0) {
 			return (
 				<Modal
