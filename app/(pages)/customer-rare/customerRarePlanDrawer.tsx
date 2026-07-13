@@ -80,11 +80,7 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
-import {
-	CUSTOMER_RARE_PLAN_DRAWER_EXIT_DURATION_MS,
-	requestOverlayClose,
-	requestOverlayOpen,
-} from '@/lib/overlayCoordinator';
+import { CUSTOMER_RARE_PLAN_DRAWER_EXIT_DURATION_MS } from '@/lib/overlayCoordinator';
 import type {
 	ICustomerRareMeal,
 	IPopularTrend,
@@ -1579,7 +1575,6 @@ export default function CustomerRarePlanDrawer() {
 		setIsHelpPopoverOpen(false);
 		setIsShellOpen(false);
 		customerStore.closeCustomerRarePlanDrawer();
-		requestOverlayClose('customer-rare.plan-drawer');
 	}, []);
 
 	const handleClose = useCallback(() => {
@@ -1817,11 +1812,7 @@ export default function CustomerRarePlanDrawer() {
 
 	const handleOpen = useCallback(() => {
 		vibrate();
-		requestOverlayOpen('customer-rare.plan-drawer', {
-			onActivate: () => {
-				setIsShellOpen(true);
-			},
-		});
+		customerStore.openCustomerRarePlanDrawer();
 	}, [vibrate]);
 
 	const handleHelpPopoverOpenChange = useCallback((isOpen: boolean) => {
