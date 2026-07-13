@@ -142,6 +142,44 @@ function checkAdminUnauthorizedActionResult(
 	);
 }
 
+function summarizeGrantRevocationBatch<TData>(
+	keys: string[],
+	results: Array<PromiseSettledResult<TAdminApiResult<TData>>>
+) {
+	const successfulKeys: string[] = [];
+	const failedKeys: string[] = [];
+	let firstApiError: Extract<TAdminApiResult, { status: 'error' }> | null =
+		null;
+	let firstFailureMessage: string | null = null;
+
+	for (const [index, result] of results.entries()) {
+		const key = keys[index];
+		if (key === undefined) {
+			continue;
+		}
+
+		if (result.status === 'rejected') {
+			failedKeys.push(key);
+			firstFailureMessage ??=
+				result.reason instanceof Error
+					? result.reason.message
+					: '批量撤销SSO授权失败';
+			continue;
+		}
+
+		if (result.value.status === 'ok') {
+			successfulKeys.push(key);
+			continue;
+		}
+
+		failedKeys.push(key);
+		firstApiError ??= result.value;
+		firstFailureMessage ??= result.value.displayMessage;
+	}
+
+	return { failedKeys, firstApiError, firstFailureMessage, successfulKeys };
+}
+
 export interface IAdminSsoGrantsInitialData {
 	admin: IAdminMeData | null;
 	clientId: string;
@@ -605,11 +643,11 @@ export default function AdminSsoGrantsClient({
 		setIsRevokingSelected(true);
 		setConfirmAction(null);
 		setMessage(null);
-		void Promise.all(
+		void Promise.allSettled(
 			keys.map((key) => {
 				const grantKey = parseGrantSelectionKey(key);
 				return grantKey === null
-					? Promise.resolve({ status: 'ok' as const })
+					? Promise.reject(new Error('invalid-grant-selection'))
 					: revokeAdminSsoGrant(
 							grantKey.clientId,
 							grantKey.userId,
@@ -619,28 +657,26 @@ export default function AdminSsoGrantsClient({
 			})
 		)
 			.then((results) => {
-				const errorResult = results.find(
-					(
-						result
-					): result is Extract<
-						TAdminApiResult,
-						{ status: 'error' }
-					> => result.status === 'error'
-				);
-				if (errorResult !== undefined) {
-					handleErrorResult(errorResult);
+				const summary = summarizeGrantRevocationBatch(keys, results);
+				setSelectedKeys(new Set(summary.failedKeys));
+				if (summary.successfulKeys.length > 0) {
+					refreshCurrentGrants();
+				}
+				if (summary.failedKeys.length === 0) {
+					setMessage(
+						`已撤销${summary.successfulKeys.length}条SSO授权`
+					);
 					return;
 				}
-
-				setSelectedKeys(new Set());
-				setMessage(`已撤销${results.length}条SSO授权`);
-				refreshCurrentGrants();
-			})
-			.catch((error: unknown) => {
+				if (
+					summary.firstApiError !== null &&
+					checkAdminUnauthorizedActionResult(summary.firstApiError)
+				) {
+					handleErrorResult(summary.firstApiError);
+					return;
+				}
 				setMessage(
-					error instanceof Error
-						? error.message
-						: '批量撤销SSO授权失败'
+					`已撤销${summary.successfulKeys.length}条SSO授权，${summary.failedKeys.length}条失败${summary.firstFailureMessage === null ? '' : `：${summary.firstFailureMessage}`}`
 				);
 			})
 			.finally(() => {

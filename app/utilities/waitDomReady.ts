@@ -15,6 +15,7 @@ export function waitDomReady() {
 	return new Promise<void>((resolve) => {
 		if (checkReadyState()) {
 			resolve();
+			return;
 		}
 
 		const EVENT_TYPE = 'readystatechange';

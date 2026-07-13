@@ -284,6 +284,13 @@ export default function AdminUserDetailClient({
 					if (!checkDetailRequestId(requestId)) {
 						return;
 					}
+					if (result.status === 'mutation-committed-detail-error') {
+						onSuccess?.();
+						setMessage(
+							`${success}，但详情刷新失败：${result.detailError.displayMessage}`
+						);
+						return;
+					}
 					if (result.status === 'error') {
 						handleActionError(result);
 						return;

@@ -1677,7 +1677,9 @@ export default function CustomerRarePlanDrawer() {
 			contentReadyTimeoutRef.current = globalThis.setTimeout(
 				() => {
 					if (!customerStore.shared.planDrawer.isOpen.get()) {
-						customerStore.openCustomerRarePlanDrawer();
+						contentReadyTimeoutRef.current = null;
+						contentReadyFrameRef.current = [];
+						return;
 					}
 					setIsContentReady(true);
 					contentReadyTimeoutRef.current = null;
@@ -1739,10 +1741,8 @@ export default function CustomerRarePlanDrawer() {
 			return;
 		}
 
-		if (isContentReady) {
-			setIsShellOpen(false);
-		}
-	}, [isContentReady, isStoreOpen]);
+		setIsShellOpen(false);
+	}, [isStoreOpen]);
 
 	useEffect(() => {
 		if (!isActiveTask || !helpPopoverDismissLockedRef.current) {

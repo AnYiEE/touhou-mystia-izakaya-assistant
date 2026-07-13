@@ -20,12 +20,9 @@ export function downloadJson(
 	URL.revokeObjectURL(url);
 }
 
-export function parseJsonFromInput(
-	input: HTMLInputElement,
-	callback: (value: string) => void
-) {
+export async function parseJsonFromInput(input: HTMLInputElement) {
 	if (input.files === null) {
-		return;
+		return null;
 	}
 
 	const {
@@ -33,10 +30,8 @@ export function parseJsonFromInput(
 	} = input;
 
 	if (file === undefined) {
-		return;
+		return null;
 	}
 
-	const blob = new Blob([file], { type: FILE_TYPE_JSON });
-
-	void blob.text().then(callback);
+	return file.text();
 }

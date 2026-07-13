@@ -488,7 +488,7 @@ export function sendSyncPing(body: ISyncStatePingBody) {
 			headers: { 'Content-Type': 'application/json' },
 			keepalive: true,
 			method: 'POST',
-		});
+		}).catch(() => {});
 
 		return true;
 	} catch {

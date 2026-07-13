@@ -136,9 +136,7 @@ export default class ErrorBoundary extends Component<IProps, IStates> {
 	}
 
 	public override componentDidCatch({ message }: Error, info: ErrorInfo) {
-		if (!this.state.hasError) {
-			this.setState({ info });
-		}
+		this.setState({ info });
 		trackEvent(trackEvent.category.error, 'Global', message);
 	}
 

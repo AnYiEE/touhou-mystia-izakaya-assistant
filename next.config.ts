@@ -9,6 +9,7 @@ import {
 	IS_OFFLINE,
 	IS_PRODUCTION,
 	IS_SELF_HOSTED,
+	IS_SKIP_LINT,
 	IS_VERCEL,
 	getSha,
 } from './scripts/utils';
@@ -23,8 +24,6 @@ const serverActionBodySizeLimit = getServerActionBodySizeLimit(
 );
 
 const exportMode = IS_OFFLINE || (!IS_SELF_HOSTED && !IS_VERCEL);
-const skipLint =
-	IS_OFFLINE || (IS_PRODUCTION && Boolean(process.env.SKIP_LINT));
 
 function readSiteStatusBuildOperationId() {
 	try {
@@ -87,12 +86,12 @@ const nextConfig: NextConfig = {
 	reactStrictMode: true,
 	typedRoutes: true,
 
-	eslint: { ignoreDuringBuilds: skipLint },
-	typescript: { ignoreBuildErrors: skipLint },
+	eslint: { ignoreDuringBuilds: IS_SKIP_LINT },
+	typescript: { ignoreBuildErrors: IS_SKIP_LINT },
 
 	experimental: {
 		serverActions: { bodySizeLimit: serverActionBodySizeLimit },
-		webpackMemoryOptimizations: skipLint,
+		webpackMemoryOptimizations: IS_SKIP_LINT,
 	},
 };
 

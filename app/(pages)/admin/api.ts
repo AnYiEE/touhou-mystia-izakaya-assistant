@@ -226,14 +226,23 @@ export function getAdminUsersByIds(ids: string[]) {
 	);
 }
 
-export type TAdminUserDetailApiResult<TData = Record<string, unknown>> =
+type TAdminUserDetailRefreshApiResult<TData = Record<string, unknown>> =
 	| { data: TData; detail: IAdminUserDetailData; status: 'ok' }
+	| Extract<TAdminApiResult, { status: 'error' }>;
+
+export type TAdminUserDetailApiResult<TData = Record<string, unknown>> =
+	| TAdminUserDetailRefreshApiResult<TData>
+	| {
+			data: TData;
+			detailError: Extract<TAdminApiResult, { status: 'error' }>;
+			status: 'mutation-committed-detail-error';
+	  }
 	| Extract<TAdminApiResult, { status: 'error' }>;
 
 async function fetchAdminUserDetailApiResult<TData>(
 	id: string,
 	data: TData
-): Promise<TAdminUserDetailApiResult<TData>> {
+): Promise<TAdminUserDetailRefreshApiResult<TData>> {
 	const detailResult = await fetchAdminApiResult<IAdminUserDetailData>(
 		`/api/v1/admin/users/${encodeURIComponent(id)}`
 	);
@@ -246,7 +255,7 @@ async function fetchAdminUserDetailApiResult<TData>(
 
 export async function refreshAdminUserDetail(
 	id: string
-): Promise<TAdminUserDetailApiResult> {
+): Promise<TAdminUserDetailRefreshApiResult> {
 	return fetchAdminUserDetailApiResult(id, {});
 }
 
@@ -260,7 +269,14 @@ async function mutateAdminUserDetail<TData>(
 		return result;
 	}
 
-	return fetchAdminUserDetailApiResult(id, result.data);
+	const detailResult = await fetchAdminUserDetailApiResult(id, result.data);
+	return detailResult.status === 'error'
+		? {
+				data: result.data,
+				detailError: detailResult,
+				status: 'mutation-committed-detail-error',
+			}
+		: detailResult;
 }
 
 export function resetAdminUserPassword(

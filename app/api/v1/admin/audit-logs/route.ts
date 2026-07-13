@@ -1,11 +1,15 @@
 import { type NextRequest } from 'next/server';
 
 import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
-import { type TSsoActorType } from '@/lib/db/types';
+import {
+	parseNonNegativeIntegerParam,
+	parsePositiveIntegerParam,
+} from '@/lib/api/adminPagination';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/lib/api/routeResponses';
+import { type TSsoActorType } from '@/lib/db/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -15,43 +19,6 @@ const MAX_AUDIT_LOG_OFFSET = 5000;
 const MAX_PAGE = 250;
 const MAX_PAGE_SIZE = 100;
 const MIN_AUDIT_LOG_QUERY_LENGTH = 2;
-
-function parsePositiveIntegerParam(
-	value: string | null,
-	defaultValue: number,
-	maxValue: number
-) {
-	if (value === null) {
-		return defaultValue;
-	}
-	if (!/^\d+$/u.test(value)) {
-		return null;
-	}
-
-	const parsedValue = Number.parseInt(value, 10);
-	if (
-		!Number.isSafeInteger(parsedValue) ||
-		parsedValue < 1 ||
-		parsedValue > maxValue
-	) {
-		return null;
-	}
-
-	return parsedValue;
-}
-
-function parseNonNegativeIntegerParam(value: string | null) {
-	if (value === null) {
-		return;
-	}
-	if (!/^\d+$/u.test(value)) {
-		return null;
-	}
-
-	const parsedValue = Number.parseInt(value, 10);
-
-	return Number.isSafeInteger(parsedValue) ? parsedValue : null;
-}
 
 function getTrimmedSearchParam(request: NextRequest, name: string) {
 	const value = request.nextUrl.searchParams.get(name)?.trim();

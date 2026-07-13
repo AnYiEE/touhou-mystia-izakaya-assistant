@@ -68,6 +68,51 @@ async function checkPathExists(path: string) {
 	}
 }
 
+export async function restoreRouterFiles(
+	backupRootPath: string,
+	targetRootPath: string
+) {
+	if (!(await checkPathExists(backupRootPath))) {
+		return;
+	}
+
+	async function restore(currentPath: string, targetPath: string) {
+		const entries = await readdir(currentPath, { withFileTypes: true });
+		for (const entry of entries) {
+			const fromPath = join(currentPath, entry.name);
+			const toPath = join(targetPath, entry.name);
+
+			if (entry.isDirectory()) {
+				await restore(fromPath, toPath);
+				continue;
+			}
+			if (!routeFilePattern.test(entry.name)) {
+				continue;
+			}
+
+			if (await checkPathExists(toPath)) {
+				const [backupContent, targetContent] = await Promise.all([
+					readFile(fromPath),
+					readFile(toPath),
+				]);
+				if (!backupContent.equals(targetContent)) {
+					throw new Error(
+						`offline-router-restore-conflict:${fromPath}:${toPath}`
+					);
+				}
+				await rm(fromPath, { force: true });
+				continue;
+			}
+
+			await mkdir(dirname(toPath), { recursive: true });
+			await rename(fromPath, toPath);
+		}
+	}
+
+	await restore(backupRootPath, targetRootPath);
+	await rm(backupRootPath, { force: true, recursive: true });
+}
+
 function normalizePath(path: string) {
 	return path.replaceAll('\\', '/');
 }
@@ -415,32 +460,6 @@ async function removeExistingOfflineZipFiles() {
 	}
 }
 
-async function restoreRouterFiles() {
-	if (!(await checkPathExists(fakeApiPath))) {
-		return;
-	}
-
-	async function restore(currentPath: string, targetPath: string) {
-		const entries = await readdir(currentPath, { withFileTypes: true });
-		for (const entry of entries) {
-			const fromPath = join(currentPath, entry.name);
-			const toPath = join(targetPath, entry.name);
-
-			if (entry.isDirectory()) {
-				await restore(fromPath, toPath);
-			} else if (routeFilePattern.test(entry.name)) {
-				await ((await checkPathExists(toPath))
-					? rm(fromPath, { force: true })
-					: movePathIfExists(fromPath, toPath));
-			}
-		}
-	}
-
-	await restore(fakeApiPath, apiPath);
-
-	await rm(fakeApiPath, { force: true, recursive: true });
-}
-
 async function restoreAdminPages() {
 	if (!(await checkPathExists(offlineAdminPath))) {
 		return;
@@ -452,7 +471,7 @@ async function restoreAdminPages() {
 async function restoreOfflineFiles() {
 	await restoreRootMiddleware();
 	await restoreOfflineSourceFiles();
-	await restoreRouterFiles();
+	await restoreRouterFiles(fakeApiPath, apiPath);
 	await restoreAdminPages();
 	await rm(offlinePagesPath, { force: true, recursive: true });
 }

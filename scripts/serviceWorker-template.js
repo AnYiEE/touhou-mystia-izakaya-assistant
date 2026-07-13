@@ -69,17 +69,42 @@
 		return response;
 	}
 
+	async function fetchAnonymousNavigationAndCache(
+		/** @type {Request} */ request
+	) {
+		const cache = await caches.open(VERSION);
+		const responseFromCache = await cache.match(request);
+		if (responseFromCache !== undefined) {
+			return;
+		}
+
+		const response = await fetch(request.url, {
+			cache: 'no-cache',
+			credentials: 'omit',
+			headers: request.headers,
+		});
+
+		if (response.ok) {
+			await cache.put(request, response);
+		}
+	}
+
+	async function fetchWithoutCache(/** @type {Request} */ request) {
+		return fetch(request, { cache: 'no-cache' });
+	}
+
 	async function fetchWithRetry(
 		/** @type {Request} */ request,
 		/** @type {number} */ retries,
-		/** @type {FetchEvent} */ event
+		/** @type {FetchEvent} */ event,
+		/** @type {typeof fetchAndCache} */ fetcher
 	) {
 		try {
-			return await fetchAndCache(request, event);
+			return await fetcher(request, event);
 		} catch (error) {
 			if (retries > 1) {
 				await delay(1000);
-				return fetchWithRetry(request, retries - 1, event);
+				return fetchWithRetry(request, retries - 1, event, fetcher);
 			}
 			throw error;
 		}
@@ -96,7 +121,7 @@
 		}
 
 		try {
-			return await fetchWithRetry(request, 3, event);
+			return await fetchWithRetry(request, 3, event, fetchAndCache);
 		} catch {
 			return networkErrorResponse.clone();
 		}
@@ -110,7 +135,7 @@
 		const responseFromCache = await cache.match(request);
 
 		try {
-			return await fetchWithRetry(request, 3, event);
+			return await fetchWithRetry(request, 3, event, fetchWithoutCache);
 		} catch {
 			return responseFromCache ?? networkErrorResponse.clone();
 		}
@@ -177,6 +202,9 @@
 			// user-specific data or session-dependent content.
 		} else {
 			// Cache public routes (file has no extension).
+			event.waitUntil(
+				fetchAnonymousNavigationAndCache(event.request).catch(() => {})
+			);
 			event.respondWith(networkFirst(event.request, event));
 		}
 	});

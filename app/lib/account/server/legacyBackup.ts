@@ -149,15 +149,6 @@ function normalizeBackupUserId(rawUserId: unknown) {
 	return userId;
 }
 
-export function parseLegacyBackupCode(rawCode: string) {
-	const normalizedCode = rawCode.trim();
-	if (!validate(normalizedCode)) {
-		return null;
-	}
-
-	return normalizedCode.toLowerCase();
-}
-
 export async function uploadLegacyBackupData({
 	body,
 	meta,

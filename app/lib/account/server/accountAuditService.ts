@@ -22,6 +22,7 @@ let lastAccountAuditLogCleanupAt = 0;
 export const ACCOUNT_AUDIT_ACTION_MAP = {
 	accountDataCleared: 'user-clear-account-data',
 	accountDataExported: 'user-export-account-data',
+	accountDataImported: 'user-import-account-data',
 	accountDeleted: 'user-delete-account',
 	adminClearUserData: 'admin-clear-user-data',
 	adminDeleteUserSessions: 'admin-delete-user-sessions',

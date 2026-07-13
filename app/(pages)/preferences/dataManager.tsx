@@ -47,6 +47,10 @@ import {
 	fetchLegacyBackupMetadata,
 	uploadLegacyBackup,
 } from '@/lib/account/client/legacyBackups';
+import {
+	validateCustomerNormalMealsData,
+	validateCustomerRareMealsData,
+} from '@/lib/account/sync/validation';
 
 import {
 	compatibilityCustomerRareData,
@@ -195,8 +199,12 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	);
 
 	const [importValue, setImportValue] = useState('');
+	const importValueRef = useRef(importValue);
+	importValueRef.current = importValue;
 	const throttledImportValue = useThrottle(importValue);
 	const [importData, setImportData] = useState<TMealData | null>(null);
+	const [importReadError, setImportReadError] = useState(false);
+	const importReadRequestIdRef = useRef(0);
 	const importInputRef = useRef<HTMLInputElement | null>(null);
 
 	const [isExportButtonDisabled, setIsExportButtonDisabled] = useState(false);
@@ -581,15 +589,49 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 	const handleImportInputChange = useCallback(
 		(event: ChangeEvent<HTMLInputElement>) => {
 			const { target } = event;
-			parseJsonFromInput(target, (text) => {
-				setImportValue(text);
-				target.value = '';
-			});
+			const requestId = ++importReadRequestIdRef.current;
+			setImportReadError(false);
+			setIsSaveButtonLoading(true);
+			void parseJsonFromInput(target)
+				.then((text) => {
+					if (importReadRequestIdRef.current !== requestId) {
+						return;
+					}
+					if (text === null || text === importValueRef.current) {
+						setIsSaveButtonLoading(false);
+						return;
+					}
+					setImportValue(text);
+				})
+				.catch(() => {
+					if (importReadRequestIdRef.current !== requestId) {
+						return;
+					}
+					setImportValue('');
+					setImportReadError(true);
+				})
+				.finally(() => {
+					target.value = '';
+				});
 		},
 		[]
 	);
 
+	const handleImportValueChange = useCallback((value: string) => {
+		importReadRequestIdRef.current += 1;
+		setImportReadError(false);
+		setImportValue(value);
+	}, []);
+
 	useEffect(() => {
+		if (importReadError) {
+			setImportData(null);
+			setIsSaveButtonDisabled(true);
+			setIsSaveButtonError(true);
+			setIsSaveButtonLoading(false);
+			return;
+		}
+
 		const hasValue = Boolean(throttledImportValue);
 		try {
 			setImportData(null);
@@ -601,6 +643,36 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 			if (Array.isArray(json) || !isObject(json)) {
 				throw new TypeError('not an object');
 			}
+
+			if ('customer_normal' in json) {
+				if (
+					Object.keys(json).length !== 2 ||
+					!('customer_rare' in json)
+				) {
+					throw new TypeError('invalid combined meal data');
+				}
+				const normalData = json.customer_normal as Record<
+					string,
+					object[]
+				>;
+				const rareData = json.customer_rare as Record<string, object[]>;
+				deleteIndexProperty(normalData);
+				deleteIndexProperty(rareData);
+				if (
+					!validateCustomerNormalMealsData(normalData) ||
+					!validateCustomerRareMealsData(rareData)
+				) {
+					throw new TypeError('invalid meal data');
+				}
+			} else {
+				const rareData = json as Record<string, object[]>;
+				deleteIndexProperty(rareData);
+				compatibilityCustomerRareData(rareData);
+				if (!validateCustomerRareMealsData(rareData)) {
+					throw new TypeError('invalid legacy meal data');
+				}
+			}
+
 			setImportData(json);
 			setIsSaveButtonDisabled(false);
 			setIsSaveButtonError(false);
@@ -612,7 +684,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 			}
 			setIsSaveButtonLoading(false);
 		}
-	}, [throttledImportValue]);
+	}, [importReadError, throttledImportValue]);
 
 	useEffect(() => {
 		if (!shouldLockDataManagerScroll) {
@@ -646,6 +718,8 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 					isDisabled={isResetPopoverOpened}
 					variant="underlined"
 					onSelectionChange={() => {
+						importReadRequestIdRef.current += 1;
+						setImportReadError(false);
 						setImportValue('');
 					}}
 					aria-label="数据管理选项卡"
@@ -659,7 +733,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 									disableAnimation={isReducedMotion}
 									placeholder="从本地文件导入或输入顾客套餐数据"
 									value={importValue}
-									onValueChange={setImportValue}
+									onValueChange={handleImportValueChange}
 									classNames={{
 										inputWrapper: cn(
 											'bg-default/40 transition-background data-[hover=true]:bg-default-200 group-data-[focus=true]:bg-default motion-reduce:transition-none',

@@ -12,6 +12,8 @@ const execAsync = promisify(exec);
 export const IS_OFFLINE = checkOfflineEnv(process.env.OFFLINE);
 export const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 export const IS_SELF_HOSTED = checkEnvFlag(process.env.SELF_HOSTED);
+export const IS_SKIP_LINT =
+	IS_OFFLINE || (IS_PRODUCTION && checkEnvFlag(process.env.SKIP_LINT));
 export const IS_VERCEL = checkVercelEnv(process.env.VERCEL);
 
 export const CDN_URL = IS_OFFLINE ? '' : (process.env.CDN_URL ?? '');

@@ -1,4 +1,4 @@
-import { type Kysely } from 'kysely';
+import { type Kysely, type Transaction } from 'kysely';
 
 import {
 	compatibilityCustomerRareData,
@@ -508,6 +508,7 @@ export async function importBackupData({
 	session,
 	signal,
 	userId,
+	writeAuditLog,
 }: {
 	code: string;
 	expectedStateEpoch: number;
@@ -515,6 +516,11 @@ export async function importBackupData({
 	session: Pick<TSession, 'id' | 'token_hash'>;
 	signal: IBackupCodeLockSignal;
 	userId: string;
+	writeAuditLog: (
+		trx: Transaction<TDatabase>,
+		now: number,
+		result: { namespaceCount: number; stateEpoch: number }
+	) => Promise<void>;
 }) {
 	const database = await getAccountDatabase();
 	const preflightResult = await checkImportBackupDataPreconditions(
@@ -708,17 +714,22 @@ export async function importBackupData({
 			});
 		}
 
+		const importedAt = Date.now();
 		await trx
 			.insertInto(TABLE_NAME_MAP.backupImportRecord)
 			.values({
 				code,
-				created_at: Date.now(),
+				created_at: importedAt,
 				file_name: preflightResult.fileName,
 				results: JSON.stringify(results),
 				state_epoch: expectedStateEpoch,
 				user_id: userId,
 			})
 			.execute();
+		await writeAuditLog(trx, importedAt, {
+			namespaceCount: results.length,
+			stateEpoch: expectedStateEpoch,
+		});
 		lockModule.throwIfBackupCodeLockLost(signal);
 
 		return {

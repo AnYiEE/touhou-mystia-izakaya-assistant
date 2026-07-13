@@ -222,11 +222,13 @@ export function recoverAccountSyncConflictResolutionJournals(userId: string) {
 		),
 	}));
 	activeJournalRecoveries.set(userId, recovery);
-	void recovery.finally(() => {
-		if (activeJournalRecoveries.get(userId) === recovery) {
-			activeJournalRecoveries.delete(userId);
-		}
-	});
+	void recovery
+		.finally(() => {
+			if (activeJournalRecoveries.get(userId) === recovery) {
+				activeJournalRecoveries.delete(userId);
+			}
+		})
+		.catch(() => {});
 
 	return recovery;
 }

@@ -182,6 +182,13 @@ let visibilityOperationId: string | null = null;
 
 const tabId = createAccountTabId();
 
+function runAfterAccountSyncPromiseSettles(
+	promise: Promise<unknown>,
+	callback: () => void
+) {
+	void promise.finally(callback).catch(() => {});
+}
+
 function getLoggedInAccountContext() {
 	const csrfToken = accountStore.shared.csrfToken.get();
 	const user = accountStore.shared.user.get();
@@ -3988,11 +3995,10 @@ export function startAccountSyncClient() {
 					);
 					return;
 				} else {
-					void reconcileAccountSyncPausedConflicts(
-						context.user.id
-					).finally(() => {
-						scheduleAccountSyncFlush();
-					});
+					runAfterAccountSyncPromiseSettles(
+						reconcileAccountSyncPausedConflicts(context.user.id),
+						scheduleAccountSyncFlush
+					);
 					return;
 				}
 				scheduleAccountSyncFlush();
@@ -4203,10 +4209,9 @@ export function startAccountSyncClient() {
 				);
 			}
 			restoreAccountSyncRuntimeState(context.user.id);
-			void reconcileAccountSyncPausedConflicts(context.user.id).finally(
-				() => {
-					scheduleAccountSyncFlush();
-				}
+			runAfterAccountSyncPromiseSettles(
+				reconcileAccountSyncPausedConflicts(context.user.id),
+				scheduleAccountSyncFlush
 			);
 			return;
 		}
@@ -4243,11 +4248,10 @@ export function startAccountSyncClient() {
 					}
 				);
 			} else {
-				void reconcileAccountSyncPausedConflicts(
-					context.user.id
-				).finally(() => {
-					scheduleAccountSyncFlush();
-				});
+				runAfterAccountSyncPromiseSettles(
+					reconcileAccountSyncPausedConflicts(context.user.id),
+					scheduleAccountSyncFlush
+				);
 			}
 			return;
 		}
@@ -4331,11 +4335,10 @@ export function startAccountSyncClient() {
 			scheduleAccountSyncResetRecovery(initialContext.user.id);
 		}
 		restoreAccountSyncRuntimeState(initialContext.user.id);
-		void reconcileAccountSyncPausedConflicts(
-			initialContext.user.id
-		).finally(() => {
-			scheduleAccountSyncFlush();
-		});
+		runAfterAccountSyncPromiseSettles(
+			reconcileAccountSyncPausedConflicts(initialContext.user.id),
+			scheduleAccountSyncFlush
+		);
 	}
 
 	return () => {

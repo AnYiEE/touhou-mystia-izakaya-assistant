@@ -98,11 +98,13 @@ export async function POST(request: NextRequest) {
 	}
 	const code = rawCode.toLowerCase();
 
-	const [authModule, lockModule, backupImportModule] = await Promise.all([
-		import('@/lib/account/server/auth'),
-		import('@/actions/backup/lock'),
-		import('@/lib/account/server/backupImport'),
-	]);
+	const [authModule, lockModule, backupImportModule, accountAuditModule] =
+		await Promise.all([
+			import('@/lib/account/server/auth'),
+			import('@/actions/backup/lock'),
+			import('@/lib/account/server/backupImport'),
+			import('@/lib/account/server/accountAuditService'),
+		]);
 	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
 		return createAccountAuthErrorRouteResponse(auth, request);
@@ -122,6 +124,25 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
+	const codeDigest = accountAuditModule.createAccountAuditValueDigest(code);
+	const createAuditInput = (
+		result: 'already-imported' | 'imported',
+		namespaceCount: number,
+		stateEpoch: number
+	) =>
+		accountAuditModule.createAccountUserAuditLogInput({
+			action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
+				.accountDataImported,
+			metadata: {
+				backup_code_digest: codeDigest,
+				namespace_count: namespaceCount,
+				result,
+				state_epoch: stateEpoch,
+			},
+			request,
+			userId: auth.data.user.id,
+		});
+
 	try {
 		let importedBackupFileName: string | null | undefined;
 		const response = await lockModule.withBackupCodeLock(
@@ -136,6 +157,16 @@ export async function POST(request: NextRequest) {
 						session: auth.data.session,
 						signal,
 						userId: auth.data.user.id,
+						writeAuditLog: (trx, now, result) =>
+							accountAuditModule.writeAccountAuditLogInTransaction(
+								trx,
+								createAuditInput(
+									'imported',
+									result.namespaceCount,
+									result.stateEpoch
+								),
+								now
+							),
 					});
 				} catch (error) {
 					const errorResponse =
@@ -159,6 +190,13 @@ export async function POST(request: NextRequest) {
 					);
 				}
 				if (importResult.status === 'already-imported') {
+					await accountAuditModule.writeAccountAuditLog(
+						createAuditInput(
+							'already-imported',
+							importResult.results.length,
+							auth.data.user.state_epoch
+						)
+					);
 					return createNoStoreJsonResponse({
 						results: importResult.results,
 					});

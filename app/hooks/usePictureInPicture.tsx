@@ -173,7 +173,7 @@ export function usePictureInPicture(
 			const label = '在画中画中打开';
 
 			return (
-				<div className="flex justify-end pt-2 opacity-0 transition-opacity group-hover:opacity-100">
+				<div className="flex justify-end pt-2 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
 					<Tooltip
 						showArrow
 						closeDelay={0}

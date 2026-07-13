@@ -1,6 +1,8 @@
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import { animate } from 'framer-motion';
 
+import { useReducedMotion } from '@/design/ui/hooks';
+
 const ANIMATION_DURATION = 0.2;
 const ANIMATION_EASING = [0.2, 1, 0.3, 1] as const;
 
@@ -26,6 +28,8 @@ function prepareCollapseAnimation(element: HTMLElement) {
 }
 
 export function useSavedMealReorderAnimation() {
+	const isReducedMotion = useReducedMotion();
+
 	const pendingAnimationsRef = useRef<IPendingAnimation[]>([]);
 	const contentElementsRef = useRef(new Map<number, HTMLDivElement>());
 	const rowElementsRef = useRef(new Map<number, HTMLDivElement>());
@@ -56,6 +60,10 @@ export function useSavedMealReorderAnimation() {
 
 	const animateSavedMealSwap = useCallback(
 		(currentDataIndex: number, nextDataIndex: number) => {
+			if (isReducedMotion) {
+				return;
+			}
+
 			const currentElement =
 				contentElementsRef.current.get(currentDataIndex);
 			const nextElement = contentElementsRef.current.get(nextDataIndex);
@@ -75,7 +83,7 @@ export function useSavedMealReorderAnimation() {
 				},
 			];
 		},
-		[]
+		[isReducedMotion]
 	);
 
 	const animateSavedMealRemove = useCallback(
@@ -87,6 +95,10 @@ export function useSavedMealReorderAnimation() {
 				nextRowDataIndex,
 			}: IRemoveAnimationOptions = {}
 		) => {
+			if (isReducedMotion) {
+				return;
+			}
+
 			const rowElement = rowElementsRef.current.get(dataIndex);
 			if (rowElement === undefined) {
 				return;
@@ -177,10 +189,15 @@ export function useSavedMealReorderAnimation() {
 				});
 			}
 		},
-		[]
+		[isReducedMotion]
 	);
 
 	useLayoutEffect(() => {
+		if (isReducedMotion) {
+			pendingAnimationsRef.current = [];
+			return;
+		}
+
 		const pendingAnimations = pendingAnimationsRef.current;
 		if (pendingAnimations.length === 0) {
 			return;

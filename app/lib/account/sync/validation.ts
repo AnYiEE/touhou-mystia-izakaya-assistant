@@ -148,6 +148,20 @@ function validateMealSnapshot(
 	);
 }
 
+export function validateCustomerNormalMealsData(data: unknown) {
+	return validateMealSnapshot(data, {
+		customerNames: customerNormalNames,
+		validateMeal: validateCustomerNormalMeal,
+	});
+}
+
+export function validateCustomerRareMealsData(data: unknown) {
+	return validateMealSnapshot(data, {
+		customerNames: customerRareNames,
+		validateMeal: validateCustomerRareMeal,
+	});
+}
+
 function validateCustomerRarePlan(
 	data: unknown,
 	{ allowLegacyCustomerSort = false } = {}
@@ -311,16 +325,10 @@ function validateGlobalPreferences(data: unknown) {
 
 export function validateSyncStateData(change: ISyncStateChange) {
 	if (change.namespace === SYNC_NAMESPACE_MAP.customerNormalMeals) {
-		return validateMealSnapshot(change.data, {
-			customerNames: customerNormalNames,
-			validateMeal: validateCustomerNormalMeal,
-		});
+		return validateCustomerNormalMealsData(change.data);
 	}
 	if (change.namespace === SYNC_NAMESPACE_MAP.customerRareMeals) {
-		return validateMealSnapshot(change.data, {
-			customerNames: customerRareNames,
-			validateMeal: validateCustomerRareMeal,
-		});
+		return validateCustomerRareMealsData(change.data);
 	}
 	if (change.namespace === SYNC_NAMESPACE_MAP.customerRarePlans) {
 		return validateCustomerRarePlans(change.data, {

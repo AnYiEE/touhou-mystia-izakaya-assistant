@@ -3,6 +3,7 @@ import { type NextRequest } from 'next/server';
 import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
 import { getRequestAuditContext } from '@/lib/account/server/request';
 import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
+import { parsePositiveIntegerParam } from '@/lib/api/adminPagination';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -15,30 +16,6 @@ export const dynamic = 'force-dynamic';
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE = 10_000;
 const MAX_PAGE_SIZE = 100;
-
-function parsePositiveIntegerParam(
-	value: string | null,
-	defaultValue: number,
-	maxValue: number
-) {
-	if (value === null) {
-		return defaultValue;
-	}
-	if (!/^\d+$/u.test(value)) {
-		return null;
-	}
-
-	const parsedValue = Number.parseInt(value, 10);
-	if (
-		!Number.isSafeInteger(parsedValue) ||
-		parsedValue < 1 ||
-		parsedValue > maxValue
-	) {
-		return null;
-	}
-
-	return parsedValue;
-}
 
 function parseBooleanFilter(value: string | null) {
 	if (value === null || value === '') {

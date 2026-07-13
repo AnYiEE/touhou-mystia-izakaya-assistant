@@ -1,9 +1,10 @@
 import { type ChildProcess, spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { cwd } from 'node:process';
+import { cwd, execPath } from 'node:process';
 
 import Database from 'better-sqlite3';
 import { Kysely, SqliteDialect } from 'kysely';
@@ -51,6 +52,11 @@ const BUILD_STAGES = [
 const RETRY_DELAYS_MS = [50, 100, 250, 500] as const;
 const UUID_PATTERN =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+const moduleRequire = createRequire(import.meta.url);
+const commandPathMap = {
+	next: moduleRequire.resolve('next/dist/bin/next'),
+	tsx: moduleRequire.resolve('tsx/cli'),
+} as const;
 
 class BuildStageError extends Error {
 	readonly exitCode: number;
@@ -262,7 +268,7 @@ async function main() {
 		'service-worker': ['tsx', ['scripts/generateServiceWorker.ts']],
 	} as const satisfies Record<
 		TBuildStage,
-		readonly [string, ReadonlyArray<string>]
+		readonly [keyof typeof commandPathMap, ReadonlyArray<string>]
 	>;
 	const signalState: {
 		cleanupPromise: Promise<unknown> | null;
@@ -307,8 +313,9 @@ async function main() {
 			throw new BuildStageError(stage, 1, signalState.received);
 		}
 		const [command, args] = stageCommands[stage];
+		const commandArgs = [commandPathMap[command], ...args];
 		await new Promise<void>((resolvePromise, reject) => {
-			const child = spawn(command, [...args], {
+			const child = spawn(execPath, commandArgs, {
 				cwd: projectDirectory,
 				detached: process.platform !== 'win32',
 				stdio: 'inherit',
