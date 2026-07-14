@@ -874,6 +874,10 @@ function handleOverlayShortcutKeyDown(event: KeyboardEvent) {
 }
 
 export function handleOverlayCoordinatorKeyDown(event: KeyboardEvent) {
+	if (typeof event.key !== 'string') {
+		return;
+	}
+
 	if (event.key !== 'Escape') {
 		handleOverlayShortcutKeyDown(event);
 		return;
