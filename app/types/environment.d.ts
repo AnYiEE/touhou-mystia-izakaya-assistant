@@ -26,6 +26,7 @@ declare global {
 			SQLITE_DATABASE_PATH?: string;
 			SKIP_LINT?: string;
 			TRUST_PROXY?: string;
+			UPLOAD_DIR?: string;
 
 			VERCEL?: string;
 			VERCEL_ENV?: NodeJS.ProcessEnv['NODE_ENV'];

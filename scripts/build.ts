@@ -10,6 +10,7 @@ import Database from 'better-sqlite3';
 import { Kysely, SqliteDialect } from 'kysely';
 import nextEnv from '@next/env';
 
+import { publishSelfHostedRelease } from './deployment/publishRelease';
 import {
 	clearDeploymentMaintenance,
 	migrateSiteRuntimeStateTable,
@@ -39,6 +40,7 @@ interface IBuildCoordinatorOptions {
 	) => Promise<boolean>;
 	now: () => number;
 	operationId: string;
+	publishRelease: () => Promise<unknown>;
 	runStage: (stage: TBuildStage) => Promise<void>;
 	runtimeEnabled: boolean;
 	writeBuildIdentity: (operationId: string) => void;
@@ -227,6 +229,7 @@ export async function runBuildCoordinator({
 	enableMaintenance,
 	now,
 	operationId,
+	publishRelease,
 	runStage,
 	runtimeEnabled,
 	writeBuildIdentity,
@@ -241,6 +244,9 @@ export async function runBuildCoordinator({
 		}
 		for (const stage of BUILD_STAGES) {
 			await runStage(stage);
+		}
+		if (runtimeEnabled) {
+			await publishRelease();
 		}
 		completed = true;
 	} finally {
@@ -345,6 +351,11 @@ async function main() {
 			enableMaintenance: attemptEnableDeploymentMaintenance,
 			now: Date.now,
 			operationId,
+			publishRelease: async () =>
+				await publishSelfHostedRelease({
+					operationId,
+					projectDirectory,
+				}),
 			runStage,
 			runtimeEnabled,
 			writeBuildIdentity: (value) => {

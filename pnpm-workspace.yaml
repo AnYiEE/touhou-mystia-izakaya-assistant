@@ -1,3 +1,4 @@
+nodeLinker: hoisted
 publicHoistPattern:
   - "*@heroui/*"
   - '@next/env'

@@ -10,11 +10,11 @@ import {
 } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
-import { cwd } from 'node:process';
 
+import { getUploadDirectoryPath } from '@/lib/backup/storagePath';
 import type { TBackupFileRecord } from '@/lib/db/types';
 
-const dir = join(cwd(), 'upload/backups');
+const dir = join(getUploadDirectoryPath(process.env.UPLOAD_DIR), 'backups');
 const encoding: BufferEncoding = 'utf8';
 
 interface IBackupFileReference {

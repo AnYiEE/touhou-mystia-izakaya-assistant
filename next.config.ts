@@ -98,6 +98,9 @@ const nextConfig: NextConfig = {
 if (exportMode) {
 	nextConfig.output = 'export';
 } else {
+	if (IS_SELF_HOSTED && !IS_VERCEL && !IS_OFFLINE) {
+		nextConfig.output = 'standalone';
+	}
 	nextConfig.headers = async () => {
 		const headers: Awaited<ReturnType<NonNullable<NextConfig['headers']>>> =
 			[];

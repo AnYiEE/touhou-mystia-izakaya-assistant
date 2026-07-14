@@ -9,7 +9,7 @@
 		"build": "tsx scripts/build.ts",
 		"build:offline": "tsx scripts/buildOffline.ts",
 		"sprites": "tsx scripts/generateSprites.ts",
-		"start": "next start",
+		"start": "node scripts/startSelfHosted.mjs",
 		"serve": "pnpx serve out",
 		"lint": "eslint --cache .",
 		"lint:fix": "eslint --cache --fix .",
