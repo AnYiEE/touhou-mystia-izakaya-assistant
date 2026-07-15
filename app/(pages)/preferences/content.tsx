@@ -20,7 +20,11 @@ import Sprite from '@/components/sprite';
 import { siteConfig } from '@/configs';
 import { DLC_LABEL_MAP, DYNAMIC_TAG_MAP } from '@/data';
 import { type TGlobalSearchPreferenceKey } from '@/lib/globalSearch';
-import { accountStore, customerRareStore, globalStore } from '@/stores';
+import {
+	accountStore,
+	customerRareStore as customerStore,
+	globalStore,
+} from '@/stores';
 import { toSet } from '@/utilities';
 
 const { isAccountFeatureClientEnabled } = siteConfig;
@@ -76,9 +80,9 @@ export default memo<IProps>(function Content({ onModalClose }) {
 					: (accountUser.nickname ?? accountUser.username);
 
 	const isOrderLinkedFilter =
-		customerRareStore.persistence.customer.orderLinkedFilter.use();
+		customerStore.persistence.customer.orderLinkedFilter.use();
 	const isShowTagDescription =
-		customerRareStore.persistence.customer.showTagDescription.use();
+		customerStore.persistence.customer.showTagDescription.use();
 
 	const allDlcs = globalStore.dlcs.get();
 	const hiddenDlcs = globalStore.hiddenDlcs.use();
@@ -642,8 +646,8 @@ export default memo<IProps>(function Content({ onModalClose }) {
 					<SwitchItem
 						isSelected={isOrderLinkedFilter}
 						onValueChange={
-							customerRareStore.persistence.customer
-								.orderLinkedFilter.set
+							customerStore.persistence.customer.orderLinkedFilter
+								.set
 						}
 						aria-label={`选择点单需求标签的同时${isOrderLinkedFilter ? '不' : ''}筛选表格`}
 					>
@@ -662,7 +666,7 @@ export default memo<IProps>(function Content({ onModalClose }) {
 					<SwitchItem
 						isSelected={isShowTagDescription}
 						onValueChange={
-							customerRareStore.persistence.customer
+							customerStore.persistence.customer
 								.showTagDescription.set
 						}
 						aria-label={`${isShowTagDescription ? '隐藏' : '显示'}料理标签描述`}

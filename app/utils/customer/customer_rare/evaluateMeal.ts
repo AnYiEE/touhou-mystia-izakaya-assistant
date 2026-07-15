@@ -7,10 +7,10 @@ import {
 	type TRecipeName,
 	type TRecipeTag,
 } from '@/data';
-import { type ICustomerOrder } from '@/stores';
+import { type ICustomerOrder } from '@/types';
 import { checkLengthEmpty, intersection, without } from '@/utilities';
 
-interface IParameters {
+export interface IEvaluateMealParams {
 	currentBeverageTags: TBeverageTag[];
 	currentCustomerBeverageTags: TBeverageTag[];
 	currentCustomerName: TCustomerRareName;
@@ -24,13 +24,32 @@ interface IParameters {
 	isDarkMatter: boolean;
 }
 
+export type TCreateMealEvaluatorParams = Pick<
+	IEvaluateMealParams,
+	| 'currentBeverageTags'
+	| 'currentCustomerBeverageTags'
+	| 'currentCustomerName'
+	| 'currentCustomerNegativeTags'
+	| 'currentCustomerOrder'
+	| 'currentCustomerPositiveTags'
+	| 'hasMystiaCooker'
+>;
+
+export type TMealEvaluatorParams = Pick<
+	IEvaluateMealParams,
+	| 'currentIngredients'
+	| 'currentRecipeName'
+	| 'currentRecipeTagsWithTrend'
+	| 'isDarkMatter'
+>;
+
 function calculateMaxScore({
 	currentBeverageTags,
 	currentCustomerOrder,
 	currentRecipeTagsWithTrend,
 	hasMystiaCooker,
 }: Pick<
-	IParameters,
+	IEvaluateMealParams,
 	| 'currentBeverageTags'
 	| 'currentCustomerOrder'
 	| 'currentRecipeTagsWithTrend'
@@ -76,7 +95,7 @@ function calculateMinScore({
 	hasMystiaCooker,
 	mealScore,
 }: Pick<
-	IParameters,
+	IEvaluateMealParams,
 	| 'currentBeverageTags'
 	| 'currentCustomerOrder'
 	| 'currentRecipeTagsWithTrend'
@@ -105,13 +124,26 @@ function calculateMinScore({
 	return mealScore;
 }
 
+export function getIngredientEasterEggTarget(
+	currentCustomerName: TCustomerRareName
+): TIngredientName | null {
+	switch (currentCustomerName) {
+		case '河城荷取':
+			return '黄瓜';
+		case '犬走椛':
+			return '可可豆';
+		default:
+			return null;
+	}
+}
+
 export function checkIngredientEasterEgg({
 	currentCustomerName,
 	currentIngredients,
 	currentRecipeName,
 	mealScore = 0,
 }: Pick<
-	IParameters,
+	IEvaluateMealParams,
 	'currentCustomerName' | 'currentIngredients' | 'currentRecipeName'
 > & { mealScore?: number }): {
 	ingredient: TIngredientName | null;
@@ -123,21 +155,16 @@ export function checkIngredientEasterEgg({
 		return noChanged;
 	}
 
+	const ingredient = getIngredientEasterEggTarget(currentCustomerName);
+	if (ingredient === null || !currentIngredients.includes(ingredient)) {
+		return noChanged;
+	}
+
 	switch (currentCustomerName) {
-		case '河城荷取': {
-			const ingredient = '黄瓜';
-			if (currentIngredients.includes(ingredient)) {
-				return { ingredient, score: Math.max(mealScore, 3) };
-			}
-			break;
-		}
-		case '犬走椛': {
-			const ingredient = '可可豆';
-			if (currentIngredients.includes(ingredient)) {
-				return { ingredient, score: Math.min(mealScore, 1) };
-			}
-			break;
-		}
+		case '河城荷取':
+			return { ingredient, score: Math.max(mealScore, 3) };
+		case '犬走椛':
+			return { ingredient, score: Math.min(mealScore, 1) };
 	}
 
 	return noChanged;
@@ -147,7 +174,7 @@ export function checkRecipeEasterEgg({
 	currentCustomerName,
 	currentRecipeName,
 	mealScore = 0,
-}: Pick<IParameters, 'currentCustomerName' | 'currentRecipeName'> & {
+}: Pick<IEvaluateMealParams, 'currentCustomerName' | 'currentRecipeName'> & {
 	mealScore?: number;
 }): { recipe: TRecipeName | null; score: number } {
 	switch (currentCustomerName) {
@@ -205,7 +232,7 @@ function checkEasterEgg({
 	currentRecipeName,
 	mealScore,
 }: Pick<
-	IParameters,
+	IEvaluateMealParams,
 	'currentCustomerName' | 'currentRecipeName' | 'currentIngredients'
 > & { mealScore: number }) {
 	switch (currentCustomerName) {
@@ -253,102 +280,112 @@ function getRatingKey(mealScore: number): TRatingKey | null {
 	return null;
 }
 
-export function evaluateMeal({
+function evaluateBeverageSide({
 	currentBeverageTags,
 	currentCustomerBeverageTags,
-	currentCustomerName,
-	currentCustomerNegativeTags,
 	currentCustomerOrder,
-	currentCustomerPositiveTags,
-	currentIngredients,
-	currentRecipeName,
-	currentRecipeTagsWithTrend,
 	hasMystiaCooker,
-	isDarkMatter,
-}: IParameters) {
-	if (checkLengthEmpty(currentBeverageTags) || currentRecipeName === null) {
-		return null;
-	}
-
-	let currentRecipeScore: number | null = null;
-
-	if (isDarkMatter) {
-		currentRecipeName = DARK_MATTER_META_MAP.name;
-		currentRecipeScore = 0;
-		currentRecipeTagsWithTrend = [DARK_MATTER_META_MAP.positiveTag];
-		hasMystiaCooker = false;
-	}
-
-	const {
-		beverageTag: customerOrderBeverageTag,
-		recipeTag: customerOrderRecipeTag,
-	} = currentCustomerOrder;
-
-	if (customerOrderBeverageTag === null && !hasMystiaCooker) {
-		return null;
-	}
-	if (customerOrderRecipeTag === null && !hasMystiaCooker) {
-		return null;
-	}
-
+}: Pick<
+	TCreateMealEvaluatorParams,
+	| 'currentBeverageTags'
+	| 'currentCustomerBeverageTags'
+	| 'currentCustomerOrder'
+	| 'hasMystiaCooker'
+>) {
 	const matchedBeverageTags = intersection(
 		currentBeverageTags,
 		currentCustomerBeverageTags
 	);
 	const matchedBeverageTagsWithoutOrderedBeverage = without(
 		matchedBeverageTags,
-		hasMystiaCooker ? matchedBeverageTags[0] : customerOrderBeverageTag
+		hasMystiaCooker
+			? matchedBeverageTags[0]
+			: currentCustomerOrder.beverageTag
 	);
 	const orderedBeverageScore = checkLengthEmpty(matchedBeverageTags)
 		? 0
 		: Number(
 				hasMystiaCooker ||
-					(customerOrderBeverageTag
-						? matchedBeverageTags.includes(customerOrderBeverageTag)
+					(currentCustomerOrder.beverageTag
+						? matchedBeverageTags.includes(
+								currentCustomerOrder.beverageTag
+							)
 						: 0)
 			);
-	const { length: matchedBeverageScore } =
-		matchedBeverageTagsWithoutOrderedBeverage;
-	const beverageScore = orderedBeverageScore + matchedBeverageScore;
 
-	if (currentRecipeScore === null) {
-		const matchedRecipeNegativeTags = intersection(
-			currentRecipeTagsWithTrend,
-			currentCustomerNegativeTags
-		);
-		const matchedRecipePositiveTags = intersection(
-			currentRecipeTagsWithTrend,
-			currentCustomerPositiveTags
-		);
-		const matchedRecipePositiveTagsWithoutOrderedRecipe = without(
-			matchedRecipePositiveTags,
-			hasMystiaCooker
-				? matchedRecipePositiveTags[0]
-				: customerOrderRecipeTag
-		);
-		const orderedRecipeScore = checkLengthEmpty(matchedRecipePositiveTags)
-			? 0
-			: Number(
-					hasMystiaCooker ||
-						(customerOrderRecipeTag
-							? matchedRecipePositiveTags.includes(
-									customerOrderRecipeTag
-								)
-							: 0)
-				);
-		const { length: matchedRecipeNegativeScore } =
-			matchedRecipeNegativeTags;
-		const { length: matchedRecipePositiveScore } =
-			matchedRecipePositiveTagsWithoutOrderedRecipe;
-		currentRecipeScore = isDarkMatter
-			? 0
-			: orderedRecipeScore +
-				matchedRecipePositiveScore -
-				matchedRecipeNegativeScore;
-	}
+	return (
+		orderedBeverageScore + matchedBeverageTagsWithoutOrderedBeverage.length
+	);
+}
 
+function evaluateRecipeSide({
+	currentCustomerNegativeTags,
+	currentCustomerOrder,
+	currentCustomerPositiveTags,
+	currentRecipeTagsWithTrend,
+	hasMystiaCooker,
+}: Pick<
+	IEvaluateMealParams,
+	| 'currentCustomerNegativeTags'
+	| 'currentCustomerOrder'
+	| 'currentCustomerPositiveTags'
+	| 'currentRecipeTagsWithTrend'
+	| 'hasMystiaCooker'
+>) {
+	const matchedRecipeNegativeTags = intersection(
+		currentRecipeTagsWithTrend,
+		currentCustomerNegativeTags
+	);
+	const matchedRecipePositiveTags = intersection(
+		currentRecipeTagsWithTrend,
+		currentCustomerPositiveTags
+	);
+	const matchedRecipePositiveTagsWithoutOrderedRecipe = without(
+		matchedRecipePositiveTags,
+		hasMystiaCooker
+			? matchedRecipePositiveTags[0]
+			: currentCustomerOrder.recipeTag
+	);
+	const orderedRecipeScore = checkLengthEmpty(matchedRecipePositiveTags)
+		? 0
+		: Number(
+				hasMystiaCooker ||
+					(currentCustomerOrder.recipeTag
+						? matchedRecipePositiveTags.includes(
+								currentCustomerOrder.recipeTag
+							)
+						: 0)
+			);
+
+	return (
+		orderedRecipeScore +
+		matchedRecipePositiveTagsWithoutOrderedRecipe.length -
+		matchedRecipeNegativeTags.length
+	);
+}
+
+function combineMealSides({
+	beverageScore,
+	currentBeverageTags,
+	currentCustomerName,
+	currentCustomerOrder,
+	currentIngredients,
+	currentRecipeName,
+	currentRecipeTagsWithTrend,
+	hasMystiaCooker,
+	recipeScore,
+}: Pick<
+	IEvaluateMealParams,
+	| 'currentBeverageTags'
+	| 'currentCustomerName'
+	| 'currentCustomerOrder'
+	| 'currentIngredients'
+	| 'currentRecipeName'
+	| 'currentRecipeTagsWithTrend'
+	| 'hasMystiaCooker'
+> & { beverageScore: number; recipeScore: number }) {
 	let mealScore = Math.min(
-		beverageScore + currentRecipeScore,
+		beverageScore + recipeScore,
 		calculateMaxScore({
 			currentBeverageTags,
 			currentCustomerOrder,
@@ -373,4 +410,111 @@ export function evaluateMeal({
 	});
 
 	return getRatingKey(mealScore);
+}
+
+export function createMealEvaluator({
+	currentBeverageTags,
+	currentCustomerBeverageTags,
+	currentCustomerName,
+	currentCustomerNegativeTags,
+	currentCustomerOrder,
+	currentCustomerPositiveTags,
+	hasMystiaCooker,
+}: TCreateMealEvaluatorParams) {
+	const beverageScoreWithMystiaCooker = evaluateBeverageSide({
+		currentBeverageTags,
+		currentCustomerBeverageTags,
+		currentCustomerOrder,
+		hasMystiaCooker: true,
+	});
+	const beverageScoreWithoutMystiaCooker = evaluateBeverageSide({
+		currentBeverageTags,
+		currentCustomerBeverageTags,
+		currentCustomerOrder,
+		hasMystiaCooker: false,
+	});
+
+	return ({
+		currentIngredients,
+		currentRecipeName,
+		currentRecipeTagsWithTrend,
+		isDarkMatter,
+	}: TMealEvaluatorParams) => {
+		if (
+			checkLengthEmpty(currentBeverageTags) ||
+			currentRecipeName === null
+		) {
+			return null;
+		}
+
+		const effectiveHasMystiaCooker = isDarkMatter ? false : hasMystiaCooker;
+		const effectiveRecipeName = isDarkMatter
+			? DARK_MATTER_META_MAP.name
+			: currentRecipeName;
+		const effectiveRecipeTagsWithTrend = isDarkMatter
+			? [DARK_MATTER_META_MAP.positiveTag]
+			: currentRecipeTagsWithTrend;
+
+		if (
+			(currentCustomerOrder.beverageTag === null ||
+				currentCustomerOrder.recipeTag === null) &&
+			!effectiveHasMystiaCooker
+		) {
+			return null;
+		}
+
+		const beverageScore = effectiveHasMystiaCooker
+			? beverageScoreWithMystiaCooker
+			: beverageScoreWithoutMystiaCooker;
+		const recipeScore = isDarkMatter
+			? 0
+			: evaluateRecipeSide({
+					currentCustomerNegativeTags,
+					currentCustomerOrder,
+					currentCustomerPositiveTags,
+					currentRecipeTagsWithTrend: effectiveRecipeTagsWithTrend,
+					hasMystiaCooker: effectiveHasMystiaCooker,
+				});
+
+		return combineMealSides({
+			beverageScore,
+			currentBeverageTags,
+			currentCustomerName,
+			currentCustomerOrder,
+			currentIngredients,
+			currentRecipeName: effectiveRecipeName,
+			currentRecipeTagsWithTrend: effectiveRecipeTagsWithTrend,
+			hasMystiaCooker: effectiveHasMystiaCooker,
+			recipeScore,
+		});
+	};
+}
+
+export function evaluateMeal({
+	currentBeverageTags,
+	currentCustomerBeverageTags,
+	currentCustomerName,
+	currentCustomerNegativeTags,
+	currentCustomerOrder,
+	currentCustomerPositiveTags,
+	currentIngredients,
+	currentRecipeName,
+	currentRecipeTagsWithTrend,
+	hasMystiaCooker,
+	isDarkMatter,
+}: IEvaluateMealParams) {
+	return createMealEvaluator({
+		currentBeverageTags,
+		currentCustomerBeverageTags,
+		currentCustomerName,
+		currentCustomerNegativeTags,
+		currentCustomerOrder,
+		currentCustomerPositiveTags,
+		hasMystiaCooker,
+	})({
+		currentIngredients,
+		currentRecipeName,
+		currentRecipeTagsWithTrend,
+		isDarkMatter,
+	});
 }

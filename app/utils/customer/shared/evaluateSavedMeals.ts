@@ -4,8 +4,8 @@ import {
 	type TCustomerNormalName,
 	type TCustomerRareName,
 } from '@/data';
-import { type ICustomerOrder } from '@/stores';
 import {
+	type ICustomerOrder,
 	type IMealRecipe,
 	type IPopularTrend,
 	type TPopularTag,

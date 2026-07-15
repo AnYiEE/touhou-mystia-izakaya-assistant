@@ -45,6 +45,7 @@ import {
 	reverseVisibilityState,
 } from '@/stores/utils';
 import type {
+	ICustomerOrder,
 	ICustomerRareMeal,
 	ICustomerRarePlansState,
 	IMealRecipe,
@@ -100,11 +101,6 @@ import {
 	updateActiveCustomerRarePlan,
 } from '@/utils/customer/shared';
 import type { TBeverage, TRecipe } from '@/utils/types';
-
-export interface ICustomerOrder {
-	beverageTag: TBeverageTag | null;
-	recipeTag: TRecipeTag | null;
-}
 
 type TBeverageTableSortDescriptor = ITableSortDescriptor<TBeverageTableSortKey>;
 type TRecipeTableSortDescriptor = ITableSortDescriptor<TRecipeTableSortKey>;

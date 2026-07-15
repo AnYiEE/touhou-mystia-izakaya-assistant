@@ -73,8 +73,6 @@ import {
 	type TBeverageTag,
 	type TCookerName,
 	type TCustomerRareName,
-	type TDlc,
-	type TIngredientName,
 	type TPlace,
 	type TRecipeName,
 	type TRecipeTag,
@@ -83,31 +81,26 @@ import { customerRareStore as customerStore, globalStore } from '@/stores';
 import { CUSTOMER_RARE_PLAN_DRAWER_EXIT_DURATION_MS } from '@/lib/overlayCoordinator';
 import type {
 	ICustomerRareMeal,
-	IPopularTrend,
 	IResolvedCustomerRarePlanGroup,
 	TCustomerRarePlanCustomerSort,
 	TCustomerRarePlanMealSource,
 	TCustomerRarePlanMode,
 } from '@/types';
-import {
-	checkLengthEmpty,
-	createBoundedRuntimeCache,
-	pinyinSort,
-} from '@/utilities';
-import { resolveRecommendedCustomerRarePlanMealBatch } from '@/utils/customer/shared';
+import { checkLengthEmpty, pinyinSort } from '@/utilities';
 import {
 	checkCustomerRarePlansStateVirtual,
 	getDisplayedCustomerRarePlan,
 	normalizeCustomerRarePlanName,
 } from '@/utils/customer/shared/customerRarePlanState';
 
+import { useCustomerRarePlanRecommendations } from './useCustomerRarePlanRecommendations';
+
 const DRAWER_CONTENT_READY_DELAY = 360;
-const DRAWER_RECOMMENDED_MEAL_BATCH_SIZE = 1;
 const DRAWER_RECOMMENDED_MEAL_RENDER_BATCH_SIZE = 12;
+const DRAWER_STATUS_NOTICE_TRANSITION_DURATION_SECONDS = 0.14;
 const DRAWER_SKELETON_ROWS = [0, 1, 2, 3, 4, 5] as const;
 const CONTROLS_TOGGLE_CLICK_GUARD_MS = 320;
 const RECOMMENDED_FILTER_ALL_KEY = '__all__';
-const RECOMMENDED_MEAL_CACHE_VERSION = 3;
 const DRAWER_SKELETON_PRIMARY_CLASSNAME =
 	'bg-default/45 dark:bg-foreground/15 animate-pulse';
 const DRAWER_SKELETON_SECONDARY_CLASSNAME =
@@ -116,7 +109,6 @@ const DRAWER_SKELETON_BLOCK_CLASSNAME =
 	'bg-default/35 dark:bg-foreground/10 animate-pulse';
 const DRAWER_SKELETON_MUTED_BLOCK_CLASSNAME =
 	'bg-default/25 dark:bg-foreground/5 animate-pulse';
-const DRAWER_RECOMMENDED_MEAL_CACHE_MAX_SIZE = 256;
 const CUSTOMER_RARE_PLAN_CUSTOMER_SORT_OPTIONS = [
 	{ label: '默认排序', value: 'default' },
 	{ label: '拼音A-Z（按DLC分组）', value: 'pinyin-asc' },
@@ -134,61 +126,6 @@ const CUSTOMER_RARE_PLAN_INTERACTIVE_SELECTOR = [
 	'[data-customer-rare-plan-interactive="true"]',
 ].join(',');
 let controlsToggleClickGuardUntil = 0;
-interface IRecommendedMealCacheEntry {
-	isComplete: boolean;
-	meals: IResolvedCustomerRarePlanGroup['meals'];
-	nextIndex: number;
-}
-
-const recommendedMealCache = createBoundedRuntimeCache<
-	string,
-	IRecommendedMealCacheEntry
->(DRAWER_RECOMMENDED_MEAL_CACHE_MAX_SIZE);
-
-function getSortedCacheValues<T extends number | string>(
-	values: ReadonlySet<T>
-) {
-	return [...values].map(String).sort(pinyinSort);
-}
-
-function getRecommendedMealCacheKey({
-	customerName,
-	hiddenBeverages,
-	hiddenDlcs,
-	hiddenIngredients,
-	hiddenRecipes,
-	isFamousShop,
-	maxExtraIngredients,
-	maxRating,
-	maxResults,
-	popularTrend,
-}: {
-	customerName: TCustomerRareName;
-	hiddenBeverages: ReadonlySet<TBeverageName>;
-	hiddenDlcs: ReadonlySet<TDlc>;
-	hiddenIngredients: ReadonlySet<TIngredientName>;
-	hiddenRecipes: ReadonlySet<TRecipeName>;
-	isFamousShop: boolean;
-	maxExtraIngredients: number | null;
-	maxRating: number;
-	maxResults: number;
-	popularTrend: IPopularTrend;
-}) {
-	return JSON.stringify({
-		cacheVersion: RECOMMENDED_MEAL_CACHE_VERSION,
-		customerName,
-		hiddenBeverages: getSortedCacheValues(hiddenBeverages),
-		hiddenDlcs: getSortedCacheValues(hiddenDlcs),
-		hiddenIngredients: getSortedCacheValues(hiddenIngredients),
-		hiddenRecipes: getSortedCacheValues(hiddenRecipes),
-		isFamousShop,
-		maxExtraIngredients,
-		maxRating,
-		maxResults,
-		popularTrendIsNegative: popularTrend.isNegative,
-		popularTrendTag: popularTrend.tag,
-	});
-}
 
 function getInteractionTimestamp() {
 	return performance.now();
@@ -489,6 +426,7 @@ function CustomerGroup({
 	onOpenRecipe,
 	onToggleExpanded,
 	popoverPortalProps,
+	recommendationSessionKey,
 }: {
 	group: IResolvedCustomerRarePlanGroup;
 	isExpanded: boolean;
@@ -502,6 +440,7 @@ function CustomerGroup({
 	onOpenRecipe: (recipeName: TRecipeName) => void;
 	onToggleExpanded: (customerName: TCustomerRareName) => void;
 	popoverPortalProps: Pick<IPopoverProps, 'portalContainer'>;
+	recommendationSessionKey: string;
 }) {
 	const isReducedMotion = useReducedMotion();
 	const isHighAppearance = globalStore.persistence.highAppearance.use();
@@ -520,58 +459,35 @@ function CustomerGroup({
 	const recommendedMaxResults =
 		customerStore.shared.suggestMeals.maxResults.use();
 	const cardRef = useRef<HTMLDivElement>(null);
-	const recommendedMealCacheKey = useMemo(
-		() =>
-			getRecommendedMealCacheKey({
-				customerName: group.customerName,
-				hiddenBeverages,
-				hiddenDlcs,
-				hiddenIngredients,
-				hiddenRecipes,
-				isFamousShop,
-				maxExtraIngredients: recommendedMaxExtraIngredients,
-				maxRating: recommendedMaxRating,
-				maxResults: recommendedMaxResults,
-				popularTrend,
-			}),
-		[
-			group.customerName,
+	const isRecommendedSource = group.mealSource === 'recommended';
+	const { meals: recommendedMeals, status: recommendedMealsStatus } =
+		useCustomerRarePlanRecommendations({
+			customerName: group.customerName,
 			hiddenBeverages,
 			hiddenDlcs,
 			hiddenIngredients,
 			hiddenRecipes,
+			isEnabled: isRecommendedSource && isExpanded,
 			isFamousShop,
+			maxExtraIngredients: recommendedMaxExtraIngredients,
+			maxRating: recommendedMaxRating,
+			maxResults: recommendedMaxResults,
 			popularTrend,
-			recommendedMaxExtraIngredients,
-			recommendedMaxRating,
-			recommendedMaxResults,
-		]
-	);
-	const initialRecommendedMealCacheEntry = useMemo(
-		() => recommendedMealCache.get(recommendedMealCacheKey),
-		[recommendedMealCacheKey]
-	);
-	const recommendedMealsRef = useRef<IResolvedCustomerRarePlanGroup['meals']>(
-		initialRecommendedMealCacheEntry?.meals ?? []
-	);
-	const recommendedNextIndexRef = useRef(
-		initialRecommendedMealCacheEntry?.nextIndex ?? 0
-	);
-	const [recommendedMeals, setRecommendedMeals] = useState<
-		IResolvedCustomerRarePlanGroup['meals']
-	>(initialRecommendedMealCacheEntry?.meals ?? []);
+			sessionKey: recommendationSessionKey,
+		});
 	const [recommendedRenderCount, setRecommendedRenderCount] = useState(0);
-	const [isRecommendedMealsComplete, setIsRecommendedMealsComplete] =
-		useState(initialRecommendedMealCacheEntry?.isComplete ?? false);
-	const [isRecommendedMealsLoading, setIsRecommendedMealsLoading] =
-		useState(false);
 	const [selectedRecommendedRecipeTag, setSelectedRecommendedRecipeTag] =
 		useState<TRecipeTag | null>(null);
 	const [selectedRecommendedBeverageTag, setSelectedRecommendedBeverageTag] =
 		useState<TBeverageTag | null>(null);
 	const [activeRecommendedSetIndex, setActiveRecommendedSetIndex] =
 		useState(0);
-	const isRecommendedSource = group.mealSource === 'recommended';
+	const isRecommendedMealsComplete = recommendedMealsStatus === 'complete';
+	const isRecommendedMealsError = recommendedMealsStatus === 'error';
+	const isRecommendedMealsLoading =
+		isExpanded &&
+		(recommendedMealsStatus === 'pending' ||
+			recommendedMealsStatus === 'partial');
 	const displayMeals = isRecommendedSource ? recommendedMeals : group.meals;
 	const availableRecommendedSetIndexes = useMemo(
 		() =>
@@ -712,13 +628,23 @@ function CustomerGroup({
 		isExpanded &&
 		isRecommendedMealsLoading &&
 		checkLengthEmpty(displayMeals);
+	const recommendedStatusNotice = isRecommendedMealsLoading
+		? { className: 'text-foreground-500', text: '正在生成更多推荐套餐…' }
+		: isRecommendedMealsError
+			? {
+					className: 'text-danger-600',
+					text: '部分推荐套餐生成失败，收起后可重试',
+				}
+			: null;
 	const mealCountLabel = isRecommendedSource
 		? checkLengthEmpty(displayMeals)
 			? isRecommendedMealsPending
 				? '生成中'
-				: isRecommendedMealsComplete
-					? '0个套餐'
-					: '自动推荐'
+				: isRecommendedMealsError
+					? '生成失败'
+					: isRecommendedMealsComplete
+						? '0个套餐'
+						: '自动推荐'
 			: isRecommendedFilterActive
 				? `${filteredDisplayMeals.length}/${activeRecommendedSetMeals.length}个套餐`
 				: `${activeRecommendedSetMeals.length}个套餐`
@@ -727,23 +653,11 @@ function CustomerGroup({
 	useEffect(() => {
 		if (!isRecommendedSource) {
 			setRecommendedRenderCount(0);
-			setIsRecommendedMealsLoading(false);
 			setSelectedRecommendedRecipeTag(null);
 			setSelectedRecommendedBeverageTag(null);
 			setActiveRecommendedSetIndex(0);
-			return;
 		}
-
-		const cacheEntry = recommendedMealCache.get(recommendedMealCacheKey);
-		const cachedMeals = cacheEntry?.meals ?? [];
-
-		recommendedMealsRef.current = cachedMeals;
-		recommendedNextIndexRef.current = cacheEntry?.nextIndex ?? 0;
-		setRecommendedMeals(cachedMeals);
-		setRecommendedRenderCount(0);
-		setIsRecommendedMealsComplete(cacheEntry?.isComplete ?? false);
-		setIsRecommendedMealsLoading(false);
-	}, [isRecommendedSource, recommendedMealCacheKey]);
+	}, [isRecommendedSource]);
 
 	useEffect(() => {
 		if (!isRecommendedSource || checkLengthEmpty(displayMeals)) {
@@ -838,89 +752,6 @@ function CustomerGroup({
 		recommendedRenderCount,
 	]);
 
-	useEffect(() => {
-		if (!isRecommendedSource || !isExpanded) {
-			setIsRecommendedMealsLoading(false);
-			return;
-		}
-		if (isRecommendedMealsComplete) {
-			return;
-		}
-
-		let isCancelled = false;
-		let timer: ReturnType<typeof setTimeout> | null = null;
-		let nextIndex = recommendedNextIndexRef.current;
-		let meals = recommendedMealsRef.current;
-
-		setIsRecommendedMealsLoading(true);
-
-		const runBatch = () => {
-			const batch = resolveRecommendedCustomerRarePlanMealBatch({
-				batchSize: DRAWER_RECOMMENDED_MEAL_BATCH_SIZE,
-				customerName: group.customerName,
-				hiddenBeverages,
-				hiddenDlcs,
-				hiddenIngredients,
-				hiddenRecipes,
-				isFamousShop,
-				maxExtraIngredients: recommendedMaxExtraIngredients,
-				maxRating: recommendedMaxRating,
-				maxResults: recommendedMaxResults,
-				popularTrend,
-				startIndex: nextIndex,
-			});
-
-			if (isCancelled) {
-				return;
-			}
-
-			nextIndex = batch.nextIndex;
-			recommendedNextIndexRef.current = nextIndex;
-			if (!checkLengthEmpty(batch.meals)) {
-				meals = [...meals, ...batch.meals];
-				recommendedMealsRef.current = meals;
-				setRecommendedMeals(meals);
-			}
-			recommendedMealCache.set(recommendedMealCacheKey, {
-				isComplete: batch.isComplete,
-				meals,
-				nextIndex,
-			});
-
-			if (batch.isComplete) {
-				setIsRecommendedMealsComplete(true);
-				setIsRecommendedMealsLoading(false);
-				return;
-			}
-
-			timer = globalThis.setTimeout(runBatch, 0);
-		};
-
-		timer = globalThis.setTimeout(runBatch, 0);
-
-		return () => {
-			isCancelled = true;
-			if (timer !== null) {
-				globalThis.clearTimeout(timer);
-			}
-		};
-	}, [
-		group.customerName,
-		hiddenBeverages,
-		hiddenDlcs,
-		hiddenIngredients,
-		hiddenRecipes,
-		isExpanded,
-		isFamousShop,
-		isRecommendedMealsComplete,
-		isRecommendedSource,
-		popularTrend,
-		recommendedMealCacheKey,
-		recommendedMaxExtraIngredients,
-		recommendedMaxRating,
-		recommendedMaxResults,
-	]);
-
 	const handleRecommendedRecipeTagFilterChange = useCallback(
 		(selection: Selection) => {
 			const [value] = selectionToValues<string>(selection);
@@ -960,6 +791,7 @@ function CustomerGroup({
 
 	return (
 		<Card
+			as="div"
 			ref={cardRef}
 			disableAnimation
 			disableRipple
@@ -1162,6 +994,11 @@ function CustomerGroup({
 								<Placeholder className="rounded-small border border-dashed border-default-200/80 bg-background/35 px-3 py-5 text-small dark:bg-default-50/5">
 									正在生成推荐套餐
 								</Placeholder>
+							) : isRecommendedMealsError &&
+							  checkLengthEmpty(filteredDisplayMeals) ? (
+								<Placeholder className="rounded-small border border-dashed border-default-200/80 bg-background/35 px-3 py-5 text-small dark:bg-default-50/5">
+									推荐套餐生成失败，请收起后重试
+								</Placeholder>
 							) : checkLengthEmpty(filteredDisplayMeals) ? (
 								<Placeholder className="space-y-3 rounded-small border border-dashed border-default-200/80 bg-background/35 px-3 py-5 text-small dark:bg-default-50/5">
 									{group.mealSource === 'recommended' ? (
@@ -1196,21 +1033,60 @@ function CustomerGroup({
 									)}
 								</Placeholder>
 							) : (
-								<div className="grid grid-cols-1 gap-2 min-[1202px]:grid-cols-2 min-[1738px]:grid-cols-3 min-[2284px]:grid-cols-4">
-									{renderedMeals.map((meal) => (
-										<MealRow
-											key={`${group.customerName}:${meal.source}:${meal.dataIndex ?? meal.visibleIndex}`}
-											meal={meal}
-											onOpenBeverage={onOpenBeverage}
-											onOpenCooker={onOpenCooker}
-											onOpenIngredient={onOpenIngredient}
-											onOpenRecipe={onOpenRecipe}
-											popoverPortalProps={
-												popoverPortalProps
-											}
-										/>
-									))}
-								</div>
+								<>
+									<AnimatePresence initial={false}>
+										{recommendedStatusNotice !== null && (
+											<motion.div
+												key="recommended-status-notice"
+												animate={{
+													height: 'auto',
+													opacity: 1,
+												}}
+												exit={{ height: 0, opacity: 0 }}
+												initial={{
+													height: 0,
+													opacity: 0,
+												}}
+												transition={{
+													duration: isReducedMotion
+														? 0
+														: DRAWER_STATUS_NOTICE_TRANSITION_DURATION_SECONDS,
+													ease: 'easeInOut',
+												}}
+												className="overflow-hidden"
+											>
+												<p
+													className={cn(
+														'pb-2 text-tiny',
+														recommendedStatusNotice.className
+													)}
+													aria-live="polite"
+												>
+													{
+														recommendedStatusNotice.text
+													}
+												</p>
+											</motion.div>
+										)}
+									</AnimatePresence>
+									<div className="grid grid-cols-1 gap-2 min-[1202px]:grid-cols-2 min-[1738px]:grid-cols-3 min-[2284px]:grid-cols-4">
+										{renderedMeals.map((meal) => (
+											<MealRow
+												key={`${group.customerName}:${meal.source}:${meal.dataIndex ?? meal.visibleIndex}`}
+												meal={meal}
+												onOpenBeverage={onOpenBeverage}
+												onOpenCooker={onOpenCooker}
+												onOpenIngredient={
+													onOpenIngredient
+												}
+												onOpenRecipe={onOpenRecipe}
+												popoverPortalProps={
+													popoverPortalProps
+												}
+											/>
+										))}
+									</div>
+								</>
 							)}
 						</div>
 					</motion.div>
@@ -1339,9 +1215,11 @@ function CustomerRarePlanHelpPopover({
 function CustomerRarePlanResults({
 	isHighAppearance,
 	popoverPortalProps,
+	recommendationSessionKey,
 }: {
 	isHighAppearance: boolean;
 	popoverPortalProps: Pick<IPopoverProps, 'portalContainer'>;
+	recommendationSessionKey: string;
 }) {
 	const { pushState } = usePathname();
 	const openWindow = useViewInNewWindow();
@@ -1515,6 +1393,9 @@ function CustomerRarePlanResults({
 											}
 											popoverPortalProps={
 												popoverPortalProps
+											}
+											recommendationSessionKey={
+												recommendationSessionKey
 											}
 										/>
 									</motion.div>
@@ -2869,6 +2750,9 @@ export default function CustomerRarePlanDrawer() {
 											isHighAppearance={isHighAppearance}
 											popoverPortalProps={
 												drawerPortalContainerProps
+											}
+											recommendationSessionKey={
+												activePlan.id
 											}
 										/>
 									</div>

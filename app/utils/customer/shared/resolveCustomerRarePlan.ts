@@ -22,7 +22,10 @@ import { pinyinSort } from '@/utilities';
 
 import { evaluateRareSavedMeal } from './evaluateSavedMeals';
 import { getVisibleSavedMeals } from './getVisibleSavedMeals';
-import { suggestMeals } from '../customer_rare/suggestMeals';
+import {
+	type ISuggestMealsOptions,
+	suggestMeals,
+} from '../customer_rare/suggestMeals';
 
 interface IResolveCustomerRarePlanParams {
 	beverageInstance?: Beverage;
@@ -40,19 +43,20 @@ interface IResolveCustomerRarePlanParams {
 	recipeInstance?: Recipe;
 }
 
-interface IRecommendedCustomerRarePlanMealCombo {
+export interface IRecommendedCustomerRarePlanMealCombo {
 	beverageTag: TBeverageTag;
 	cooker: TCookerName;
 	recipeTag: TRecipeTag;
 }
 
+export interface IRecommendedCustomerRarePlanMealSession {
+	readonly combos: ReadonlyArray<IRecommendedCustomerRarePlanMealCombo>;
+}
+
 interface IResolveRecommendedCustomerRarePlanMealBatchParams {
 	batchSize: number;
-	cookerInstance?: Cooker;
-	customerInstance?: CustomerRare;
 	customerName: TCustomerRareName;
 	hiddenBeverages: ReadonlySet<TBeverageName>;
-	hiddenDlcs: ReadonlySet<TDlc>;
 	hiddenIngredients: ReadonlySet<TIngredientName>;
 	hiddenRecipes: ReadonlySet<TRecipeName>;
 	isFamousShop: boolean;
@@ -61,6 +65,7 @@ interface IResolveRecommendedCustomerRarePlanMealBatchParams {
 	maxResults: number;
 	popularTrend: IPopularTrend;
 	recipeInstance?: Recipe;
+	session: IRecommendedCustomerRarePlanMealSession;
 	startIndex: number;
 }
 
@@ -478,17 +483,17 @@ function resolveSavedCustomerRarePlanMeals({
 	}));
 }
 
-function getRecommendedCustomerRarePlanMealCombos({
-	cookerInstance,
-	customerInstance,
+export function createRecommendedCustomerRarePlanMealSession({
+	cookerInstance = instance_cooker,
+	customerInstance = instance_customer,
 	customerName,
 	hiddenDlcs,
 }: {
-	cookerInstance: Cooker;
-	customerInstance: CustomerRare;
+	cookerInstance?: Cooker;
+	customerInstance?: CustomerRare;
 	customerName: TCustomerRareName;
 	hiddenDlcs: ReadonlySet<TDlc>;
-}) {
+}): IRecommendedCustomerRarePlanMealSession {
 	const customer = customerInstance.getPropsByName(customerName);
 	const recipeTags = [...customer.positiveTags].sort(
 		pinyinSort
@@ -505,37 +510,39 @@ function getRecommendedCustomerRarePlanMealCombos({
 		.map(({ name }) => name)
 		.sort(pinyinSort);
 
-	return recipeTags.flatMap<IRecommendedCustomerRarePlanMealCombo>(
-		(recipeTag) =>
-			beverageTags.flatMap((beverageTag) =>
-				cookers.map((cooker) => ({ beverageTag, cooker, recipeTag }))
-			)
-	);
+	return {
+		combos: recipeTags.flatMap<IRecommendedCustomerRarePlanMealCombo>(
+			(recipeTag) =>
+				beverageTags.flatMap((beverageTag) =>
+					cookers.map((cooker) => ({
+						beverageTag,
+						cooker,
+						recipeTag,
+					}))
+				)
+		),
+	};
 }
 
-export function resolveRecommendedCustomerRarePlanMealBatch({
-	batchSize,
-	cookerInstance = instance_cooker,
-	customerInstance = instance_customer,
-	customerName,
-	hiddenBeverages,
-	hiddenDlcs,
-	hiddenIngredients,
-	hiddenRecipes,
-	isFamousShop,
-	maxExtraIngredients,
-	maxRating,
-	maxResults,
-	popularTrend,
-	recipeInstance = instance_recipe,
-	startIndex,
-}: IResolveRecommendedCustomerRarePlanMealBatchParams) {
-	const combos = getRecommendedCustomerRarePlanMealCombos({
-		cookerInstance,
-		customerInstance,
+export async function resolveRecommendedCustomerRarePlanMealBatch(
+	{
+		batchSize,
 		customerName,
-		hiddenDlcs,
-	});
+		hiddenBeverages,
+		hiddenIngredients,
+		hiddenRecipes,
+		isFamousShop,
+		maxExtraIngredients,
+		maxRating,
+		maxResults,
+		popularTrend,
+		recipeInstance = instance_recipe,
+		session,
+		startIndex,
+	}: IResolveRecommendedCustomerRarePlanMealBatchParams,
+	options: ISuggestMealsOptions = {}
+) {
+	const { combos } = session;
 	const safeStartIndex = Math.max(0, startIndex);
 	const safeBatchSize = Math.max(1, batchSize);
 	const safeMaxResults = Math.max(1, maxResults);
@@ -543,9 +550,13 @@ export function resolveRecommendedCustomerRarePlanMealBatch({
 		safeStartIndex,
 		safeStartIndex + safeBatchSize
 	);
-	const meals = batchCombos.flatMap(
-		({ beverageTag, cooker, recipeTag }, index) =>
-			suggestMeals({
+	const meals: IResolvedCustomerRarePlanGroup['meals'] = [];
+	for (const [
+		index,
+		{ beverageTag, cooker, recipeTag },
+	] of batchCombos.entries()) {
+		const suggestedMeals = await suggestMeals(
+			{
 				cooker,
 				currentBeverage: null,
 				currentRecipe: null,
@@ -560,7 +571,11 @@ export function resolveRecommendedCustomerRarePlanMealBatch({
 				maxRating,
 				maxResults: safeMaxResults,
 				popularTrend,
-			}).map((meal, recommendedSetIndex) => ({
+			},
+			options
+		);
+		meals.push(
+			...suggestedMeals.map((meal, recommendedSetIndex) => ({
 				dataIndex: null,
 				evaluation: {
 					isDarkMatter: recipeInstance.checkDarkMatter(meal.recipe)
@@ -580,7 +595,8 @@ export function resolveRecommendedCustomerRarePlanMealBatch({
 					(safeStartIndex + index) * safeMaxResults +
 					recommendedSetIndex,
 			}))
-	);
+		);
+	}
 	const nextIndex = safeStartIndex + batchCombos.length;
 
 	return { isComplete: nextIndex >= combos.length, meals, nextIndex };

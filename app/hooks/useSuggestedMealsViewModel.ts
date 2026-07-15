@@ -3,6 +3,7 @@ import {
 	useEffect,
 	useLayoutEffect,
 	useMemo,
+	useRef,
 	useState,
 } from 'react';
 
@@ -12,32 +13,64 @@ import {
 	DARK_MATTER_META_MAP,
 	DYNAMIC_TAG_MAP,
 	type TCookerName,
+	type TCustomerRareName,
 	type TIngredientName,
 } from '@/data';
+import { getLogSafeErrorCode } from '@/lib/logging';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
+import type { ICustomerOrder, IPopularTrend } from '@/types';
 import { checkLengthEmpty, toArray, toSet } from '@/utilities';
 import {
 	getScoreBasedAlternatives,
 	suggestMeals,
 } from '@/utils/customer/customer_rare/suggestMeals';
+import { checkSuggestMealsAbortError } from '@/utils/customer/customer_rare/suggestMealsEngine';
 import { getRestExtraIngredients } from '@/utils/customer/shared';
 
-type TSuggestedMeal = ReturnType<typeof suggestMeals>[number];
-type TSuggestions = ReturnType<typeof suggestMeals> | null;
+type TSuggestions = Awaited<ReturnType<typeof suggestMeals>> | null;
+type TSuggestedMeal = NonNullable<TSuggestions>[number];
+type TSuggestionStatus =
+	| 'error'
+	| 'idle'
+	| 'pending'
+	| 'refreshing'
+	| 'success';
+type TAlternativesStatus = 'error' | 'idle' | 'pending' | 'success';
 
 const EMPTY_ALTERNATIVES: TIngredientName[] = [];
-const EMPTY_ALTERNATIVES_MAP = new Map<
-	number,
-	Map<TIngredientName, TIngredientName[]>
->();
+const EMPTY_ALTERNATIVES_MAP = new Map<string, IAlternativesEntry>();
 
 interface IAlternativesState {
-	map: Map<number, Map<TIngredientName, TIngredientName[]>>;
+	generation: number;
+	map: Map<string, IAlternativesEntry>;
+}
+
+interface IAlternativesEntry {
+	map: Map<TIngredientName, TIngredientName[]>;
+	status: Exclude<TAlternativesStatus, 'idle'>;
+}
+
+interface ISuggestionsState {
+	activeRequestKey: string | null;
+	generation: number;
+	resultContext: ISuggestionResultContext | null;
+	resultGeneration: number;
+	status: TSuggestionStatus;
 	suggestions: TSuggestions;
+}
+
+interface ISuggestionResultContext {
+	readonly customerName: TCustomerRareName;
+	readonly customerOrder: ICustomerOrder;
+	readonly hasMystiaCooker: boolean;
+	readonly hiddenIngredients: ReadonlySet<TIngredientName>;
+	readonly isFamousShop: boolean;
+	readonly popularTrend: IPopularTrend;
 }
 
 interface ISuggestedMealRowViewModel {
 	beverage: TSuggestedMeal['beverage'];
+	alternativesStatus: TAlternativesStatus;
 	cooker: TCookerName;
 	ensureAlternatives: () => void;
 	getAlternatives: (
@@ -96,11 +129,22 @@ export function useSuggestedMealsViewModel() {
 	const instance_ingredient = customerStore.instances.ingredient.get();
 	const instance_recipe = customerStore.instances.recipe.get();
 
-	const [alternativesState, setAlternativesState] =
-		useState<IAlternativesState>(() => ({
-			map: new Map(),
+	const suggestionGenerationRef = useRef(0);
+	const alternativeControllersRef = useRef(
+		new Map<string, AbortController>()
+	);
+	const [suggestionsState, setSuggestionsState] = useState<ISuggestionsState>(
+		() => ({
+			activeRequestKey: null,
+			generation: 0,
+			resultContext: null,
+			resultGeneration: 0,
+			status: 'idle',
 			suggestions: null,
-		}));
+		})
+	);
+	const [alternativesState, setAlternativesState] =
+		useState<IAlternativesState>(() => ({ generation: 0, map: new Map() }));
 
 	const selectedCookerKeys = useMemo<SelectionSet>(
 		() =>
@@ -170,29 +214,141 @@ export function useSuggestedMealsViewModel() {
 		currentCustomerName !== null &&
 		(hasOrderTags || (hasMystiaCooker && hasSelection));
 
-	const suggestions = useMemo(() => {
-		if (!isActive) {
-			return null;
-		}
-
-		const results = suggestMeals({
-			cooker: selectedSuggestMealsCooker,
-			currentBeverage: currentBeverageName,
-			currentRecipe: currentRecipeData,
-			customerName: currentCustomerName,
-			customerOrder: currentCustomerOrder,
+	const hasUnsetPopularOrderTag =
+		(currentCustomerOrder.recipeTag === DYNAMIC_TAG_MAP.popularPositive ||
+			currentCustomerOrder.recipeTag ===
+				DYNAMIC_TAG_MAP.popularNegative) &&
+		currentCustomerPopularTrend.tag === null;
+	const suggestionRequestKey = useMemo(
+		() =>
+			JSON.stringify({
+				currentBeverageName,
+				currentCustomerName,
+				currentCustomerOrder,
+				currentCustomerPopularTrend,
+				currentRecipeData,
+				hasMystiaCooker,
+				hiddenBeverages: [...hiddenBeverages].sort(),
+				hiddenIngredients: [...hiddenIngredients].sort(),
+				hiddenRecipes: [...hiddenRecipes].sort(),
+				isFamousShop,
+				selectedSuggestMealsCooker,
+				suggestMaxExtraIngredients,
+				suggestMaxRating,
+				suggestMaxResults,
+			}),
+		[
+			currentBeverageName,
+			currentCustomerName,
+			currentCustomerOrder,
+			currentCustomerPopularTrend,
+			currentRecipeData,
 			hasMystiaCooker,
 			hiddenBeverages,
 			hiddenIngredients,
 			hiddenRecipes,
 			isFamousShop,
-			maxExtraIngredients: suggestMaxExtraIngredients,
-			maxRating: suggestMaxRating,
-			maxResults: suggestMaxResults,
-			popularTrend: currentCustomerPopularTrend,
-		});
+			selectedSuggestMealsCooker,
+			suggestMaxExtraIngredients,
+			suggestMaxRating,
+			suggestMaxResults,
+		]
+	);
 
-		return results;
+	useEffect(() => {
+		const generation = ++suggestionGenerationRef.current;
+		const controller = new AbortController();
+
+		if (!isActive || hasUnsetPopularOrderTag) {
+			setSuggestionsState({
+				activeRequestKey: suggestionRequestKey,
+				generation,
+				resultContext: null,
+				resultGeneration: 0,
+				status: 'idle',
+				suggestions: null,
+			});
+			return () => {
+				controller.abort();
+			};
+		}
+
+		setSuggestionsState((prev) => ({
+			...prev,
+			activeRequestKey: suggestionRequestKey,
+			generation,
+			status: prev.suggestions === null ? 'pending' : 'refreshing',
+		}));
+		const resultContext: ISuggestionResultContext = {
+			customerName: currentCustomerName,
+			customerOrder: { ...currentCustomerOrder },
+			hasMystiaCooker,
+			hiddenIngredients: new Set(hiddenIngredients),
+			isFamousShop,
+			popularTrend: { ...currentCustomerPopularTrend },
+		};
+
+		const run = async () => {
+			try {
+				const suggestions = await suggestMeals(
+					{
+						cooker: selectedSuggestMealsCooker,
+						currentBeverage: currentBeverageName,
+						currentRecipe: currentRecipeData,
+						customerName: currentCustomerName,
+						customerOrder: currentCustomerOrder,
+						hasMystiaCooker,
+						hiddenBeverages,
+						hiddenIngredients,
+						hiddenRecipes,
+						isFamousShop,
+						maxExtraIngredients: suggestMaxExtraIngredients,
+						maxRating: suggestMaxRating,
+						maxResults: suggestMaxResults,
+						popularTrend: currentCustomerPopularTrend,
+					},
+					{ signal: controller.signal }
+				);
+
+				if (
+					controller.signal.aborted ||
+					suggestionGenerationRef.current !== generation
+				) {
+					return;
+				}
+				setSuggestionsState({
+					activeRequestKey: suggestionRequestKey,
+					generation,
+					resultContext,
+					resultGeneration: generation,
+					status: 'success',
+					suggestions,
+				});
+			} catch (error) {
+				if (
+					controller.signal.aborted ||
+					checkSuggestMealsAbortError(error) ||
+					suggestionGenerationRef.current !== generation
+				) {
+					return;
+				}
+
+				console.warn('Suggested meal calculation failed.', {
+					errorCode: getLogSafeErrorCode(error),
+				});
+				setSuggestionsState((prev) =>
+					prev.generation === generation
+						? { ...prev, status: 'error' }
+						: prev
+				);
+			}
+		};
+
+		void run();
+
+		return () => {
+			controller.abort();
+		};
 	}, [
 		currentBeverageName,
 		currentCustomerName,
@@ -203,43 +359,67 @@ export function useSuggestedMealsViewModel() {
 		hiddenBeverages,
 		hiddenIngredients,
 		hiddenRecipes,
+		hasUnsetPopularOrderTag,
 		isActive,
 		isFamousShop,
 		selectedSuggestMealsCooker,
 		suggestMaxExtraIngredients,
 		suggestMaxRating,
 		suggestMaxResults,
+		suggestionRequestKey,
 	]);
 
-	const isVisible = isActive && suggestions !== null;
+	const {
+		activeRequestKey,
+		generation,
+		resultContext,
+		resultGeneration,
+		status: storedSuggestionStatus,
+		suggestions,
+	} = suggestionsState;
+	const suggestionStatus: TSuggestionStatus =
+		!isActive || hasUnsetPopularOrderTag
+			? 'idle'
+			: activeRequestKey === suggestionRequestKey
+				? storedSuggestionStatus
+				: suggestions === null
+					? 'pending'
+					: 'refreshing';
+	const isVisible = isActive;
+	const displayCustomerOrder =
+		resultContext?.customerOrder ?? currentCustomerOrder;
 	const alternativesMap =
-		alternativesState.suggestions === suggestions
+		alternativesState.generation === generation
 			? alternativesState.map
 			: EMPTY_ALTERNATIVES_MAP;
 
 	useLayoutEffect(() => {
 		customerStore.shared.suggestMeals.visibility.set(isVisible);
+
+		return () => {
+			customerStore.shared.suggestMeals.visibility.set(false);
+		};
 	}, [isVisible]);
 
 	useEffect(() => {
-		setAlternativesState((prev) => {
-			if (prev.suggestions === suggestions && prev.map.size === 0) {
-				return prev;
+		const controllers = alternativeControllersRef.current;
+		for (const controller of controllers.values()) {
+			controller.abort();
+		}
+		controllers.clear();
+		setAlternativesState({ generation, map: new Map() });
+
+		return () => {
+			for (const controller of controllers.values()) {
+				controller.abort();
 			}
-
-			return { map: new Map(), suggestions };
-		});
-	}, [suggestions]);
-
-	const hasUnsetPopularOrderTag =
-		(currentCustomerOrder.recipeTag === DYNAMIC_TAG_MAP.popularPositive ||
-			currentCustomerOrder.recipeTag ===
-				DYNAMIC_TAG_MAP.popularNegative) &&
-		currentCustomerPopularTrend.tag === null;
+			controllers.clear();
+		};
+	}, [generation]);
 
 	const loadAlternatives = useCallback(
 		(
-			loopIndex: number,
+			mealKey: string,
 			args: Omit<
 				Parameters<typeof getScoreBasedAlternatives>[0],
 				| 'hasMystiaCooker'
@@ -250,47 +430,106 @@ export function useSuggestedMealsViewModel() {
 				| 'popularTrend'
 			>
 		) => {
-			setAlternativesState((prev) => {
-				const prevMap =
-					prev.suggestions === suggestions
-						? prev.map
-						: EMPTY_ALTERNATIVES_MAP;
+			if (
+				suggestionStatus !== 'success' ||
+				resultContext === null ||
+				alternativeControllersRef.current.has(mealKey)
+			) {
+				return;
+			}
 
-				if (prevMap.has(loopIndex)) {
+			const controller = new AbortController();
+			alternativeControllersRef.current.set(mealKey, controller);
+			setAlternativesState((prev) => {
+				const existing = prev.map.get(mealKey);
+				if (
+					prev.generation !== generation ||
+					(existing !== undefined && existing.status !== 'error')
+				) {
 					return prev;
 				}
 
-				const next = new Map(prevMap);
-				next.set(
-					loopIndex,
-					getScoreBasedAlternatives({
-						...args,
-						hasMystiaCooker,
-						hiddenIngredients,
-						instance_ingredient,
-						instance_recipe,
-						isFamousShop,
-						popularTrend: currentCustomerPopularTrend,
-					})
-				);
-				return { map: next, suggestions };
+				const next = new Map(prev.map);
+				next.set(mealKey, { map: new Map(), status: 'pending' });
+				return { generation, map: next };
 			});
+
+			const run = async () => {
+				try {
+					const map = await getScoreBasedAlternatives(
+						{
+							...args,
+							hasMystiaCooker: resultContext.hasMystiaCooker,
+							hiddenIngredients: resultContext.hiddenIngredients,
+							instance_ingredient,
+							instance_recipe,
+							isFamousShop: resultContext.isFamousShop,
+							popularTrend: resultContext.popularTrend,
+						},
+						{
+							signal: controller.signal,
+							taskKey: `suggest-alternatives:${mealKey}`,
+						}
+					);
+					if (
+						controller.signal.aborted ||
+						suggestionGenerationRef.current !== generation
+					) {
+						return;
+					}
+					setAlternativesState((prev) => {
+						if (prev.generation !== generation) {
+							return prev;
+						}
+						const next = new Map(prev.map);
+						next.set(mealKey, { map, status: 'success' });
+						return { generation, map: next };
+					});
+				} catch (error) {
+					if (
+						controller.signal.aborted ||
+						checkSuggestMealsAbortError(error) ||
+						suggestionGenerationRef.current !== generation
+					) {
+						return;
+					}
+
+					console.warn('Suggested meal alternatives failed.', {
+						errorCode: getLogSafeErrorCode(error),
+					});
+					setAlternativesState((prev) => {
+						if (prev.generation !== generation) {
+							return prev;
+						}
+						const next = new Map(prev.map);
+						next.set(mealKey, { map: new Map(), status: 'error' });
+						return { generation, map: next };
+					});
+				} finally {
+					if (
+						alternativeControllersRef.current.get(mealKey) ===
+						controller
+					) {
+						alternativeControllersRef.current.delete(mealKey);
+					}
+				}
+			};
+
+			void run();
 		},
 		[
-			currentCustomerPopularTrend,
-			hasMystiaCooker,
-			hiddenIngredients,
+			generation,
 			instance_ingredient,
 			instance_recipe,
-			isFamousShop,
-			suggestions,
+			resultContext,
+			suggestionStatus,
 		]
 	);
 
 	const suggestedMealRows = useMemo<
 		ISuggestedMealRowViewModel[] | null
 	>(() => {
-		if (suggestions === null || currentCustomerName === null) {
+		if (suggestions === null || resultContext === null) {
 			return null;
 		}
 
@@ -299,9 +538,9 @@ export function useSuggestedMealsViewModel() {
 			dlc: customerDlc,
 			negativeTags: customerNegativeTags,
 			positiveTags: customerPositiveTags,
-		} = instance_customer.getPropsByName(currentCustomerName);
+		} = instance_customer.getPropsByName(resultContext.customerName);
 
-		return suggestions.map((meal, loopIndex) => {
+		return suggestions.map((meal) => {
 			const {
 				beverage,
 				price,
@@ -321,20 +560,25 @@ export function useSuggestedMealsViewModel() {
 			const isDarkMatter =
 				!checkLengthEmpty(recipeData.extraIngredients) &&
 				instance_recipe.checkDarkMatter(recipeData).isDarkMatter;
-			const currentAlternatives = alternativesMap.get(loopIndex);
+			const mealKey = `${resultGeneration}:${recipeData.name}|${beverage}|${recipeData.extraIngredients.join(',')}`;
+			const currentAlternatives = alternativesMap.get(mealKey);
+			const alternativesStatus = currentAlternatives?.status ?? 'idle';
 
 			return {
+				alternativesStatus,
 				beverage,
 				cooker,
 				ensureAlternatives: () => {
 					if (
-						currentAlternatives !== undefined ||
-						checkLengthEmpty(visibleExtraIngredients)
+						(currentAlternatives !== undefined &&
+							currentAlternatives.status !== 'error') ||
+						checkLengthEmpty(visibleExtraIngredients) ||
+						suggestionStatus !== 'success'
 					) {
 						return;
 					}
 
-					loadAlternatives(loopIndex, {
+					loadAlternatives(mealKey, {
 						baseRating: ratingKey,
 						beverageTags: instance_beverage.getPropsByName(
 							beverage,
@@ -342,9 +586,9 @@ export function useSuggestedMealsViewModel() {
 						),
 						customerBeverageTags,
 						customerDlc,
-						customerName: currentCustomerName,
+						customerName: resultContext.customerName,
 						customerNegativeTags,
-						customerOrder: currentCustomerOrder,
+						customerOrder: resultContext.customerOrder,
 						customerPositiveTags,
 						extraIngredients: visibleExtraIngredients,
 						recipeIngredients,
@@ -354,10 +598,10 @@ export function useSuggestedMealsViewModel() {
 					});
 				},
 				getAlternatives: (ingredientName) =>
-					currentAlternatives?.get(ingredientName) ??
+					currentAlternatives?.map.get(ingredientName) ??
 					EMPTY_ALTERNATIVES,
-				hasAlternativesLoaded: currentAlternatives !== undefined,
-				key: `${recipeData.name}-${beverage}-${loopIndex}`,
+				hasAlternativesLoaded: alternativesStatus === 'success',
+				key: mealKey,
 				price,
 				ratingKey,
 				recipeData,
@@ -370,12 +614,13 @@ export function useSuggestedMealsViewModel() {
 		});
 	}, [
 		alternativesMap,
-		currentCustomerName,
-		currentCustomerOrder,
 		instance_beverage,
 		instance_customer,
 		instance_recipe,
 		loadAlternatives,
+		resultContext,
+		resultGeneration,
+		suggestionStatus,
 		suggestions,
 	]);
 
@@ -383,7 +628,7 @@ export function useSuggestedMealsViewModel() {
 		availableRecipeCookers,
 		currentBeverageName,
 		currentCustomerName,
-		currentCustomerOrder,
+		currentCustomerOrder: displayCustomerOrder,
 		currentRecipeData,
 		handleCookerChange,
 		handleMaxExtraChange,
@@ -398,6 +643,7 @@ export function useSuggestedMealsViewModel() {
 		selectedMaxExtraKeys,
 		selectedMaxRatingKeys,
 		suggestedMealRows,
+		suggestionStatus,
 		suggestMaxRating,
 	};
 }

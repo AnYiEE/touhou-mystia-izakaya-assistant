@@ -1,4 +1,5 @@
-import { Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import {
 	useSuggestedMealsViewModel,
@@ -43,6 +44,30 @@ import {
 import { customerRareStore as customerStore } from '@/stores';
 import { checkLengthEmpty } from '@/utilities';
 
+const REFRESHING_NOTICE_DELAY_MS = 160;
+const STATUS_NOTICE_TRANSITION_DURATION_SECONDS = 0.14;
+
+function useDeferredRefreshingNotice(isRefreshing: boolean) {
+	const [isVisible, setIsVisible] = useState(false);
+
+	useEffect(() => {
+		if (!isRefreshing) {
+			setIsVisible(false);
+			return;
+		}
+
+		const timeoutId = globalThis.setTimeout(() => {
+			setIsVisible(true);
+		}, REFRESHING_NOTICE_DELAY_MS);
+
+		return () => {
+			globalThis.clearTimeout(timeoutId);
+		};
+	}, [isRefreshing]);
+
+	return isVisible;
+}
+
 export default function SuggestedMealCard() {
 	const isReducedMotion = useReducedMotion();
 	const popoverMotionProps = useMotionProps('popover');
@@ -67,7 +92,11 @@ export default function SuggestedMealCard() {
 		selectedMaxRatingKeys,
 		suggestMaxRating,
 		suggestedMealRows,
+		suggestionStatus,
 	} = useSuggestedMealsViewModel();
+	const isRefreshingNoticeVisible = useDeferredRefreshingNotice(
+		suggestionStatus === 'refreshing'
+	);
 
 	let content: IFadeMotionDivProps['children'];
 	let contentTarget: IFadeMotionDivProps['target'];
@@ -91,6 +120,15 @@ export default function SuggestedMealCard() {
 				?.label ?? '完美';
 		const hasSuggestedMealRows =
 			suggestedMealRows !== null && !checkLengthEmpty(suggestedMealRows);
+		const isResultInteractionDisabled = suggestionStatus !== 'success';
+		const statusNotice = isRefreshingNoticeVisible
+			? { className: 'text-default-500', text: '正在更新推荐结果…' }
+			: suggestionStatus === 'error' && hasSuggestedMealRows
+				? {
+						className: 'text-danger-600',
+						text: '推荐更新失败，仍显示上次结果',
+					}
+				: null;
 
 		const cookerSelect = (
 			<div className="flex flex-col gap-x-2 md:flex-row md:items-center md:justify-between xl:flex-col xl:items-start xl:justify-start 3xl:flex-row 3xl:items-center 3xl:justify-between">
@@ -133,7 +171,7 @@ export default function SuggestedMealCard() {
 										”评级的结果，高评分优先
 									</Ol.Li>
 									<Ol.Li>
-										同评分下优先推荐获取更便利的料理、酒水和食材
+										同评分下优先推荐获取更便利的料理和酒水；额外食材综合比较获取难度、价格和等级
 									</Ol.Li>
 									<Ol.Li>
 										可限制套餐的额外食材数量，超出上限的套餐将被排除
@@ -282,16 +320,48 @@ export default function SuggestedMealCard() {
 			>
 				<div className="space-y-3 p-4 xl:p-2 xl:pb-4">
 					{cookerSelect}
+					<AnimatePresence initial={false}>
+						{statusNotice !== null && (
+							<motion.div
+								key="suggestion-status-notice"
+								animate={{ height: 'auto', opacity: 1 }}
+								exit={{ height: 0, opacity: 0 }}
+								initial={{ height: 0, opacity: 0 }}
+								transition={{
+									duration: isReducedMotion
+										? 0
+										: STATUS_NOTICE_TRANSITION_DURATION_SECONDS,
+									ease: 'easeInOut',
+								}}
+								className="!mt-0 overflow-hidden"
+							>
+								<p
+									className={cn(
+										'pt-3 text-tiny',
+										statusNotice.className
+									)}
+									aria-live="polite"
+								>
+									{statusNotice.text}
+								</p>
+							</motion.div>
+						)}
+					</AnimatePresence>
 					<Divider className="md:hidden" />
 					{hasUnsetPopularOrderTag ? (
 						<Placeholder className="space-y-2 py-4">
 							<p>选定的点单需求包含流行趋势标签</p>
 							<p>请您先在设置中指定「流行趋势」</p>
 						</Placeholder>
+					) : suggestionStatus === 'pending' ? (
+						<Placeholder className="py-4">
+							正在计算推荐套餐…
+						</Placeholder>
 					) : hasSuggestedMealRows ? (
 						suggestedMealRows.map(
 							(
 								{
+									alternativesStatus,
 									beverage,
 									cooker,
 									ensureAlternatives,
@@ -562,11 +632,19 @@ export default function SuggestedMealCard() {
 																			<PopoverContent>
 																				<div className="flex flex-col gap-1 p-1">
 																					<span className="text-tiny text-default-700">
-																						{checkLengthEmpty(
-																							alternatives
-																						)
-																							? '无可用替换'
-																							: '可替换为'}
+																						{alternativesStatus ===
+																							'pending' ||
+																						alternativesStatus ===
+																							'idle'
+																							? '正在查找…'
+																							: alternativesStatus ===
+																								  'error'
+																								? '加载失败'
+																								: checkLengthEmpty(
+																											alternatives
+																									  )
+																									? '无可用替换'
+																									: '可替换为'}
 																					</span>
 																					{!checkLengthEmpty(
 																						alternatives
@@ -630,6 +708,9 @@ export default function SuggestedMealCard() {
 											<div className="flex w-full flex-row-reverse items-center justify-center gap-2 md:w-auto xl:flex-col">
 												<Button
 													fullWidth
+													isDisabled={
+														isResultInteractionDisabled
+													}
 													color="primary"
 													size="sm"
 													variant="flat"
@@ -669,6 +750,10 @@ export default function SuggestedMealCard() {
 								);
 							}
 						)
+					) : suggestionStatus === 'error' ? (
+						<Placeholder className="py-4">
+							推荐计算失败，请调整条件后重试
+						</Placeholder>
 					) : (
 						<Placeholder className="py-4">
 							未找到匹配的推荐套餐
