@@ -73,7 +73,8 @@ export default function Content() {
 	const validName = validateName(routeCustomerName);
 	const hasCustomerPath =
 		routeCustomerName !== undefined && routeCustomerName !== '';
-	const title = `${validName === null ? '' : `${validName} | `}${getPageTitle('/customer-rare')} | ${zhName} - ${enName}`;
+	const isPlanDrawerOpen = customerStore.shared.planDrawer.isOpen.use();
+	const title = `${isPlanDrawerOpen ? '营业预设 | ' : ''}${validName === null ? '' : `${validName} | `}${getPageTitle('/customer-rare')} | ${zhName} - ${enName}`;
 
 	useDocumentTitle(title, '/customer-rare');
 
