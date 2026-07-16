@@ -804,10 +804,64 @@ function compareByNormalizedWeight(
 	);
 }
 
-async function dedupeScoredResults(
+interface IResultDiversityOptions {
+	readonly isBeverageFixed: boolean;
+	readonly isRecipeFixed: boolean;
+}
+
+function findDiverseResultIndex(
+	results: ReadonlyArray<IScoredResult>,
+	seenBeverages: ReadonlySet<TBeverageName>,
+	seenRecipes: ReadonlySet<TRecipeName>,
+	{ isBeverageFixed, isRecipeFixed }: IResultDiversityOptions
+) {
+	const highestScore = results[0]?.score;
+	let newBeverageIndex = -1;
+	let newRecipeIndex = -1;
+
+	for (const [index, { meal, score }] of results.entries()) {
+		if (score !== highestScore) {
+			break;
+		}
+
+		const isNewBeverage = !seenBeverages.has(meal.beverage);
+		const isNewRecipe = !seenRecipes.has(meal.recipe.name);
+
+		if (isRecipeFixed) {
+			if (isNewBeverage) {
+				return index;
+			}
+			continue;
+		}
+		if (isBeverageFixed) {
+			if (isNewRecipe) {
+				return index;
+			}
+			continue;
+		}
+		if (isNewRecipe && isNewBeverage) {
+			return index;
+		}
+		if (isNewRecipe && newRecipeIndex === -1) {
+			newRecipeIndex = index;
+		}
+		if (isNewBeverage && newBeverageIndex === -1) {
+			newBeverageIndex = index;
+		}
+	}
+
+	return newRecipeIndex === -1
+		? newBeverageIndex === -1
+			? 0
+			: newBeverageIndex
+		: newRecipeIndex;
+}
+
+async function selectScoredResults(
 	results: IScoredResult[],
 	maxResults: number,
 	keyFn: (meal: ISuggestedMeal) => string,
+	diversityOptions: IResultDiversityOptions,
 	execution: ISuggestMealsExecution
 ) {
 	const ranges = await buildSoftSortRanges(
@@ -821,10 +875,11 @@ async function dedupeScoredResults(
 	);
 
 	const seen = new Set<string>();
-	const out: ISuggestedMeal[] = [];
+	const dedupedResults: IScoredResult[] = [];
 
-	for (const { meal } of sortedResults) {
+	for (const result of sortedResults) {
 		await execution.checkpoint();
+		const { meal } = result;
 		const key = keyFn(meal);
 
 		if (seen.has(key)) {
@@ -832,11 +887,33 @@ async function dedupeScoredResults(
 		}
 
 		seen.add(key);
-		out.push(meal);
+		dedupedResults.push(result);
+	}
 
-		if (out.length >= maxResults) {
+	const remainingResults = [...dedupedResults];
+	const seenBeverages = new Set<TBeverageName>();
+	const seenRecipes = new Set<TRecipeName>();
+	const out: ISuggestedMeal[] = [];
+
+	while (out.length < maxResults && remainingResults.length > 0) {
+		await execution.checkpoint();
+		const resultIndex =
+			out.length === 0
+				? 0
+				: findDiverseResultIndex(
+						remainingResults,
+						seenBeverages,
+						seenRecipes,
+						diversityOptions
+					);
+		const [result] = remainingResults.splice(resultIndex, 1);
+		if (result === undefined) {
 			break;
 		}
+
+		out.push(result.meal);
+		seenBeverages.add(result.meal.beverage);
+		seenRecipes.add(result.meal.recipe.name);
 	}
 
 	return out;
@@ -1349,11 +1426,12 @@ async function computeSuggestions(
 		}
 	}
 
-	return dedupeScoredResults(
+	return selectScoredResults(
 		results,
 		maxResults,
 		(m) =>
 			`${m.recipe.name}|${m.beverage}|${m.recipe.extraIngredients.join(',')}`,
+		{ isBeverageFixed: false, isRecipeFixed: false },
 		execution
 	);
 }
@@ -1683,10 +1761,11 @@ async function suggestForBeverage(
 		}
 	}
 
-	return dedupeScoredResults(
+	return selectScoredResults(
 		results,
 		maxResults,
 		(m) => `${m.recipe.name}|${m.recipe.extraIngredients.join(',')}`,
+		{ isBeverageFixed: true, isRecipeFixed: false },
 		execution
 	);
 }
@@ -1906,10 +1985,11 @@ async function suggestForRecipe(
 		}
 	}
 
-	return dedupeScoredResults(
+	return selectScoredResults(
 		results,
 		maxResults,
 		(m) => `${m.beverage}|${m.recipe.extraIngredients.join(',')}`,
+		{ isBeverageFixed: false, isRecipeFixed: true },
 		execution
 	);
 }
