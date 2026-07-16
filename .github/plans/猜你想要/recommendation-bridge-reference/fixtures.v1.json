@@ -1,0 +1,250 @@
+[
+	{
+		"name": "availability omitted",
+		"valid": true,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-availability-omitted",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" }
+			}
+		}
+	},
+	{
+		"name": "empty availability",
+		"valid": true,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-empty-availability",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"options": { "availability": {} }
+			}
+		}
+	},
+	{
+		"name": "empty category",
+		"valid": true,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-empty-category",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"options": { "availability": { "ingredients": {} } }
+			}
+		}
+	},
+	{
+		"name": "empty include",
+		"valid": true,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-empty-include",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"options": { "availability": { "recipes": { "include": [] } } }
+			}
+		}
+	},
+	{
+		"name": "blacklist wins overlap",
+		"valid": true,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-overlap",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"options": {
+					"availability": {
+						"beverages": {
+							"include": ["教父"],
+							"exclude": ["教父"]
+						}
+					}
+				}
+			}
+		}
+	},
+	{
+		"name": "fixed recipe base ingredient excluded",
+		"valid": true,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-fixed-base-excluded",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"selection": { "recipe": { "name": "桃花羹" } },
+				"options": {
+					"availability": {
+						"recipes": { "include": ["桃花羹"] },
+						"ingredients": { "exclude": ["桃子"] }
+					}
+				}
+			}
+		}
+	},
+	{
+		"name": "legacy excluded field",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-legacy-excluded",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"options": { "excluded": { "ingredients": ["蜂蜜"] } }
+			}
+		}
+	},
+	{
+		"name": "null availability",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-null-availability",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"options": { "availability": null }
+			}
+		}
+	},
+	{
+		"name": "unknown availability category",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-unknown-category",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"options": { "availability": { "customers": {} } }
+			}
+		}
+	},
+	{
+		"name": "unknown category field",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-unknown-category-field",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"options": { "availability": { "recipes": { "enabled": [] } } }
+			}
+		}
+	},
+	{
+		"name": "duplicate include item",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-duplicate-include",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"options": {
+					"availability": {
+						"ingredients": { "include": ["蜂蜜", "蜂蜜"] }
+					}
+				}
+			}
+		}
+	},
+	{
+		"name": "unknown availability item",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-unknown-item",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"options": {
+					"availability": {
+						"ingredients": { "exclude": ["未收录食材"] }
+					}
+				}
+			}
+		}
+	},
+	{
+		"name": "fixed recipe outside include",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-fixed-recipe-outside-include",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"selection": { "recipe": { "name": "桃花羹" } },
+				"options": { "availability": { "recipes": { "include": [] } } }
+			}
+		}
+	},
+	{
+		"name": "fixed beverage excluded",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-fixed-beverage-excluded",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"selection": { "beverage": "教父" },
+				"options": {
+					"availability": { "beverages": { "exclude": ["教父"] } }
+				}
+			}
+		}
+	},
+	{
+		"name": "fixed extra outside include",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-fixed-extra-outside-include",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"selection": {
+					"recipe": {
+						"name": "桃花羹",
+						"extra_ingredients": ["蜂蜜"]
+					}
+				},
+				"options": {
+					"availability": { "ingredients": { "include": ["辣椒"] } }
+				}
+			}
+		}
+	},
+	{
+		"name": "fixed extra excluded",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-fixed-extra-excluded",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"selection": {
+					"recipe": {
+						"name": "桃花羹",
+						"extra_ingredients": ["蜂蜜"]
+					}
+				},
+				"options": {
+					"availability": { "ingredients": { "exclude": ["蜂蜜"] } }
+				}
+			}
+		}
+	}
+]

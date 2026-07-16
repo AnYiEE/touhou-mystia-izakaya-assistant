@@ -130,6 +130,7 @@ import {
 } from '@/lib/account/client/syncOperationLease';
 import { removeAccountSyncLeaseForAccountDeletion } from '@/lib/account/client/lease';
 import { removeAccountSyncMetaForAccountDeletion } from '@/lib/account/client/snapshot';
+import { createRecommendationBridgeContinuationUrl } from '@/lib/recommendations/bridge/launchDescriptor';
 import {
 	NICKNAME_RULE_DESCRIPTION,
 	PASSWORD_RULE_DESCRIPTION,
@@ -902,7 +903,9 @@ export default memo<IProps>(function AccountManager() {
 				});
 
 				if (redirectTo !== undefined) {
-					globalThis.location.assign(redirectTo);
+					globalThis.location.assign(
+						createRecommendationBridgeContinuationUrl(redirectTo)
+					);
 					return;
 				}
 				if (isSsoContext) {
@@ -2682,7 +2685,9 @@ export default memo<IProps>(function AccountManager() {
 			});
 
 			if (redirectTo !== undefined) {
-				globalThis.location.assign(redirectTo);
+				globalThis.location.assign(
+					createRecommendationBridgeContinuationUrl(redirectTo)
+				);
 				return;
 			}
 			if (isSsoContext) {
@@ -2936,7 +2941,9 @@ export default memo<IProps>(function AccountManager() {
 				});
 
 				if (redirectTo !== undefined) {
-					globalThis.location.assign(redirectTo);
+					globalThis.location.assign(
+						createRecommendationBridgeContinuationUrl(redirectTo)
+					);
 					return;
 				}
 				if (isSsoContext) {

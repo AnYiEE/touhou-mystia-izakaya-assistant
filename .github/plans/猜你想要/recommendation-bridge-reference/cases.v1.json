@@ -1,0 +1,85 @@
+[
+	{
+		"name": "完整套餐",
+		"request": {
+			"type": "recommendation.request",
+			"request_id": "reference-complete-meal",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"options": {
+					"availability": { "ingredients": { "exclude": ["蜂蜜"] } },
+					"max_results": 3
+				}
+			}
+		}
+	},
+	{
+		"name": "固定料理",
+		"request": {
+			"type": "recommendation.request",
+			"request_id": "reference-fixed-recipe",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"selection": { "recipe": { "name": "桃花羹" } },
+				"options": {
+					"availability": {
+						"recipes": { "include": ["桃花羹"] },
+						"ingredients": { "exclude": ["桃子"] }
+					},
+					"max_results": 3
+				}
+			}
+		}
+	},
+	{
+		"name": "固定酒水",
+		"request": {
+			"type": "recommendation.request",
+			"request_id": "reference-fixed-beverage",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"selection": { "beverage": "教父" },
+				"options": {
+					"availability": {
+						"beverages": { "include": ["教父"] },
+						"recipes": { "include": ["桃花羹"] }
+					},
+					"cooker": "油锅",
+					"max_results": 3
+				}
+			}
+		}
+	},
+	{
+		"name": "固定料理和酒水",
+		"request": {
+			"type": "recommendation.request",
+			"request_id": "reference-fixed-meal",
+			"payload": {
+				"customer": "比那名居天子",
+				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"selection": {
+					"recipe": {
+						"name": "桃花羹",
+						"extra_ingredients": ["蜂蜜"]
+					},
+					"beverage": "教父"
+				},
+				"options": {
+					"availability": {
+						"recipes": { "include": ["桃花羹"] },
+						"beverages": { "include": ["教父"] },
+						"ingredients": {
+							"include": ["蜂蜜"],
+							"exclude": ["辣椒"]
+						}
+					},
+					"max_results": 3
+				}
+			}
+		}
+	}
+]

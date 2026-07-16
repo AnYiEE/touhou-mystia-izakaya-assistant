@@ -185,6 +185,12 @@ const changelog = [
 			'新增：稀客页支持营业预设，可集中查看多个稀客的已保存套餐或自动推荐套餐。',
 		],
 	},
+	{
+		version: 'v2.6',
+		changes: [
+			'新增：支持游戏Mod通过本地WSS桥接使用稀客套餐自动推荐算法并获取推荐结果。',
+		],
+	},
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;

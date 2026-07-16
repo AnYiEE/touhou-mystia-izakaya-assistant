@@ -19,6 +19,7 @@ export default defineConfig(
 	{
 		ignores: [
 			'node_modules/**',
+			'.deploy/**',
 			'.next/**',
 			'build/**',
 			'out/**',

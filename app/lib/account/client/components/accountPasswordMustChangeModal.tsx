@@ -47,6 +47,7 @@ import {
 	checkPasswordPolicy,
 } from '@/lib/account/shared/constants';
 import { getLogSafeErrorCode } from '@/lib/logging';
+import { createRecommendationBridgeContinuationUrl } from '@/lib/recommendations/bridge/launchDescriptor';
 import { createMainSiteUrl } from '@/lib/siteUrl';
 import { accountStore, globalStore } from '@/stores';
 
@@ -267,7 +268,9 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 
 				if (shouldResumeSso) {
 					globalThis.location.assign(
-						createMainSiteUrl('/sso/authorize').toString()
+						createRecommendationBridgeContinuationUrl(
+							createMainSiteUrl('/sso/authorize').toString()
+						)
 					);
 					return;
 				}

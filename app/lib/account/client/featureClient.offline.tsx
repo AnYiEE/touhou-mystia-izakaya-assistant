@@ -1,7 +1,11 @@
 'use client';
 
 import { clearAccountSyncRuntimeConflicts } from './syncRuntimeState';
+
+import { discardRecommendationBridgeLaunchDescriptor } from '@/lib/recommendations/bridge/launchDescriptor';
 import { accountStore as store } from '@/stores/account';
+
+discardRecommendationBridgeLaunchDescriptor();
 
 export function startAccountFeatureClients() {
 	store.shared.bootstrapStatus.set('disabled');
