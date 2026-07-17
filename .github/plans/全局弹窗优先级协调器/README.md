@@ -13,7 +13,7 @@
 - 扩展阶段：根覆盖层快捷键、Esc Host 与 NavbarMenu 关闭等待已完成；Modal/Drawer 真实动画完成信号尚未接入。
 - 当前焦点：按要求未启动浏览器；交互视觉验证留给人工观测。
 - 最后更新：2026-07-10。
-- 当前验证：协调状态机脚本、快捷键协调脚本、全量 TypeScript、全量 ESLint、Prettier 和静态覆盖层扫描。
+- 历史验证：协调状态机脚本、快捷键协调脚本、全量 TypeScript、全量 ESLint、Prettier 和静态覆盖层扫描；这些记录不替代发布前重新验证。
 
 ## 核心决策
 
@@ -49,12 +49,12 @@
 
 ## 扫描基线
 
-- 9 处 `<Modal>` JSX。
+- 15 处业务/Host `<Modal>` JSX：14 处业务 Modal 均传入协调配置，另 1 处是 `OverlayCoordinatorHost` 在 P0 根尚未出现时展示的不可关闭准备层，不登记协调 ID。
 - 12 类逻辑 Modal，其中隐藏酒水/料理/食材是三个逻辑实例，普客/稀客信息是两个路由实例。
 - 1 个自定义全屏 Drawer：营业预设。
 - 1 个 Driver.js 教程。
 - 1 个移动端全屏 NavbarMenu。
-- 37 处 Popover、15 处 Dropdown、27 处 Select、5 处 Autocomplete、113 处 Tooltip，它们不作为全局协调对象。
+- 37 处 Popover、15 处 Dropdown、27 处 Select、5 处 Autocomplete、113 处 Tooltip，它们不作为全局协调对象（2026-07-17 按根 JSX 标签复扫）。
 - 没有绕过项目封装直接使用 HeroUI Modal 的业务组件。
 - 没有原生 `<dialog>`、`showModal()`、`window.alert/confirm` 或业务层 `createPortal()`。
 

@@ -687,7 +687,7 @@ CREATE TABLE external_users (
 - `app/(pages)/admin/sso/new/page.tsx`：SSO client 新建页。
 - `app/(pages)/admin/sso/[id]/page.tsx`：SSO client 编辑页。
 - `app/(pages)/admin/sso/clientForm.tsx`：SSO client 表单。
-- `app/api/v1/admin/sso/clients/route.ts`、`app/api/v1/admin/sso/clients/[id]/route.ts`、`app/api/v1/admin/sso/clients/utils.ts`：管理员 SSO client CRUD API。
+- `app/api/v1/admin/sso/clients/route.ts`、`app/api/v1/admin/sso/clients/[id]/route.ts`：管理员 SSO client CRUD API；payload 解析与错误映射复用 `app/lib/account/server/adminSsoClientPayload.ts`、`adminSsoClientRouteResponses.ts` 和 service 层。
 
 修改文件：
 

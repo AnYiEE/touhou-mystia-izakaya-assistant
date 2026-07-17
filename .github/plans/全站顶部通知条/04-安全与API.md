@@ -1,11 +1,11 @@
-# 04-安全、Server Action 与 API
+# 04-安全与 API
 
 ## HTML 净化
 
 当前实现已新增并使用：
 
 - `sanitize-html`
-- 如需要类型，再新增 `@types/sanitize-html`
+- `@types/sanitize-html`
 
 依赖已同步到 `package.json` 和 `pnpm-lock.yaml`。后续调整净化能力时仍必须保持依赖和锁文件一致。
 
@@ -45,43 +45,32 @@
 
 通知正文支持服务端模板变量：
 
-| 变量                | 公开渲染规则                                      |
-| ------------------- | ------------------------------------------------- |
-| `{{user.username}}` | 已登录用户显示当前用户名；未登录用户显示“游客”    |
-| `{{user.id}}`       | 已登录用户显示当前用户 ID；未登录用户显示空字符串 |
+| 变量                    | 公开渲染规则                                      |
+| ----------------------- | ------------------------------------------------- |
+| `{{user.username}}`     | 已登录用户显示当前用户名；未登录用户显示“游客”    |
+| `{{user.id}}`           | 已登录用户显示当前用户 ID；未登录用户显示空字符串 |
+| `{{user.nickname}}`     | 已登录用户显示当前昵称；未登录用户显示空字符串    |
+| `{{user.display_name}}` | 依次使用昵称、用户名和“游客”                      |
 
 变量只在公开展示、公开 API 和后台预览输出边界渲染；数据库存储、后台编辑值、版本历史快照和字段 diff 都保留原始模板文本。变量值必须先 HTML 转义，再进入 sanitizer，避免用户名或用户 ID 注入 HTML。
 
-写入、预览、前台读取、Server Action 返回和公开 API 返回前都必须复用同一个 sanitizer。`dangerouslySetInnerHTML` 只允许封装在通知条和后台预览展示中。
+写入、预览、前台读取和公开 API 返回前都必须复用同一个 sanitizer。`dangerouslySetInnerHTML` 只允许封装在通知条和后台预览展示中。
 
 ## 共享服务边界
 
-通知系统应先实现共享领域服务，再让 Server Actions 和 API routes 做薄适配：
+通知系统以共享领域服务为事实来源，API routes 做薄适配：
 
 - payload parser、业务校验、HTML 净化、等级、受众、关闭策略、关闭同步、排序、归档、版本历史和 DTO 转换放在 `app/lib/announcements/server/*`。
-- 站内后台 Server Actions 只负责请求期 guard、调用服务、返回 action result 和触发 revalidate/redirect。
 - API routes 只负责 HTTP guard、body 读取、调用同一服务、映射 no-store JSON 响应。
-- 不在 `app/api` 目录放可被页面或 action 反向导入的 helper/re-export 空壳。
+- 不在 `app/api` 目录放可被页面反向导入的 helper/re-export 空壳。
 
 页面渲染和公开 API 必须复用同一个 `getVisibleAnnouncementsForRequestContext` 之类的 service。这个 service 统一处理：运行时边界、可选用户 session、受众过滤、cookie 关闭 token、数据库关闭记录、排序、数量限制和 sanitizer。`AnnouncementBar` 负责把 DTO 渲染成 HTML，`GET /api/v1/announcements` 负责把同一个 DTO 序列化为 JSON。
 
-已落地的运行时加载边界：后台公告 API routes、后台公告 Server Actions 和前台 `dismissAnnouncementAction` 均先执行对应 guard、body/payload 校验，再动态加载 `app/lib/announcements/server/service.ts`。这样未通过鉴权、同源、CSRF 或限流的请求不会提前拉起公告 service 及其 DB/净化/历史记录依赖链。
+已落地的运行时加载边界：后台公告 API routes 和公开公告关闭 route 均先执行对应 guard、body/payload 校验，再动态加载 `app/lib/announcements/server/service.ts`。这样未通过鉴权、同源、CSRF 或限流的请求不会提前拉起公告 service 及其 DB/净化/历史记录依赖链。
 
-## 站内 Server Actions
+## 站内后台调用链
 
-站内后台页面优先使用 Server Actions，而不是浏览器 fetch 后台 API。
-
-建议新增 `app/(pages)/admin/announcements/actions.ts`：
-
-| Action                      | 作用                                                     |
-| --------------------------- | -------------------------------------------------------- |
-| `createAnnouncementAction`  | 创建草稿通知                                             |
-| `updateAnnouncementAction`  | 更新通知，使用完整 PUT 语义的同一 payload parser         |
-| `archiveAnnouncementAction` | 归档通知，设置 `deleted_at`                              |
-| `previewAnnouncementAction` | 返回服务端净化后的预览，不写数据库                       |
-| `dismissAnnouncementAction` | 已登录用户关闭单条通知时同步关闭记录；未登录时不写数据库 |
-
-管理员写 action 必须保留账号功能门禁、管理员开关、same-origin、cookie security、rate limit、管理员 session 和 CSRF。`dismissAnnouncementAction` 是公开页面交互，使用账号 session 识别可选用户，不要求管理员 session。列表和详情首载可以由服务器组件在通过管理员 guard 后直接调用 service，不需要先走 API。
+当前站内后台页面使用 `app/(pages)/admin/api.ts` 调用受保护 API，而不是公告 Server Actions。`app/(pages)/admin/announcements/server.ts` 只提供后台页面初始鉴权数据；创建、更新、归档、恢复、预览、清理和版本读取都由后台 API routes 承接。公开页面关闭通知通过 `/api/v1/announcements` 写请求同步已登录用户的关闭记录，匿名用户只保留 cookie。
 
 ## 后台 API
 
@@ -120,16 +109,14 @@
 
 ## 站内客户端调用
 
-站内后台页面不新增默认的浏览器 fetch 客户端作为主路径。表单提交、启用/停用、归档和预览优先使用 Server Actions；需要局部刷新时优先用 `router.refresh()`、`revalidatePath` 或服务端重新读取。
-
-如果后续确实需要浏览器 fetch fallback，可新增相邻的小模块，并沿用现有 API 客户端模式：
+当前站内后台页面通过 `app/(pages)/admin/api.ts` 的相邻浏览器客户端调用 API；该模块沿用现有后台 API 客户端模式：
 
 - `cache: 'no-store'`。
 - `credentials: 'same-origin'`。
 - 统一读取 `{ status: 'ok', data }` / `{ status: 'error', message }`。
 - 管理员 session 失效时沿用现有 `checkAdminSessionUnauthorized` / `clearAdminSession` 处理。
 
-不要把通知后台 fetch helper 塞回 `app/lib/account/client/api.ts` 形成新的大杂烩。
+通知后台 fetch helper 继续留在 `app/(pages)/admin/api.ts`，不并入 `app/lib/account/client/api.ts`。
 
 ## 公开 API
 

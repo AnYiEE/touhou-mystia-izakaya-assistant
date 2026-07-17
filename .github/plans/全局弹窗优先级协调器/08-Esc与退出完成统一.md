@@ -19,7 +19,7 @@
 - 已完成：NavbarMenu 路由回调等待协调器关闭完成 Promise，不再维护组件内退出 timer；登记时长作为统一兜底。
 - 待实施：Modal/Drawer 的真实动画完成信号。为避免无浏览器验证时改变现有离场动画，本切口不改 HeroUI `motionProps` 或 Drawer variants。
 
-## 当前问题
+## 实施前问题（快捷键与 Esc 已解决）
 
 ### Esc 分散
 
@@ -69,7 +69,7 @@
 
 ### 1. 单一全局键盘 Host
 
-新增一个无视觉输出的 `OverlayCoordinatorHost`，在应用 Provider 层只挂载一次。Host 在 `window` capture 阶段统一监听 Esc 和已登记的根覆盖层快捷键，并从协调器读取当前真正活动的覆盖层。
+`OverlayCoordinatorHost` 在应用 Provider 层只挂载一次。Host 在 `window` capture 阶段统一监听 Esc 和已登记的根覆盖层快捷键，并从协调器读取当前真正活动的覆盖层。它通常无视觉输出；P0 已请求但真实阻断根尚未出现时，会复用项目 `Modal` 显示不可关闭的准备层，该准备层不登记协调 ID。
 
 覆盖层登记增加以下运行期信息：
 
@@ -115,7 +115,9 @@ Host 的处理顺序：
 
 ### 2. 通用退出完成协议
 
-协调器为每次退出创建单调递增的退出周期 token。只有同时匹配覆盖层 ID 和 token 的完成信号才能推进当前交接，迟到的旧动画回调会被忽略。
+以下退出 token/真实完成信号仍是待实施设计。当前代码使用登记的 `exitDelayMs` 推进交接，并额外提供 `requestOverlayCloseAndWait(id)` 供 NavbarMenu 普通导航等待同一兜底时长；尚无 `exitingOverlayId`、`exitToken` 或 `reportOverlayExitComplete`。
+
+目标设计中，协调器为每次退出创建单调递增的退出周期 token。只有同时匹配覆盖层 ID 和 token 的完成信号才能推进当前交接，迟到的旧动画回调会被忽略。
 
 协调快照记录 `exitingOverlayId` 和 `exitToken`；`useCoordinatedOverlay()` 只在当前覆盖层正处于该退出周期时返回对应 token，并提供已经绑定 ID/token 的 `reportExitComplete()`。业务组件不自行保存或拼装 token。
 
@@ -153,7 +155,7 @@ reportOverlayExitComplete(id, exitToken): void;
 
 - 根节点提供给登记项。
 - HeroUI Navbar 当前没有公开稳定的退出完成回调，因此首期继续使用 `MOBILE_NAV_MENU_EXIT_DELAY_MS` 兜底。
-- 普通路由跳转使用 `requestOverlayClose(...).then(route)`，删除 Navbar 自己的关闭定时器和 timer ref。
+- 普通路由跳转当前使用 `requestOverlayCloseAndWait(...).then(route)`，Navbar 自己不再维护关闭定时器和 timer ref；接入真实完成协议后可再收敛 API。
 - 打开搜索、账号或设置 Modal 继续使用 `handoffOverlay()`。
 
 ## 数据流

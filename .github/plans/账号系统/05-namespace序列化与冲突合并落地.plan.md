@@ -22,6 +22,7 @@ isProject: false
 | `app/lib/account/sync/types.ts`                            | namespace 数据类型                              |
 | `app/lib/account/sync/serializers/customerNormalMeals.ts`  | 普客套餐                                        |
 | `app/lib/account/sync/serializers/customerRareMeals.ts`    | 稀客套餐                                        |
+| `app/lib/account/sync/serializers/customerRarePlans.ts`    | 稀客营业预设（当前 schema v3）                  |
 | `app/lib/account/sync/serializers/customerRareSettings.ts` | 稀客设置                                        |
 | `app/lib/account/sync/serializers/globalPreferences.ts`    | 全局设置白名单                                  |
 | `app/lib/account/sync/serializers/theme.ts`                | 主题                                            |
@@ -34,6 +35,7 @@ isProject: false
 | ------------------------ | ----------------------------------------- | ------------------ | -------------------------------------------------- |
 | `customer_normal.meals`  | `customerNormalStore.persistence.meals`   | 同左               | 纯新增自动合并；删除、排序、重复意图进入人工冲突   |
 | `customer_rare.meals`    | `customerRareStore.persistence.meals`     | 同左               | 纯新增自动合并；删除、排序、重复意图进入人工冲突   |
+| `customer_rare.plans`    | `customerRareStore.persistence.plans`     | 同左               | 可靠基线三方合并；虚拟默认不持久化；同组冲突确认   |
 | `customer_rare.settings` | `orderLinkedFilter`、`showTagDescription` | 同左               | 字段级合并，冲突字段后提交服务端胜出               |
 | `global.preferences`     | `globalStore.persistence` 白名单          | 同左               | 字段级合并，未改字段不覆盖云端                     |
 | `theme`                  | `theme` localStorage                      | theme apply helper | 后提交服务端的快照胜出                             |
@@ -96,12 +98,14 @@ export interface ISyncMergeParams<T> {
 export interface ISyncMergeResult<T> {
 	conflict: ISyncConflictItem<T> | null;
 	data: T;
+	requiresConfirmation: boolean;
 	shouldUpload: boolean;
 }
 
 export type TSyncNamespace =
 	| 'customer_normal.meals'
 	| 'customer_rare.meals'
+	| 'customer_rare.plans'
 	| 'customer_rare.settings'
 	| 'global.preferences'
 	| 'theme'
@@ -133,7 +137,7 @@ export type TSyncNamespace =
 - cloud 和 local 都没有删除 base 中已有套餐。
 - cloud 和 local 都没有改变 base 中已有套餐顺序。
 - local 没有保存与 cloud 相同签名但位置不同的重复套餐。
-- 登录或注册后的本地接管是特例：当缺少 base、云端已有套餐且本地只有可按稳定签名计数消耗后确认的新增套餐时，允许把本地新增追加到云端快照并按云端 revision 入队；item-level revision conflict 仍只生成合并预览，不静默覆盖云端。
+- 缺少可靠 base 时，两侧都含非默认套餐只生成合并预览并要求确认，不能仅凭集合并集推断某侧没有删除；一侧为系统默认空值以及 namespace 明确的单调规则仍可静默收敛。
 
 不满足以上条件时进入人工冲突，避免删除、排序或用户有意重复保存被自动吞掉。
 
@@ -182,7 +186,7 @@ export interface ISyncConflictItem<T = unknown> {
 - 服务端同步写入和旧备份码导入均拒绝或清洗 namespace 白名单外字段。
 - 普客/稀客套餐合并不产生重复套餐。
 - 普客/稀客套餐删除或排序冲突会进入人工冲突，不自动复活已删除套餐。
-- 登录接管或有可靠 base 时，两台设备修改 `global.preferences` 不同字段可自动字段级合并；普通 item-level revision conflict 缺少可靠 base 时只提供合并预览，由用户确认。
+- 有可靠 base 时，两台设备修改 `global.preferences` 不同独立字段/原子分组可自动三方合并；普通 item-level revision conflict 缺少可靠 base 时只提供合并预览，由用户确认。
 - 稀客教程本地完成 + 云端未完成时上传完成状态。
 - 本地重置稀客教程不会把云端完成状态改回未完成。
 - 主题远端写回会更新当前标签 UI，不只写 storage。
@@ -193,5 +197,6 @@ export interface ISyncConflictItem<T = unknown> {
 
 - 已新增 [app/lib/account/sync/serializers/customerNormalMeals.ts](../../../app/lib/account/sync/serializers/customerNormalMeals.ts)、[app/lib/account/sync/serializers/customerRareMeals.ts](../../../app/lib/account/sync/serializers/customerRareMeals.ts)、[app/lib/account/sync/serializers/customerRareSettings.ts](../../../app/lib/account/sync/serializers/customerRareSettings.ts)、[app/lib/account/sync/serializers/globalPreferences.ts](../../../app/lib/account/sync/serializers/globalPreferences.ts)、[app/lib/account/sync/serializers/theme.ts](../../../app/lib/account/sync/serializers/theme.ts) 和 [app/lib/account/sync/serializers/tutorialCustomerRare.ts](../../../app/lib/account/sync/serializers/tutorialCustomerRare.ts)。
 - 已新增 [app/lib/account/sync/serializers/meals.ts](../../../app/lib/account/sync/serializers/meals.ts) 和 [app/lib/account/sync/serializers/utils.ts](../../../app/lib/account/sync/serializers/utils.ts)，集中处理稳定签名、默认值比较、字段级合并与套餐纯新增合并。
+- 已新增 [app/lib/account/sync/serializers/customerRarePlans.ts](../../../app/lib/account/sync/serializers/customerRarePlans.ts) 与 [customerRarePlansMerge.ts](../../../app/lib/account/sync/serializers/customerRarePlansMerge.ts)，并由客户端共同基线、`requiresConfirmation` 和统一 merge-result 路由区分静默收敛、确认与真实冲突。
 - 已更新 [app/design/hooks/use-theme/useTheme.ts](../../../app/design/hooks/use-theme/useTheme.ts)，导出 `applyTheme`、`getStoredTheme` 和同标签监听，供 `theme` serializer 写回当前 DOM、storage 与 React 状态。
 - serializer 未从 [app/lib/account/sync/index.ts](../../../app/lib/account/sync/index.ts) 导出，避免服务端 API 路由导入浏览器 store/theme 代码。
