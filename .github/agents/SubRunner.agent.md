@@ -16,13 +16,9 @@ tools:
         web,
         'cognitionai/deepwiki/*',
         'microsoftdocs/mcp/*',
+        vscodeGeneral/runCommand,
+        vscodeGeneral/toolSearch,
         'gitkraken/*',
-        github.vscode-pull-request-github/issue_fetch,
-        github.vscode-pull-request-github/labels_fetch,
-        github.vscode-pull-request-github/notification_fetch,
-        github.vscode-pull-request-github/doSearch,
-        github.vscode-pull-request-github/activePullRequest,
-        github.vscode-pull-request-github/pullRequestStatusChecks,
         todo,
     ]
 user-invocable: false
