@@ -1,13 +1,11 @@
 import { checkPopularTag } from './tags';
+import { mergeGlobalPreferencesSnapshots } from './globalPreferencesMerge';
 import {
-	checkSnapshotEqual,
-	createMergeResult,
 	isAllowedStringArray,
 	isIntegerInRange,
 	isNonNegativeSafeInteger,
 	isPlainObject,
 	isStringArray,
-	mergeFieldMap,
 } from './utils';
 import {
 	BEVERAGE_LIST,
@@ -26,91 +24,6 @@ import { type ISyncNamespaceSerializer } from '@/lib/account/sync';
 import { globalStore } from '@/stores/global';
 import { type IPopularTrend } from '@/types';
 import { cloneJsonObject } from '@/utilities';
-
-const GLOBAL_PREFERENCE_ATOMIC_GROUP_PATHS = [
-	['customerCardTagsTooltip'],
-	['donationModal'],
-	['famousShop'],
-	['hiddenItems', 'dlcs'],
-	['highAppearance'],
-	['popularTrend'],
-	['suggestMeals'],
-	['table', 'columns'],
-	['table', 'hiddenItems'],
-	['table', 'row'],
-	['tachie'],
-	['vibrate'],
-] as const;
-
-function readPreferenceGroup(
-	snapshot: IGlobalPreferencesSnapshot,
-	path: ReadonlyArray<string>
-) {
-	return path.reduce<unknown>(
-		(value, key) =>
-			value !== null && typeof value === 'object'
-				? (value as Record<string, unknown>)[key]
-				: undefined,
-		snapshot
-	);
-}
-
-function writePreferenceGroup(
-	snapshot: IGlobalPreferencesSnapshot,
-	path: ReadonlyArray<string>,
-	value: unknown
-) {
-	let target = snapshot as unknown as Record<string, unknown>;
-	for (const key of path.slice(0, -1)) {
-		target = target[key] as Record<string, unknown>;
-	}
-	const key = path.at(-1);
-	if (key !== undefined) {
-		target[key] =
-			value !== null && typeof value === 'object'
-				? cloneJsonObject(value)
-				: value;
-	}
-}
-
-function mergeGlobalPreferenceAtomicGroups({
-	base,
-	cloud,
-	local,
-}: {
-	base: IGlobalPreferencesSnapshot;
-	cloud: IGlobalPreferencesSnapshot;
-	local: IGlobalPreferencesSnapshot;
-}) {
-	const data = cloneJsonObject(cloud);
-	let requiresConfirmation = false;
-
-	for (const path of GLOBAL_PREFERENCE_ATOMIC_GROUP_PATHS) {
-		const baseValue = readPreferenceGroup(base, path);
-		const cloudValue = readPreferenceGroup(cloud, path);
-		const localValue = readPreferenceGroup(local, path);
-		const hasCloudChange = !checkSnapshotEqual(cloudValue, baseValue);
-		const hasLocalChange = !checkSnapshotEqual(localValue, baseValue);
-
-		if (!hasCloudChange && hasLocalChange) {
-			writePreferenceGroup(data, path, localValue);
-			continue;
-		}
-		if (
-			hasCloudChange &&
-			hasLocalChange &&
-			!checkSnapshotEqual(cloudValue, localValue)
-		) {
-			requiresConfirmation = true;
-		}
-	}
-
-	return createMergeResult({
-		data,
-		requiresConfirmation,
-		shouldUpload: !checkSnapshotEqual(data, cloud),
-	});
-}
 
 export interface IGlobalPreferencesSnapshot {
 	customerCardTagsTooltip: boolean;
@@ -145,21 +58,23 @@ export interface IGlobalPreferencesSnapshot {
 	vibrate: boolean;
 }
 
-const beverageColumnKeys = new Set<string>([
+const beverageColumnKeyOrder = [
 	'beverage',
 	'price',
 	'suitability',
 	'action',
-]);
-const recipeColumnKeys = new Set<string>([
+] as const;
+const recipeColumnKeyOrder = [
 	'recipe',
 	'cooker',
 	'ingredient',
 	'price',
 	'suitability',
-	'action',
 	'time',
-]);
+	'action',
+] as const;
+const beverageColumnKeys = new Set<string>(beverageColumnKeyOrder);
+const recipeColumnKeys = new Set<string>(recipeColumnKeyOrder);
 const rootKeys = new Set([
 	'customerCardTagsTooltip',
 	'donationModal',
@@ -188,12 +103,24 @@ const suggestMealsKeys = new Set([
 const tableKeys = new Set(['columns', 'hiddenItems', 'row']);
 const tableColumnKeys = new Set(['beverage', 'recipe']);
 const tableHiddenItemKeys = new Set(['beverages', 'ingredients', 'recipes']);
-const dlcKeys = new Set(Object.keys(DLC_LABEL_MAP));
-const beverageNames = new Set<string>(BEVERAGE_LIST.map((item) => item.name));
-const ingredientNames = new Set<string>(
-	INGREDIENT_LIST.map((item) => item.name)
+const dlcKeyOrder = Object.keys(DLC_LABEL_MAP).sort(
+	(left, right) => Number(left) - Number(right)
 );
-const recipeNames = new Set<string>(RECIPE_LIST.map((item) => item.name));
+const beverageNameOrder = BEVERAGE_LIST.map((item) => item.name);
+const ingredientNameOrder = INGREDIENT_LIST.map((item) => item.name);
+const recipeNameOrder = RECIPE_LIST.map((item) => item.name);
+const dlcKeys = new Set(dlcKeyOrder);
+const beverageNames = new Set<string>(beverageNameOrder);
+const ingredientNames = new Set<string>(ingredientNameOrder);
+const recipeNames = new Set<string>(recipeNameOrder);
+const globalPreferencesSetValueOrders = {
+	beverageColumns: beverageColumnKeyOrder,
+	hiddenBeverages: beverageNameOrder,
+	hiddenDlcs: dlcKeyOrder,
+	hiddenIngredients: ingredientNameOrder,
+	hiddenRecipes: recipeNameOrder,
+	recipeColumns: recipeColumnKeyOrder,
+};
 
 function checkExactKeys(data: Record<string, unknown>, keys: Set<string>) {
 	const dataKeys = Object.keys(data);
@@ -342,23 +269,6 @@ function isRecipeColumnArray(data: unknown): data is TRecipeTableColumnKey[] {
 	);
 }
 
-function normalizeInteractionCountToCloud(
-	data: IGlobalPreferencesSnapshot,
-	cloud: IGlobalPreferencesSnapshot | null
-) {
-	if (cloud === null) {
-		return data;
-	}
-
-	return {
-		...data,
-		donationModal: {
-			...data.donationModal,
-			interactionCount: cloud.donationModal.interactionCount,
-		},
-	};
-}
-
 export const globalPreferencesSerializer = {
 	deserialize(data) {
 		return this.migrate(data, 1);
@@ -447,39 +357,14 @@ export const globalPreferencesSerializer = {
 		return this.validate(snapshot) ? snapshot : this.getDefaultSnapshot();
 	},
 	merge({ base, cloud, local, namespace }) {
-		const normalizedBase =
-			base === null
-				? null
-				: normalizeInteractionCountToCloud(base, cloud);
-		const normalizedLocal = normalizeInteractionCountToCloud(local, cloud);
-
-		if (normalizedBase !== null && cloud !== null) {
-			return mergeGlobalPreferenceAtomicGroups({
-				base: normalizedBase,
-				cloud,
-				local: normalizedLocal,
-			});
-		}
-
-		const merged = mergeFieldMap<IGlobalPreferencesSnapshot>({
-			allowBaseNullAutoMerge: true,
-			base: null,
+		return mergeGlobalPreferencesSnapshots({
+			base,
 			cloud,
 			defaults: this.getDefaultSnapshot(),
-			local: normalizedLocal,
+			local,
 			namespace,
+			setValueOrders: globalPreferencesSetValueOrders,
 		});
-		if (
-			cloud !== null &&
-			merged.conflict === null &&
-			!checkSnapshotEqual(normalizedLocal, this.getDefaultSnapshot()) &&
-			!checkSnapshotEqual(cloud, this.getDefaultSnapshot()) &&
-			!checkSnapshotEqual(normalizedLocal, cloud)
-		) {
-			return { ...merged, requiresConfirmation: true };
-		}
-
-		return merged;
 	},
 	migrate(data, version) {
 		if (version !== 1) {

@@ -963,88 +963,63 @@ function setAccountSyncConflict(conflict: ISyncConflictItem) {
 	upsertAccountSyncConflict(conflict);
 }
 
-function normalizeGlobalPreferencesInteractionCount(
+function normalizeGlobalPreferencesDonationModal(
 	data: IGlobalPreferencesSnapshot,
-	interactionCount: number
+	donationModal: IGlobalPreferencesSnapshot['donationModal']
 ) {
-	return {
-		...data,
-		donationModal: { ...data.donationModal, interactionCount },
-	};
+	return { ...data, donationModal };
 }
 
-function getInteractionCountOnlyCloudConflict(
+function getDonationOnlyAutomaticConflict(
 	conflict: ISyncConflictItem
-): ISyncConflictItem<IGlobalPreferencesSnapshot> | null {
-	if (conflict.namespace !== SYNC_NAMESPACE_MAP.globalPreferences) {
+): {
+	conflict: ISyncConflictItem<IGlobalPreferencesSnapshot>;
+	resolution: 'cloud' | 'merged';
+} | null {
+	if (
+		conflict.namespace !== SYNC_NAMESPACE_MAP.globalPreferences ||
+		conflict.localCollision !== undefined
+	) {
 		return null;
 	}
 
 	let cloud: IGlobalPreferencesSnapshot;
 	let local: IGlobalPreferencesSnapshot;
-	let localCollision:
-		| {
-				candidates: Array<{
-					baseRevision: number;
-					data: IGlobalPreferencesSnapshot;
-					id: string;
-					label: string;
-					schemaVersion: number;
-					snapshotHash: string;
-				}>;
-				invalidEvidenceCount: number;
-				token: string;
-				version: 1;
-		  }
-		| undefined;
 	try {
 		cloud = globalPreferencesSerializer.deserialize(conflict.cloud);
 		local = globalPreferencesSerializer.deserialize(conflict.local);
-		localCollision =
-			conflict.localCollision === undefined
-				? undefined
-				: {
-						...conflict.localCollision,
-						candidates: conflict.localCollision.candidates.map(
-							(candidate) => {
-								const data =
-									globalPreferencesSerializer.deserialize(
-										candidate.data
-									);
-								if (
-									!globalPreferencesSerializer.validate(data)
-								) {
-									throw new Error(
-										'invalid-global-preferences-collision-candidate'
-									);
-								}
-								return { ...candidate, data };
-							}
-						),
-					};
 	} catch {
 		return null;
 	}
 
-	const normalizedLocal = normalizeGlobalPreferencesInteractionCount(
+	const normalizedLocal = normalizeGlobalPreferencesDonationModal(
 		local,
-		cloud.donationModal.interactionCount
+		cloud.donationModal
 	);
 	if (createSnapshotHash(normalizedLocal) !== createSnapshotHash(cloud)) {
 		return null;
 	}
-
-	return {
+	const mergeResult = globalPreferencesSerializer.merge({
+		base: null,
 		cloud,
 		local,
-		...(localCollision === undefined ? {} : { localCollision }),
-		merged:
-			conflict.merged === null
-				? null
-				: globalPreferencesSerializer.deserialize(conflict.merged),
-		namespace: conflict.namespace,
-		revision: conflict.revision,
-		userId: conflict.userId,
+		namespace: SYNC_NAMESPACE_MAP.globalPreferences,
+	});
+	const resolution = getSyncMergeAutomaticResolution(mergeResult, cloud);
+	if (resolution === null) {
+		return null;
+	}
+
+	return {
+		conflict: {
+			cloud,
+			local,
+			merged: mergeResult.data,
+			namespace: conflict.namespace,
+			revision: conflict.revision,
+			userId: conflict.userId,
+		},
+		resolution,
 	};
 }
 
@@ -1171,17 +1146,41 @@ function tryResolveStoredAutomaticConflict(
 	return true;
 }
 
-function tryResolveInteractionCountOnlyConflict(
+function tryResolveDonationOnlyConflict(
 	conflict: ISyncConflictItem,
 	userId: string
 ) {
-	const cloudConflict = getInteractionCountOnlyCloudConflict(conflict);
-	if (cloudConflict === null) {
+	const automaticConflict = getDonationOnlyAutomaticConflict(conflict);
+	const entry = readDirtyQueueEntry(userId, conflict.namespace);
+	if (
+		automaticConflict === null ||
+		!checkCurrentAccountUser(userId) ||
+		entry?.paused !== 'conflict' ||
+		entry.conflict === null ||
+		!checkConflictSnapshotsEqual(entry.conflict, conflict)
+	) {
 		return false;
 	}
+	const generationToken = captureAccountSyncResetGeneration(userId);
+	const nextConflict = {
+		...automaticConflict.conflict,
+		automaticResolution: automaticConflict.resolution,
+	};
+	const nextEntry = updatePausedConflictEntryIfCurrent({
+		conflict: nextConflict,
+		data: nextConflict.local,
+		expectedEntry: entry,
+		generationToken,
+		userId,
+	});
+	if (nextEntry === null) {
+		return false;
+	}
+
 	return tryResolveStoredAutomaticConflict(
-		{ ...cloudConflict, automaticResolution: 'cloud' },
-		userId
+		nextConflict,
+		userId,
+		generationToken
 	);
 }
 
@@ -1206,7 +1205,7 @@ function restoreAccountSyncConflict(
 	if (tryResolveStoredAutomaticConflict(conflict, userId)) {
 		return null;
 	}
-	if (tryResolveInteractionCountOnlyConflict(conflict, userId)) {
+	if (tryResolveDonationOnlyConflict(conflict, userId)) {
 		return null;
 	}
 
