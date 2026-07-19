@@ -2,24 +2,14 @@ import { useCallback, useMemo } from 'react';
 
 import { useSkipProcessItemData } from '@/hooks';
 
-import { type TDlc } from '@/data';
 import { globalStore as store } from '@/stores';
+import { isAvailableWithHiddenDlcs } from '@/utils/availability';
 import type { TItemData, TItemInstance } from '@/utils/types';
-
-type TDataItem<T> = T extends ReadonlyArray<infer Item> ? Item : never;
-type THiddenDlcVisibilityPredicate<T> = (
-	item: T,
-	hiddenDlcs: ReadonlySet<TDlc>
-) => boolean;
 
 export function useFilteredData<
 	T extends TItemInstance | TItemData<TItemInstance>,
 	U extends T extends TItemInstance ? TItemData<T> : T,
->(
-	instanceOrData: T,
-	filterData: () => U,
-	isVisibleWithHiddenDlcs?: THiddenDlcVisibilityPredicate<TDataItem<U>>
-) {
+>(instanceOrData: T, filterData: () => U) {
 	const shouldSkipProcessData = useSkipProcessItemData();
 
 	const hiddenDlcs = store.hiddenDlcs.use();
@@ -27,11 +17,9 @@ export function useFilteredData<
 	const filterHiddenDlcs = useCallback(
 		<S extends TItemData<TItemInstance>>(data: S) =>
 			data.filter((item) =>
-				isVisibleWithHiddenDlcs === undefined
-					? !hiddenDlcs.has(item.dlc)
-					: isVisibleWithHiddenDlcs(item as TDataItem<U>, hiddenDlcs)
+				isAvailableWithHiddenDlcs(item.availabilityPaths, hiddenDlcs)
 			) as unknown as S,
-		[hiddenDlcs, isVisibleWithHiddenDlcs]
+		[hiddenDlcs]
 	);
 
 	const filteredData = useMemo(() => {

@@ -1,7 +1,7 @@
 import { filterItems } from '@/utilities';
 
 interface IFilterableIngredient {
-	dlc: number;
+	availabilityDlcs: ReadonlyArray<number>;
 	level: number;
 	name: string;
 	tags: ReadonlyArray<string>;
@@ -15,7 +15,7 @@ export function filterIngredientData<
 >({
 	blockedIngredientNames,
 	calculateTagsWithTrend,
-	filterDlcs,
+	filterAvailabilityDlcs,
 	filterLevels,
 	filterNoTags,
 	filterTags,
@@ -26,7 +26,7 @@ export function filterIngredientData<
 	calculateTagsWithTrend: (
 		tags: ReadonlyArray<string>
 	) => ReadonlyArray<string>;
-	filterDlcs: ReadonlyArray<string>;
+	filterAvailabilityDlcs: ReadonlyArray<string>;
 	filterLevels: ReadonlyArray<string>;
 	filterNoTags: ReadonlyArray<string>;
 	filterTags: ReadonlyArray<string>;
@@ -44,7 +44,11 @@ export function filterIngredientData<
 		>((item) => ({ ...item, _tagsWithTrend: calculateTagsWithTrend(item.tags) }));
 
 	const filtered = filterItems(augmented, [
-		{ field: 'dlc', match: 'in', values: filterDlcs },
+		{
+			field: 'availabilityDlcs',
+			match: 'any',
+			values: filterAvailabilityDlcs,
+		},
 		{ field: '_tagsWithTrend', match: 'all', values: filterTags },
 		{ field: '_tagsWithTrend', match: 'excludeAny', values: filterNoTags },
 		{ field: 'level', match: 'in', values: filterLevels },

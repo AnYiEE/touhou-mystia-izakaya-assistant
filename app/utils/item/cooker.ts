@@ -37,7 +37,7 @@ export class Cooker extends Item<TCookers> {
 			return Cooker._instance;
 		}
 
-		const instance = new Cooker(COOKER_LIST);
+		const instance = new Cooker(COOKER_LIST, 'cooker');
 
 		Cooker._instance = instance;
 

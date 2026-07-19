@@ -16,6 +16,7 @@ import {
 	type TRecipes,
 } from '@/data';
 import { CustomerRare } from '@/utils';
+import type { TAvailabilityItemWithPinyin } from '@/utils/item/types';
 import {
 	type TSourcePlace,
 	extractSourcePlacesFromText,
@@ -39,7 +40,7 @@ type TRecipe = Prettify<
 	}
 >;
 
-type TRecipeWithPinyin = TRecipe & { pinyin: string[] };
+type TRecipeWithPinyin = TAvailabilityItemWithPinyin<TRecipe>;
 
 type TRecipeSuitabilityRowData = TRecipeWithPinyin & {
 	matchedNegativeTags?: TRecipeTag[];
@@ -220,7 +221,7 @@ export class Recipe extends Food<TRecipe[]> {
 			recipe.places = extractPlacesFromRecipeFrom(recipe.from);
 		});
 
-		super(clonedData as unknown as TRecipe[]);
+		super(clonedData as unknown as TRecipe[], 'recipe');
 	}
 
 	public static getInstance() {

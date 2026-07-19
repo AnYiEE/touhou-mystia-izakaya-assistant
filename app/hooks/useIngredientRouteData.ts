@@ -14,8 +14,8 @@ export function useIngredientRouteData(store: TCustomerRouteStore) {
 	const hiddenIngredients = store.shared.recipe.table.hiddenIngredients.use();
 	const ingredientPinyinSortState =
 		store.persistence.ingredient.pinyinSortState.use();
-	const ingredientFilterDlcs =
-		store.persistence.ingredient.filters.dlcs.use();
+	const ingredientFilterAvailabilityDlcs =
+		store.persistence.ingredient.filters.availabilityDlcs.use();
 	const ingredientFilterLevels =
 		store.persistence.ingredient.filters.levels.use();
 	const ingredientFilterNoTags =
@@ -38,7 +38,7 @@ export function useIngredientRouteData(store: TCustomerRouteStore) {
 						currentCustomerPopularTrend,
 						isFamousShop
 					),
-				filterDlcs: ingredientFilterDlcs,
+				filterAvailabilityDlcs: ingredientFilterAvailabilityDlcs,
 				filterLevels: ingredientFilterLevels,
 				filterNoTags: ingredientFilterNoTags,
 				filterTags: ingredientFilterTags,
@@ -48,7 +48,7 @@ export function useIngredientRouteData(store: TCustomerRouteStore) {
 		[
 			currentCustomerPopularTrend,
 			hiddenIngredients,
-			ingredientFilterDlcs,
+			ingredientFilterAvailabilityDlcs,
 			ingredientFilterLevels,
 			ingredientFilterNoTags,
 			ingredientFilterTags,

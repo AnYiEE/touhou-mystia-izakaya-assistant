@@ -24,6 +24,7 @@ import {
 	RECIPE_SPRITE_CONFIG,
 } from '@/data';
 import { Item } from '@/utils/item/base';
+import type { TItemWithPinyin } from '@/utils/item/types';
 
 import { pxToRem } from '@/utilities';
 
@@ -57,7 +58,7 @@ export class Sprite<
 	TCurrentSpriteTarget extends TSpriteTarget,
 	TItems extends TSpriteData<TCurrentSpriteTarget> =
 		TSpriteData<TCurrentSpriteTarget>,
-> extends Item<TItems> {
+> extends Item<TItems, TItemWithPinyin<TItems[number]>> {
 	private static _instances = new Map<TSpriteTarget, Sprite<TSpriteTarget>>();
 
 	private _config: ISpriteConfig;

@@ -14,6 +14,7 @@ import {
 	DYNAMIC_TAG_MAP,
 	type TCookerName,
 	type TCustomerRareName,
+	type TDlc,
 	type TIngredientName,
 } from '@/data';
 import { getLogSafeErrorCode } from '@/lib/logging';
@@ -63,6 +64,7 @@ interface ISuggestionResultContext {
 	readonly customerName: TCustomerRareName;
 	readonly customerOrder: ICustomerOrder;
 	readonly hasMystiaCooker: boolean;
+	readonly hiddenDlcs: ReadonlySet<TDlc>;
 	readonly hiddenIngredients: ReadonlySet<TIngredientName>;
 	readonly isFamousShop: boolean;
 	readonly popularTrend: IPopularTrend;
@@ -105,6 +107,7 @@ export function useSuggestedMealsViewModel() {
 	const hasMystiaCooker = customerStore.shared.customer.hasMystiaCooker.use();
 	const hiddenBeverages =
 		customerStore.shared.beverage.table.hiddenBeverages.use();
+	const hiddenDlcs = customerStore.shared.hiddenItems.dlcs.use();
 	const hiddenIngredients =
 		customerStore.shared.recipe.table.hiddenIngredients.use();
 	const hiddenRecipes = customerStore.shared.recipe.table.hiddenRecipes.use();
@@ -229,6 +232,7 @@ export function useSuggestedMealsViewModel() {
 				currentRecipeData,
 				hasMystiaCooker,
 				hiddenBeverages: [...hiddenBeverages].sort(),
+				hiddenDlcs: [...hiddenDlcs].sort(),
 				hiddenIngredients: [...hiddenIngredients].sort(),
 				hiddenRecipes: [...hiddenRecipes].sort(),
 				isFamousShop,
@@ -245,6 +249,7 @@ export function useSuggestedMealsViewModel() {
 			currentRecipeData,
 			hasMystiaCooker,
 			hiddenBeverages,
+			hiddenDlcs,
 			hiddenIngredients,
 			hiddenRecipes,
 			isFamousShop,
@@ -283,6 +288,7 @@ export function useSuggestedMealsViewModel() {
 			customerName: currentCustomerName,
 			customerOrder: { ...currentCustomerOrder },
 			hasMystiaCooker,
+			hiddenDlcs: new Set(hiddenDlcs),
 			hiddenIngredients: new Set(hiddenIngredients),
 			isFamousShop,
 			popularTrend: { ...currentCustomerPopularTrend },
@@ -299,6 +305,7 @@ export function useSuggestedMealsViewModel() {
 						customerOrder: currentCustomerOrder,
 						hasMystiaCooker,
 						hiddenBeverages,
+						hiddenDlcs,
 						hiddenIngredients,
 						hiddenRecipes,
 						isFamousShop,
@@ -357,6 +364,7 @@ export function useSuggestedMealsViewModel() {
 		currentRecipeData,
 		hasMystiaCooker,
 		hiddenBeverages,
+		hiddenDlcs,
 		hiddenIngredients,
 		hiddenRecipes,
 		hasUnsetPopularOrderTag,
@@ -423,6 +431,7 @@ export function useSuggestedMealsViewModel() {
 			args: Omit<
 				Parameters<typeof getScoreBasedAlternatives>[0],
 				| 'hasMystiaCooker'
+				| 'hiddenDlcs'
 				| 'hiddenIngredients'
 				| 'instance_ingredient'
 				| 'instance_recipe'
@@ -460,6 +469,7 @@ export function useSuggestedMealsViewModel() {
 						{
 							...args,
 							hasMystiaCooker: resultContext.hasMystiaCooker,
+							hiddenDlcs: resultContext.hiddenDlcs,
 							hiddenIngredients: resultContext.hiddenIngredients,
 							instance_ingredient,
 							instance_recipe,
@@ -535,7 +545,6 @@ export function useSuggestedMealsViewModel() {
 
 		const {
 			beverageTags: customerBeverageTags,
-			dlc: customerDlc,
 			negativeTags: customerNegativeTags,
 			positiveTags: customerPositiveTags,
 		} = instance_customer.getPropsByName(resultContext.customerName);
@@ -585,7 +594,6 @@ export function useSuggestedMealsViewModel() {
 							'tags'
 						),
 						customerBeverageTags,
-						customerDlc,
 						customerName: resultContext.customerName,
 						customerNegativeTags,
 						customerOrder: resultContext.customerOrder,

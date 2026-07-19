@@ -10,6 +10,7 @@ import {
 	pinyinSort,
 } from '@/utilities';
 import { type Recipe } from '@/utils';
+import { isAvailableWithHiddenDlcs } from '@/utils/availability';
 import type { TRecipe } from '@/utils/types';
 
 import {
@@ -69,8 +70,8 @@ export function buildRecipeSuitabilityRows({
 	recipeInstance,
 	rowsPerPage,
 	searchValue = '',
+	selectedAvailabilityDlcs = [],
 	selectedCookers = [],
-	selectedDlcs = [],
 	selectedRecipeTags = [],
 	sortDescriptor,
 }: {
@@ -87,8 +88,8 @@ export function buildRecipeSuitabilityRows({
 	recipeInstance: Recipe;
 	rowsPerPage: number;
 	searchValue?: string;
+	selectedAvailabilityDlcs?: ReadonlyArray<string>;
 	selectedCookers?: ReadonlyArray<TRecipe['cooker']>;
-	selectedDlcs?: ReadonlyArray<string>;
 	selectedRecipeTags?: ReadonlyArray<TRecipeTag>;
 	sortDescriptor: ITableSortDescriptor<TRecipeTableSortKey>;
 }): IRecipeSuitabilityRowsResult {
@@ -104,7 +105,9 @@ export function buildRecipeSuitabilityRows({
 			isFamousShop,
 			popularTrend,
 		})
-		.filter(({ dlc }) => !hiddenDlcs.has(dlc));
+		.filter(({ availabilityPaths }) =>
+			isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs)
+		);
 	const dataWithVisibleRows = data.filter(
 		({ ingredients, name }) =>
 			!checkArrayContainsOf(ingredients, hiddenIngredients) &&
@@ -114,19 +117,21 @@ export function buildRecipeSuitabilityRows({
 	const hasNameFilter = Boolean(searchValue);
 	const shouldFilterByTableOptions =
 		hasNameFilter ||
+		!checkLengthEmpty(selectedAvailabilityDlcs) ||
 		!checkLengthEmpty(selectedCookers) ||
-		!checkLengthEmpty(selectedDlcs) ||
 		!checkLengthEmpty(selectedRecipeTags);
 
 	const filteredRows = shouldFilterByTableOptions
 		? dataWithVisibleRows.filter(
-				({ cooker, dlc, name, pinyin, positiveTags }) => {
+				({ availabilityDlcs, cooker, name, pinyin, positiveTags }) => {
 					const isNameMatched = hasNameFilter
 						? matchSearch(searchValue, { name, pinyin })
 						: true;
-					const isDlcMatched =
-						checkLengthEmpty(selectedDlcs) ||
-						selectedDlcs.includes(dlc.toString());
+					const isAvailabilityDlcMatched =
+						checkLengthEmpty(selectedAvailabilityDlcs) ||
+						availabilityDlcs.some((value) =>
+							selectedAvailabilityDlcs.includes(value.toString())
+						);
 					const isCookerMatched =
 						checkLengthEmpty(selectedCookers) ||
 						selectedCookers.includes(cooker);
@@ -136,7 +141,7 @@ export function buildRecipeSuitabilityRows({
 
 					return (
 						isNameMatched &&
-						isDlcMatched &&
+						isAvailabilityDlcMatched &&
 						isCookerMatched &&
 						isPositiveTagsMatched
 					);

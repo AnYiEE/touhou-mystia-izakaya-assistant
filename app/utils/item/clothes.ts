@@ -26,7 +26,7 @@ export class Clothes extends Item<TClothes> {
 			return Clothes._instance;
 		}
 
-		const instance = new Clothes(CLOTHES_LIST);
+		const instance = new Clothes(CLOTHES_LIST, 'clothes');
 
 		Clothes._instance = instance;
 

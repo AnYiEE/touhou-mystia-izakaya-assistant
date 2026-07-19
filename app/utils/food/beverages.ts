@@ -9,12 +9,13 @@ import {
 	type TPlace,
 } from '@/data';
 import { extractPlacesFromFoodFrom } from '@/data/utils';
+import type { TAvailabilityItemWithPinyin } from '@/utils/item/types';
 
 import { checkArrayEqualOf } from '@/utilities';
 
 type TBeverage = Prettify<TBeverages[number] & { places: TPlace[] }>;
 
-type TBeverageWithPinyin = TBeverage & { pinyin: string[] };
+type TBeverageWithPinyin = TAvailabilityItemWithPinyin<TBeverage>;
 
 type TBeverageSuitabilityRowData = TBeverageWithPinyin & {
 	matchedTags: TBeverageTag[];
@@ -56,7 +57,7 @@ export class Beverage extends Food<TBeverage[]> {
 			places: extractPlacesFromFoodFrom(item.from),
 		}));
 
-		super(dataWithPlaces);
+		super(dataWithPlaces, 'beverage');
 	}
 
 	public static getInstance() {

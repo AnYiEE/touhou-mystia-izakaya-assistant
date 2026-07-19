@@ -2,7 +2,6 @@ import { useCallback } from 'react';
 
 import { useFilteredData, useSortedData } from '@/hooks';
 
-import { type TDlc } from '@/data';
 import { customerNormalStore, customerRareStore } from '@/stores';
 import { type CustomerNormal, type CustomerRare } from '@/utils';
 import { filterCustomerData } from '@/utils/customer/shared';
@@ -33,7 +32,8 @@ export function useCustomerRouteData(
 	const customerPinyinSortState =
 		store.persistence.customer.pinyinSortState.use();
 
-	const customerFilterDlcs = store.persistence.customer.filters.dlcs.use();
+	const customerFilterAvailabilityDlcs =
+		store.persistence.customer.filters.availabilityDlcs.use();
 	const customerFilterExcludes =
 		store.persistence.customer.filters.excludes.use();
 	const customerFilterIncludes =
@@ -47,14 +47,14 @@ export function useCustomerRouteData(
 		() =>
 			filterCustomerData<TCustomerRouteItem>({
 				customerData: instance_customer.data,
-				customerFilterDlcs,
+				customerFilterAvailabilityDlcs,
 				customerFilterExcludes,
 				customerFilterIncludes,
 				customerFilterNoPlaces,
 				customerFilterPlaces,
 			}) as TCustomerData,
 		[
-			customerFilterDlcs,
+			customerFilterAvailabilityDlcs,
 			customerFilterExcludes,
 			customerFilterIncludes,
 			customerFilterNoPlaces,
@@ -62,27 +62,7 @@ export function useCustomerRouteData(
 			instance_customer.data,
 		]
 	);
-	const isCustomerVisibleWithHiddenDlcs = useCallback(
-		(item: TCustomerRouteItem, hiddenDlcs: ReadonlySet<TDlc>) => {
-			if ('isVisibleWithHiddenDlcs' in instance_customer) {
-				return instance_customer.isVisibleWithHiddenDlcs(
-					{ dlc: item.dlc, name: item.name } as Parameters<
-						typeof instance_customer.isVisibleWithHiddenDlcs
-					>[0],
-					hiddenDlcs
-				);
-			}
-
-			return !hiddenDlcs.has(item.dlc);
-		},
-		[instance_customer]
-	);
-
-	const customerFilteredData = useFilteredData(
-		instance_customer,
-		filterData,
-		isCustomerVisibleWithHiddenDlcs
-	);
+	const customerFilteredData = useFilteredData(instance_customer, filterData);
 
 	const customerSortedData = useSortedData(
 		instance_customer,

@@ -113,6 +113,8 @@ import {
 	Partner,
 	Recipe,
 } from '@/utils';
+import { isAvailableWithHiddenDlcs } from '@/utils/availability';
+import type { IAvailabilityItemData } from '@/utils/availability/types';
 import type { TSpriteTarget } from '@/utils/sprite/types';
 
 interface IRecentState {
@@ -204,9 +206,10 @@ const GLOBAL_SEARCH_VALUE_SUGGESTION_FIELD_TYPES = new Set<
 >([
 	'beverage-tag',
 	'category',
+	'availability-dlc',
+	'content-dlc',
 	'cooker',
 	'customer-tag',
-	'dlc',
 	'ingredient',
 	'level',
 	'moving-speed',
@@ -617,11 +620,30 @@ function getDlcDisplayLabel(value: string) {
 	return tokenLabel ?? value;
 }
 
+function checkFieldTypeIsDlc(fieldType: IGlobalSearchIndexField['fieldType']) {
+	return fieldType === 'availability-dlc' || fieldType === 'content-dlc';
+}
+
+function getMatchedDlcDisplayText(match: IGlobalSearchMatchedField) {
+	const values = match.field.text
+		.split(/\s+/u)
+		.filter((value) => getDlcLabelMeta(value) !== null);
+	const matchedValues = values.filter((value) =>
+		getDlcSearchTexts(value).some((text) =>
+			checkNameMatchesKeyword(text, match.keyword)
+		)
+	);
+	const displayValues = matchedValues.length > 0 ? matchedValues : values;
+	const labels = [...new Set(displayValues.map(getDlcDisplayLabel))];
+
+	return labels.length > 0 ? labels.join('、') : match.field.text;
+}
+
 function getFieldValueDisplayText(
 	fieldType: IGlobalSearchIndexField['fieldType'],
 	value: string
 ) {
-	return fieldType === 'dlc' ? getDlcDisplayLabel(value) : value;
+	return checkFieldTypeIsDlc(fieldType) ? getDlcDisplayLabel(value) : value;
 }
 
 function getMatchedFieldSpriteTokens(match: IGlobalSearchMatchedField) {
@@ -844,10 +866,10 @@ function renderMatchedFieldContent(
 	item: IGlobalSearchIndexItem,
 	match: IGlobalSearchMatchedField
 ) {
-	if (match.field.fieldType === 'dlc') {
+	if (checkFieldTypeIsDlc(match.field.fieldType)) {
 		return (
 			<span className="min-w-0 break-words">
-				{getDlcDisplayLabel(match.field.text)}
+				{getMatchedDlcDisplayText(match)}
 			</span>
 		);
 	}
@@ -919,7 +941,7 @@ function getFieldValueTokens(
 ) {
 	const tokens = value.split(/\s+/u).filter(Boolean);
 
-	if (fieldType === 'dlc') {
+	if (checkFieldTypeIsDlc(fieldType)) {
 		return tokens.filter((token) => getDlcLabelMeta(token) !== null);
 	}
 
@@ -1022,7 +1044,7 @@ function compareFieldValueSuggestion({
 		}
 	}
 
-	if (fieldType === 'dlc' || fieldType === 'level') {
+	if (checkFieldTypeIsDlc(fieldType) || fieldType === 'level') {
 		const aNumber = Number(aValue);
 		const bNumber = Number(bValue);
 
@@ -1043,7 +1065,7 @@ function checkFieldValueMatchesKeyword({
 	keyword: string;
 	value: string;
 }) {
-	if (fieldType === 'dlc') {
+	if (checkFieldTypeIsDlc(fieldType)) {
 		return getDlcSearchTexts(value).some((text) =>
 			checkNameMatchesKeyword(text, keyword)
 		);
@@ -1062,7 +1084,9 @@ function checkFieldValueExactlyMatchesKeyword({
 	value: string;
 }) {
 	const normalizedKeyword = keyword.toLowerCase();
-	const texts = fieldType === 'dlc' ? getDlcSearchTexts(value) : [value];
+	const texts = checkFieldTypeIsDlc(fieldType)
+		? getDlcSearchTexts(value)
+		: [value];
 
 	return texts.some((text) => text.toLowerCase() === normalizedKeyword);
 }
@@ -1265,6 +1289,44 @@ function getGlobalSearchFieldValueSuggestions({
 	return matches;
 }
 
+function getFieldValueTokenDeletionRange({
+	cursorIndex,
+	fieldCondition,
+	value,
+	valueCache,
+}: {
+	cursorIndex: number;
+	fieldCondition:
+		| null
+		| ReturnType<typeof parseGlobalSearchQuery>['fieldConditions'][number];
+	value: string;
+	valueCache: TGlobalSearchFieldValueCache;
+}) {
+	if (fieldCondition === null || cursorIndex !== value.length) {
+		return null;
+	}
+
+	const keyword = fieldCondition.keyword.trim();
+	const keywordEnd = value.endsWith(' ') ? cursorIndex - 1 : cursorIndex;
+	const keywordStart = keywordEnd - keyword.length;
+	if (
+		keyword.length === 0 ||
+		value.slice(keywordStart, keywordEnd) !== keyword ||
+		!getGlobalSearchFieldValueMatches({ fieldCondition, valueCache }).some(
+			(fieldValue) =>
+				checkFieldValueExactlyMatchesKeyword({
+					fieldType: fieldCondition.fieldType,
+					keyword,
+					value: fieldValue,
+				})
+		)
+	) {
+		return null;
+	}
+
+	return { end: cursorIndex, start: keywordStart };
+}
+
 function replaceActiveFieldValue(
 	value: string,
 	prefix: string,
@@ -1344,14 +1406,16 @@ export default function GlobalSpotlightSearch() {
 		[hiddenDlcs]
 	);
 	const index = useMemo(() => {
-		const isVisibleDlc = ({ dlc }: { dlc: TDlc }) => !hiddenDlcs.has(dlc);
+		const isVisibleItem = ({ availabilityPaths }: IAvailabilityItemData) =>
+			isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs);
 		const customerRareInstance = CustomerRare.getInstance();
 		const ingredientInstance = Ingredient.getInstance();
 		const recipeInstance = Recipe.getInstance();
 		const ingredients = ingredientInstance.data
 			.filter(
-				({ dlc, name }) =>
-					isVisibleDlc({ dlc }) && !hiddenIngredients.has(name)
+				({ availabilityPaths, name }) =>
+					isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs) &&
+					!hiddenIngredients.has(name)
 			)
 			.map((item) => ({
 				...item,
@@ -1363,8 +1427,8 @@ export default function GlobalSpotlightSearch() {
 			}));
 		const recipes = recipeInstance.data
 			.filter(
-				({ dlc, ingredients: itemIngredients, name }) =>
-					isVisibleDlc({ dlc }) &&
+				({ availabilityPaths, ingredients: itemIngredients, name }) =>
+					isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs) &&
 					!hiddenRecipes.has(name) &&
 					itemIngredients.every(
 						(ingredient) => !hiddenIngredients.has(ingredient)
@@ -1388,24 +1452,22 @@ export default function GlobalSpotlightSearch() {
 		return [
 			...buildGlobalSearchIndex({
 				beverages: Beverage.getInstance().data.filter(
-					({ dlc, name }) =>
-						isVisibleDlc({ dlc }) && !hiddenBeverages.has(name)
+					({ availabilityPaths, name }) =>
+						isAvailableWithHiddenDlcs(
+							availabilityPaths,
+							hiddenDlcs
+						) && !hiddenBeverages.has(name)
 				),
-				clothes: Clothes.getInstance().data.filter(isVisibleDlc),
-				cookers: Cooker.getInstance().data.filter(isVisibleDlc),
-				currencies: Currency.getInstance().data.filter(isVisibleDlc),
+				clothes: Clothes.getInstance().data.filter(isVisibleItem),
+				cookers: Cooker.getInstance().data.filter(isVisibleItem),
+				currencies: Currency.getInstance().data.filter(isVisibleItem),
 				customerNormal:
-					CustomerNormal.getInstance().data.filter(isVisibleDlc),
-				customerRare: customerRareInstance.data.filter((customer) =>
-					customerRareInstance.isVisibleWithHiddenDlcs(
-						customer,
-						hiddenDlcs
-					)
-				),
+					CustomerNormal.getInstance().data.filter(isVisibleItem),
+				customerRare: customerRareInstance.data.filter(isVisibleItem),
 				ingredients:
 					ingredients as unknown as typeof ingredientInstance.data,
-				ornaments: Ornament.getInstance().data.filter(isVisibleDlc),
-				partners: Partner.getInstance().data.filter(isVisibleDlc),
+				ornaments: Ornament.getInstance().data.filter(isVisibleItem),
+				partners: Partner.getInstance().data.filter(isVisibleItem),
 				recipes,
 			}),
 			...buildGlobalSearchPreferenceIndex({
@@ -1925,7 +1987,10 @@ export default function GlobalSpotlightSearch() {
 				replaceActiveFieldValue(
 					value,
 					activeFieldCondition.prefix,
-					suggestion
+					getFieldValueDisplayText(
+						activeFieldCondition.fieldType,
+						suggestion
+					)
 				)
 			);
 			inputRef.current?.focus();
@@ -1998,10 +2063,13 @@ export default function GlobalSpotlightSearch() {
 					return;
 				}
 
-				const deletionRange = getPrefixTokenDeletionRange(
-					query,
-					selectionStart
-				);
+				const deletionRange =
+					getFieldValueTokenDeletionRange({
+						cursorIndex: selectionStart,
+						fieldCondition: activeFieldCondition,
+						value: query,
+						valueCache: fieldValueCache,
+					}) ?? getPrefixTokenDeletionRange(query, selectionStart);
 				if (deletionRange === null) {
 					return;
 				}
@@ -2020,7 +2088,15 @@ export default function GlobalSpotlightSearch() {
 				});
 			}
 		},
-		[handleOpenItem, query, results.length, selectedResult, vibrate]
+		[
+			activeFieldCondition,
+			fieldValueCache,
+			handleOpenItem,
+			query,
+			results.length,
+			selectedResult,
+			vibrate,
+		]
 	);
 
 	useEffect(() => {
@@ -2238,7 +2314,11 @@ export default function GlobalSpotlightSearch() {
 					<span className="mt-0.5 block max-w-full truncate text-tiny text-foreground-500">
 						{match === undefined
 							? item.description
-							: `${match.field.label}中命中：${match.snippet}`}
+							: `${match.field.label}中命中：${
+									checkFieldTypeIsDlc(match.field.fieldType)
+										? getMatchedDlcDisplayText(match)
+										: match.snippet
+								}`}
 					</span>
 				</span>
 			</Button>
@@ -2418,7 +2498,9 @@ export default function GlobalSpotlightSearch() {
 							{renderSearchSyntax(`@${suggestion.alias}`)}
 						</span>
 						<span className="shrink-0 text-tiny text-foreground-400">
-							{suggestion.kind === 'section' ? '分区' : '字段'}
+							{suggestion.kind === 'section'
+								? '分区'
+								: (suggestion.valueTypeLabel ?? '字段')}
 						</span>
 					</Button>
 				))}

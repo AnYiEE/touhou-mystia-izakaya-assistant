@@ -12,15 +12,13 @@ import {
 	type TPlace,
 } from '@/data';
 import { Clothes } from '@/utils';
+import { isAvailableWithHiddenDlcs } from '@/utils/availability';
+import type { IAvailabilityPath } from '@/utils/availability/types';
 
 import { siteConfig } from '@/configs';
 import { checkLengthEmpty } from '@/utilities';
 
 const { cdnUrl } = siteConfig;
-
-const BASE_GAME_VISIBLE_RARE_CUSTOMERS = new Set<TCustomerRareName>([
-	'雾雨魔理沙',
-]);
 
 export class CustomerRare extends Customer<TCustomerRares> {
 	private static _instance: CustomerRare | undefined;
@@ -32,7 +30,7 @@ export class CustomerRare extends Customer<TCustomerRares> {
 			return CustomerRare._instance;
 		}
 
-		const instance = new CustomerRare(CUSTOMER_RARE_LIST);
+		const instance = new CustomerRare(CUSTOMER_RARE_LIST, 'customerRare');
 
 		CustomerRare._instance = instance;
 
@@ -56,12 +54,12 @@ export class CustomerRare extends Customer<TCustomerRares> {
 	}
 
 	public isVisibleWithHiddenDlcs(
-		customer: Pick<TCustomerRares[number], 'dlc' | 'name'>,
+		customer: { availabilityPaths: ReadonlyArray<IAvailabilityPath> },
 		hiddenDlcs: ReadonlySet<TDlc>
 	) {
-		return (
-			!hiddenDlcs.has(customer.dlc) ||
-			BASE_GAME_VISIBLE_RARE_CUSTOMERS.has(customer.name)
+		return isAvailableWithHiddenDlcs(
+			customer.availabilityPaths,
+			hiddenDlcs
 		);
 	}
 

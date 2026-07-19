@@ -18,6 +18,7 @@ import {
 	toSet,
 } from '@/utilities';
 import { Ingredient } from '@/utils';
+import { filterAvailableItemsByHiddenDlcs } from '@/utils/availability';
 
 const instance = Ingredient.getInstance();
 
@@ -26,7 +27,8 @@ const storeVersion = {
 	popular: 1, // eslint-disable-next-line sort-keys
 	filterTypes: 2, // eslint-disable-next-line sort-keys
 	filterPlaces: 3,
-	removeSearchValue: 4,
+	removeSearchValue: 4, // eslint-disable-next-line sort-keys
+	availabilityDlcFilter: 5,
 } as const;
 
 const getNames = createNamesCache(instance);
@@ -36,7 +38,8 @@ const state = {
 
 	persistence: {
 		filters: {
-			dlcs: [] as string[],
+			availabilityDlcs: [] as string[],
+			contentDlcs: [] as string[],
 			levels: [] as string[],
 			noPlaces: [] as string[],
 			noTags: [] as string[],
@@ -59,7 +62,7 @@ export const ingredientsStore = store(state, {
 	middlewares: [
 		persistMiddleware<typeof state>({
 			name: 'page-ingredients-storage',
-			version: storeVersion.removeSearchValue,
+			version: storeVersion.availabilityDlcFilter,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -88,6 +91,13 @@ export const ingredientsStore = store(state, {
 				if (version < storeVersion.removeSearchValue) {
 					delete oldState.persistence.searchValue;
 				}
+				if (version < storeVersion.availabilityDlcFilter) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					oldState.persistence.filters.contentDlcs =
+						oldState.persistence.filters.dlcs;
+					oldState.persistence.filters.availabilityDlcs = [];
+					delete oldState.persistence.filters.dlcs;
+				}
 				return persistedState as typeof state;
 			},
 			partialize: (currentStore) =>
@@ -97,11 +107,24 @@ export const ingredientsStore = store(state, {
 		}),
 	],
 }).computed((currentStore) => ({
-	availableDlcs: () => {
+	availableAvailabilityDlcs: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		return instance
-			.getValuesByProp('dlc', true)
-			.filter(({ value }) => !hiddenDlcs.has(value))
+			.getValuesByProp(
+				'availabilityDlcs',
+				true,
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
+			)
+			.sort(numberSort);
+	},
+	availableContentDlcs: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
+			.getValuesByProp(
+				'dlc',
+				true,
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
+			)
 			.sort(numberSort);
 	},
 	availableLevels: () => {
@@ -110,7 +133,7 @@ export const ingredientsStore = store(state, {
 			.getValuesByProp(
 				'level',
 				true,
-				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
 			.sort(numberSort);
 	},
@@ -121,7 +144,7 @@ export const ingredientsStore = store(state, {
 			instance.getValuesByProp(
 				'name',
 				false,
-				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
 		).map(toGetValueCollection);
 	},
@@ -131,7 +154,7 @@ export const ingredientsStore = store(state, {
 			.getValuesByProp(
 				'places',
 				true,
-				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
 			.sort(pinyinSort);
 	},
@@ -141,7 +164,7 @@ export const ingredientsStore = store(state, {
 			instance.getValuesByProp(
 				'tags',
 				false,
-				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			),
 			DYNAMIC_TAG_MAP.popularNegative,
 			DYNAMIC_TAG_MAP.popularPositive
@@ -156,7 +179,7 @@ export const ingredientsStore = store(state, {
 			instance.getValuesByProp(
 				'type',
 				false,
-				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
 		).map(toGetValueCollection);
 	},
@@ -164,7 +187,8 @@ export const ingredientsStore = store(state, {
 
 ingredientsStore.shared.hiddenItems.dlcs.onChange(() => {
 	ingredientsStore.persistence.filters.set({
-		dlcs: [],
+		availabilityDlcs: [],
+		contentDlcs: [],
 		levels: [],
 		noPlaces: [],
 		noTags: [],

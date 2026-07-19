@@ -58,9 +58,11 @@ export default function BeverageTabContent() {
 		customerStore.shared.customer.select.beverageTag.use();
 
 	const currentBeverageName = customerStore.shared.beverage.name.use();
-	const selectedDlcs = customerStore.beverageTableDlcs.use();
+	const selectedAvailabilityDlcs =
+		customerStore.beverageTableAvailabilityDlcs.use();
 
-	const availableBeverageDlcs = customerStore.availableBeverageDlcs.use();
+	const availableBeverageAvailabilityDlcs =
+		customerStore.availableBeverageAvailabilityDlcs.use();
 	const availableBeverageNames = customerStore.availableBeverageNames.use();
 	const availableBeverageTags = customerStore.availableBeverageTags.use();
 
@@ -332,7 +334,7 @@ export default function BeverageTabContent() {
 						</Select>
 					</div>
 					<div className="flex w-full gap-3 md:w-auto">
-						{availableBeverageDlcs.length > 1 && (
+						{availableBeverageAvailabilityDlcs.length > 1 && (
 							<Dropdown showArrow>
 								<DropdownTrigger>
 									<Button
@@ -350,24 +352,24 @@ export default function BeverageTabContent() {
 													isHighAppearance,
 												'ring-2 ring-default':
 													!checkLengthEmpty(
-														selectedDlcs
+														selectedAvailabilityDlcs
 													),
 											}
 										)}
 									>
-										DLC
+										可获取于
 									</Button>
 								</DropdownTrigger>
 								<DropdownMenu
 									closeOnSelect={false}
-									items={availableBeverageDlcs}
-									selectedKeys={selectedDlcs}
+									items={availableBeverageAvailabilityDlcs}
+									selectedKeys={selectedAvailabilityDlcs}
 									selectionMode="multiple"
 									variant="flat"
 									onSelectionChange={
-										customerStore.onBeverageTableSelectedDlcsChange
+										customerStore.onBeverageTableSelectedAvailabilityDlcsChange
 									}
-									aria-label="选择特定DLC中的酒水"
+									aria-label="按可获取内容筛选酒水"
 									itemClasses={{
 										base: 'transition-background motion-reduce:transition-none',
 									}}
@@ -485,15 +487,15 @@ export default function BeverageTabContent() {
 			</div>
 		),
 		[
-			availableBeverageDlcs,
+			availableBeverageAvailabilityDlcs,
 			availableBeverageNames,
 			availableBeverageTags,
 			isHighAppearance,
 			isReducedMotion,
 			popoverMotionProps,
 			searchValue,
+			selectedAvailabilityDlcs,
 			selectedCustomerBeverageTag,
-			selectedDlcs,
 			tableSortedRows.length,
 			tableRowsPerPage,
 			tableSelectableRows,

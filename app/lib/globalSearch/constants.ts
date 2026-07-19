@@ -506,9 +506,9 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		standalone: true,
 	},
 	{
-		aliases: ['DLC', '数据集', 'dlc'],
-		key: 'dlc',
-		label: 'DLC',
+		aliases: ['内容归属', '归属', '所属DLC', 'content-dlc'],
+		key: 'content-dlc',
+		label: '内容归属',
 		order: 200,
 		sections: [
 			'beverages',
@@ -524,6 +524,28 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 			'recipes',
 		],
 		standalone: true,
+		valueTypeLabel: 'DLC',
+	},
+	{
+		aliases: ['可获取于', 'DLC', '可获取DLC', 'dlc', 'availability-dlc'],
+		key: 'availability-dlc',
+		label: '可获取于',
+		order: 201,
+		sections: [
+			'beverages',
+			'clothes',
+			'cookers',
+			'currencies',
+			'customers',
+			'customer-normal',
+			'customer-rare',
+			'ingredients',
+			'ornaments',
+			'partners',
+			'recipes',
+		],
+		standalone: true,
+		valueTypeLabel: 'DLC',
 	},
 ] as const satisfies ReadonlyArray<IGlobalSearchFieldPrefixGroup>;
 

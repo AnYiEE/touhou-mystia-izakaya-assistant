@@ -1,21 +1,21 @@
 import { checkLengthEmpty, filterItems } from '@/utilities';
 
 interface IFilterableCustomer {
-	dlc: number;
+	availabilityDlcs: ReadonlyArray<number>;
 	name: string;
 	places: ReadonlyArray<string>;
 }
 
 export function filterCustomerData<TCustomer extends IFilterableCustomer>({
 	customerData,
-	customerFilterDlcs,
+	customerFilterAvailabilityDlcs,
 	customerFilterExcludes,
 	customerFilterIncludes,
 	customerFilterNoPlaces,
 	customerFilterPlaces,
 }: {
 	customerData: ReadonlyArray<TCustomer>;
-	customerFilterDlcs: ReadonlyArray<string>;
+	customerFilterAvailabilityDlcs: ReadonlyArray<string>;
 	customerFilterExcludes: ReadonlyArray<string>;
 	customerFilterIncludes: ReadonlyArray<string>;
 	customerFilterNoPlaces: ReadonlyArray<string>;
@@ -23,7 +23,11 @@ export function filterCustomerData<TCustomer extends IFilterableCustomer>({
 }): TCustomer[] {
 	const filtered = filterItems(customerData, [
 		{ field: 'name', match: 'excludeIn', values: customerFilterExcludes },
-		{ field: 'dlc', match: 'in', values: customerFilterDlcs },
+		{
+			field: 'availabilityDlcs',
+			match: 'any',
+			values: customerFilterAvailabilityDlcs,
+		},
 		{ field: 'places', match: 'any', values: customerFilterPlaces },
 		{
 			field: 'places',

@@ -191,6 +191,7 @@ export function useCustomerRarePlanRecommendations({
 								batchSize: RECOMMENDED_MEAL_BATCH_SIZE,
 								customerName,
 								hiddenBeverages,
+								hiddenDlcs,
 								hiddenIngredients,
 								hiddenRecipes,
 								isFamousShop,

@@ -16,6 +16,7 @@ import {
 	getPinyin,
 	processPinyin,
 } from '@/utilities';
+import { hasEquivalentDlcFilters } from '@/utils/availability';
 
 import type {
 	IGlobalSearchQueryAst,
@@ -205,11 +206,13 @@ function createAppendFilterAction<T extends string>({
 function createDlcFilterAction({
 	availableValues,
 	currentValues,
+	filterLabel,
 	keyword,
 	setValues,
 }: {
 	availableValues: () => Array<ValueCollection<string | number>>;
 	currentValues: () => string[];
+	filterLabel: '内容归属' | '可获取于';
 	keyword: string;
 	setValues: (values: string[]) => void;
 }): Omit<IGlobalSearchFilterAction, 'label' | 'targetSection'> | null {
@@ -220,22 +223,50 @@ function createDlcFilterAction({
 
 	return createAppendFilterAction({
 		currentValues,
-		description: `筛选DLC：${getDlcDisplayLabel(value)}`,
+		description: `筛选${filterLabel}：${getDlcDisplayLabel(value)}`,
 		setValues,
 		value,
 	});
+}
+
+function getDlcFilterKind(
+	fieldType: TGlobalSearchFieldType,
+	data: Parameters<typeof hasEquivalentDlcFilters>[0]
+) {
+	return fieldType === 'availability-dlc'
+		? hasEquivalentDlcFilters(data)
+			? 'content'
+			: 'availability'
+		: fieldType === 'content-dlc'
+			? 'content'
+			: null;
 }
 
 function createRecipeFilterAction(
 	fieldType: TGlobalSearchFieldType,
 	keyword: string
 ): Omit<IGlobalSearchFilterAction, 'label' | 'targetSection'> | null {
-	if (fieldType === 'dlc') {
+	const dlcFilterKind = getDlcFilterKind(
+		fieldType,
+		recipesStore.instance.get().data
+	);
+	if (dlcFilterKind !== null) {
 		return createDlcFilterAction({
-			availableValues: recipesStore.availableDlcs.get,
-			currentValues: recipesStore.persistence.filters.dlcs.get,
+			availableValues:
+				dlcFilterKind === 'availability'
+					? recipesStore.availableAvailabilityDlcs.get
+					: recipesStore.availableContentDlcs.get,
+			currentValues:
+				dlcFilterKind === 'availability'
+					? recipesStore.persistence.filters.availabilityDlcs.get
+					: recipesStore.persistence.filters.contentDlcs.get,
+			filterLabel:
+				dlcFilterKind === 'availability' ? '可获取于' : '内容归属',
 			keyword,
-			setValues: recipesStore.persistence.filters.dlcs.set,
+			setValues:
+				dlcFilterKind === 'availability'
+					? recipesStore.persistence.filters.availabilityDlcs.set
+					: recipesStore.persistence.filters.contentDlcs.set,
 		});
 	}
 
@@ -362,12 +393,27 @@ function createBeverageFilterAction(
 	fieldType: TGlobalSearchFieldType,
 	keyword: string
 ): Omit<IGlobalSearchFilterAction, 'label' | 'targetSection'> | null {
-	if (fieldType === 'dlc') {
+	const dlcFilterKind = getDlcFilterKind(
+		fieldType,
+		beveragesStore.instance.get().data
+	);
+	if (dlcFilterKind !== null) {
 		return createDlcFilterAction({
-			availableValues: beveragesStore.availableDlcs.get,
-			currentValues: beveragesStore.persistence.filters.dlcs.get,
+			availableValues:
+				dlcFilterKind === 'availability'
+					? beveragesStore.availableAvailabilityDlcs.get
+					: beveragesStore.availableContentDlcs.get,
+			currentValues:
+				dlcFilterKind === 'availability'
+					? beveragesStore.persistence.filters.availabilityDlcs.get
+					: beveragesStore.persistence.filters.contentDlcs.get,
+			filterLabel:
+				dlcFilterKind === 'availability' ? '可获取于' : '内容归属',
 			keyword,
-			setValues: beveragesStore.persistence.filters.dlcs.set,
+			setValues:
+				dlcFilterKind === 'availability'
+					? beveragesStore.persistence.filters.availabilityDlcs.set
+					: beveragesStore.persistence.filters.contentDlcs.set,
 		});
 	}
 
@@ -428,12 +474,27 @@ function createIngredientFilterAction(
 	fieldType: TGlobalSearchFieldType,
 	keyword: string
 ): Omit<IGlobalSearchFilterAction, 'label' | 'targetSection'> | null {
-	if (fieldType === 'dlc') {
+	const dlcFilterKind = getDlcFilterKind(
+		fieldType,
+		ingredientsStore.instance.get().data
+	);
+	if (dlcFilterKind !== null) {
 		return createDlcFilterAction({
-			availableValues: ingredientsStore.availableDlcs.get,
-			currentValues: ingredientsStore.persistence.filters.dlcs.get,
+			availableValues:
+				dlcFilterKind === 'availability'
+					? ingredientsStore.availableAvailabilityDlcs.get
+					: ingredientsStore.availableContentDlcs.get,
+			currentValues:
+				dlcFilterKind === 'availability'
+					? ingredientsStore.persistence.filters.availabilityDlcs.get
+					: ingredientsStore.persistence.filters.contentDlcs.get,
+			filterLabel:
+				dlcFilterKind === 'availability' ? '可获取于' : '内容归属',
 			keyword,
-			setValues: ingredientsStore.persistence.filters.dlcs.set,
+			setValues:
+				dlcFilterKind === 'availability'
+					? ingredientsStore.persistence.filters.availabilityDlcs.set
+					: ingredientsStore.persistence.filters.contentDlcs.set,
 		});
 	}
 
@@ -512,12 +573,27 @@ function createCookerFilterAction(
 	fieldType: TGlobalSearchFieldType,
 	keyword: string
 ): Omit<IGlobalSearchFilterAction, 'label' | 'targetSection'> | null {
-	if (fieldType === 'dlc') {
+	const dlcFilterKind = getDlcFilterKind(
+		fieldType,
+		cookersStore.instance.get().data
+	);
+	if (dlcFilterKind !== null) {
 		return createDlcFilterAction({
-			availableValues: cookersStore.availableDlcs.get,
-			currentValues: cookersStore.persistence.filters.dlcs.get,
+			availableValues:
+				dlcFilterKind === 'availability'
+					? cookersStore.availableAvailabilityDlcs.get
+					: cookersStore.availableContentDlcs.get,
+			currentValues:
+				dlcFilterKind === 'availability'
+					? cookersStore.persistence.filters.availabilityDlcs.get
+					: cookersStore.persistence.filters.contentDlcs.get,
+			filterLabel:
+				dlcFilterKind === 'availability' ? '可获取于' : '内容归属',
 			keyword,
-			setValues: cookersStore.persistence.filters.dlcs.set,
+			setValues:
+				dlcFilterKind === 'availability'
+					? cookersStore.persistence.filters.availabilityDlcs.set
+					: cookersStore.persistence.filters.contentDlcs.set,
 		});
 	}
 
@@ -568,23 +644,39 @@ function createDlcOnlyFilterAction(
 	fieldType: TGlobalSearchFieldType,
 	keyword: string
 ): Omit<IGlobalSearchFilterAction, 'label' | 'targetSection'> | null {
-	if (fieldType !== 'dlc') {
-		return null;
-	}
-
 	const storeMap = {
 		clothes: clothesStore,
 		currencies: currenciesStore,
 		ornaments: ornamentsStore,
 		partners: partnersStore,
 	} as const;
+	const dataMap = {
+		clothes: clothesStore.instance.get().data,
+		currencies: currenciesStore.instance.get().data,
+		ornaments: ornamentsStore.instance.get().data,
+		partners: partnersStore.instance.get().data,
+	} as const;
 	const targetStore = storeMap[targetSection];
+	const dlcFilterKind = getDlcFilterKind(fieldType, dataMap[targetSection]);
+	if (dlcFilterKind === null) {
+		return null;
+	}
 
 	return createDlcFilterAction({
-		availableValues: targetStore.availableDlcs.get,
-		currentValues: targetStore.persistence.filters.dlcs.get,
+		availableValues:
+			dlcFilterKind === 'availability'
+				? targetStore.availableAvailabilityDlcs.get
+				: targetStore.availableContentDlcs.get,
+		currentValues:
+			dlcFilterKind === 'availability'
+				? targetStore.persistence.filters.availabilityDlcs.get
+				: targetStore.persistence.filters.contentDlcs.get,
+		filterLabel: dlcFilterKind === 'availability' ? '可获取于' : '内容归属',
 		keyword,
-		setValues: targetStore.persistence.filters.dlcs.set,
+		setValues:
+			dlcFilterKind === 'availability'
+				? targetStore.persistence.filters.availabilityDlcs.set
+				: targetStore.persistence.filters.contentDlcs.set,
 	});
 }
 

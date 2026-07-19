@@ -16,14 +16,19 @@ import SidePinyinSortIconButton, {
 
 import { recipesStore as store } from '@/stores';
 import { checkLengthEmpty, filterItems } from '@/utilities';
+import { hasEquivalentDlcFilters } from '@/utils/availability';
 
 export default function Recipes() {
 	const currentPopularTrend = store.shared.popularTrend.use();
 	const isFamousShop = store.shared.famousShop.use();
 
 	const instance = store.instance.get();
+	const isAvailabilityDlcFilterRedundant = hasEquivalentDlcFilters(
+		instance.data
+	);
 
-	const availableDlcs = store.availableDlcs.use();
+	const availableAvailabilityDlcs = store.availableAvailabilityDlcs.use();
+	const availableContentDlcs = store.availableContentDlcs.use();
 	const availableCookers = store.availableCookers.use();
 	const availableIngredients = store.availableIngredients.use();
 	const availableLevels = store.availableLevels.use();
@@ -33,7 +38,9 @@ export default function Recipes() {
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
 
-	const filterDlcs = store.persistence.filters.dlcs.use();
+	const filterAvailabilityDlcs =
+		store.persistence.filters.availabilityDlcs.use();
+	const filterContentDlcs = store.persistence.filters.contentDlcs.use();
 	const filterLevels = store.persistence.filters.levels.use();
 	const filterCookers = store.persistence.filters.cookers.use();
 	const filterIngredients = store.persistence.filters.ingredients.use();
@@ -67,7 +74,14 @@ export default function Recipes() {
 	const filterData = useCallback(
 		() =>
 			filterItems(dataWithTrend, [
-				{ field: 'dlc', match: 'in', values: filterDlcs },
+				{
+					field: 'availabilityDlcs',
+					match: 'any',
+					values: isAvailabilityDlcFilterRedundant
+						? []
+						: filterAvailabilityDlcs,
+				},
+				{ field: 'dlc', match: 'in', values: filterContentDlcs },
 				{ field: 'level', match: 'in', values: filterLevels },
 				{ field: 'cooker', match: 'in', values: filterCookers },
 				{
@@ -109,8 +123,9 @@ export default function Recipes() {
 			]),
 		[
 			dataWithTrend,
+			filterAvailabilityDlcs,
 			filterCookers,
-			filterDlcs,
+			filterContentDlcs,
 			filterIngredients,
 			filterLevels,
 			filterNegativeTags,
@@ -120,6 +135,7 @@ export default function Recipes() {
 			filterNoPositiveTags,
 			filterPlaces,
 			filterPositiveTags,
+			isAvailabilityDlcFilterRedundant,
 		]
 	);
 
@@ -138,11 +154,24 @@ export default function Recipes() {
 	const selectConfig = useMemo<TSelectConfig>(
 		() => [
 			{
-				items: availableDlcs,
-				label: 'DLC',
-				selectedKeys: filterDlcs,
-				setSelectedKeys: store.persistence.filters.dlcs.set,
+				items: availableContentDlcs,
+				label: '内容归属',
+				selectedKeys: filterContentDlcs,
+				setSelectedKeys: store.persistence.filters.contentDlcs.set,
+				valueType: 'dlc',
 			},
+			...(isAvailabilityDlcFilterRedundant
+				? []
+				: [
+						{
+							items: availableAvailabilityDlcs,
+							label: '可获取于',
+							selectedKeys: filterAvailabilityDlcs,
+							setSelectedKeys:
+								store.persistence.filters.availabilityDlcs.set,
+							valueType: 'dlc',
+						} satisfies TSelectConfig[number],
+					]),
 			{
 				items: availablePositiveTags,
 				label: '正特性（包含）',
@@ -208,15 +237,17 @@ export default function Recipes() {
 			},
 		],
 		[
+			availableAvailabilityDlcs,
 			availableCookers,
-			availableDlcs,
+			availableContentDlcs,
 			availableIngredients,
 			availableLevels,
 			availableNegativeTags,
 			availablePlaces,
 			availablePositiveTags,
+			filterAvailabilityDlcs,
 			filterCookers,
-			filterDlcs,
+			filterContentDlcs,
 			filterIngredients,
 			filterLevels,
 			filterNegativeTags,
@@ -226,6 +257,7 @@ export default function Recipes() {
 			filterNoPositiveTags,
 			filterPlaces,
 			filterPositiveTags,
+			isAvailabilityDlcFilterRedundant,
 		]
 	);
 

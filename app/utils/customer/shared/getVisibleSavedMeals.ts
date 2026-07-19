@@ -7,6 +7,8 @@ import {
 	type TRecipeName,
 } from '@/data';
 import { checkArrayContainsOf, checkLengthEmpty } from '@/utilities';
+import { isAvailableWithHiddenDlcs } from '@/utils/availability';
+import type { IAvailabilityPath } from '@/utils/availability/types';
 
 export interface IVisibleSavedMealEntry<TMeal> {
 	dataIndex: number;
@@ -20,7 +22,7 @@ export function getVisibleSavedMeals<TMeal>({
 	hiddenIngredients = new Set<TIngredientName>(),
 	hiddenRecipes = new Set<TRecipeName>(),
 	meals,
-	resolveDlcRefs,
+	resolveAvailabilityRefs,
 	resolveItemRefs,
 }: {
 	hiddenBeverages?: ReadonlySet<TBeverageName>;
@@ -28,12 +30,12 @@ export function getVisibleSavedMeals<TMeal>({
 	hiddenIngredients?: ReadonlySet<TIngredientName>;
 	hiddenRecipes?: ReadonlySet<TRecipeName>;
 	meals: ReadonlyArray<TMeal> | null | undefined;
-	resolveDlcRefs: (
+	resolveAvailabilityRefs: (
 		meal: TMeal
 	) => {
-		beverageDlc: TDlc;
-		ingredientDlcs: ReadonlyArray<TDlc>;
-		recipeDlc: TDlc;
+		beveragePaths: ReadonlyArray<IAvailabilityPath> | null;
+		ingredientPaths: ReadonlyArray<ReadonlyArray<IAvailabilityPath>>;
+		recipePaths: ReadonlyArray<IAvailabilityPath>;
 	} | null;
 	resolveItemRefs?: (
 		meal: TMeal
@@ -50,18 +52,22 @@ export function getVisibleSavedMeals<TMeal>({
 	const visibleMeals: Array<IVisibleSavedMealEntry<TMeal>> = [];
 
 	meals.forEach((meal, dataIndex) => {
-		const dlcRefs = resolveDlcRefs(meal);
-		if (dlcRefs === null) {
+		const availabilityRefs = resolveAvailabilityRefs(meal);
+		if (availabilityRefs === null) {
 			return;
 		}
 
-		const hasHiddenIngredientDlc = dlcRefs.ingredientDlcs.some((dlc) =>
-			hiddenDlcs.has(dlc)
-		);
+		const requiredItemPaths = [
+			...availabilityRefs.ingredientPaths,
+			availabilityRefs.recipePaths,
+			...(availabilityRefs.beveragePaths === null
+				? []
+				: [availabilityRefs.beveragePaths]),
+		];
 		if (
-			hasHiddenIngredientDlc ||
-			hiddenDlcs.has(dlcRefs.beverageDlc) ||
-			hiddenDlcs.has(dlcRefs.recipeDlc)
+			requiredItemPaths.some(
+				(paths) => !isAvailableWithHiddenDlcs(paths, hiddenDlcs)
+			)
 		) {
 			return;
 		}

@@ -9,7 +9,7 @@ export class Currency extends Item<TCurrencies> {
 			return Currency._instance;
 		}
 
-		const instance = new Currency(CURRENCY_LIST);
+		const instance = new Currency(CURRENCY_LIST, 'currency');
 
 		Currency._instance = instance;
 

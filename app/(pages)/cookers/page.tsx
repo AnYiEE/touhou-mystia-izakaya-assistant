@@ -16,17 +16,24 @@ import SidePinyinSortIconButton, {
 
 import { cookersStore as store } from '@/stores';
 import { checkLengthEmpty, filterItems } from '@/utilities';
+import { hasEquivalentDlcFilters } from '@/utils/availability';
 
 export default function Cookers() {
 	const instance = store.instance.get();
+	const isAvailabilityDlcFilterRedundant = hasEquivalentDlcFilters(
+		instance.data
+	);
 
 	const availableCategories = store.availableCategories.use();
-	const availableDlcs = store.availableDlcs.use();
+	const availableAvailabilityDlcs = store.availableAvailabilityDlcs.use();
+	const availableContentDlcs = store.availableContentDlcs.use();
 	const availableTypes = store.availableTypes.use();
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
 
-	const filterDlcs = store.persistence.filters.dlcs.use();
+	const filterAvailabilityDlcs =
+		store.persistence.filters.availabilityDlcs.use();
+	const filterContentDlcs = store.persistence.filters.contentDlcs.use();
 	const filterCategories = store.persistence.filters.categories.use();
 	const filterNoCategories = store.persistence.filters.noCategories.use();
 	const filterTypes = store.persistence.filters.types.use();
@@ -35,7 +42,14 @@ export default function Cookers() {
 	const filterData = useCallback(
 		() =>
 			filterItems(instance.data, [
-				{ field: 'dlc', match: 'in', values: filterDlcs },
+				{
+					field: 'availabilityDlcs',
+					match: 'any',
+					values: isAvailabilityDlcFilterRedundant
+						? []
+						: filterAvailabilityDlcs,
+				},
+				{ field: 'dlc', match: 'in', values: filterContentDlcs },
 				{ field: 'category', match: 'in', values: filterCategories },
 				{
 					field: 'category',
@@ -46,12 +60,14 @@ export default function Cookers() {
 				{ field: 'type', match: 'excludeAny', values: filterNoTypes },
 			]),
 		[
+			filterAvailabilityDlcs,
 			filterCategories,
-			filterDlcs,
+			filterContentDlcs,
 			filterNoCategories,
 			filterNoTypes,
 			filterTypes,
 			instance.data,
+			isAvailabilityDlcFilterRedundant,
 		]
 	);
 
@@ -70,11 +86,24 @@ export default function Cookers() {
 	const selectConfig = useMemo<TSelectConfig>(
 		() => [
 			{
-				items: availableDlcs,
-				label: 'DLC',
-				selectedKeys: filterDlcs,
-				setSelectedKeys: store.persistence.filters.dlcs.set,
+				items: availableContentDlcs,
+				label: '内容归属',
+				selectedKeys: filterContentDlcs,
+				setSelectedKeys: store.persistence.filters.contentDlcs.set,
+				valueType: 'dlc',
 			},
+			...(isAvailabilityDlcFilterRedundant
+				? []
+				: [
+						{
+							items: availableAvailabilityDlcs,
+							label: '可获取于',
+							selectedKeys: filterAvailabilityDlcs,
+							setSelectedKeys:
+								store.persistence.filters.availabilityDlcs.set,
+							valueType: 'dlc',
+						} satisfies TSelectConfig[number],
+					]),
 			{
 				items: availableCategories,
 				label: '厨具系列（包含）',
@@ -101,14 +130,17 @@ export default function Cookers() {
 			},
 		],
 		[
+			availableAvailabilityDlcs,
 			availableCategories,
-			availableDlcs,
+			availableContentDlcs,
 			availableTypes,
+			filterAvailabilityDlcs,
 			filterCategories,
-			filterDlcs,
+			filterContentDlcs,
 			filterNoCategories,
 			filterNoTypes,
 			filterTypes,
+			isAvailabilityDlcFilterRedundant,
 		]
 	);
 

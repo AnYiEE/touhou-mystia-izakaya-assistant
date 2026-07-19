@@ -1,4 +1,10 @@
-import type { IItem, TItemWithPinyin } from './types';
+import type {
+	IItem,
+	TAvailabilityItemWithPinyin,
+	TItemWithPinyin,
+} from './types';
+import { attachAvailabilityData } from '@/utils/availability/catalog';
+import type { TAvailabilityCategory } from '@/utils/availability/types';
 
 import {
 	checkLengthEmpty,
@@ -15,7 +21,7 @@ type DeepFlatElement<T> =
 
 export class Item<
 	TItems extends IItem[],
-	TItem extends TItemWithPinyin<TItems[number]> = TItemWithPinyin<
+	TItem extends TItemWithPinyin<TItems[number]> = TAvailabilityItemWithPinyin<
 		TItems[number]
 	>,
 	TItemId extends TItem['id'] = TItem['id'],
@@ -30,8 +36,12 @@ export class Item<
 		ReadonlyArray<TItem>
 	>;
 
-	protected constructor(data: TItems) {
-		this._data = cloneJsonObject(data).map((item) => ({
+	protected constructor(data: TItems, category?: TAvailabilityCategory) {
+		const dataWithAvailability =
+			category === undefined
+				? data
+				: attachAvailabilityData(category, data);
+		this._data = cloneJsonObject(dataWithAvailability).map((item) => ({
 			...item,
 			pinyin: getPinyin(item.name),
 		})) as TItem[];

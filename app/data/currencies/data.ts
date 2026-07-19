@@ -58,7 +58,7 @@ export const CURRENCY_LIST = [
 		name: '蓬松松糖果',
 		description:
 			'“蓬松松爱莲♡魔法店”发行的糖果型货币，是爱莲分享给大家的甜蜜。可以在“蓬松松爱莲♡魔法店”里换购商品。',
-		dlc: 0,
+		dlc: 5,
 		from: [
 			'【爱莲】奖励符卡',
 			{

@@ -58,6 +58,7 @@ export function adaptV1RecommendationRequest({
 			beverageNames,
 			availability.beverages
 		),
+		hiddenDlcs: new Set(),
 		hiddenIngredients: createHiddenNames<TIngredientName>(
 			ingredientNames,
 			availability.ingredients

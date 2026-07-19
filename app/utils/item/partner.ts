@@ -24,7 +24,7 @@ export class Partner extends Item<TPartners> {
 			return Partner._instance;
 		}
 
-		const instance = new Partner(PARTNER_LIST);
+		const instance = new Partner(PARTNER_LIST, 'partner');
 
 		Partner._instance = instance;
 

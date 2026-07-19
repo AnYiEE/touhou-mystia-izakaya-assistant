@@ -36,6 +36,7 @@ interface ISelectConfigItem extends Pick<
 	selectedKeys: string[];
 	setSelectedKeys: Dispatch<ISelectConfigItem['selectedKeys']>;
 	spriteTarget?: TSpriteTarget;
+	valueType?: 'dlc';
 }
 export type TSelectConfig = ISelectConfigItem[];
 
@@ -60,7 +61,8 @@ export default memo<IProps>(function SideFilterIconButton({
 	const filteredSelectConfig = useMemo(
 		() =>
 			selectConfig.filter(
-				({ items, label }) => !(label === 'DLC' && items.length <= 1)
+				({ items, valueType }) =>
+					!(valueType === 'dlc' && items.length <= 1)
 			),
 		[selectConfig]
 	);
@@ -121,69 +123,84 @@ export default memo<IProps>(function SideFilterIconButton({
 					</PopoverTrigger>
 				</span>
 			</Tooltip>
-			<PopoverContent className="w-64">
-				<div className="w-full space-y-1">
-					{filteredSelectConfig.map(
-						(
-							{
-								items,
-								label,
-								selectedKeys,
-								selectionMode,
-								setSelectedKeys,
-								spriteTarget,
-							},
-							index
-						) => (
-							<Select
-								key={index}
-								disableAnimation={isReducedMotion}
-								isVirtualized={false}
-								items={items}
-								label={label}
-								selectedKeys={selectedKeys}
-								selectionMode={selectionMode ?? 'multiple'}
-								size="sm"
-								onSelectionChange={handleSelectionChange(
-									setSelectedKeys
-								)}
-								popoverProps={{
-									motionProps: selectMotionProps,
-									shouldCloseOnScroll: false,
-								}}
-								classNames={{
-									listboxWrapper: cn(
-										'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
-										{
-											'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
+			<PopoverContent className="max-h-[calc(var(--safe-h-dvh)-5.5rem)] w-64 overflow-hidden">
+				<div className="flex min-h-0 w-full flex-col gap-1">
+					<div className="min-h-0 space-y-1 overflow-y-auto scrollbar-hide">
+						{filteredSelectConfig.map(
+							(
+								{
+									items,
+									label,
+									selectedKeys,
+									selectionMode,
+									setSelectedKeys,
+									spriteTarget,
+									valueType,
+								},
+								index
+							) => (
+								<Select
+									key={index}
+									disableAnimation={isReducedMotion}
+									isVirtualized={false}
+									items={items}
+									label={label}
+									selectedKeys={selectedKeys}
+									selectionMode={selectionMode ?? 'multiple'}
+									size="sm"
+									onSelectionChange={handleSelectionChange(
+										setSelectedKeys
+									)}
+									popoverProps={{
+										motionProps: selectMotionProps,
+										shouldCloseOnScroll: false,
+									}}
+									classNames={{
+										listboxWrapper: cn(
+											'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
+											{
+												'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
+													isHighAppearance,
+											}
+										),
+										popoverContent: cn({
+											'bg-content1/70 backdrop-blur-lg':
 												isHighAppearance,
-										}
-									),
-									popoverContent: cn({
-										'bg-content1/70 backdrop-blur-lg':
-											isHighAppearance,
-									}),
-									trigger: cn(
-										'transition-background motion-reduce:transition-none',
-										isHighAppearance
-											? 'bg-default/40 data-[hover=true]:bg-default-400/40'
-											: 'bg-default-200 data-[hover=true]:bg-default'
-									),
-								}}
-							>
-								{({ value }) =>
-									spriteTarget ? (
-										<SelectItem
-											key={value}
-											textValue={value as TItemName}
-											classNames={{
-												base: '[&>span]:inline-flex',
-											}}
-										>
-											<span className="inline-flex items-center">
-												{spriteTarget ===
-												'customer_normal' ? (
-													<div className="h-6 w-6 overflow-hidden rounded-full">
+										}),
+										trigger: cn(
+											'transition-background motion-reduce:transition-none',
+											isHighAppearance
+												? 'bg-default/40 data-[hover=true]:bg-default-400/40'
+												: 'bg-default-200 data-[hover=true]:bg-default'
+										),
+									}}
+								>
+									{({ value }) =>
+										spriteTarget ? (
+											<SelectItem
+												key={value}
+												textValue={value as TItemName}
+												classNames={{
+													base: '[&>span]:inline-flex',
+												}}
+											>
+												<span className="inline-flex items-center">
+													{spriteTarget ===
+													'customer_normal' ? (
+														<div className="h-6 w-6 overflow-hidden rounded-full">
+															<Sprite
+																target={
+																	spriteTarget
+																}
+																name={
+																	value as TItemName
+																}
+																size={2.15}
+																className="-translate-x-[0.315rem] -translate-y-px"
+															/>
+														</div>
+													) : spriteTarget ===
+													  'customer_rare' ? (
 														<Sprite
 															target={
 																spriteTarget
@@ -191,48 +208,42 @@ export default memo<IProps>(function SideFilterIconButton({
 															name={
 																value as TItemName
 															}
-															size={2.15}
-															className="-translate-x-[0.315rem] -translate-y-px"
+															size={1.5}
+															className="rounded-full"
 														/>
-													</div>
-												) : spriteTarget ===
-												  'customer_rare' ? (
-													<Sprite
-														target={spriteTarget}
-														name={
-															value as TItemName
-														}
-														size={1.5}
-														className="rounded-full"
-													/>
-												) : (
-													<Sprite
-														target={spriteTarget}
-														name={
-															value as TItemName
-														}
-														size={1}
-													/>
-												)}
-												<span className="ml-1">
-													{value}
+													) : (
+														<Sprite
+															target={
+																spriteTarget
+															}
+															name={
+																value as TItemName
+															}
+															size={1}
+														/>
+													)}
+													<span className="ml-1">
+														{value}
+													</span>
 												</span>
-											</span>
-										</SelectItem>
-									) : (
-										<SelectItem key={value}>
-											{label === 'DLC'
-												? DLC_LABEL_MAP[value as TDlc]
-														.label
-												: value.toString()}
-										</SelectItem>
-									)
-								}
-							</Select>
-						)
-					)}
+											</SelectItem>
+										) : (
+											<SelectItem key={value}>
+												{valueType === 'dlc'
+													? DLC_LABEL_MAP[
+															value as TDlc
+														].label
+													: value.toString()}
+											</SelectItem>
+										)
+									}
+								</Select>
+							)
+						)}
+					</div>
 					<Button
 						fullWidth
+						className="shrink-0"
 						color="danger"
 						isDisabled={!hasFilter}
 						size="sm"

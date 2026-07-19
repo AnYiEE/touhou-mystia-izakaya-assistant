@@ -24,7 +24,7 @@ export class Ornament extends Item<TOrnaments> {
 			return Ornament._instance;
 		}
 
-		const instance = new Ornament(ORNAMENT_LIST);
+		const instance = new Ornament(ORNAMENT_LIST, 'ornament');
 
 		Ornament._instance = instance;
 

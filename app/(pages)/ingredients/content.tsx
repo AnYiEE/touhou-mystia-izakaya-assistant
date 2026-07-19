@@ -40,6 +40,7 @@ import {
 	toArray,
 } from '@/utilities';
 import { type Ingredient } from '@/utils';
+import { isAvailableWithHiddenDlcs } from '@/utils/availability';
 import type { TItemData, TRecipe } from '@/utils/types';
 
 interface IProps {
@@ -113,7 +114,12 @@ export default memo<IProps>(function Content({ data }) {
 								}
 								const relatedRecipesGroupByDlcMap =
 									relatedRecipes.reduce((map, item) => {
-										if (hiddenDlcs.has(item.dlc)) {
+										if (
+											!isAvailableWithHiddenDlcs(
+												item.availabilityPaths,
+												hiddenDlcs
+											)
+										) {
 											return map;
 										}
 										if (!map.has(item.dlc)) {

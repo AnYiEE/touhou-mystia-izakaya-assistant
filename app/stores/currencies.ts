@@ -10,20 +10,25 @@ import { persist as persistMiddleware } from '@/stores/middlewares';
 import { createNamesCache } from '@/stores/utils';
 import { numberSort, sortBy, toGetValueCollection, toSet } from '@/utilities';
 import { Currency } from '@/utils';
+import { filterAvailableItemsByHiddenDlcs } from '@/utils/availability';
 
 const instance = Currency.getInstance();
 
 const storeVersion = {
 	initial: 0, // eslint-disable-next-line sort-keys
 	filterDlcs: 1,
-	removeSearchValue: 2,
+	removeSearchValue: 2, // eslint-disable-next-line sort-keys
+	availabilityDlcFilter: 3,
 } as const;
 
 const state = {
 	instance,
 
 	persistence: {
-		filters: { dlcs: [] as string[] },
+		filters: {
+			availabilityDlcs: [] as string[],
+			contentDlcs: [] as string[],
+		},
 		pinyinSortState: pinyinSortStateMap.none as TPinyinSortState,
 	},
 	shared: { hiddenItems: { dlcs: toSet<TDlc>() } },
@@ -35,7 +40,7 @@ export const currenciesStore = store(state, {
 	middlewares: [
 		persistMiddleware<typeof state>({
 			name: 'page-currencies-storage',
-			version: storeVersion.removeSearchValue,
+			version: storeVersion.availabilityDlcFilter,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -46,6 +51,13 @@ export const currenciesStore = store(state, {
 				if (version < storeVersion.removeSearchValue) {
 					delete oldState.persistence.searchValue;
 				}
+				if (version < storeVersion.availabilityDlcFilter) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					oldState.persistence.filters.contentDlcs =
+						oldState.persistence.filters.dlcs;
+					oldState.persistence.filters.availabilityDlcs = [];
+					delete oldState.persistence.filters.dlcs;
+				}
 				return persistedState as typeof state;
 			},
 			partialize: (currentStore) =>
@@ -55,11 +67,24 @@ export const currenciesStore = store(state, {
 		}),
 	],
 }).computed((currentStore) => ({
-	availableDlcs: () => {
+	availableAvailabilityDlcs: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		return instance
-			.getValuesByProp('dlc', true)
-			.filter(({ value }) => !hiddenDlcs.has(value))
+			.getValuesByProp(
+				'availabilityDlcs',
+				true,
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
+			)
+			.sort(numberSort);
+	},
+	availableContentDlcs: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
+			.getValuesByProp(
+				'dlc',
+				true,
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
+			)
 			.sort(numberSort);
 	},
 	availableNames: () => {
@@ -69,12 +94,15 @@ export const currenciesStore = store(state, {
 			instance.getValuesByProp(
 				'name',
 				false,
-				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
 		).map(toGetValueCollection);
 	},
 }));
 
 currenciesStore.shared.hiddenItems.dlcs.onChange(() => {
-	currenciesStore.persistence.filters.set({ dlcs: [] });
+	currenciesStore.persistence.filters.set({
+		availabilityDlcs: [],
+		contentDlcs: [],
+	});
 });

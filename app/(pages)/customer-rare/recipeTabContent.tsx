@@ -59,10 +59,12 @@ export default function RecipeTabContent() {
 
 	const currentRecipeData = customerStore.shared.recipe.data.use();
 	const selectedCookers = customerStore.recipeTableCookers.use();
-	const selectedDlcs = customerStore.recipeTableDlcs.use();
+	const selectedAvailabilityDlcs =
+		customerStore.recipeTableAvailabilityDlcs.use();
 
 	const availableRecipeCookers = customerStore.availableRecipeCookers.use();
-	const availableRecipeDlcs = customerStore.availableRecipeDlcs.use();
+	const availableRecipeAvailabilityDlcs =
+		customerStore.availableRecipeAvailabilityDlcs.use();
 	const availableRecipeNames = customerStore.availableRecipeNames.use();
 	const availableRecipeTags = customerStore.availableRecipeTags.use();
 
@@ -465,7 +467,7 @@ export default function RecipeTabContent() {
 								)}
 							</DropdownMenu>
 						</Dropdown>
-						{availableRecipeDlcs.length > 1 && (
+						{availableRecipeAvailabilityDlcs.length > 1 && (
 							<Dropdown showArrow>
 								<DropdownTrigger>
 									<Button
@@ -483,24 +485,24 @@ export default function RecipeTabContent() {
 													isHighAppearance,
 												'ring-2 ring-default':
 													!checkLengthEmpty(
-														selectedDlcs
+														selectedAvailabilityDlcs
 													),
 											}
 										)}
 									>
-										DLC
+										可获取于
 									</Button>
 								</DropdownTrigger>
 								<DropdownMenu
 									closeOnSelect={false}
-									items={availableRecipeDlcs}
-									selectedKeys={selectedDlcs}
+									items={availableRecipeAvailabilityDlcs}
+									selectedKeys={selectedAvailabilityDlcs}
 									selectionMode="multiple"
 									variant="flat"
 									onSelectionChange={
-										customerStore.onRecipeTableSelectedDlcsChange
+										customerStore.onRecipeTableSelectedAvailabilityDlcsChange
 									}
-									aria-label="选择特定DLC中的料理"
+									aria-label="按可获取内容筛选料理"
 									itemClasses={{
 										base: 'transition-background motion-reduce:transition-none',
 									}}
@@ -619,16 +621,16 @@ export default function RecipeTabContent() {
 		),
 		[
 			availableRecipeCookers,
-			availableRecipeDlcs,
+			availableRecipeAvailabilityDlcs,
 			availableRecipeNames,
 			availableRecipeTags,
 			isHighAppearance,
 			isReducedMotion,
 			popoverMotionProps,
 			searchValue,
+			selectedAvailabilityDlcs,
 			selectedCookers,
 			selectedCustomerRecipeTag,
-			selectedDlcs,
 			tableSortedRows.length,
 			tableRowsPerPage,
 			tableSelectableRows,

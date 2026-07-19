@@ -209,7 +209,7 @@ export default memo<IProps>(function Content({ onModalClose }) {
 			</Heading>
 			<Heading
 				as="h3"
-				subTitle="已关闭的数据集所对应的物品将在各个页面中被隐藏"
+				subTitle="关闭未拥有的数据集以隐藏仅在对应数据集中出现或可以获取的内容"
 			>
 				数据集
 			</Heading>

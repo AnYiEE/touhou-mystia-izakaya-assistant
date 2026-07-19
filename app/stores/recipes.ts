@@ -18,6 +18,7 @@ import {
 	toSet,
 } from '@/utilities';
 import { Recipe } from '@/utils';
+import { filterAvailableItemsByHiddenDlcs } from '@/utils/availability';
 
 const instance = Recipe.getInstance();
 
@@ -26,7 +27,8 @@ const storeVersion = {
 	popular: 1, // eslint-disable-next-line sort-keys
 	cooker: 2,
 	filterPlaces: 3,
-	removeSearchValue: 4,
+	removeSearchValue: 4, // eslint-disable-next-line sort-keys
+	availabilityDlcFilter: 5,
 } as const;
 
 const state = {
@@ -34,8 +36,9 @@ const state = {
 
 	persistence: {
 		filters: {
+			availabilityDlcs: [] as string[],
+			contentDlcs: [] as string[],
 			cookers: [] as string[],
-			dlcs: [] as string[],
 			ingredients: [] as string[],
 			levels: [] as string[],
 			negativeTags: [] as string[],
@@ -62,7 +65,7 @@ export const recipesStore = store(state, {
 	middlewares: [
 		persistMiddleware<typeof state>({
 			name: 'page-recipes-storage',
-			version: storeVersion.removeSearchValue,
+			version: storeVersion.availabilityDlcFilter,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -90,6 +93,13 @@ export const recipesStore = store(state, {
 				if (version < storeVersion.removeSearchValue) {
 					delete oldState.persistence.searchValue;
 				}
+				if (version < storeVersion.availabilityDlcFilter) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					oldState.persistence.filters.contentDlcs =
+						oldState.persistence.filters.dlcs;
+					oldState.persistence.filters.availabilityDlcs = [];
+					delete oldState.persistence.filters.dlcs;
+				}
 				return persistedState as typeof state;
 			},
 			partialize: (currentStore) =>
@@ -99,22 +109,35 @@ export const recipesStore = store(state, {
 		}),
 	],
 }).computed((currentStore) => ({
+	availableAvailabilityDlcs: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
+			.getValuesByProp(
+				'availabilityDlcs',
+				true,
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
+			)
+			.sort(numberSort);
+	},
+	availableContentDlcs: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
+			.getValuesByProp(
+				'dlc',
+				true,
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
+			)
+			.sort(numberSort);
+	},
 	availableCookers: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		return instance
 			.getValuesByProp(
 				'cooker',
 				true,
-				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
 			.sort(pinyinSort);
-	},
-	availableDlcs: () => {
-		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-		return instance
-			.getValuesByProp('dlc', true)
-			.filter(({ value }) => !hiddenDlcs.has(value))
-			.sort(numberSort);
 	},
 	availableIngredients: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
@@ -122,7 +145,7 @@ export const recipesStore = store(state, {
 			.getValuesByProp(
 				'ingredients',
 				true,
-				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
 			.sort(pinyinSort);
 	},
@@ -132,7 +155,7 @@ export const recipesStore = store(state, {
 			.getValuesByProp(
 				'level',
 				true,
-				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
 			.sort(numberSort);
 	},
@@ -143,7 +166,7 @@ export const recipesStore = store(state, {
 			instance.getValuesByProp(
 				'name',
 				false,
-				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
 		).map(toGetValueCollection);
 	},
@@ -153,7 +176,7 @@ export const recipesStore = store(state, {
 			.getValuesByProp(
 				'negativeTags',
 				true,
-				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
 			.sort(pinyinSort);
 	},
@@ -163,7 +186,7 @@ export const recipesStore = store(state, {
 			.getValuesByProp(
 				'places',
 				true,
-				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
 			.sort(pinyinSort);
 	},
@@ -173,7 +196,7 @@ export const recipesStore = store(state, {
 			instance.getValuesByProp(
 				'positiveTags',
 				false,
-				instance.data.filter(({ dlc }) => !hiddenDlcs.has(dlc))
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			),
 			DYNAMIC_TAG_MAP.popularNegative,
 			DYNAMIC_TAG_MAP.popularPositive
@@ -185,8 +208,9 @@ export const recipesStore = store(state, {
 
 recipesStore.shared.hiddenItems.dlcs.onChange(() => {
 	recipesStore.persistence.filters.set({
+		availabilityDlcs: [],
+		contentDlcs: [],
 		cookers: [],
-		dlcs: [],
 		ingredients: [],
 		levels: [],
 		negativeTags: [],

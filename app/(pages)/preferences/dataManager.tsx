@@ -1017,13 +1017,13 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 									customerRareStore.persistence.recipe.table.cookers.set(
 										[]
 									);
-									customerRareStore.persistence.recipe.table.dlcs.set(
+									customerRareStore.persistence.recipe.table.availabilityDlcs.set(
 										[]
 									);
 									customerRareStore.persistence.recipe.table.sortDescriptor.set(
 										{}
 									);
-									customerRareStore.persistence.beverage.table.dlcs.set(
+									customerRareStore.persistence.beverage.table.availabilityDlcs.set(
 										[]
 									);
 									customerRareStore.persistence.beverage.table.sortDescriptor.set(

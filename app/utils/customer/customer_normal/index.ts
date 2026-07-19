@@ -17,7 +17,10 @@ export class CustomerNormal extends Customer<TCustomerNormals> {
 			return CustomerNormal._instance;
 		}
 
-		const instance = new CustomerNormal(CUSTOMER_NORMAL_LIST);
+		const instance = new CustomerNormal(
+			CUSTOMER_NORMAL_LIST,
+			'customerNormal'
+		);
 
 		CustomerNormal._instance = instance;
 

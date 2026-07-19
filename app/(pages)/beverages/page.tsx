@@ -16,18 +16,25 @@ import SidePinyinSortIconButton, {
 
 import { beveragesStore as store } from '@/stores';
 import { checkLengthEmpty, filterItems } from '@/utilities';
+import { hasEquivalentDlcFilters } from '@/utils/availability';
 
 export default function Beverages() {
 	const instance = store.instance.get();
+	const isAvailabilityDlcFilterRedundant = hasEquivalentDlcFilters(
+		instance.data
+	);
 
-	const availableDlcs = store.availableDlcs.use();
+	const availableAvailabilityDlcs = store.availableAvailabilityDlcs.use();
+	const availableContentDlcs = store.availableContentDlcs.use();
 	const availableLevels = store.availableLevels.use();
 	const availablePlaces = store.availablePlaces.use();
 	const availableTags = store.availableTags.use();
 
 	const pinyinSortState = store.persistence.pinyinSortState.use();
 
-	const filterDlcs = store.persistence.filters.dlcs.use();
+	const filterAvailabilityDlcs =
+		store.persistence.filters.availabilityDlcs.use();
+	const filterContentDlcs = store.persistence.filters.contentDlcs.use();
 	const filterLevels = store.persistence.filters.levels.use();
 	const filterTags = store.persistence.filters.tags.use();
 	const filterNoTags = store.persistence.filters.noTags.use();
@@ -37,7 +44,14 @@ export default function Beverages() {
 	const filterData = useCallback(
 		() =>
 			filterItems(instance.data, [
-				{ field: 'dlc', match: 'in', values: filterDlcs },
+				{
+					field: 'availabilityDlcs',
+					match: 'any',
+					values: isAvailabilityDlcFilterRedundant
+						? []
+						: filterAvailabilityDlcs,
+				},
+				{ field: 'dlc', match: 'in', values: filterContentDlcs },
 				{ field: 'level', match: 'in', values: filterLevels },
 				{ field: 'tags', match: 'all', values: filterTags },
 				{ field: 'tags', match: 'excludeAny', values: filterNoTags },
@@ -49,13 +63,15 @@ export default function Beverages() {
 				},
 			]),
 		[
-			filterDlcs,
+			filterAvailabilityDlcs,
+			filterContentDlcs,
 			filterLevels,
 			filterNoPlaces,
 			filterNoTags,
 			filterPlaces,
 			filterTags,
 			instance.data,
+			isAvailabilityDlcFilterRedundant,
 		]
 	);
 
@@ -74,11 +90,24 @@ export default function Beverages() {
 	const selectConfig = useMemo<TSelectConfig>(
 		() => [
 			{
-				items: availableDlcs,
-				label: 'DLC',
-				selectedKeys: filterDlcs,
-				setSelectedKeys: store.persistence.filters.dlcs.set,
+				items: availableContentDlcs,
+				label: '内容归属',
+				selectedKeys: filterContentDlcs,
+				setSelectedKeys: store.persistence.filters.contentDlcs.set,
+				valueType: 'dlc',
 			},
+			...(isAvailabilityDlcFilterRedundant
+				? []
+				: [
+						{
+							items: availableAvailabilityDlcs,
+							label: '可获取于',
+							selectedKeys: filterAvailabilityDlcs,
+							setSelectedKeys:
+								store.persistence.filters.availabilityDlcs.set,
+							valueType: 'dlc',
+						} satisfies TSelectConfig[number],
+					]),
 			{
 				items: availableTags,
 				label: '酒水标签（包含）',
@@ -111,16 +140,19 @@ export default function Beverages() {
 			},
 		],
 		[
-			availableDlcs,
+			availableAvailabilityDlcs,
+			availableContentDlcs,
 			availableLevels,
 			availablePlaces,
 			availableTags,
-			filterDlcs,
+			filterAvailabilityDlcs,
+			filterContentDlcs,
 			filterLevels,
 			filterNoPlaces,
 			filterNoTags,
 			filterPlaces,
 			filterTags,
+			isAvailabilityDlcFilterRedundant,
 		]
 	);
 

@@ -8,6 +8,7 @@ import {
 	pinyinSort,
 } from '@/utilities';
 import { type Beverage } from '@/utils';
+import { isAvailableWithHiddenDlcs } from '@/utils/availability';
 import type { TBeverage } from '@/utils/types';
 
 import {
@@ -57,8 +58,8 @@ export function buildBeverageSuitabilityRows({
 	page,
 	rowsPerPage,
 	searchValue = '',
+	selectedAvailabilityDlcs = [],
 	selectedBeverageTags = [],
-	selectedDlcs = [],
 	sortDescriptor,
 }: {
 	beverageInstance: Beverage;
@@ -69,13 +70,15 @@ export function buildBeverageSuitabilityRows({
 	page: number;
 	rowsPerPage: number;
 	searchValue?: string;
+	selectedAvailabilityDlcs?: ReadonlyArray<string>;
 	selectedBeverageTags?: ReadonlyArray<TBeverageTag>;
-	selectedDlcs?: ReadonlyArray<string>;
 	sortDescriptor: ITableSortDescriptor<TBeverageTableSortKey>;
 }): IBeverageSuitabilityRowsResult {
 	const data: TBeverageSuitabilityRow[] = beverageInstance
 		.buildBeverageSuitabilityRows(customerBeverageTags)
-		.filter(({ dlc }) => !hiddenDlcs.has(dlc));
+		.filter(({ availabilityPaths }) =>
+			isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs)
+		);
 	const dataWithVisibleRows = data.filter(
 		({ name }) => !hiddenBeverages.has(name)
 	);
@@ -83,23 +86,31 @@ export function buildBeverageSuitabilityRows({
 	const hasNameFilter = Boolean(searchValue);
 	const shouldFilterByTableOptions =
 		hasNameFilter ||
-		!checkLengthEmpty(selectedBeverageTags) ||
-		!checkLengthEmpty(selectedDlcs);
+		!checkLengthEmpty(selectedAvailabilityDlcs) ||
+		!checkLengthEmpty(selectedBeverageTags);
 
 	const filteredRows = shouldFilterByTableOptions
-		? dataWithVisibleRows.filter(({ dlc, name, pinyin, tags }) => {
-				const isNameMatched = hasNameFilter
-					? matchSearch(searchValue, { name, pinyin })
-					: true;
-				const isDlcMatched =
-					checkLengthEmpty(selectedDlcs) ||
-					selectedDlcs.includes(dlc.toString());
-				const isTagsMatched =
-					checkLengthEmpty(selectedBeverageTags) ||
-					checkArraySubsetOf(selectedBeverageTags, tags);
+		? dataWithVisibleRows.filter(
+				({ availabilityDlcs, name, pinyin, tags }) => {
+					const isNameMatched = hasNameFilter
+						? matchSearch(searchValue, { name, pinyin })
+						: true;
+					const isAvailabilityDlcMatched =
+						checkLengthEmpty(selectedAvailabilityDlcs) ||
+						availabilityDlcs.some((value) =>
+							selectedAvailabilityDlcs.includes(value.toString())
+						);
+					const isTagsMatched =
+						checkLengthEmpty(selectedBeverageTags) ||
+						checkArraySubsetOf(selectedBeverageTags, tags);
 
-				return isNameMatched && isDlcMatched && isTagsMatched;
-			})
+					return (
+						isNameMatched &&
+						isAvailabilityDlcMatched &&
+						isTagsMatched
+					);
+				}
+			)
 		: dataWithVisibleRows;
 
 	const sortedRows = sortBeverageRows(filteredRows, sortDescriptor);

@@ -33,19 +33,19 @@ function matchCondition<T>(item: T, condition: IFilterCondition<T>) {
 		case 'excludeIn':
 			return !values.includes(String(fieldValue));
 		case 'all': {
-			const array = [fieldValue].flat() as string[];
+			const array = [fieldValue].flat().map(String);
 			return checkArraySubsetOf(values as string[], array);
 		}
 		case 'excludeAll': {
-			const array = [fieldValue].flat() as string[];
+			const array = [fieldValue].flat().map(String);
 			return !checkArraySubsetOf(values as string[], array);
 		}
 		case 'any': {
-			const array = [fieldValue].flat() as string[];
+			const array = [fieldValue].flat().map(String);
 			return checkArrayContainsOf(values as string[], array);
 		}
 		case 'excludeAny': {
-			const array = [fieldValue].flat() as string[];
+			const array = [fieldValue].flat().map(String);
 			return !checkArrayContainsOf(values as string[], array);
 		}
 		default:

@@ -396,28 +396,27 @@ function extractPlacesFromSource(value: unknown): string[] {
 }
 
 function formatDlcValue(value: unknown): string[] {
-	const [dlcValue] = flattenValue(value);
+	return flattenValue(value).flatMap((dlcValue) => {
+		const dlc = Number(dlcValue) as TDlc;
 
-	if (dlcValue === undefined) {
-		return [];
-	}
+		if (!(dlc in DLC_LABEL_MAP)) {
+			return dlcValue;
+		}
 
-	const dlc = Number(dlcValue) as TDlc;
+		const labelMeta = DLC_LABEL_MAP[dlc];
 
-	if (!(dlc in DLC_LABEL_MAP)) {
-		return flattenValue(value);
-	}
-
-	const labelMeta = DLC_LABEL_MAP[dlc];
-
-	return [labelMeta.label, labelMeta.shortLabel, dlcValue].filter(Boolean);
+		return [labelMeta.label, labelMeta.shortLabel, dlcValue].filter(
+			Boolean
+		);
+	});
 }
 
 function joinFieldValue(fieldType: TGlobalSearchFieldType, value: unknown) {
 	const formatters: Partial<
 		Record<TGlobalSearchFieldType, (value: unknown) => string[]>
 	> = {
-		dlc: formatDlcValue,
+		'availability-dlc': formatDlcValue,
+		'content-dlc': formatDlcValue,
 		effect: formatEffectValue,
 		evaluation: formatEvaluationValue,
 		from: formatSourceValue,
@@ -501,6 +500,24 @@ function createField(
 	return text.length === 0 ? [] : [{ fieldType, label, text, weight }];
 }
 
+function createDlcFields({
+	availabilityDlcs,
+	dlc,
+}: {
+	availabilityDlcs: ReadonlyArray<TDlc>;
+	dlc: TDlc;
+}) {
+	return [
+		...createField('content-dlc', '内容归属', dlc, FIELD_WEIGHT.medium),
+		...createField(
+			'availability-dlc',
+			'可获取于',
+			availabilityDlcs,
+			FIELD_WEIGHT.medium
+		),
+	];
+}
+
 function getSectionLabel(section: TGlobalSearchSection) {
 	return (
 		GLOBAL_SEARCH_SECTION_PREFIX_GROUPS.find(({ key }) => key === section)
@@ -558,7 +575,7 @@ function buildRecipeItems(data = Recipe.getInstance().data) {
 					item.description,
 					FIELD_WEIGHT.text
 				),
-				...createField('dlc', 'DLC', item.dlc, FIELD_WEIGHT.medium),
+				...createDlcFields(item),
 				...createField(
 					'level',
 					'等级',
@@ -626,7 +643,7 @@ function buildBeverageItems(data = Beverage.getInstance().data) {
 					item.description,
 					FIELD_WEIGHT.text
 				),
-				...createField('dlc', 'DLC', item.dlc, FIELD_WEIGHT.medium),
+				...createDlcFields(item),
 				...createField(
 					'level',
 					'等级',
@@ -671,7 +688,7 @@ function buildIngredientItems(data = Ingredient.getInstance().data) {
 					item.description,
 					FIELD_WEIGHT.text
 				),
-				...createField('dlc', 'DLC', item.dlc, FIELD_WEIGHT.medium),
+				...createDlcFields(item),
 				...createField(
 					'level',
 					'等级',
@@ -711,7 +728,7 @@ function buildCookerItems(data = Cooker.getInstance().data) {
 					item.description,
 					FIELD_WEIGHT.text
 				),
-				...createField('dlc', 'DLC', item.dlc, FIELD_WEIGHT.medium),
+				...createDlcFields(item),
 				...createField('type', '类型', item.type, FIELD_WEIGHT.primary),
 				...createField(
 					'category',
@@ -761,7 +778,7 @@ function buildSimpleItemSection(
 					item.description,
 					FIELD_WEIGHT.text
 				),
-				...createField('dlc', 'DLC', item.dlc, FIELD_WEIGHT.medium),
+				...createDlcFields(item),
 				...('effect' in item
 					? createField(
 							'effect',
@@ -816,7 +833,7 @@ function buildCustomerItems(
 					item.description,
 					FIELD_WEIGHT.text
 				),
-				...createField('dlc', 'DLC', item.dlc, FIELD_WEIGHT.medium),
+				...createDlcFields(item),
 				...createField(
 					'place',
 					'地区',

@@ -17,8 +17,10 @@ import type {
 	TCustomerRarePlanCustomerSort,
 	TRatingKey,
 } from '@/types';
-import { Beverage, Cooker, CustomerRare, Ingredient, Recipe } from '@/utils';
 import { pinyinSort } from '@/utilities';
+import { Beverage, Cooker, CustomerRare, Ingredient, Recipe } from '@/utils';
+import { isAvailableWithHiddenDlcs } from '@/utils/availability';
+import type { IAvailabilityPath } from '@/utils/availability/types';
 
 import { evaluateRareSavedMeal } from './evaluateSavedMeals';
 import { getVisibleSavedMeals } from './getVisibleSavedMeals';
@@ -57,6 +59,7 @@ interface IResolveRecommendedCustomerRarePlanMealBatchParams {
 	batchSize: number;
 	customerName: TCustomerRareName;
 	hiddenBeverages: ReadonlySet<TBeverageName>;
+	hiddenDlcs: ReadonlySet<TDlc>;
 	hiddenIngredients: ReadonlySet<TIngredientName>;
 	hiddenRecipes: ReadonlySet<TRecipeName>;
 	isFamousShop: boolean;
@@ -408,21 +411,33 @@ function resolveSavedCustomerRarePlanMeals({
 	popularTrend: IPopularTrend;
 	recipeInstance: Recipe;
 }) {
-	const beverageDlcCache = new Map<TBeverageName, TDlc>();
-	const ingredientDlcCache = new Map<TIngredientName, TDlc>();
-	const recipeDlcCache = new Map<TRecipeName, TDlc>();
+	const beverageAvailabilityCache = new Map<
+		TBeverageName,
+		ReadonlyArray<IAvailabilityPath>
+	>();
+	const ingredientAvailabilityCache = new Map<
+		TIngredientName,
+		ReadonlyArray<IAvailabilityPath>
+	>();
+	const recipeAvailabilityCache = new Map<
+		TRecipeName,
+		ReadonlyArray<IAvailabilityPath>
+	>();
 	const recipeIngredientsCache = new Map<TRecipeName, TIngredientName[]>();
-	const resolveBeverageDlc = (beverageName: TBeverageName) =>
-		getCachedValue(beverageDlcCache, beverageName, () =>
-			beverageInstance.getPropsByName(beverageName, 'dlc')
+	const resolveBeverageAvailability = (beverageName: TBeverageName) =>
+		getCachedValue(beverageAvailabilityCache, beverageName, () =>
+			beverageInstance.getPropsByName(beverageName, 'availabilityPaths')
 		);
-	const resolveIngredientDlc = (ingredientName: TIngredientName) =>
-		getCachedValue(ingredientDlcCache, ingredientName, () =>
-			ingredientInstance.getPropsByName(ingredientName, 'dlc')
+	const resolveIngredientAvailability = (ingredientName: TIngredientName) =>
+		getCachedValue(ingredientAvailabilityCache, ingredientName, () =>
+			ingredientInstance.getPropsByName(
+				ingredientName,
+				'availabilityPaths'
+			)
 		);
-	const resolveRecipeDlc = (recipeName: TRecipeName) =>
-		getCachedValue(recipeDlcCache, recipeName, () =>
-			recipeInstance.getPropsByName(recipeName, 'dlc')
+	const resolveRecipeAvailability = (recipeName: TRecipeName) =>
+		getCachedValue(recipeAvailabilityCache, recipeName, () =>
+			recipeInstance.getPropsByName(recipeName, 'availabilityPaths')
 		);
 	const resolveRecipeIngredients = (recipeName: TRecipeName) =>
 		getCachedValue(recipeIngredientsCache, recipeName, () =>
@@ -434,13 +449,14 @@ function resolveSavedCustomerRarePlanMeals({
 		...(hiddenIngredients === undefined ? {} : { hiddenIngredients }),
 		...(hiddenRecipes === undefined ? {} : { hiddenRecipes }),
 		meals: meals[customerName],
-		resolveDlcRefs: (meal) => {
+		resolveAvailabilityRefs: (meal) => {
 			try {
 				return {
-					beverageDlc: resolveBeverageDlc(meal.beverage),
-					ingredientDlcs:
-						meal.recipe.extraIngredients.map(resolveIngredientDlc),
-					recipeDlc: resolveRecipeDlc(meal.recipe.name),
+					beveragePaths: resolveBeverageAvailability(meal.beverage),
+					ingredientPaths: meal.recipe.extraIngredients.map(
+						resolveIngredientAvailability
+					),
+					recipePaths: resolveRecipeAvailability(meal.recipe.name),
 				};
 			} catch {
 				return null;
@@ -503,9 +519,9 @@ export function createRecommendedCustomerRarePlanMealSession({
 	) as TBeverageTag[];
 	const cookers = cookerInstance.data
 		.filter(
-			({ category, dlc }) =>
+			({ availabilityPaths, category }) =>
 				category === CUSTOMER_RARE_PLAN_RECOMMENDED_COOKER_CATEGORY &&
-				!hiddenDlcs.has(dlc)
+				isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs)
 		)
 		.map(({ name }) => name)
 		.sort(pinyinSort);
@@ -529,6 +545,7 @@ export async function resolveRecommendedCustomerRarePlanMealBatch(
 		batchSize,
 		customerName,
 		hiddenBeverages,
+		hiddenDlcs,
 		hiddenIngredients,
 		hiddenRecipes,
 		isFamousShop,
@@ -564,6 +581,7 @@ export async function resolveRecommendedCustomerRarePlanMealBatch(
 				customerOrder: { beverageTag, recipeTag },
 				hasMystiaCooker: false,
 				hiddenBeverages,
+				hiddenDlcs,
 				hiddenIngredients,
 				hiddenRecipes,
 				isFamousShop,

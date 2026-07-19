@@ -23,10 +23,11 @@ export type TGlobalSearchFieldType =
 	| 'beverage-tag'
 	| 'category'
 	| 'chat'
+	| 'content-dlc'
 	| 'cooker'
 	| 'customer-tag'
 	| 'description'
-	| 'dlc'
+	| 'availability-dlc'
 	| 'effect'
 	| 'evaluation'
 	| 'from'
@@ -66,6 +67,7 @@ export interface IGlobalSearchFieldPrefixGroup {
 	sectionLabels?: Partial<Record<TGlobalSearchSection, string>>;
 	sections?: TGlobalSearchSection[];
 	standalone: boolean;
+	valueTypeLabel?: string;
 }
 
 export interface IGlobalSearchExampleQuery {
@@ -127,6 +129,7 @@ export interface IGlobalSearchPrefixSuggestion {
 	kind: TGlobalSearchPrefixKind;
 	key: TGlobalSearchFieldType | TGlobalSearchSection;
 	label: string;
+	valueTypeLabel?: string;
 }
 
 export interface IGlobalSearchTransientTarget {

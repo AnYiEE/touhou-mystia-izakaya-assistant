@@ -1,4 +1,4 @@
-import type { TPlace } from '@/data';
+import { type TCollectionLocation, type TPlace } from '@/data';
 import { ALL_PLACES, ALL_PLACES_SET, PLACE_NAME_REGEX } from '@/data/constant';
 import type { IFoodBase } from '@/data/types';
 import type { ISpriteConfig } from '@/utils/sprite/types';
@@ -50,6 +50,25 @@ export function generateSpriteConfig<
 
 type TFoodFrom = IFoodBase['from'] & { self?: boolean };
 
+const EXCLUDED_COLLECTION_PLACE_MAP = new Map<TCollectionLocation, TPlace>([
+	['非【迷途竹林】河流', '迷途竹林'],
+	['非【妖怪兽道】河流', '妖怪兽道'],
+]);
+
+export function extractPlacesFromCollectionLocation(
+	location: TCollectionLocation
+) {
+	const excludedPlace = EXCLUDED_COLLECTION_PLACE_MAP.get(location);
+	if (excludedPlace !== undefined) {
+		return ALL_PLACES.filter((place) => place !== excludedPlace);
+	}
+
+	const match = PLACE_NAME_REGEX.exec(location);
+	return match?.[1] !== undefined && ALL_PLACES_SET.has(match[1])
+		? [match[1] as TPlace]
+		: [];
+}
+
 export function extractPlacesFromFoodFrom(from: TFoodFrom) {
 	if ('self' in from && from.self) {
 		return ALL_PLACES;
@@ -70,10 +89,9 @@ export function extractPlacesFromFoodFrom(from: TFoodFrom) {
 
 	from.collect?.forEach((item) => {
 		const location = typeof item === 'string' ? item : item[0];
-		const match = PLACE_NAME_REGEX.exec(location);
-		if (match?.[1] && ALL_PLACES_SET.has(match[1])) {
-			places.add(match[1] as TPlace);
-		}
+		extractPlacesFromCollectionLocation(location).forEach((place) => {
+			places.add(place);
+		});
 	});
 
 	from.fishing?.forEach((p) => places.add(p));

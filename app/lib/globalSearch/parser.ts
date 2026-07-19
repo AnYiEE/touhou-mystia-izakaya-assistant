@@ -14,7 +14,8 @@ const PREFIX_PATTERN = /^@(.+)$/u;
 const ACTIVE_PREFIX_PATTERN = /(?:^|\s)@([^\s@]*)$/u;
 const DEFAULT_GLOBAL_FIELD_SUGGESTION_KEYS = new Set<TGlobalSearchFieldType>([
 	'description',
-	'dlc',
+	'availability-dlc',
+	'content-dlc',
 	'from',
 	'name',
 	'place',
@@ -22,7 +23,8 @@ const DEFAULT_GLOBAL_FIELD_SUGGESTION_KEYS = new Set<TGlobalSearchFieldType>([
 ]);
 const SINGLE_VALUE_FIELD_SUGGESTION_KEYS = new Set<TGlobalSearchFieldType>([
 	'category',
-	'dlc',
+	'availability-dlc',
+	'content-dlc',
 	'level',
 	'moving-speed',
 	'price',
@@ -170,6 +172,24 @@ export function parseGlobalSearchQuery(raw: string): IGlobalSearchQueryAst {
 		if (currentField !== null) {
 			const lastCondition = fieldConditions.at(-1);
 			if (lastCondition?.fieldType === currentField.fieldType) {
+				if (
+					lastCondition.keyword.length === 0 &&
+					SINGLE_VALUE_FIELD_SUGGESTION_KEYS.has(
+						currentField.fieldType
+					)
+				) {
+					const [fieldKeyword = '', ...freeKeywordParts] =
+						token.value.split(/\s+/u);
+					lastCondition.keyword = fieldKeyword;
+					currentField = null;
+
+					const freeKeyword = freeKeywordParts.join(' ');
+					if (freeKeyword.length > 0) {
+						freeKeywords.push(freeKeyword);
+					}
+					return;
+				}
+
 				lastCondition.keyword = [lastCondition.keyword, token.value]
 					.filter(Boolean)
 					.join(' ');
@@ -296,6 +316,9 @@ export function getGlobalSearchPrefixSuggestions(
 			key: group.key,
 			kind: 'field',
 			label: getFieldPrefixLabel(group.key, ast.resultSection),
+			...('valueTypeLabel' in group
+				? { valueTypeLabel: group.valueTypeLabel }
+				: {}),
 		};
 	});
 

@@ -38,6 +38,7 @@ import {
 	numberSort,
 	toArray,
 } from '@/utilities';
+import { filterAvailableItemsByHiddenDlcs } from '@/utils/availability';
 import type { TItemData, TItemInstance } from '@/utils/types';
 
 interface ISettingsButtonProps {
@@ -419,36 +420,31 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 
 	const beverageData = useMemo(
 		() =>
-			instance_beverage
-				.getPinyinSortedData()
-				.get()
-				.filter(({ dlc }) => !hiddenDlcs.has(dlc)),
+			filterAvailableItemsByHiddenDlcs(
+				instance_beverage.getPinyinSortedData().get(),
+				hiddenDlcs
+			),
 		[hiddenDlcs, instance_beverage]
 	);
 
 	const ingredientData = useMemo(
 		() =>
-			instance_ingredient
-				.getPinyinSortedData()
-				.get()
-				.filter(
-					({ dlc, name }) =>
-						!hiddenDlcs.has(dlc) &&
-						!instance_ingredient.blockedIngredients.has(name)
-				),
+			filterAvailableItemsByHiddenDlcs(
+				instance_ingredient.getPinyinSortedData().get(),
+				hiddenDlcs
+			).filter(
+				({ name }) => !instance_ingredient.blockedIngredients.has(name)
+			),
 		[hiddenDlcs, instance_ingredient]
 	);
 
 	const recipeData = useMemo(
 		() =>
-			instance_recipe
-				.getPinyinSortedData()
-				.get()
-				.filter(
-					({ dlc, name }) =>
-						!hiddenDlcs.has(dlc) &&
-						!instance_recipe.blockedRecipes.has(name)
-				)
+			filterAvailableItemsByHiddenDlcs(
+				instance_recipe.getPinyinSortedData().get(),
+				hiddenDlcs
+			)
+				.filter(({ name }) => !instance_recipe.blockedRecipes.has(name))
 				.map((recipe) => {
 					if (
 						checkArrayContainsOf(

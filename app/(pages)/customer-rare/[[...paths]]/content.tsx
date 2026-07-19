@@ -114,15 +114,16 @@ export default function Content() {
 		customerStore
 	);
 
-	const availableCustomerDlcs = customerStore.availableCustomerDlcs.use();
+	const availableCustomerAvailabilityDlcs =
+		customerStore.availableCustomerAvailabilityDlcs.use();
 	const availableCustomerNames = customerStore.availableCustomerNames.use();
 	const availableCustomerPlaces = customerStore.availableCustomerPlaces.use();
 
 	const customerPinyinSortState =
 		customerStore.persistence.customer.pinyinSortState.use();
 
-	const customerFilterDlcs =
-		customerStore.persistence.customer.filters.dlcs.use();
+	const customerFilterAvailabilityDlcs =
+		customerStore.persistence.customer.filters.availabilityDlcs.use();
 	const customerFilterPlaces =
 		customerStore.persistence.customer.filters.places.use();
 	const customerFilterNoPlaces =
@@ -144,11 +145,13 @@ export default function Content() {
 	const customerSelectConfig = useMemo<TSelectConfig>(
 		() => [
 			{
-				items: availableCustomerDlcs,
-				label: 'DLC',
-				selectedKeys: customerFilterDlcs,
+				items: availableCustomerAvailabilityDlcs,
+				label: '可出现于',
+				selectedKeys: customerFilterAvailabilityDlcs,
 				setSelectedKeys:
-					customerStore.persistence.customer.filters.dlcs.set,
+					customerStore.persistence.customer.filters.availabilityDlcs
+						.set,
+				valueType: 'dlc',
 			},
 			{
 				items: availableCustomerPlaces,
@@ -182,10 +185,10 @@ export default function Content() {
 			},
 		],
 		[
-			availableCustomerDlcs,
+			availableCustomerAvailabilityDlcs,
 			availableCustomerNames,
 			availableCustomerPlaces,
-			customerFilterDlcs,
+			customerFilterAvailabilityDlcs,
 			customerFilterExcludes,
 			customerFilterIncludes,
 			customerFilterNoPlaces,
@@ -204,7 +207,8 @@ export default function Content() {
 	const { ingredientFilteredData, ingredientSortedData } =
 		useIngredientRouteData(customerStore);
 
-	const availableIngredientDlcs = customerStore.availableIngredientDlcs.use();
+	const availableIngredientAvailabilityDlcs =
+		customerStore.availableIngredientAvailabilityDlcs.use();
 	const availableIngredientLevels =
 		customerStore.availableIngredientLevels.use();
 	const availableIngredientTags = customerStore.availableIngredientTags.use();
@@ -212,8 +216,8 @@ export default function Content() {
 	const ingredientPinyinSortState =
 		customerStore.persistence.ingredient.pinyinSortState.use();
 
-	const ingredientFilterDlcs =
-		customerStore.persistence.ingredient.filters.dlcs.use();
+	const ingredientFilterAvailabilityDlcs =
+		customerStore.persistence.ingredient.filters.availabilityDlcs.use();
 	const ingredientFilterTags =
 		customerStore.persistence.ingredient.filters.tags.use();
 	const ingredientFilterNoTags =
@@ -233,11 +237,13 @@ export default function Content() {
 	const ingredientSelectConfig = useMemo<TSelectConfig>(
 		() => [
 			{
-				items: availableIngredientDlcs,
-				label: 'DLC',
-				selectedKeys: ingredientFilterDlcs,
+				items: availableIngredientAvailabilityDlcs,
+				label: '可获取于',
+				selectedKeys: ingredientFilterAvailabilityDlcs,
 				setSelectedKeys:
-					customerStore.persistence.ingredient.filters.dlcs.set,
+					customerStore.persistence.ingredient.filters
+						.availabilityDlcs.set,
+				valueType: 'dlc',
 			},
 			{
 				items: availableIngredientTags,
@@ -262,10 +268,10 @@ export default function Content() {
 			},
 		],
 		[
-			availableIngredientDlcs,
+			availableIngredientAvailabilityDlcs,
 			availableIngredientLevels,
 			availableIngredientTags,
-			ingredientFilterDlcs,
+			ingredientFilterAvailabilityDlcs,
 			ingredientFilterLevels,
 			ingredientFilterNoTags,
 			ingredientFilterTags,

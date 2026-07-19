@@ -77,6 +77,7 @@ import {
 	Partner,
 	Recipe,
 } from '@/utils';
+import { filterAvailableItemsByHiddenDlcs } from '@/utils/availability';
 import { migrateCustomerRarePlansSnapshot } from '@/lib/account/sync/serializers/customerRarePlansMerge';
 import {
 	type ITableSortDescriptor,
@@ -140,7 +141,8 @@ const storeVersion = {
 	removeCustomerSearchValue: 21, // eslint-disable-next-line sort-keys
 	plans: 22, // eslint-disable-next-line sort-keys
 	planCustomerSort: 23,
-	virtualPlans: 24,
+	virtualPlans: 24, // eslint-disable-next-line sort-keys
+	availabilityDlcFilter: 25,
 } as const;
 
 function trackCustomerRarePlanFilterChange(
@@ -189,13 +191,13 @@ const state = {
 	persistence: {
 		beverage: {
 			table: {
-				dlcs: [] as string[],
+				availabilityDlcs: [] as string[],
 				sortDescriptor: {} as TBeverageTableSortDescriptor,
 			},
 		},
 		customer: {
 			filters: {
-				dlcs: [] as string[],
+				availabilityDlcs: [] as string[],
 				places: [] as string[], // eslint-disable-next-line sort-keys
 				noPlaces: [] as string[], // eslint-disable-next-line sort-keys
 				includes: [] as string[], // eslint-disable-next-line sort-keys
@@ -210,7 +212,7 @@ const state = {
 		},
 		ingredient: {
 			filters: {
-				dlcs: [] as string[],
+				availabilityDlcs: [] as string[],
 				tags: [] as string[], // eslint-disable-next-line sort-keys
 				noTags: [] as string[], // eslint-disable-next-line sort-keys
 				levels: [] as string[],
@@ -221,8 +223,8 @@ const state = {
 		},
 		recipe: {
 			table: {
+				availabilityDlcs: [] as string[],
 				cookers: [] as string[],
-				dlcs: [] as string[],
 				sortDescriptor: {} as TRecipeTableSortDescriptor,
 			},
 		},
@@ -315,7 +317,7 @@ export const customerRareStore = store(state, {
 		}),
 		persistMiddleware<typeof state>({
 			name: storeName,
-			version: storeVersion.virtualPlans,
+			version: storeVersion.availabilityDlcFilter,
 
 			migrate(persistedState, version) {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -606,6 +608,24 @@ export const customerRareStore = store(state, {
 						);
 					}
 				}
+				if (version < storeVersion.availabilityDlcFilter) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					oldState.persistence.beverage.table.availabilityDlcs =
+						oldState.persistence.beverage.table.dlcs;
+					delete oldState.persistence.beverage.table.dlcs;
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					oldState.persistence.customer.filters.availabilityDlcs =
+						oldState.persistence.customer.filters.dlcs;
+					delete oldState.persistence.customer.filters.dlcs;
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					oldState.persistence.ingredient.filters.availabilityDlcs =
+						oldState.persistence.ingredient.filters.dlcs;
+					delete oldState.persistence.ingredient.filters.dlcs;
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					oldState.persistence.recipe.table.availabilityDlcs =
+						oldState.persistence.recipe.table.dlcs;
+					delete oldState.persistence.recipe.table.dlcs;
+				}
 				return persistedState as typeof state;
 			},
 			partialize(currentStore) {
@@ -651,14 +671,14 @@ export const customerRareStore = store(state, {
 				searchValue: shouldGet
 					? currentStore.shared.beverage.searchValue.get()
 					: currentStore.shared.beverage.searchValue.use(),
+				selectedAvailabilityDlcs: shouldGet
+					? currentStore.persistence.beverage.table.availabilityDlcs.get()
+					: currentStore.persistence.beverage.table.availabilityDlcs.use(),
 				selectedBeverageTags: [
 					...(shouldGet
 						? currentStore.shared.customer.select.beverageTag.get()
 						: currentStore.shared.customer.select.beverageTag.use()),
 				] as TBeverageTag[],
-				selectedDlcs: shouldGet
-					? currentStore.persistence.beverage.table.dlcs.get()
-					: currentStore.persistence.beverage.table.dlcs.use(),
 				sortDescriptor: shouldGet
 					? currentStore.persistence.beverage.table.sortDescriptor.get()
 					: currentStore.persistence.beverage.table.sortDescriptor.use(),
@@ -721,14 +741,14 @@ export const customerRareStore = store(state, {
 				searchValue: shouldGet
 					? currentStore.shared.recipe.searchValue.get()
 					: currentStore.shared.recipe.searchValue.use(),
+				selectedAvailabilityDlcs: shouldGet
+					? currentStore.persistence.recipe.table.availabilityDlcs.get()
+					: currentStore.persistence.recipe.table.availabilityDlcs.use(),
 				selectedCookers: (shouldGet
 					? currentStore.persistence.recipe.table.cookers.get()
 					: currentStore.persistence.recipe.table.cookers.use()) as Array<
 					TRecipe['cooker']
 				>,
-				selectedDlcs: shouldGet
-					? currentStore.persistence.recipe.table.dlcs.get()
-					: currentStore.persistence.recipe.table.dlcs.use(),
 				selectedRecipeTags: [
 					...(shouldGet
 						? currentStore.shared.customer.select.recipeTag.get()
@@ -968,23 +988,23 @@ export const customerRareStore = store(state, {
 				hiddenIngredients,
 				hiddenRecipes,
 				meals: currentCustomerMeals,
-				resolveDlcRefs: (meal) => {
+				resolveAvailabilityRefs: (meal) => {
 					try {
 						return {
-							beverageDlc: instance_beverage.getPropsByName(
+							beveragePaths: instance_beverage.getPropsByName(
 								meal.beverage,
-								'dlc'
+								'availabilityPaths'
 							),
-							ingredientDlcs: meal.recipe.extraIngredients.map(
+							ingredientPaths: meal.recipe.extraIngredients.map(
 								(ingredientName) =>
 									instance_ingredient.getPropsByName(
 										ingredientName,
-										'dlc'
+										'availabilityPaths'
 									)
 							),
-							recipeDlc: instance_recipe.getPropsByName(
+							recipePaths: instance_recipe.getPropsByName(
 								meal.recipe.name,
-								'dlc'
+								'availabilityPaths'
 							),
 						};
 					} catch {
@@ -1111,11 +1131,17 @@ export const customerRareStore = store(state, {
 		});
 
 		return {
-			availableBeverageDlcs: () => {
+			availableBeverageAvailabilityDlcs: () => {
 				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 				return instance_beverage
-					.getValuesByProp('dlc', true)
-					.filter(({ value }) => !hiddenDlcs.has(value))
+					.getValuesByProp(
+						'availabilityDlcs',
+						true,
+						filterAvailableItemsByHiddenDlcs(
+							instance_beverage.data,
+							hiddenDlcs
+						)
+					)
 					.sort(numberSort);
 			},
 			availableBeverageNames: () => {
@@ -1124,8 +1150,9 @@ export const customerRareStore = store(state, {
 					.getValuesByProp(
 						'name',
 						true,
-						instance_beverage.data.filter(
-							({ dlc }) => !hiddenDlcs.has(dlc)
+						filterAvailableItemsByHiddenDlcs(
+							instance_beverage.data,
+							hiddenDlcs
 						)
 					)
 					.sort(pinyinSort);
@@ -1137,17 +1164,24 @@ export const customerRareStore = store(state, {
 					instance_beverage.getValuesByProp(
 						'tags',
 						false,
-						instance_beverage.data.filter(
-							({ dlc }) => !hiddenDlcs.has(dlc)
+						filterAvailableItemsByHiddenDlcs(
+							instance_beverage.data,
+							hiddenDlcs
 						)
 					)
 				).map(toGetValueCollection);
 			},
-			availableCustomerDlcs: () => {
+			availableCustomerAvailabilityDlcs: () => {
 				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 				return instance_customer
-					.getValuesByProp('dlc', true)
-					.filter(({ value }) => !hiddenDlcs.has(value))
+					.getValuesByProp(
+						'availabilityDlcs',
+						true,
+						filterAvailableItemsByHiddenDlcs(
+							instance_customer.data,
+							hiddenDlcs
+						)
+					)
 					.sort(numberSort);
 			},
 			availableCustomerNames: () => {
@@ -1159,11 +1193,9 @@ export const customerRareStore = store(state, {
 					instance_customer.getValuesByProp(
 						'name',
 						false,
-						instance_customer.data.filter((customer) =>
-							instance_customer.isVisibleWithHiddenDlcs(
-								customer,
-								hiddenDlcs
-							)
+						filterAvailableItemsByHiddenDlcs(
+							instance_customer.data,
+							hiddenDlcs
 						)
 					)
 				).map(toGetValueCollection);
@@ -1174,20 +1206,24 @@ export const customerRareStore = store(state, {
 					.getValuesByProp(
 						'places',
 						true,
-						instance_customer.data.filter((customer) =>
-							instance_customer.isVisibleWithHiddenDlcs(
-								customer,
-								hiddenDlcs
-							)
+						filterAvailableItemsByHiddenDlcs(
+							instance_customer.data,
+							hiddenDlcs
 						)
 					)
 					.sort(pinyinSort);
 			},
-			availableIngredientDlcs: () => {
+			availableIngredientAvailabilityDlcs: () => {
 				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 				return instance_ingredient
-					.getValuesByProp('dlc', true)
-					.filter(({ value }) => !hiddenDlcs.has(value))
+					.getValuesByProp(
+						'availabilityDlcs',
+						true,
+						filterAvailableItemsByHiddenDlcs(
+							instance_ingredient.data,
+							hiddenDlcs
+						)
+					)
 					.sort(numberSort);
 			},
 			availableIngredientLevels: () => {
@@ -1196,9 +1232,11 @@ export const customerRareStore = store(state, {
 					.getValuesByProp(
 						'level',
 						true,
-						instance_ingredient.data.filter(
-							({ dlc, level }) =>
-								!hiddenDlcs.has(dlc) &&
+						filterAvailableItemsByHiddenDlcs(
+							instance_ingredient.data,
+							hiddenDlcs
+						).filter(
+							({ level }) =>
 								!instance_ingredient.blockedLevels.has(level)
 						)
 					)
@@ -1210,9 +1248,11 @@ export const customerRareStore = store(state, {
 					instance_ingredient.getValuesByProp(
 						'tags',
 						false,
-						instance_ingredient.data.filter(
-							({ dlc, tags }) =>
-								!hiddenDlcs.has(dlc) &&
+						filterAvailableItemsByHiddenDlcs(
+							instance_ingredient.data,
+							hiddenDlcs
+						).filter(
+							({ tags }) =>
 								!tags.some((tag) =>
 									instance_ingredient.blockedTags.has(tag)
 								)
@@ -1224,24 +1264,31 @@ export const customerRareStore = store(state, {
 					.map(toGetValueCollection)
 					.sort(pinyinSort);
 			},
+			availableRecipeAvailabilityDlcs: () => {
+				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+				return instance_recipe
+					.getValuesByProp(
+						'availabilityDlcs',
+						true,
+						filterAvailableItemsByHiddenDlcs(
+							instance_recipe.data,
+							hiddenDlcs
+						)
+					)
+					.sort(numberSort);
+			},
 			availableRecipeCookers: () => {
 				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 				return instance_recipe
 					.getValuesByProp(
 						'cooker',
 						true,
-						instance_recipe.data.filter(
-							({ dlc }) => !hiddenDlcs.has(dlc)
+						filterAvailableItemsByHiddenDlcs(
+							instance_recipe.data,
+							hiddenDlcs
 						)
 					)
 					.sort(pinyinSort);
-			},
-			availableRecipeDlcs: () => {
-				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-				return instance_recipe
-					.getValuesByProp('dlc', true)
-					.filter(({ value }) => !hiddenDlcs.has(value))
-					.sort(numberSort);
 			},
 			availableRecipeNames: () => {
 				const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
@@ -1249,9 +1296,11 @@ export const customerRareStore = store(state, {
 					.getValuesByProp(
 						'name',
 						true,
-						instance_recipe.data.filter(
-							({ dlc, name }) =>
-								!hiddenDlcs.has(dlc) &&
+						filterAvailableItemsByHiddenDlcs(
+							instance_recipe.data,
+							hiddenDlcs
+						).filter(
+							({ name }) =>
 								!instance_recipe.blockedRecipes.has(name)
 						)
 					)
@@ -1263,9 +1312,11 @@ export const customerRareStore = store(state, {
 					instance_recipe.getValuesByProp(
 						'positiveTags',
 						false,
-						instance_recipe.data.filter(
-							({ dlc, positiveTags }) =>
-								!hiddenDlcs.has(dlc) &&
+						filterAvailableItemsByHiddenDlcs(
+							instance_recipe.data,
+							hiddenDlcs
+						).filter(
+							({ positiveTags }) =>
 								!positiveTags.some((positiveTag) =>
 									instance_recipe.blockedTags.has(positiveTag)
 								)
@@ -1278,11 +1329,13 @@ export const customerRareStore = store(state, {
 					.sort(pinyinSort);
 			},
 
-			beverageTableDlcs: {
+			beverageTableAvailabilityDlcs: {
 				read: () =>
-					toSet(currentStore.persistence.beverage.table.dlcs.use()),
+					toSet(
+						currentStore.persistence.beverage.table.availabilityDlcs.use()
+					),
 				write: (dlcs: Selection) => {
-					currentStore.persistence.beverage.table.dlcs.set(
+					currentStore.persistence.beverage.table.availabilityDlcs.set(
 						toArray<SelectionSet>(dlcs) as never
 					);
 				},
@@ -1290,21 +1343,23 @@ export const customerRareStore = store(state, {
 			beverageTablePagedRows: () => beverageTableRows.use().pagedRows,
 			beverageTableSortedRows: () => beverageTableRows.use().sortedRows,
 
+			recipeTableAvailabilityDlcs: {
+				read: () =>
+					toSet(
+						currentStore.persistence.recipe.table.availabilityDlcs.use()
+					),
+				write: (dlcs: Selection) => {
+					currentStore.persistence.recipe.table.availabilityDlcs.set(
+						toArray<SelectionSet>(dlcs) as never
+					);
+				},
+			},
 			recipeTableCookers: {
 				read: () =>
 					toSet(currentStore.persistence.recipe.table.cookers.use()),
 				write: (cookers: Selection) => {
 					currentStore.persistence.recipe.table.cookers.set(
 						toArray<SelectionSet>(cookers) as never
-					);
-				},
-			},
-			recipeTableDlcs: {
-				read: () =>
-					toSet(currentStore.persistence.recipe.table.dlcs.use()),
-				write: (dlcs: Selection) => {
-					currentStore.persistence.recipe.table.dlcs.set(
-						toArray<SelectionSet>(dlcs) as never
 					);
 				},
 			},
@@ -1687,8 +1742,8 @@ export const customerRareStore = store(state, {
 			currentStore.shared.beverage.searchValue.set(value);
 			currentStore.shared.beverage.table.page.set(1);
 		},
-		onBeverageTableSelectedDlcsChange(dlcs: Selection) {
-			currentStore.beverageTableDlcs.set(dlcs);
+		onBeverageTableSelectedAvailabilityDlcsChange(dlcs: Selection) {
+			currentStore.beverageTableAvailabilityDlcs.set(dlcs);
 			currentStore.shared.beverage.table.page.set(1);
 		},
 		onBeverageTableSelectedTagsChange(tags: Selection) {
@@ -1746,12 +1801,12 @@ export const customerRareStore = store(state, {
 			currentStore.shared.recipe.searchValue.set(value);
 			currentStore.shared.recipe.table.page.set(1);
 		},
-		onRecipeTableSelectedCookersChange(cookers: Selection) {
-			currentStore.recipeTableCookers.set(cookers);
+		onRecipeTableSelectedAvailabilityDlcsChange(dlcs: Selection) {
+			currentStore.recipeTableAvailabilityDlcs.set(dlcs);
 			currentStore.shared.recipe.table.page.set(1);
 		},
-		onRecipeTableSelectedDlcsChange(dlcs: Selection) {
-			currentStore.recipeTableDlcs.set(dlcs);
+		onRecipeTableSelectedCookersChange(cookers: Selection) {
+			currentStore.recipeTableCookers.set(cookers);
 			currentStore.shared.recipe.table.page.set(1);
 		},
 		onRecipeTableSelectedPositiveTagsChange(tags: Selection) {
@@ -2050,21 +2105,21 @@ customerRareStore.shared.recipe.data.onChange((data) => {
 });
 
 customerRareStore.shared.hiddenItems.dlcs.onChange(() => {
-	customerRareStore.persistence.beverage.table.dlcs.set([]);
+	customerRareStore.persistence.beverage.table.availabilityDlcs.set([]);
 	customerRareStore.persistence.customer.filters.set({
-		dlcs: [],
+		availabilityDlcs: [],
 		excludes: [],
 		includes: [],
 		noPlaces: [],
 		places: [],
 	});
 	customerRareStore.persistence.ingredient.filters.set({
-		dlcs: [],
+		availabilityDlcs: [],
 		levels: [],
 		noTags: [],
 		tags: [],
 	});
+	customerRareStore.persistence.recipe.table.availabilityDlcs.set([]);
 	customerRareStore.persistence.recipe.table.cookers.set([]);
-	customerRareStore.persistence.recipe.table.dlcs.set([]);
 	customerRareStore.shared.customer.name.set(null);
 });

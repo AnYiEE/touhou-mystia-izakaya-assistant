@@ -189,6 +189,7 @@ const changelog = [
 		version: 'v2.6',
 		changes: [
 			'新增：支持游戏Mod通过本地WSS桥接使用稀客套餐自动推荐算法并获取推荐结果。',
+			'新增：资料页和全局Spotlight搜索支持分别按“内容归属”和“可获取于”筛选。',
 		],
 	},
 ] as const satisfies Array<{

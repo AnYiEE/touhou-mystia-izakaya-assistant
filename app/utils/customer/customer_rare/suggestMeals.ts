@@ -24,6 +24,7 @@ import {
 	union,
 } from '@/utilities';
 import { Beverage, CustomerRare, Ingredient, Recipe } from '@/utils';
+import { isAvailableWithHiddenDlcs } from '@/utils/availability';
 import { extractPrimaryMapPlaceFromSourceText } from '@/utils/sourcePlaces';
 import type { TItemData } from '@/utils/types';
 
@@ -70,6 +71,7 @@ export interface ISuggestParams {
 	readonly customerOrder: ICustomerOrder;
 	readonly hasMystiaCooker: boolean;
 	readonly hiddenBeverages: ReadonlySet<TBeverageName>;
+	readonly hiddenDlcs: ReadonlySet<TDlc>;
 	readonly hiddenIngredients: ReadonlySet<TIngredientName>;
 	readonly hiddenRecipes: ReadonlySet<TRecipeName>;
 	readonly isFamousShop: boolean;
@@ -429,9 +431,11 @@ function buildSuggestIngredientPenaltyContext(
 
 export function createSuggestIngredientPenaltyContext({
 	customerName,
+	hiddenDlcs,
 	hiddenIngredients,
 }: {
 	customerName: TCustomerRareName;
+	hiddenDlcs: ReadonlySet<TDlc>;
 	hiddenIngredients: ReadonlySet<TIngredientName>;
 }) {
 	const instance_customer = CustomerRare.getInstance();
@@ -440,8 +444,8 @@ export function createSuggestIngredientPenaltyContext({
 		instance_customer.getPropsByName(customerName);
 	const [customerPlace] = customerPlaces;
 	const ingredients = instance_ingredient.data.filter(
-		({ dlc, level, name, tags }) =>
-			(dlc === 0 || dlc === customerDlc) &&
+		({ availabilityPaths, level, name, tags }) =>
+			isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs) &&
 			!instance_ingredient.blockedIngredients.has(name) &&
 			!instance_ingredient.blockedLevels.has(level) &&
 			!hiddenIngredients.has(name) &&
@@ -499,6 +503,7 @@ function createSuggestContext({
 	cooker: selectedCooker,
 	customerName,
 	hiddenBeverages,
+	hiddenDlcs,
 	hiddenIngredients,
 	hiddenRecipes,
 }: ISuggestParams) {
@@ -522,24 +527,37 @@ function createSuggestContext({
 	const [, budgetSoftMax] = customerPrice;
 	const budgetMax = Math.ceil(budgetSoftMax * customerEnduranceLimit);
 
-	const isDlcAllowed = (dlc: TDlc) => dlc === 0 || dlc === customerDlc;
-
 	const baseGameBeverages = instance_beverage.data.filter(
-		({ dlc, name }) => isDlcAllowed(dlc) && !hiddenBeverages.has(name)
+		({ availabilityPaths, name }) =>
+			isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs) &&
+			!hiddenBeverages.has(name)
+	);
+
+	const unavailableRecipeIngredientNames = new Set(
+		instance_ingredient.data
+			.filter(
+				({ availabilityPaths, name }) =>
+					!isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs) ||
+					hiddenIngredients.has(name)
+			)
+			.map(({ name }) => name)
 	);
 
 	const baseGameRecipes = instance_recipe.data.filter(
-		({ cooker, dlc, ingredients, name }) =>
-			isDlcAllowed(dlc) &&
+		({ availabilityPaths, cooker, ingredients, name }) =>
+			isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs) &&
 			!instance_recipe.blockedRecipes.has(name) &&
 			!hiddenRecipes.has(name) &&
-			!checkArrayContainsOf(ingredients, hiddenIngredients) &&
+			!checkArrayContainsOf(
+				ingredients,
+				unavailableRecipeIngredientNames
+			) &&
 			(selectedCooker === null || cooker === selectedCooker)
 	);
 
 	const baseGameIngredients = instance_ingredient.data.filter(
-		({ dlc, level, name, tags }) =>
-			isDlcAllowed(dlc) &&
+		({ availabilityPaths, level, name, tags }) =>
+			isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs) &&
 			!instance_ingredient.blockedIngredients.has(name) &&
 			!instance_ingredient.blockedLevels.has(level) &&
 			!hiddenIngredients.has(name) &&
@@ -587,6 +605,7 @@ function buildSuggestContextCacheKey({
 	cooker,
 	customerName,
 	hiddenBeverages,
+	hiddenDlcs,
 	hiddenIngredients,
 	hiddenRecipes,
 }: ISuggestParams) {
@@ -594,6 +613,7 @@ function buildSuggestContextCacheKey({
 		cooker ?? '',
 		customerName,
 		toArray(hiddenBeverages).sort().join(','),
+		toArray(hiddenDlcs).sort().join(','),
 		toArray(hiddenIngredients).sort().join(','),
 		toArray(hiddenRecipes).sort().join(','),
 	].join('|');
@@ -2028,6 +2048,7 @@ function buildCacheKey({
 	customerOrder,
 	hasMystiaCooker,
 	hiddenBeverages,
+	hiddenDlcs,
 	hiddenIngredients,
 	hiddenRecipes,
 	isFamousShop,
@@ -2047,6 +2068,7 @@ function buildCacheKey({
 		customerOrder.recipeTag ?? '',
 		hasMystiaCooker ? '1' : '0',
 		toArray(hiddenBeverages).sort().join(','),
+		toArray(hiddenDlcs).sort().join(','),
 		toArray(hiddenIngredients).sort().join(','),
 		toArray(hiddenRecipes).sort().join(','),
 		isFamousShop ? '1' : '0',
@@ -2062,13 +2084,13 @@ interface IScoreBasedAlternativesParams {
 	baseRating: TRatingKey;
 	beverageTags: TBeverageTag[];
 	customerBeverageTags: ReadonlyArray<TBeverageTag>;
-	customerDlc: TDlc;
 	customerName: TCustomerRareName;
 	customerNegativeTags: ReadonlyArray<TRecipeTag>;
 	customerOrder: ICustomerOrder;
 	customerPositiveTags: ReadonlyArray<TRecipeTag>;
 	extraIngredients: TIngredientName[];
 	hasMystiaCooker: boolean;
+	hiddenDlcs: ReadonlySet<TDlc>;
 	hiddenIngredients: ReadonlySet<TIngredientName>;
 	instance_ingredient: Ingredient;
 	instance_recipe: Recipe;
@@ -2085,13 +2107,13 @@ export async function getScoreBasedAlternatives(
 		baseRating,
 		beverageTags,
 		customerBeverageTags,
-		customerDlc,
 		customerName,
 		customerNegativeTags,
 		customerOrder,
 		customerPositiveTags,
 		extraIngredients,
 		hasMystiaCooker,
+		hiddenDlcs,
 		hiddenIngredients,
 		instance_ingredient,
 		instance_recipe,
@@ -2117,7 +2139,7 @@ export async function getScoreBasedAlternatives(
 
 	const filteredCandidates = instance_ingredient.data.filter(
 		(item) =>
-			(item.dlc === 0 || item.dlc === customerDlc) &&
+			isAvailableWithHiddenDlcs(item.availabilityPaths, hiddenDlcs) &&
 			!instance_ingredient.blockedIngredients.has(item.name) &&
 			!instance_ingredient.blockedLevels.has(item.level) &&
 			!hiddenIngredients.has(item.name) &&
@@ -2128,6 +2150,7 @@ export async function getScoreBasedAlternatives(
 	);
 	const ingredientPenaltyContext = createSuggestIngredientPenaltyContext({
 		customerName,
+		hiddenDlcs,
 		hiddenIngredients,
 	});
 
@@ -2263,6 +2286,7 @@ function createSuggestParamsSnapshot(params: ISuggestParams): ISuggestParams {
 					},
 		customerOrder: { ...params.customerOrder },
 		hiddenBeverages: new Set(params.hiddenBeverages),
+		hiddenDlcs: new Set(params.hiddenDlcs),
 		hiddenIngredients: new Set(params.hiddenIngredients),
 		hiddenRecipes: new Set(params.hiddenRecipes),
 		popularTrend: { ...params.popularTrend },
