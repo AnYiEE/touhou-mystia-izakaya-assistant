@@ -9,7 +9,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
 	faChevronDown,
 	faMagnifyingGlass,
-	faPlus,
 	faTags,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -28,6 +27,7 @@ import {
 import { useMotionProps, useReducedMotion } from '@/design/ui/hooks';
 
 import RecipeTableShell from '@/(pages)/customer-shared/recipeTableShell';
+import RecipeTableActionButton from '@/(pages)/customer-shared/recipeTableActionButton';
 import TagGroup from '@/(pages)/customer-shared/tagGroup';
 import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
 import Price from '@/components/price';
@@ -282,32 +282,16 @@ export default function RecipeTabContent() {
 							{cookTime.max}秒
 						</div>
 					);
-				case 'action': {
-					const label = '点击：选择此项';
+				case 'action':
 					return (
-						<div className="flex justify-center">
-							<Tooltip
-								showArrow
-								content={label}
-								placement="left"
-								size="sm"
-							>
-								<Button
-									isIconOnly
-									size="sm"
-									variant="light"
-									onPress={() => {
-										vibrate();
-										customerStore.onRecipeTableAction(name);
-									}}
-									aria-label={label}
-								>
-									<FontAwesomeIcon icon={faPlus} />
-								</Button>
-							</Tooltip>
-						</div>
+						<RecipeTableActionButton
+							ingredients={ingredients}
+							onSelect={() => {
+								vibrate();
+								customerStore.onRecipeTableAction(name);
+							}}
+						/>
 					);
-				}
 			}
 		},
 		[currentCustomerName, openWindow, vibrate]
