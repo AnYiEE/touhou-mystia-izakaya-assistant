@@ -219,7 +219,8 @@ export type TDescription =
 	| `${string}？`
 	| `${string}！`
 	| `${string}…`
-	| `${string}♡`;
+	| `${string}♡`
+	| `${string}——${string}`;
 
 export interface IItemBase {
 	id: number;
