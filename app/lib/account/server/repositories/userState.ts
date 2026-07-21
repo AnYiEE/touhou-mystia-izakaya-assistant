@@ -19,6 +19,7 @@ import type {
 	TDatabase,
 	TSession,
 	TUser,
+	TUserCredential,
 	TUserState,
 	TUserStateNew,
 } from '@/lib/db/types';
@@ -147,6 +148,31 @@ export async function getUserState(
 	);
 }
 
+export async function getUserStateSnapshotInTransaction(
+	trx: Transaction<TDatabase>,
+	{
+		credential,
+		namespaces,
+		user,
+	}: {
+		credential: TUserCredential;
+		namespaces: Array<TUserState['namespace']> | null;
+		user: TUser;
+	}
+) {
+	let stateQuery = trx
+		.selectFrom(TABLE_NAME)
+		.selectAll()
+		.where('user_id', '=', user.id);
+	if (namespaces !== null) {
+		stateQuery = stateQuery.where('namespace', 'in', namespaces);
+	}
+
+	const records = await stateQuery.execute();
+
+	return { credential, records, state_epoch: user.state_epoch, user };
+}
+
 export async function getActiveUserStateSnapshotForSession({
 	namespaces,
 	session,
@@ -180,21 +206,13 @@ export async function getActiveUserStateSnapshotForSession({
 			return { status: 'unauthorized' as const };
 		}
 
-		let stateQuery = trx
-			.selectFrom(TABLE_NAME)
-			.selectAll()
-			.where('user_id', '=', userId);
-		if (namespaces !== null) {
-			stateQuery = stateQuery.where('namespace', 'in', namespaces);
-		}
-		const records = await stateQuery.execute();
-
 		return {
-			credential,
-			records,
-			state_epoch: user.state_epoch,
+			...(await getUserStateSnapshotInTransaction(trx, {
+				credential,
+				namespaces,
+				user,
+			})),
 			status: 'ok' as const,
-			user,
 		};
 	});
 }

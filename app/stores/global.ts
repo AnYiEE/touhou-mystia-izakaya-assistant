@@ -306,6 +306,20 @@ const state = {
 	},
 };
 
+const hiddenDlcSetCache = new WeakMap<ReadonlyArray<string>, Set<TDlc>>();
+const hiddenBeverageSetCache = new WeakMap<
+	ReadonlyArray<TBeverageName>,
+	Set<TBeverageName>
+>();
+const hiddenIngredientSetCache = new WeakMap<
+	ReadonlyArray<TIngredientName>,
+	Set<TIngredientName>
+>();
+const hiddenRecipeSetCache = new WeakMap<
+	ReadonlyArray<TRecipeName>,
+	Set<TRecipeName>
+>();
+
 export const globalStore = store(state, {
 	middlewares: [
 		syncMiddleware<typeof state>({
@@ -452,13 +466,16 @@ export const globalStore = store(state, {
 
 		hiddenDlcs: {
 			read: () => {
-				const dlcs = toSet(
-					currentStore.persistence.hiddenItems.dlcs
-						.use()
-						.map(Number) as TDlc[]
-				);
-				dlcs.delete(0);
-				return dlcs;
+				const hiddenDlcValues =
+					currentStore.persistence.hiddenItems.dlcs.use();
+				const cachedHiddenDlcs = hiddenDlcSetCache.get(hiddenDlcValues);
+				if (cachedHiddenDlcs !== undefined) {
+					return cachedHiddenDlcs;
+				}
+				const hiddenDlcs = toSet(hiddenDlcValues.map(Number) as TDlc[]);
+				hiddenDlcs.delete(0);
+				hiddenDlcSetCache.set(hiddenDlcValues, hiddenDlcs);
+				return hiddenDlcs;
 			},
 			write: (dlcs: Set<TDlc>) => {
 				const set = new Set(dlcs);
@@ -516,10 +533,22 @@ export const globalStore = store(state, {
 		},
 
 		hiddenBeverages: {
-			read: () =>
-				toSet(
-					currentStore.persistence.table.hiddenItems.beverages.use()
-				),
+			read: () => {
+				const hiddenBeverageValues =
+					currentStore.persistence.table.hiddenItems.beverages.use();
+				const cachedHiddenBeverages =
+					hiddenBeverageSetCache.get(hiddenBeverageValues);
+				if (cachedHiddenBeverages !== undefined) {
+					return cachedHiddenBeverages;
+				}
+
+				const hiddenBeverages = toSet(hiddenBeverageValues);
+				hiddenBeverageSetCache.set(
+					hiddenBeverageValues,
+					hiddenBeverages
+				);
+				return hiddenBeverages;
+			},
 			write: (beverages: Set<TBeverageName>) => {
 				currentStore.persistence.table.hiddenItems.beverages.set(
 					toArray(beverages)
@@ -527,10 +556,22 @@ export const globalStore = store(state, {
 			},
 		},
 		hiddenIngredients: {
-			read: () =>
-				toSet(
-					currentStore.persistence.table.hiddenItems.ingredients.use()
-				),
+			read: () => {
+				const hiddenIngredientValues =
+					currentStore.persistence.table.hiddenItems.ingredients.use();
+				const cachedHiddenIngredients = hiddenIngredientSetCache.get(
+					hiddenIngredientValues
+				);
+				if (cachedHiddenIngredients !== undefined) {
+					return cachedHiddenIngredients;
+				}
+				const hiddenIngredients = toSet(hiddenIngredientValues);
+				hiddenIngredientSetCache.set(
+					hiddenIngredientValues,
+					hiddenIngredients
+				);
+				return hiddenIngredients;
+			},
 			write: (ingredients: Set<TIngredientName>) => {
 				currentStore.persistence.table.hiddenItems.ingredients.set(
 					toArray(ingredients)
@@ -538,8 +579,18 @@ export const globalStore = store(state, {
 			},
 		},
 		hiddenRecipes: {
-			read: () =>
-				toSet(currentStore.persistence.table.hiddenItems.recipes.use()),
+			read: () => {
+				const hiddenRecipeValues =
+					currentStore.persistence.table.hiddenItems.recipes.use();
+				const cachedHiddenRecipes =
+					hiddenRecipeSetCache.get(hiddenRecipeValues);
+				if (cachedHiddenRecipes !== undefined) {
+					return cachedHiddenRecipes;
+				}
+				const hiddenRecipes = toSet(hiddenRecipeValues);
+				hiddenRecipeSetCache.set(hiddenRecipeValues, hiddenRecipes);
+				return hiddenRecipes;
+			},
 			write: (recipes: Set<TRecipeName>) => {
 				currentStore.persistence.table.hiddenItems.recipes.set(
 					toArray(recipes)

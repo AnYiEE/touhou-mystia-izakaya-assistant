@@ -14,7 +14,8 @@ export interface ISuggestMealsYieldScheduler {
 }
 
 export interface ISuggestMealsExecution {
-	checkpoint(force?: boolean): Promise<void>;
+	checkpoint(force: true): Promise<void>;
+	checkpoint(force?: false): Promise<void> | undefined;
 	throwIfAborted(): void;
 }
 
@@ -278,18 +279,29 @@ export function createSuggestMealsExecution({
 		sliceStartedAt = now();
 	};
 
-	return {
-		async checkpoint(force = false) {
-			throwIfAborted(signal);
+	function checkpoint(force: true): Promise<void>;
+	function checkpoint(force?: false): Promise<void> | undefined;
+	function checkpoint(force = false) {
+		throwIfAborted(signal);
 
+		try {
 			if (!force && now() - sliceStartedAt < sliceBudgetMs) {
 				return;
 			}
 
-			await scheduler.yield(taskKey, signal);
-			throwIfAborted(signal);
-			resetSliceStartedAt();
-		},
+			return scheduler.yield(taskKey, signal).then(() => {
+				throwIfAborted(signal);
+				resetSliceStartedAt();
+			});
+		} catch (error) {
+			// Preserve the rejection value produced by the former async checkpoint.
+			// eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+			return Promise.reject(error);
+		}
+	}
+
+	return {
+		checkpoint,
 		throwIfAborted() {
 			throwIfAborted(signal);
 		},
@@ -425,7 +437,10 @@ export async function buildExactIngredientStateTable(
 			}
 
 			for (const sourceState of sourceLayer.values()) {
-				await execution.checkpoint();
+				const checkpoint = execution.checkpoint();
+				if (checkpoint !== undefined) {
+					await checkpoint;
+				}
 				const nextState: IExactIngredientState = {
 					count,
 					effectMask: addMaskIndexes(
@@ -467,7 +482,10 @@ export async function buildExactIngredientStateTable(
 	for (const layer of layerMaps) {
 		const states: IExactIngredientState[] = [];
 		for (const state of layer.values()) {
-			await execution.checkpoint();
+			const checkpoint = execution.checkpoint();
+			if (checkpoint !== undefined) {
+				await checkpoint;
+			}
 			states.push(state);
 		}
 		stateCount += states.length;

@@ -26,6 +26,18 @@ export async function listCredentialsByUserId(userId: TUser['id']) {
 		.execute();
 }
 
+export function listCredentialsByUserIdInTransaction(
+	trx: Transaction<TDatabase>,
+	userId: TUser['id']
+) {
+	return trx
+		.selectFrom(TABLE_NAME)
+		.selectAll()
+		.where('user_id', '=', userId)
+		.orderBy('created_at', 'asc')
+		.execute();
+}
+
 export async function listCredentialsForActiveUserSession(
 	userId: TUser['id'],
 	session: TAuthenticatedSessionIdentity
@@ -37,12 +49,10 @@ export async function listCredentialsForActiveUserSession(
 			return { status: 'unauthorized' as const };
 		}
 
-		const credentials = await trx
-			.selectFrom(TABLE_NAME)
-			.selectAll()
-			.where('user_id', '=', userId)
-			.orderBy('created_at', 'asc')
-			.execute();
+		const credentials = await listCredentialsByUserIdInTransaction(
+			trx,
+			userId
+		);
 
 		return { credentials, status: 'ok' as const };
 	});

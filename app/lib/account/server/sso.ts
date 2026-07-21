@@ -585,6 +585,18 @@ export async function hasSsoUserClientGrant(
 	return record !== undefined;
 }
 
+export function createSsoUserClientGrant(
+	record: Awaited<
+		ReturnType<typeof listSsoUserClientGrantsForUserInTransaction>
+	>[number]
+) {
+	return {
+		client: { id: record.client_id, name: record.client_name },
+		created_at: record.created_at,
+		updated_at: record.updated_at,
+	};
+}
+
 export async function listSsoUserClientGrantsForUser(userId: TUser['id']) {
 	const db = await getAccountDatabase();
 	const records = await db
@@ -605,11 +617,30 @@ export async function listSsoUserClientGrantsForUser(userId: TUser['id']) {
 		.orderBy(`${CLIENT_TABLE_NAME}.id`, 'asc')
 		.execute();
 
-	return records.map((record) => ({
-		client: { id: record.client_id, name: record.client_name },
-		created_at: record.created_at,
-		updated_at: record.updated_at,
-	}));
+	return records.map(createSsoUserClientGrant);
+}
+
+export async function listSsoUserClientGrantsForUserInTransaction(
+	trx: Transaction<TDatabase>,
+	userId: TUser['id']
+) {
+	return trx
+		.selectFrom(GRANT_TABLE_NAME)
+		.innerJoin(
+			CLIENT_TABLE_NAME,
+			`${GRANT_TABLE_NAME}.client_id`,
+			`${CLIENT_TABLE_NAME}.id`
+		)
+		.select([
+			`${CLIENT_TABLE_NAME}.id as client_id`,
+			`${CLIENT_TABLE_NAME}.name as client_name`,
+			`${GRANT_TABLE_NAME}.created_at`,
+			`${GRANT_TABLE_NAME}.updated_at`,
+		])
+		.where(`${GRANT_TABLE_NAME}.user_id`, '=', userId)
+		.orderBy(`${GRANT_TABLE_NAME}.updated_at`, 'desc')
+		.orderBy(`${CLIENT_TABLE_NAME}.id`, 'asc')
+		.execute();
 }
 
 export async function listSsoUserClientGrantsForActiveUserSession(
@@ -618,38 +649,27 @@ export async function listSsoUserClientGrantsForActiveUserSession(
 ) {
 	const db = await getAccountDatabase();
 
-	return db.transaction().execute(async (trx) => {
+	const result = await db.transaction().execute(async (trx) => {
 		if (!(await lockActiveUserSessionInTransaction(trx, userId, session))) {
 			return { status: 'unauthorized' as const };
 		}
 
-		const records = await trx
-			.selectFrom(GRANT_TABLE_NAME)
-			.innerJoin(
-				CLIENT_TABLE_NAME,
-				`${GRANT_TABLE_NAME}.client_id`,
-				`${CLIENT_TABLE_NAME}.id`
-			)
-			.select([
-				`${CLIENT_TABLE_NAME}.id as client_id`,
-				`${CLIENT_TABLE_NAME}.name as client_name`,
-				`${GRANT_TABLE_NAME}.created_at`,
-				`${GRANT_TABLE_NAME}.updated_at`,
-			])
-			.where(`${GRANT_TABLE_NAME}.user_id`, '=', userId)
-			.orderBy(`${GRANT_TABLE_NAME}.updated_at`, 'desc')
-			.orderBy(`${CLIENT_TABLE_NAME}.id`, 'asc')
-			.execute();
-
 		return {
-			grants: records.map((record) => ({
-				client: { id: record.client_id, name: record.client_name },
-				created_at: record.created_at,
-				updated_at: record.updated_at,
-			})),
+			records: await listSsoUserClientGrantsForUserInTransaction(
+				trx,
+				userId
+			),
 			status: 'ok' as const,
 		};
 	});
+	if (result.status === 'unauthorized') {
+		return result;
+	}
+
+	return {
+		grants: result.records.map(createSsoUserClientGrant),
+		status: 'ok' as const,
+	};
 }
 
 async function validateSsoTicketInTransaction(

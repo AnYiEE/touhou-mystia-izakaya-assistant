@@ -119,7 +119,10 @@ async function stableSortWithExecution<T>(
 		startIndex < values.length;
 		startIndex += COOPERATIVE_SORT_RUN_SIZE
 	) {
-		await execution.checkpoint();
+		const checkpointPromise = execution.checkpoint();
+		if (checkpointPromise !== undefined) {
+			await checkpointPromise;
+		}
 		runs.push(
 			values
 				.slice(startIndex, startIndex + COOPERATIVE_SORT_RUN_SIZE)
@@ -141,7 +144,10 @@ async function stableSortWithExecution<T>(
 			let leftIndex = 0;
 			let rightIndex = 0;
 			while (leftIndex < left.length && rightIndex < right.length) {
-				await execution.checkpoint();
+				const checkpointPromise = execution.checkpoint();
+				if (checkpointPromise !== undefined) {
+					await checkpointPromise;
+				}
 				const leftValue = left[leftIndex];
 				const rightValue = right[rightIndex];
 				if (leftValue === undefined || rightValue === undefined) {
@@ -156,14 +162,20 @@ async function stableSortWithExecution<T>(
 				}
 			}
 			while (leftIndex < left.length) {
-				await execution.checkpoint();
+				const checkpointPromise = execution.checkpoint();
+				if (checkpointPromise !== undefined) {
+					await checkpointPromise;
+				}
 				const value = left[leftIndex++];
 				if (value !== undefined) {
 					merged.push(value);
 				}
 			}
 			while (rightIndex < right.length) {
-				await execution.checkpoint();
+				const checkpointPromise = execution.checkpoint();
+				if (checkpointPromise !== undefined) {
+					await checkpointPromise;
+				}
 				const value = right[rightIndex++];
 				if (value !== undefined) {
 					merged.push(value);
@@ -787,7 +799,10 @@ async function buildSoftSortRanges(
 	let ingredientMin = Infinity;
 
 	for (const metrics of metricsList) {
-		await execution.checkpoint();
+		const checkpointPromise = execution.checkpoint();
+		if (checkpointPromise !== undefined) {
+			await checkpointPromise;
+		}
 		acquisitionMax = Math.max(acquisitionMax, metrics.acquisitionWeight);
 		acquisitionMin = Math.min(acquisitionMin, metrics.acquisitionWeight);
 		ingredientMax = Math.max(ingredientMax, metrics.ingredientPenalty);
@@ -898,7 +913,10 @@ async function selectScoredResults(
 	const dedupedResults: IScoredResult[] = [];
 
 	for (const result of sortedResults) {
-		await execution.checkpoint();
+		const checkpointPromise = execution.checkpoint();
+		if (checkpointPromise !== undefined) {
+			await checkpointPromise;
+		}
 		const { meal } = result;
 		const key = keyFn(meal);
 
@@ -916,7 +934,10 @@ async function selectScoredResults(
 	const out: ISuggestedMeal[] = [];
 
 	while (out.length < maxResults && remainingResults.length > 0) {
-		await execution.checkpoint();
+		const checkpointPromise = execution.checkpoint();
+		if (checkpointPromise !== undefined) {
+			await checkpointPromise;
+		}
 		const resultIndex =
 			out.length === 0
 				? 0
@@ -1065,7 +1086,10 @@ async function getRecipeIngredientSummaries({
 		}
 
 		for (const state of stateTable.layers[count] ?? []) {
-			await execution.checkpoint();
+			const checkpointPromise = execution.checkpoint();
+			if (checkpointPromise !== undefined) {
+				await checkpointPromise;
+			}
 			const tagSet = toSet(
 				recipeTagsBase,
 				getExactIngredientStateTags(
@@ -1212,7 +1236,10 @@ async function findBestExtraIngredients({
 
 	for (let count = 1; count <= extraSlots; count++) {
 		for (const summary of summaryLayers[count] ?? []) {
-			await execution.checkpoint();
+			const checkpointPromise = execution.checkpoint();
+			if (checkpointPromise !== undefined) {
+				await checkpointPromise;
+			}
 			const rating = evaluateRecipe({
 				currentIngredients: [...summary.currentIngredients],
 				currentRecipeName: recipeName,
@@ -1322,7 +1349,10 @@ async function computeSuggestions(
 		},
 		recipeTagsWithTrend,
 	} of recipesWithSuitability) {
-		await execution.checkpoint();
+		const checkpointPromise = execution.checkpoint();
+		if (checkpointPromise !== undefined) {
+			await checkpointPromise;
+		}
 		const extraSlots =
 			maxExtraIngredients === null
 				? 5 - recipeIngredients.length
@@ -1332,7 +1362,10 @@ async function computeSuggestions(
 			members: beverageMembers,
 			tags: beverageTags,
 		} of beverageTagGroups.values()) {
-			await execution.checkpoint();
+			const checkpointPromise = execution.checkpoint();
+			if (checkpointPromise !== undefined) {
+				await checkpointPromise;
+			}
 			const rating = evaluateMeal({
 				currentBeverageTags: beverageTags,
 				currentCustomerBeverageTags: customerBeverageTags,
@@ -1674,7 +1707,10 @@ async function suggestForBeverage(
 		},
 		recipeTagsWithTrend,
 	} of recipesWithSuitability) {
-		await execution.checkpoint();
+		const checkpointPromise = execution.checkpoint();
+		if (checkpointPromise !== undefined) {
+			await checkpointPromise;
+		}
 		const rating = evaluateMeal({
 			currentBeverageTags: beverageTags,
 			currentCustomerBeverageTags: customerBeverageTags,
@@ -1884,7 +1920,10 @@ async function suggestForRecipe(
 		members: beverageMembers,
 		tags: beverageTags,
 	} of beverageTagGroups.values()) {
-		await execution.checkpoint();
+		const checkpointPromise = execution.checkpoint();
+		if (checkpointPromise !== undefined) {
+			await checkpointPromise;
+		}
 		const rating = evaluateMeal({
 			currentBeverageTags: beverageTags,
 			currentCustomerBeverageTags: customerBeverageTags,
@@ -2178,7 +2217,10 @@ export async function getScoreBasedAlternatives(
 	});
 
 	for (const [pos, targetName] of extraIngredients.entries()) {
-		await execution.checkpoint();
+		const checkpointPromise = execution.checkpoint();
+		if (checkpointPromise !== undefined) {
+			await checkpointPromise;
+		}
 		const otherExtras = extraIngredients.filter((_, i) => i !== pos);
 		const candidates: Array<{
 			name: TIngredientName;
@@ -2187,7 +2229,10 @@ export async function getScoreBasedAlternatives(
 		}> = [];
 
 		for (const item of filteredCandidates) {
-			await execution.checkpoint();
+			const checkpointPromise = execution.checkpoint();
+			if (checkpointPromise !== undefined) {
+				await checkpointPromise;
+			}
 			if (
 				item.name === targetName ||
 				otherExtras.includes(item.name) ||

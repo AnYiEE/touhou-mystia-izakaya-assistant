@@ -29,6 +29,7 @@ const MATCH_SCORE = {
 	prefix: 95,
 } as const;
 const CONTEXT_SECTION_SCORE = 120;
+const PINYIN_KEYWORD_PATTERN = /^[a-z]+$/u;
 const textPinyinCache = createBoundedRuntimeCache<
 	string,
 	{ firstLetters: string; full: string }
@@ -91,12 +92,14 @@ function getBaseMatchScore(keyword: string, text: string) {
 		return MATCH_SCORE.contains;
 	}
 
-	const pinyin = getTextPinyin(text);
-	if (pinyin.full.includes(normalizedKeyword)) {
-		return MATCH_SCORE.pinyin;
-	}
-	if (pinyin.firstLetters.includes(normalizedKeyword)) {
-		return MATCH_SCORE.pinyinInitial;
+	if (PINYIN_KEYWORD_PATTERN.test(normalizedKeyword)) {
+		const pinyin = getTextPinyin(text);
+		if (pinyin.full.includes(normalizedKeyword)) {
+			return MATCH_SCORE.pinyin;
+		}
+		if (pinyin.firstLetters.includes(normalizedKeyword)) {
+			return MATCH_SCORE.pinyinInitial;
+		}
 	}
 	if (isSubsequence(normalizedKeyword, normalizedText)) {
 		return MATCH_SCORE.fuzzy;

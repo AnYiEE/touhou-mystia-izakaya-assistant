@@ -72,15 +72,17 @@ export default function RecipeTabContent() {
 
 	const tableCurrentPage = customerStore.shared.recipe.table.page.use();
 	const tableRowsPerPage = customerStore.shared.recipe.table.rows.use();
-	const tableRowsPerPageNumber = customerStore.shared.recipe.table.row.use();
 	const tableSelectableRows =
 		customerStore.shared.recipe.table.selectableRows.get();
 	const tableSortDescriptor =
 		customerStore.persistence.recipe.table.sortDescriptor.use();
 	const tableVisibleColumns = customerStore.shared.recipe.table.columns.use();
 
-	const tableCurrentPageItems = customerStore.recipeTablePagedRows.use();
-	const tableSortedRows = customerStore.recipeTableSortedRows.use();
+	const {
+		pagedRows: tableCurrentPageItems,
+		sortedRows: tableSortedRows,
+		totalPages: tableTotalPages,
+	} = customerStore.recipeTableRows.use();
 
 	const tableHeaderColumns = useMemo(
 		() =>
@@ -88,10 +90,6 @@ export default function RecipeTabContent() {
 				tableVisibleColumns.has(key)
 			),
 		[tableVisibleColumns]
-	);
-
-	const tableTotalPages = Math.ceil(
-		tableSortedRows.length / tableRowsPerPageNumber
 	);
 
 	const tableSelectedKeys = toSet(currentRecipeData?.name ?? '');

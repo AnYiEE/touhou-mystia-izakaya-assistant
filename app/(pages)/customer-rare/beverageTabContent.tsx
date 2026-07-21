@@ -70,8 +70,6 @@ export default function BeverageTabContent() {
 
 	const tableCurrentPage = customerStore.shared.beverage.table.page.use();
 	const tableRowsPerPage = customerStore.shared.beverage.table.rows.use();
-	const tableRowsPerPageNumber =
-		customerStore.shared.beverage.table.row.use();
 	const tableSelectableRows =
 		customerStore.shared.beverage.table.selectableRows.get();
 	const tableSortDescriptor =
@@ -79,8 +77,11 @@ export default function BeverageTabContent() {
 	const tableVisibleColumns =
 		customerStore.shared.beverage.table.columns.use();
 
-	const tableCurrentPageItems = customerStore.beverageTablePagedRows.use();
-	const tableSortedRows = customerStore.beverageTableSortedRows.use();
+	const {
+		pagedRows: tableCurrentPageItems,
+		sortedRows: tableSortedRows,
+		totalPages: tableTotalPages,
+	} = customerStore.beverageTableRows.use();
 
 	const tableHeaderColumns = useMemo(
 		() =>
@@ -88,10 +89,6 @@ export default function BeverageTabContent() {
 				tableVisibleColumns.has(key)
 			),
 		[tableVisibleColumns]
-	);
-
-	const tableTotalPages = Math.ceil(
-		tableSortedRows.length / tableRowsPerPageNumber
 	);
 
 	const tableSelectedKeys = toSet(currentBeverageName ?? '');

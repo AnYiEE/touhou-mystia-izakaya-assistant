@@ -224,6 +224,146 @@ export async function getSessionByTokenHash(tokenHash: TSession['token_hash']) {
 	);
 }
 
+async function lockActiveSessionTokenInTransaction(
+	trx: Transaction<TDatabase>,
+	{
+		absoluteAfter,
+		idleAfter,
+		tokenHash,
+	}: {
+		absoluteAfter: TSession['created_at'];
+		idleAfter: TSession['last_seen_at'];
+		tokenHash: TSession['token_hash'];
+	}
+) {
+	const lockResult = await trx
+		.updateTable(USER_TABLE_NAME)
+		.set({ updated_at: sql<TUser['updated_at']>`updated_at` })
+		.where('status', '=', USER_STATUS_MAP.active)
+		.where(
+			'id',
+			'in',
+			trx
+				.selectFrom(TABLE_NAME)
+				.select('user_id')
+				.where('token_hash', '=', tokenHash)
+				.where('created_at', '>', absoluteAfter)
+				.where('last_seen_at', '>', idleAfter)
+		)
+		.executeTakeFirst();
+
+	return lockResult.numUpdatedRows === 1n;
+}
+
+export async function authenticateSessionSnapshotInTransaction(
+	trx: Transaction<TDatabase>,
+	{
+		absoluteTimeoutMs,
+		allowPasswordMustChange,
+		idleTimeoutMs,
+		lastSeenUpdateIntervalMs,
+		lockActiveSession,
+		now,
+		tokenHash,
+	}: {
+		absoluteTimeoutMs: number;
+		allowPasswordMustChange: boolean;
+		idleTimeoutMs: number;
+		lastSeenUpdateIntervalMs: number;
+		lockActiveSession: boolean;
+		now: number;
+		tokenHash: TSession['token_hash'];
+	}
+): Promise<TAuthenticateSessionSnapshotResult> {
+	const isActiveSession = lockActiveSession
+		? await lockActiveSessionTokenInTransaction(trx, {
+				absoluteAfter: now - absoluteTimeoutMs,
+				idleAfter: now - idleTimeoutMs,
+				tokenHash,
+			})
+		: true;
+	const session = await trx
+		.selectFrom(TABLE_NAME)
+		.selectAll()
+		.where('token_hash', '=', tokenHash)
+		.executeTakeFirst();
+	if (session === undefined) {
+		return { status: 'session-not-found' };
+	}
+
+	const deleteCurrentSessionBestEffort = async () => {
+		try {
+			await trx
+				.deleteFrom(TABLE_NAME)
+				.where('id', '=', session.id)
+				.where('token_hash', '=', tokenHash)
+				.execute();
+			return false;
+		} catch {
+			return true;
+		}
+	};
+
+	if (
+		session.created_at + absoluteTimeoutMs <= now ||
+		session.last_seen_at + idleTimeoutMs <= now
+	) {
+		return {
+			cleanupFailed: await deleteCurrentSessionBestEffort(),
+			status: 'session-expired',
+		};
+	}
+
+	const user = await trx
+		.selectFrom(USER_TABLE_NAME)
+		.selectAll()
+		.where('id', '=', session.user_id)
+		.executeTakeFirst();
+	const credential = await trx
+		.selectFrom(USER_CREDENTIAL_TABLE_NAME)
+		.selectAll()
+		.where('user_id', '=', session.user_id)
+		.executeTakeFirst();
+	if (user === undefined || credential === undefined) {
+		return {
+			cleanupFailed: await deleteCurrentSessionBestEffort(),
+			status: 'orphaned',
+		};
+	}
+
+	const userStatus: string = user.status;
+	if (userStatus === USER_STATUS_MAP.disabled) {
+		return {
+			cleanupFailed: await deleteCurrentSessionBestEffort(),
+			status: 'user-disabled',
+		};
+	}
+	if (userStatus === USER_STATUS_MAP.deleted) {
+		return {
+			cleanupFailed: await deleteCurrentSessionBestEffort(),
+			status: 'user-deleted',
+		};
+	}
+	if (userStatus !== USER_STATUS_MAP.active) {
+		return { status: 'unexpected-user-status' };
+	}
+	if (!isActiveSession) {
+		return { status: 'session-not-found' };
+	}
+	if (credential.password_must_change === 1 && !allowPasswordMustChange) {
+		return { status: 'password-must-change' };
+	}
+
+	return {
+		credential,
+		session,
+		shouldUpdateLastSeen:
+			session.last_seen_at + lastSeenUpdateIntervalMs < now,
+		status: 'ok',
+		user,
+	};
+}
+
 export async function authenticateSessionSnapshot({
 	absoluteTimeoutMs,
 	allowPasswordMustChange,
@@ -241,85 +381,19 @@ export async function authenticateSessionSnapshot({
 }): Promise<TAuthenticateSessionSnapshotResult> {
 	const db = await getAccountDatabase();
 
-	return db.transaction().execute(async (trx) => {
-		const session = await trx
-			.selectFrom(TABLE_NAME)
-			.selectAll()
-			.where('token_hash', '=', tokenHash)
-			.executeTakeFirst();
-		if (session === undefined) {
-			return { status: 'session-not-found' };
-		}
-
-		const deleteCurrentSessionBestEffort = async () => {
-			try {
-				await trx
-					.deleteFrom(TABLE_NAME)
-					.where('id', '=', session.id)
-					.where('token_hash', '=', tokenHash)
-					.execute();
-				return false;
-			} catch {
-				return true;
-			}
-		};
-
-		if (
-			session.created_at + absoluteTimeoutMs <= now ||
-			session.last_seen_at + idleTimeoutMs <= now
-		) {
-			return {
-				cleanupFailed: await deleteCurrentSessionBestEffort(),
-				status: 'session-expired',
-			};
-		}
-
-		const user = await trx
-			.selectFrom(USER_TABLE_NAME)
-			.selectAll()
-			.where('id', '=', session.user_id)
-			.executeTakeFirst();
-		const credential = await trx
-			.selectFrom(USER_CREDENTIAL_TABLE_NAME)
-			.selectAll()
-			.where('user_id', '=', session.user_id)
-			.executeTakeFirst();
-		if (user === undefined || credential === undefined) {
-			return {
-				cleanupFailed: await deleteCurrentSessionBestEffort(),
-				status: 'orphaned',
-			};
-		}
-
-		const userStatus: string = user.status;
-		if (userStatus === USER_STATUS_MAP.disabled) {
-			return {
-				cleanupFailed: await deleteCurrentSessionBestEffort(),
-				status: 'user-disabled',
-			};
-		}
-		if (userStatus === USER_STATUS_MAP.deleted) {
-			return {
-				cleanupFailed: await deleteCurrentSessionBestEffort(),
-				status: 'user-deleted',
-			};
-		}
-		if (userStatus !== USER_STATUS_MAP.active) {
-			return { status: 'unexpected-user-status' };
-		}
-		if (credential.password_must_change === 1 && !allowPasswordMustChange) {
-			return { status: 'password-must-change' };
-		}
-
-		return {
-			credential,
-			session,
-			shouldUpdateLastSeen:
-				session.last_seen_at + lastSeenUpdateIntervalMs < now,
-			status: 'ok',
-			user,
-		};
-	});
+	return db
+		.transaction()
+		.execute((trx) =>
+			authenticateSessionSnapshotInTransaction(trx, {
+				absoluteTimeoutMs,
+				allowPasswordMustChange,
+				idleTimeoutMs,
+				lastSeenUpdateIntervalMs,
+				lockActiveSession: false,
+				now,
+				tokenHash,
+			})
+		);
 }
 
 export async function cleanupExpiredSessions({
@@ -609,6 +683,26 @@ export async function listSessionsByUserId(userId: TUser['id']) {
 		.execute();
 }
 
+export function listSessionsByUserIdInTransaction(
+	trx: Transaction<TDatabase>,
+	userId: TUser['id']
+) {
+	return trx
+		.selectFrom(TABLE_NAME)
+		.select([
+			'created_at',
+			'id',
+			'ip_address',
+			'last_seen_at',
+			'user_agent',
+			'user_id',
+		])
+		.where('user_id', '=', userId)
+		.orderBy('last_seen_at', 'desc')
+		.orderBy('created_at', 'desc')
+		.execute();
+}
+
 export async function listSessionsForActiveUserSession(
 	userId: TUser['id'],
 	session: TAuthenticatedSessionIdentity
@@ -620,20 +714,7 @@ export async function listSessionsForActiveUserSession(
 			return { status: 'unauthorized' as const };
 		}
 
-		const sessions = await trx
-			.selectFrom(TABLE_NAME)
-			.select([
-				'created_at',
-				'id',
-				'ip_address',
-				'last_seen_at',
-				'user_agent',
-				'user_id',
-			])
-			.where('user_id', '=', userId)
-			.orderBy('last_seen_at', 'desc')
-			.orderBy('created_at', 'desc')
-			.execute();
+		const sessions = await listSessionsByUserIdInTransaction(trx, userId);
 
 		return { sessions, status: 'ok' as const };
 	});

@@ -1340,8 +1340,7 @@ export const customerRareStore = store(state, {
 					);
 				},
 			},
-			beverageTablePagedRows: () => beverageTableRows.use().pagedRows,
-			beverageTableSortedRows: () => beverageTableRows.use().sortedRows,
+			beverageTableRows: () => beverageTableRows.use(),
 
 			recipeTableAvailabilityDlcs: {
 				read: () =>
@@ -1363,8 +1362,7 @@ export const customerRareStore = store(state, {
 					);
 				},
 			},
-			recipeTablePagedRows: () => recipeTableRows.use().pagedRows,
-			recipeTableSortedRows: () => recipeTableRows.use().sortedRows,
+			recipeTableRows: () => recipeTableRows.use(),
 
 			bondRewards: () => bondRewards.use(),
 			currentMealPrice: () => currentMealPrice.use(),

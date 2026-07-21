@@ -47,7 +47,16 @@ export async function GET(request: NextRequest) {
 		import('@/lib/account/server/user'),
 		import('@/lib/account/server/repositories/userState'),
 	]);
-	const auth = await authModule.authenticateAccountFromRequest(request, true);
+	const auth = await authModule.authenticateAccountFromRequestWithTransaction(
+		request,
+		(trx, account) =>
+			userStateModule.getUserStateSnapshotInTransaction(trx, {
+				credential: account.credential,
+				namespaces: null,
+				user: account.user,
+			}),
+		true
+	);
 	if (auth.status === 'error') {
 		if (auth.message === 'unauthorized') {
 			return createNoStoreJsonResponse({
@@ -64,19 +73,8 @@ export async function GET(request: NextRequest) {
 
 		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
 	}
-	const stateSnapshot =
-		await userStateModule.getActiveUserStateSnapshotForSession({
-			namespaces: null,
-			session: {
-				id: auth.data.session.id,
-				token_hash: auth.data.session.token_hash,
-			},
-			userId: auth.data.user.id,
-		});
-	if (stateSnapshot.status === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
-	}
 
+	const stateSnapshot = auth.result;
 	const revisions = stateSnapshot.records.reduce<Record<string, number>>(
 		(result, namespace) => {
 			result[namespace.namespace] = namespace.revision;

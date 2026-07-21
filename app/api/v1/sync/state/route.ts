@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
 
+import { checkAccountRateLimitGuard } from '@/lib/account/server/guards';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
@@ -61,38 +62,59 @@ export async function GET(request: NextRequest) {
 		import('@/lib/account/server/auth'),
 		import('@/lib/account/server/repositories/userState'),
 	]);
-	const auth = await authModule.authenticateAccountFromRequest(request);
+	const auth = await authModule.authenticateAccountFromRequestWithTransaction(
+		request,
+		async (trx, account) => {
+			const rateLimitResult = checkAccountRateLimitGuard(
+				request,
+				'sync-state-get'
+			);
+			if (rateLimitResult.status === 'error') {
+				return {
+					error: rateLimitResult,
+					status: 'rate-limit-error' as const,
+				};
+			}
+
+			const namespaceParams =
+				request.nextUrl.searchParams.getAll('namespace');
+			const namespaces = namespaceParams.filter(checkSyncNamespace);
+			if (namespaces.length !== namespaceParams.length) {
+				return { status: 'unknown-namespace' as const };
+			}
+
+			return {
+				snapshot:
+					await userStateModule.getUserStateSnapshotInTransaction(
+						trx,
+						{
+							credential: account.credential,
+							namespaces:
+								namespaces.length === 0 ? null : namespaces,
+							user: account.user,
+						}
+					),
+				status: 'ok' as const,
+			};
+		}
+	);
 	if (auth.status === 'error') {
 		return createAccountAuthErrorRouteResponse(auth, request);
 	}
-
-	const rateLimitResponse = checkAccountRateLimitRouteResponse(
-		request,
-		'sync-state-get'
-	);
-	if (rateLimitResponse !== null) {
-		return rateLimitResponse;
+	if (auth.result.status === 'rate-limit-error') {
+		const { data, headers, httpStatus, message } = auth.result.error;
+		return createNoStoreErrorResponse(
+			message,
+			httpStatus,
+			data,
+			headers === undefined ? undefined : { headers }
+		);
 	}
-
-	const namespaceParams = request.nextUrl.searchParams.getAll('namespace');
-	const namespaces = namespaceParams.filter(checkSyncNamespace);
-	if (namespaces.length !== namespaceParams.length) {
+	if (auth.result.status === 'unknown-namespace') {
 		return createNoStoreErrorResponse('unknown-namespace', 400);
 	}
 
-	const snapshot = await userStateModule.getActiveUserStateSnapshotForSession(
-		{
-			namespaces: namespaces.length === 0 ? null : namespaces,
-			session: {
-				id: auth.data.session.id,
-				token_hash: auth.data.session.token_hash,
-			},
-			userId: auth.data.user.id,
-		}
-	);
-	if (snapshot.status === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
-	}
+	const { snapshot } = auth.result;
 
 	try {
 		return createNoStoreJsonResponse({

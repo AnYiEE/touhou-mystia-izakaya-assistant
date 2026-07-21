@@ -170,7 +170,11 @@ export default async function RootLayout({
 						locale={locale}
 					>
 						<div className="flex min-h-dvh-safe flex-col">
-							<AnnouncementBar />
+							<AnnouncementBar
+								viewer={
+									accountFeatureInitialData?.viewer ?? null
+								}
+							/>
 							<Navbar />
 							<main className="container mx-auto grid max-w-7xl grow px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
 								<div id="modal-portal-container" />

@@ -1,6 +1,10 @@
 import { unstable_rethrow } from 'next/navigation';
 
-import { authenticateAccountFromRequest, createAccountCsrfToken } from './auth';
+import {
+	authenticateAccountFromRequest,
+	authenticateAccountFromRequestWithTransaction,
+	createAccountCsrfToken,
+} from './auth';
 import { createCurrentRequest } from './currentRequest';
 import {
 	checkAccountCookieSecurityGuard,
@@ -15,15 +19,29 @@ import {
 	type TAccountMeResponse,
 } from '../shared/types';
 import { getLogSafeErrorCode } from '@/lib/logging';
-import { getActiveUserStateSnapshotForSession } from '@/lib/account/server/repositories/userState';
+import {
+	getActiveUserStateSnapshotForSession,
+	getUserStateSnapshotInTransaction,
+} from '@/lib/account/server/repositories/userState';
 import { createAccountSessionRecord } from '@/lib/account/server/sessionPresentation';
+import type { TUser, TUserCredential, TUserState } from '@/lib/db/types';
 
 export interface IAccountFeatureInitialData {
 	account: TAccountMeResponse;
 	ssoGrants: IAccountSsoGrantInitialData | null;
 	sessions: IAccountSessionInitialData | null;
+	viewer: TAccountFeatureViewer;
 	webauthn: IAccountWebauthnInitialData | null;
 }
+
+export type TAccountFeatureViewer =
+	| { isAuthenticated: false }
+	| {
+			isAuthenticated: true;
+			nickname: TUser['nickname'];
+			userId: TUser['id'];
+			username: TUser['username'];
+	  };
 
 function createAccountAnonymousInitialData(): TAccountMeResponse {
 	return {
@@ -111,6 +129,41 @@ export async function createAccountWebauthnInitialDataForUser(
 	};
 }
 
+function createAccountMeInitialData({
+	credential,
+	records,
+	sessionTokenHash,
+	user,
+}: {
+	credential: TUserCredential;
+	records: TUserState[];
+	sessionTokenHash: string;
+	user: TUser;
+}): IAccountMeSuccessResponse {
+	const revisions = records.reduce<Record<string, number>>(
+		(result, namespace) => {
+			result[namespace.namespace] = namespace.revision;
+			return result;
+		},
+		{}
+	);
+
+	return {
+		csrf_token: createAccountCsrfToken(sessionTokenHash),
+		featureEnabled: true,
+		has_password: credential.password_set === 1,
+		isLoggedIn: true,
+		password_must_change: credential.password_must_change === 1,
+		state_epoch: user.state_epoch,
+		syncMeta: {
+			lastAppliedRemoteHash: {},
+			revisions,
+			state_epoch: user.state_epoch,
+		},
+		user: createAccountUserProfile(user),
+	};
+}
+
 export async function createAccountMeInitialDataForAuthenticatedRequest({
 	sessionId,
 	sessionTokenHash,
@@ -129,29 +182,12 @@ export async function createAccountMeInitialDataForAuthenticatedRequest({
 		return null;
 	}
 
-	const revisions = stateSnapshot.records.reduce<Record<string, number>>(
-		(result, namespace) => {
-			result[namespace.namespace] = namespace.revision;
-			return result;
-		},
-		{}
-	);
-
-	return {
-		csrf_token: createAccountCsrfToken(sessionTokenHash),
-		featureEnabled: true,
-		has_password: stateSnapshot.credential.password_set === 1,
-		isLoggedIn: true,
-		password_must_change:
-			stateSnapshot.credential.password_must_change === 1,
-		state_epoch: stateSnapshot.user.state_epoch,
-		syncMeta: {
-			lastAppliedRemoteHash: {},
-			revisions,
-			state_epoch: stateSnapshot.user.state_epoch,
-		},
-		user: createAccountUserProfile(stateSnapshot.user),
-	};
+	return createAccountMeInitialData({
+		credential: stateSnapshot.credential,
+		records: stateSnapshot.records,
+		sessionTokenHash,
+		user: stateSnapshot.user,
+	});
 }
 
 export async function readAccountSsoGrantInitialData(
@@ -206,57 +242,122 @@ export async function readAccountFeatureInitialData(
 			return null;
 		}
 
-		const auth = await authenticateAccountFromRequest(request, true);
+		const [sessionsModule, ssoModule, credentialsModule] =
+			await Promise.all([
+				import('@/lib/account/server/repositories/sessions'),
+				import('@/lib/account/server/sso'),
+				import('@/lib/account/server/repositories/webauthnCredentials'),
+			]);
+		const auth = await authenticateAccountFromRequestWithTransaction(
+			request,
+			async (trx, authenticatedAccount) => {
+				const stateSnapshot = await getUserStateSnapshotInTransaction(
+					trx,
+					{
+						credential: authenticatedAccount.credential,
+						namespaces: null,
+						user: authenticatedAccount.user,
+					}
+				);
+				if (
+					authenticatedAccount.credential.password_must_change === 1
+				) {
+					return {
+						credentials: null,
+						grantRecords: null,
+						sessionRecords: null,
+						stateSnapshot,
+					};
+				}
+
+				const sessionRecords =
+					await sessionsModule.listSessionsByUserIdInTransaction(
+						trx,
+						authenticatedAccount.user.id
+					);
+				const grantRecords =
+					await ssoModule.listSsoUserClientGrantsForUserInTransaction(
+						trx,
+						authenticatedAccount.user.id
+					);
+				const credentials =
+					await credentialsModule.listCredentialsByUserIdInTransaction(
+						trx,
+						authenticatedAccount.user.id
+					);
+
+				return {
+					credentials,
+					grantRecords,
+					sessionRecords,
+					stateSnapshot,
+				};
+			},
+			true
+		);
 		if (auth.status === 'error') {
 			return auth.message === 'unauthorized'
 				? {
 						account: createAccountAnonymousInitialData(),
 						sessions: null,
 						ssoGrants: null,
+						viewer: { isAuthenticated: false },
 						webauthn: null,
 					}
 				: null;
 		}
 
-		const account = await createAccountMeInitialDataForAuthenticatedRequest(
-			{
-				sessionId: auth.data.session.id,
-				sessionTokenHash: auth.data.sessionTokenHash,
-				userId: auth.data.user.id,
-			}
-		);
-		if (account === null) {
-			return null;
+		const { credentials, grantRecords, sessionRecords, stateSnapshot } =
+			auth.result;
+		const account = createAccountMeInitialData({
+			credential: stateSnapshot.credential,
+			records: stateSnapshot.records,
+			sessionTokenHash: auth.data.sessionTokenHash,
+			user: stateSnapshot.user,
+		});
+		const viewer = {
+			isAuthenticated: true,
+			nickname: stateSnapshot.user.nickname,
+			userId: stateSnapshot.user.id,
+			username: stateSnapshot.user.username,
+		} satisfies TAccountFeatureViewer;
+		if (credentials === null) {
+			return {
+				account,
+				sessions: null,
+				ssoGrants: null,
+				viewer,
+				webauthn: null,
+			};
 		}
 
-		const passwordMustChange = account.password_must_change;
-		const sessions = passwordMustChange
-			? null
-			: await createAccountSessionInitialDataForAuthenticatedRequest({
-					sessionId: auth.data.session.id,
-					sessionTokenHash: auth.data.sessionTokenHash,
-					userId: auth.data.user.id,
-				});
-		const ssoGrants = passwordMustChange
-			? null
-			: await createAccountSsoGrantInitialDataForUser(auth.data.user.id, {
-					id: auth.data.session.id,
-					token_hash: auth.data.sessionTokenHash,
-				});
-		const webauthn = passwordMustChange
-			? null
-			: await createAccountWebauthnInitialDataForUser(auth.data.user.id, {
-					id: auth.data.session.id,
-					token_hash: auth.data.sessionTokenHash,
-				});
-		if (
-			!passwordMustChange &&
-			(sessions === null || ssoGrants === null || webauthn === null)
-		) {
-			return null;
-		}
+		const sessions = {
+			rendered_at: Date.now(),
+			sessions: sessionRecords.map((session) =>
+				createAccountSessionRecord(session, auth.data.session.id)
+			),
+			user_id: auth.data.user.id,
+		} satisfies IAccountSessionInitialData;
+		const ssoGrants = {
+			grants: grantRecords.map(ssoModule.createSsoUserClientGrant),
+			rendered_at: Date.now(),
+			user_id: auth.data.user.id,
+		} satisfies IAccountSsoGrantInitialData;
+		const [presentationModule, webauthnModule] = await Promise.all([
+			import('@/lib/account/server/webauthnPresentation'),
+			import('@/lib/account/server/webauthn'),
+		]);
+		const { rpID } = webauthnModule.getWebAuthnRelyingParty();
+		const webauthn = {
+			credentials: credentials.map((credential) =>
+				presentationModule.createWebauthnCredentialSummary(credential)
+			),
+			rendered_at: Date.now(),
+			rp_id: rpID,
+			user_id: auth.data.user.id,
+		} satisfies IAccountWebauthnInitialData;
 
-		return { account, sessions, ssoGrants, webauthn };
+		return { account, sessions, ssoGrants, viewer, webauthn };
 	} catch (error) {
 		unstable_rethrow(error);
 

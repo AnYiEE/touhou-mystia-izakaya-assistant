@@ -17,9 +17,12 @@ import {
 	createSessionToken,
 	hashSessionToken,
 } from './session';
+import { getAccountDatabase } from '@/lib/account/server/db';
 import {
 	type TActiveUserSessionPatch,
+	type TAuthenticateSessionSnapshotResult,
 	authenticateSessionSnapshot,
+	authenticateSessionSnapshotInTransaction,
 	cleanupExpiredSessions,
 	createSession,
 	createSessionForActiveUser as createSessionForActiveUserRecord,
@@ -65,6 +68,10 @@ export type TAccountAuthResult =
 			message: TAccountAuthErrorMessage;
 			status: 'error';
 	  };
+
+export type TAccountAuthTransactionResult<TResult> =
+	| { data: IAuthenticatedAccount; result: Awaited<TResult>; status: 'ok' }
+	| Extract<TAccountAuthResult, { status: 'error' }>;
 
 export function getAccountSessionCookieOptions(request: NextRequest) {
 	return createSessionCookieOptions(getAccountCookieSecureFlag(request));
@@ -201,26 +208,18 @@ function isValidSessionTokenFormat(token: string) {
 	return token.length === expectedLength && /^[A-Za-z0-9_-]+$/u.test(token);
 }
 
-export async function authenticateAccountFromRequest(
-	request: NextRequest,
-	allowPasswordMustChange = false
-): Promise<TAccountAuthResult> {
-	const token = request.cookies.get(ACCOUNT_SESSION_COOKIE_NAME)?.value;
-	if (!token || !isValidSessionTokenFormat(token)) {
-		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
-	}
-
-	const sessionTokenHash = hashSessionToken(token);
-	const now = Date.now();
-	void cleanupExpiredAccountSessionsBestEffort(now);
-	const snapshot = await authenticateSessionSnapshot({
-		absoluteTimeoutMs: SESSION_ABSOLUTE_TIMEOUT_MS,
-		allowPasswordMustChange,
-		idleTimeoutMs: SESSION_IDLE_TIMEOUT_MS,
-		lastSeenUpdateIntervalMs: SESSION_LAST_SEEN_UPDATE_INTERVAL,
-		now,
-		tokenHash: sessionTokenHash,
-	});
+function createAccountAuthResult(
+	snapshot: Exclude<TAuthenticateSessionSnapshotResult, { status: 'ok' }>,
+	sessionTokenHash: string
+): Extract<TAccountAuthResult, { status: 'error' }>;
+function createAccountAuthResult(
+	snapshot: TAuthenticateSessionSnapshotResult,
+	sessionTokenHash: string
+): TAccountAuthResult;
+function createAccountAuthResult(
+	snapshot: Awaited<ReturnType<typeof authenticateSessionSnapshot>>,
+	sessionTokenHash: string
+): TAccountAuthResult {
 	if (snapshot.status === 'session-not-found') {
 		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
 	}
@@ -266,17 +265,148 @@ export async function authenticateAccountFromRequest(
 			status: 'error',
 		};
 	}
-	const { credential, session, shouldUpdateLastSeen, user } = snapshot;
-	if (shouldUpdateLastSeen) {
-		try {
-			await updateSessionLastSeen(session.id, sessionTokenHash, now);
-		} catch (error) {
-			console.error('Failed to update account session last seen.', error);
-		}
-	}
+
+	const { credential, session, user } = snapshot;
 
 	return {
 		data: { credential, session, sessionTokenHash, user },
+		status: 'ok',
+	};
+}
+
+async function updateSessionLastSeenBestEffort(
+	account: IAuthenticatedAccount,
+	now: number
+) {
+	try {
+		await updateSessionLastSeen(
+			account.session.id,
+			account.sessionTokenHash,
+			now
+		);
+	} catch (error) {
+		console.error('Failed to update account session last seen.', error);
+	}
+}
+
+export async function authenticateAccountFromRequest(
+	request: NextRequest,
+	allowPasswordMustChange = false
+): Promise<TAccountAuthResult> {
+	const token = request.cookies.get(ACCOUNT_SESSION_COOKIE_NAME)?.value;
+	if (!token || !isValidSessionTokenFormat(token)) {
+		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
+	}
+
+	const sessionTokenHash = hashSessionToken(token);
+	const now = Date.now();
+	void cleanupExpiredAccountSessionsBestEffort(now);
+	const snapshot = await authenticateSessionSnapshot({
+		absoluteTimeoutMs: SESSION_ABSOLUTE_TIMEOUT_MS,
+		allowPasswordMustChange,
+		idleTimeoutMs: SESSION_IDLE_TIMEOUT_MS,
+		lastSeenUpdateIntervalMs: SESSION_LAST_SEEN_UPDATE_INTERVAL,
+		now,
+		tokenHash: sessionTokenHash,
+	});
+
+	const auth = createAccountAuthResult(snapshot, sessionTokenHash);
+	if (auth.status === 'error') {
+		return auth;
+	}
+	if (snapshot.status === 'ok' && snapshot.shouldUpdateLastSeen) {
+		await updateSessionLastSeenBestEffort(auth.data, now);
+	}
+
+	return auth;
+}
+
+export async function authenticateAccountFromRequestWithTransaction<TResult>(
+	request: NextRequest,
+	read: (
+		trx: Transaction<TDatabase>,
+		account: IAuthenticatedAccount
+	) => Promise<TResult>,
+	allowPasswordMustChange = false
+): Promise<TAccountAuthTransactionResult<TResult>> {
+	const token = request.cookies.get(ACCOUNT_SESSION_COOKIE_NAME)?.value;
+	if (!token || !isValidSessionTokenFormat(token)) {
+		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
+	}
+
+	const sessionTokenHash = hashSessionToken(token);
+	const now = Date.now();
+	void cleanupExpiredAccountSessionsBestEffort(now);
+	const db = await getAccountDatabase();
+
+	type TSessionSnapshot = Awaited<
+		ReturnType<typeof authenticateSessionSnapshotInTransaction>
+	>;
+	type TTransactionResult =
+		| {
+				result: Awaited<TResult>;
+				snapshot: Extract<TSessionSnapshot, { status: 'ok' }>;
+		  }
+		| { snapshot: Exclude<TSessionSnapshot, { status: 'ok' }> };
+
+	const lastSeenAccounts: IAuthenticatedAccount[] = [];
+	const transactionResult: TTransactionResult = await (async () => {
+		try {
+			return await db.transaction().execute(async (trx) => {
+				const transactionSnapshot =
+					await authenticateSessionSnapshotInTransaction(trx, {
+						absoluteTimeoutMs: SESSION_ABSOLUTE_TIMEOUT_MS,
+						allowPasswordMustChange,
+						idleTimeoutMs: SESSION_IDLE_TIMEOUT_MS,
+						lastSeenUpdateIntervalMs:
+							SESSION_LAST_SEEN_UPDATE_INTERVAL,
+						lockActiveSession: true,
+						now,
+						tokenHash: sessionTokenHash,
+					});
+				if (transactionSnapshot.status !== 'ok') {
+					return { snapshot: transactionSnapshot };
+				}
+
+				const account = {
+					credential: transactionSnapshot.credential,
+					session: transactionSnapshot.session,
+					sessionTokenHash,
+					user: transactionSnapshot.user,
+				} satisfies IAuthenticatedAccount;
+				if (transactionSnapshot.shouldUpdateLastSeen) {
+					lastSeenAccounts.push(account);
+				}
+
+				return {
+					result: await read(trx, account),
+					snapshot: transactionSnapshot,
+				};
+			});
+		} finally {
+			const [lastSeenAccount] = lastSeenAccounts;
+			if (lastSeenAccount !== undefined) {
+				await updateSessionLastSeenBestEffort(lastSeenAccount, now);
+			}
+		}
+	})();
+	if (!('result' in transactionResult)) {
+		return createAccountAuthResult(
+			transactionResult.snapshot,
+			sessionTokenHash
+		);
+	}
+
+	const { result, snapshot } = transactionResult;
+
+	return {
+		data: {
+			credential: snapshot.credential,
+			session: snapshot.session,
+			sessionTokenHash,
+			user: snapshot.user,
+		},
+		result,
 		status: 'ok',
 	};
 }

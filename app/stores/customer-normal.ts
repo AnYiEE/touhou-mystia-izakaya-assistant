@@ -961,8 +961,7 @@ export const customerNormalStore = store(state, {
 					);
 				},
 			},
-			beverageTablePagedRows: () => beverageTableRows.use().pagedRows,
-			beverageTableSortedRows: () => beverageTableRows.use().sortedRows,
+			beverageTableRows: () => beverageTableRows.use(),
 
 			recipeTableAvailabilityDlcs: {
 				read: () =>
@@ -984,8 +983,7 @@ export const customerNormalStore = store(state, {
 					);
 				},
 			},
-			recipeTablePagedRows: () => recipeTableRows.use().pagedRows,
-			recipeTableSortedRows: () => recipeTableRows.use().sortedRows,
+			recipeTableRows: () => recipeTableRows.use(),
 
 			ingredientScoreChanges: () => ingredientScoreChanges.use(),
 			savedCustomerMealsWithEvaluation: () =>

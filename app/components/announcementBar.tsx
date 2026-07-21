@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { unstable_rethrow } from 'next/navigation';
 
+import { type TAccountFeatureViewer } from '@/lib/account/server/initialData';
 import {
 	ANNOUNCEMENT_DISMISSED_COOKIE_NAME,
 	parseAnnouncementDismissedCookieValue,
@@ -9,7 +10,29 @@ import type { IAnnouncementPublicItem } from '@/lib/announcements/shared/types';
 import { getLogSafeErrorCode } from '@/lib/logging';
 import { siteConfig } from '@/configs';
 
-export default async function AnnouncementBar() {
+interface IProps {
+	viewer?: TAccountFeatureViewer | null;
+}
+
+async function readAnnouncementViewerFallback(): Promise<TAccountFeatureViewer> {
+	const [authModule, currentRequestModule] = await Promise.all([
+		import('@/lib/account/server/auth'),
+		import('@/lib/account/server/currentRequest'),
+	]);
+	const request = await currentRequestModule.createCurrentRequest('/');
+	const auth = await authModule.authenticateAccountFromRequest(request, true);
+
+	return auth.status === 'ok'
+		? {
+				isAuthenticated: true,
+				nickname: auth.data.user.nickname,
+				userId: auth.data.user.id,
+				username: auth.data.user.username,
+			}
+		: { isAuthenticated: false };
+}
+
+export default async function AnnouncementBar({ viewer = null }: IProps) {
 	if (siteConfig.isExportMode) {
 		return null;
 	}
@@ -17,12 +40,10 @@ export default async function AnnouncementBar() {
 	let announcements: IAnnouncementPublicItem[] = [];
 
 	try {
-		const [environmentModule, serviceModule, authModule] =
-			await Promise.all([
-				import('@/lib/announcements/server/environment'),
-				import('@/lib/announcements/server/service'),
-				import('@/lib/account/server/auth'),
-			]);
+		const [environmentModule, serviceModule] = await Promise.all([
+			import('@/lib/announcements/server/environment'),
+			import('@/lib/announcements/server/service'),
+		]);
 		const status = await environmentModule.getAnnouncementFeatureStatus();
 		if (status.enabled) {
 			const cookieStore = await cookies();
@@ -30,27 +51,13 @@ export default async function AnnouncementBar() {
 				cookieStore.get(ANNOUNCEMENT_DISMISSED_COOKIE_NAME)?.value ??
 					null
 			);
-			const { createCurrentRequest } =
-				await import('@/lib/account/server/currentRequest');
-			const request = await createCurrentRequest('/');
-			const auth = await authModule.authenticateAccountFromRequest(
-				request,
-				true
-			);
+			const requestViewer =
+				viewer ?? (await readAnnouncementViewerFallback());
 			const visible =
-				auth.status === 'ok'
-					? await serviceModule.getVisibleAnnouncementsForRequestContext(
-							{
-								dismissedTokens,
-								isAuthenticated: true,
-								nickname: auth.data.user.nickname,
-								userId: auth.data.user.id,
-								username: auth.data.user.username,
-							}
-						)
-					: await serviceModule.getVisibleAnnouncementsForRequestContext(
-							{ dismissedTokens, isAuthenticated: false }
-						);
+				await serviceModule.getVisibleAnnouncementsForRequestContext({
+					...requestViewer,
+					dismissedTokens,
+				});
 			if (visible.active) {
 				announcements = visible.announcements;
 			}
