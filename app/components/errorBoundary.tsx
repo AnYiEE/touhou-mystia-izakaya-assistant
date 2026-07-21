@@ -11,7 +11,6 @@ import {
 import { trackEvent } from '@/components/analytics';
 
 import { siteConfig } from '@/configs';
-import { checkA11yConfirmKey } from '@/utilities';
 
 const { links } = siteConfig;
 
@@ -51,9 +50,6 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 				onClick={() => {
 					handleButtonPress(shouldClear);
 				}}
-				onKeyDown={checkA11yConfirmKey(() => {
-					handleButtonPress(shouldClear);
-				})}
 			>
 				{children}
 			</button>
@@ -88,9 +84,6 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 					onClick={() => {
 						handleLinkPress(1);
 					}}
-					onKeyDown={checkA11yConfirmKey(() => {
-						handleLinkPress(1);
-					})}
 					className="font-medium text-primary hover:underline hover:underline-offset-2"
 				>
 					{links.qqGroup1.label}
@@ -103,9 +96,6 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 					onClick={() => {
 						handleLinkPress(2);
 					}}
-					onKeyDown={checkA11yConfirmKey(() => {
-						handleLinkPress(2);
-					})}
 					className="font-medium text-primary hover:underline hover:underline-offset-2"
 				>
 					{links.qqGroup2.label}
