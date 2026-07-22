@@ -3074,7 +3074,7 @@ export const RECIPE_LIST = [
 		dlc: 9,
 		level: 1,
 		price: 35,
-		from: {},
+		from: { bond: { name: '芙兰朵露', level: 2 } },
 	},
 	{
 		id: 11007,
@@ -3090,7 +3090,7 @@ export const RECIPE_LIST = [
 		dlc: 9,
 		level: 3,
 		price: 68,
-		from: {},
+		from: { bond: { name: '芙兰朵露', level: 3 } },
 	},
 	{
 		id: 11008,
@@ -3106,7 +3106,7 @@ export const RECIPE_LIST = [
 		dlc: 9,
 		level: 4,
 		price: 105,
-		from: {},
+		from: { bond: { name: '芙兰朵露', level: 4 } },
 	},
 	{
 		id: 11009,
@@ -3122,7 +3122,7 @@ export const RECIPE_LIST = [
 		dlc: 9,
 		level: 1,
 		price: 35,
-		from: {},
+		from: { bond: { name: '八意永琳', level: 2 } },
 	},
 	{
 		id: 11010,
@@ -3138,7 +3138,7 @@ export const RECIPE_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 55,
-		from: {},
+		from: { bond: { name: '八意永琳', level: 3 } },
 	},
 	{
 		id: 11011,
@@ -3161,7 +3161,7 @@ export const RECIPE_LIST = [
 		dlc: 9,
 		level: 3,
 		price: 118,
-		from: {},
+		from: { bond: { name: '八意永琳', level: 4 } },
 	},
 	{
 		id: 11012,
@@ -3481,7 +3481,7 @@ export const RECIPE_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 36,
-		from: {},
+		from: { buy: { name: '【人间之里】雪', price: null } },
 	},
 	{
 		id: 12001,
@@ -3497,7 +3497,7 @@ export const RECIPE_LIST = [
 		dlc: 9,
 		level: 3,
 		price: 80,
-		from: {},
+		from: { buy: { name: '【人间之里】雪', price: null } },
 	},
 	{
 		id: 12002,
@@ -3522,7 +3522,7 @@ export const RECIPE_LIST = [
 		dlc: 9,
 		level: 4,
 		price: 120,
-		from: {},
+		from: { buy: { name: '【人间之里】雪', price: null } },
 	},
 	{
 		id: 12003,
@@ -3538,7 +3538,7 @@ export const RECIPE_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 35,
-		from: {},
+		from: { buy: { name: '【人间之里】雪', price: null } },
 	},
 	{
 		id: 12004,
@@ -3562,6 +3562,6 @@ export const RECIPE_LIST = [
 		dlc: 9,
 		level: 4,
 		price: 95,
-		from: {},
+		from: { buy: { name: '【人间之里】雪', price: null } },
 	},
 ] as const satisfies IRecipe[];

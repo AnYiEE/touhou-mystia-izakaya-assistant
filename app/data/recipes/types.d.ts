@@ -68,7 +68,10 @@ export interface IRecipe extends IFoodBase {
 				bond: { name: TCustomerRareName; level: number };
 				buy: {
 					name: TMerchant;
-					price: { currency: TCurrencyName; amount: number } | number;
+					price:
+						| { currency: TCurrencyName; amount: number }
+						| number
+						| null;
 				};
 				/** @description Recipes by levelup. */
 				levelup: [number, TPlace | null];
