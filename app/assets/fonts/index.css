@@ -1,0 +1,35 @@
+@import './google-fonts.css';
+
+/* Metric-compatible fallbacks retained from next/font/google. */
+@font-face {
+	font-family: 'Noto Sans Fallback';
+	src: local('Arial');
+	ascent-override: 100.54%;
+	descent-override: 27.56%;
+	line-gap-override: 0%;
+	size-adjust: 106.33%;
+}
+
+@font-face {
+	font-family: 'Noto Sans Mono Fallback';
+	src: local('Arial');
+	ascent-override: 79.43%;
+	descent-override: 21.77%;
+	line-gap-override: 0%;
+	size-adjust: 134.59%;
+}
+
+@font-face {
+	font-family: 'Noto Sans SC Fallback';
+	src: local('Arial');
+	ascent-override: 110.73%;
+	descent-override: 27.49%;
+	line-gap-override: 0%;
+	size-adjust: 104.76%;
+}
+
+:root {
+	--font-noto-sans: 'Noto Sans', 'Noto Sans Fallback';
+	--font-noto-sans-mono: 'Noto Sans Mono', 'Noto Sans Mono Fallback';
+	--font-noto-sans-sc: 'Noto Sans SC', 'Noto Sans SC Fallback';
+}

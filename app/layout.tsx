@@ -1,11 +1,9 @@
 import { type PropsWithChildren } from 'react';
 import { type Metadata, type Viewport } from 'next';
-import { Noto_Sans, Noto_Sans_Mono, Noto_Sans_SC } from 'next/font/google';
 import Script from 'next/script';
 import { execSync } from 'node:child_process';
 
 import { ThemeScript } from '@/design/hooks';
-import { cn } from '@/design/ui/components';
 
 import Polyfills from '@/polyfills';
 import Providers, { AddHighAppearance } from '@/providers';
@@ -19,6 +17,7 @@ import { config as fontawesomeConfig } from '@fortawesome/fontawesome-svg-core';
 import { siteConfig } from '@/configs';
 
 import './globals.scss';
+import './assets/fonts/index.css';
 import 'driver.js/dist/driver.css';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 
@@ -89,24 +88,6 @@ const sha = (() => {
 	}
 })();
 
-const notoSans = Noto_Sans({
-	subsets: ['latin'],
-	variable: '--font-noto-sans',
-	weight: 'variable',
-});
-
-const notoSansMono = Noto_Sans_Mono({
-	subsets: ['latin'],
-	variable: '--font-noto-sans-mono',
-	weight: 'variable',
-});
-
-const notoSansSC = Noto_Sans_SC({
-	subsets: ['latin'],
-	variable: '--font-noto-sans-sc',
-	weight: 'variable',
-});
-
 interface IProps {}
 
 async function readRootAccountFeatureInitialData() {
@@ -128,12 +109,7 @@ export default async function RootLayout({
 		<html
 			suppressHydrationWarning
 			lang={locale}
-			className={cn(
-				notoSans.variable,
-				notoSansMono.variable,
-				notoSansSC.variable,
-				'selection-custom light:izakaya dark:izakaya-dark'
-			)}
+			className="selection-custom light:izakaya dark:izakaya-dark"
 		>
 			<head>
 				<Polyfills />

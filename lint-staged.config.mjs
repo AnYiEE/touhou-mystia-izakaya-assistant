@@ -8,9 +8,9 @@ const buildEslintCommand = (/** @type {ReadonlyArray<string>} */ filenames) =>
 
 /** @type {import('lint-staged').Configuration} */
 const config = {
-	'!*.{scss,mjs,js,jsx,ts,tsx}': 'prettier --ignore-unknown --write',
+	'!*.{css,scss,mjs,js,jsx,ts,tsx}': 'prettier --ignore-unknown --write',
+	'*.{css,scss}': ['prettier --write', 'stylelint --allow-empty-input --fix'],
 	'*.{mjs,js,jsx,ts,tsx}': ['prettier --write', buildEslintCommand],
-	'*.scss': ['prettier --write', 'stylelint --allow-empty-input --fix'],
 };
 
 export default config;
