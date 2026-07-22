@@ -1,5 +1,5 @@
 import { Fragment, memo, useRef } from 'react';
-import { isObject } from 'lodash';
+import { isNil, isObject } from 'lodash';
 
 import {
 	useItemPopoverState,
@@ -137,6 +137,9 @@ export default memo<IProps>(function Content({ data }) {
 													Array.isArray(target);
 												const isSelf =
 													method === 'self';
+												const isNoPrice =
+													isBuy &&
+													isNil(target.price);
 												return (
 													<Fragment key={fromIndex}>
 														{isSelf ? (
@@ -171,7 +174,13 @@ export default memo<IProps>(function Content({ data }) {
 															</>
 														) : isBuy ? (
 															<>
-																{target.name}（
+																{isNoPrice
+																	? '出售于'
+																	: null}
+																{target.name}
+																{isNoPrice
+																	? null
+																	: '（'}
 																{isObject(
 																	target.price
 																) ? (
@@ -225,14 +234,16 @@ export default memo<IProps>(function Content({ data }) {
 																			/>
 																		</Tooltip>
 																	</span>
-																) : (
+																) : isNoPrice ? null : (
 																	<Price>
 																		{
 																			target.price
 																		}
 																	</Price>
 																)}
-																）
+																{isNoPrice
+																	? null
+																	: '）'}
 															</>
 														) : (
 															isLevelUp && (
