@@ -6,6 +6,10 @@ export const SPOTLIGHT_EXIT_DURATION_MS = 120;
 export const CUSTOMER_RARE_PLAN_DRAWER_EXIT_DURATION_MS = 340;
 
 export const OVERLAY_DEFINITION_MAP = {
+	'account.data-manager': {
+		exitDelayMs: MODAL_DEFAULT_EXIT_DELAY_MS,
+		priority: 'task',
+	},
 	'account.legal': {
 		exitDelayMs: MODAL_DEFAULT_EXIT_DELAY_MS,
 		priority: 'task',

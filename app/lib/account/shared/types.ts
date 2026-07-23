@@ -451,19 +451,6 @@ export interface IAccountUserProfile {
 	username: string;
 }
 
-export interface IAccountExportData {
-	state: Array<{
-		data: string;
-		namespace: string;
-		revision: number;
-		schema_version: number;
-		updated_at: number;
-		user_id: string;
-	}>;
-	state_epoch: number;
-	user: IAccountUserProfile;
-}
-
 export interface IAdminMeData {
 	auth_source: 'credentials' | 'user';
 	csrf_token: string;

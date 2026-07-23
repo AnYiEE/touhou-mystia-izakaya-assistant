@@ -6,7 +6,6 @@ import {
 } from '@simplewebauthn/browser';
 
 import {
-	type IAccountExportData,
 	type IAccountProfileUpdateBody,
 	type IAccountSessionListData,
 	type IAccountSsoGrantListData,
@@ -35,7 +34,6 @@ import {
 } from '@/lib/api/serviceClient';
 
 export type {
-	IAccountExportData,
 	IAccountSessionListData,
 	IAccountSsoGrantListData,
 	IAccountProfileUpdateBody,
@@ -380,10 +378,6 @@ export async function startWebAuthnLogin({
 		'/api/v1/auth/webauthn/authentication/verify',
 		createJsonRequestInit('POST', { response: assertionResponse })
 	);
-}
-
-export function exportAccountData() {
-	return fetchAccountApiResult<IAccountExportData>('/api/v1/account/export');
 }
 
 export function deleteAccountData(

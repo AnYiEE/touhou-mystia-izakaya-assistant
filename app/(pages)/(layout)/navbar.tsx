@@ -154,7 +154,7 @@ const ACCOUNT_ACTION_MENU_SECTION_CLASS_NAMES = {
 	divider: 'mx-1 my-1 bg-default-200/70',
 	group: 'space-y-1',
 	heading:
-		'px-2 pb-0.5 pt-2.5 text-tiny font-medium uppercase text-default-500',
+		'block px-2 pb-0.5 pt-2.5 text-tiny font-medium uppercase text-default-500',
 };
 
 const MOBILE_SECTION_TITLE_CLASS_NAME =
@@ -655,7 +655,7 @@ export default function Navbar() {
 				title={
 					/* HeroUI intersects its collection title with the DOM title string. */
 					(
-						<span className="flex items-center gap-2">
+						<span className="inline-flex w-full items-center justify-between gap-2">
 							<span>账号</span>
 							{accountSyncPauseLabel !== null && (
 								<span className="rounded-full bg-warning/15 px-1.5 py-0.5 text-[10px] font-normal leading-none text-warning-700 dark:text-warning">

@@ -1,4 +1,5 @@
 export type TOverlayId =
+	| 'account.data-manager'
 	| 'account.legal'
 	| 'account.main'
 	| 'account.password-required'

@@ -33,8 +33,8 @@ import {
 	faCheck,
 	faCircleInfo,
 	faCloudArrowUp,
+	faDatabase,
 	faDesktop,
-	faDownload,
 	faFingerprint,
 	faKey,
 	faPen,
@@ -63,6 +63,7 @@ import {
 import AccountConfirmButton from './accountConfirmButton';
 import AccountSyncStatus from './accountSyncStatus';
 import LegalStatement from '@/(pages)/about/legalStatement';
+import LocalDataManager from '@/(pages)/preferences/localDataManager';
 import { trackEvent } from '@/components/analytics';
 import Heading from '@/components/heading';
 import TimeAgo from '@/components/timeAgo';
@@ -78,7 +79,6 @@ import {
 	deleteAccount,
 	deleteAccountData,
 	deleteWebAuthnCredential,
-	exportAccountData,
 	listWebAuthnCredentials,
 	loginAccount,
 	logoutAccount,
@@ -153,7 +153,6 @@ import {
 	requestOverlayClose,
 } from '@/lib/overlayCoordinator';
 import { accountStore, globalStore } from '@/stores';
-import { downloadJson } from '@/utilities';
 
 type TAuthMode = 'login' | 'register';
 type TAuthEntryMode = 'passkey' | 'password';
@@ -456,6 +455,7 @@ export default memo<IProps>(function AccountManager() {
 	const [hasAcceptedAuthTerms, setHasAcceptedAuthTerms] = useState(false);
 	const [shouldHighlightAuthTerms, setShouldHighlightAuthTerms] =
 		useState(false);
+	const [isDataManagerModalOpen, setIsDataManagerModalOpen] = useState(false);
 	const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
 	const [registrationNickname, setRegistrationNickname] = useState('');
 	const [username, setUsername] = useState('');
@@ -584,6 +584,28 @@ export default memo<IProps>(function AccountManager() {
 		vibrate();
 		setIsLegalModalOpen(false);
 		requestOverlayClose('account.legal');
+	}, [vibrate]);
+
+	const handleOpenDataManagerModal = useCallback(() => {
+		vibrate();
+		trackEvent(
+			trackEvent.category.click,
+			'Account Button',
+			'Open Data Manager'
+		);
+		pushOverlayChild({
+			childId: 'account.data-manager',
+			onOpenChild: () => {
+				setIsDataManagerModalOpen(true);
+			},
+			parentId: 'account.main',
+		});
+	}, [vibrate]);
+
+	const handleCloseDataManagerModal = useCallback(() => {
+		vibrate();
+		setIsDataManagerModalOpen(false);
+		requestOverlayClose('account.data-manager');
 	}, [vibrate]);
 
 	const isRegistrationPasswordInvalid =
@@ -1467,105 +1489,6 @@ export default memo<IProps>(function AccountManager() {
 	const handleLogout = useCallback(() => {
 		logoutAfterFlush(logoutAccount, 'Logout');
 	}, [logoutAfterFlush]);
-
-	const handleExport = useCallback(() => {
-		if (isSubmitting || user === null) {
-			return;
-		}
-
-		vibrate();
-
-		trackEvent(
-			trackEvent.category.click,
-			'Account Sync Button',
-			'Export Data'
-		);
-
-		setIsSubmitting(true);
-		setMessage(null);
-
-		const expectedAuthContext = {
-			expectedCsrfToken: csrfToken,
-			expectedUserId: user.id,
-		};
-		const flushPromise =
-			user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
-				? Promise.resolve(true)
-				: flushAccountSyncQueueUntilIdle();
-
-		void flushPromise
-			.then((isFlushed) => {
-				if (!isFlushed) {
-					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
-						return null;
-					}
-					if (accountStore.shared.user.get() === null) {
-						resetAccountStateIfCurrent(expectedAuthContext);
-						return null;
-					}
-
-					const syncLastError =
-						accountStore.shared.sync.lastError.get();
-					if (syncLastError === 'unauthorized') {
-						resetAccountStateIfCurrent(expectedAuthContext);
-						return null;
-					}
-
-					setMessage('同步尚未完成，请先重试同步后再导出');
-
-					return null;
-				}
-
-				return exportAccountData();
-			})
-			.then((result) => {
-				if (result === null) {
-					return;
-				}
-				if (result.status === 'error') {
-					if (
-						handleUnauthorizedAccountActionError(
-							result,
-							expectedAuthContext
-						)
-					) {
-						return;
-					}
-					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
-						return;
-					}
-
-					setMessage(result.message);
-					return;
-				}
-				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
-					return;
-				}
-
-				const { data } = result;
-
-				downloadJson(
-					`mystia-account-${user.username}`,
-					JSON.stringify(data, null, 2)
-				);
-				setMessage('账号数据已导出');
-			})
-			.catch((error: unknown) => {
-				if (
-					handleUnauthorizedAccountError(error, expectedAuthContext)
-				) {
-					return;
-				}
-				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
-					return;
-				}
-
-				setMessage(error instanceof Error ? error.message : '导出失败');
-			})
-			.finally(() => {
-				setIsSubmitting(false);
-			});
-	}, [csrfToken, isSubmitting, user, vibrate]);
 
 	const handleLogoutAll = useCallback(() => {
 		logoutAfterFlush(logoutAllAccount, 'Logout All');
@@ -3194,7 +3117,6 @@ export default memo<IProps>(function AccountManager() {
 			'通行密钥已添加',
 			'通行密钥已删除',
 			'通行密钥已重命名',
-			'账号数据已导出',
 			'云端数据已清空',
 		].includes(message);
 	const messageText =
@@ -4340,7 +4262,7 @@ export default memo<IProps>(function AccountManager() {
 					{!passwordMustChange && (
 						<AccountPanel className="space-y-4">
 							<div>
-								<AccountPanelTitle icon={faDownload}>
+								<AccountPanelTitle icon={faDatabase}>
 									数据与会话
 								</AccountPanelTitle>
 								<div className="flex flex-col gap-2">
@@ -4348,19 +4270,16 @@ export default memo<IProps>(function AccountManager() {
 										fullWidth
 										className="justify-start"
 										isDisabled={isSubmitting}
-										isLoading={isSubmitting}
 										startContent={
-											isSubmitting ? null : (
-												<FontAwesomeIcon
-													icon={faDownload}
-													className="w-4"
-												/>
-											)
+											<FontAwesomeIcon
+												icon={faDatabase}
+												className="w-4"
+											/>
 										}
 										variant="flat"
-										onPress={handleExport}
+										onPress={handleOpenDataManagerModal}
 									>
-										导出账号数据
+										数据管理
 									</Button>
 									<Button
 										fullWidth
@@ -4760,7 +4679,7 @@ export default memo<IProps>(function AccountManager() {
 										className="mt-1 w-4 shrink-0"
 									/>
 									<p>
-										危险操作会影响云端数据或账号本身，请确认已经导出需要保留的数据。
+										危险操作会影响云端数据或账号本身，请先通过数据管理导出需要保留的数据。
 									</p>
 								</div>
 								<div className="flex flex-col gap-2">
@@ -4810,6 +4729,19 @@ export default memo<IProps>(function AccountManager() {
 					)}
 				</div>
 			)}
+			<Modal
+				coordination={{ id: 'account.data-manager' }}
+				isOpen={isDataManagerModalOpen}
+				size="2xl"
+				onClose={handleCloseDataManagerModal}
+			>
+				<div className="space-y-4">
+					<Heading as="h2" isFirst>
+						数据管理
+					</Heading>
+					<LocalDataManager isFullWidth />
+				</div>
+			</Modal>
 			<Modal
 				coordination={{ id: 'account.legal' }}
 				isOpen={isLegalModalOpen}

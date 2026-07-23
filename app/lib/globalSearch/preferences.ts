@@ -159,15 +159,9 @@ const GLOBAL_SEARCH_ACCOUNT_PREFERENCE_ITEMS = [
 	},
 	{
 		action: 'open-account-modal',
-		description: '导出账号数据，处理同步异常或冲突',
+		description: '查看同步状态，处理同步异常或冲突',
 		key: 'account-sync',
-		keywords: [
-			'导出账号数据',
-			'同步冲突',
-			'同步异常',
-			'立即同步',
-			'账号数据',
-		],
+		keywords: ['同步状态', '云同步', '同步冲突', '同步异常', '立即同步'],
 		label: '账号同步',
 	},
 ] as const;
