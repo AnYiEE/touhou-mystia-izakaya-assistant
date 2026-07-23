@@ -50,6 +50,7 @@ import {
 import {
 	validateCustomerNormalMealsData,
 	validateCustomerRareMealsData,
+	validateCustomerRarePlansData,
 } from '@/lib/account/sync/validation';
 
 import {
@@ -127,6 +128,25 @@ function getClosestModalScrollContainer(element: HTMLElement | null) {
 
 type TCloudState = 'danger' | 'default' | 'success';
 type TExportButtonLabel = ExtractCollectionValue<typeof exportButtonLabelMap>;
+type TResetTarget = 'meals' | 'plans';
+
+const CUSTOMER_DATA_KEY_MAP = {
+	normalMeals: 'customer_normal_meals',
+	rareMeals: 'customer_rare_meals',
+	rarePlans: 'customer_rare_plans',
+} as const;
+
+const LEGACY_CUSTOMER_DATA_KEY_MAP = {
+	normalMeals: 'customer_normal',
+	rareMeals: 'customer_rare',
+} as const;
+
+const CUSTOMER_DATA_KEY_SET = new Set<string>(
+	Object.values(CUSTOMER_DATA_KEY_MAP)
+);
+const LEGACY_CUSTOMER_DATA_KEY_SET = new Set<string>(
+	Object.values(LEGACY_CUSTOMER_DATA_KEY_MAP)
+);
 
 function setErrorState({
 	error,
@@ -181,6 +201,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 
 	const currentNormalMealData = customerNormalStore.persistence.meals.use();
 	const currentRareMealData = customerRareStore.persistence.meals.use();
+	const currentRarePlanData = customerRareStore.persistence.plans.use();
 
 	const currentMealData = useMemo(
 		() => ({
@@ -190,19 +211,33 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		[currentNormalMealData, currentRareMealData]
 	);
 
+	const currentCustomerData = useMemo(
+		() => ({
+			[CUSTOMER_DATA_KEY_MAP.normalMeals]: currentNormalMealData,
+			[CUSTOMER_DATA_KEY_MAP.rareMeals]: currentRareMealData,
+			[CUSTOMER_DATA_KEY_MAP.rarePlans]: currentRarePlanData,
+		}),
+		[currentNormalMealData, currentRareMealData, currentRarePlanData]
+	);
+
 	// For compatibility with older versions
 	type TMealData = typeof currentMealData | typeof currentRareMealData;
+	type TCustomerData = Partial<typeof currentCustomerData>;
+	interface IImportData {
+		data: TCustomerData;
+		eventLabel: 'Customer Data' | 'Customer Rare Data';
+	}
 
-	const currentMealDataString = useMemo(
-		() => JSON.stringify(currentMealData, null, '\t'),
-		[currentMealData]
+	const currentCustomerDataString = useMemo(
+		() => JSON.stringify(currentCustomerData, null, '\t'),
+		[currentCustomerData]
 	);
 
 	const [importValue, setImportValue] = useState('');
 	const importValueRef = useRef(importValue);
 	importValueRef.current = importValue;
 	const throttledImportValue = useThrottle(importValue);
-	const [importData, setImportData] = useState<TMealData | null>(null);
+	const [importData, setImportData] = useState<IImportData | null>(null);
 	const [importReadError, setImportReadError] = useState(false);
 	const importReadRequestIdRef = useRef(0);
 	const importInputRef = useRef<HTMLInputElement | null>(null);
@@ -218,10 +253,8 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		toggleBoolean,
 		false
 	);
-	const [isResetPopoverOpened, toggleResetPopoverOpened] = useReducer(
-		toggleBoolean,
-		false
-	);
+	const [resetTarget, setResetTarget] = useState<TResetTarget | null>(null);
+	const isResetPopoverOpened = resetTarget !== null;
 
 	const shouldLockDataManagerScroll =
 		isSavePopoverOpened || isResetPopoverOpened;
@@ -535,46 +568,49 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 			);
 		}, 5000);
 		cloudTimers.current.push(timerId);
-		const fileName = `customer_data-${Object.keys(currentMealData.customer_normal).length}_${Object.keys(currentMealData.customer_rare).length}-${Date.now()}`;
-		downloadJson(fileName, currentMealDataString);
+		const fileName = `customer_data-${Object.keys(currentMealData.customer_normal).length}_${Object.keys(currentMealData.customer_rare).length}_${currentRarePlanData.items.length}-${Date.now()}`;
+		downloadJson(fileName, currentCustomerDataString);
 		trackEvent(trackEvent.category.click, 'Export Button', fileName);
-	}, [currentMealData, currentMealDataString]);
+	}, [currentCustomerDataString, currentMealData, currentRarePlanData]);
 
 	const handleImportData = useCallback(() => {
 		toggleSavePopoverOpened();
 		if (importData !== null) {
-			if ('customer_normal' in importData) {
-				deleteIndexProperty(importData.customer_normal);
-				deleteIndexProperty(importData.customer_rare);
+			const { data, eventLabel } = importData;
+			if (data.customer_normal_meals !== undefined) {
 				customerNormalStore.persistence.meals.set(
-					importData.customer_normal
-				);
-				customerRareStore.persistence.meals.set(
-					importData.customer_rare
-				);
-				trackEvent(
-					trackEvent.category.click,
-					'Import Button',
-					'Customer Data'
-				);
-			} else {
-				deleteIndexProperty(importData);
-				compatibilityCustomerRareData(importData);
-				customerRareStore.persistence.meals.set(importData);
-				trackEvent(
-					trackEvent.category.click,
-					'Import Button',
-					'Customer Rare Data'
+					data.customer_normal_meals
 				);
 			}
+			if (data.customer_rare_meals !== undefined) {
+				customerRareStore.persistence.meals.set(
+					data.customer_rare_meals
+				);
+			}
+			if (data.customer_rare_plans !== undefined) {
+				customerRareStore.persistence.plans.set(
+					data.customer_rare_plans
+				);
+			}
+			trackEvent(trackEvent.category.click, 'Import Button', eventLabel);
 		}
 	}, [importData]);
 
-	const handleResetData = useCallback(() => {
-		toggleResetPopoverOpened();
+	const handleResetMealData = useCallback(() => {
+		setResetTarget(null);
 		customerNormalStore.persistence.meals.set({});
 		customerRareStore.persistence.meals.set({});
 		trackEvent(trackEvent.category.click, 'Reset Button', 'Customer Data');
+	}, []);
+
+	const handleResetPlanData = useCallback(() => {
+		setResetTarget(null);
+		customerRareStore.persistence.plans.set({ activeId: null, items: [] });
+		trackEvent(
+			trackEvent.category.click,
+			'Reset Button',
+			'Customer Rare Plans'
+		);
 	}, []);
 
 	const handleImportButtonPress = useCallback(() => {
@@ -639,31 +675,88 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				setIsSaveButtonError(false);
 			}
 			setIsSaveButtonLoading(true);
-			const json = JSON.parse(throttledImportValue);
+			const json: unknown = JSON.parse(throttledImportValue);
 			if (Array.isArray(json) || !isObject(json)) {
 				throw new TypeError('not an object');
 			}
 
-			if ('customer_normal' in json) {
-				if (
-					Object.keys(json).length !== 2 ||
-					!('customer_rare' in json)
-				) {
+			const keys = Object.keys(json);
+			const hasCurrentCustomerDataKey = keys.some((key) =>
+				CUSTOMER_DATA_KEY_SET.has(key)
+			);
+			const hasLegacyCustomerDataKey = keys.some((key) =>
+				LEGACY_CUSTOMER_DATA_KEY_SET.has(key)
+			);
+
+			if (hasCurrentCustomerDataKey && hasLegacyCustomerDataKey) {
+				throw new TypeError('mixed current and legacy customer data');
+			}
+
+			if (hasCurrentCustomerDataKey) {
+				if (!keys.every((key) => CUSTOMER_DATA_KEY_SET.has(key))) {
 					throw new TypeError('invalid combined meal data');
 				}
-				const normalData = json.customer_normal as Record<
-					string,
-					object[]
-				>;
-				const rareData = json.customer_rare as Record<string, object[]>;
-				deleteIndexProperty(normalData);
-				deleteIndexProperty(rareData);
-				if (
-					!validateCustomerNormalMealsData(normalData) ||
-					!validateCustomerRareMealsData(rareData)
-				) {
-					throw new TypeError('invalid meal data');
+
+				const data = json as Record<string, unknown>;
+				if (CUSTOMER_DATA_KEY_MAP.normalMeals in data) {
+					const normalData = data[
+						CUSTOMER_DATA_KEY_MAP.normalMeals
+					] as Record<string, object[]>;
+					deleteIndexProperty(normalData);
+					if (!validateCustomerNormalMealsData(normalData)) {
+						throw new TypeError('invalid normal meal data');
+					}
 				}
+				if (CUSTOMER_DATA_KEY_MAP.rareMeals in data) {
+					const rareData = data[
+						CUSTOMER_DATA_KEY_MAP.rareMeals
+					] as Record<string, object[]>;
+					deleteIndexProperty(rareData);
+					if (!validateCustomerRareMealsData(rareData)) {
+						throw new TypeError('invalid rare meal data');
+					}
+				}
+				if (
+					CUSTOMER_DATA_KEY_MAP.rarePlans in data &&
+					!validateCustomerRarePlansData(
+						data[CUSTOMER_DATA_KEY_MAP.rarePlans]
+					)
+				) {
+					throw new TypeError('invalid customer rare plans');
+				}
+
+				setImportData({ data, eventLabel: 'Customer Data' });
+			} else if (hasLegacyCustomerDataKey) {
+				if (
+					!keys.every((key) => LEGACY_CUSTOMER_DATA_KEY_SET.has(key))
+				) {
+					throw new TypeError('invalid legacy combined meal data');
+				}
+
+				const legacyData = json as Record<string, unknown>;
+				const data: TCustomerData = {};
+				if (LEGACY_CUSTOMER_DATA_KEY_MAP.normalMeals in legacyData) {
+					const normalData = legacyData[
+						LEGACY_CUSTOMER_DATA_KEY_MAP.normalMeals
+					] as Record<string, object[]>;
+					deleteIndexProperty(normalData);
+					if (!validateCustomerNormalMealsData(normalData)) {
+						throw new TypeError('invalid legacy normal meal data');
+					}
+					data.customer_normal_meals = normalData;
+				}
+				if (LEGACY_CUSTOMER_DATA_KEY_MAP.rareMeals in legacyData) {
+					const rareData = legacyData[
+						LEGACY_CUSTOMER_DATA_KEY_MAP.rareMeals
+					] as Record<string, object[]>;
+					deleteIndexProperty(rareData);
+					if (!validateCustomerRareMealsData(rareData)) {
+						throw new TypeError('invalid legacy rare meal data');
+					}
+					data.customer_rare_meals = rareData;
+				}
+
+				setImportData({ data, eventLabel: 'Customer Data' });
 			} else {
 				const rareData = json as Record<string, object[]>;
 				deleteIndexProperty(rareData);
@@ -671,9 +764,12 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 				if (!validateCustomerRareMealsData(rareData)) {
 					throw new TypeError('invalid legacy meal data');
 				}
+				setImportData({
+					data: { customer_rare_meals: rareData },
+					eventLabel: 'Customer Rare Data',
+				});
 			}
 
-			setImportData(json);
 			setIsSaveButtonDisabled(false);
 			setIsSaveButtonError(false);
 			setIsSaveButtonLoading(false);
@@ -709,7 +805,9 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 
 	return (
 		<div ref={dataManagerRef}>
-			<Heading subTitle="备份/还原/重置顾客套餐数据">数据管理</Heading>
+			<Heading subTitle="备份/还原/重置顾客套餐和营业预设数据">
+				数据管理
+			</Heading>
 			<div className="-mt-2">
 				<Tabs
 					defaultSelectedKey="reset"
@@ -731,7 +829,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 								<Textarea
 									isClearable
 									disableAnimation={isReducedMotion}
-									placeholder="从本地文件导入或输入顾客套餐数据"
+									placeholder="从本地文件导入或输入顾客套餐和营业预设数据"
 									value={importValue}
 									onValueChange={handleImportValueChange}
 									classNames={{
@@ -757,7 +855,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 									variant="flat"
 									onPress={handleImportButtonPress}
 								>
-									导入
+									选择本地文件
 								</Button>
 								<Popover
 									shouldBlockScroll
@@ -782,7 +880,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 												)
 											)}
 										>
-											保存
+											应用到本设备
 										</Button>
 									</PopoverTrigger>
 									<PopoverContent className="space-y-1 p-1">
@@ -793,7 +891,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 											variant="ghost"
 											onPress={handleImportData}
 										>
-											确认保存
+											确认应用
 										</Button>
 										<Button
 											fullWidth
@@ -802,7 +900,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 											variant="ghost"
 											onPress={toggleSavePopoverOpened}
 										>
-											取消保存
+											取消
 										</Button>
 									</PopoverContent>
 								</Popover>
@@ -812,7 +910,8 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 									hideSymbol
 									fullWidth
 									tooltipProps={{
-										content: '点击以复制当前的顾客套餐数据',
+										content:
+											'点击以复制当前的顾客套餐和营业预设数据',
 										delay: 0,
 										offset: 0,
 										showArrow: !isHighAppearance,
@@ -826,7 +925,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 										pre: 'max-h-[13.25rem] w-full overflow-auto whitespace-pre-wrap',
 									}}
 								>
-									{currentMealDataString}
+									{currentCustomerDataString}
 								</Snippet>
 								<Tooltip
 									isOpen
@@ -959,18 +1058,28 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 							<Popover
 								shouldBlockScroll
 								showArrow
-								isOpen={isResetPopoverOpened}
+								isOpen={resetTarget === 'meals'}
 							>
 								<PopoverTrigger>
 									<Button
 										fullWidth
 										color="danger"
 										variant="flat"
-										onClick={toggleResetPopoverOpened}
+										onClick={() => {
+											setResetTarget((current) =>
+												current === 'meals'
+													? null
+													: 'meals'
+											);
+										}}
 										onKeyDown={debounce(
-											checkA11yConfirmKey(
-												toggleResetPopoverOpened
-											)
+											checkA11yConfirmKey(() => {
+												setResetTarget((current) =>
+													current === 'meals'
+														? null
+														: 'meals'
+												);
+											})
 										)}
 									>
 										重置已保存的顾客套餐数据
@@ -982,7 +1091,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 										color="danger"
 										size="sm"
 										variant="ghost"
-										onPress={handleResetData}
+										onPress={handleResetMealData}
 									>
 										确认重置
 									</Button>
@@ -991,7 +1100,62 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 										color="primary"
 										size="sm"
 										variant="ghost"
-										onPress={toggleResetPopoverOpened}
+										onPress={() => {
+											setResetTarget(null);
+										}}
+									>
+										取消重置
+									</Button>
+								</PopoverContent>
+							</Popover>
+							<Popover
+								shouldBlockScroll
+								showArrow
+								isOpen={resetTarget === 'plans'}
+							>
+								<PopoverTrigger>
+									<Button
+										fullWidth
+										color="danger"
+										variant="flat"
+										onClick={() => {
+											setResetTarget((current) =>
+												current === 'plans'
+													? null
+													: 'plans'
+											);
+										}}
+										onKeyDown={debounce(
+											checkA11yConfirmKey(() => {
+												setResetTarget((current) =>
+													current === 'plans'
+														? null
+														: 'plans'
+												);
+											})
+										)}
+									>
+										重置已保存的营业预设数据
+									</Button>
+								</PopoverTrigger>
+								<PopoverContent className="space-y-1 p-1">
+									<Button
+										fullWidth
+										color="danger"
+										size="sm"
+										variant="ghost"
+										onPress={handleResetPlanData}
+									>
+										确认重置
+									</Button>
+									<Button
+										fullWidth
+										color="primary"
+										size="sm"
+										variant="ghost"
+										onPress={() => {
+											setResetTarget(null);
+										}}
 									>
 										取消重置
 									</Button>

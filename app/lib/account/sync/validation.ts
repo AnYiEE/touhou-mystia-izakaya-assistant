@@ -202,7 +202,7 @@ function validateCustomerRarePlan(
 	);
 }
 
-function validateCustomerRarePlans(
+export function validateCustomerRarePlansData(
 	data: unknown,
 	{ allowLegacyCustomerSort = false } = {}
 ) {
@@ -333,7 +333,7 @@ export function validateSyncStateData(change: ISyncStateChange) {
 		return validateCustomerRareMealsData(change.data);
 	}
 	if (change.namespace === SYNC_NAMESPACE_MAP.customerRarePlans) {
-		return validateCustomerRarePlans(change.data, {
+		return validateCustomerRarePlansData(change.data, {
 			allowLegacyCustomerSort: change.schema_version === 1,
 		});
 	}

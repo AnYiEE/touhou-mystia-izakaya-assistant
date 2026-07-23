@@ -93,7 +93,7 @@ const GLOBAL_SEARCH_BASE_PREFERENCE_ITEMS = [
 		label: '显示料理标签描述',
 	},
 	{
-		description: '导入、导出、备份、还原或重置顾客套餐数据',
+		description: '导入、导出、备份、还原或重置顾客套餐和营业预设数据',
 		key: 'data-manager',
 		keywords: [
 			'本地导入',
