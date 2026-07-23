@@ -27,6 +27,7 @@ import type {
 	IAdminSsoUserGrantsData,
 	IAdminUserDetailData,
 	IAdminUserListData,
+	TAccountSyncStatus,
 	TAdminSsoCallbackDeliveryStatus,
 	TAdminSsoCallbackEvent,
 	TAdminSsoCallbackQueueStatus,
@@ -324,7 +325,11 @@ export function deleteAdminUserSessions(id: string, csrfToken: string) {
 }
 
 export function clearAdminUserData(id: string, csrfToken: string) {
-	return mutateAdminUserDetail<{ state_epoch: number }>(
+	return mutateAdminUserDetail<{
+		state_epoch: number;
+		sync_generation: number;
+		sync_status: TAccountSyncStatus;
+	}>(
 		id,
 		`/api/v1/admin/users/${encodeURIComponent(id)}/data`,
 		createAdminCsrfRequestInit('DELETE', csrfToken)

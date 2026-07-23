@@ -19,6 +19,7 @@ import Sprite from '@/components/sprite';
 
 import { siteConfig } from '@/configs';
 import { DLC_LABEL_MAP, DYNAMIC_TAG_MAP } from '@/data';
+import { getAccountSyncPauseIndicator } from '@/lib/account/client/accountSyncPauseIndicator';
 import { type TGlobalSearchPreferenceKey } from '@/lib/globalSearch';
 import {
 	accountStore,
@@ -64,6 +65,9 @@ export default memo<IProps>(function Content({ onModalClose }) {
 
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const accountUser = accountStore.shared.user.use();
+	const { label: accountSyncPauseLabel } = getAccountSyncPauseIndicator(
+		accountUser?.sync_status
+	);
 
 	const shouldShowMobileAccountEntry =
 		isPreferencesModalOpen &&
@@ -201,6 +205,7 @@ export default memo<IProps>(function Content({ onModalClose }) {
 					isDisabled={accountBootstrapStatus === 'unknown'}
 					label={accountActionLabel}
 					onPress={handleAccountButtonPress}
+					syncStatusLabel={accountSyncPauseLabel}
 					className="mb-5"
 				/>
 			)}

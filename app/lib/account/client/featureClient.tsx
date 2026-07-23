@@ -11,13 +11,10 @@ import {
 	startAccountBootstrapRetryClient,
 } from './bootstrap';
 import { startAccountStoreSyncWatchers } from './doubleWrite';
+import type { IStartAccountFeatureClientsOptions } from './featureClient.types';
 import { startAccountSyncClient } from './syncClient';
 
 import { startRecommendationBridgeClient } from '@/lib/recommendations/bridge/client';
-
-interface IStartAccountFeatureClientsOptions {
-	skipInitialBootstrap?: boolean;
-}
 
 export function startAccountFeatureClients({
 	skipInitialBootstrap = false,

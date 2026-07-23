@@ -591,7 +591,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 								<p>
 									{shouldResumeSso
 										? '如果暂时不处理，可以退出当前账号返回首页。'
-										: '如果暂时不处理，可以退出当前账号；本机未完成的同步队列会留在本地，之后重新登录再继续。'}
+										: '如果暂时不处理，可以退出当前账号；本设备未完成的同步队列会留在本地，之后重新登录再继续。'}
 								</p>
 							</div>
 						</div>

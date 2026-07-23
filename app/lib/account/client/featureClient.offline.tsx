@@ -1,5 +1,6 @@
 'use client';
 
+import type { IStartAccountFeatureClientsOptions } from './featureClient.types';
 import { clearAccountSyncRuntimeConflicts } from './syncRuntimeState';
 
 import { discardRecommendationBridgeLaunchDescriptor } from '@/lib/recommendations/bridge/launchDescriptor';
@@ -7,7 +8,11 @@ import { accountStore as store } from '@/stores/account';
 
 discardRecommendationBridgeLaunchDescriptor();
 
-export function startAccountFeatureClients() {
+export function startAccountFeatureClients(
+	options: IStartAccountFeatureClientsOptions = {}
+) {
+	void options;
+
 	store.shared.bootstrapStatus.set('disabled');
 	store.shared.adminCsrfToken.set(null);
 	store.shared.csrfToken.set(null);

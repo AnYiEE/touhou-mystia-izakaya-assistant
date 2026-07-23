@@ -1,5 +1,6 @@
 import {
 	type ACCOUNT_COOKIE_NAME_MAP,
+	type ACCOUNT_SYNC_STATUS_MAP,
 	type SSO_CALLBACK_EVENT_LIST,
 	type USER_STATUS_MAP,
 } from './constants';
@@ -7,6 +8,9 @@ import { type IAccountSyncMeta } from '../sync';
 
 export type TUserStatus =
 	(typeof USER_STATUS_MAP)[keyof typeof USER_STATUS_MAP];
+
+export type TAccountSyncStatus =
+	(typeof ACCOUNT_SYNC_STATUS_MAP)[keyof typeof ACCOUNT_SYNC_STATUS_MAP];
 
 export type TAccountCookieNameMap = typeof ACCOUNT_COOKIE_NAME_MAP;
 
@@ -442,6 +446,8 @@ export interface IAccountUserProfile {
 	nickname: string | null;
 	state_epoch: number;
 	status: TUserStatus;
+	sync_generation: number;
+	sync_status: TAccountSyncStatus;
 	username: string;
 }
 

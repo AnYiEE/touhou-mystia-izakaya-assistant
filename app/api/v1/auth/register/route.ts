@@ -8,7 +8,10 @@ import {
 	checkSameOriginRouteResponse,
 	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
-import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
+import {
+	ACCOUNT_SYNC_STATUS_MAP,
+	USER_STATUS_MAP,
+} from '@/lib/account/shared/constants';
 import { type IAuthLoginSuccessResponse } from '@/lib/account/shared/types';
 import {
 	createNoStoreErrorResponse,
@@ -140,6 +143,8 @@ export async function POST(request: NextRequest) {
 				nickname,
 				state_epoch: 0,
 				status: USER_STATUS_MAP.active,
+				sync_generation: 0,
+				sync_status: ACCOUNT_SYNC_STATUS_MAP.active,
 				updated_at: now,
 				username,
 				username_normalized: usernameNormalized,

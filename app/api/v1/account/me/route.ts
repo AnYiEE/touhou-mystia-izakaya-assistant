@@ -97,6 +97,8 @@ export async function GET(request: NextRequest) {
 			lastAppliedRemoteHash: {},
 			revisions,
 			state_epoch: stateSnapshot.user.state_epoch,
+			sync_generation: stateSnapshot.user.sync_generation,
+			sync_status: stateSnapshot.user.sync_status,
 		},
 		user: userModule.createAccountUserProfile(stateSnapshot.user),
 	} satisfies TAccountMeResponse);

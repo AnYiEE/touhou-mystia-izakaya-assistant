@@ -44,6 +44,8 @@ export function createAccountUserProfile(user: TUser): IAccountUserProfile {
 		nickname: user.nickname,
 		state_epoch: user.state_epoch,
 		status: user.status,
+		sync_generation: user.sync_generation,
+		sync_status: user.sync_status,
 		username: user.username,
 	};
 }

@@ -15,13 +15,19 @@ import {
 
 import { Button, Tooltip } from '@/design/ui/components';
 
+import AccountConfirmButton from './accountConfirmButton';
 import { trackEvent } from '@/components/analytics';
 import TimeAgo from '@/components/timeAgo';
 
 import { checkAccountSyncBroadcastSupported } from '@/lib/account/client/broadcast';
 import { getAccountClientErrorMessage } from '@/lib/account/client/errorMessage';
 import { readDirtyQueueEntries } from '@/lib/account/client/queue';
-import { retryAccountSyncQueue } from '@/lib/account/client/syncClient';
+import { checkAccountSyncResetPrepared } from '@/lib/account/client/resetGeneration';
+import {
+	rebuildAccountSyncCloudFromLocal,
+	retryAccountSyncQueue,
+} from '@/lib/account/client/syncClient';
+import { ACCOUNT_SYNC_STATUS_MAP } from '@/lib/account/shared/constants';
 import { SYNC_NAMESPACE_MAP, type TSyncNamespace } from '@/lib/account/sync';
 import { getLogSafeErrorCode } from '@/lib/logging';
 import { accountStore as store } from '@/stores/account';
@@ -42,6 +48,7 @@ const storageModeLabelMap = {
 const pausedReasonLabelMap = {
 	'applying-remote': '应用云端中',
 	bootstrap: '初始化中',
+	'cloud-paused': '云同步已暂停',
 	conflict: '冲突待处理',
 	'delete-data': '清空数据中',
 	'importing-backup': '导入旧备份中',
@@ -58,6 +65,9 @@ export default memo<IProps>(function AccountSyncStatus() {
 	const sync = store.shared.sync.use();
 	const user = store.shared.user.use();
 	const [isDetailOpen, setIsDetailOpen] = useState(false);
+	const [isRebuildConfirmOpen, setIsRebuildConfirmOpen] = useState(false);
+	const [isRebuilding, setIsRebuilding] = useState(false);
+	const [rebuildError, setRebuildError] = useState<string | null>(null);
 
 	const storageMode = getSafeStorageMode();
 	const supportsNativeLock = checkCrossTabNativeLockSupported();
@@ -91,6 +101,13 @@ export default memo<IProps>(function AccountSyncStatus() {
 		hasPendingUploads && (sync.canRetry || sync.failedAttempts >= 3);
 	const shouldShowManualSyncButton =
 		sync.isSyncing || shouldEnableManualRetry;
+	const hasIncompletePauseTransition =
+		user !== null &&
+		(sync.lastError === 'account-sync-pause-incomplete' ||
+			checkAccountSyncResetPrepared(user.id));
+	const pauseError = hasIncompletePauseTransition
+		? getAccountClientErrorMessage('account-sync-pause-incomplete')
+		: rebuildError;
 
 	const handleManualSyncPress = useCallback(() => {
 		vibrate();
@@ -109,6 +126,85 @@ export default memo<IProps>(function AccountSyncStatus() {
 	const handleDetailToggle = useCallback(() => {
 		setIsDetailOpen((value) => !value);
 	}, []);
+
+	const handleRebuild = useCallback(() => {
+		if (isRebuilding) {
+			return;
+		}
+		vibrate();
+		setIsRebuilding(true);
+		setRebuildError(null);
+		void rebuildAccountSyncCloudFromLocal()
+			.then((didRebuild) => {
+				if (!didRebuild) {
+					throw new Error('sync-rebuild-failed');
+				}
+				setIsRebuildConfirmOpen(false);
+			})
+			.catch((error: unknown) => {
+				setRebuildError(
+					getAccountClientErrorMessage(
+						error instanceof Error
+							? error.message
+							: 'sync-rebuild-failed',
+						'恢复云同步失败，请稍后重试'
+					)
+				);
+			})
+			.finally(() => {
+				setIsRebuilding(false);
+			});
+	}, [isRebuilding, vibrate]);
+
+	const handleRebuildCancel = useCallback(() => {
+		setIsRebuildConfirmOpen(false);
+	}, []);
+
+	const handleRebuildOpenChange = useCallback((isOpen: boolean) => {
+		setIsRebuildConfirmOpen(isOpen);
+		if (isOpen) {
+			setRebuildError(null);
+		}
+	}, []);
+
+	if (user?.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+		return (
+			<div className="space-y-3 rounded-medium border border-warning/40 bg-warning/5 p-3 text-small">
+				<div className="flex items-center gap-2 text-warning-700 dark:text-warning">
+					<FontAwesomeIcon icon={faCloudArrowUp} className="w-4" />
+					<span className="font-medium">云同步已暂停</span>
+				</div>
+				<p className="leading-5 text-foreground-500">
+					云端当前没有数据，本设备的数据仅保存在本地。
+				</p>
+				<AccountConfirmButton
+					buttonLabel={
+						isRebuilding
+							? '正在恢复云同步'
+							: '用本设备数据恢复云同步'
+					}
+					color="warning"
+					confirmColor="warning"
+					confirmLabel="确认恢复"
+					icon={faCloudArrowUp}
+					isDisabled={isRebuilding || hasIncompletePauseTransition}
+					isLoading={isRebuilding}
+					isOpen={isRebuildConfirmOpen}
+					onCancel={handleRebuildCancel}
+					onConfirm={handleRebuild}
+					onOpenChange={handleRebuildOpenChange}
+				/>
+				{pauseError !== null && (
+					<p
+						className="text-danger-600 dark:text-danger"
+						role="alert"
+					>
+						{pauseError}
+					</p>
+				)}
+			</div>
+		);
+	}
 
 	return (
 		<div className="space-y-2 text-small text-foreground-600">

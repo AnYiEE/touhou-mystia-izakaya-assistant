@@ -12,6 +12,7 @@ import {
 import { parseSyncStatePutBody } from '@/lib/account/sync/validation';
 import { getAccountSyncCapacityConfiguration } from '@/lib/account/server/syncCapacity';
 import { putSyncStateChanges } from '@/lib/account/server/syncState';
+import { ACCOUNT_SYNC_STATUS_MAP } from '@/lib/account/shared/constants';
 import { type ISyncStatePingBody } from '@/lib/account/sync';
 import {
 	createNoStoreErrorResponse,
@@ -89,9 +90,25 @@ export async function POST(request: NextRequest) {
 	) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
+	if (auth.data.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+		return createNoStoreErrorResponse('sync-paused', 409, {
+			state_epoch: auth.data.user.state_epoch,
+			sync_generation: auth.data.user.sync_generation,
+			sync_status: auth.data.user.sync_status,
+		});
+	}
 	if (parsedBody.state_epoch !== auth.data.user.state_epoch) {
 		return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
 			state_epoch: auth.data.user.state_epoch,
+			sync_generation: auth.data.user.sync_generation,
+			sync_status: auth.data.user.sync_status,
+		});
+	}
+	if (parsedBody.sync_generation !== auth.data.user.sync_generation) {
+		return createNoStoreErrorResponse('sync-generation-mismatch', 409, {
+			state_epoch: auth.data.user.state_epoch,
+			sync_generation: auth.data.user.sync_generation,
+			sync_status: auth.data.user.sync_status,
 		});
 	}
 
@@ -107,6 +124,22 @@ export async function POST(request: NextRequest) {
 	if (writeResult.status === 'state-epoch-mismatch') {
 		return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
 			state_epoch: writeResult.state_epoch,
+			sync_generation: writeResult.sync_generation,
+			sync_status: writeResult.sync_status,
+		});
+	}
+	if (writeResult.status === 'sync-paused') {
+		return createNoStoreErrorResponse('sync-paused', 409, {
+			state_epoch: writeResult.state_epoch,
+			sync_generation: writeResult.sync_generation,
+			sync_status: writeResult.sync_status,
+		});
+	}
+	if (writeResult.status === 'sync-generation-mismatch') {
+		return createNoStoreErrorResponse('sync-generation-mismatch', 409, {
+			state_epoch: writeResult.state_epoch,
+			sync_generation: writeResult.sync_generation,
+			sync_status: writeResult.sync_status,
 		});
 	}
 	if (writeResult.status === 'corrupt-user-state') {
@@ -116,5 +149,7 @@ export async function POST(request: NextRequest) {
 	return createNoStoreJsonResponse({
 		results: writeResult.results,
 		state_epoch: auth.data.user.state_epoch,
+		sync_generation: auth.data.user.sync_generation,
+		sync_status: auth.data.user.sync_status,
 	});
 }

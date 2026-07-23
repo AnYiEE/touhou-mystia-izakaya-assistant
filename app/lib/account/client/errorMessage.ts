@@ -2,6 +2,7 @@ import { PASSWORD_RULE_DESCRIPTION } from '@/lib/account/shared/constants';
 
 const ACCOUNT_CLIENT_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'account-disabled-offline': '离线包不支持账号功能',
+	'account-sync-pause-incomplete': '云端数据已清空，请刷新页面后再恢复云同步',
 	'account-sync-reset-incomplete': '本地同步重置尚未完成，系统会自动重试',
 	'backup-code-already-imported': '这个旧备份码已被导入',
 	'backup-code-lock-lost': '旧备份码正在被处理，请稍后重试',
@@ -51,6 +52,10 @@ const ACCOUNT_CLIENT_ERROR_MESSAGE_MAP: Record<string, string> = {
 		'当前版本无法处理部分云同步状态，请刷新页面或更新应用',
 	'sync-conflict': '账号数据存在冲突，请先处理冲突后重试',
 	'sync-failed': '同步失败，请刷新页面重试',
+	'sync-generation-mismatch': '云同步状态刚刚变化，请刷新后重试',
+	'sync-paused': '云同步已暂停，请先用本设备数据恢复云同步',
+	'sync-rebuild-conflict': '其他设备已更新云端，正在重新协调本地数据',
+	'sync-rebuild-failed': '恢复云同步失败，请稍后重试',
 	'sync-refresh-failed': '刷新同步状态失败，请刷新页面重试',
 	'sync-request-too-large':
 		'单次同步请求过大，请缩减对应类别的同步数据后重试',

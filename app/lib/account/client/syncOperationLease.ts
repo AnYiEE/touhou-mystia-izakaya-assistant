@@ -9,10 +9,16 @@ import {
 	removeAccountStorage,
 	writeAccountStorage,
 } from './storage';
+import {
+	ACCOUNT_SYNC_OPERATION_KIND_MAP,
+	type TAccountSyncOperationKind,
+} from '@/lib/account/sync';
 import { accountStore as store } from '@/stores';
 import { withCrossTabLock } from '@/utilities/crossTabLock';
 
-type TAccountSyncOperationKind = 'delete-data' | 'import-backup';
+const ACCOUNT_SYNC_OPERATION_KIND_SET = new Set<TAccountSyncOperationKind>(
+	Object.values(ACCOUNT_SYNC_OPERATION_KIND_MAP)
+);
 
 interface IAccountSyncOperationLease {
 	expiresAt: number;
@@ -62,8 +68,9 @@ function checkOperationLease(
 		value !== null &&
 		typeof value === 'object' &&
 		!Array.isArray(value) &&
-		((value as IAccountSyncOperationLease).kind === 'delete-data' ||
-			(value as IAccountSyncOperationLease).kind === 'import-backup') &&
+		ACCOUNT_SYNC_OPERATION_KIND_SET.has(
+			(value as IAccountSyncOperationLease).kind
+		) &&
 		typeof (value as IAccountSyncOperationLease).operationId === 'string' &&
 		(value as IAccountSyncOperationLease).operationId !== '' &&
 		(value as IAccountSyncOperationLease).operationId.length <=

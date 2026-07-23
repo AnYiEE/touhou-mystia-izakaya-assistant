@@ -11,6 +11,10 @@ import {
 	writeAccountJsonStorage,
 } from './storage';
 import {
+	ACCOUNT_SYNC_STATUS_MAP,
+	checkAccountSyncStatus,
+} from '@/lib/account/shared/constants';
+import {
 	type IAccountSyncMeta,
 	type ISyncNamespaceSerializer,
 	type ISyncStateRecord,
@@ -160,6 +164,12 @@ export function readAccountSyncMeta(userId: string) {
 	const stateEpoch = checkNonNegativeSafeInteger(meta.state_epoch)
 		? meta.state_epoch
 		: 0;
+	const syncGeneration = checkNonNegativeSafeInteger(meta.sync_generation)
+		? meta.sync_generation
+		: 0;
+	const syncStatus = checkAccountSyncStatus(meta.sync_status)
+		? meta.sync_status
+		: ACCOUNT_SYNC_STATUS_MAP.active;
 	const clearedStateEpoch = checkStoredClearedStateEpoch(
 		meta.clearedStateEpoch
 	)
@@ -175,6 +185,8 @@ export function readAccountSyncMeta(userId: string) {
 			checkStoredSyncRevision
 		),
 		state_epoch: stateEpoch,
+		sync_generation: syncGeneration,
+		sync_status: syncStatus,
 	};
 	if (clearedStateEpoch !== undefined) {
 		sanitizedMeta.clearedStateEpoch = clearedStateEpoch;
@@ -236,6 +248,8 @@ export function applyRemoteAccountRecords({
 	records,
 	replaceMeta = true,
 	stateEpoch,
+	syncGeneration,
+	syncStatus,
 	userId,
 }: {
 	generationToken: string | null;
@@ -243,6 +257,8 @@ export function applyRemoteAccountRecords({
 	records: ISyncStateRecord[];
 	replaceMeta?: boolean;
 	stateEpoch: number;
+	syncGeneration: number;
+	syncStatus: IAccountSyncMeta['sync_status'];
 	userId: string;
 }) {
 	if (!checkNonNegativeSafeInteger(stateEpoch)) {
@@ -273,11 +289,15 @@ export function applyRemoteAccountRecords({
 					lastAppliedRemoteHash: { ...previousLastAppliedRemoteHash },
 					revisions: { ...previousRevisions },
 					state_epoch: stateEpoch,
+					sync_generation: syncGeneration,
+					sync_status: syncStatus,
 				}
 			: {
 					lastAppliedRemoteHash: {},
 					revisions: {},
 					state_epoch: stateEpoch,
+					sync_generation: syncGeneration,
+					sync_status: syncStatus,
 				};
 
 	if (records.length > 0) {

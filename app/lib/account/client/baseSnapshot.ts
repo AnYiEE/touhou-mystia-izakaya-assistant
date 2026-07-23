@@ -55,11 +55,12 @@ function checkBaseSnapshotContainer(
 	);
 }
 
-export function readAccountSyncBaseSnapshot(
+function readAccountSyncBaseSnapshotContainer(
 	userId: string,
 	namespace: TSyncNamespace,
 	expectedRevision: number | undefined,
-	serializer: Pick<ISyncNamespaceSerializer<unknown>, 'migrate' | 'validate'>
+	serializer: Pick<ISyncNamespaceSerializer<unknown>, 'migrate' | 'validate'>,
+	requireCurrentResetGeneration: boolean
 ) {
 	const key = createAccountSyncBaseSnapshotKey(userId, namespace);
 	const compressed = readOptionalLocalCache(key);
@@ -91,8 +92,9 @@ export function readAccountSyncBaseSnapshot(
 		return null;
 	}
 	if (
+		requireCurrentResetGeneration &&
 		(parsed.resetGeneration ?? null) !==
-		getAccountSyncResetGenerationId(userId)
+			getAccountSyncResetGenerationId(userId)
 	) {
 		return null;
 	}
@@ -115,6 +117,36 @@ export function readAccountSyncBaseSnapshot(
 	} catch {
 		return null;
 	}
+}
+
+export function readAccountSyncBaseSnapshot(
+	userId: string,
+	namespace: TSyncNamespace,
+	expectedRevision: number | undefined,
+	serializer: Pick<ISyncNamespaceSerializer<unknown>, 'migrate' | 'validate'>
+) {
+	return readAccountSyncBaseSnapshotContainer(
+		userId,
+		namespace,
+		expectedRevision,
+		serializer,
+		true
+	);
+}
+
+export function readRetainedAccountSyncBaseSnapshot(
+	userId: string,
+	namespace: TSyncNamespace,
+	expectedRevision: number | undefined,
+	serializer: Pick<ISyncNamespaceSerializer<unknown>, 'migrate' | 'validate'>
+) {
+	return readAccountSyncBaseSnapshotContainer(
+		userId,
+		namespace,
+		expectedRevision,
+		serializer,
+		false
+	);
 }
 
 export function writeAccountSyncBaseSnapshot({

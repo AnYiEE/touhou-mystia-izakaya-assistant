@@ -12,6 +12,7 @@ interface IProps extends Pick<
 	'className' | 'isDisabled' | 'onPress' | 'onPressStart'
 > {
 	label: ReactNodeWithoutBoolean;
+	syncStatusLabel: string | null;
 }
 
 export default memo<IProps>(function MobileAccountActionButton({
@@ -20,6 +21,7 @@ export default memo<IProps>(function MobileAccountActionButton({
 	label,
 	onPress,
 	onPressStart,
+	syncStatusLabel,
 }) {
 	const pressProps = {
 		...(onPress === undefined ? {} : { onPress }),
@@ -49,6 +51,11 @@ export default memo<IProps>(function MobileAccountActionButton({
 					数据同步和账号安全
 				</span>
 			</span>
+			{syncStatusLabel !== null && (
+				<span className="shrink-0 rounded-full bg-warning/15 px-2 py-1 text-tiny leading-none text-warning-700 dark:text-warning">
+					{syncStatusLabel}
+				</span>
+			)}
 			<FontAwesomeIcon
 				icon={faChevronRight}
 				className="w-2.5 shrink-0 text-default-400 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"

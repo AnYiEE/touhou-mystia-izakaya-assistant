@@ -17,6 +17,7 @@ import {
 	type IAuthRegisterBody,
 	type IWebauthnCredentialListData,
 	type TAccountMeResponse,
+	type TAccountSyncStatus,
 } from '@/lib/account/shared/types';
 import {
 	type ISyncImportBackupCodeResponse,
@@ -24,6 +25,8 @@ import {
 	type ISyncStatePingBody,
 	type ISyncStatePutBody,
 	type ISyncStatePutResponse,
+	type ISyncStateRebuildBody,
+	type ISyncStateRebuildResponse,
 } from '@/lib/account/sync';
 import {
 	ServiceApiError,
@@ -383,10 +386,22 @@ export function exportAccountData() {
 	return fetchAccountApiResult<IAccountExportData>('/api/v1/account/export');
 }
 
-export function deleteAccountData(csrfToken: string, stateEpoch: number) {
-	return fetchAccountApiResult<{ state_epoch: number }>(
+export function deleteAccountData(
+	csrfToken: string,
+	stateEpoch: number,
+	syncGeneration: number
+) {
+	return fetchAccountApiResult<{
+		state_epoch: number;
+		sync_generation: number;
+		sync_status: TAccountSyncStatus;
+	}>(
 		'/api/v1/account/delete-data',
-		createJsonRequestInit('DELETE', { state_epoch: stateEpoch }, csrfToken)
+		createJsonRequestInit(
+			'DELETE',
+			{ state_epoch: stateEpoch, sync_generation: syncGeneration },
+			csrfToken
+		)
 	);
 }
 
@@ -450,6 +465,27 @@ export async function putSyncState(body: ISyncStatePutBody, csrfToken: string) {
 					'X-CSRF-Token': csrfToken,
 				},
 				method: 'PUT',
+			}
+		);
+	} catch (error) {
+		mapServiceApiError(error);
+	}
+}
+
+export async function rebuildSyncState(
+	body: ISyncStateRebuildBody,
+	csrfToken: string
+) {
+	try {
+		return await fetchServiceApi<ISyncStateRebuildResponse>(
+			'/api/v1/sync/rebuild',
+			{
+				body: JSON.stringify(body),
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRF-Token': csrfToken,
+				},
+				method: 'POST',
 			}
 		);
 	} catch (error) {

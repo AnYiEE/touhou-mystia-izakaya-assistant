@@ -23,6 +23,7 @@ import {
 import { scheduleAccountSyncFlush } from './syncClient';
 import { refreshAccountSyncQueueRuntime } from './syncRuntimeState';
 import { STORAGE_KEY, addThemeChangeListener } from '@/design/hooks';
+import { ACCOUNT_SYNC_STATUS_MAP } from '@/lib/account/shared/constants';
 import { SYNC_NAMESPACE_MAP, type TSyncNamespace } from '@/lib/account/sync';
 import {
 	accountStore,
@@ -133,6 +134,32 @@ async function reconcileNamespaceLocalSnapshot(
 	if (checkAccountSyncPaused()) {
 		clearAccountSyncLocalSnapshotReconcileRetry(userId, namespace);
 		recordPausedAccountSyncDirtyNamespace(namespace);
+		return;
+	}
+
+	if (context.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+		const serializer = getAccountSyncSerializer(namespace);
+		const entry = markAccountSyncDirty({
+			baseRevision: context.meta.revisions[namespace] ?? 0,
+			data: serializer.getLocalSnapshot(),
+			generationToken,
+			namespace,
+			paused: 'cloud-paused',
+			replacePausedEntry: true,
+			userId,
+		});
+		if (entry === null) {
+			scheduleAccountSyncLocalSnapshotReconcileRetry(
+				generation,
+				generationToken,
+				userId,
+				namespace,
+				'contention'
+			);
+			return;
+		}
+		clearAccountSyncLocalSnapshotReconcileRetry(userId, namespace);
+		refreshAccountSyncQueueRuntime(userId);
 		return;
 	}
 

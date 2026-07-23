@@ -180,6 +180,8 @@ export async function listAdminSsoTicketRecords(
 					nickname: ticket.user_nickname,
 					state_epoch: ticket.user_state_epoch,
 					status: ticket.user_status,
+					sync_generation: ticket.user_sync_generation,
+					sync_status: ticket.user_sync_status,
 					updated_at: ticket.ticket_created_at,
 					username: ticket.username,
 					username_normalized: ticket.username_normalized,

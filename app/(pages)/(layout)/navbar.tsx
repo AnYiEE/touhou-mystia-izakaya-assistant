@@ -63,6 +63,7 @@ import Sprite from '@/components/sprite';
 import ThemeSwitcher from '@/components/themeSwitcher';
 
 import { siteConfig } from '@/configs';
+import { getAccountSyncPauseIndicator } from '@/lib/account/client/accountSyncPauseIndicator';
 import {
 	MOBILE_NAV_MENU_EXIT_DELAY_MS,
 	type TOverlayId,
@@ -230,6 +231,8 @@ export default function Navbar() {
 
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const accountUser = accountStore.shared.user.use();
+	const { isPaused: isAccountSyncPaused, label: accountSyncPauseLabel } =
+		getAccountSyncPauseIndicator(accountUser?.sync_status);
 
 	const shouldShowAccountAction =
 		isAccountFeatureClientEnabled && accountBootstrapStatus !== 'disabled';
@@ -597,6 +600,7 @@ export default function Navbar() {
 			<MobileAccountActionButton
 				isDisabled={accountBootstrapStatus === 'unknown'}
 				label={accountActionLabel}
+				syncStatusLabel={accountSyncPauseLabel}
 				onPress={() => {
 					handleAccountMenuClick(true);
 				}}
@@ -648,7 +652,19 @@ export default function Navbar() {
 			}}
 		>
 			<DropdownSection
-				title="账号"
+				title={
+					/* HeroUI intersects its collection title with the DOM title string. */
+					(
+						<span className="flex items-center gap-2">
+							<span>账号</span>
+							{accountSyncPauseLabel !== null && (
+								<span className="rounded-full bg-warning/15 px-1.5 py-0.5 text-[10px] font-normal leading-none text-warning-700 dark:text-warning">
+									{accountSyncPauseLabel}
+								</span>
+							)}
+						</span>
+					) as unknown as string
+				}
 				hideSelectedIcon
 				showDivider
 				classNames={ACCOUNT_ACTION_MENU_SECTION_CLASS_NAMES}
@@ -702,7 +718,15 @@ export default function Navbar() {
 						className="gap-1 text-base"
 					>
 						<FontAwesomeIcon icon={faUser} className="w-3.5" />
-						<span className="mr-1">账号</span>
+						<span className="relative mr-1">
+							账号
+							{isAccountSyncPaused && (
+								<span
+									aria-hidden="true"
+									className="absolute -right-2 top-0 h-2 w-2 rounded-full bg-warning"
+								/>
+							)}
+						</span>
 						<FontAwesomeIcon
 							icon={faChevronDown}
 							size="sm"

@@ -8,10 +8,12 @@ import {
 	AccountApiError,
 	fetchSyncState,
 	putSyncState,
+	rebuildSyncState,
 	sendSyncPing,
 } from './api';
 import {
 	readAccountSyncBaseSnapshot,
+	readRetainedAccountSyncBaseSnapshot,
 	removeAccountSyncBaseSnapshot,
 	writeAccountSyncBaseSnapshot,
 } from './baseSnapshot';
@@ -56,6 +58,7 @@ import {
 	readIsolatedDirtyQueueNamespaces,
 	recordAccountSyncDirtyQueueExternalMutation,
 	removeDirtyQueueEntryIfCurrent,
+	replaceDirtyQueueCollisionIfCurrent,
 	setDirtyQueueEntryError,
 	updatePausedConflictEntryIfCurrent,
 	writeDirtyQueueEntryIfCurrent,
@@ -77,6 +80,7 @@ import {
 	getAccountSyncSerializer,
 	readAccountSyncMeta,
 	withAccountSyncMetaTransitionLock,
+	withAccountSyncPaused,
 	withApplyingRemoteState,
 	writeAccountSyncMeta,
 } from './snapshot';
@@ -94,13 +98,16 @@ import {
 	checkAccountSyncAutoResolutionActive,
 	clearAccountSyncRuntimeConflicts,
 	endAccountSyncAutoResolution,
+	removeAccountSyncConflict,
 	removeAccountSyncRemoteConflictNotices,
 	replaceAccountSyncConflicts,
 	setAccountSyncFutureStateIsolated,
 	upsertAccountSyncConflict,
 } from './syncRuntimeState';
 import {
+	ACCOUNT_SYNC_OPERATION_KIND_MAP,
 	type IAccountSyncBroadcastMessage,
+	type IAccountSyncMeta,
 	type IDirtyQueueEntry,
 	type ISyncConflictItem,
 	type ISyncStateGetResponse,
@@ -114,6 +121,10 @@ import {
 	type TSyncStatePutResult,
 	checkSupportedSyncSchemaVersion,
 } from '@/lib/account/sync';
+import {
+	ACCOUNT_SYNC_STATUS_MAP,
+	checkAccountSyncStatus,
+} from '@/lib/account/shared/constants';
 import {
 	checkSnapshotEqual,
 	checkSyncMergeCanApplyAutomatically,
@@ -143,6 +154,11 @@ const REMOTE_CONFLICT_NOTICE_REASONS: ReadonlySet<
 const ACCOUNT_STATE_RESUME_REFRESH_DEDUPE_MS = 1000;
 const RESET_RECOVERY_ERROR_REPORT_ATTEMPTS = 3;
 const RESET_RECOVERY_MAX_RETRY_DELAY = 60 * 1000;
+const SYNC_AUTHORITY_ERROR_MESSAGES: string[] = [
+	'state-epoch-mismatch',
+	'sync-generation-mismatch',
+	'sync-paused',
+];
 const TERMINAL_SYNC_ERROR_PRECEDENCE = [
 	'sync-schema-update-required',
 	'sync-account-capacity-exceeded',
@@ -283,7 +299,13 @@ function validateRemoteSyncState(response: unknown): ISyncStateGetResponse {
 	if (!checkPlainObject(response)) {
 		throw new TypeError('invalid-sync-state');
 	}
-	const { records, state_epoch: stateEpoch } = response;
+
+	const {
+		records,
+		state_epoch: stateEpoch,
+		sync_generation: syncGeneration,
+		sync_status: syncStatus,
+	} = response;
 
 	if (!Array.isArray(records)) {
 		throw new TypeError('invalid-sync-state');
@@ -292,10 +314,18 @@ function validateRemoteSyncState(response: unknown): ISyncStateGetResponse {
 	if (!checkNonNegativeSafeInteger(stateEpoch)) {
 		throw new TypeError('invalid-sync-state-epoch');
 	}
+	if (
+		!checkNonNegativeSafeInteger(syncGeneration) ||
+		!checkAccountSyncStatus(syncStatus)
+	) {
+		throw new TypeError('invalid-sync-generation');
+	}
 
 	return {
 		records: records.map(validateRemoteSyncRecord),
 		state_epoch: stateEpoch,
+		sync_generation: syncGeneration,
+		sync_status: syncStatus,
 	};
 }
 
@@ -402,7 +432,13 @@ function validateSyncPutResponse(response: unknown): ISyncStatePutResponse {
 	if (!checkPlainObject(response)) {
 		throw new TypeError('invalid-sync-result');
 	}
-	const { results, state_epoch: stateEpoch } = response;
+
+	const {
+		results,
+		state_epoch: stateEpoch,
+		sync_generation: syncGeneration,
+		sync_status: syncStatus,
+	} = response;
 
 	if (!Array.isArray(results)) {
 		throw new TypeError('invalid-sync-result');
@@ -411,10 +447,18 @@ function validateSyncPutResponse(response: unknown): ISyncStatePutResponse {
 	if (!checkNonNegativeSafeInteger(stateEpoch)) {
 		throw new TypeError('invalid-sync-state-epoch');
 	}
+	if (
+		!checkNonNegativeSafeInteger(syncGeneration) ||
+		!checkAccountSyncStatus(syncStatus)
+	) {
+		throw new TypeError('invalid-sync-generation');
+	}
 
 	return {
 		results: results.map(validateSyncPutResult),
 		state_epoch: stateEpoch,
+		sync_generation: syncGeneration,
+		sync_status: syncStatus,
 	};
 }
 
@@ -473,6 +517,41 @@ function setCurrentAccountUserStateEpoch(userId: string, stateEpoch: number) {
 
 	if (user.state_epoch !== stateEpoch) {
 		accountStore.shared.user.set({ ...user, state_epoch: stateEpoch });
+	}
+
+	return true;
+}
+
+interface IPauseAccountSyncForEmptyCloudOptions {
+	stateEpoch: number;
+	syncGeneration: number;
+	userId: string;
+}
+
+function setCurrentAccountUserSyncState(
+	userId: string,
+	stateEpoch: number,
+	syncGeneration: number,
+	syncStatus: IAccountSyncMeta['sync_status']
+) {
+	if (!setCurrentAccountUserStateEpoch(userId, stateEpoch)) {
+		return false;
+	}
+
+	const user = accountStore.shared.user.get();
+	if (user?.id !== userId) {
+		return false;
+	}
+
+	if (
+		user.sync_generation !== syncGeneration ||
+		user.sync_status !== syncStatus
+	) {
+		accountStore.shared.user.set({
+			...user,
+			sync_generation: syncGeneration,
+			sync_status: syncStatus,
+		});
 	}
 
 	return true;
@@ -808,15 +887,17 @@ function getRecordMap(records: ISyncStateRecord[]) {
 }
 
 function postRemoteAppliedBroadcast({
+	force = false,
 	records,
 	stateEpoch,
 	userId,
 }: {
+	force?: boolean;
 	records: ISyncStateRecord[];
 	stateEpoch: number;
 	userId: string;
 }) {
-	if (records.length === 0) {
+	if (!force && records.length === 0) {
 		return;
 	}
 
@@ -1442,6 +1523,8 @@ function applyRemoteStatePreservingDirtyUnlocked({
 	records,
 	replaceMeta = true,
 	stateEpoch,
+	syncGeneration,
+	syncStatus,
 	targetNamespaces,
 	userId,
 }: {
@@ -1450,6 +1533,8 @@ function applyRemoteStatePreservingDirtyUnlocked({
 	records: ISyncStateRecord[];
 	replaceMeta?: boolean;
 	stateEpoch: number;
+	syncGeneration: number;
+	syncStatus: IAccountSyncMeta['sync_status'];
 	targetNamespaces?: TSyncNamespace[];
 	userId: string;
 }) {
@@ -1511,12 +1596,36 @@ function applyRemoteStatePreservingDirtyUnlocked({
 				? null
 				: serializer.migrate(record.data, record.schema_version);
 		const local = serializer.migrate(entry.data, entry.schema_version);
-		const storedBase = readAccountSyncBaseSnapshot(
-			userId,
-			entry.namespace,
-			entry.baseRevision,
-			serializer
-		);
+		const cloudSnapshot = cloud ?? serializer.getDefaultSnapshot();
+		if (checkSnapshotEqual(local, cloudSnapshot)) {
+			if (
+				!removeDirtyQueueEntryIfCurrent({
+					expectedEntry: entry,
+					generationToken,
+					userId,
+				})
+			) {
+				preserveNamespaceSet.add(entry.namespace);
+				return;
+			}
+			removeAccountSyncConflict(userId, entry.namespace);
+			return;
+		}
+
+		const storedBase =
+			entry.paused === 'cloud-paused'
+				? readRetainedAccountSyncBaseSnapshot(
+						userId,
+						entry.namespace,
+						entry.baseRevision,
+						serializer
+					)
+				: readAccountSyncBaseSnapshot(
+						userId,
+						entry.namespace,
+						entry.baseRevision,
+						serializer
+					);
 		const base = storedBase?.data ?? null;
 		const mergeResult = serializer.merge({
 			base,
@@ -1586,6 +1695,8 @@ function applyRemoteStatePreservingDirtyUnlocked({
 		records: recordsToApply,
 		replaceMeta,
 		stateEpoch,
+		syncGeneration,
+		syncStatus,
 		userId,
 	});
 	recordsToApply.forEach((record) => {
@@ -1625,6 +1736,8 @@ async function applyRemoteStatePreservingDirty(options: {
 	records: ISyncStateRecord[];
 	replaceMeta?: boolean;
 	stateEpoch: number;
+	syncGeneration: number;
+	syncStatus: IAccountSyncMeta['sync_status'];
 	targetNamespaces?: TSyncNamespace[];
 	userId: string;
 }) {
@@ -1774,6 +1887,191 @@ export function restoreAccountSyncRuntimeState(
 		accountStore.shared.sync.lastResult.set('failed');
 	}
 	updatePendingCount(entries);
+}
+
+async function pauseAccountSyncForEmptyCloudUnlocked({
+	stateEpoch,
+	syncGeneration,
+	userId,
+}: IPauseAccountSyncForEmptyCloudOptions) {
+	const user = accountStore.shared.user.get();
+	if (
+		user?.id !== userId ||
+		!checkNonNegativeSafeInteger(stateEpoch) ||
+		!checkNonNegativeSafeInteger(syncGeneration)
+	) {
+		return false;
+	}
+
+	invalidateAccountSyncClientRuns(userId);
+
+	const resetMarker = await withAccountSyncResetGenerationLock(userId, () => {
+		const current = readAccountSyncResetGeneration(userId);
+		if (
+			current.status === 'current' &&
+			current.marker.state_epoch === stateEpoch &&
+			(current.marker.phase === 'prepared' ||
+				current.marker.phase === 'committed')
+		) {
+			return current.marker;
+		}
+		return prepareAccountSyncResetGeneration({
+			operationId: createAccountClientId(),
+			stateEpoch,
+			userId,
+		});
+	});
+	if (resetMarker === null) {
+		return false;
+	}
+
+	const resetGeneration = readAccountSyncResetGeneration(userId);
+	if (
+		resetGeneration.status !== 'current' ||
+		resetGeneration.marker.operationId !== resetMarker.operationId ||
+		resetGeneration.marker.state_epoch !== stateEpoch
+	) {
+		return false;
+	}
+
+	const generationToken = resetGeneration.raw;
+	const resetOperationId = resetMarker.operationId;
+	if (
+		!setCurrentAccountUserSyncState(
+			userId,
+			stateEpoch,
+			syncGeneration,
+			ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
+		)
+	) {
+		return false;
+	}
+
+	const currentMeta = readAccountSyncMeta(userId);
+	writeAccountSyncMeta(
+		userId,
+		{
+			clearedStateEpoch: stateEpoch,
+			lastAppliedRemoteHash: currentMeta?.lastAppliedRemoteHash ?? {},
+			revisions: currentMeta?.revisions ?? {},
+			state_epoch: stateEpoch,
+			sync_generation: syncGeneration,
+			sync_status: ACCOUNT_SYNC_STATUS_MAP.pausedEmpty,
+		},
+		{ generationToken, resetOperationId }
+	);
+	for (const namespace of Object.values(SYNC_NAMESPACE_MAP)) {
+		const transitionResult = await withAccountSyncNamespaceTransitionLock(
+			userId,
+			namespace,
+			() => {
+				const currentUser = accountStore.shared.user.get();
+				if (
+					currentUser?.id !== userId ||
+					currentUser.sync_generation !== syncGeneration ||
+					currentUser.sync_status !==
+						ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
+				) {
+					return false;
+				}
+				const journal = readAccountSyncConflictResolutionJournal(
+					userId,
+					namespace
+				);
+				if (
+					journal?.status === 'current' &&
+					!removeAccountSyncConflictResolutionJournal({
+						generationToken,
+						namespace,
+						operationId: journal.journal.operationId,
+						resetOperationId,
+						userId,
+					})
+				) {
+					return false;
+				}
+				const serializer = getAccountSyncSerializer(namespace);
+				const currentMeta = readAccountSyncMeta(userId);
+				const data = serializer.getLocalSnapshot();
+				const baseRevision = currentMeta?.revisions[namespace] ?? 0;
+				const currentEntry = readDirtyQueueEntry(userId, namespace);
+				if (
+					currentEntry?.paused === 'cloud-paused' &&
+					checkSnapshotHashMatches(data, currentEntry.snapshotHash)
+				) {
+					return true;
+				}
+				const entry = markAccountSyncDirty({
+					baseRevision,
+					data,
+					generationToken,
+					namespace,
+					paused: 'cloud-paused',
+					replacePausedEntry: true,
+					resetOperationId,
+					userId,
+				});
+				if (entry !== null) {
+					return true;
+				}
+				const collision = readDirtyQueueCollisionState(
+					userId,
+					namespace
+				);
+				if (collision === null) {
+					return false;
+				}
+				return replaceDirtyQueueCollisionIfCurrent({
+					generationToken,
+					nextEntry: {
+						attempts: 0,
+						baseRevision,
+						clientMutationId: createAccountClientId(),
+						conflict: null,
+						data,
+						dirtyAt: Date.now(),
+						lastError: null,
+						namespace,
+						paused: 'cloud-paused',
+						schema_version: SYNC_SCHEMA_VERSION_MAP[namespace],
+						snapshotHash: createSnapshotHash(data),
+					},
+					resetOperationId,
+					token: collision.token,
+					userId,
+				});
+			}
+		);
+		if (transitionResult !== true) {
+			return false;
+		}
+	}
+
+	if (resetGeneration.marker.phase === 'prepared') {
+		const committedGenerationToken =
+			await withAccountSyncResetGenerationLock(userId, () =>
+				commitAccountSyncResetGeneration({
+					expectedRaw: generationToken,
+					marker: resetGeneration.marker,
+				})
+			);
+		if (typeof committedGenerationToken !== 'string') {
+			return false;
+		}
+	}
+
+	clearAccountSyncRuntimeConflicts();
+	restoreAccountSyncRuntimeState(userId);
+
+	return true;
+}
+
+export function pauseAccountSyncForEmptyCloud(
+	options: IPauseAccountSyncForEmptyCloudOptions
+) {
+	return withAccountSyncPaused(() =>
+		pauseAccountSyncForEmptyCloudUnlocked(options)
+	);
 }
 
 async function resetAccountSyncCloudStateAfterDeleteUnlocked({
@@ -2009,6 +2307,9 @@ async function resetAccountSyncCloudStateAfterDeleteUnlocked({
 			lastAppliedRemoteHash: {},
 			revisions: {},
 			state_epoch: stateEpoch,
+			sync_generation:
+				accountStore.shared.user.get()?.sync_generation ?? 0,
+			sync_status: ACCOUNT_SYNC_STATUS_MAP.pausedEmpty,
 		},
 		{ generationToken, resetOperationId, suppressRuntime: true }
 	);
@@ -2145,6 +2446,9 @@ function pauseDirtyEntriesAfterRemoteClear({
 			lastAppliedRemoteHash: {},
 			revisions: {},
 			state_epoch: stateEpoch,
+			sync_generation:
+				accountStore.shared.user.get()?.sync_generation ?? 0,
+			sync_status: ACCOUNT_SYNC_STATUS_MAP.pausedEmpty,
 		},
 		{ generationToken }
 	);
@@ -2205,10 +2509,15 @@ async function handleSuccessfulUpload({
 				return false;
 			}
 
-			const meta = readAccountSyncMeta(userId) ?? {
+			const meta: IAccountSyncMeta = readAccountSyncMeta(userId) ?? {
 				lastAppliedRemoteHash: {},
 				revisions: {},
 				state_epoch: stateEpoch,
+				sync_generation:
+					accountStore.shared.user.get()?.sync_generation ?? 0,
+				sync_status:
+					accountStore.shared.user.get()?.sync_status ??
+					ACCOUNT_SYNC_STATUS_MAP.active,
 			};
 			meta.lastAppliedRemoteHash[entry.namespace] = createSnapshotHash(
 				entry.data
@@ -2367,6 +2676,8 @@ async function requestSyncEntryBatch({
 					schema_version: entry.schema_version,
 				})),
 				state_epoch: stateEpoch,
+				sync_generation:
+					accountStore.shared.user.get()?.sync_generation ?? 0,
 			},
 			csrfToken
 		)
@@ -2399,6 +2710,11 @@ async function requestSyncEntriesWithRequestLimitSplit({
 					},
 				],
 				state_epoch: stateEpoch,
+				sync_generation:
+					accountStore.shared.user.get()?.sync_generation ?? 0,
+				sync_status:
+					accountStore.shared.user.get()?.sync_status ??
+					ACCOUNT_SYNC_STATUS_MAP.active,
 			};
 		}
 	}
@@ -2431,7 +2747,14 @@ async function requestSyncEntriesWithRequestLimitSplit({
 		}
 	}
 
-	return { results, state_epoch: responseStateEpoch };
+	return {
+		results,
+		state_epoch: responseStateEpoch,
+		sync_generation: accountStore.shared.user.get()?.sync_generation ?? 0,
+		sync_status:
+			accountStore.shared.user.get()?.sync_status ??
+			ACCOUNT_SYNC_STATUS_MAP.active,
+	};
 }
 
 async function requestSyncEntriesWithCapacityRetry({
@@ -2521,6 +2844,8 @@ async function requestSyncEntriesWithCapacityRetry({
 			return result;
 		}),
 		state_epoch: responseStateEpoch,
+		sync_generation: initialResponse.sync_generation,
+		sync_status: initialResponse.sync_status,
 	} satisfies ISyncStatePutResponse;
 }
 
@@ -2539,6 +2864,13 @@ async function handleStateEpochMismatch(
 		!checkRemoteStateFresh(userId, remoteState.state_epoch)
 	) {
 		return false;
+	}
+	if (remoteState.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+		return pauseAccountSyncForEmptyCloud({
+			stateEpoch: remoteState.state_epoch,
+			syncGeneration: remoteState.sync_generation,
+			userId,
+		});
 	}
 	if (
 		checkRemoteStateCleared({
@@ -2584,6 +2916,8 @@ async function handleStateEpochMismatch(
 		generationToken,
 		records: remoteState.records,
 		stateEpoch: remoteState.state_epoch,
+		syncGeneration: remoteState.sync_generation,
+		syncStatus: remoteState.sync_status,
 		userId,
 	});
 	if (recordsToApply === null) {
@@ -2597,7 +2931,25 @@ async function handleStateEpochMismatch(
 		});
 	}
 
-	setCurrentAccountUserStateEpoch(userId, remoteState.state_epoch);
+	const latestMeta = readAccountSyncMeta(userId);
+	if (latestMeta !== null) {
+		writeAccountSyncMeta(
+			userId,
+			{
+				...latestMeta,
+				state_epoch: remoteState.state_epoch,
+				sync_generation: remoteState.sync_generation,
+				sync_status: remoteState.sync_status,
+			},
+			{ generationToken }
+		);
+	}
+	setCurrentAccountUserSyncState(
+		userId,
+		remoteState.state_epoch,
+		remoteState.sync_generation,
+		remoteState.sync_status
+	);
 
 	return true;
 }
@@ -2606,6 +2958,11 @@ export async function flushAccountSyncQueue() {
 	const generation = syncClientGeneration;
 	const context = getLoggedInAccountContext();
 	if (context === null) {
+		return true;
+	}
+	if (context.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+		clearSyncTimers();
+		updatePendingCount();
 		return true;
 	}
 	if (checkAccountSyncResetPrepared(context.user.id)) {
@@ -2848,9 +3205,11 @@ export async function flushAccountSyncQueue() {
 			if (!checkAfterFlushHandler([])) {
 				return false;
 			}
-			setCurrentAccountUserStateEpoch(
+			setCurrentAccountUserSyncState(
 				context.user.id,
-				response.state_epoch
+				response.state_epoch,
+				response.sync_generation,
+				response.sync_status
 			);
 
 			recordAccountSyncRefreshSuccess({
@@ -2910,7 +3269,7 @@ export async function flushAccountSyncQueue() {
 			}
 			if (
 				error instanceof Error &&
-				error.message === 'state-epoch-mismatch'
+				SYNC_AUTHORITY_ERROR_MESSAGES.includes(error.message)
 			) {
 				try {
 					const didRefresh = await handleStateEpochMismatch(
@@ -3213,6 +3572,21 @@ export async function takeOverLocalAccountData(
 	) {
 		return false;
 	}
+	if (remoteState.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+		return pauseAccountSyncForEmptyCloud({
+			stateEpoch: remoteState.state_epoch,
+			syncGeneration: remoteState.sync_generation,
+			userId: context.user.id,
+		});
+	}
+	const localSyncMeta = readAccountSyncMeta(context.user.id);
+	const wasCloudPaused =
+		context.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty ||
+		localSyncMeta?.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty ||
+		(localSyncMeta?.sync_generation ?? 0) < remoteState.sync_generation ||
+		readDirtyQueueEntries(context.user.id).some(
+			(entry) => entry.paused === 'cloud-paused'
+		);
 	const remoteResetGeneration = readAccountSyncResetGeneration(
 		context.user.id
 	);
@@ -3331,7 +3705,7 @@ export async function takeOverLocalAccountData(
 					dirtyEntry?.paused === 'conflict' && storedConflict !== null
 						? dirtyEntry
 						: null;
-				if (dirtyNamespaceSet.has(namespace)) {
+				if (dirtyNamespaceSet.has(namespace) && !wasCloudPaused) {
 					if (pausedDirtyEntry !== null && storedConflict !== null) {
 						const serializer = getAccountSyncSerializer(namespace);
 						const record = recordMap[namespace];
@@ -3376,8 +3750,53 @@ export async function takeOverLocalAccountData(
 								record.data,
 								record.schema_version
 							);
-				const storedBase =
-					dirtyEntry === null
+				const cloudSnapshot = cloud ?? serializer.getDefaultSnapshot();
+				if (checkSnapshotEqual(local, cloudSnapshot)) {
+					if (
+						dirtyEntry !== null &&
+						!removeDirtyQueueEntryIfCurrent({
+							expectedEntry: dirtyEntry,
+							generationToken,
+							userId: context.user.id,
+						})
+					) {
+						return false;
+					}
+					removeAccountSyncConflict(context.user.id, namespace);
+					if (record !== undefined) {
+						recordsToApply.push(record);
+					}
+					return true;
+				}
+				if (pausedDirtyEntry !== null && storedConflict !== null) {
+					const storedCloud = serializer.deserialize(
+						storedConflict.cloud
+					);
+					if (
+						storedConflict.revision === (record?.revision ?? 0) &&
+						checkSnapshotEqual(storedCloud, cloudSnapshot)
+					) {
+						const restoredConflict = restoreAccountSyncConflict(
+							storedConflict,
+							context.user.id
+						);
+						if (restoredConflict !== null) {
+							setAccountSyncConflict(restoredConflict);
+						}
+						return true;
+					}
+				}
+				const expectedBaseRevision =
+					dirtyEntry?.baseRevision ??
+					localSyncMeta?.revisions[namespace];
+				const storedBase = wasCloudPaused
+					? readRetainedAccountSyncBaseSnapshot(
+							context.user.id,
+							namespace,
+							expectedBaseRevision,
+							serializer
+						)
+					: dirtyEntry === null
 						? null
 						: readAccountSyncBaseSnapshot(
 								context.user.id,
@@ -3454,6 +3873,7 @@ export async function takeOverLocalAccountData(
 						data: mergeResult.data,
 						generationToken,
 						namespace,
+						replacePausedEntry: wasCloudPaused,
 						userId: context.user.id,
 					});
 					if (markedEntry?.paused !== null) {
@@ -3469,6 +3889,16 @@ export async function takeOverLocalAccountData(
 					return true;
 				}
 
+				if (
+					dirtyEntry?.paused === 'cloud-paused' &&
+					!removeDirtyQueueEntryIfCurrent({
+						expectedEntry: dirtyEntry,
+						generationToken,
+						userId: context.user.id,
+					})
+				) {
+					return false;
+				}
 				if (record !== undefined) {
 					recordsToApply.push(record);
 				}
@@ -3515,6 +3945,8 @@ export async function takeOverLocalAccountData(
 							records: [record],
 							replaceMeta: false,
 							stateEpoch: remoteState.state_epoch,
+							syncGeneration: remoteState.sync_generation,
+							syncStatus: remoteState.sync_status,
 							userId: context.user.id,
 						});
 					}
@@ -3540,6 +3972,8 @@ export async function takeOverLocalAccountData(
 					lastAppliedRemoteHash: {},
 					revisions: {},
 					state_epoch: remoteState.state_epoch,
+					sync_generation: remoteState.sync_generation,
+					sync_status: remoteState.sync_status,
 				};
 				for (const record of dirtyRemoteRecords) {
 					if (
@@ -3569,6 +4003,8 @@ export async function takeOverLocalAccountData(
 					});
 				}
 				meta.state_epoch = remoteState.state_epoch;
+				meta.sync_generation = remoteState.sync_generation;
+				meta.sync_status = remoteState.sync_status;
 				writeAccountSyncMeta(context.user.id, meta, {
 					generationToken,
 				});
@@ -3581,15 +4017,268 @@ export async function takeOverLocalAccountData(
 		}
 	}
 	postRemoteAppliedBroadcast({
+		force: wasCloudPaused,
 		records: appliedRecords,
 		stateEpoch: remoteState.state_epoch,
 		userId: context.user.id,
 	});
-	setCurrentAccountUserStateEpoch(context.user.id, remoteState.state_epoch);
+	setCurrentAccountUserSyncState(
+		context.user.id,
+		remoteState.state_epoch,
+		remoteState.sync_generation,
+		remoteState.sync_status
+	);
 	scheduleAccountSyncFlush();
 	recordAccountSyncRefreshSuccess({ userId: context.user.id });
 
 	return true;
+}
+
+interface IAccountSyncRebuildCapture {
+	dirtyEntryHash: string | null;
+	localSnapshotHash: string;
+}
+
+async function applySuccessfulAccountSyncRebuild({
+	captures,
+	remoteState,
+	userId,
+}: {
+	captures: Map<TSyncNamespace, IAccountSyncRebuildCapture>;
+	remoteState: ISyncStateGetResponse;
+	userId: string;
+}) {
+	const currentUser = accountStore.shared.user.get();
+	if (
+		remoteState.sync_status !== ACCOUNT_SYNC_STATUS_MAP.active ||
+		currentUser?.id !== userId ||
+		remoteState.state_epoch <= currentUser.state_epoch ||
+		remoteState.sync_generation <= currentUser.sync_generation
+	) {
+		return false;
+	}
+
+	const generationToken = captureAccountSyncResetGeneration(userId);
+	const recordMap = getRecordMap(remoteState.records);
+	const nextMeta: IAccountSyncMeta = {
+		lastAppliedRemoteHash: {},
+		revisions: {},
+		state_epoch: remoteState.state_epoch,
+		sync_generation: remoteState.sync_generation,
+		sync_status: remoteState.sync_status,
+	};
+
+	for (const namespace of Object.values(SYNC_NAMESPACE_MAP)) {
+		const capture = captures.get(namespace);
+		const record = recordMap[namespace];
+		if (capture === undefined || record?.revision !== 1) {
+			return false;
+		}
+		const didApply = await withAccountSyncNamespaceTransitionLock(
+			userId,
+			namespace,
+			() => {
+				if (!checkCurrentAccountUser(userId)) {
+					return false;
+				}
+				const serializer = getAccountSyncSerializer(namespace);
+				const cloud = serializer.migrate(
+					record.data,
+					record.schema_version
+				);
+				if (
+					createSnapshotHash(cloud) !== capture.localSnapshotHash ||
+					!writeAccountSyncBaseSnapshot({
+						data: cloud,
+						generationToken,
+						namespace,
+						revision: record.revision,
+						userId,
+					})
+				) {
+					return false;
+				}
+				nextMeta.lastAppliedRemoteHash[namespace] =
+					createSnapshotHash(cloud);
+				nextMeta.revisions[namespace] = record.revision;
+
+				const currentEntry = readDirtyQueueEntry(userId, namespace);
+				const currentEntryHash =
+					currentEntry === null
+						? null
+						: createSnapshotHash(currentEntry);
+				const currentLocal = serializer.deserialize(
+					serializer.getLocalSnapshot()
+				);
+				const isRequestSnapshotCurrent =
+					currentEntryHash === capture.dirtyEntryHash &&
+					createSnapshotHash(currentLocal) ===
+						capture.localSnapshotHash;
+				if (isRequestSnapshotCurrent) {
+					return (
+						currentEntry === null ||
+						removeDirtyQueueEntryIfCurrent({
+							expectedEntry: currentEntry,
+							generationToken,
+							userId,
+						})
+					);
+				}
+
+				return writeDirtyQueueEntryIfCurrent({
+					expectedEntry: currentEntry,
+					generationToken,
+					nextEntry: {
+						attempts: 0,
+						baseRevision: record.revision,
+						clientMutationId: createAccountClientId(),
+						conflict: null,
+						data: currentLocal,
+						dirtyAt: Date.now(),
+						lastError: null,
+						namespace,
+						paused: null,
+						schema_version: SYNC_SCHEMA_VERSION_MAP[namespace],
+						snapshotHash: createSnapshotHash(currentLocal),
+					},
+					userId,
+				});
+			}
+		);
+		if (didApply !== true) {
+			return false;
+		}
+	}
+
+	const didWriteMeta = await withAccountSyncMetaTransitionLock(
+		userId,
+		generationToken,
+		() => {
+			if (!checkCurrentAccountUser(userId)) {
+				return false;
+			}
+			writeAccountSyncMeta(userId, nextMeta, { generationToken });
+			return true;
+		}
+	);
+	if (
+		didWriteMeta !== true ||
+		!setCurrentAccountUserSyncState(
+			userId,
+			remoteState.state_epoch,
+			remoteState.sync_generation,
+			remoteState.sync_status
+		)
+	) {
+		return false;
+	}
+
+	clearAccountSyncRuntimeConflicts();
+	restoreAccountSyncRuntimeState(userId);
+	postRemoteAppliedBroadcast({
+		force: true,
+		records: remoteState.records,
+		stateEpoch: remoteState.state_epoch,
+		userId,
+	});
+	scheduleAccountSyncFlush();
+	recordAccountSyncRefreshSuccess({ userId });
+
+	return true;
+}
+
+export async function rebuildAccountSyncCloudFromLocal() {
+	const context = getLoggedInAccountContext();
+	if (
+		context?.user.sync_status !== ACCOUNT_SYNC_STATUS_MAP.pausedEmpty ||
+		checkAccountSyncResetPrepared(context.user.id)
+	) {
+		return false;
+	}
+
+	const reconcileRebuildResult = async () => {
+		const didReconcile = await takeOverLocalAccountData();
+		return (
+			didReconcile &&
+			accountStore.shared.user.get()?.sync_status ===
+				ACCOUNT_SYNC_STATUS_MAP.active
+		);
+	};
+
+	const result = await withAccountSyncOperationLease(
+		context.user.id,
+		ACCOUNT_SYNC_OPERATION_KIND_MAP.rebuildCloud,
+		async () => {
+			const currentContext = getLoggedInAccountContext();
+			if (
+				currentContext?.user.id !== context.user.id ||
+				currentContext.user.sync_status !==
+					ACCOUNT_SYNC_STATUS_MAP.pausedEmpty ||
+				checkAccountSyncResetPrepared(context.user.id)
+			) {
+				return false;
+			}
+			const captures = new Map<
+				TSyncNamespace,
+				IAccountSyncRebuildCapture
+			>();
+			const changes = Object.values(SYNC_NAMESPACE_MAP).map(
+				(namespace) => {
+					const serializer = getAccountSyncSerializer(namespace);
+					const localSnapshot = serializer.deserialize(
+						serializer.getLocalSnapshot()
+					);
+					const dirtyEntry = readDirtyQueueEntry(
+						context.user.id,
+						namespace
+					);
+					captures.set(namespace, {
+						dirtyEntryHash:
+							dirtyEntry === null
+								? null
+								: createSnapshotHash(dirtyEntry),
+						localSnapshotHash: createSnapshotHash(localSnapshot),
+					});
+					return {
+						data: serializer.serialize(localSnapshot),
+						namespace,
+						revision: 0,
+						schema_version: SYNC_SCHEMA_VERSION_MAP[namespace],
+					};
+				}
+			);
+			try {
+				const remoteState = validateRemoteSyncState(
+					await rebuildSyncState(
+						{
+							changes,
+							state_epoch: currentContext.user.state_epoch,
+							sync_generation:
+								currentContext.user.sync_generation,
+						},
+						currentContext.csrfToken
+					)
+				);
+				const didApply = await applySuccessfulAccountSyncRebuild({
+					captures,
+					remoteState,
+					userId: context.user.id,
+				});
+				return didApply || (await reconcileRebuildResult());
+			} catch (error) {
+				if (
+					error instanceof AccountApiError &&
+					error.status === 409 &&
+					(await reconcileRebuildResult())
+				) {
+					return true;
+				}
+				throw error;
+			}
+		}
+	);
+
+	return result === true;
 }
 
 function createAccountSyncResetRecoveryKey(
@@ -3768,6 +4457,7 @@ export function flushAccountSyncQueueWithBeacon() {
 	const context = getLoggedInAccountContext();
 	if (
 		context === null ||
+		context.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty ||
 		checkAccountSyncPaused() ||
 		checkAccountSyncOperationActive(context.user.id) ||
 		checkAccountSyncResetPrepared(context.user.id) ||
@@ -3819,6 +4509,7 @@ export function flushAccountSyncQueueWithBeacon() {
 		})),
 		csrf_token: context.csrfToken,
 		state_epoch: context.user.state_epoch,
+		sync_generation: context.user.sync_generation,
 	});
 	const entryBatchHash = createSnapshotHash(
 		createBeaconBatchIdentity(entries)
@@ -4027,6 +4718,8 @@ export function startAccountSyncClient() {
 							records: remoteState.records,
 							replaceMeta: false,
 							stateEpoch: remoteState.state_epoch,
+							syncGeneration: remoteState.sync_generation,
+							syncStatus: remoteState.sync_status,
 							targetNamespaces: message.namespaces,
 							userId: expectedUserId,
 						});
@@ -4065,12 +4758,27 @@ export function startAccountSyncClient() {
 				if (!checkBroadcastStateEpoch(message)) {
 					return;
 				}
-
-				scheduleAccountSyncResetRecovery(
-					context.user.id,
-					message.operationId,
-					message.deleteStartedAt
-				);
+				const expectedUserId = context.user.id;
+				void fetchValidatedSyncState([])
+					.then(async (remoteState) => {
+						if (
+							remoteState.sync_status ===
+							ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
+						) {
+							await pauseAccountSyncForEmptyCloud({
+								stateEpoch: remoteState.state_epoch,
+								syncGeneration: remoteState.sync_generation,
+								userId: expectedUserId,
+							});
+						}
+					})
+					.catch((error: unknown) => {
+						handlePassiveSyncRefreshError(
+							error,
+							expectedUserId,
+							syncClientGeneration
+						);
+					});
 				return;
 			}
 
@@ -4089,12 +4797,32 @@ export function startAccountSyncClient() {
 					) {
 						return;
 					}
+					if (
+						remoteState.sync_status ===
+						ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
+					) {
+						await pauseAccountSyncForEmptyCloud({
+							stateEpoch: remoteState.state_epoch,
+							syncGeneration: remoteState.sync_generation,
+							userId: expectedUserId,
+						});
+						return;
+					}
+					if (
+						accountStore.shared.user.get()?.sync_status ===
+						ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
+					) {
+						await takeOverLocalAccountData();
+						return;
+					}
 
 					const applied = await applyRemoteStatePreservingDirty({
 						generationToken,
 						records: remoteState.records,
 						replaceMeta: false,
 						stateEpoch: remoteState.state_epoch,
+						syncGeneration: remoteState.sync_generation,
+						syncStatus: remoteState.sync_status,
 						targetNamespaces: message.namespaces,
 						userId: expectedUserId,
 					});
@@ -4114,9 +4842,11 @@ export function startAccountSyncClient() {
 						}, LEASE_BUSY_RETRY_DELAY);
 						return;
 					}
-					setCurrentAccountUserStateEpoch(
+					setCurrentAccountUserSyncState(
 						expectedUserId,
-						remoteState.state_epoch
+						remoteState.state_epoch,
+						remoteState.sync_generation,
+						remoteState.sync_status
 					);
 				})
 				.catch((error: unknown) => {

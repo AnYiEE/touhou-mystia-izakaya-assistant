@@ -5,7 +5,10 @@ import {
 	type Updateable,
 } from 'kysely';
 
-import { type TUserStatus } from '@/lib/account/shared/types';
+import {
+	type TAccountSyncStatus,
+	type TUserStatus,
+} from '@/lib/account/shared/types';
 import { type SSO_CALLBACK_EVENT_LIST } from '@/lib/account/shared/constants';
 import {
 	type TAnnouncementAudience,
@@ -99,6 +102,8 @@ interface ITableUser {
 	nickname: string | null;
 	state_epoch: number;
 	status: TUserStatus;
+	sync_generation: number;
+	sync_status: TAccountSyncStatus;
 	updated_at: number;
 	username: string;
 	username_normalized: string;

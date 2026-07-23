@@ -13,6 +13,10 @@ import {
 	createAdminAuthErrorRouteResponse,
 } from '@/lib/account/server/adminRouteResponses';
 import {
+	ACCOUNT_SYNC_STATUS_MAP,
+	USER_STATUS_MAP,
+} from '@/lib/account/shared/constants';
+import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 } from '@/lib/api/routeResponses';
@@ -80,15 +84,17 @@ export async function DELETE(
 	if (user === null) {
 		return createNoStoreErrorResponse('target-user-not-found', 404);
 	}
-	if (user.status === 'deleted') {
+	if (user.status === USER_STATUS_MAP.deleted) {
 		return createNoStoreErrorResponse('invalid-user-status', 403);
 	}
 
 	try {
-		const stateEpoch =
+		const syncState =
 			await userStateModule.clearUserDataAndDeleteSessionsAndIncrementStateEpochWithAudit(
 				id,
-				(trx, auditNow, nextStateEpoch) =>
+				user.state_epoch,
+				user.sync_generation,
+				(trx, auditNow, nextStateEpoch, nextSyncGeneration) =>
 					accountAuditModule.writeAccountAuditLogInTransaction(
 						trx,
 						accountAuditModule.createAccountAdminAuditLogInput({
@@ -97,6 +103,9 @@ export async function DELETE(
 							adminId: auth.actorId,
 							metadata: {
 								state_epoch: nextStateEpoch,
+								sync_generation: nextSyncGeneration,
+								sync_status:
+									ACCOUNT_SYNC_STATUS_MAP.pausedEmpty,
 								target_nickname: user.nickname,
 								target_user_id: id,
 								target_username: user.username,
@@ -109,7 +118,7 @@ export async function DELETE(
 					)
 			);
 
-		return createNoStoreJsonResponse({ state_epoch: stateEpoch });
+		return createNoStoreJsonResponse(syncState);
 	} catch (error) {
 		if (error instanceof Error) {
 			if (error.message === 'user-not-found') {

@@ -11,6 +11,12 @@ export const SYNC_NAMESPACE_MAP = {
 export type TSyncNamespace =
 	(typeof SYNC_NAMESPACE_MAP)[keyof typeof SYNC_NAMESPACE_MAP];
 
+export const ACCOUNT_SYNC_OPERATION_KIND_MAP = {
+	deleteData: 'delete-data',
+	importBackup: 'import-backup',
+	rebuildCloud: 'rebuild-cloud',
+} as const;
+
 export const SYNC_SCHEMA_VERSION_MAP = {
 	[SYNC_NAMESPACE_MAP.customerNormalMeals]: 1,
 	[SYNC_NAMESPACE_MAP.customerRareMeals]: 1,

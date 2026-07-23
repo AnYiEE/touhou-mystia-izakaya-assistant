@@ -11,7 +11,10 @@ import {
 	checkAccountSyncCapacityAllowed,
 	getAccountSyncCapacityConfiguration,
 } from '@/lib/account/server/syncCapacity';
-import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
+import {
+	ACCOUNT_SYNC_STATUS_MAP,
+	USER_STATUS_MAP,
+} from '@/lib/account/shared/constants';
 import { SYNC_NAMESPACE_MAP, type TSyncNamespace } from '@/lib/account/sync';
 import { TABLE_NAME_MAP } from '@/lib/db';
 import type {
@@ -29,6 +32,7 @@ const USER_TABLE_NAME = TABLE_NAME_MAP.user;
 const USER_CREDENTIAL_TABLE_NAME = TABLE_NAME_MAP.userCredential;
 const SESSION_TABLE_NAME = TABLE_NAME_MAP.session;
 const BACKUP_IMPORT_TABLE_NAME = TABLE_NAME_MAP.backupImportRecord;
+const SQLITE_WRITE_RETRY_DELAYS_MS = [10, 50, 200] as const;
 const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
 	Object.values(SYNC_NAMESPACE_MAP)
 );
@@ -101,6 +105,67 @@ function checkNewUserStateEntryCounters(entry: TUserStateNew) {
 	);
 }
 
+function canIncrementUserSyncCounters(
+	user: Pick<TUser, 'state_epoch' | 'sync_generation'>
+) {
+	return (
+		isNonNegativeSafeInteger(user.state_epoch) &&
+		user.state_epoch < Number.MAX_SAFE_INTEGER &&
+		isNonNegativeSafeInteger(user.sync_generation) &&
+		user.sync_generation < Number.MAX_SAFE_INTEGER
+	);
+}
+
+function checkRetryableSqliteWriteError(error: unknown) {
+	if (!(error instanceof Error)) {
+		return false;
+	}
+	const { code } = error as NodeJS.ErrnoException;
+	return (
+		code === 'SQLITE_BUSY' ||
+		code === 'SQLITE_BUSY_SNAPSHOT' ||
+		code === 'SQLITE_LOCKED' ||
+		error.message.includes('database is locked')
+	);
+}
+
+async function executeUserStateWriteTransaction<T>(
+	operation: (transaction: Transaction<TDatabase>) => Promise<T>
+) {
+	const db = await getAccountDatabase();
+	for (let attempt = 0; ; attempt += 1) {
+		try {
+			return await db.transaction().execute(operation);
+		} catch (error) {
+			const retryDelayMs = SQLITE_WRITE_RETRY_DELAYS_MS[attempt];
+			if (
+				retryDelayMs === undefined ||
+				!checkRetryableSqliteWriteError(error)
+			) {
+				throw error;
+			}
+			await new Promise<void>((resolvePromise) => {
+				setTimeout(resolvePromise, retryDelayMs);
+			});
+		}
+	}
+}
+
+type TUserSyncState = Pick<
+	TUser,
+	'state_epoch' | 'sync_generation' | 'sync_status'
+>;
+
+function createUserSyncState(
+	user: Pick<TUser, 'state_epoch' | 'sync_generation' | 'sync_status'>
+): TUserSyncState {
+	return {
+		state_epoch: user.state_epoch,
+		sync_generation: user.sync_generation,
+		sync_status: user.sync_status,
+	};
+}
+
 type TPutUserStateEntriesIfRevisionResult =
 	| { status: 'corrupt-user-state' }
 	| {
@@ -130,7 +195,9 @@ type TPutUserStateEntriesIfRevisionResult =
 			status: 'ok';
 	  }
 	| { status: 'unauthorized' }
-	| { state_epoch: number; status: 'state-epoch-mismatch' };
+	| (TUserSyncState & { status: 'sync-paused' })
+	| (TUserSyncState & { status: 'sync-generation-mismatch' })
+	| (TUserSyncState & { status: 'state-epoch-mismatch' });
 
 export async function getUserState(
 	userId: TUser['id'],
@@ -220,18 +287,18 @@ export async function getActiveUserStateSnapshotForSession({
 export async function putUserStateEntriesIfRevision(
 	changes: IPutUserStateEntryIfRevisionChange[],
 	expectedStateEpoch: number,
+	expectedSyncGeneration: number,
 	session: Pick<TSession, 'id' | 'token_hash'>,
 	userId: TUser['id']
 ): Promise<TPutUserStateEntriesIfRevisionResult> {
-	const db = await getAccountDatabase();
 	if (changes.some((change) => change.entry.user_id !== userId)) {
 		throw new Error('mixed-user-state-entries');
 	}
 
-	return db.transaction().execute(async (trx) => {
+	return executeUserStateWriteTransaction(async (trx) => {
 		const user = await trx
 			.selectFrom(USER_TABLE_NAME)
-			.select(['state_epoch', 'status'])
+			.select(['state_epoch', 'status', 'sync_generation', 'sync_status'])
 			.where('id', '=', userId)
 			.executeTakeFirst();
 		if (user === undefined) {
@@ -240,10 +307,19 @@ export async function putUserStateEntriesIfRevision(
 		if (user.status !== USER_STATUS_MAP.active) {
 			return { status: 'unauthorized' };
 		}
+		if (user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+			return { ...createUserSyncState(user), status: 'sync-paused' };
+		}
 		if (user.state_epoch !== expectedStateEpoch) {
 			return {
-				state_epoch: user.state_epoch,
+				...createUserSyncState(user),
 				status: 'state-epoch-mismatch',
+			};
+		}
+		if (user.sync_generation !== expectedSyncGeneration) {
+			return {
+				...createUserSyncState(user),
+				status: 'sync-generation-mismatch',
 			};
 		}
 
@@ -253,11 +329,18 @@ export async function putUserStateEntriesIfRevision(
 			.where('id', '=', userId)
 			.where('status', '=', USER_STATUS_MAP.active)
 			.where('state_epoch', '=', expectedStateEpoch)
+			.where('sync_generation', '=', expectedSyncGeneration)
+			.where('sync_status', '=', ACCOUNT_SYNC_STATUS_MAP.active)
 			.executeTakeFirst();
 		if (stateEpochLockResult.numUpdatedRows !== 1n) {
 			const currentUser = await trx
 				.selectFrom(USER_TABLE_NAME)
-				.select(['state_epoch', 'status'])
+				.select([
+					'state_epoch',
+					'status',
+					'sync_generation',
+					'sync_status',
+				])
 				.where('id', '=', userId)
 				.executeTakeFirst();
 			if (currentUser === undefined) {
@@ -266,10 +349,24 @@ export async function putUserStateEntriesIfRevision(
 			if (currentUser.status !== USER_STATUS_MAP.active) {
 				return { status: 'unauthorized' };
 			}
+			if (
+				currentUser.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
+			) {
+				return {
+					...createUserSyncState(currentUser),
+					status: 'sync-paused',
+				};
+			}
+			if (currentUser.state_epoch !== expectedStateEpoch) {
+				return {
+					...createUserSyncState(currentUser),
+					status: 'state-epoch-mismatch',
+				};
+			}
 
 			return {
-				state_epoch: currentUser.state_epoch,
-				status: 'state-epoch-mismatch',
+				...createUserSyncState(currentUser),
+				status: 'sync-generation-mismatch',
 			};
 		}
 
@@ -486,35 +583,43 @@ export async function putUserStateEntriesIfRevision(
 export async function clearUserStateIfStateEpochWithAudit(
 	userId: TUser['id'],
 	expectedStateEpoch: TUser['state_epoch'],
+	expectedSyncGeneration: TUser['sync_generation'],
 	session: Pick<TSession, 'id' | 'token_hash'>,
 	writeAuditLog: (
 		trx: Transaction<TDatabase>,
 		now: number,
-		stateEpoch: TUser['state_epoch']
+		stateEpoch: TUser['state_epoch'],
+		syncGeneration: TUser['sync_generation']
 	) => Promise<void>
 ) {
-	const db = await getAccountDatabase();
-
-	return db.transaction().execute(async (trx) => {
+	return executeUserStateWriteTransaction(async (trx) => {
 		const user = await trx
 			.selectFrom(USER_TABLE_NAME)
-			.select(['state_epoch', 'status'])
+			.select(['state_epoch', 'status', 'sync_generation', 'sync_status'])
 			.where('id', '=', userId)
 			.executeTakeFirst();
 		if (user?.status !== USER_STATUS_MAP.active) {
 			return { status: 'unauthorized' as const };
 		}
-		if (
-			!Number.isSafeInteger(user.state_epoch) ||
-			user.state_epoch < 0 ||
-			user.state_epoch >= Number.MAX_SAFE_INTEGER
-		) {
-			throw new Error('invalid-user-state-epoch');
+		if (!canIncrementUserSyncCounters(user)) {
+			throw new Error('invalid-user-sync-counter');
+		}
+		if (user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+			return {
+				...createUserSyncState(user),
+				status: 'sync-paused' as const,
+			};
 		}
 		if (user.state_epoch !== expectedStateEpoch) {
 			return {
-				state_epoch: user.state_epoch,
+				...createUserSyncState(user),
 				status: 'state-epoch-mismatch' as const,
+			};
+		}
+		if (user.sync_generation !== expectedSyncGeneration) {
+			return {
+				...createUserSyncState(user),
+				status: 'sync-generation-mismatch' as const,
 			};
 		}
 
@@ -524,19 +629,40 @@ export async function clearUserStateIfStateEpochWithAudit(
 			.where('id', '=', userId)
 			.where('status', '=', USER_STATUS_MAP.active)
 			.where('state_epoch', '=', expectedStateEpoch)
+			.where('sync_generation', '=', expectedSyncGeneration)
+			.where('sync_status', '=', ACCOUNT_SYNC_STATUS_MAP.active)
 			.executeTakeFirst();
 		if (stateEpochLockResult.numUpdatedRows !== 1n) {
 			const currentUser = await trx
 				.selectFrom(USER_TABLE_NAME)
-				.select(['state_epoch', 'status'])
+				.select([
+					'state_epoch',
+					'status',
+					'sync_generation',
+					'sync_status',
+				])
 				.where('id', '=', userId)
 				.executeTakeFirst();
 			if (currentUser?.status !== USER_STATUS_MAP.active) {
 				return { status: 'unauthorized' as const };
 			}
+			if (
+				currentUser.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
+			) {
+				return {
+					...createUserSyncState(currentUser),
+					status: 'sync-paused' as const,
+				};
+			}
+			if (currentUser.state_epoch !== expectedStateEpoch) {
+				return {
+					...createUserSyncState(currentUser),
+					status: 'state-epoch-mismatch' as const,
+				};
+			}
 			return {
-				state_epoch: currentUser.state_epoch,
-				status: 'state-epoch-mismatch' as const,
+				...createUserSyncState(currentUser),
+				status: 'sync-generation-mismatch' as const,
 			};
 		}
 
@@ -564,95 +690,204 @@ export async function clearUserStateIfStateEpochWithAudit(
 			.updateTable(USER_TABLE_NAME)
 			.set(({ eb, ref }) => ({
 				state_epoch: eb(ref('state_epoch'), '+', 1),
+				sync_generation: eb(ref('sync_generation'), '+', 1),
+				sync_status: ACCOUNT_SYNC_STATUS_MAP.pausedEmpty,
 				updated_at: now,
 			}))
 			.where('id', '=', userId)
 			.where('status', '=', USER_STATUS_MAP.active)
 			.where('state_epoch', '=', expectedStateEpoch)
-			.returning('state_epoch')
+			.where('sync_generation', '=', expectedSyncGeneration)
+			.where('sync_status', '=', ACCOUNT_SYNC_STATUS_MAP.active)
+			.returning(['state_epoch', 'sync_generation', 'sync_status'])
 			.executeTakeFirst();
 		if (record === undefined) {
 			throw new Error('state-epoch-lock-lost');
 		}
 
-		await writeAuditLog(trx, now, record.state_epoch);
+		await writeAuditLog(
+			trx,
+			now,
+			record.state_epoch,
+			record.sync_generation
+		);
 
-		return { state_epoch: record.state_epoch, status: 'ok' as const };
+		return { ...record, status: 'ok' as const };
 	});
 }
 
-export async function clearUserDataAndDeleteSessionsAndIncrementStateEpoch(
-	userId: TUser['id']
+export async function rebuildUserStateIfPausedWithAudit(
+	entries: TUserStateNew[],
+	expectedStateEpoch: TUser['state_epoch'],
+	expectedSyncGeneration: TUser['sync_generation'],
+	session: Pick<TSession, 'id' | 'token_hash'>,
+	userId: TUser['id'],
+	writeAuditLog: (
+		trx: Transaction<TDatabase>,
+		now: number,
+		stateEpoch: number,
+		syncGeneration: number,
+		totalBytes: number
+	) => Promise<void>
 ) {
-	const db = await getAccountDatabase();
+	if (
+		entries.length !== SYNC_NAMESPACE_SET.size ||
+		entries.some(
+			(entry) =>
+				entry.user_id !== userId ||
+				!checkSyncNamespace(entry.namespace) ||
+				entry.revision !== 1 ||
+				!checkNewUserStateEntryCounters(entry)
+		) ||
+		new Set(entries.map((entry) => entry.namespace)).size !== entries.length
+	) {
+		return { status: 'corrupt-user-state' as const };
+	}
 
-	return db.transaction().execute(async (trx) => {
+	return executeUserStateWriteTransaction(async (trx) => {
+		const user = await trx
+			.selectFrom(USER_TABLE_NAME)
+			.select(['state_epoch', 'status', 'sync_generation', 'sync_status'])
+			.where('id', '=', userId)
+			.executeTakeFirst();
+		if (user?.status !== USER_STATUS_MAP.active) {
+			return { status: 'unauthorized' as const };
+		}
+		if (!canIncrementUserSyncCounters(user)) {
+			throw new Error('invalid-user-sync-counter');
+		}
+		if (user.sync_status !== ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+			return {
+				...createUserSyncState(user),
+				status: 'sync-not-paused' as const,
+			};
+		}
+		if (user.state_epoch !== expectedStateEpoch) {
+			return {
+				...createUserSyncState(user),
+				status: 'state-epoch-mismatch' as const,
+			};
+		}
+		if (user.sync_generation !== expectedSyncGeneration) {
+			return {
+				...createUserSyncState(user),
+				status: 'sync-generation-mismatch' as const,
+			};
+		}
+
+		const lockResult = await trx
+			.updateTable(USER_TABLE_NAME)
+			.set({ updated_at: sql<TUser['updated_at']>`updated_at` })
+			.where('id', '=', userId)
+			.where('status', '=', USER_STATUS_MAP.active)
+			.where('state_epoch', '=', expectedStateEpoch)
+			.where('sync_generation', '=', expectedSyncGeneration)
+			.where('sync_status', '=', ACCOUNT_SYNC_STATUS_MAP.pausedEmpty)
+			.executeTakeFirst();
+		if (lockResult.numUpdatedRows !== 1n) {
+			return { status: 'lock-lost' as const };
+		}
+
+		const currentSession = await trx
+			.selectFrom(SESSION_TABLE_NAME)
+			.select('id')
+			.where('id', '=', session.id)
+			.where('user_id', '=', userId)
+			.where('token_hash', '=', session.token_hash)
+			.executeTakeFirst();
+		if (currentSession === undefined) {
+			return { status: 'unauthorized' as const };
+		}
+		const currentEntries = await trx
+			.selectFrom(TABLE_NAME)
+			.selectAll()
+			.where('user_id', '=', userId)
+			.execute();
+		if (currentEntries.length > 0) {
+			return { status: 'cloud-not-empty' as const };
+		}
+
+		const capacity = calculateAccountSyncCapacity({
+			currentEntries: [],
+			replacements: entries,
+		});
+		const configuration = getAccountSyncCapacityConfiguration();
+		if (
+			!checkAccountSyncCapacityAllowed({
+				candidateBytes: capacity.candidateBytes,
+				currentBytes: 0,
+				limitBytes: configuration.stateTotalMaxBytes,
+			})
+		) {
+			return {
+				candidate_bytes: capacity.candidateBytes,
+				limit_bytes: configuration.stateTotalMaxBytes,
+				status: 'capacity-exceeded' as const,
+			};
+		}
+
+		if (entries.length > 0) {
+			await trx.insertInto(TABLE_NAME).values(entries).execute();
+		}
 		const now = Date.now();
-		const record = await trx
+		const nextUser = await trx
 			.updateTable(USER_TABLE_NAME)
 			.set(({ eb, ref }) => ({
 				state_epoch: eb(ref('state_epoch'), '+', 1),
+				sync_generation: eb(ref('sync_generation'), '+', 1),
+				sync_status: ACCOUNT_SYNC_STATUS_MAP.active,
 				updated_at: now,
 			}))
 			.where('id', '=', userId)
-			.where('status', '!=', USER_STATUS_MAP.deleted)
-			.returning('state_epoch')
+			.where('state_epoch', '=', expectedStateEpoch)
+			.where('sync_generation', '=', expectedSyncGeneration)
+			.where('sync_status', '=', ACCOUNT_SYNC_STATUS_MAP.pausedEmpty)
+			.returning(['state_epoch', 'sync_generation', 'sync_status'])
 			.executeTakeFirst();
-
-		if (record === undefined) {
-			const user = await trx
-				.selectFrom(USER_TABLE_NAME)
-				.select('status')
-				.where('id', '=', userId)
-				.executeTakeFirst();
-			if (user === undefined) {
-				throw new Error('user-not-found');
-			}
-			if (user.status === USER_STATUS_MAP.deleted) {
-				throw new Error('invalid-user-status');
-			}
-
-			throw new Error('update-not-applied');
+		if (nextUser === undefined) {
+			throw new Error('sync-rebuild-lock-lost');
 		}
 
-		await trx
-			.deleteFrom(TABLE_NAME)
-			.where('user_id', '=', userId)
-			.execute();
-		await trx
-			.deleteFrom(BACKUP_IMPORT_TABLE_NAME)
-			.where('user_id', '=', userId)
-			.execute();
-		await trx
-			.deleteFrom(SESSION_TABLE_NAME)
-			.where('user_id', '=', userId)
-			.execute();
-
-		return record.state_epoch;
+		await writeAuditLog(
+			trx,
+			now,
+			nextUser.state_epoch,
+			nextUser.sync_generation,
+			capacity.candidateBytes
+		);
+		return { ...nextUser, entries, status: 'ok' as const };
 	});
 }
 
 export async function clearUserDataAndDeleteSessionsAndIncrementStateEpochWithAudit(
 	userId: TUser['id'],
+	expectedStateEpoch: TUser['state_epoch'],
+	expectedSyncGeneration: TUser['sync_generation'],
 	writeAuditLog: (
 		trx: Transaction<TDatabase>,
 		now: number,
-		stateEpoch: TUser['state_epoch']
+		stateEpoch: TUser['state_epoch'],
+		syncGeneration: TUser['sync_generation']
 	) => Promise<void>
 ) {
-	const db = await getAccountDatabase();
-
-	return db.transaction().execute(async (trx) => {
+	return executeUserStateWriteTransaction(async (trx) => {
 		const now = Date.now();
 		const record = await trx
 			.updateTable(USER_TABLE_NAME)
 			.set(({ eb, ref }) => ({
 				state_epoch: eb(ref('state_epoch'), '+', 1),
+				sync_generation: eb(ref('sync_generation'), '+', 1),
+				sync_status: ACCOUNT_SYNC_STATUS_MAP.pausedEmpty,
 				updated_at: now,
 			}))
 			.where('id', '=', userId)
 			.where('status', '!=', USER_STATUS_MAP.deleted)
-			.returning('state_epoch')
+			.where('state_epoch', '=', expectedStateEpoch)
+			.where('state_epoch', '<', Number.MAX_SAFE_INTEGER)
+			.where('sync_generation', '=', expectedSyncGeneration)
+			.where('sync_generation', '<', Number.MAX_SAFE_INTEGER)
+			.where('sync_status', '=', ACCOUNT_SYNC_STATUS_MAP.active)
+			.returning(['state_epoch', 'sync_generation', 'sync_status'])
 			.executeTakeFirst();
 
 		if (record === undefined) {
@@ -683,9 +918,14 @@ export async function clearUserDataAndDeleteSessionsAndIncrementStateEpochWithAu
 			.deleteFrom(SESSION_TABLE_NAME)
 			.where('user_id', '=', userId)
 			.execute();
-		await writeAuditLog(trx, now, record.state_epoch);
+		await writeAuditLog(
+			trx,
+			now,
+			record.state_epoch,
+			record.sync_generation
+		);
 
-		return record.state_epoch;
+		return record;
 	});
 }
 

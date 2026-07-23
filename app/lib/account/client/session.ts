@@ -5,6 +5,7 @@ import {
 	type IAuthLoginSuccessResponse,
 	type TAccountMeResponse,
 } from '../shared/types';
+import { ACCOUNT_SYNC_STATUS_MAP } from '../shared/constants';
 import { readAccountSyncMeta } from './snapshot';
 import {
 	invalidateAccountSyncClientRuns,
@@ -228,6 +229,13 @@ export async function importPendingLegacyBackupCode(
 	checkCurrentRequest = () => true,
 	userId?: string
 ) {
+	if (
+		accountStore.shared.user.get()?.sync_status ===
+		ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
+	) {
+		accountStore.shared.sync.lastError.set('sync-paused');
+		return false;
+	}
 	const cloudCode = globalStore.persistence.cloudCode.get();
 	const normalizedCode = cloudCode?.trim() ?? '';
 

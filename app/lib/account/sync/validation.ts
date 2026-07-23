@@ -1,9 +1,11 @@
+import { parseClientSyncGeneration } from './protocol';
 import { ALL_PLACES_SET, DLC_LABEL_MAP } from '@/data';
 import { THEME_MAP } from '@/design/hooks/use-theme/constants';
 import {
 	type ISyncStateChange,
 	type ISyncStatePutBody,
 	SYNC_NAMESPACE_MAP,
+	SYNC_SCHEMA_VERSION_MAP,
 	type TSyncNamespace,
 	checkSupportedSyncSchemaVersion,
 } from '@/lib/account/sync';
@@ -371,12 +373,19 @@ export function parseSyncStatePutBody(
 	body: unknown,
 	allowedExtraRootKeys: string[] = []
 ) {
-	const rootKeys = ['changes', 'state_epoch', ...allowedExtraRootKeys];
+	const syncGeneration = parseClientSyncGeneration(body);
+	const rootKeys = [
+		'changes',
+		'state_epoch',
+		'sync_generation',
+		...allowedExtraRootKeys,
+	];
 	if (
 		!isPlainObject(body) ||
 		!hasExactKeys(body, rootKeys) ||
 		!('state_epoch' in body) ||
 		!isNonNegativeSafeInteger(body['state_epoch']) ||
+		syncGeneration === null ||
 		!('changes' in body) ||
 		!Array.isArray(body['changes'])
 	) {
@@ -433,5 +442,39 @@ export function parseSyncStatePutBody(
 	return {
 		changes,
 		state_epoch: body['state_epoch'],
+		sync_generation: syncGeneration,
 	} satisfies ISyncStatePutBody;
+}
+
+export function checkSyncStateRebuildChanges(changes: ISyncStateChange[]) {
+	return (
+		changes.length === SYNC_NAMESPACE_SET.size &&
+		changes.every((change) => change.revision === 0)
+	);
+}
+
+export function findUnsupportedSyncSchemaVersion(body: unknown) {
+	if (!isPlainObject(body) || !Array.isArray(body['changes'])) {
+		return null;
+	}
+
+	for (const change of body['changes']) {
+		if (
+			!isPlainObject(change) ||
+			!checkSyncNamespace(change['namespace']) ||
+			!isNonNegativeSafeInteger(change['schema_version'])
+		) {
+			continue;
+		}
+		const currentSchemaVersion =
+			SYNC_SCHEMA_VERSION_MAP[change['namespace']];
+		if (change['schema_version'] > currentSchemaVersion) {
+			return {
+				current_schema_version: currentSchemaVersion,
+				namespace: change['namespace'],
+			};
+		}
+	}
+
+	return null;
 }

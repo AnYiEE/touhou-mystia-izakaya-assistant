@@ -24,6 +24,7 @@ export const ACCOUNT_AUDIT_ACTION_MAP = {
 	accountDataExported: 'user-export-account-data',
 	accountDataImported: 'user-import-account-data',
 	accountDeleted: 'user-delete-account',
+	accountSyncRebuilt: 'account-sync-rebuilt',
 	adminClearUserData: 'admin-clear-user-data',
 	adminDeleteUserSessions: 'admin-delete-user-sessions',
 	adminDisableUser: 'admin-disable-user',

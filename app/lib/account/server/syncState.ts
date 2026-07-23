@@ -22,11 +22,18 @@ import {
 
 export type TSyncConflictParseMode = 'fail' | 'item-error';
 
+type TUserSyncState = Pick<
+	TUser,
+	'state_epoch' | 'sync_generation' | 'sync_status'
+>;
+
 type TPutSyncStateChangesResult =
 	| { results: TSyncStatePutResult[]; status: 'ok' }
 	| { status: 'corrupt-user-state' }
 	| { status: 'unauthorized' }
-	| { state_epoch: number; status: 'state-epoch-mismatch' };
+	| (TUserSyncState & { status: 'sync-paused' })
+	| (TUserSyncState & { status: 'sync-generation-mismatch' })
+	| (TUserSyncState & { status: 'state-epoch-mismatch' });
 
 export function createUserStateRecord(
 	userId: string,
@@ -159,6 +166,7 @@ export async function putSyncStateChanges({
 			expectedRevision: change.change.revision,
 		})),
 		body.state_epoch,
+		body.sync_generation,
 		session,
 		userId
 	);
@@ -166,6 +174,12 @@ export async function putSyncStateChanges({
 		return { status: 'unauthorized' };
 	}
 	if (writeResult.status === 'state-epoch-mismatch') {
+		return writeResult;
+	}
+	if (
+		writeResult.status === 'sync-paused' ||
+		writeResult.status === 'sync-generation-mismatch'
+	) {
 		return writeResult;
 	}
 	if (writeResult.status === 'corrupt-user-state') {

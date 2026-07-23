@@ -109,6 +109,7 @@ const auditTargetTypeLabelMap: Record<string, string> = {
 };
 
 const auditActionLabelMap: Record<string, string> = {
+	'account-sync-rebuilt': '用户重建云端同步数据',
 	'admin-cleanup-announcement-records': '管理员清理通知历史',
 	'admin-cleanup-expired-sso-tickets': '管理员清理过期SSO Ticket',
 	'admin-cleanup-sso-callback-deliveries': '管理员清理SSO Callback历史',

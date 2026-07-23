@@ -30,7 +30,10 @@ import {
 	isNonNegativeSafeInteger,
 	isPlainObject,
 } from '@/lib/account/sync/serializers/utils';
-import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
+import {
+	ACCOUNT_SYNC_STATUS_MAP,
+	USER_STATUS_MAP,
+} from '@/lib/account/shared/constants';
 import { MAX_BACKUP_DATA_BYTES } from '@/lib/account/shared/requestLimits';
 import { getAccountDatabase } from '@/lib/account/server/db';
 import { maskBackupCode } from '@/lib/account/server/backupCode';
@@ -399,6 +402,7 @@ async function checkImportBackupDataPreconditions(
 	userId: string,
 	code: string,
 	expectedStateEpoch: number,
+	expectedSyncGeneration: number,
 	session: Pick<TSession, 'id' | 'token_hash'>,
 	signal: IBackupCodeLockSignal,
 	lockModule: TBackupLockModule
@@ -407,7 +411,7 @@ async function checkImportBackupDataPreconditions(
 
 	const user = await database
 		.selectFrom(TABLE_NAME_MAP.user)
-		.select(['state_epoch', 'status'])
+		.select(['state_epoch', 'status', 'sync_generation', 'sync_status'])
 		.where('id', '=', userId)
 		.executeTakeFirst();
 	lockModule.throwIfBackupCodeLockLost(signal);
@@ -415,10 +419,28 @@ async function checkImportBackupDataPreconditions(
 		throw new Error('unauthorized');
 	}
 
+	if (user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+		return {
+			state_epoch: user.state_epoch,
+			status: 'sync-paused' as const,
+			sync_generation: user.sync_generation,
+			sync_status: user.sync_status,
+		};
+	}
 	if (user.state_epoch !== expectedStateEpoch) {
 		return {
 			state_epoch: user.state_epoch,
 			status: 'state-epoch-mismatch' as const,
+			sync_generation: user.sync_generation,
+			sync_status: user.sync_status,
+		};
+	}
+	if (user.sync_generation !== expectedSyncGeneration) {
+		return {
+			state_epoch: user.state_epoch,
+			status: 'sync-generation-mismatch' as const,
+			sync_generation: user.sync_generation,
+			sync_status: user.sync_status,
 		};
 	}
 
@@ -504,6 +526,7 @@ async function readImportBackupFile(
 export async function importBackupData({
 	code,
 	expectedStateEpoch,
+	expectedSyncGeneration,
 	lockModule,
 	session,
 	signal,
@@ -512,6 +535,7 @@ export async function importBackupData({
 }: {
 	code: string;
 	expectedStateEpoch: number;
+	expectedSyncGeneration: number;
 	lockModule: TBackupLockModule;
 	session: Pick<TSession, 'id' | 'token_hash'>;
 	signal: IBackupCodeLockSignal;
@@ -528,6 +552,7 @@ export async function importBackupData({
 		userId,
 		code,
 		expectedStateEpoch,
+		expectedSyncGeneration,
 		session,
 		signal,
 		lockModule
@@ -548,7 +573,7 @@ export async function importBackupData({
 
 		const user = await trx
 			.selectFrom(TABLE_NAME_MAP.user)
-			.select(['state_epoch', 'status'])
+			.select(['state_epoch', 'status', 'sync_generation', 'sync_status'])
 			.where('id', '=', userId)
 			.executeTakeFirst();
 		lockModule.throwIfBackupCodeLockLost(signal);
@@ -556,10 +581,28 @@ export async function importBackupData({
 			throw new Error('unauthorized');
 		}
 
+		if (user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+			return {
+				state_epoch: user.state_epoch,
+				status: 'sync-paused' as const,
+				sync_generation: user.sync_generation,
+				sync_status: user.sync_status,
+			};
+		}
 		if (user.state_epoch !== expectedStateEpoch) {
 			return {
 				state_epoch: user.state_epoch,
 				status: 'state-epoch-mismatch' as const,
+				sync_generation: user.sync_generation,
+				sync_status: user.sync_status,
+			};
+		}
+		if (user.sync_generation !== expectedSyncGeneration) {
+			return {
+				state_epoch: user.state_epoch,
+				status: 'sync-generation-mismatch' as const,
+				sync_generation: user.sync_generation,
+				sync_status: user.sync_status,
 			};
 		}
 

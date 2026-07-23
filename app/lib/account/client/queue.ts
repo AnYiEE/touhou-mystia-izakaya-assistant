@@ -35,6 +35,7 @@ const SYNC_PAUSED_REASON_SET = new Set<TSyncPausedReason | null>([
 	null,
 	'applying-remote',
 	'bootstrap',
+	'cloud-paused',
 	'conflict',
 	'delete-data',
 	'importing-backup',
@@ -1567,14 +1568,18 @@ export function markAccountSyncDirty({
 	data,
 	generationToken,
 	namespace,
+	paused = null,
 	replacePausedEntry = false,
+	resetOperationId,
 	userId,
 }: {
 	baseRevision: number;
 	data: unknown;
 	generationToken: string | null;
 	namespace: TSyncNamespace;
+	paused?: Exclude<TSyncPausedReason, 'conflict'> | null;
 	replacePausedEntry?: boolean;
+	resetOperationId?: string;
 	userId: string;
 }) {
 	if (!checkSyncRevision(baseRevision)) {
@@ -1596,7 +1601,7 @@ export function markAccountSyncDirty({
 			dirtyAt: now,
 			lastError: null,
 			namespace,
-			paused: null,
+			paused,
 			schema_version: SYNC_SCHEMA_VERSION_MAP[namespace],
 			snapshotHash: createSnapshotHash(data),
 		},
@@ -1611,6 +1616,7 @@ export function markAccountSyncDirty({
 			expectedEntry: currentEntry,
 			generationToken,
 			nextEntry: entry,
+			...(resetOperationId === undefined ? {} : { resetOperationId }),
 			userId,
 		})
 	) {

@@ -9,6 +9,8 @@ import {
 	createAccountAuthErrorRouteResponse,
 	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
+import { ACCOUNT_SYNC_STATUS_MAP } from '@/lib/account/shared/constants';
+import { parseClientSyncGeneration } from '@/lib/account/sync/protocol';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -19,6 +21,7 @@ export const dynamic = 'force-dynamic';
 
 interface IDeleteAccountDataBody {
 	state_epoch: number;
+	sync_generation: number;
 }
 
 function parseDeleteAccountDataBody(
@@ -27,13 +30,17 @@ function parseDeleteAccountDataBody(
 	if (value === null || typeof value !== 'object' || Array.isArray(value)) {
 		return null;
 	}
+	const parsedGeneration = parseClientSyncGeneration(value);
+	if (parsedGeneration === null) {
+		return null;
+	}
 	const stateEpoch = Object.getOwnPropertyDescriptor(value, 'state_epoch')
 		?.value as unknown;
 	return typeof stateEpoch === 'number' &&
 		Number.isSafeInteger(stateEpoch) &&
 		stateEpoch >= 0 &&
 		stateEpoch < Number.MAX_SAFE_INTEGER
-		? { state_epoch: stateEpoch }
+		? { state_epoch: stateEpoch, sync_generation: parsedGeneration }
 		: null;
 }
 
@@ -80,24 +87,31 @@ export async function DELETE(request: NextRequest) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
-	let expectedStateEpoch = auth.data.user.state_epoch;
-	if (request.body !== null) {
-		const bodyResult =
-			await readJsonBodyResult<IDeleteAccountDataBody>(request);
-		if (bodyResult.status === 'payload-too-large') {
-			return createNoStoreErrorResponse('payload-too-large', 413);
-		}
-		const body = parseDeleteAccountDataBody(
-			bodyResult.status === 'ok' ? bodyResult.data : null
-		);
-		if (body === null) {
-			return createNoStoreErrorResponse('invalid-object-structure', 400);
-		}
-		expectedStateEpoch = body.state_epoch;
+	const bodyResult =
+		await readJsonBodyResult<IDeleteAccountDataBody>(request);
+	if (bodyResult.status === 'payload-too-large') {
+		return createNoStoreErrorResponse('payload-too-large', 413);
+	}
+	const body = parseDeleteAccountDataBody(
+		bodyResult.status === 'ok' ? bodyResult.data : null
+	);
+	if (body === null) {
+		return createNoStoreErrorResponse('invalid-object-structure', 400);
+	}
+	const expectedStateEpoch = body.state_epoch;
+	const expectedSyncGeneration = body.sync_generation;
+	if (expectedSyncGeneration !== auth.data.user.sync_generation) {
+		return createNoStoreErrorResponse('sync-generation-mismatch', 409, {
+			state_epoch: auth.data.user.state_epoch,
+			sync_generation: auth.data.user.sync_generation,
+			sync_status: auth.data.user.sync_status,
+		});
 	}
 	if (expectedStateEpoch !== auth.data.user.state_epoch) {
 		return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
 			state_epoch: auth.data.user.state_epoch,
+			sync_generation: auth.data.user.sync_generation,
+			sync_status: auth.data.user.sync_status,
 		});
 	}
 
@@ -109,11 +123,12 @@ export async function DELETE(request: NextRequest) {
 		await userStateModule.clearUserStateIfStateEpochWithAudit(
 			auth.data.user.id,
 			expectedStateEpoch,
+			expectedSyncGeneration,
 			{
 				id: auth.data.session.id,
 				token_hash: auth.data.session.token_hash,
 			},
-			(trx, auditNow, nextStateEpoch) =>
+			(trx, auditNow, nextStateEpoch, nextSyncGeneration) =>
 				accountAuditModule.writeAccountAuditLogInTransaction(
 					trx,
 					accountAuditModule.createAccountUserAuditLogInput({
@@ -122,6 +137,8 @@ export async function DELETE(request: NextRequest) {
 						metadata: {
 							nickname: auth.data.user.nickname,
 							state_epoch: nextStateEpoch,
+							sync_generation: nextSyncGeneration,
+							sync_status: ACCOUNT_SYNC_STATUS_MAP.pausedEmpty,
 							username: auth.data.user.username,
 						},
 						request,
@@ -136,7 +153,27 @@ export async function DELETE(request: NextRequest) {
 	if (clearResult.status === 'state-epoch-mismatch') {
 		return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
 			state_epoch: clearResult.state_epoch,
+			sync_generation: clearResult.sync_generation,
+			sync_status: clearResult.sync_status,
 		});
 	}
-	return createNoStoreJsonResponse({ state_epoch: clearResult.state_epoch });
+	if (clearResult.status === 'sync-paused') {
+		return createNoStoreErrorResponse('sync-paused', 409, {
+			state_epoch: clearResult.state_epoch,
+			sync_generation: clearResult.sync_generation,
+			sync_status: clearResult.sync_status,
+		});
+	}
+	if (clearResult.status === 'sync-generation-mismatch') {
+		return createNoStoreErrorResponse('sync-generation-mismatch', 409, {
+			state_epoch: clearResult.state_epoch,
+			sync_generation: clearResult.sync_generation,
+			sync_status: clearResult.sync_status,
+		});
+	}
+	return createNoStoreJsonResponse({
+		state_epoch: clearResult.state_epoch,
+		sync_generation: clearResult.sync_generation,
+		sync_status: clearResult.sync_status,
+	});
 }

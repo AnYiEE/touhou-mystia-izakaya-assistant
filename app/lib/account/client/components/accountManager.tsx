@@ -54,16 +54,13 @@ import {
 import {
 	Button,
 	Card,
-	type IButtonProps,
 	Input,
 	Modal,
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
 	Tooltip,
 	cn,
 } from '@/design/ui/components';
 
+import AccountConfirmButton from './accountConfirmButton';
 import AccountSyncStatus from './accountSyncStatus';
 import LegalStatement from '@/(pages)/about/legalStatement';
 import { trackEvent } from '@/components/analytics';
@@ -121,8 +118,7 @@ import {
 } from '@/lib/account/client/session';
 import {
 	flushAccountSyncQueueUntilIdle,
-	resetAccountSyncCloudStateAfterDelete,
-	scheduleAccountSyncFlush,
+	pauseAccountSyncForEmptyCloud,
 } from '@/lib/account/client/syncClient';
 import {
 	removeAccountSyncOperationForAccountDeletion,
@@ -132,6 +128,7 @@ import { removeAccountSyncLeaseForAccountDeletion } from '@/lib/account/client/l
 import { removeAccountSyncMetaForAccountDeletion } from '@/lib/account/client/snapshot';
 import { createRecommendationBridgeContinuationUrl } from '@/lib/recommendations/bridge/launchDescriptor';
 import {
+	ACCOUNT_SYNC_STATUS_MAP,
 	NICKNAME_RULE_DESCRIPTION,
 	PASSWORD_RULE_DESCRIPTION,
 	USERNAME_RULE_DESCRIPTION,
@@ -352,106 +349,6 @@ const AccountInputIcon = memo<IAccountInputIconProps>(
 			<span className="pointer-events-none inline-flex -translate-y-px items-center text-default-400">
 				<FontAwesomeIcon icon={icon} className="block w-3.5" />
 			</span>
-		);
-	}
-);
-
-interface IAccountConfirmButtonProps {
-	ariaLabel?: IButtonProps['aria-label'];
-	buttonLabel: ReactNodeWithoutBoolean;
-	className?: IButtonProps['className'];
-	color: IButtonProps['color'];
-	confirmLabel: ReactNodeWithoutBoolean;
-	fullWidth?: boolean;
-	icon: FontAwesomeIconProps['icon'];
-	isIconOnly?: boolean;
-	isDisabled: boolean;
-	isLoading: boolean;
-	isOpen: boolean;
-	onCancel: () => void;
-	onConfirm: () => void;
-	onOpenChange: (isOpen: boolean) => void;
-	radius?: IButtonProps['radius'];
-	size?: IButtonProps['size'];
-}
-
-const AccountConfirmButton = memo<IAccountConfirmButtonProps>(
-	function AccountConfirmButton({
-		ariaLabel,
-		buttonLabel,
-		className,
-		color,
-		confirmLabel,
-		fullWidth = true,
-		icon,
-		isDisabled,
-		isIconOnly,
-		isLoading,
-		isOpen,
-		onCancel,
-		onConfirm,
-		onOpenChange,
-		radius,
-		size,
-	}) {
-		return (
-			<Popover
-				shouldBlockScroll
-				showArrow
-				isOpen={isOpen}
-				onOpenChange={onOpenChange}
-			>
-				<PopoverTrigger>
-					<Button
-						{...(ariaLabel === undefined
-							? {}
-							: { 'aria-label': ariaLabel })}
-						fullWidth={fullWidth}
-						className={cn(
-							!isIconOnly && 'justify-start',
-							className
-						)}
-						color={color}
-						isDisabled={isDisabled}
-						isIconOnly={isIconOnly}
-						isLoading={isLoading}
-						radius={radius}
-						size={size}
-						startContent={
-							isLoading || isIconOnly ? null : (
-								<FontAwesomeIcon icon={icon} className="w-4" />
-							)
-						}
-						variant={isIconOnly ? 'light' : 'flat'}
-					>
-						{isIconOnly ? (
-							<FontAwesomeIcon icon={icon} className="w-3.5" />
-						) : (
-							buttonLabel
-						)}
-					</Button>
-				</PopoverTrigger>
-				<PopoverContent className="space-y-1 p-1">
-					<Button
-						fullWidth
-						color="danger"
-						size="sm"
-						variant="ghost"
-						onPress={onConfirm}
-					>
-						{confirmLabel}
-					</Button>
-					<Button
-						fullWidth
-						color="primary"
-						size="sm"
-						variant="ghost"
-						onPress={onCancel}
-					>
-						取消
-					</Button>
-				</PopoverContent>
-			</Popover>
 		);
 	}
 );
@@ -1591,8 +1488,12 @@ export default memo<IProps>(function AccountManager() {
 			expectedCsrfToken: csrfToken,
 			expectedUserId: user.id,
 		};
+		const flushPromise =
+			user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
+				? Promise.resolve(true)
+				: flushAccountSyncQueueUntilIdle();
 
-		void flushAccountSyncQueueUntilIdle()
+		void flushPromise
 			.then((isFlushed) => {
 				if (!isFlushed) {
 					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
@@ -1701,20 +1602,18 @@ export default memo<IProps>(function AccountManager() {
 			async (operationId) => {
 				const result = await deleteAccountData(
 					csrfToken,
-					user.state_epoch
+					user.state_epoch,
+					user.sync_generation
 				);
 				if (result.status === 'error') {
-					return { operationId, resetResult: null, result };
+					return { operationId, pauseResult: null, result };
 				}
-				const resetResult = await resetAccountSyncCloudStateAfterDelete(
-					{
-						deleteStartedAt,
-						operationId,
-						stateEpoch: result.data.state_epoch,
-						userId: user.id,
-					}
-				);
-				return { operationId, resetResult, result };
+				const pauseResult = await pauseAccountSyncForEmptyCloud({
+					stateEpoch: result.data.state_epoch,
+					syncGeneration: result.data.sync_generation,
+					userId: user.id,
+				});
+				return { operationId, pauseResult, result };
 			}
 		)
 			.then(async (leaseResult) => {
@@ -1722,7 +1621,7 @@ export default memo<IProps>(function AccountManager() {
 					setMessage('账号数据操作正在其他标签页进行，请稍后重试');
 					return;
 				}
-				const { operationId, resetResult, result } = leaseResult;
+				const { operationId, pauseResult, result } = leaseResult;
 				if (result.status === 'error') {
 					if (
 						handleUnauthorizedAccountActionError(
@@ -1739,7 +1638,8 @@ export default memo<IProps>(function AccountManager() {
 					}
 					if (
 						result.httpStatus === 409 &&
-						result.message === 'state-epoch-mismatch'
+						(result.message === 'state-epoch-mismatch' ||
+							result.message === 'sync-generation-mismatch')
 					) {
 						setMessage('云端数据已发生变化，正在刷新账号状态…');
 						try {
@@ -1780,13 +1680,8 @@ export default memo<IProps>(function AccountManager() {
 
 				const { state_epoch } = result.data;
 
-				const shouldFlushPreservedDirty = resetResult;
-				if (shouldFlushPreservedDirty === null) {
-					throw new Error('account-sync-reset-incomplete');
-				}
-
-				if (shouldFlushPreservedDirty) {
-					scheduleAccountSyncFlush();
+				if (!pauseResult) {
+					throw new Error('account-sync-pause-incomplete');
 				}
 				return postAccountSyncBroadcastMessage({
 					deleteStartedAt,
@@ -1825,8 +1720,15 @@ export default memo<IProps>(function AccountManager() {
 					return;
 				}
 
+				const errorCode =
+					error instanceof Error
+						? error.message
+						: 'account-sync-pause-incomplete';
+				if (errorCode === 'account-sync-pause-incomplete') {
+					accountStore.shared.sync.lastError.set(errorCode);
+				}
 				setMessage(
-					error instanceof Error ? error.message : '清空云端数据失败'
+					getAccountClientErrorMessage(errorCode, '清空云端数据失败')
 				);
 			})
 			.finally(() => {
@@ -3294,7 +3196,6 @@ export default memo<IProps>(function AccountManager() {
 			'通行密钥已重命名',
 			'账号数据已导出',
 			'云端数据已清空',
-			'云端数据已清空，其他标签页可能需要手动刷新',
 		].includes(message);
 	const messageText =
 		message === null ? null : getAccountClientErrorMessage(message);
@@ -3310,7 +3211,11 @@ export default memo<IProps>(function AccountManager() {
 		registrationNicknameErrorMessage === null ? authErrorMessage : null;
 	const accountStatusMessage =
 		messageText !== null && authErrorMessage === null ? messageText : null;
-	const accountStatusDescription = accountStatusMessage ?? '账号同步已连接';
+	const isAccountSyncPaused =
+		user?.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty;
+	const accountStatusDescription = isAccountSyncPaused
+		? '云同步已暂停'
+		: (accountStatusMessage ?? '账号同步已连接');
 	const passwordDescription =
 		authCredentialErrorMessage === null
 			? authMode === 'register'
@@ -3800,7 +3705,7 @@ export default memo<IProps>(function AccountManager() {
 									账号会同步此浏览器保存的数据，让其他设备继续使用相同配置。
 								</p>
 								<p>
-									注册后会自动登录；登录后，本机尚未上传的更改会自动继续同步。
+									注册后会自动登录；登录后，本设备尚未上传的更改会自动继续同步。
 								</p>
 							</>
 						)}
@@ -3839,14 +3744,17 @@ export default memo<IProps>(function AccountManager() {
 									aria-live="polite"
 									className={cn(
 										'max-w-28 shrink truncate rounded-full px-2 py-1 text-tiny leading-none sm:max-w-40',
-										accountStatusMessage === null
-											? 'bg-default-100 text-foreground-500 dark:bg-default-50/20'
-											: isMessageSuccess
-												? 'bg-success/15 text-success-700 dark:text-success'
-												: 'bg-danger/15 text-danger-600 dark:text-danger'
+										isAccountSyncPaused
+											? 'bg-warning/15 text-warning-700 dark:text-warning'
+											: accountStatusMessage === null
+												? 'bg-default-100 text-foreground-500 dark:bg-default-50/20'
+												: isMessageSuccess
+													? 'bg-success/15 text-success-700 dark:text-success'
+													: 'bg-danger/15 text-danger-600 dark:text-danger'
 									)}
 									role={
-										accountStatusMessage === null
+										accountStatusMessage === null &&
+										!isAccountSyncPaused
 											? undefined
 											: 'status'
 									}
@@ -4857,12 +4765,20 @@ export default memo<IProps>(function AccountManager() {
 								</div>
 								<div className="flex flex-col gap-2">
 									<AccountConfirmButton
-										buttonLabel="清空云端数据"
+										buttonLabel={
+											user.sync_status ===
+											ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
+												? '云端数据已清空'
+												: '清空云端数据'
+										}
 										color="warning"
 										confirmLabel="确认清空"
 										icon={faCloudArrowUp}
 										isDisabled={
-											isSubmitting || csrfToken === null
+											isSubmitting ||
+											csrfToken === null ||
+											user.sync_status ===
+												ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
 										}
 										isLoading={isSubmitting}
 										isOpen={isDeleteDataPopoverOpen}

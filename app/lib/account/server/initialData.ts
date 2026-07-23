@@ -159,6 +159,8 @@ function createAccountMeInitialData({
 			lastAppliedRemoteHash: {},
 			revisions,
 			state_epoch: user.state_epoch,
+			sync_generation: user.sync_generation,
+			sync_status: user.sync_status,
 		},
 		user: createAccountUserProfile(user),
 	};

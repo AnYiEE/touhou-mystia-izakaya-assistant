@@ -96,6 +96,8 @@ function createNullableUserProfile(
 		event.user_created_at === null ||
 		event.user_state_epoch === null ||
 		event.user_status === null ||
+		event.user_sync_generation === null ||
+		event.user_sync_status === null ||
 		event.username === null ||
 		event.username_normalized === null
 	) {
@@ -110,6 +112,8 @@ function createNullableUserProfile(
 		nickname: event.user_nickname,
 		state_epoch: event.user_state_epoch,
 		status: event.user_status,
+		sync_generation: event.user_sync_generation,
+		sync_status: event.user_sync_status,
 		updated_at: event.event_created_at,
 		username: event.username,
 		username_normalized: event.username_normalized,

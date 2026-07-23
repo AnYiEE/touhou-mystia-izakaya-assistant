@@ -144,6 +144,8 @@ export interface ISsoClientUserGrantRecord {
 	user_nickname: string | null;
 	user_state_epoch: number;
 	user_status: TUser['status'];
+	user_sync_generation: number;
+	user_sync_status: TUser['sync_status'];
 	username: string;
 	username_normalized: string;
 }
@@ -212,6 +214,8 @@ export interface IAdminSsoTicketRecord {
 	user_nickname: string | null;
 	user_state_epoch: number;
 	user_status: TUser['status'];
+	user_sync_generation: number;
+	user_sync_status: TUser['sync_status'];
 	username: string;
 	username_normalized: string;
 }
@@ -234,6 +238,8 @@ export interface IAdminSsoGrantEventRecord {
 	user_nickname: string | null;
 	user_state_epoch: number | null;
 	user_status: TUser['status'] | null;
+	user_sync_generation: number | null;
+	user_sync_status: TUser['sync_status'] | null;
 	username: string | null;
 	username_normalized: string | null;
 }
@@ -1757,6 +1763,8 @@ export async function listAdminSsoGrants({
 			`${USER_TABLE_NAME}.nickname as user_nickname`,
 			`${USER_TABLE_NAME}.state_epoch as user_state_epoch`,
 			`${USER_TABLE_NAME}.status as user_status`,
+			`${USER_TABLE_NAME}.sync_generation as user_sync_generation`,
+			`${USER_TABLE_NAME}.sync_status as user_sync_status`,
 			`${USER_TABLE_NAME}.username as username`,
 			`${USER_TABLE_NAME}.username_normalized as username_normalized`,
 		])
@@ -1916,6 +1924,8 @@ export async function listAdminSsoGrantEvents({
 			`${USER_TABLE_NAME}.nickname as user_nickname`,
 			`${USER_TABLE_NAME}.state_epoch as user_state_epoch`,
 			`${USER_TABLE_NAME}.status as user_status`,
+			`${USER_TABLE_NAME}.sync_generation as user_sync_generation`,
+			`${USER_TABLE_NAME}.sync_status as user_sync_status`,
 			`${USER_TABLE_NAME}.username as username`,
 			`${USER_TABLE_NAME}.username_normalized as username_normalized`,
 		]);
@@ -2474,6 +2484,8 @@ export async function listAdminSsoTickets({
 			`${USER_TABLE_NAME}.nickname as user_nickname`,
 			`${USER_TABLE_NAME}.state_epoch as user_state_epoch`,
 			`${USER_TABLE_NAME}.status as user_status`,
+			`${USER_TABLE_NAME}.sync_generation as user_sync_generation`,
+			`${USER_TABLE_NAME}.sync_status as user_sync_status`,
 			`${USER_TABLE_NAME}.username as username`,
 			`${USER_TABLE_NAME}.username_normalized as username_normalized`,
 		])
@@ -2716,6 +2728,8 @@ export async function listSsoUserClientGrantsForClient(
 			`${USER_TABLE_NAME}.nickname as user_nickname`,
 			`${USER_TABLE_NAME}.state_epoch as user_state_epoch`,
 			`${USER_TABLE_NAME}.status as user_status`,
+			`${USER_TABLE_NAME}.sync_generation as user_sync_generation`,
+			`${USER_TABLE_NAME}.sync_status as user_sync_status`,
 			`${USER_TABLE_NAME}.username as username`,
 			`${USER_TABLE_NAME}.username_normalized as username_normalized`,
 		])

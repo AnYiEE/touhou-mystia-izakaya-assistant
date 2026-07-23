@@ -11,6 +11,7 @@ import {
 	readJsonBodyResult,
 } from '@/lib/account/server/routeResponses';
 import { AccountSyncCapacityExceededError } from '@/lib/account/server/syncCapacity';
+import { ACCOUNT_SYNC_STATUS_MAP } from '@/lib/account/shared/constants';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -123,6 +124,13 @@ export async function POST(request: NextRequest) {
 	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
+	if (auth.data.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+		return createNoStoreErrorResponse('sync-paused', 409, {
+			state_epoch: auth.data.user.state_epoch,
+			sync_generation: auth.data.user.sync_generation,
+			sync_status: auth.data.user.sync_status,
+		});
+	}
 
 	const codeDigest = accountAuditModule.createAccountAuditValueDigest(code);
 	const createAuditInput = (
@@ -153,6 +161,7 @@ export async function POST(request: NextRequest) {
 					importResult = await backupImportModule.importBackupData({
 						code,
 						expectedStateEpoch: auth.data.user.state_epoch,
+						expectedSyncGeneration: auth.data.user.sync_generation,
 						lockModule,
 						session: auth.data.session,
 						signal,
@@ -186,8 +195,30 @@ export async function POST(request: NextRequest) {
 					return createNoStoreErrorResponse(
 						'state-epoch-mismatch',
 						409,
-						{ state_epoch: importResult.state_epoch }
+						{
+							state_epoch: importResult.state_epoch,
+							sync_generation: importResult.sync_generation,
+							sync_status: importResult.sync_status,
+						}
 					);
+				}
+				if (importResult.status === 'sync-generation-mismatch') {
+					return createNoStoreErrorResponse(
+						'sync-generation-mismatch',
+						409,
+						{
+							state_epoch: importResult.state_epoch,
+							sync_generation: importResult.sync_generation,
+							sync_status: importResult.sync_status,
+						}
+					);
+				}
+				if (importResult.status === 'sync-paused') {
+					return createNoStoreErrorResponse('sync-paused', 409, {
+						state_epoch: importResult.state_epoch,
+						sync_generation: importResult.sync_generation,
+						sync_status: importResult.sync_status,
+					});
 				}
 				if (importResult.status === 'already-imported') {
 					await accountAuditModule.writeAccountAuditLog(

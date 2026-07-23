@@ -5,6 +5,7 @@ import { migrateSsoTables } from './sso';
 import { TABLE_NAME_MAP } from '../constant';
 import { type TDatabase } from '../types';
 import { dropMismatchedSqliteIndexes, getTableColumns } from '../utils';
+import { ACCOUNT_SYNC_STATUS_MAP } from '@/lib/account/shared/constants';
 
 const SERVER_MISCONFIGURED_MESSAGE = 'server-misconfigured';
 
@@ -61,6 +62,8 @@ const ACCOUNT_TABLE_COLUMNS_MAP = {
 		'nickname',
 		'status',
 		'state_epoch',
+		'sync_generation',
+		'sync_status',
 		'created_at',
 		'updated_at',
 		'last_login_at',
@@ -133,6 +136,12 @@ const ACCOUNT_TABLE_COLUMN_DEFINITION_MAP = {
 		nickname: { dataType: 'text' },
 		state_epoch: { dataType: 'integer', defaultTo: 0, notNull: true },
 		status: { dataType: 'text', defaultTo: 'active', notNull: true },
+		sync_generation: { dataType: 'integer', defaultTo: 0, notNull: true },
+		sync_status: {
+			dataType: 'text',
+			defaultTo: ACCOUNT_SYNC_STATUS_MAP.active,
+			notNull: true,
+		},
 		updated_at: { dataType: 'integer', defaultTo: 0, notNull: true },
 		username: { dataType: 'text', defaultTo: '', notNull: true },
 		username_normalized: { dataType: 'text', defaultTo: '', notNull: true },
@@ -473,6 +482,12 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.addColumn('status', 'text', (col) => col.notNull().defaultTo('active'))
 		.addColumn('state_epoch', 'integer', (col) =>
 			col.notNull().defaultTo(0)
+		)
+		.addColumn('sync_generation', 'integer', (col) =>
+			col.notNull().defaultTo(0)
+		)
+		.addColumn('sync_status', 'text', (col) =>
+			col.notNull().defaultTo(ACCOUNT_SYNC_STATUS_MAP.active)
 		)
 		.addColumn('created_at', 'integer', (col) => col.notNull())
 		.addColumn('updated_at', 'integer', (col) => col.notNull())

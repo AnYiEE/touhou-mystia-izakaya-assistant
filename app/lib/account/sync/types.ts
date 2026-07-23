@@ -1,4 +1,8 @@
-import { type TSyncNamespace } from './constants';
+import {
+	type ACCOUNT_SYNC_OPERATION_KIND_MAP,
+	type TSyncNamespace,
+} from './constants';
+import { type TAccountSyncStatus } from '../shared/types';
 
 export interface ISyncStateChange {
 	data: unknown;
@@ -10,6 +14,7 @@ export interface ISyncStateChange {
 export interface ISyncStatePutBody {
 	changes: ISyncStateChange[];
 	state_epoch: number;
+	sync_generation: number;
 }
 
 export interface ISyncStatePingBody extends ISyncStatePutBody {
@@ -21,11 +26,17 @@ export interface IAccountSyncMeta {
 	lastAppliedRemoteHash: Partial<Record<TSyncNamespace, string>>;
 	revisions: Partial<Record<TSyncNamespace, number>>;
 	state_epoch: number;
+	sync_generation: number;
+	sync_status: TAccountSyncStatus;
 }
+
+export type TAccountSyncOperationKind =
+	(typeof ACCOUNT_SYNC_OPERATION_KIND_MAP)[keyof typeof ACCOUNT_SYNC_OPERATION_KIND_MAP];
 
 export type TSyncPausedReason =
 	| 'applying-remote'
 	| 'bootstrap'
+	| 'cloud-paused'
 	| 'conflict'
 	| 'delete-data'
 	| 'importing-backup';
@@ -71,7 +82,7 @@ export interface IAccountSyncBroadcastMessage {
 		| 'queue-changed';
 	syncOperation?: {
 		expiresAt: number;
-		kind: 'delete-data' | 'import-backup';
+		kind: TAccountSyncOperationKind;
 		ownerTabId: string;
 		startedAt: number;
 		status: 'ended' | 'renewed' | 'started';
@@ -174,11 +185,28 @@ export interface ISyncStateRecord {
 export interface ISyncStateGetResponse {
 	records: ISyncStateRecord[];
 	state_epoch: number;
+	sync_generation: number;
+	sync_status: TAccountSyncStatus;
 }
 
 export interface ISyncStatePutResponse {
 	results: TSyncStatePutResult[];
 	state_epoch: number;
+	sync_generation: number;
+	sync_status: TAccountSyncStatus;
+}
+
+export interface ISyncStateRebuildBody {
+	changes: ISyncStateChange[];
+	state_epoch: number;
+	sync_generation: number;
+}
+
+export interface ISyncStateRebuildResponse {
+	records: ISyncStateRecord[];
+	state_epoch: number;
+	sync_generation: number;
+	sync_status: 'active';
 }
 
 export interface ISyncImportBackupCodeResponse {

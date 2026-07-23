@@ -4,6 +4,19 @@ export const USER_STATUS_MAP = {
 	disabled: 'disabled',
 } as const;
 
+export const ACCOUNT_SYNC_STATUS_MAP = {
+	active: 'active',
+	pausedEmpty: 'paused_empty',
+} as const;
+
+export function checkAccountSyncStatus(
+	value: unknown
+): value is (typeof ACCOUNT_SYNC_STATUS_MAP)[keyof typeof ACCOUNT_SYNC_STATUS_MAP] {
+	return Object.values(ACCOUNT_SYNC_STATUS_MAP).includes(
+		value as (typeof ACCOUNT_SYNC_STATUS_MAP)[keyof typeof ACCOUNT_SYNC_STATUS_MAP]
+	);
+}
+
 export const ACCOUNT_COOKIE_NAME_MAP = {
 	adminSession: 'mystia-admin-session',
 	session: 'mystia-session',
