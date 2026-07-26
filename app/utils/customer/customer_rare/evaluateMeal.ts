@@ -8,7 +8,6 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import { type ICustomerOrder } from '@/types';
-import { checkLengthEmpty, intersection, without } from '@/utilities';
 
 export interface IEvaluateMealParams {
 	currentBeverageTags: TBeverageTag[];
@@ -292,29 +291,39 @@ function evaluateBeverageSide({
 	| 'currentCustomerOrder'
 	| 'hasMystiaCooker'
 >) {
-	const matchedBeverageTags = intersection(
-		currentBeverageTags,
-		currentCustomerBeverageTags
-	);
-	const matchedBeverageTagsWithoutOrderedBeverage = without(
-		matchedBeverageTags,
-		hasMystiaCooker
-			? matchedBeverageTags[0]
-			: currentCustomerOrder.beverageTag
-	);
-	const orderedBeverageScore = checkLengthEmpty(matchedBeverageTags)
-		? 0
-		: Number(
-				hasMystiaCooker ||
-					(currentCustomerOrder.beverageTag
-						? matchedBeverageTags.includes(
-								currentCustomerOrder.beverageTag
-							)
-						: 0)
-			);
+	let firstMatchedTag: TBeverageTag | undefined;
+	let firstMatchedTagCount = 0;
+	let matchedOrderedTagCount = 0;
+	let matchedTagCount = 0;
+
+	for (const tag of currentBeverageTags) {
+		if (!currentCustomerBeverageTags.includes(tag)) {
+			continue;
+		}
+
+		matchedTagCount++;
+		if (firstMatchedTag === undefined) {
+			firstMatchedTag = tag;
+			firstMatchedTagCount = 1;
+		} else if (tag === firstMatchedTag) {
+			firstMatchedTagCount++;
+		}
+		if (tag === currentCustomerOrder.beverageTag) {
+			matchedOrderedTagCount++;
+		}
+	}
+
+	if (matchedTagCount === 0) {
+		return 0;
+	}
+	if (hasMystiaCooker) {
+		return 1 + matchedTagCount - firstMatchedTagCount;
+	}
 
 	return (
-		orderedBeverageScore + matchedBeverageTagsWithoutOrderedBeverage.length
+		Number(matchedOrderedTagCount > 0) +
+		matchedTagCount -
+		matchedOrderedTagCount
 	);
 }
 
@@ -332,35 +341,49 @@ function evaluateRecipeSide({
 	| 'currentRecipeTagsWithTrend'
 	| 'hasMystiaCooker'
 >) {
-	const matchedRecipeNegativeTags = intersection(
-		currentRecipeTagsWithTrend,
-		currentCustomerNegativeTags
-	);
-	const matchedRecipePositiveTags = intersection(
-		currentRecipeTagsWithTrend,
-		currentCustomerPositiveTags
-	);
-	const matchedRecipePositiveTagsWithoutOrderedRecipe = without(
-		matchedRecipePositiveTags,
-		hasMystiaCooker
-			? matchedRecipePositiveTags[0]
-			: currentCustomerOrder.recipeTag
-	);
-	const orderedRecipeScore = checkLengthEmpty(matchedRecipePositiveTags)
-		? 0
-		: Number(
-				hasMystiaCooker ||
-					(currentCustomerOrder.recipeTag
-						? matchedRecipePositiveTags.includes(
-								currentCustomerOrder.recipeTag
-							)
-						: 0)
-			);
+	let firstMatchedPositiveTag: TRecipeTag | undefined;
+	let firstMatchedPositiveTagCount = 0;
+	let matchedNegativeTagCount = 0;
+	let matchedOrderedTagCount = 0;
+	let matchedPositiveTagCount = 0;
+
+	for (const tag of currentRecipeTagsWithTrend) {
+		if (currentCustomerNegativeTags.includes(tag)) {
+			matchedNegativeTagCount++;
+		}
+		if (!currentCustomerPositiveTags.includes(tag)) {
+			continue;
+		}
+
+		matchedPositiveTagCount++;
+		if (firstMatchedPositiveTag === undefined) {
+			firstMatchedPositiveTag = tag;
+			firstMatchedPositiveTagCount = 1;
+		} else if (tag === firstMatchedPositiveTag) {
+			firstMatchedPositiveTagCount++;
+		}
+		if (tag === currentCustomerOrder.recipeTag) {
+			matchedOrderedTagCount++;
+		}
+	}
+
+	if (matchedPositiveTagCount === 0) {
+		return -matchedNegativeTagCount;
+	}
+	if (hasMystiaCooker) {
+		return (
+			1 +
+			matchedPositiveTagCount -
+			firstMatchedPositiveTagCount -
+			matchedNegativeTagCount
+		);
+	}
 
 	return (
-		orderedRecipeScore +
-		matchedRecipePositiveTagsWithoutOrderedRecipe.length -
-		matchedRecipeNegativeTags.length
+		Number(matchedOrderedTagCount > 0) +
+		matchedPositiveTagCount -
+		matchedOrderedTagCount -
+		matchedNegativeTagCount
 	);
 }
 
@@ -440,10 +463,7 @@ export function createMealEvaluator({
 		currentRecipeTagsWithTrend,
 		isDarkMatter,
 	}: TMealEvaluatorParams) => {
-		if (
-			checkLengthEmpty(currentBeverageTags) ||
-			currentRecipeName === null
-		) {
+		if (currentBeverageTags.length === 0 || currentRecipeName === null) {
 			return null;
 		}
 

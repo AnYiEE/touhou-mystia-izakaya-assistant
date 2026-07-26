@@ -6,7 +6,6 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import { type IPopularTrend, type TPopularTag } from '@/types';
-import { intersection } from '@/utilities';
 import type { TRecipe } from '@/utils/types';
 
 interface IParameters {
@@ -112,10 +111,11 @@ export function evaluateMeal({
 		extraScore += 1;
 	}
 
-	extraScore += intersection(
-		currentExtraTags,
-		currentCustomerPositiveTags
-	).length;
+	for (const tag of currentExtraTags) {
+		if (currentCustomerPositiveTags.includes(tag)) {
+			extraScore++;
+		}
+	}
 
 	let mealScore = 2 + extraScore;
 

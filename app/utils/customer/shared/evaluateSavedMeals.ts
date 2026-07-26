@@ -11,7 +11,7 @@ import {
 	type TPopularTag,
 	type TRatingKey,
 } from '@/types';
-import { createBoundedRuntimeCache, union } from '@/utilities';
+import { createBoundedRuntimeCache } from '@/utilities';
 import {
 	Beverage,
 	CustomerNormal,
@@ -163,7 +163,7 @@ export function evaluateRareSavedMeal({
 		currentCustomerNegativeTags: customerNegativeTags,
 		currentCustomerOrder: customerOrder,
 		currentCustomerPositiveTags: customerPositiveTags,
-		currentIngredients: union(ingredients, extraIngredients),
+		currentIngredients: [...new Set([...ingredients, ...extraIngredients])],
 		currentRecipeName: recipeName,
 		currentRecipeTagsWithTrend: recipeTagsWithTrend,
 		hasMystiaCooker,

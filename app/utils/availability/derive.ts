@@ -9,6 +9,8 @@ import {
 	INGREDIENT_LIST,
 	ORNAMENT_LIST,
 	PARTNER_LIST,
+	PLACE_DLC_MAP,
+	PLACE_NAME_REGEX,
 	RECIPE_LIST,
 	type TCollectionLocation,
 	type TCurrencyName,
@@ -30,6 +32,7 @@ import {
 	resolveRareCustomerBondAvailabilityResult,
 } from './sourceResolvers';
 import type {
+	IAvailabilityAcquisitionSource,
 	IAvailabilityAuditEntry,
 	IAvailabilityPath,
 	IAvailabilityResult,
@@ -88,8 +91,15 @@ function mergeResults(results: ReadonlyArray<IAvailabilityResult>) {
 	);
 }
 
-function createDlcPath(dlc: TDlc, source: string) {
-	return createAvailabilityPath([dlc], source);
+function createDlcPath(
+	dlc: TDlc,
+	source: string,
+	options: {
+		readonly acquisitionSources?: ReadonlyArray<IAvailabilityAcquisitionSource>;
+		readonly isFishingPath?: boolean;
+	} = {}
+) {
+	return createAvailabilityPath([dlc], source, options);
 }
 
 function getSatisfactionRequirementKeys(path: IAvailabilityPath) {
@@ -120,7 +130,19 @@ function getMinimalPrerequisitePaths(paths: ReadonlyArray<IAvailabilityPath>) {
 function createFallbackResult(dlc: TDlc, context: string) {
 	const dlcLabel = DLC_LABEL_MAP[dlc].label;
 	return createResult(
-		[createDlcPath(dlc, `归属回退：${dlcLabel}`)],
+		[
+			createDlcPath(dlc, `归属回退：${dlcLabel}`, {
+				acquisitionSources: [
+					{
+						kind: 'unknown',
+						name: context,
+						place: null,
+						probability: null,
+						timeWindow: null,
+					},
+				],
+			}),
+		],
 		[`${context}无法精确解析，已回退到内容归属${dlcLabel}`]
 	);
 }
@@ -130,9 +152,28 @@ function resolveTextAvailabilityResult(
 	contentDlc: TDlc,
 	context: string
 ) {
+	const placeMatch = PLACE_NAME_REGEX.exec(value);
+	const parsedPlace = placeMatch?.[1];
+	const place =
+		parsedPlace !== undefined && Object.hasOwn(PLACE_DLC_MAP, parsedPlace)
+			? (parsedPlace as TPlace)
+			: null;
+
 	return value === ''
 		? createFallbackResult(contentDlc, context)
-		: createResult([createDlcPath(contentDlc, value)]);
+		: createResult([
+				createDlcPath(contentDlc, value, {
+					acquisitionSources: [
+						{
+							kind: 'unknown',
+							name: value,
+							place,
+							probability: null,
+							timeWindow: null,
+						},
+					],
+				}),
+			]);
 }
 
 function ensureResultHasPath(
@@ -202,7 +243,10 @@ function combineMerchantAndCurrencyPaths(
 	);
 	const diagnostics = [...merchantResult.diagnostics];
 	let combinedPaths = merchantResult.availabilityPaths.map((path) =>
-		createAvailabilityPath(path.requiredDlcs, path.sources[0] ?? source)
+		createAvailabilityPath(path.requiredDlcs, path.sources[0] ?? source, {
+			acquisitionSources: path.acquisitionSources,
+			isFishingPath: path.isFishingPath,
+		})
 	);
 
 	currencyNames.forEach((currencyName) => {
@@ -222,7 +266,13 @@ function combineMerchantAndCurrencyPaths(
 			prerequisitePaths.map((currencyPath) =>
 				createAvailabilityPath(
 					[...itemPath.requiredDlcs, ...currencyPath.requiredDlcs],
-					source
+					source,
+					{
+						acquisitionSources: itemPath.acquisitionSources,
+						isFishingPath:
+							itemPath.isFishingPath ||
+							currencyPath.isFishingPath,
+					}
 				)
 			)
 		);
@@ -248,7 +298,16 @@ function resolveCurrencyNonBuySource(
 		return createResult([
 			resolvePlaceAvailabilityPath(
 				source.task,
-				`地区任务：${source.task}`
+				`地区任务：${source.task}`,
+				[
+					{
+						kind: 'task',
+						name: source.task,
+						place: source.task,
+						probability: null,
+						timeWindow: null,
+					},
+				]
 			),
 		]);
 	}
@@ -346,22 +405,51 @@ function resolveFoodAvailabilityResult(item: IFoodAvailabilityItem) {
 	const results: IAvailabilityResult[] = [];
 
 	if (item.from.self === true) {
-		results.push(createResult([createDlcPath(0, '初始获得')]));
+		results.push(
+			createResult([
+				createDlcPath(0, '初始获得', {
+					acquisitionSources: [
+						{
+							kind: 'self',
+							name: '初始获得',
+							place: null,
+							probability: null,
+							timeWindow: null,
+						},
+					],
+				}),
+			])
+		);
 	}
 
 	item.from.buy?.forEach((entry) => {
 		const merchant = typeof entry === 'string' ? entry : entry[0];
+		const probability =
+			typeof entry === 'string' || typeof entry[1] !== 'number'
+				? 100
+				: entry[1];
 		results.push(
 			resolveMerchantAvailabilityResult(
 				merchant,
 				item.dlc,
-				`购买：${merchant}`
+				`购买：${merchant}`,
+				probability
 			)
 		);
 	});
 
 	item.from.collect?.forEach((entry) => {
 		const location = typeof entry === 'string' ? entry : entry[0];
+		const probability =
+			typeof entry === 'string' || typeof entry[1] !== 'number'
+				? 100
+				: entry[1];
+		const timeWindow =
+			typeof entry !== 'string' &&
+			typeof entry[2] === 'number' &&
+			typeof entry[3] === 'number'
+				? ([entry[2], entry[3]] as const)
+				: null;
 		const places = extractPlacesFromCollectionLocation(location);
 
 		results.push(
@@ -371,7 +459,16 @@ function resolveFoodAvailabilityResult(item: IFoodAvailabilityItem) {
 						places.map((place) =>
 							resolvePlaceAvailabilityPath(
 								place,
-								`采集：${location}`
+								`采集：${location}`,
+								[
+									{
+										kind: 'collect',
+										name: location,
+										place,
+										probability,
+										timeWindow,
+									},
+								]
 							)
 						)
 					)
@@ -386,8 +483,23 @@ function resolveFoodAvailabilityResult(item: IFoodAvailabilityItem) {
 		results.push(
 			createResult([
 				combineAvailabilityPaths(
-					resolvePlaceAvailabilityPath(place, `钓鱼地点：${place}`),
-					createDlcPath(4, 'DLC4 钓鱼能力')
+					createAvailabilityPath(
+						[PLACE_DLC_MAP[place]],
+						`钓鱼地点：${place}`,
+						{
+							acquisitionSources: [
+								{
+									kind: 'fishing',
+									name: place,
+									place,
+									probability: null,
+									timeWindow: null,
+								},
+							],
+							isFishingPath: true,
+						}
+					),
+					createDlcPath(4, 'DLC4 钓鱼能力', { isFishingPath: true })
 				),
 			])
 		);
@@ -433,7 +545,21 @@ function resolveRecipeAvailabilityResult(item: (typeof RECIPE_LIST)[number]) {
 
 	const results: IAvailabilityResult[] = [];
 	if ('self' in item.from) {
-		results.push(createResult([createDlcPath(0, '初始食谱')]));
+		results.push(
+			createResult([
+				createDlcPath(0, '初始食谱', {
+					acquisitionSources: [
+						{
+							kind: 'self',
+							name: '初始食谱',
+							place: null,
+							probability: null,
+							timeWindow: null,
+						},
+					],
+				}),
+			])
+		);
 	}
 	if ('bond' in item.from) {
 		results.push(
@@ -454,13 +580,25 @@ function resolveRecipeAvailabilityResult(item: (typeof RECIPE_LIST)[number]) {
 	}
 	if ('levelup' in item.from) {
 		const [level, place] = item.from.levelup;
+		const acquisitionSources: IAvailabilityAcquisitionSource[] = [
+			{
+				kind: 'levelup',
+				name: `Lv.${level}`,
+				place,
+				probability: null,
+				timeWindow: null,
+			},
+		];
 		results.push(
 			createResult([
 				place === null
-					? createDlcPath(0, `升级：Lv.${level}`)
+					? createDlcPath(0, `升级：Lv.${level}`, {
+							acquisitionSources,
+						})
 					: resolvePlaceAvailabilityPath(
 							place,
-							`地区升级：${place} Lv.${level}`
+							`地区升级：${place} Lv.${level}`,
+							acquisitionSources
 						),
 			])
 		);
@@ -488,7 +626,19 @@ function resolveArrayItemAvailabilityResult(
 		}
 
 		if ('self' in source) {
-			return createResult([createDlcPath(0, '初始获得')]);
+			return createResult([
+				createDlcPath(0, '初始获得', {
+					acquisitionSources: [
+						{
+							kind: 'self',
+							name: '初始获得',
+							place: null,
+							probability: null,
+							timeWindow: null,
+						},
+					],
+				}),
+			]);
 		}
 		if ('bond' in source) {
 			return resolveRareCustomerBondAvailabilityResult(
@@ -541,13 +691,34 @@ function resolvePartnerAvailabilityResult(item: (typeof PARTNER_LIST)[number]) {
 	}
 
 	if ('self' in item.from) {
-		return createResult([createDlcPath(0, '初始伙伴')]);
+		return createResult([
+			createDlcPath(0, '初始伙伴', {
+				acquisitionSources: [
+					{
+						kind: 'self',
+						name: '初始伙伴',
+						place: null,
+						probability: null,
+						timeWindow: null,
+					},
+				],
+			}),
+		]);
 	}
 	if ('place' in item.from) {
 		return createResult([
 			resolvePlaceAvailabilityPath(
 				item.from.place,
-				`地区解锁：${item.from.place}`
+				`地区解锁：${item.from.place}`,
+				[
+					{
+						kind: 'unknown',
+						name: item.from.place,
+						place: item.from.place,
+						probability: null,
+						timeWindow: null,
+					},
+				]
 			),
 		]);
 	}
@@ -555,7 +726,16 @@ function resolvePartnerAvailabilityResult(item: (typeof PARTNER_LIST)[number]) {
 		return createResult([
 			resolvePlaceAvailabilityPath(
 				item.from.task,
-				`地区任务：${item.from.task}`
+				`地区任务：${item.from.task}`,
+				[
+					{
+						kind: 'task',
+						name: item.from.task,
+						place: item.from.task,
+						probability: null,
+						timeWindow: null,
+					},
+				]
 			),
 		]);
 	}
@@ -584,10 +764,32 @@ function resolveCustomerAvailabilityResult(
 	item: { dlc: TDlc; name: string }
 ) {
 	const paths = [
-		createDlcPath(item.dlc, `内容存在：${DLC_LABEL_MAP[item.dlc].label}`),
+		createDlcPath(item.dlc, `内容存在：${DLC_LABEL_MAP[item.dlc].label}`, {
+			acquisitionSources: [
+				{
+					kind: 'content',
+					name: item.name,
+					place: null,
+					probability: null,
+					timeWindow: null,
+				},
+			],
+		}),
 	];
 	if (category === 'customerRare' && item.name === '雾雨魔理沙') {
-		paths.push(createDlcPath(0, '本体特殊来店'));
+		paths.push(
+			createDlcPath(0, '本体特殊来店', {
+				acquisitionSources: [
+					{
+						kind: 'content',
+						name: '本体特殊来店',
+						place: null,
+						probability: null,
+						timeWindow: null,
+					},
+				],
+			})
+		);
 	}
 	return createResult(paths);
 }

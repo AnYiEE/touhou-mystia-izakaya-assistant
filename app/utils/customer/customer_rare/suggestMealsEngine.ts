@@ -4,7 +4,14 @@ import {
 	type TRecipeTag,
 } from '@/data';
 
+import {
+	EMPTY_RECOMMENDATION_PRIORITY_METRICS,
+	type IRecommendationPriorityMetrics,
+	compareRecommendationStrictMetrics,
+} from './suggestMealPriority';
+
 const DEFAULT_SLICE_BUDGET_MS = 6;
+const CHECKPOINT_TIME_CHECK_INTERVAL = 32;
 
 // eslint-disable-next-line unicorn/prefer-global-this
 const isServer = typeof window === 'undefined';
@@ -23,6 +30,7 @@ export interface IExactIngredientCandidate {
 	readonly effectKeys: ReadonlyArray<string>;
 	readonly name: TIngredientName;
 	readonly penalty: number;
+	readonly priority: IRecommendationPriorityMetrics;
 	readonly tags: ReadonlyArray<TIngredientTag>;
 }
 
@@ -32,6 +40,7 @@ export interface IExactIngredientState {
 	readonly extraIngredients: ReadonlyArray<TIngredientName>;
 	readonly ingredientPenalty: number;
 	readonly orderedTagIndexes: ReadonlyArray<number>;
+	readonly priority: IRecommendationPriorityMetrics;
 	readonly tagMask: ReadonlyArray<number>;
 }
 
@@ -275,8 +284,10 @@ export function createSuggestMealsExecution({
 	}
 
 	let sliceStartedAt = now();
+	let checkpointsUntilTimeCheck = CHECKPOINT_TIME_CHECK_INTERVAL;
 	const resetSliceStartedAt = () => {
 		sliceStartedAt = now();
+		checkpointsUntilTimeCheck = CHECKPOINT_TIME_CHECK_INTERVAL;
 	};
 
 	function checkpoint(force: true): Promise<void>;
@@ -285,8 +296,20 @@ export function createSuggestMealsExecution({
 		throwIfAborted(signal);
 
 		try {
-			if (!force && now() - sliceStartedAt < sliceBudgetMs) {
-				return;
+			if (!force) {
+				if (sliceBudgetMs === Infinity) {
+					return;
+				}
+				if (sliceBudgetMs > 0) {
+					checkpointsUntilTimeCheck--;
+					if (checkpointsUntilTimeCheck > 0) {
+						return;
+					}
+					checkpointsUntilTimeCheck = CHECKPOINT_TIME_CHECK_INTERVAL;
+				}
+				if (now() - sliceStartedAt < sliceBudgetMs) {
+					return;
+				}
 			}
 
 			return scheduler.yield(taskKey, signal).then(() => {
@@ -332,27 +355,71 @@ function addMaskIndexes(
 	mask: ReadonlyArray<number>,
 	indexes: ReadonlyArray<number>
 ) {
-	const nextMask = [...mask];
+	let nextMask: number[] | undefined;
 
 	for (const index of indexes) {
 		const segmentIndex = Math.floor(index / 32);
 		const bitIndex = index % 32;
-		nextMask[segmentIndex] =
-			((nextMask[segmentIndex] ?? 0) | (1 << bitIndex)) >>> 0;
+		const segment = (nextMask ?? mask)[segmentIndex] ?? 0;
+		const nextSegment = (segment | (1 << bitIndex)) >>> 0;
+		if (nextSegment === segment) {
+			continue;
+		}
+
+		nextMask ??= [...mask];
+		nextMask[segmentIndex] = nextSegment;
 	}
 
-	return nextMask;
+	return nextMask ?? mask;
 }
 
-function createStateKey({
-	effectMask,
-	orderedTagIndexes,
-	tagMask,
-}: Pick<
-	IExactIngredientState,
-	'effectMask' | 'orderedTagIndexes' | 'tagMask'
->) {
-	return `${tagMask.join('.')}:${effectMask.join('.')}:${orderedTagIndexes.join('.')}`;
+function mergeMasks(
+	mask: ReadonlyArray<number>,
+	addition: ReadonlyArray<number>
+) {
+	let nextMask: number[] | undefined;
+
+	for (const [segmentIndex, additionSegment] of addition.entries()) {
+		const segment = (nextMask ?? mask)[segmentIndex] ?? 0;
+		const nextSegment = (segment | additionSegment) >>> 0;
+		if (nextSegment === segment) {
+			continue;
+		}
+
+		nextMask ??= [...mask];
+		nextMask[segmentIndex] = nextSegment;
+	}
+
+	return nextMask ?? mask;
+}
+
+function createStateKey(
+	tagMask: ReadonlyArray<number>,
+	effectMask: ReadonlyArray<number>,
+	orderedTagIndexes: ReadonlyArray<number>
+) {
+	const tagKey =
+		tagMask.length === 1
+			? (tagMask[0]?.toString() ?? '')
+			: tagMask.join('.');
+	const effectKey =
+		effectMask.length === 1
+			? (effectMask[0]?.toString() ?? '')
+			: effectMask.join('.');
+	const orderedTagKey =
+		orderedTagIndexes.length === 0 ? '' : orderedTagIndexes.join('.');
+
+	return `${tagKey}:${effectKey}:${orderedTagKey}`;
+}
+
+function compareTerminalStates(
+	left: IExactIngredientState,
+	right: IExactIngredientState
+) {
+	return (
+		compareRecommendationStrictMetrics(left.priority, right.priority) ||
+		left.ingredientPenalty - right.ingredientPenalty
+	);
 }
 
 function appendOrderedTagIndexes(
@@ -361,22 +428,25 @@ function appendOrderedTagIndexes(
 	tagIndexMap: ReadonlyMap<TIngredientTag, number>,
 	orderSensitiveTags: ReadonlySet<TRecipeTag>
 ) {
-	const nextIndexes = [...currentIndexes];
-	const seen = new Set(currentIndexes);
+	if (orderSensitiveTags.size === 0) {
+		return currentIndexes;
+	}
+
+	let nextIndexes: number[] | undefined;
 
 	for (const tag of candidateTags) {
 		const index = tagIndexMap.get(tag);
 		if (
 			index !== undefined &&
 			orderSensitiveTags.has(tag as TRecipeTag) &&
-			!seen.has(index)
+			!(nextIndexes ?? currentIndexes).includes(index)
 		) {
-			seen.add(index);
+			nextIndexes ??= [...currentIndexes];
 			nextIndexes.push(index);
 		}
 	}
 
-	return nextIndexes;
+	return nextIndexes ?? currentIndexes;
 }
 
 export async function buildExactIngredientStateTable(
@@ -409,13 +479,21 @@ export async function buildExactIngredientStateTable(
 		extraIngredients: [],
 		ingredientPenalty: 0,
 		orderedTagIndexes: [],
+		priority: EMPTY_RECOMMENDATION_PRIORITY_METRICS,
 		tagMask: createEmptyMask(tagNames.length),
 	};
 	const layerMaps = Array.from(
 		{ length: maxCount + 1 },
-		() => new Map<string, IExactIngredientState>()
+		() => new Map<string, IExactIngredientState[]>()
 	);
-	layerMaps[0]?.set(createStateKey(emptyState), emptyState);
+	layerMaps[0]?.set(
+		createStateKey(
+			emptyState.tagMask,
+			emptyState.effectMask,
+			emptyState.orderedTagIndexes
+		),
+		[emptyState]
+	);
 
 	for (const [candidateIndex, candidate] of candidates.entries()) {
 		execution.throwIfAborted();
@@ -427,6 +505,14 @@ export async function buildExactIngredientStateTable(
 			const index = effectIndexMap.get(key);
 			return index === undefined ? [] : [index];
 		});
+		const candidateTagMask = addMaskIndexes(
+			emptyState.tagMask,
+			candidateTagIndexes
+		);
+		const candidateEffectMask = addMaskIndexes(
+			emptyState.effectMask,
+			candidateEffectIndexes
+		);
 		const maxTargetCount = Math.min(maxCount, candidateIndex + 1);
 
 		for (let count = maxTargetCount; count >= 1; count--) {
@@ -436,42 +522,149 @@ export async function buildExactIngredientStateTable(
 				continue;
 			}
 
-			for (const sourceState of sourceLayer.values()) {
-				const checkpoint = execution.checkpoint();
-				if (checkpoint !== undefined) {
-					await checkpoint;
-				}
-				const nextState: IExactIngredientState = {
-					count,
-					effectMask: addMaskIndexes(
+			for (const sourceStates of sourceLayer.values()) {
+				for (const sourceState of sourceStates) {
+					const checkpoint = execution.checkpoint();
+					if (checkpoint !== undefined) {
+						await checkpoint;
+					}
+					const effectMask = mergeMasks(
 						sourceState.effectMask,
-						candidateEffectIndexes
-					),
-					extraIngredients: [
-						...sourceState.extraIngredients,
-						candidate.name,
-					],
-					ingredientPenalty:
-						sourceState.ingredientPenalty + candidate.penalty,
-					orderedTagIndexes: appendOrderedTagIndexes(
+						candidateEffectMask
+					);
+					const ingredientPenalty =
+						sourceState.ingredientPenalty + candidate.penalty;
+					const acquisitionEase =
+						sourceState.priority.acquisitionEase +
+						candidate.priority.acquisitionEase;
+					const contentMismatchCount =
+						sourceState.priority.contentMismatchCount +
+						candidate.priority.contentMismatchCount;
+					const customerPlacesMismatchCount =
+						sourceState.priority.customerPlacesMismatchCount +
+						candidate.priority.customerPlacesMismatchCount;
+					const lateSourceCount =
+						sourceState.priority.lateSourceCount +
+						candidate.priority.lateSourceCount;
+					const maxLateTierDistance = Math.max(
+						sourceState.priority.maxLateTierDistance,
+						candidate.priority.maxLateTierDistance
+					);
+					const pathMismatchCount =
+						sourceState.priority.pathMismatchCount +
+						candidate.priority.pathMismatchCount;
+					const primaryPlaceMismatchCount =
+						sourceState.priority.primaryPlaceMismatchCount +
+						candidate.priority.primaryPlaceMismatchCount;
+					const totalLateTierDistance =
+						sourceState.priority.totalLateTierDistance +
+						candidate.priority.totalLateTierDistance;
+					const unknownSourceCount =
+						sourceState.priority.unknownSourceCount +
+						candidate.priority.unknownSourceCount;
+					const orderedTagIndexes = appendOrderedTagIndexes(
 						sourceState.orderedTagIndexes,
 						candidate.tags,
 						tagIndexMap,
 						orderSensitiveTags
-					),
-					tagMask: addMaskIndexes(
+					);
+					const tagMask = mergeMasks(
 						sourceState.tagMask,
-						candidateTagIndexes
-					),
-				};
-				const stateKey = createStateKey(nextState);
-				const currentState = targetLayer.get(stateKey);
+						candidateTagMask
+					);
+					const stateKey = createStateKey(
+						tagMask,
+						effectMask,
+						orderedTagIndexes
+					);
+					const currentStates = targetLayer.get(stateKey);
+					let isDominated = false;
+					if (currentStates !== undefined) {
+						for (const state of currentStates) {
+							if (
+								state.priority.contentMismatchCount <=
+									contentMismatchCount &&
+								state.priority.pathMismatchCount <=
+									pathMismatchCount &&
+								state.priority.primaryPlaceMismatchCount <=
+									primaryPlaceMismatchCount &&
+								state.priority.customerPlacesMismatchCount <=
+									customerPlacesMismatchCount &&
+								state.priority.unknownSourceCount <=
+									unknownSourceCount &&
+								state.priority.lateSourceCount <=
+									lateSourceCount &&
+								state.priority.maxLateTierDistance <=
+									maxLateTierDistance &&
+								state.priority.totalLateTierDistance <=
+									totalLateTierDistance &&
+								state.priority.acquisitionEase >=
+									acquisitionEase &&
+								state.ingredientPenalty <= ingredientPenalty
+							) {
+								isDominated = true;
+								break;
+							}
+						}
+					}
+					if (isDominated) {
+						continue;
+					}
 
-				if (
-					currentState === undefined ||
-					nextState.ingredientPenalty < currentState.ingredientPenalty
-				) {
-					targetLayer.set(stateKey, nextState);
+					const priority: IRecommendationPriorityMetrics = {
+						acquisitionEase,
+						contentMismatchCount,
+						customerPlacesMismatchCount,
+						lateSourceCount,
+						maxLateTierDistance,
+						pathMismatchCount,
+						primaryPlaceMismatchCount,
+						totalLateTierDistance,
+						unknownSourceCount,
+					};
+					const nextState: IExactIngredientState = {
+						count,
+						effectMask,
+						extraIngredients: [
+							...sourceState.extraIngredients,
+							candidate.name,
+						],
+						ingredientPenalty,
+						orderedTagIndexes,
+						priority,
+						tagMask,
+					};
+					if (currentStates === undefined) {
+						targetLayer.set(stateKey, [nextState]);
+						continue;
+					}
+
+					let writeIndex = 0;
+					for (const state of currentStates) {
+						if (
+							contentMismatchCount >
+								state.priority.contentMismatchCount ||
+							pathMismatchCount >
+								state.priority.pathMismatchCount ||
+							primaryPlaceMismatchCount >
+								state.priority.primaryPlaceMismatchCount ||
+							customerPlacesMismatchCount >
+								state.priority.customerPlacesMismatchCount ||
+							unknownSourceCount >
+								state.priority.unknownSourceCount ||
+							lateSourceCount > state.priority.lateSourceCount ||
+							maxLateTierDistance >
+								state.priority.maxLateTierDistance ||
+							totalLateTierDistance >
+								state.priority.totalLateTierDistance ||
+							acquisitionEase < state.priority.acquisitionEase ||
+							ingredientPenalty > state.ingredientPenalty
+						) {
+							currentStates[writeIndex++] = state;
+						}
+					}
+					currentStates.length = writeIndex;
+					currentStates.push(nextState);
 				}
 			}
 		}
@@ -481,12 +674,23 @@ export async function buildExactIngredientStateTable(
 	let stateCount = 0;
 	for (const layer of layerMaps) {
 		const states: IExactIngredientState[] = [];
-		for (const state of layer.values()) {
-			const checkpoint = execution.checkpoint();
-			if (checkpoint !== undefined) {
-				await checkpoint;
+		for (const stateGroup of layer.values()) {
+			let [terminalState] = stateGroup;
+			for (const state of stateGroup) {
+				const checkpoint = execution.checkpoint();
+				if (checkpoint !== undefined) {
+					await checkpoint;
+				}
+				if (
+					terminalState === undefined ||
+					compareTerminalStates(state, terminalState) < 0
+				) {
+					terminalState = state;
+				}
 			}
-			states.push(state);
+			if (terminalState !== undefined) {
+				states.push(terminalState);
+			}
 		}
 		stateCount += states.length;
 		layers.push(states);

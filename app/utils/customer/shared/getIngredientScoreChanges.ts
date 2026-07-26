@@ -6,7 +6,6 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import { type IPopularTrend } from '@/types';
-import { intersection, toSet, union } from '@/utilities';
 import type { TRecipe } from '@/utils/types';
 
 import type {
@@ -144,10 +143,12 @@ export function getIngredientScoreChanges({
 	) => ReadonlyArray<TIngredientTag>;
 	isDarkMatter?: boolean;
 }): IIngredientScoreChangesResult {
-	const currentRecipeAllIngredients = union(
-		currentRecipeIngredients,
-		currentRecipeExtraIngredients
-	);
+	const currentRecipeAllIngredients = [
+		...new Set([
+			...currentRecipeIngredients,
+			...currentRecipeExtraIngredients,
+		]),
+	];
 	const currentRecipeExtraIngredientsTags =
 		currentRecipeExtraIngredients.flatMap((extraIngredient) =>
 			getIngredientTags(extraIngredient)
@@ -157,8 +158,11 @@ export function getIngredientScoreChanges({
 	const currentRecipeComposedTags = composeRecipeTagsWithPopularTrend(
 		currentRecipeExtraIngredientsTagsWithTrend
 	);
-	const currentRecipeTagsWithTrend = union(
-		calculateRecipeTagsWithTrend(currentRecipeComposedTags)
+	const currentRecipeTagsWithTrend = [
+		...new Set(calculateRecipeTagsWithTrend(currentRecipeComposedTags)),
+	];
+	const before = composeRecipeTagsWithPopularTrend(
+		currentRecipeTagsWithTrend
 	);
 
 	const currentIngredientCount =
@@ -168,26 +172,22 @@ export function getIngredientScoreChanges({
 		isLargePartitionTagNext &&
 		currentPopularTrend.tag === DYNAMIC_TAG_MAP.largePartition;
 
-	const darkIngredientNames = candidates
-		.filter(
-			({ tags }) =>
-				intersection(tags, currentRecipeNegativeTags).length > 0
-		)
-		.map(({ name }) => name);
-	const darkIngredientSet = toSet(darkIngredientNames);
+	const negativeTagSet = new Set(currentRecipeNegativeTags);
+	const darkIngredientNames: TIngredientName[] = [];
+	for (const { name, tags } of candidates) {
+		if (tags.some((tag) => negativeTagSet.has(tag as TRecipeTag))) {
+			darkIngredientNames.push(name);
+		}
+	}
+	const darkIngredientSet = new Set(darkIngredientNames);
 
 	const changesByName: IIngredientScoreChangesResult['changesByName'] = {};
 
 	candidates.forEach(({ name, tags }) => {
 		const tagsWithTrend = calculateIngredientTagsWithTrend(tags);
-		const allTagsWithTrend = union(
-			currentRecipeTagsWithTrend,
-			tagsWithTrend
-		);
-
-		const before = composeRecipeTagsWithPopularTrend(
-			currentRecipeTagsWithTrend
-		);
+		const allTagsWithTrend = [
+			...new Set([...currentRecipeTagsWithTrend, ...tagsWithTrend]),
+		];
 		const after = composeRecipeTagsWithPopularTrend(allTagsWithTrend);
 
 		let scoreChange = getIngredientScoreChange(
@@ -207,7 +207,9 @@ export function getIngredientScoreChanges({
 
 		const isDarkIngredient = darkIngredientSet.has(name);
 		const easterEggScore = getIngredientEasterEggScore?.({
-			currentIngredients: union(currentRecipeAllIngredients, [name]),
+			currentIngredients: [
+				...new Set([...currentRecipeAllIngredients, name]),
+			],
 			currentRecipeName:
 				isDarkIngredient || isDarkMatter
 					? DARK_MATTER_META_MAP.name

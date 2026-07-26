@@ -1,4 +1,4 @@
-import { type TDlc } from '@/data';
+import { type TDlc, type TPlace } from '@/data';
 
 export type TAvailabilityCategory =
 	| 'beverage'
@@ -12,7 +12,28 @@ export type TAvailabilityCategory =
 	| 'partner'
 	| 'recipe';
 
+export type TAvailabilityAcquisitionSourceKind =
+	| 'bond'
+	| 'buy'
+	| 'collect'
+	| 'content'
+	| 'fishing'
+	| 'levelup'
+	| 'self'
+	| 'task'
+	| 'unknown';
+
+export interface IAvailabilityAcquisitionSource {
+	kind: TAvailabilityAcquisitionSourceKind;
+	name: string;
+	place: TPlace | null;
+	probability: number | null;
+	timeWindow: readonly [number, number] | null;
+}
+
 export interface IAvailabilityPath {
+	acquisitionSources: ReadonlyArray<IAvailabilityAcquisitionSource>;
+	isFishingPath: boolean;
 	requiredDlcs: readonly [TDlc, ...TDlc[]];
 	sources: ReadonlyArray<string>;
 }
