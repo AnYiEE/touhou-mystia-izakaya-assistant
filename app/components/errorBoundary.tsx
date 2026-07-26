@@ -11,6 +11,7 @@ import {
 import { trackEvent } from '@/components/analytics';
 
 import { siteConfig } from '@/configs';
+import { clearSavedLocalDataBeforeReload } from '@/lib/recommendations/persistentCache/clearSavedData';
 
 const { links } = siteConfig;
 
@@ -23,14 +24,9 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 	error,
 	info,
 }) {
-	const handleButtonPress = useCallback((shouldClear: boolean) => {
+	const handleButtonPress = useCallback(async (shouldClear: boolean) => {
 		if (shouldClear) {
-			try {
-				localStorage.clear();
-			} catch (storageError) {
-				console.error(storageError);
-				alert(storageError);
-			}
+			await clearSavedLocalDataBeforeReload();
 		}
 		trackEvent(
 			trackEvent.category.click,
@@ -48,7 +44,7 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 			<button
 				className="mx-auto block w-1/2 cursor-pointer rounded-medium bg-content1 p-2 transition-background hover:bg-content2 motion-reduce:transition-none"
 				onClick={() => {
-					handleButtonPress(shouldClear);
+					void handleButtonPress(shouldClear);
 				}}
 			>
 				{children}

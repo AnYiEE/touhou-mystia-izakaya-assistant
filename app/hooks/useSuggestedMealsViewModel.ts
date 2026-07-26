@@ -18,11 +18,21 @@ import {
 	type TIngredientName,
 } from '@/data';
 import { getLogSafeErrorCode } from '@/lib/logging';
+import { RECOMMENDATION_CACHE_READ_GRACE_MS } from '@/lib/recommendations/persistentCache/constants';
+import {
+	readSuggestedMealCardResult,
+	writeSuggestedMealCardResult,
+} from '@/lib/recommendations/persistentCache';
+import { resolvePersistentRecommendationRace } from '@/lib/recommendations/persistentCache/race';
+import { recordRecommendationCacheResolution } from '@/lib/recommendations/persistentCache/debug';
 import { customerRareStore as customerStore, globalStore } from '@/stores';
 import type { ICustomerOrder, IPopularTrend } from '@/types';
 import { checkLengthEmpty, toArray, toSet } from '@/utilities';
 import {
+	type ISuggestParams,
+	buildSuggestMealsCacheKey,
 	getScoreBasedAlternatives,
+	readSuggestedMealsMemoryCache,
 	suggestMeals,
 } from '@/utils/customer/customer_rare/suggestMeals';
 import { checkSuggestMealsAbortError } from '@/utils/customer/customer_rare/suggestMealsEngine';
@@ -222,25 +232,27 @@ export function useSuggestedMealsViewModel() {
 			currentCustomerOrder.recipeTag ===
 				DYNAMIC_TAG_MAP.popularNegative) &&
 		currentCustomerPopularTrend.tag === null;
-	const suggestionRequestKey = useMemo(
+	const suggestParams = useMemo<ISuggestParams | null>(
 		() =>
-			JSON.stringify({
-				currentBeverageName,
-				currentCustomerName,
-				currentCustomerOrder,
-				currentCustomerPopularTrend,
-				currentRecipeData,
-				hasMystiaCooker,
-				hiddenBeverages: [...hiddenBeverages].sort(),
-				hiddenDlcs: [...hiddenDlcs].sort(),
-				hiddenIngredients: [...hiddenIngredients].sort(),
-				hiddenRecipes: [...hiddenRecipes].sort(),
-				isFamousShop,
-				selectedSuggestMealsCooker,
-				suggestMaxExtraIngredients,
-				suggestMaxRating,
-				suggestMaxResults,
-			}),
+			currentCustomerName === null
+				? null
+				: {
+						cooker: selectedSuggestMealsCooker,
+						currentBeverage: currentBeverageName,
+						currentRecipe: currentRecipeData,
+						customerName: currentCustomerName,
+						customerOrder: currentCustomerOrder,
+						hasMystiaCooker,
+						hiddenBeverages,
+						hiddenDlcs,
+						hiddenIngredients,
+						hiddenRecipes,
+						isFamousShop,
+						maxExtraIngredients: suggestMaxExtraIngredients,
+						maxRating: suggestMaxRating,
+						maxResults: suggestMaxResults,
+						popularTrend: currentCustomerPopularTrend,
+					},
 		[
 			currentBeverageName,
 			currentCustomerName,
@@ -259,12 +271,19 @@ export function useSuggestedMealsViewModel() {
 			suggestMaxResults,
 		]
 	);
+	const suggestionRequestKey = useMemo(
+		() =>
+			suggestParams === null
+				? 'inactive'
+				: buildSuggestMealsCacheKey(suggestParams),
+		[suggestParams]
+	);
 
 	useEffect(() => {
 		const generation = ++suggestionGenerationRef.current;
 		const controller = new AbortController();
 
-		if (!isActive || hasUnsetPopularOrderTag) {
+		if (!isActive || hasUnsetPopularOrderTag || suggestParams === null) {
 			setSuggestionsState({
 				activeRequestKey: suggestionRequestKey,
 				generation,
@@ -278,44 +297,49 @@ export function useSuggestedMealsViewModel() {
 			};
 		}
 
+		const resultContext: ISuggestionResultContext = {
+			customerName: suggestParams.customerName,
+			customerOrder: { ...suggestParams.customerOrder },
+			hasMystiaCooker: suggestParams.hasMystiaCooker,
+			hiddenDlcs: new Set(suggestParams.hiddenDlcs),
+			hiddenIngredients: new Set(suggestParams.hiddenIngredients),
+			isFamousShop: suggestParams.isFamousShop,
+			popularTrend: { ...suggestParams.popularTrend },
+		};
+		const memorySuggestions = readSuggestedMealsMemoryCache(suggestParams);
+		if (memorySuggestions !== undefined) {
+			recordRecommendationCacheResolution('suggestedMealCard', 'memory');
+			setSuggestionsState({
+				activeRequestKey: suggestionRequestKey,
+				generation,
+				resultContext,
+				resultGeneration: generation,
+				status: 'success',
+				suggestions: memorySuggestions,
+			});
+			return () => {
+				controller.abort();
+			};
+		}
+
 		setSuggestionsState((prev) => ({
 			...prev,
 			activeRequestKey: suggestionRequestKey,
 			generation,
 			status: prev.suggestions === null ? 'pending' : 'refreshing',
 		}));
-		const resultContext: ISuggestionResultContext = {
-			customerName: currentCustomerName,
-			customerOrder: { ...currentCustomerOrder },
-			hasMystiaCooker,
-			hiddenDlcs: new Set(hiddenDlcs),
-			hiddenIngredients: new Set(hiddenIngredients),
-			isFamousShop,
-			popularTrend: { ...currentCustomerPopularTrend },
-		};
 
 		const run = async () => {
 			try {
-				const suggestions = await suggestMeals(
-					{
-						cooker: selectedSuggestMealsCooker,
-						currentBeverage: currentBeverageName,
-						currentRecipe: currentRecipeData,
-						customerName: currentCustomerName,
-						customerOrder: currentCustomerOrder,
-						hasMystiaCooker,
-						hiddenBeverages,
-						hiddenDlcs,
-						hiddenIngredients,
-						hiddenRecipes,
-						isFamousShop,
-						maxExtraIngredients: suggestMaxExtraIngredients,
-						maxRating: suggestMaxRating,
-						maxResults: suggestMaxResults,
-						popularTrend: currentCustomerPopularTrend,
-					},
-					{ signal: controller.signal }
-				);
+				const { result: suggestions, source } =
+					await resolvePersistentRecommendationRace({
+						compute: (signal) =>
+							suggestMeals(suggestParams, { signal }),
+						graceMs: RECOMMENDATION_CACHE_READ_GRACE_MS,
+						readPersistent: () =>
+							readSuggestedMealCardResult(suggestionRequestKey),
+						signal: controller.signal,
+					});
 
 				if (
 					controller.signal.aborted ||
@@ -323,6 +347,10 @@ export function useSuggestedMealsViewModel() {
 				) {
 					return;
 				}
+				recordRecommendationCacheResolution(
+					'suggestedMealCard',
+					source
+				);
 				setSuggestionsState({
 					activeRequestKey: suggestionRequestKey,
 					generation,
@@ -331,6 +359,12 @@ export function useSuggestedMealsViewModel() {
 					status: 'success',
 					suggestions,
 				});
+				if (source === 'compute') {
+					void writeSuggestedMealCardResult(
+						suggestionRequestKey,
+						suggestions
+					);
+				}
 			} catch (error) {
 				if (
 					controller.signal.aborted ||
@@ -357,23 +391,9 @@ export function useSuggestedMealsViewModel() {
 			controller.abort();
 		};
 	}, [
-		currentBeverageName,
-		currentCustomerName,
-		currentCustomerOrder,
-		currentCustomerPopularTrend,
-		currentRecipeData,
-		hasMystiaCooker,
-		hiddenBeverages,
-		hiddenDlcs,
-		hiddenIngredients,
-		hiddenRecipes,
 		hasUnsetPopularOrderTag,
 		isActive,
-		isFamousShop,
-		selectedSuggestMealsCooker,
-		suggestMaxExtraIngredients,
-		suggestMaxRating,
-		suggestMaxResults,
+		suggestParams,
 		suggestionRequestKey,
 	]);
 

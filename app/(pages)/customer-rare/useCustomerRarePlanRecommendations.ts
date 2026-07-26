@@ -10,6 +10,13 @@ import {
 	type TRecipeName,
 } from '@/data';
 import { getLogSafeErrorCode } from '@/lib/logging';
+import {
+	readCustomerRarePlanResult,
+	writeCustomerRarePlanResult,
+} from '@/lib/recommendations/persistentCache';
+import { RECOMMENDATION_CACHE_READ_GRACE_MS } from '@/lib/recommendations/persistentCache/constants';
+import { recordRecommendationCacheResolution } from '@/lib/recommendations/persistentCache/debug';
+import { resolvePersistentRecommendationRace } from '@/lib/recommendations/persistentCache/race';
 import type { IPopularTrend } from '@/types';
 import {
 	checkSuggestMealsAbortError,
@@ -117,6 +124,9 @@ export function useCustomerRarePlanRecommendations({
 
 	useLayoutEffect(() => {
 		const cachedMeals = readCustomerRarePlanRecommendationCache(cacheKey);
+		if (cachedMeals !== undefined) {
+			recordRecommendationCacheResolution('customerRarePlan', 'memory');
+		}
 		generationRef.current++;
 		isCompleteRef.current = cachedMeals !== undefined;
 		mealsRef.current = cachedMeals ?? [];
@@ -139,65 +149,92 @@ export function useCustomerRarePlanRecommendations({
 
 		const run = async () => {
 			try {
-				let isComplete = false;
-				let nextIndex = initialNextIndex;
-				while (!isComplete) {
-					await sharedRecommendationScheduler.yield(
-						taskKey,
-						controller.signal
-					);
-					const batch =
-						await resolveRecommendedCustomerRarePlanMealBatch(
-							{
-								batchSize: RECOMMENDED_MEAL_BATCH_SIZE,
-								customerName,
-								hiddenBeverages,
-								hiddenDlcs,
-								hiddenIngredients,
-								hiddenRecipes,
-								isFamousShop,
-								maxExtraIngredients,
-								maxRating,
-								maxResults,
-								popularTrend,
-								session: recommendationSession,
-								startIndex: nextIndex,
-							},
-							{
-								scheduler: sharedRecommendationScheduler,
-								signal: controller.signal,
-								taskKey,
+				const { result: completedMeals, source } =
+					await resolvePersistentRecommendationRace({
+						compute: async (signal) => {
+							let isComplete = false;
+							let nextIndex = initialNextIndex;
+							while (!isComplete) {
+								await sharedRecommendationScheduler.yield(
+									taskKey,
+									signal
+								);
+								const batch =
+									await resolveRecommendedCustomerRarePlanMealBatch(
+										{
+											batchSize:
+												RECOMMENDED_MEAL_BATCH_SIZE,
+											customerName,
+											hiddenBeverages,
+											hiddenDlcs,
+											hiddenIngredients,
+											hiddenRecipes,
+											isFamousShop,
+											maxExtraIngredients,
+											maxRating,
+											maxResults,
+											popularTrend,
+											session: recommendationSession,
+											startIndex: nextIndex,
+										},
+										{
+											scheduler:
+												sharedRecommendationScheduler,
+											signal,
+											taskKey,
+										}
+									);
+
+								if (
+									signal.aborted ||
+									generationRef.current !== generation
+								) {
+									throw new DOMException(
+										'The operation was aborted.',
+										'AbortError'
+									);
+								}
+
+								nextIndex = batch.nextIndex;
+								nextIndexRef.current = nextIndex;
+								if (batch.meals.length > 0) {
+									mealsRef.current = [
+										...mealsRef.current,
+										...batch.meals,
+									];
+									setMeals(mealsRef.current);
+								}
+								isComplete = batch.isComplete;
+								if (!isComplete) {
+									setStatus('partial');
+								}
 							}
-						);
+							return mealsRef.current;
+						},
+						graceMs: RECOMMENDATION_CACHE_READ_GRACE_MS,
+						readPersistent: () =>
+							readCustomerRarePlanResult(cacheKey),
+						signal: controller.signal,
+					});
 
-					if (
-						controller.signal.aborted ||
-						generationRef.current !== generation
-					) {
-						return;
-					}
-
-					nextIndex = batch.nextIndex;
-					nextIndexRef.current = nextIndex;
-					if (batch.meals.length > 0) {
-						mealsRef.current = [
-							...mealsRef.current,
-							...batch.meals,
-						];
-						setMeals(mealsRef.current);
-					}
-					isComplete = batch.isComplete;
-					if (!isComplete) {
-						setStatus('partial');
-					}
+				if (
+					controller.signal.aborted ||
+					generationRef.current !== generation
+				) {
+					return;
 				}
-
+				recordRecommendationCacheResolution('customerRarePlan', source);
+				mealsRef.current = completedMeals;
 				isCompleteRef.current = true;
 				writeCustomerRarePlanRecommendationCache(cacheKey, {
 					isComplete: true,
-					meals: mealsRef.current,
+					meals: completedMeals,
 				});
+				setMeals(completedMeals);
 				setStatus('complete');
+				if (source === 'compute') {
+					void writeCustomerRarePlanResult(cacheKey, completedMeals);
+				}
 			} catch (error) {
 				if (
 					controller.signal.aborted ||

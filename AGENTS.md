@@ -124,6 +124,10 @@ A namespace or schema-version change must preserve existing local, queued, confl
 
 Raw game records and types come from `app/data/index.ts`; processed domain singletons and reusable query logic come from `app/utils/`. Use singleton APIs for application queries because they include derived data absent from raw records. Recommendation adapters call `suggestMeals` and existing evaluation helpers instead of reimplementing their rules.
 
+### Recommendation cache versioning
+
+`app/lib/recommendations/persistentCache/constants.ts` owns the explicit recommendation cache versions. Any change that can alter recommendation candidates, ratings, ordering, diversity, availability interpretation, or request semantics must increment `RECOMMENDATION_ALGORITHM_VERSION` in the same patch. Equivalent refactors, performance-only optimizations, comments, and formatting do not increment it. Recommendation-relevant game data changes are covered automatically by the normalized data fingerprint and do not require an algorithm version change.
+
 ### Database and deployment behavior
 
 Server operations that validate state and update related rows use a Kysely transaction. Migrations support existing and fresh databases plus overlapping old/new processes during reloads; preserve a column until its old shape can be identified and safely transformed.

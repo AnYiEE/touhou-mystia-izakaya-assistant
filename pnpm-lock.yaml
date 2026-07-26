@@ -190,6 +190,9 @@ importers:
       framer-motion:
         specifier: 12.17.2
         version: 12.17.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      idb:
+        specifier: ^8.0.3
+        version: 8.0.3
       js-sha1:
         specifier: ^0.7.0
         version: 0.7.0
@@ -4361,6 +4364,9 @@ packages:
     resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
     engines: {node: '>=18'}
     hasBin: true
+
+  idb@8.0.3:
+    resolution: {integrity: sha512-LtwtVyVYO5BqRvcsKuB2iUMnHwPVByPCXFXOpuU96IZPPoPN6xjOGxZQ74pgSVVLQWtUOYgyeL4GE98BY5D3wg==}
 
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
@@ -10868,6 +10874,8 @@ snapshots:
       entities: 8.0.0
 
   husky@9.1.7: {}
+
+  idb@8.0.3: {}
 
   ieee754@1.2.1: {}
 

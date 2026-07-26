@@ -2218,7 +2218,7 @@ async function suggestBySelection(
 	return [];
 }
 
-function buildCacheKey({
+export function buildSuggestMealsCacheKey({
 	cooker,
 	currentBeverage,
 	currentRecipe,
@@ -2629,6 +2629,12 @@ function createSuggestParamsSnapshot(params: ISuggestParams): ISuggestParams {
 	};
 }
 
+export function readSuggestedMealsMemoryCache(params: ISuggestParams) {
+	const paramsSnapshot = createSuggestParamsSnapshot(params);
+	const cached = suggestCache.get(buildSuggestMealsCacheKey(paramsSnapshot));
+	return cached === undefined ? undefined : cloneSuggestedMeals(cached);
+}
+
 export interface ISuggestMealsOptions {
 	readonly scheduler?: ISuggestMealsYieldScheduler;
 	readonly signal?: AbortSignal;
@@ -2643,7 +2649,7 @@ export async function suggestMeals(
 	const paramsSnapshot = createSuggestParamsSnapshot(params);
 	const execution = createSuggestMealsExecution(options);
 	execution.throwIfAborted();
-	const cacheKey = buildCacheKey(paramsSnapshot);
+	const cacheKey = buildSuggestMealsCacheKey(paramsSnapshot);
 
 	const cached = suggestCache.get(cacheKey);
 	if (cached !== undefined) {

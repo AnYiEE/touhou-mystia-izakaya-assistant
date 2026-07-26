@@ -121,6 +121,7 @@
 		"compare-versions": "^6.1.1",
 		"driver.js": "1.5.0",
 		"framer-motion": "12.17.2",
+		"idb": "^8.0.3",
 		"js-sha1": "^0.7.0",
 		"kysely": "^0.29.4",
 		"lodash": "^4.18.1",
