@@ -10,8 +10,7 @@ import {
 	type TRecipeName,
 } from '@/data';
 import { getLogSafeErrorCode } from '@/lib/logging';
-import type { IPopularTrend, IResolvedCustomerRarePlanGroup } from '@/types';
-import { createBoundedRuntimeCache, pinyinSort } from '@/utilities';
+import type { IPopularTrend } from '@/types';
 import {
 	checkSuggestMealsAbortError,
 	createRoundRobinSuggestMealsScheduler,
@@ -21,9 +20,14 @@ import {
 	resolveRecommendedCustomerRarePlanMealBatch,
 } from '@/utils/customer/shared';
 
+import {
+	buildCustomerRarePlanRecommendationCacheKey,
+	peekCustomerRarePlanRecommendationCache,
+	readCustomerRarePlanRecommendationCache,
+	writeCustomerRarePlanRecommendationCache,
+} from './customerRarePlanRecommendationCache';
+
 const RECOMMENDED_MEAL_BATCH_SIZE = 1;
-const RECOMMENDED_MEAL_CACHE_MAX_SIZE = 256;
-const RECOMMENDED_MEAL_CACHE_MAX_WEIGHT = 4096;
 const sharedRecommendationScheduler = createRoundRobinSuggestMealsScheduler();
 
 interface IUseCustomerRarePlanRecommendationsParams {
@@ -48,49 +52,6 @@ export type TCustomerRarePlanRecommendationStatus =
 	| 'partial'
 	| 'pending';
 
-const recommendedMealCache = createBoundedRuntimeCache<
-	string,
-	IResolvedCustomerRarePlanGroup['meals']
->(RECOMMENDED_MEAL_CACHE_MAX_SIZE, {
-	getWeight: (meals) => Math.max(1, meals.length),
-	maxWeight: RECOMMENDED_MEAL_CACHE_MAX_WEIGHT,
-});
-
-function getSortedCacheValues<T extends number | string>(
-	values: ReadonlySet<T>
-) {
-	return [...values].map(String).sort(pinyinSort);
-}
-
-function buildCacheKey({
-	customerName,
-	hiddenBeverages,
-	hiddenDlcs,
-	hiddenIngredients,
-	hiddenRecipes,
-	isFamousShop,
-	maxExtraIngredients,
-	maxRating,
-	maxResults,
-	popularTrend,
-}: Omit<
-	IUseCustomerRarePlanRecommendationsParams,
-	'isEnabled' | 'sessionKey'
->) {
-	return JSON.stringify({
-		customerName,
-		hiddenBeverages: getSortedCacheValues(hiddenBeverages),
-		hiddenDlcs: getSortedCacheValues(hiddenDlcs),
-		hiddenIngredients: getSortedCacheValues(hiddenIngredients),
-		hiddenRecipes: getSortedCacheValues(hiddenRecipes),
-		isFamousShop,
-		maxExtraIngredients,
-		maxRating,
-		maxResults,
-		popularTrend,
-	});
-}
-
 export function useCustomerRarePlanRecommendations({
 	customerName,
 	hiddenBeverages,
@@ -107,7 +68,7 @@ export function useCustomerRarePlanRecommendations({
 }: IUseCustomerRarePlanRecommendationsParams) {
 	const cacheKey = useMemo(
 		() =>
-			buildCacheKey({
+			buildCustomerRarePlanRecommendationCacheKey({
 				customerName,
 				hiddenBeverages,
 				hiddenDlcs,
@@ -133,7 +94,7 @@ export function useCustomerRarePlanRecommendations({
 		]
 	);
 	const cacheSnapshot = useMemo(
-		() => recommendedMealCache.peek(cacheKey),
+		() => peekCustomerRarePlanRecommendationCache(cacheKey),
 		[cacheKey]
 	);
 	const recommendationSession = useMemo(
@@ -155,7 +116,7 @@ export function useCustomerRarePlanRecommendations({
 	);
 
 	useLayoutEffect(() => {
-		const cachedMeals = recommendedMealCache.get(cacheKey);
+		const cachedMeals = readCustomerRarePlanRecommendationCache(cacheKey);
 		generationRef.current++;
 		isCompleteRef.current = cachedMeals !== undefined;
 		mealsRef.current = cachedMeals ?? [];
@@ -232,7 +193,10 @@ export function useCustomerRarePlanRecommendations({
 				}
 
 				isCompleteRef.current = true;
-				recommendedMealCache.set(cacheKey, mealsRef.current);
+				writeCustomerRarePlanRecommendationCache(cacheKey, {
+					isComplete: true,
+					meals: mealsRef.current,
+				});
 				setStatus('complete');
 			} catch (error) {
 				if (

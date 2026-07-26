@@ -1,8 +1,17 @@
 interface IBoundedRuntimeCache<K, V> {
 	clear(): void;
 	get(key: K): V | undefined;
+	getStats(): IBoundedRuntimeCacheStats;
 	peek(key: K): V | undefined;
 	set(key: K, value: V): void;
+}
+
+export interface IBoundedRuntimeCacheStats {
+	readonly entryCount: number;
+	readonly evictionCount: number;
+	readonly hitCount: number;
+	readonly logicalWeight: number;
+	readonly missCount: number;
 }
 
 interface IBoundedRuntimeCacheOptions<V> {
@@ -34,23 +43,40 @@ export function createBoundedRuntimeCache<K, V>(
 	}
 
 	const cache = new Map<K, ICacheEntry<V>>();
+	let evictionCount = 0;
+	let hitCount = 0;
+	let missCount = 0;
 	let totalWeight = 0;
 
 	return {
 		clear() {
 			cache.clear();
+			evictionCount = 0;
+			hitCount = 0;
+			missCount = 0;
 			totalWeight = 0;
 		},
 		get(key) {
 			const entry = cache.get(key);
 			if (entry === undefined) {
+				missCount++;
 				return;
 			}
 
+			hitCount++;
 			cache.delete(key);
 			cache.set(key, entry);
 
 			return entry.value;
+		},
+		getStats() {
+			return {
+				entryCount: cache.size,
+				evictionCount,
+				hitCount,
+				logicalWeight: totalWeight,
+				missCount,
+			};
 		},
 		peek(key) {
 			return cache.get(key)?.value;
@@ -88,6 +114,7 @@ export function createBoundedRuntimeCache<K, V>(
 				}
 				cache.delete(oldest.value);
 				totalWeight -= oldestEntry.weight;
+				evictionCount++;
 			}
 		},
 	} as IBoundedRuntimeCache<K, V>;

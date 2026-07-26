@@ -11,7 +11,10 @@ import {
 	type TRecipeTag,
 } from '@/data';
 import type { ICustomerOrder, IMealRecipe, IPopularTrend } from '@/types';
-import { createBoundedRuntimeCache } from '@/utilities';
+import {
+	type IBoundedRuntimeCacheStats,
+	createBoundedRuntimeCache,
+} from '@/utilities';
 import { Beverage, CustomerRare, Ingredient, Recipe } from '@/utils';
 import type { TItemData } from '@/utils/types';
 
@@ -557,6 +560,18 @@ function createSuggestContext({
 
 type TSuggestContext = ReturnType<typeof createSuggestContext>;
 
+function getSuggestContextLogicalWeight(context: TSuggestContext) {
+	return (
+		context.baseGameBeverages.length +
+		context.baseGameIngredients.length +
+		context.baseGameRecipes.length +
+		context.beveragePriorityMap.size +
+		context.ingredientPriorityMap.size +
+		context.recipeAggregatePriorityMap.size +
+		context.recipePriorityMap.size
+	);
+}
+
 interface IMealPriorityOptions {
 	readonly fixedExtraIngredients: ReadonlySet<TIngredientName>;
 	readonly isBeverageFixed: boolean;
@@ -762,8 +777,14 @@ function getMealPriority(
 	};
 }
 
+const SUGGEST_CONTEXT_CACHE_MAX_ENTRIES = 1000;
+const SUGGEST_CONTEXT_CACHE_MAX_WEIGHT = 500_000;
 const suggestContextCache = createBoundedRuntimeCache<string, TSuggestContext>(
-	64
+	SUGGEST_CONTEXT_CACHE_MAX_ENTRIES,
+	{
+		getWeight: getSuggestContextLogicalWeight,
+		maxWeight: SUGGEST_CONTEXT_CACHE_MAX_WEIGHT,
+	}
 );
 
 function buildSuggestContextCacheKey({
@@ -1063,17 +1084,24 @@ interface IRecipeIngredientSummary {
 	readonly recipeTagsWithTrend: ReadonlyArray<TRecipeTag>;
 }
 
+const EXACT_INGREDIENT_STATE_CACHE_MAX_ENTRIES = 4000;
+const EXACT_INGREDIENT_STATE_CACHE_MAX_STATES = 2_000_000;
+const RECIPE_INGREDIENT_SUMMARY_CACHE_MAX_ENTRIES = 20_000;
+const RECIPE_INGREDIENT_SUMMARY_CACHE_MAX_SUMMARIES = 300_000;
 const exactIngredientStateCache = createBoundedRuntimeCache<
 	string,
 	IExactIngredientStateTable
->(64, { getWeight: (table) => table.stateCount, maxWeight: 100_000 });
+>(EXACT_INGREDIENT_STATE_CACHE_MAX_ENTRIES, {
+	getWeight: (table) => table.stateCount,
+	maxWeight: EXACT_INGREDIENT_STATE_CACHE_MAX_STATES,
+});
 const recipeIngredientSummaryCache = createBoundedRuntimeCache<
 	string,
 	ReadonlyArray<ReadonlyArray<IRecipeIngredientSummary>>
->(128, {
+>(RECIPE_INGREDIENT_SUMMARY_CACHE_MAX_ENTRIES, {
 	getWeight: (layers) =>
 		layers.reduce((total, layer) => total + layer.length, 0),
-	maxWeight: 100_000,
+	maxWeight: RECIPE_INGREDIENT_SUMMARY_CACHE_MAX_SUMMARIES,
 });
 const exactIngredientStateTableIds = new WeakMap<
 	IExactIngredientStateTable,
@@ -2252,8 +2280,83 @@ interface IScoreBasedAlternativesParams {
 	recipePositiveTags: ReadonlyArray<TRecipeTag>;
 }
 
+function cloneScoreBasedAlternatives(
+	alternatives: ReadonlyMap<TIngredientName, ReadonlyArray<TIngredientName>>
+) {
+	const cloned = new Map<TIngredientName, TIngredientName[]>();
+	for (const [ingredientName, candidates] of alternatives) {
+		cloned.set(ingredientName, [...candidates]);
+	}
+
+	return cloned;
+}
+
+function getScoreBasedAlternativesLogicalWeight(
+	alternatives: ReadonlyMap<TIngredientName, ReadonlyArray<TIngredientName>>
+) {
+	let weight = 0;
+	for (const candidates of alternatives.values()) {
+		weight += candidates.length;
+	}
+
+	return weight;
+}
+
+const SCORE_BASED_ALTERNATIVES_CACHE_MAX_ENTRIES = 4000;
+const SCORE_BASED_ALTERNATIVES_CACHE_MAX_ITEMS = 20_000;
+const scoreBasedAlternativesCache = createBoundedRuntimeCache<
+	string,
+	Map<TIngredientName, TIngredientName[]>
+>(SCORE_BASED_ALTERNATIVES_CACHE_MAX_ENTRIES, {
+	getWeight: getScoreBasedAlternativesLogicalWeight,
+	maxWeight: SCORE_BASED_ALTERNATIVES_CACHE_MAX_ITEMS,
+});
+
+function buildScoreBasedAlternativesCacheKey({
+	baseRating,
+	beverageTags,
+	customerBeverageTags,
+	customerName,
+	customerNegativeTags,
+	customerOrder,
+	customerPositiveTags,
+	extraIngredients,
+	hasMystiaCooker,
+	hiddenDlcs,
+	hiddenIngredients,
+	isFamousShop,
+	popularTrend,
+	recipeIngredients,
+	recipeName,
+	recipeNegativeTags,
+	recipePositiveTags,
+}: IScoreBasedAlternativesParams) {
+	return JSON.stringify({
+		baseRating,
+		beverageTags,
+		customerBeverageTags,
+		customerName,
+		customerNegativeTags,
+		customerOrder,
+		customerPositiveTags,
+		extraIngredients,
+		hasMystiaCooker,
+		hiddenDlcs: [...hiddenDlcs].sort(),
+		hiddenIngredients: [...hiddenIngredients].sort(),
+		isFamousShop,
+		popularTrend,
+		recipeIngredients,
+		recipeName,
+		recipeNegativeTags,
+		recipePositiveTags,
+	});
+}
+
 export async function getScoreBasedAlternatives(
-	{
+	params: IScoreBasedAlternativesParams,
+	options: ISuggestMealsOptions = {}
+): Promise<Map<TIngredientName, TIngredientName[]>> {
+	const {
 		baseRating,
 		beverageTags,
 		customerBeverageTags,
@@ -2273,10 +2376,21 @@ export async function getScoreBasedAlternatives(
 		recipeName,
 		recipeNegativeTags,
 		recipePositiveTags,
-	}: IScoreBasedAlternativesParams,
-	options: ISuggestMealsOptions = {}
-): Promise<Map<TIngredientName, TIngredientName[]>> {
+	} = params;
 	const execution = createSuggestMealsExecution(options);
+	execution.throwIfAborted();
+	const canUseCache =
+		instance_ingredient === Ingredient.getInstance() &&
+		instance_recipe === Recipe.getInstance();
+	const cacheKey = canUseCache
+		? buildScoreBasedAlternativesCacheKey(params)
+		: null;
+	if (cacheKey !== null) {
+		const cached = scoreBasedAlternativesCache.get(cacheKey);
+		if (cached !== undefined) {
+			return cloneScoreBasedAlternatives(cached);
+		}
+	}
 	await execution.checkpoint(true);
 	const baseScore = SCORE_MAP[baseRating];
 	const result = new Map<TIngredientName, TIngredientName[]>();
@@ -2445,13 +2559,42 @@ export async function getScoreBasedAlternatives(
 	}
 
 	execution.throwIfAborted();
+	if (cacheKey !== null) {
+		scoreBasedAlternativesCache.set(
+			cacheKey,
+			cloneScoreBasedAlternatives(result)
+		);
+	}
 	return result;
 }
 
-const suggestCache = createBoundedRuntimeCache<string, ISuggestedMeal[]>(256, {
-	getWeight: (meals) => Math.max(1, meals.length),
-	maxWeight: 1024,
-});
+const SUGGEST_CACHE_MAX_ENTRIES = 15_000;
+const SUGGEST_CACHE_MAX_MEALS = 150_000;
+const suggestCache = createBoundedRuntimeCache<string, ISuggestedMeal[]>(
+	SUGGEST_CACHE_MAX_ENTRIES,
+	{
+		getWeight: (meals) => Math.max(1, meals.length),
+		maxWeight: SUGGEST_CACHE_MAX_MEALS,
+	}
+);
+
+export interface IRecommendationMemoryCacheStats {
+	readonly alternatives: IBoundedRuntimeCacheStats;
+	readonly exactIngredientState: IBoundedRuntimeCacheStats;
+	readonly finalResult: IBoundedRuntimeCacheStats;
+	readonly recipeIngredientSummary: IBoundedRuntimeCacheStats;
+	readonly searchContext: IBoundedRuntimeCacheStats;
+}
+
+export function getRecommendationMemoryCacheStats(): IRecommendationMemoryCacheStats {
+	return {
+		alternatives: scoreBasedAlternativesCache.getStats(),
+		exactIngredientState: exactIngredientStateCache.getStats(),
+		finalResult: suggestCache.getStats(),
+		recipeIngredientSummary: recipeIngredientSummaryCache.getStats(),
+		searchContext: suggestContextCache.getStats(),
+	};
+}
 
 function cloneSuggestedMeals(meals: ReadonlyArray<ISuggestedMeal>) {
 	return meals.map(({ beverage, price, rating, recipe }) => ({
