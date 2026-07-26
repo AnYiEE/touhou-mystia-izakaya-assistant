@@ -26,7 +26,8 @@ import { evaluateRareSavedMeal } from './evaluateSavedMeals';
 import { getVisibleSavedMeals } from './getVisibleSavedMeals';
 import {
 	type ISuggestMealsOptions,
-	suggestMeals,
+	type ISuggestedMeal,
+	suggestMealsBatch,
 } from '../customer_rare/suggestMeals';
 
 interface IResolveCustomerRarePlanParams {
@@ -55,6 +56,12 @@ export interface IRecommendedCustomerRarePlanMealSession {
 	readonly combos: ReadonlyArray<IRecommendedCustomerRarePlanMealCombo>;
 }
 
+export interface IRecommendedCustomerRarePlanMealProgress {
+	readonly isComplete: boolean;
+	readonly meals: IResolvedCustomerRarePlanGroup['meals'];
+	readonly nextIndex: number;
+}
+
 interface IResolveRecommendedCustomerRarePlanMealBatchParams {
 	batchSize: number;
 	customerName: TCustomerRareName;
@@ -66,6 +73,7 @@ interface IResolveRecommendedCustomerRarePlanMealBatchParams {
 	maxExtraIngredients: number | null;
 	maxRating: number;
 	maxResults: number;
+	onProgress?: (progress: IRecommendedCustomerRarePlanMealProgress) => void;
 	popularTrend: IPopularTrend;
 	recipeInstance?: Recipe;
 	session: IRecommendedCustomerRarePlanMealSession;
@@ -552,6 +560,7 @@ export async function resolveRecommendedCustomerRarePlanMealBatch(
 		maxExtraIngredients,
 		maxRating,
 		maxResults,
+		onProgress,
 		popularTrend,
 		recipeInstance = instance_recipe,
 		session,
@@ -567,54 +576,73 @@ export async function resolveRecommendedCustomerRarePlanMealBatch(
 		safeStartIndex,
 		safeStartIndex + safeBatchSize
 	);
-	const meals: IResolvedCustomerRarePlanGroup['meals'] = [];
-	for (const [
-		index,
-		{ beverageTag, cooker, recipeTag },
-	] of batchCombos.entries()) {
-		const suggestedMeals = await suggestMeals(
-			{
-				cooker,
-				currentBeverage: null,
-				currentRecipe: null,
-				customerName,
-				customerOrder: { beverageTag, recipeTag },
-				hasMystiaCooker: false,
-				hiddenBeverages,
-				hiddenDlcs,
-				hiddenIngredients,
-				hiddenRecipes,
-				isFamousShop,
-				maxExtraIngredients,
-				maxRating,
-				maxResults: safeMaxResults,
-				popularTrend,
+	const resolveSuggestedMeals = (
+		suggestedMeals: ReadonlyArray<ISuggestedMeal>,
+		index: number
+	): IResolvedCustomerRarePlanGroup['meals'] => {
+		const combo = batchCombos[index];
+		if (combo === undefined) {
+			return [];
+		}
+		const { beverageTag, recipeTag } = combo;
+
+		return suggestedMeals.map((meal, recommendedSetIndex) => ({
+			dataIndex: null,
+			evaluation: {
+				isDarkMatter: recipeInstance.checkDarkMatter(meal.recipe)
+					.isDarkMatter,
+				price: meal.price,
+				rating: meal.rating,
 			},
-			options
-		);
-		meals.push(
-			...suggestedMeals.map((meal, recommendedSetIndex) => ({
-				dataIndex: null,
-				evaluation: {
-					isDarkMatter: recipeInstance.checkDarkMatter(meal.recipe)
-						.isDarkMatter,
-					price: meal.price,
-					rating: meal.rating,
-				},
-				meal: {
-					beverage: meal.beverage,
-					hasMystiaCooker: false,
-					order: { beverageTag, recipeTag },
-					recipe: meal.recipe,
-				},
-				recommendedSetIndex,
-				source: 'recommended' as const,
-				visibleIndex:
-					(safeStartIndex + index) * safeMaxResults +
-					recommendedSetIndex,
-			}))
-		);
-	}
+			meal: {
+				beverage: meal.beverage,
+				hasMystiaCooker: false,
+				order: { beverageTag, recipeTag },
+				recipe: meal.recipe,
+			},
+			recommendedSetIndex,
+			source: 'recommended' as const,
+			visibleIndex:
+				(safeStartIndex + index) * safeMaxResults + recommendedSetIndex,
+		}));
+	};
+	const resolvedBatches: Array<IResolvedCustomerRarePlanGroup['meals']> = [];
+	await suggestMealsBatch(
+		batchCombos.map(({ beverageTag, cooker, recipeTag }) => ({
+			cooker,
+			currentBeverage: null,
+			currentRecipe: null,
+			customerName,
+			customerOrder: { beverageTag, recipeTag },
+			hasMystiaCooker: false,
+			hiddenBeverages,
+			hiddenDlcs,
+			hiddenIngredients,
+			hiddenRecipes,
+			isFamousShop,
+			maxExtraIngredients,
+			maxRating,
+			maxResults: safeMaxResults,
+			popularTrend,
+		})),
+		{
+			...options,
+			onResult: ({ index, meals: suggestedMeals }) => {
+				const resolvedMeals = resolveSuggestedMeals(
+					suggestedMeals,
+					index
+				);
+				resolvedBatches[index] = resolvedMeals;
+				const nextIndex = safeStartIndex + index + 1;
+				onProgress?.({
+					isComplete: nextIndex >= combos.length,
+					meals: resolvedMeals,
+					nextIndex,
+				});
+			},
+		}
+	);
+	const meals = resolvedBatches.flat();
 	const nextIndex = safeStartIndex + batchCombos.length;
 
 	return { isComplete: nextIndex >= combos.length, meals, nextIndex };

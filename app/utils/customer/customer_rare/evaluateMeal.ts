@@ -10,15 +10,15 @@ import {
 import { type ICustomerOrder } from '@/types';
 
 export interface IEvaluateMealParams {
-	currentBeverageTags: TBeverageTag[];
-	currentCustomerBeverageTags: TBeverageTag[];
+	currentBeverageTags: ReadonlyArray<TBeverageTag>;
+	currentCustomerBeverageTags: ReadonlyArray<TBeverageTag>;
 	currentCustomerName: TCustomerRareName;
-	currentCustomerNegativeTags: TRecipeTag[];
+	currentCustomerNegativeTags: ReadonlyArray<TRecipeTag>;
 	currentCustomerOrder: ICustomerOrder;
-	currentCustomerPositiveTags: TRecipeTag[];
-	currentIngredients: TIngredientName[];
+	currentCustomerPositiveTags: ReadonlyArray<TRecipeTag>;
+	currentIngredients: ReadonlyArray<TIngredientName>;
 	currentRecipeName: TRecipeName | null;
-	currentRecipeTagsWithTrend: TRecipeTag[];
+	currentRecipeTagsWithTrend: ReadonlyArray<TRecipeTag>;
 	hasMystiaCooker: boolean;
 	isDarkMatter: boolean;
 }
@@ -42,85 +42,17 @@ export type TMealEvaluatorParams = Pick<
 	| 'isDarkMatter'
 >;
 
-function calculateMaxScore({
-	currentBeverageTags,
-	currentCustomerOrder,
-	currentRecipeTagsWithTrend,
-	hasMystiaCooker,
-}: Pick<
-	IEvaluateMealParams,
-	| 'currentBeverageTags'
-	| 'currentCustomerOrder'
-	| 'currentRecipeTagsWithTrend'
-	| 'hasMystiaCooker'
->) {
-	const {
-		beverageTag: customerOrderBeverageTag,
-		recipeTag: customerOrderRecipeTag,
-	} = currentCustomerOrder;
-
-	if (
-		customerOrderBeverageTag === null &&
-		customerOrderRecipeTag === null &&
-		!hasMystiaCooker
-	) {
-		return 0;
-	}
-
-	const beverageMaxScore = hasMystiaCooker
-		? 1
-		: customerOrderBeverageTag
-			? Number(currentBeverageTags.includes(customerOrderBeverageTag))
-			: 0;
-	const recipeMaxScore = hasMystiaCooker
-		? 1
-		: customerOrderRecipeTag
-			? Number(
-					currentRecipeTagsWithTrend.includes(customerOrderRecipeTag)
-				)
-			: 0;
-
-	if (beverageMaxScore + recipeMaxScore === 0) {
-		return 1;
-	}
-
-	return 1 + 1 + beverageMaxScore + recipeMaxScore;
+export interface IMealEvaluatorRecipeSideFacts {
+	readonly firstMatchedPositiveTagCount: number;
+	readonly matchedNegativeTagCount: number;
+	readonly matchedPositiveTagCount: number;
+	readonly tagCounts: ReadonlyMap<TRecipeTag, number>;
 }
 
-function calculateMinScore({
-	currentBeverageTags,
-	currentCustomerOrder,
-	currentRecipeTagsWithTrend,
-	hasMystiaCooker,
-	mealScore,
-}: Pick<
-	IEvaluateMealParams,
-	| 'currentBeverageTags'
-	| 'currentCustomerOrder'
-	| 'currentRecipeTagsWithTrend'
-	| 'hasMystiaCooker'
-> & { mealScore: number }) {
-	if (hasMystiaCooker) {
-		return mealScore;
-	}
-
-	const {
-		beverageTag: customerOrderBeverageTag,
-		recipeTag: customerOrderRecipeTag,
-	} = currentCustomerOrder;
-
-	if (customerOrderBeverageTag === null || customerOrderRecipeTag === null) {
-		return mealScore;
-	}
-
-	if (
-		currentBeverageTags.includes(customerOrderBeverageTag) &&
-		currentRecipeTagsWithTrend.includes(customerOrderRecipeTag)
-	) {
-		return Math.max(mealScore, 2);
-	}
-
-	return mealScore;
+export interface IMealEvaluatorRecipeSideCache {
+	resolve(
+		currentRecipeTagsWithTrend: ReadonlyArray<TRecipeTag>
+	): IMealEvaluatorRecipeSideFacts;
 }
 
 export function getIngredientEasterEggTarget(
@@ -327,6 +259,84 @@ function evaluateBeverageSide({
 	);
 }
 
+function buildRecipeSideFacts({
+	currentCustomerNegativeTags,
+	currentCustomerPositiveTags,
+	currentRecipeTagsWithTrend,
+}: Pick<
+	IEvaluateMealParams,
+	| 'currentCustomerNegativeTags'
+	| 'currentCustomerPositiveTags'
+	| 'currentRecipeTagsWithTrend'
+>) {
+	let firstMatchedPositiveTag: TRecipeTag | undefined;
+	let firstMatchedPositiveTagCount = 0;
+	let matchedNegativeTagCount = 0;
+	let matchedPositiveTagCount = 0;
+	const tagCounts = new Map<TRecipeTag, number>();
+
+	for (const tag of currentRecipeTagsWithTrend) {
+		tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+		if (currentCustomerNegativeTags.includes(tag)) {
+			matchedNegativeTagCount++;
+		}
+		if (!currentCustomerPositiveTags.includes(tag)) {
+			continue;
+		}
+
+		matchedPositiveTagCount++;
+		if (firstMatchedPositiveTag === undefined) {
+			firstMatchedPositiveTag = tag;
+			firstMatchedPositiveTagCount = 1;
+		} else if (tag === firstMatchedPositiveTag) {
+			firstMatchedPositiveTagCount++;
+		}
+	}
+
+	return {
+		firstMatchedPositiveTagCount,
+		matchedNegativeTagCount,
+		matchedPositiveTagCount,
+		tagCounts,
+	};
+}
+
+function evaluateRecipeSideFromFacts(
+	{
+		firstMatchedPositiveTagCount,
+		matchedNegativeTagCount,
+		matchedPositiveTagCount,
+		tagCounts,
+	}: IMealEvaluatorRecipeSideFacts,
+	recipeOrderTag: TRecipeTag | null,
+	isRecipeOrderPositive: boolean,
+	hasMystiaCooker: boolean
+) {
+	if (matchedPositiveTagCount === 0) {
+		return -matchedNegativeTagCount;
+	}
+	if (hasMystiaCooker) {
+		return (
+			1 +
+			matchedPositiveTagCount -
+			firstMatchedPositiveTagCount -
+			matchedNegativeTagCount
+		);
+	}
+
+	const matchedOrderedTagCount =
+		recipeOrderTag === null || !isRecipeOrderPositive
+			? 0
+			: (tagCounts.get(recipeOrderTag) ?? 0);
+
+	return (
+		Number(matchedOrderedTagCount > 0) +
+		matchedPositiveTagCount -
+		matchedOrderedTagCount -
+		matchedNegativeTagCount
+	);
+}
+
 function evaluateRecipeSide({
 	currentCustomerNegativeTags,
 	currentCustomerOrder,
@@ -387,43 +397,74 @@ function evaluateRecipeSide({
 	);
 }
 
-function combineMealSides({
-	beverageScore,
-	currentBeverageTags,
-	currentCustomerName,
-	currentCustomerOrder,
-	currentIngredients,
-	currentRecipeName,
-	currentRecipeTagsWithTrend,
-	hasMystiaCooker,
-	recipeScore,
+export function createMealEvaluatorRecipeSideCache({
+	currentCustomerNegativeTags,
+	currentCustomerPositiveTags,
 }: Pick<
-	IEvaluateMealParams,
-	| 'currentBeverageTags'
-	| 'currentCustomerName'
-	| 'currentCustomerOrder'
-	| 'currentIngredients'
-	| 'currentRecipeName'
-	| 'currentRecipeTagsWithTrend'
-	| 'hasMystiaCooker'
-> & { beverageScore: number; recipeScore: number }) {
-	let mealScore = Math.min(
-		beverageScore + recipeScore,
-		calculateMaxScore({
-			currentBeverageTags,
-			currentCustomerOrder,
-			currentRecipeTagsWithTrend,
-			hasMystiaCooker,
-		})
-	);
+	TCreateMealEvaluatorParams,
+	'currentCustomerNegativeTags' | 'currentCustomerPositiveTags'
+>): IMealEvaluatorRecipeSideCache {
+	const cache = new WeakMap<
+		ReadonlyArray<TRecipeTag>,
+		IMealEvaluatorRecipeSideFacts
+	>();
 
-	mealScore = calculateMinScore({
-		currentBeverageTags,
-		currentCustomerOrder,
-		currentRecipeTagsWithTrend,
-		hasMystiaCooker,
-		mealScore,
-	});
+	return {
+		resolve(currentRecipeTagsWithTrend) {
+			const cached = cache.get(currentRecipeTagsWithTrend);
+			if (cached !== undefined) {
+				return cached;
+			}
+
+			const facts = buildRecipeSideFacts({
+				currentCustomerNegativeTags,
+				currentCustomerPositiveTags,
+				currentRecipeTagsWithTrend,
+			});
+			cache.set(currentRecipeTagsWithTrend, facts);
+
+			return facts;
+		},
+	};
+}
+
+function combineMealScoreValues(
+	beverageScore: number,
+	recipeScore: number,
+	hasMystiaCooker: boolean,
+	hasBeverageOrder: boolean,
+	hasRecipeOrder: boolean,
+	matchesBeverageOrder: boolean,
+	matchesRecipeOrder: boolean,
+	currentCustomerName: TCustomerRareName,
+	currentIngredients: ReadonlyArray<TIngredientName>,
+	currentRecipeName: TRecipeName | null
+) {
+	let maxScore: number;
+
+	if (!hasBeverageOrder && !hasRecipeOrder && !hasMystiaCooker) {
+		maxScore = 0;
+	} else {
+		const beverageMaxScore = hasMystiaCooker
+			? 1
+			: Number(matchesBeverageOrder);
+		const recipeMaxScore = hasMystiaCooker ? 1 : Number(matchesRecipeOrder);
+		maxScore =
+			beverageMaxScore + recipeMaxScore === 0
+				? 1
+				: 2 + beverageMaxScore + recipeMaxScore;
+	}
+
+	let mealScore = Math.min(beverageScore + recipeScore, maxScore);
+	if (
+		!hasMystiaCooker &&
+		hasBeverageOrder &&
+		hasRecipeOrder &&
+		matchesBeverageOrder &&
+		matchesRecipeOrder
+	) {
+		mealScore = Math.max(mealScore, 2);
+	}
 
 	mealScore = checkEasterEgg({
 		currentCustomerName,
@@ -435,7 +476,54 @@ function combineMealSides({
 	return getRatingKey(mealScore);
 }
 
-export function createMealEvaluator({
+function combineMealSides({
+	beverageScore,
+	currentCustomerName,
+	currentCustomerOrder,
+	currentIngredients,
+	currentRecipeName,
+	currentRecipeTagsWithTrend,
+	doesBeverageMatchOrder,
+	hasMystiaCooker,
+	recipeScore,
+}: Pick<
+	IEvaluateMealParams,
+	| 'currentCustomerName'
+	| 'currentCustomerOrder'
+	| 'currentIngredients'
+	| 'currentRecipeName'
+	| 'currentRecipeTagsWithTrend'
+	| 'hasMystiaCooker'
+> & {
+	readonly beverageScore: number;
+	readonly doesBeverageMatchOrder: boolean;
+	readonly recipeScore: number;
+}) {
+	const {
+		beverageTag: customerOrderBeverageTag,
+		recipeTag: customerOrderRecipeTag,
+	} = currentCustomerOrder;
+	const matchesBeverageOrder =
+		customerOrderBeverageTag !== null && doesBeverageMatchOrder;
+	const matchesRecipeOrder =
+		customerOrderRecipeTag !== null &&
+		currentRecipeTagsWithTrend.includes(customerOrderRecipeTag);
+
+	return combineMealScoreValues(
+		beverageScore,
+		recipeScore,
+		hasMystiaCooker,
+		customerOrderBeverageTag !== null,
+		customerOrderRecipeTag !== null,
+		matchesBeverageOrder,
+		matchesRecipeOrder,
+		currentCustomerName,
+		currentIngredients,
+		currentRecipeName
+	);
+}
+
+function createMealEvaluatorInternal({
 	currentBeverageTags,
 	currentCustomerBeverageTags,
 	currentCustomerName,
@@ -456,6 +544,9 @@ export function createMealEvaluator({
 		currentCustomerOrder,
 		hasMystiaCooker: false,
 	});
+	const doesBeverageMatchOrder =
+		currentCustomerOrder.beverageTag !== null &&
+		currentBeverageTags.includes(currentCustomerOrder.beverageTag);
 
 	return ({
 		currentIngredients,
@@ -498,15 +589,98 @@ export function createMealEvaluator({
 
 		return combineMealSides({
 			beverageScore,
-			currentBeverageTags,
 			currentCustomerName,
 			currentCustomerOrder,
 			currentIngredients,
 			currentRecipeName: effectiveRecipeName,
 			currentRecipeTagsWithTrend: effectiveRecipeTagsWithTrend,
+			doesBeverageMatchOrder,
 			hasMystiaCooker: effectiveHasMystiaCooker,
 			recipeScore,
 		});
+	};
+}
+
+export function createMealEvaluator(params: TCreateMealEvaluatorParams) {
+	return createMealEvaluatorInternal(params);
+}
+
+export function createMealEvaluatorWithRecipeSideCache(
+	params: TCreateMealEvaluatorParams,
+	recipeSideCache: IMealEvaluatorRecipeSideCache
+) {
+	const {
+		currentBeverageTags,
+		currentCustomerBeverageTags,
+		currentCustomerName,
+		currentCustomerOrder,
+		currentCustomerPositiveTags,
+		hasMystiaCooker,
+	} = params;
+	const evaluateWithoutCache = createMealEvaluatorInternal(params);
+	const beverageOrderTag = currentCustomerOrder.beverageTag;
+	const recipeOrderTag = currentCustomerOrder.recipeTag;
+	const beverageScore = evaluateBeverageSide({
+		currentBeverageTags,
+		currentCustomerBeverageTags,
+		currentCustomerOrder,
+		hasMystiaCooker,
+	});
+	const hasBeverageOrder = beverageOrderTag !== null;
+	const hasRecipeOrder = recipeOrderTag !== null;
+	const isRecipeOrderPositive =
+		recipeOrderTag !== null &&
+		currentCustomerPositiveTags.includes(recipeOrderTag);
+	const matchesBeverageOrder =
+		beverageOrderTag !== null &&
+		currentBeverageTags.includes(beverageOrderTag);
+
+	return ({
+		currentIngredients,
+		currentRecipeName,
+		currentRecipeTagsWithTrend,
+		isDarkMatter,
+	}: TMealEvaluatorParams) => {
+		if (isDarkMatter) {
+			return evaluateWithoutCache({
+				currentIngredients,
+				currentRecipeName,
+				currentRecipeTagsWithTrend,
+				isDarkMatter,
+			});
+		}
+		if (currentBeverageTags.length === 0 || currentRecipeName === null) {
+			return null;
+		}
+		if ((!hasBeverageOrder || !hasRecipeOrder) && !hasMystiaCooker) {
+			return null;
+		}
+
+		const recipeSideFacts = recipeSideCache.resolve(
+			currentRecipeTagsWithTrend
+		);
+		const recipeScore = evaluateRecipeSideFromFacts(
+			recipeSideFacts,
+			recipeOrderTag,
+			isRecipeOrderPositive,
+			hasMystiaCooker
+		);
+		const matchesRecipeOrder =
+			recipeOrderTag !== null &&
+			recipeSideFacts.tagCounts.has(recipeOrderTag);
+
+		return combineMealScoreValues(
+			beverageScore,
+			recipeScore,
+			hasMystiaCooker,
+			hasBeverageOrder,
+			hasRecipeOrder,
+			matchesBeverageOrder,
+			matchesRecipeOrder,
+			currentCustomerName,
+			currentIngredients,
+			currentRecipeName
+		);
 	};
 }
 

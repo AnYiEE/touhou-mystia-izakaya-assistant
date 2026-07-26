@@ -34,7 +34,6 @@ import {
 	writeCustomerRarePlanRecommendationCache,
 } from './customerRarePlanRecommendationCache';
 
-const RECOMMENDED_MEAL_BATCH_SIZE = 1;
 const sharedRecommendationScheduler = createRoundRobinSuggestMealsScheduler();
 
 interface IUseCustomerRarePlanRecommendationsParams {
@@ -152,62 +151,69 @@ export function useCustomerRarePlanRecommendations({
 				const { result: completedMeals, source } =
 					await resolvePersistentRecommendationRace({
 						compute: async (signal) => {
-							let isComplete = false;
-							let nextIndex = initialNextIndex;
-							while (!isComplete) {
-								await sharedRecommendationScheduler.yield(
-									taskKey,
-									signal
-								);
-								const batch =
-									await resolveRecommendedCustomerRarePlanMealBatch(
-										{
-											batchSize:
-												RECOMMENDED_MEAL_BATCH_SIZE,
-											customerName,
-											hiddenBeverages,
-											hiddenDlcs,
-											hiddenIngredients,
-											hiddenRecipes,
-											isFamousShop,
-											maxExtraIngredients,
-											maxRating,
-											maxResults,
-											popularTrend,
-											session: recommendationSession,
-											startIndex: nextIndex,
-										},
-										{
-											scheduler:
-												sharedRecommendationScheduler,
-											signal,
-											taskKey,
+							const remainingComboCount =
+								recommendationSession.combos.length -
+								initialNextIndex;
+							if (remainingComboCount <= 0) {
+								return mealsRef.current;
+							}
+							await resolveRecommendedCustomerRarePlanMealBatch(
+								{
+									batchSize: remainingComboCount,
+									customerName,
+									hiddenBeverages,
+									hiddenDlcs,
+									hiddenIngredients,
+									hiddenRecipes,
+									isFamousShop,
+									maxExtraIngredients,
+									maxRating,
+									maxResults,
+									onProgress: ({
+										isComplete,
+										meals: nextMeals,
+										nextIndex,
+									}) => {
+										if (
+											signal.aborted ||
+											generationRef.current !== generation
+										) {
+											throw new DOMException(
+												'The operation was aborted.',
+												'AbortError'
+											);
 										}
-									);
 
-								if (
-									signal.aborted ||
-									generationRef.current !== generation
-								) {
-									throw new DOMException(
-										'The operation was aborted.',
-										'AbortError'
-									);
+										nextIndexRef.current = nextIndex;
+										if (nextMeals.length > 0) {
+											mealsRef.current = [
+												...mealsRef.current,
+												...nextMeals,
+											];
+											setMeals(mealsRef.current);
+										}
+										if (!isComplete) {
+											setStatus('partial');
+										}
+									},
+									popularTrend,
+									session: recommendationSession,
+									startIndex: initialNextIndex,
+								},
+								{
+									scheduler: sharedRecommendationScheduler,
+									signal,
+									taskKey,
 								}
-
-								nextIndex = batch.nextIndex;
-								nextIndexRef.current = nextIndex;
-								if (batch.meals.length > 0) {
-									mealsRef.current = [
-										...mealsRef.current,
-										...batch.meals,
-									];
-									setMeals(mealsRef.current);
-								}
-								isComplete = batch.isComplete;
-								if (!isComplete) {
-									setStatus('partial');
-								}
+							);
+							if (
+								signal.aborted ||
+								generationRef.current !== generation
+							) {
+								throw new DOMException(
+									'The operation was aborted.',
+									'AbortError'
+								);
 							}
 							return mealsRef.current;
 						},

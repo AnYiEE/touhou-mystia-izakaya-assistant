@@ -21,6 +21,8 @@ import type { TItemData } from '@/utils/types';
 import {
 	checkRecipeEasterEgg,
 	createMealEvaluator,
+	createMealEvaluatorRecipeSideCache,
+	createMealEvaluatorWithRecipeSideCache,
 	evaluateMeal,
 	getIngredientEasterEggTarget,
 } from './evaluateMeal';
@@ -1251,13 +1253,61 @@ async function getRecipeIngredientSummaries({
 	return layers;
 }
 
-async function findBestExtraIngredients({
+interface IBestExtraIngredientsPreparation {
+	readonly summaryLayers: Awaited<
+		ReturnType<typeof getRecipeIngredientSummaries>
+	>;
+}
+
+interface IPrepareBestExtraIngredientsParams {
+	readonly baseGameIngredients: TItemData<Ingredient>;
+	readonly customerName: TCustomerRareName;
+	readonly customerPositiveTags: ReadonlyArray<TRecipeTag>;
+	readonly excludedExtraIngredients: ReadonlyArray<TIngredientName>;
+	readonly execution: ISuggestMealsExecution;
+	readonly extraSlots: number;
+	readonly hasMystiaCooker: boolean;
+	readonly ingredientPenaltyContext: ISuggestIngredientPenaltyContext;
+	readonly ingredientPriorityMap: ReadonlyMap<
+		TIngredientName,
+		IRecommendationPriorityMetrics
+	>;
+	readonly isFamousShop: boolean;
+	readonly popularTrend: IPopularTrend;
+	readonly recipeIngredients: ReadonlyArray<TIngredientName>;
+	readonly recipeName: TRecipeName;
+	readonly recipeNegativeTags: ReadonlyArray<TRecipeTag>;
+	readonly recipeTagsBase: ReadonlyArray<TRecipeTag>;
+}
+
+interface ISelectBestExtraIngredientsParams {
+	readonly evaluateRecipe: ReturnType<typeof createMealEvaluator>;
+	readonly execution: ISuggestMealsExecution;
+	readonly extraSlots: number;
+	readonly maxRating: number;
+	readonly preparation: IBestExtraIngredientsPreparation;
+	readonly recipeName: TRecipeName;
+}
+
+interface IFindBestExtraIngredientsParams extends IPrepareBestExtraIngredientsParams {
+	readonly beverageTags: ReadonlyArray<TBeverageTag>;
+	readonly customerBeverageTags: ReadonlyArray<TBeverageTag>;
+	readonly customerNegativeTags: ReadonlyArray<TRecipeTag>;
+	readonly customerOrder: ICustomerOrder;
+	readonly maxRating: number;
+}
+
+interface IBestExtraIngredientsResult {
+	readonly extraIngredients: TIngredientName[];
+	readonly ingredientPenalty: number;
+	readonly priority: IRecommendationPriorityMetrics;
+	readonly rating: TRatingKey;
+	readonly score: number;
+}
+
+async function prepareBestExtraIngredients({
 	baseGameIngredients,
-	beverageTags,
-	customerBeverageTags,
 	customerName,
-	customerNegativeTags,
-	customerOrder,
 	customerPositiveTags,
 	excludedExtraIngredients,
 	execution,
@@ -1266,43 +1316,12 @@ async function findBestExtraIngredients({
 	ingredientPenaltyContext,
 	ingredientPriorityMap,
 	isFamousShop,
-	maxRating,
 	popularTrend,
 	recipeIngredients,
 	recipeName,
 	recipeNegativeTags,
 	recipeTagsBase,
-}: {
-	baseGameIngredients: TItemData<Ingredient>;
-	beverageTags: TBeverageTag[];
-	customerBeverageTags: TBeverageTag[];
-	customerName: TCustomerRareName;
-	customerNegativeTags: ReadonlyArray<TRecipeTag>;
-	customerOrder: ICustomerOrder;
-	customerPositiveTags: ReadonlyArray<TRecipeTag>;
-	excludedExtraIngredients: ReadonlyArray<TIngredientName>;
-	execution: ISuggestMealsExecution;
-	extraSlots: number;
-	hasMystiaCooker: boolean;
-	ingredientPenaltyContext: ISuggestIngredientPenaltyContext;
-	ingredientPriorityMap: ReadonlyMap<
-		TIngredientName,
-		IRecommendationPriorityMetrics
-	>;
-	isFamousShop: boolean;
-	maxRating: number;
-	popularTrend: IPopularTrend;
-	recipeIngredients: TIngredientName[];
-	recipeName: TRecipeName;
-	recipeNegativeTags: ReadonlyArray<TRecipeTag>;
-	recipeTagsBase: ReadonlyArray<TRecipeTag>;
-}): Promise<{
-	extraIngredients: TIngredientName[];
-	rating: TRatingKey;
-	score: number;
-	ingredientPenalty: number;
-	priority: IRecommendationPriorityMetrics;
-} | null> {
+}: IPrepareBestExtraIngredientsParams): Promise<IBestExtraIngredientsPreparation> {
 	const negativeTagSet = new Set<string>(recipeNegativeTags);
 	const fixedIngredientSet = new Set(excludedExtraIngredients);
 	const effectIngredient = getIngredientEasterEggTarget(customerName);
@@ -1356,34 +1375,32 @@ async function findBestExtraIngredients({
 		recipeTagsBase,
 		stateTable,
 	});
-	const evaluateRecipe = createMealEvaluator({
-		currentBeverageTags: beverageTags,
-		currentCustomerBeverageTags: customerBeverageTags,
-		currentCustomerName: customerName,
-		currentCustomerNegativeTags: customerNegativeTags as TRecipeTag[],
-		currentCustomerOrder: customerOrder,
-		currentCustomerPositiveTags: customerPositiveTags as TRecipeTag[],
-		hasMystiaCooker,
-	});
 
-	let bestResult: {
-		extraIngredients: TIngredientName[];
-		ingredientPenalty: number;
-		priority: IRecommendationPriorityMetrics;
-		rating: TRatingKey;
-		score: number;
-	} | null = null;
+	return { summaryLayers };
+}
+
+async function selectBestExtraIngredients({
+	evaluateRecipe,
+	execution,
+	extraSlots,
+	maxRating,
+	preparation,
+	recipeName,
+}: ISelectBestExtraIngredientsParams): Promise<IBestExtraIngredientsResult | null> {
+	let bestRating: TRatingKey | null = null;
+	let bestScore = 0;
+	let bestSummary: IRecipeIngredientSummary | null = null;
 
 	for (let count = 1; count <= extraSlots; count++) {
-		for (const summary of summaryLayers[count] ?? []) {
+		for (const summary of preparation.summaryLayers[count] ?? []) {
 			const checkpointPromise = execution.checkpoint();
 			if (checkpointPromise !== undefined) {
 				await checkpointPromise;
 			}
 			const rating = evaluateRecipe({
-				currentIngredients: [...summary.currentIngredients],
+				currentIngredients: summary.currentIngredients,
 				currentRecipeName: recipeName,
-				currentRecipeTagsWithTrend: [...summary.recipeTagsWithTrend],
+				currentRecipeTagsWithTrend: summary.recipeTagsWithTrend,
 				isDarkMatter: false,
 			});
 			if (rating === null) {
@@ -1391,36 +1408,276 @@ async function findBestExtraIngredients({
 			}
 
 			const score = SCORE_MAP[rating];
-			if (
-				score > maxRating ||
-				(bestResult !== null &&
-					(score < bestResult.score ||
-						(score === bestResult.score &&
-							(compareRecommendationStrictMetrics(
-								summary.priority,
-								bestResult.priority
-							) > 0 ||
-								(compareRecommendationStrictMetrics(
-									summary.priority,
-									bestResult.priority
-								) === 0 &&
-									summary.ingredientPenalty >=
-										bestResult.ingredientPenalty)))))
-			) {
+			if (score > maxRating || score < bestScore) {
 				continue;
 			}
+			if (score === bestScore && bestSummary !== null) {
+				const priorityComparison = compareRecommendationStrictMetrics(
+					summary.priority,
+					bestSummary.priority
+				);
+				if (
+					priorityComparison > 0 ||
+					(priorityComparison === 0 &&
+						summary.ingredientPenalty >=
+							bestSummary.ingredientPenalty)
+				) {
+					continue;
+				}
+			}
 
-			bestResult = {
-				extraIngredients: [...summary.extraIngredients],
-				ingredientPenalty: summary.ingredientPenalty,
-				priority: summary.priority,
-				rating,
-				score,
-			};
+			bestRating = rating;
+			bestScore = score;
+			bestSummary = summary;
 		}
 	}
 
-	return bestResult;
+	return bestSummary === null || bestRating === null
+		? null
+		: {
+				extraIngredients: [...bestSummary.extraIngredients],
+				ingredientPenalty: bestSummary.ingredientPenalty,
+				priority: bestSummary.priority,
+				rating: bestRating,
+				score: bestScore,
+			};
+}
+
+async function findBestExtraIngredients({
+	beverageTags,
+	customerBeverageTags,
+	customerName,
+	customerNegativeTags,
+	customerOrder,
+	customerPositiveTags,
+	hasMystiaCooker,
+	maxRating,
+	...preparationParams
+}: IFindBestExtraIngredientsParams) {
+	const preparation = await prepareBestExtraIngredients({
+		customerName,
+		customerPositiveTags,
+		hasMystiaCooker,
+		...preparationParams,
+	});
+	const evaluateRecipe = createMealEvaluator({
+		currentBeverageTags: beverageTags,
+		currentCustomerBeverageTags: customerBeverageTags,
+		currentCustomerName: customerName,
+		currentCustomerNegativeTags: customerNegativeTags,
+		currentCustomerOrder: customerOrder,
+		currentCustomerPositiveTags: customerPositiveTags,
+		hasMystiaCooker,
+	});
+
+	return selectBestExtraIngredients({
+		evaluateRecipe,
+		execution: preparationParams.execution,
+		extraSlots: preparationParams.extraSlots,
+		maxRating,
+		preparation,
+		recipeName: preparationParams.recipeName,
+	});
+}
+
+interface IAutomaticSuggestContextBatchState {
+	readonly beverageTagGroups: Map<
+		TBeverageTag,
+		Map<string, IBeverageTagGroup>
+	>;
+	readonly extraIngredientPreparations: Map<
+		TItemData<Ingredient>,
+		Map<string, IBestExtraIngredientsPreparation>
+	>;
+	readonly recipesWithSuitability: Map<
+		string,
+		ReturnType<typeof buildRecipeSuitabilityList>
+	>;
+	readonly recipeSideCache: ReturnType<
+		typeof createMealEvaluatorRecipeSideCache
+	>;
+	readonly relevantIngredientGroups: Map<string, TItemData<Ingredient>>;
+	readonly relevantIngredients: Map<TRecipeTag, TItemData<Ingredient>>;
+}
+
+interface IAutomaticSuggestBatchState {
+	readonly contexts: Map<TSuggestContext, IAutomaticSuggestContextBatchState>;
+}
+
+function createAutomaticSuggestBatchState(): IAutomaticSuggestBatchState {
+	return { contexts: new Map() };
+}
+
+function getAutomaticSuggestContextBatchState(
+	batchState: IAutomaticSuggestBatchState,
+	context: TSuggestContext
+) {
+	const cached = batchState.contexts.get(context);
+	if (cached !== undefined) {
+		return cached;
+	}
+
+	const state: IAutomaticSuggestContextBatchState = {
+		beverageTagGroups: new Map(),
+		extraIngredientPreparations: new Map(),
+		recipeSideCache: createMealEvaluatorRecipeSideCache({
+			currentCustomerNegativeTags: context.customerNegativeTags,
+			currentCustomerPositiveTags: context.customerPositiveTags,
+		}),
+		recipesWithSuitability: new Map(),
+		relevantIngredientGroups: new Map(),
+		relevantIngredients: new Map(),
+	};
+	batchState.contexts.set(context, state);
+
+	return state;
+}
+
+function getAutomaticBeverageTagGroups(
+	context: TSuggestContext,
+	state: IAutomaticSuggestContextBatchState,
+	orderBeverageTag: TBeverageTag
+) {
+	const cached = state.beverageTagGroups.get(orderBeverageTag);
+	if (cached !== undefined) {
+		return cached;
+	}
+
+	const groups = buildBeverageTagGroups(
+		context.baseGameBeverages.filter(
+			({ tags }) =>
+				(tags as ReadonlyArray<TBeverageTag>).includes(
+					orderBeverageTag
+				) &&
+				(
+					context.customerBeverageTags as ReadonlyArray<TBeverageTag>
+				).includes(orderBeverageTag)
+		)
+	);
+	state.beverageTagGroups.set(orderBeverageTag, groups);
+
+	return groups;
+}
+
+function getAutomaticRelevantIngredients(
+	context: TSuggestContext,
+	state: IAutomaticSuggestContextBatchState,
+	orderRecipeTag: TRecipeTag
+) {
+	const cached = state.relevantIngredients.get(orderRecipeTag);
+	if (cached !== undefined) {
+		return cached;
+	}
+
+	const ingredients = filterRelevantIngredients(
+		context.baseGameIngredients,
+		context.customerPositiveTags,
+		context.customerNegativeTags,
+		orderRecipeTag
+	);
+	const signature = JSON.stringify(ingredients.map(({ name }) => name));
+	const sharedIngredients =
+		state.relevantIngredientGroups.get(signature) ?? ingredients;
+	state.relevantIngredientGroups.set(signature, sharedIngredients);
+	state.relevantIngredients.set(orderRecipeTag, sharedIngredients);
+
+	return sharedIngredients;
+}
+
+function getAutomaticRecipesWithSuitability(
+	context: TSuggestContext,
+	state: IAutomaticSuggestContextBatchState,
+	customerName: TCustomerRareName,
+	isFamousShop: boolean,
+	popularTrend: IPopularTrend
+) {
+	const key = [
+		isFamousShop ? '1' : '0',
+		popularTrend.tag ?? '',
+		popularTrend.isNegative ? '1' : '0',
+	].join('|');
+	const cached = state.recipesWithSuitability.get(key);
+	if (cached !== undefined) {
+		return cached;
+	}
+
+	const recipes = buildRecipeSuitabilityList(
+		context.instance_recipe,
+		context.baseGameRecipes,
+		customerName,
+		context.customerPositiveTags,
+		context.customerNegativeTags,
+		popularTrend,
+		isFamousShop
+	);
+	state.recipesWithSuitability.set(key, recipes);
+
+	return recipes;
+}
+
+async function getAutomaticExtraIngredientPreparation({
+	context,
+	customerName,
+	execution,
+	extraSlots,
+	isFamousShop,
+	popularTrend,
+	recipe,
+	relevantIngredients,
+	state,
+}: {
+	context: TSuggestContext;
+	customerName: TCustomerRareName;
+	execution: ISuggestMealsExecution;
+	extraSlots: number;
+	isFamousShop: boolean;
+	popularTrend: IPopularTrend;
+	recipe: TItemData<Recipe>[number];
+	relevantIngredients: TItemData<Ingredient>;
+	state: IAutomaticSuggestContextBatchState;
+}) {
+	let preparations =
+		state.extraIngredientPreparations.get(relevantIngredients);
+	if (preparations === undefined) {
+		preparations = new Map();
+		state.extraIngredientPreparations.set(
+			relevantIngredients,
+			preparations
+		);
+	}
+	const key = [
+		recipe.name,
+		extraSlots.toString(),
+		isFamousShop ? '1' : '0',
+		popularTrend.tag ?? '',
+		popularTrend.isNegative ? '1' : '0',
+	].join('|');
+	const cached = preparations.get(key);
+	if (cached !== undefined) {
+		return cached;
+	}
+
+	const preparation = await prepareBestExtraIngredients({
+		baseGameIngredients: relevantIngredients,
+		customerName,
+		customerPositiveTags: context.customerPositiveTags,
+		excludedExtraIngredients: [],
+		execution,
+		extraSlots,
+		hasMystiaCooker: false,
+		ingredientPenaltyContext: context.ingredientPenaltyContext,
+		ingredientPriorityMap: context.ingredientPriorityMap,
+		isFamousShop,
+		popularTrend,
+		recipeIngredients: recipe.ingredients,
+		recipeName: recipe.name,
+		recipeNegativeTags: recipe.negativeTags,
+		recipeTagsBase: recipe.positiveTags,
+	});
+	execution.throwIfAborted();
+	preparations.set(key, preparation);
+
+	return preparation;
 }
 
 async function computeSuggestions(
@@ -1435,20 +1692,15 @@ async function computeSuggestions(
 		popularTrend,
 	}: ISuggestParams,
 	context: TSuggestContext,
-	execution: ISuggestMealsExecution
+	execution: ISuggestMealsExecution,
+	batchState: IAutomaticSuggestBatchState
 ) {
 	const {
-		baseGameBeverages,
-		baseGameIngredients,
-		baseGameRecipes,
 		budgetMax,
 		budgetSoftMax,
 		customerBeverageTags,
 		customerNegativeTags,
 		customerPositiveTags,
-		ingredientPenaltyContext,
-		ingredientPriorityMap,
-		instance_recipe,
 	} = context;
 	const { beverageTag: orderBeverageTag, recipeTag: orderRecipeTag } =
 		customerOrder;
@@ -1460,41 +1712,51 @@ async function computeSuggestions(
 		return [];
 	}
 
-	const filteredBeverages = baseGameBeverages.filter(
-		({ tags }) =>
-			(tags as ReadonlyArray<TBeverageTag>).includes(orderBeverageTag) &&
-			(customerBeverageTags as ReadonlyArray<TBeverageTag>).includes(
-				orderBeverageTag
-			)
+	const contextBatchState = getAutomaticSuggestContextBatchState(
+		batchState,
+		context
 	);
-
-	const relevantIngredients = filterRelevantIngredients(
-		baseGameIngredients,
-		customerPositiveTags,
-		customerNegativeTags,
+	const relevantIngredients = getAutomaticRelevantIngredients(
+		context,
+		contextBatchState,
 		orderRecipeTag
 	);
-
-	const recipesWithSuitability = buildRecipeSuitabilityList(
-		instance_recipe,
-		baseGameRecipes,
+	const recipesWithSuitability = getAutomaticRecipesWithSuitability(
+		context,
+		contextBatchState,
 		customerName,
-		customerPositiveTags,
-		customerNegativeTags,
-		popularTrend,
-		isFamousShop
+		isFamousShop,
+		popularTrend
+	);
+	const results: IScoredResult[] = [];
+	const beverageTagGroups = getAutomaticBeverageTagGroups(
+		context,
+		contextBatchState,
+		orderBeverageTag
+	);
+	const beverageGroupsWithEvaluators = [...beverageTagGroups.values()].map(
+		(group) => ({
+			...group,
+			evaluateRecipe: createMealEvaluatorWithRecipeSideCache(
+				{
+					currentBeverageTags: group.tags,
+					currentCustomerBeverageTags: customerBeverageTags,
+					currentCustomerName: customerName,
+					currentCustomerNegativeTags: customerNegativeTags,
+					currentCustomerOrder: customerOrder,
+					currentCustomerPositiveTags: customerPositiveTags,
+					hasMystiaCooker: false,
+				},
+				contextBatchState.recipeSideCache
+			),
+		})
 	);
 
-	const results: IScoredResult[] = [];
-
-	const beverageTagGroups = buildBeverageTagGroups(filteredBeverages);
-
 	for (const {
+		recipe,
 		recipe: {
 			ingredients: recipeIngredients,
 			name: recipeName,
-			negativeTags: recipeNegativeTags,
-			positiveTags: recipePositiveTags,
 			price: recipePrice,
 		},
 		recipeTagsWithTrend,
@@ -1509,24 +1771,17 @@ async function computeSuggestions(
 				: Math.min(5 - recipeIngredients.length, maxExtraIngredients);
 
 		for (const {
+			evaluateRecipe,
 			members: beverageMembers,
-			tags: beverageTags,
-		} of beverageTagGroups.values()) {
+		} of beverageGroupsWithEvaluators) {
 			const checkpointPromise = execution.checkpoint();
 			if (checkpointPromise !== undefined) {
 				await checkpointPromise;
 			}
-			const rating = evaluateMeal({
-				currentBeverageTags: beverageTags,
-				currentCustomerBeverageTags: customerBeverageTags,
-				currentCustomerName: customerName,
-				currentCustomerNegativeTags: customerNegativeTags,
-				currentCustomerOrder: customerOrder,
-				currentCustomerPositiveTags: customerPositiveTags,
+			const rating = evaluateRecipe({
 				currentIngredients: recipeIngredients,
 				currentRecipeName: recipeName,
 				currentRecipeTagsWithTrend: recipeTagsWithTrend,
-				hasMystiaCooker: false,
 				isDarkMatter: false,
 			});
 
@@ -1542,27 +1797,25 @@ async function computeSuggestions(
 			let ingredientPenalty = 0;
 
 			if (extraSlots > 0 && (score < 4 || score > maxRating)) {
-				const bestExtra = await findBestExtraIngredients({
-					baseGameIngredients: relevantIngredients,
-					beverageTags,
-					customerBeverageTags,
-					customerName,
-					customerNegativeTags,
-					customerOrder,
-					customerPositiveTags,
-					excludedExtraIngredients: [],
+				const preparation =
+					await getAutomaticExtraIngredientPreparation({
+						context,
+						customerName,
+						execution,
+						extraSlots,
+						isFamousShop,
+						popularTrend,
+						recipe,
+						relevantIngredients,
+						state: contextBatchState,
+					});
+				const bestExtra = await selectBestExtraIngredients({
+					evaluateRecipe,
 					execution,
 					extraSlots,
-					hasMystiaCooker: false,
-					ingredientPenaltyContext,
-					ingredientPriorityMap,
-					isFamousShop,
 					maxRating,
-					popularTrend,
-					recipeIngredients,
+					preparation,
 					recipeName,
-					recipeNegativeTags,
-					recipeTagsBase: recipePositiveTags,
 				});
 
 				if (
@@ -2455,11 +2708,11 @@ export async function getScoreBasedAlternatives(
 		recipeIngredients.length + extraIngredients.length;
 	const evaluateRecipe = createMealEvaluator({
 		currentBeverageTags: beverageTags,
-		currentCustomerBeverageTags: customerBeverageTags as TBeverageTag[],
+		currentCustomerBeverageTags: customerBeverageTags,
 		currentCustomerName: customerName,
-		currentCustomerNegativeTags: customerNegativeTags as TRecipeTag[],
+		currentCustomerNegativeTags: customerNegativeTags,
 		currentCustomerOrder: customerOrder,
-		currentCustomerPositiveTags: customerPositiveTags as TRecipeTag[],
+		currentCustomerPositiveTags: customerPositiveTags,
 		hasMystiaCooker,
 	});
 
@@ -2642,12 +2895,20 @@ export interface ISuggestMealsOptions {
 	readonly taskKey?: string;
 }
 
-export async function suggestMeals(
-	params: ISuggestParams,
-	options: ISuggestMealsOptions = {}
+export interface ISuggestMealsBatchResult {
+	readonly index: number;
+	readonly meals: ReadonlyArray<ISuggestedMeal>;
+}
+
+export interface ISuggestMealsBatchOptions extends ISuggestMealsOptions {
+	readonly onResult?: (result: ISuggestMealsBatchResult) => void;
+}
+
+async function suggestMealsWithExecution(
+	paramsSnapshot: ISuggestParams,
+	execution: ISuggestMealsExecution,
+	automaticBatchState: IAutomaticSuggestBatchState
 ) {
-	const paramsSnapshot = createSuggestParamsSnapshot(params);
-	const execution = createSuggestMealsExecution(options);
 	execution.throwIfAborted();
 	const cacheKey = buildSuggestMealsCacheKey(paramsSnapshot);
 
@@ -2662,7 +2923,12 @@ export async function suggestMeals(
 	const result = checkFixedSelectionsAvailable(paramsSnapshot, context)
 		? currentBeverage !== null || currentRecipe !== null
 			? await suggestBySelection(paramsSnapshot, context, execution)
-			: await computeSuggestions(paramsSnapshot, context, execution)
+			: await computeSuggestions(
+					paramsSnapshot,
+					context,
+					execution,
+					automaticBatchState
+				)
 		: [];
 
 	execution.throwIfAborted();
@@ -2670,4 +2936,38 @@ export async function suggestMeals(
 	suggestCache.set(cacheKey, cachedResult);
 
 	return cloneSuggestedMeals(cachedResult);
+}
+
+export async function suggestMeals(
+	params: ISuggestParams,
+	options: ISuggestMealsOptions = {}
+) {
+	return suggestMealsWithExecution(
+		createSuggestParamsSnapshot(params),
+		createSuggestMealsExecution(options),
+		createAutomaticSuggestBatchState()
+	);
+}
+
+export async function suggestMealsBatch(
+	requests: ReadonlyArray<ISuggestParams>,
+	options: ISuggestMealsBatchOptions = {}
+) {
+	const { onResult, ...suggestMealsOptions } = options;
+	const requestSnapshots = requests.map(createSuggestParamsSnapshot);
+	const execution = createSuggestMealsExecution(suggestMealsOptions);
+	const automaticBatchState = createAutomaticSuggestBatchState();
+	const results: ISuggestedMeal[][] = [];
+
+	for (const [index, request] of requestSnapshots.entries()) {
+		const meals = await suggestMealsWithExecution(
+			request,
+			execution,
+			automaticBatchState
+		);
+		results.push(meals);
+		onResult?.({ index, meals: cloneSuggestedMeals(meals) });
+	}
+
+	return results;
 }
