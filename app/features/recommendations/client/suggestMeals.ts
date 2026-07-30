@@ -44,7 +44,7 @@ export function buildSuggestMealsCacheKey({
 		cooker ?? '',
 		currentBeverage ?? '',
 		currentRecipe
-			? `${currentRecipe.name}:${currentRecipe.extraIngredients.join(',')}`
+			? `${currentRecipe.name}:${currentRecipe.recipeId}:${currentRecipe.extraIngredients.join(',')}`
 			: '',
 		customerName,
 		customerOrder.beverageTag ?? '',
@@ -102,6 +102,7 @@ function cloneSuggestedMeals(meals: ReadonlyArray<ISuggestedMeal>) {
 		recipe: {
 			extraIngredients: [...recipe.extraIngredients],
 			name: recipe.name,
+			recipeId: recipe.recipeId,
 		},
 	}));
 }
@@ -117,6 +118,7 @@ function createSuggestParamsSnapshot(params: ISuggestParams): ISuggestParams {
 							...params.currentRecipe.extraIngredients,
 						],
 						name: params.currentRecipe.name,
+						recipeId: params.currentRecipe.recipeId,
 					},
 		customerOrder: { ...params.customerOrder },
 		hiddenBeverages: new Set(params.hiddenBeverages),

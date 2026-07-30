@@ -1,6 +1,6 @@
 import { Textarea } from '@heroui/input';
 import { cn } from '@heroui/theme';
-import { debounce, isObject } from 'lodash';
+import { debounce } from 'lodash';
 import {
 	type ChangeEvent,
 	memo,
@@ -22,19 +22,10 @@ import Snippet from '@/design/ui/components/snippet';
 import Tooltip from '@/design/ui/components/tooltip';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
-import {
-	validateCustomerNormalMealsData,
-	validateCustomerRareMealsData,
-	validateCustomerRarePlansData,
-} from '@/features/account/sync/validation';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { customerNormalStore } from '@/features/catalog/customers/normal/client/state/store';
 import { customerRareStore } from '@/features/catalog/customers/rare/client/state/store';
 import { customerPlansStore } from '@/features/customerPlans/client/state/store';
-import {
-	compatibilityCustomerRareData,
-	deleteIndexProperty,
-} from '@/features/legacyBackup/legacyPayload';
 
 import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
 
@@ -42,6 +33,11 @@ import { useThrottle } from '@/shared/react/useThrottle';
 import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
 import { getClosestModalScrollContainer } from './dataManagerScroll';
+import {
+	CUSTOMER_DATA_KEY_MAP,
+	type ICustomerDataImport,
+	parseCustomerDataImport,
+} from './parseCustomerDataImport';
 import { downloadJson, parseJsonFromInput } from './processJsonFile';
 
 const exportButtonLabelMap = {
@@ -49,24 +45,6 @@ const exportButtonLabelMap = {
 	downloading: '尝试唤起下载器',
 	downloadingTip: '如无响应，请检查浏览器权限、设置和浏览器扩展程序',
 } as const;
-
-const CUSTOMER_DATA_KEY_MAP = {
-	normalMeals: 'customer_normal_meals',
-	rareMeals: 'customer_rare_meals',
-	rarePlans: 'customer_rare_plans',
-} as const;
-
-const LEGACY_CUSTOMER_DATA_KEY_MAP = {
-	normalMeals: 'customer_normal',
-	rareMeals: 'customer_rare',
-} as const;
-
-const CUSTOMER_DATA_KEY_SET = new Set<string>(
-	Object.values(CUSTOMER_DATA_KEY_MAP)
-);
-const LEGACY_CUSTOMER_DATA_KEY_SET = new Set<string>(
-	Object.values(LEGACY_CUSTOMER_DATA_KEY_MAP)
-);
 
 type TExportButtonLabel = ExtractCollectionValue<typeof exportButtonLabelMap>;
 
@@ -91,12 +69,6 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 		[currentNormalMealData, currentRareMealData, currentRarePlanData]
 	);
 
-	type TCustomerData = Partial<typeof currentCustomerData>;
-	interface IImportData {
-		data: TCustomerData;
-		eventLabel: 'Customer Data' | 'Customer Rare Data';
-	}
-
 	const currentCustomerDataString = useMemo(
 		() => JSON.stringify(currentCustomerData, null, '\t'),
 		[currentCustomerData]
@@ -106,7 +78,9 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 	const importValueRef = useRef(importValue);
 	importValueRef.current = importValue;
 	const throttledImportValue = useThrottle(importValue);
-	const [importData, setImportData] = useState<IImportData | null>(null);
+	const [importData, setImportData] = useState<ICustomerDataImport | null>(
+		null
+	);
 	const [importReadError, setImportReadError] = useState(false);
 	const importReadRequestIdRef = useRef(0);
 	const importInputRef = useRef<HTMLInputElement | null>(null);
@@ -239,99 +213,7 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 			}
 			setIsSaveButtonLoading(true);
 			const json: unknown = JSON.parse(throttledImportValue);
-			if (Array.isArray(json) || !isObject(json)) {
-				throw new TypeError('not an object');
-			}
-
-			const keys = Object.keys(json);
-			const hasCurrentCustomerDataKey = keys.some((key) =>
-				CUSTOMER_DATA_KEY_SET.has(key)
-			);
-			const hasLegacyCustomerDataKey = keys.some((key) =>
-				LEGACY_CUSTOMER_DATA_KEY_SET.has(key)
-			);
-
-			if (hasCurrentCustomerDataKey && hasLegacyCustomerDataKey) {
-				throw new TypeError('mixed current and legacy customer data');
-			}
-
-			if (hasCurrentCustomerDataKey) {
-				if (!keys.every((key) => CUSTOMER_DATA_KEY_SET.has(key))) {
-					throw new TypeError('invalid combined meal data');
-				}
-
-				const data = json as Record<string, unknown>;
-				if (CUSTOMER_DATA_KEY_MAP.normalMeals in data) {
-					const normalData = data[
-						CUSTOMER_DATA_KEY_MAP.normalMeals
-					] as Record<string, object[]>;
-					deleteIndexProperty(normalData);
-					if (!validateCustomerNormalMealsData(normalData)) {
-						throw new TypeError('invalid normal meal data');
-					}
-				}
-				if (CUSTOMER_DATA_KEY_MAP.rareMeals in data) {
-					const rareData = data[
-						CUSTOMER_DATA_KEY_MAP.rareMeals
-					] as Record<string, object[]>;
-					deleteIndexProperty(rareData);
-					if (!validateCustomerRareMealsData(rareData)) {
-						throw new TypeError('invalid rare meal data');
-					}
-				}
-				if (
-					CUSTOMER_DATA_KEY_MAP.rarePlans in data &&
-					!validateCustomerRarePlansData(
-						data[CUSTOMER_DATA_KEY_MAP.rarePlans]
-					)
-				) {
-					throw new TypeError('invalid customer rare plans');
-				}
-
-				setImportData({ data, eventLabel: 'Customer Data' });
-			} else if (hasLegacyCustomerDataKey) {
-				if (
-					!keys.every((key) => LEGACY_CUSTOMER_DATA_KEY_SET.has(key))
-				) {
-					throw new TypeError('invalid legacy combined meal data');
-				}
-
-				const legacyData = json as Record<string, unknown>;
-				const data: TCustomerData = {};
-				if (LEGACY_CUSTOMER_DATA_KEY_MAP.normalMeals in legacyData) {
-					const normalData = legacyData[
-						LEGACY_CUSTOMER_DATA_KEY_MAP.normalMeals
-					] as Record<string, object[]>;
-					deleteIndexProperty(normalData);
-					if (!validateCustomerNormalMealsData(normalData)) {
-						throw new TypeError('invalid legacy normal meal data');
-					}
-					data.customer_normal_meals = normalData;
-				}
-				if (LEGACY_CUSTOMER_DATA_KEY_MAP.rareMeals in legacyData) {
-					const rareData = legacyData[
-						LEGACY_CUSTOMER_DATA_KEY_MAP.rareMeals
-					] as Record<string, object[]>;
-					deleteIndexProperty(rareData);
-					if (!validateCustomerRareMealsData(rareData)) {
-						throw new TypeError('invalid legacy rare meal data');
-					}
-					data.customer_rare_meals = rareData;
-				}
-
-				setImportData({ data, eventLabel: 'Customer Data' });
-			} else {
-				const rareData = json as Record<string, object[]>;
-				deleteIndexProperty(rareData);
-				compatibilityCustomerRareData(rareData);
-				if (!validateCustomerRareMealsData(rareData)) {
-					throw new TypeError('invalid legacy meal data');
-				}
-				setImportData({
-					data: { customer_rare_meals: rareData },
-					eventLabel: 'Customer Rare Data',
-				});
-			}
+			setImportData(parseCustomerDataImport(json));
 
 			setIsSaveButtonDisabled(false);
 			setIsSaveButtonError(false);

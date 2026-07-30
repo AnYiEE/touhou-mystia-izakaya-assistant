@@ -39,16 +39,14 @@ export default function ResultCard() {
 
 	const instance_recipe = customerNormalStore.instances.recipe.get();
 
-	const originalIngredients = useMemo(
+	const currentRecipe = useMemo(
 		() =>
 			currentRecipeData
-				? instance_recipe.getPropsByName(
-						currentRecipeData.name,
-						'ingredients'
-					)
-				: [],
+				? instance_recipe.resolveMealRecipe(currentRecipeData)
+				: null,
 		[currentRecipeData, instance_recipe]
 	);
+	const originalIngredients = currentRecipe?.baseIngredients ?? [];
 
 	const isSaveButtonDisabled =
 		currentCustomerName === null ||
@@ -111,24 +109,21 @@ export default function ResultCard() {
 				<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
 					<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 						<div className="flex items-center gap-2">
-							{currentRecipeData ? (
+							{currentRecipe ? (
 								<>
 									<SlidingSprite
 										target="cooker"
-										name={instance_recipe.getPropsByName(
-											currentRecipeData.name,
-											'cooker'
-										)}
+										name={currentRecipe.cooker}
 										size={2}
 									/>
 									<Tooltip
 										showArrow
-										content={currentRecipeData.name}
+										content={currentRecipe.name}
 										offset={3}
 									>
 										<SlidingSprite
 											target="recipe"
-											name={currentRecipeData.name}
+											name={currentRecipe.name}
 											size={2.5}
 										/>
 									</Tooltip>

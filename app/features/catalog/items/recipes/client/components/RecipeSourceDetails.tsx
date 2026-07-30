@@ -1,20 +1,12 @@
-import { cn } from '@heroui/theme';
 import { isNil, isObject } from 'lodash';
 import { Fragment } from 'react';
 
-import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
-import Popover, {
-	PopoverContent,
-	PopoverTrigger,
-} from '@/design/ui/components/popover';
 import Tooltip from '@/design/ui/components/tooltip';
 
-import { type Recipe } from '@/domain/catalog/food/Recipe';
 import type { IRecipe } from '@/domain/data/recipes/schema';
 
 import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
-import type { TItemData } from '@/features/catalog/shared/contracts';
 import {
 	type TItemRoutePath,
 	type TShareableItemName,
@@ -23,16 +15,11 @@ import {
 import { checkObjectOrStringEmpty } from '@/shared/utilities/collections/check';
 
 interface IProps {
-	cookTime: TItemData<Recipe>[number]['cookTime'];
 	from: IRecipe['from'];
 	openWindow: (path: TItemRoutePath, name: TShareableItemName) => void;
 }
 
-export default function RecipeSourceDetails({
-	cookTime,
-	from,
-	openWindow,
-}: IProps) {
+export default function RecipeSourceDetails({ from, openWindow }: IProps) {
 	return (
 		<>
 			{!checkObjectOrStringEmpty(from) && (
@@ -159,38 +146,6 @@ export default function RecipeSourceDetails({
 									</Fragment>
 								);
 							})}
-				</p>
-			)}
-			{cookTime.min !== 0 && (
-				<p>
-					<Popover showArrow offset={3} size="sm">
-						<Tooltip
-							showArrow
-							content="随游戏等级提升而降低"
-							offset={1}
-							size="sm"
-						>
-							<span className={cn('inline-flex cursor-pointer')}>
-								<PopoverTrigger>
-									<span
-										tabIndex={0}
-										className={cn(
-											'font-semibold',
-											CLASSNAME_FOCUS_VISIBLE_OUTLINE
-										)}
-									>
-										<span className="underline-dotted-offset2">
-											烹饪时间
-										</span>
-										：
-									</span>
-								</PopoverTrigger>
-							</span>
-						</Tooltip>
-						<PopoverContent>随游戏等级提升而降低</PopoverContent>
-					</Popover>
-					{cookTime.max}秒<span className="mx-0.5">➞</span>
-					{cookTime.min}秒
 				</p>
 			)}
 		</>

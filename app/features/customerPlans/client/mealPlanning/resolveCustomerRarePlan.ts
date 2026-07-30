@@ -4,7 +4,7 @@ import { Beverage } from '@/domain/catalog/food/Beverage';
 import { Ingredient } from '@/domain/catalog/food/Ingredient';
 import { Recipe } from '@/domain/catalog/food/Recipe';
 import type { TBeverageName } from '@/domain/data/beverages/types';
-import type { TCookerName } from '@/domain/data/cookers/types';
+import type { TCookerType } from '@/domain/data/cookers/types';
 import type { TCustomerRareName } from '@/domain/data/customers/rare/types';
 import type { TIngredientName } from '@/domain/data/ingredients/types';
 import type { TPlace } from '@/domain/data/places/types';
@@ -12,6 +12,7 @@ import type { TRecipeName } from '@/domain/data/recipes/types';
 import type { TDlc } from '@/domain/data/shared/types';
 import { evaluateRareSavedMeal } from '@/domain/evaluation/evaluateSavedMeal';
 import type { TRatingKey } from '@/domain/evaluation/types';
+import type { IMealRecipe } from '@/domain/meals/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import { getVisibleSavedMeals } from '@/features/catalog/customers/shared/mealPlanning/getVisibleSavedMeals';
@@ -231,9 +232,9 @@ function getDisplayedCookerName({
 	resolveRecipeCooker,
 }: {
 	meal: IResolvedCustomerRarePlanGroup['meals'][number];
-	resolveRecipeCooker: (recipeName: TRecipeName) => TCookerName;
+	resolveRecipeCooker: (recipeData: IMealRecipe) => TCookerType;
 }) {
-	const originalCooker = resolveRecipeCooker(meal.meal.recipe.name);
+	const originalCooker = resolveRecipeCooker(meal.meal.recipe);
 
 	return meal.evaluation.isDarkMatter || !meal.meal.hasMystiaCooker
 		? originalCooker
@@ -245,7 +246,7 @@ function sortResolvedCustomerRarePlanMeals({
 	resolveRecipeCooker,
 }: {
 	meals: IResolvedCustomerRarePlanGroup['meals'];
-	resolveRecipeCooker: (recipeName: TRecipeName) => TCookerName;
+	resolveRecipeCooker: (recipeData: IMealRecipe) => TCookerType;
 }) {
 	const displayedCookerNameMap = new Map(
 		meals.map((meal) => [
@@ -304,6 +305,7 @@ function createResolvedCustomerRarePlanMealDedupeKey({
 
 	return JSON.stringify([
 		meal.recipe.name,
+		meal.recipe.recipeId,
 		sortedExtraIngredients,
 		meal.beverage,
 		meal.hasMystiaCooker,
@@ -338,10 +340,12 @@ export function prepareResolvedCustomerRarePlanMeals({
 	meals: IResolvedCustomerRarePlanGroup['meals'];
 	recipeInstance?: Recipe;
 }) {
-	const recipeCookerCache = new Map<TRecipeName, TCookerName>();
-	const resolveRecipeCooker = (recipeName: TRecipeName) =>
-		getCachedValue(recipeCookerCache, recipeName, () =>
-			recipeInstance.getPropsByName(recipeName, 'cooker')
+	const recipeCookerCache = new Map<number, TCookerType>();
+	const resolveRecipeCooker = (recipeData: IMealRecipe) =>
+		getCachedValue(
+			recipeCookerCache,
+			recipeData.recipeId,
+			() => recipeInstance.resolveMealRecipe(recipeData).cooker
 		);
 	const dedupedMeals = dedupeResolvedCustomerRarePlanMeals(meals);
 
@@ -388,7 +392,10 @@ function resolveSavedCustomerRarePlanMeals({
 		TRecipeName,
 		ReadonlyArray<IAvailabilityPath>
 	>();
-	const recipeIngredientsCache = new Map<TRecipeName, TIngredientName[]>();
+	const recipeIngredientsCache = new Map<
+		number,
+		ReadonlyArray<TIngredientName>
+	>();
 	const resolveBeverageAvailability = (beverageName: TBeverageName) =>
 		getCachedValue(beverageAvailabilityCache, beverageName, () =>
 			beverageInstance.getPropsByName(beverageName, 'availabilityPaths')
@@ -404,9 +411,11 @@ function resolveSavedCustomerRarePlanMeals({
 		getCachedValue(recipeAvailabilityCache, recipeName, () =>
 			recipeInstance.getPropsByName(recipeName, 'availabilityPaths')
 		);
-	const resolveRecipeIngredients = (recipeName: TRecipeName) =>
-		getCachedValue(recipeIngredientsCache, recipeName, () =>
-			recipeInstance.getPropsByName(recipeName, 'ingredients')
+	const resolveRecipeIngredients = (recipeData: IMealRecipe) =>
+		getCachedValue(
+			recipeIngredientsCache,
+			recipeData.recipeId,
+			() => recipeInstance.resolveMealRecipe(recipeData).baseIngredients
 		);
 	const visibleMeals = getVisibleSavedMeals({
 		hiddenDlcs,
@@ -429,9 +438,7 @@ function resolveSavedCustomerRarePlanMeals({
 		},
 		resolveItemRefs: (meal) => {
 			try {
-				const recipeIngredients = resolveRecipeIngredients(
-					meal.recipe.name
-				);
+				const recipeIngredients = resolveRecipeIngredients(meal.recipe);
 				return {
 					beverageName: meal.beverage,
 					ingredientNames: [

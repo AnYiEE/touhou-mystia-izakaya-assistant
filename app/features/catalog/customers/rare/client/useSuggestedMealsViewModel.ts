@@ -124,7 +124,6 @@ export function useSuggestedMealsViewModel() {
 
 	const currentBeverageName = customerRareStore.shared.beverage.name.use();
 	const currentRecipeData = customerRareStore.shared.recipe.data.use();
-	const currentRecipeName = currentRecipeData?.name ?? null;
 
 	const hasMystiaCooker =
 		customerRareStore.shared.customer.hasMystiaCooker.use();
@@ -220,15 +219,15 @@ export function useSuggestedMealsViewModel() {
 	}, []);
 
 	useEffect(() => {
-		if (currentRecipeName === null) {
+		if (currentRecipeData === null) {
 			suggestedMealsUiStore.cooker.set(null);
 			return;
 		}
 
 		suggestedMealsUiStore.cooker.set(
-			instance_recipe.getPropsByName(currentRecipeName, 'cooker')
+			instance_recipe.resolveMealRecipe(currentRecipeData).cooker
 		);
-	}, [currentRecipeName, instance_recipe]);
+	}, [currentRecipeData, instance_recipe]);
 
 	const hasSelection =
 		currentBeverageName !== null || currentRecipeData !== null;
@@ -590,11 +589,11 @@ export function useSuggestedMealsViewModel() {
 				recipe: recipeData,
 			} = meal;
 			const {
-				cooker,
-				ingredients: recipeIngredients,
 				negativeTags: recipeNegativeTags,
 				positiveTags: recipePositiveTags,
 			} = instance_recipe.getPropsByName(recipeData.name);
+			const { baseIngredients: recipeIngredients, cooker } =
+				instance_recipe.resolveMealRecipe(recipeData);
 			const visibleExtraIngredients = getRestExtraIngredients(
 				recipeData.extraIngredients,
 				recipeIngredients.length
@@ -602,7 +601,7 @@ export function useSuggestedMealsViewModel() {
 			const isDarkMatter =
 				!checkLengthEmpty(recipeData.extraIngredients) &&
 				instance_recipe.checkDarkMatter(recipeData).isDarkMatter;
-			const mealKey = `${resultGeneration}:${recipeData.name}|${beverage}|${recipeData.extraIngredients.join(',')}`;
+			const mealKey = `${resultGeneration}:${recipeData.name}|${recipeData.recipeId}|${beverage}|${recipeData.extraIngredients.join(',')}`;
 			const currentAlternatives = alternativesMap.get(mealKey);
 			const alternativesStatus = currentAlternatives?.status ?? 'idle';
 
@@ -632,6 +631,7 @@ export function useSuggestedMealsViewModel() {
 						customerOrder: resultContext.customerOrder,
 						customerPositiveTags,
 						extraIngredients: visibleExtraIngredients,
+						recipeId: recipeData.recipeId,
 						recipeIngredients,
 						recipeName: recipeData.name,
 						recipeNegativeTags,

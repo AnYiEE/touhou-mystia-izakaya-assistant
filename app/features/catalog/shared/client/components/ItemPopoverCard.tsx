@@ -1,7 +1,6 @@
 'use client';
 
 import { cn } from '@heroui/theme';
-import { isNil } from 'lodash';
 import { type PropsWithChildren, memo, useMemo } from 'react';
 
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
@@ -13,15 +12,12 @@ import Tooltip from '@/design/ui/components/tooltip';
 
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import type { ICooker } from '@/domain/data/cookers/schema';
-import type { TCookerName } from '@/domain/data/cookers/types';
 import type { IIngredient } from '@/domain/data/ingredients/schema';
-import type { TIngredientName } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
 import type { TTag } from '@/domain/data/tags/types';
 import type { TItemName } from '@/domain/data/types';
 
 import { type ITagStyle } from '@/features/catalog/presentation/tagStyles';
-import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 import { union } from '@/shared/utilities/collections/union';
@@ -34,7 +30,6 @@ interface IItemPopoverCardProps
 	extends Pick<ISpriteProps, 'target'>, RefProps<HTMLDivElement> {
 	// Basic info.
 	id: number;
-	recipeId?: number;
 	name: TItemName;
 	displayName?: ReactNodeWithoutBoolean;
 	description: {
@@ -44,10 +39,7 @@ interface IItemPopoverCardProps
 		type?: ICooker['type'] | IIngredient['type'];
 	};
 	dlc?: number;
-	// For recipes.
-	/** @description If `null`, it means that the recipe has no cooker (such as dark matter). */
-	cooker?: TCookerName | null;
-	ingredients?: TIngredientName[];
+	details?: ReactNodeWithoutBoolean;
 	// For tags.
 	tags?: { [key in keyof ITagStyle]: TTag[] };
 	tagColors?: ITagStyle;
@@ -56,21 +48,17 @@ interface IItemPopoverCardProps
 const ItemPopoverCard = memo<PropsWithChildren<IItemPopoverCardProps>>(
 	function ItemPopoverCard({
 		children,
-		cooker,
 		description,
+		details,
 		displayName,
 		dlc,
 		id,
-		ingredients,
 		name,
-		recipeId,
 		tagColors,
 		tags,
 		target,
 		...props
 	}) {
-		const openWindow = useViewInNewWindow();
-
 		const mergedTags = useMemo<Omit<
 			NonNullable<typeof tags>,
 			'beverage'
@@ -174,49 +162,6 @@ const ItemPopoverCard = memo<PropsWithChildren<IItemPopoverCardProps>>(
 						{displayName === undefined ? name : displayName}
 					</p>
 				</div>
-				{!isNil(cooker) && ingredients !== undefined && (
-					<div className="flex flex-wrap gap-x-2 gap-y-1">
-						<Tooltip
-							showArrow
-							content={cooker}
-							offset={1}
-							size="sm"
-						>
-							<Sprite
-								target="cooker"
-								name={cooker}
-								size={1.5}
-								className="mr-4"
-							/>
-						</Tooltip>
-						{ingredients.map((ingredient, index) => {
-							const ingredientLabel = `点击：在新窗口中查看食材【${ingredient}】的详情`;
-							return (
-								<Tooltip
-									showArrow
-									key={index}
-									content={ingredientLabel}
-									offset={1}
-									size="sm"
-								>
-									<Sprite
-										target="ingredient"
-										name={ingredient}
-										size={1.5}
-										onPress={() => {
-											openWindow(
-												'ingredients',
-												ingredient
-											);
-										}}
-										aria-label={ingredientLabel}
-										role="button"
-									/>
-								</Tooltip>
-							);
-						})}
-					</div>
-				)}
 				<div className="flex gap-4">
 					{description.price !== undefined && (
 						<p>
@@ -246,12 +191,6 @@ const ItemPopoverCard = memo<PropsWithChildren<IItemPopoverCardProps>>(
 						</span>
 						<Price showSymbol={false}>{id}</Price>
 					</p>
-					{recipeId !== undefined && recipeId !== -1 && (
-						<p>
-							<span className="font-semibold">食谱ID：</span>
-							<Price showSymbol={false}>{recipeId}</Price>
-						</p>
-					)}
 				</div>
 				{hasTag && (
 					<div className="flex flex-wrap gap-x-2 gap-y-1">
@@ -267,6 +206,7 @@ const ItemPopoverCard = memo<PropsWithChildren<IItemPopoverCardProps>>(
 						/>
 					</div>
 				)}
+				{details}
 				<p
 					className={cn('break-all text-justify', {
 						'!mt-1': mergedTags === null,

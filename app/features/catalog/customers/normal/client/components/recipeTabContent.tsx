@@ -48,7 +48,7 @@ import { globalStore } from '@/features/preferences/client/state/globalPersisten
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { copyArray, toSet } from '@/shared/utilities/collections/convert';
+import { copyArray } from '@/shared/utilities/collections/convert';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 export default function RecipeTabContent() {
@@ -100,7 +100,9 @@ export default function RecipeTabContent() {
 		[tableVisibleColumns]
 	);
 
-	const tableSelectedKeys = toSet(currentRecipeData?.name ?? '');
+	const tableSelectedKeys = new Set(
+		currentRecipeData === null ? [] : [currentRecipeData.recipeId]
+	);
 
 	const renderTableCell = useCallback(
 		(
@@ -115,6 +117,7 @@ export default function RecipeTabContent() {
 				name,
 				positiveTags,
 				price,
+				recipeId,
 				suitability,
 			} = recipeData;
 
@@ -284,7 +287,10 @@ export default function RecipeTabContent() {
 							ingredients={ingredients}
 							onSelect={() => {
 								vibrate();
-								customerNormalStore.onRecipeTableAction(name);
+								customerNormalStore.onRecipeTableAction(
+									name,
+									recipeId
+								);
 							}}
 						/>
 					);
@@ -549,7 +555,7 @@ export default function RecipeTabContent() {
 					</div>
 				</div>
 				<div className="flex items-center justify-between text-small text-default-700">
-					<span>总计{tableSortedRows.length}道料理</span>
+					<span>共{tableSortedRows.length}套食谱</span>
 					<label className="flex items-center gap-2">
 						<span className="cursor-auto whitespace-nowrap">
 							表格行数

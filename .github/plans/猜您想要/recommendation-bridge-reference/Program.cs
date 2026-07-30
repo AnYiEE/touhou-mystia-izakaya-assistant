@@ -425,6 +425,15 @@ static bool TryReadSafeNonNegativeInteger(JsonElement root, string propertyName,
 		&& value <= MaxSafeInteger;
 }
 
+static bool TryReadSafeInteger(JsonElement root, string propertyName, out long value)
+{
+	value = 0;
+	return root.TryGetProperty(propertyName, out var property)
+		&& property.TryGetInt64(out value)
+		&& value >= -MaxSafeInteger
+		&& value <= MaxSafeInteger;
+}
+
 static bool TryReadRequestId(JsonElement root, out string requestId)
 {
 	return TryReadString(root, "request_id", out requestId)
@@ -451,6 +460,7 @@ static bool TryReadResult(JsonElement root, out string requestId)
 			|| !meal.TryGetProperty("recipe", out var recipe)
 			|| recipe.ValueKind != JsonValueKind.Object
 			|| !TryReadString(recipe, "name", out _)
+			|| !TryReadSafeInteger(recipe, "recipe_id", out _)
 			|| !recipe.TryGetProperty("extra_ingredients", out var extraIngredients)
 			|| extraIngredients.ValueKind != JsonValueKind.Array)
 		{
@@ -503,7 +513,8 @@ void ReadResult(JsonElement root, string requestId)
 		return;
 	}
 	var preferred = meals[0];
-	Console.WriteLine($"Request {requestId}: preferred {preferred.GetProperty("recipe").GetProperty("name").GetString()} + {preferred.GetProperty("beverage").GetString()}, {meals.GetArrayLength() - 1} candidates.");
+	var preferredRecipe = preferred.GetProperty("recipe");
+	Console.WriteLine($"Request {requestId}: preferred {preferredRecipe.GetProperty("name").GetString()} (recipe {preferredRecipe.GetProperty("recipe_id").GetInt64()}) + {preferred.GetProperty("beverage").GetString()}, {meals.GetArrayLength() - 1} candidates.");
 }
 
 static string ReadRequestId(JsonElement root) => root.GetProperty("request_id").GetString() ?? "<missing>";

@@ -1,3 +1,5 @@
+import { Recipe } from '@/domain/catalog/food/Recipe';
+
 import { type customerNormalInitialState as state } from './initialState';
 
 export const CUSTOMER_NORMAL_STORE_VERSION = {
@@ -19,9 +21,11 @@ export const CUSTOMER_NORMAL_STORE_VERSION = {
 	deleteMealIndex: 15,
 	removeCustomerSearchValue: 16, // eslint-disable-next-line sort-keys
 	availabilityDlcFilter: 17,
+	mealRecipeId: 18,
 } as const;
 
 const storeVersion = CUSTOMER_NORMAL_STORE_VERSION;
+const recipeInstance = Recipe.getInstance();
 
 export function migrateCustomerNormalPersistedState(
 	persistedState: unknown,
@@ -243,6 +247,26 @@ export function migrateCustomerNormalPersistedState(
 		oldState.persistence.recipe.table.availabilityDlcs =
 			oldState.persistence.recipe.table.dlcs;
 		delete oldState.persistence.recipe.table.dlcs;
+	}
+	if (version < storeVersion.mealRecipeId) {
+		for (const meals of Object.values(
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+			oldState.persistence.meals
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		) as any) {
+			for (const meal of meals) {
+				const recipeName: unknown = meal?.recipe?.name;
+				const recipe =
+					typeof recipeName === 'string'
+						? recipeInstance.data.find(
+								({ name }) => name === recipeName
+							)
+						: undefined;
+				if (recipe !== undefined) {
+					meal.recipe.recipeId = recipe.recipes[0].id;
+				}
+			}
+		}
 	}
 	return persistedState as typeof state;
 }

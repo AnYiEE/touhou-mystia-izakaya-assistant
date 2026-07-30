@@ -15,7 +15,10 @@ todos:
       content: 确认启动标签页独占连接及同一 Mod 实例的新连接替换规则
       status: completed
     - id: message-contract
-      content: 冻结握手、推荐、取消、结果、错误和心跳消息
+      content: 在多套食谱字段落地后重新冻结握手、推荐、取消、结果、错误和心跳消息
+      status: completed
+    - id: multi-recipe-v1
+      content: 在未发布的 V1 请求、响应、fixture 和参考 Mod 中加入 recipe_id
       status: completed
     - id: recommendation-prerequisites
       content: 完成异步推荐入参快照、领域类型下沉和 host-task 调度预备改造
@@ -37,17 +40,19 @@ isProject: false
 
 # 稀客套餐推荐本地 WSS 桥接协议与实施计划
 
-> 当前状态：设计中，桥接功能尚未上线。
+> 当前状态：代码与本地确定性验证已完成，桥接功能尚未上线。
 >
 > 当前实现基线：夜雀助手 `v2.6.7`（来自 `package.json`）；首个对外兼容 Mod 版本未定。
 >
 > 文档日期：2026-07-15
 >
+> 最近修订：2026-07-30。V1 尚未发布且没有使用方，消息契约因多套食谱支持重新开放；协议版本保持 `1`。
+>
 > 目标读者：游戏 Mod 开发者、协议调用方和本项目维护者。
 >
 > 推荐算法前置方案：[精确异步推荐算法.plan.md](精确异步推荐算法.plan.md)
 
-本文档前半部分是待发布的 V1 接入协议，后半部分记录本项目的实施任务和验收进度。连接方向、登录边界、启动方式、多标签页行为、消息字段和错误码已经冻结；真实 WSS 发布门槛尚未完成。
+本文档前半部分是待发布的 V1 接入协议，后半部分记录本项目的实施任务和验收进度。连接方向、登录边界、启动方式、多标签页行为和错误码保持冻结；推荐消息已补齐稳定 `recipe_id`，实现、fixture 和参考 Mod 已共同重新冻结该契约。真实 WSS 发布门槛尚未完成。
 
 ## 一、用途和边界
 
@@ -75,7 +80,7 @@ isProject: false
 - 公共 HTTP 推荐 API。
 - Mod 账号登录、设备码、API key、OAuth token 或服务端签名票据。
 - 普客套餐、营业预设批量生成或替代食材独立接口。
-- 推荐算法、排序权重、游戏数据或用户持久化格式调整。
+- 除[多套食谱方案](../多套食谱/README.md)要求的稳定食谱身份和候选语义外，不在桥接内另行定义推荐算法、排序权重、游戏数据或用户持久化格式。
 - Mod 本地 HTTPS 服务、证书或域名解析的安装程序。
 
 ## 二、整体流程
@@ -436,7 +441,11 @@ Mod 连续两个周期没有收到对应 pong 时可以用标准 code `1011` 和
 		"customer": "比那名居天子",
 		"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
 		"selection": {
-			"recipe": { "name": "桃花羹", "extra_ingredients": ["蜂蜜"] },
+			"recipe": {
+				"name": "桃花羹",
+				"recipe_id": 39,
+				"extra_ingredients": ["蜂蜜"]
+			},
 			"beverage": "教父"
 		},
 		"options": {
@@ -494,7 +503,11 @@ Mod 连续两个周期没有收到对应 pong 时可以用标准 code `1011` 和
 			"beverage": "教父",
 			"price": 235,
 			"rating": "exgood",
-			"recipe": { "name": "桃花羹", "extra_ingredients": ["蜂蜜"] }
+			"recipe": {
+				"name": "桃花羹",
+				"recipe_id": 39,
+				"extra_ingredients": ["蜂蜜"]
+			}
 		}
 	]
 }
@@ -510,9 +523,10 @@ Mod 连续两个周期没有收到对应 pong 时可以用标准 code `1011` 和
 | `meals[].price`                    | `integer`  | 非负整数；当前业务语义下料理价格与酒水价格之和。 |
 | `meals[].rating`                   | `string`   | `exbad`、`bad`、`norm`、`good` 或 `exgood`。     |
 | `meals[].recipe.name`              | `string`   | 料理标准名称。                                   |
+| `meals[].recipe.recipe_id`         | `integer`  | 实际采用的游戏食谱稳定 ID。                      |
 | `meals[].recipe.extra_ingredients` | `string[]` | 固定和本次新增额外食材的完整列表。               |
 
-`meals` 的第一项固定为综合权重最高的套餐。第二项及后续项保持评级优先，在当前最高评级层内优先增加料理和酒水的多样性，因此不能解释为严格的全局权重第 2～N 名。候选不足时按原权重顺序回退并尽量补足 `max_results`；同一网页构建、同一输入下顺序保持稳定。`extra_ingredients` 在业务上是无重复集合，其数组顺序不表示食材之间的推荐优先级。Mod 比较套餐身份时不能依赖额外食材的排列顺序。
+`meals` 的第一项固定为综合权重最高的套餐。第二项及后续项保持评级优先，在当前最高评级层内优先增加料理和酒水的多样性，因此不能解释为严格的全局权重第 2～N 名。同一道料理的不同 `recipe_id` 是不同食谱候选，但仍属于同一道料理，不能增加料理多样性。候选不足时按原权重顺序回退并尽量补足 `max_results`；同一网页构建、同一输入下顺序保持稳定。`extra_ingredients` 在业务上是无重复集合，其数组顺序不表示食材之间的推荐优先级。Mod 比较套餐身份时必须包含 `recipe_id`，但不能依赖额外食材的排列顺序。
 
 ### 7.4 错误分层
 
@@ -590,26 +604,32 @@ Mod 连续两个周期没有收到对应 pong 时可以用标准 code `1011` 和
 
 ```json
 {
-	"recipe": { "name": "桃花羹", "extra_ingredients": ["蜂蜜"] },
+	"recipe": {
+		"name": "桃花羹",
+		"recipe_id": 39,
+		"extra_ingredients": ["蜂蜜"]
+	},
 	"beverage": "教父"
 }
 ```
 
 - `recipe.name` 和 `beverage` 使用标准名称。
+- `recipe.recipe_id` 是 JSON 安全整数，在固定料理时必填；它必须属于 `recipe.name` 对应料理。
 - `recipe.extra_ingredients` 默认空数组，不得重复或包含基础食材。
-- 基础食材与全部额外食材的总数不得超过 5。
+- 基础食材、厨具和基础烹饪时间都由 `recipe.recipe_id` 指向的具体食谱解析；Mod 不重复传入这些制作属性。
+- 具体食谱的基础食材与全部额外食材总数不得超过 5。
 - 固定项必须符合稀客 DLC 范围和生产代码中的禁用数据规则。
 - 固定料理和酒水必须位于各自类别的最终可用范围内。
 - 固定料理的基础食材不受 `availability.ingredients` 限制；固定的额外食材必须位于最终食材可用范围内。
 - 固定项不会被算法替换。
 
-显式提供空 `selection` object 与完全省略 `selection` 等价，均表示没有固定料理或酒水。`selection.recipe` 存在时，`extra_ingredients` 可以省略并按空数组处理。
+显式提供空 `selection` object 与完全省略 `selection` 等价，均表示没有固定料理或酒水。`selection.recipe` 存在时，`recipe_id` 必须提供，`extra_ingredients` 可以省略并按空数组处理。未知 ID、料理与 ID 不匹配、旧 V1 缺少 ID 的形状都返回 `invalid-request`，不得回退到料理的默认食谱。
 
 ### 8.3 `options`
 
 | 字段                    | 类型                | 默认值  | 说明                                                       |
 | ----------------------- | ------------------- | ------- | ---------------------------------------------------------- |
-| `cooker`                | `string` 或 `null`  | `null`  | 未固定料理时按厨具过滤；`null` 表示不限。                  |
+| `cooker`                | `string` 或 `null`  | `null`  | 未固定料理时按食谱厨具过滤；`null` 表示不限。              |
 | `mystia_cooker`         | `boolean`           | `false` | 是否按夜雀厨具语义评级。                                   |
 | `famous_shop`           | `boolean`           | `false` | 是否应用名店标签规则。                                     |
 | `popular_trend`         | `object` 或 `null`  | `null`  | `{ "tag": string, "negative": boolean }`。                 |
@@ -618,7 +638,7 @@ Mod 连续两个周期没有收到对应 pong 时可以用标准 code `1011` 和
 | `max_results`           | `integer`           | `5`     | 最多返回结果数，合法值为 `1～10`；不限制内部候选扫描范围。 |
 | `availability`          | `object`            | 不限制  | 按料理、酒水和食材声明白名单与黑名单。                     |
 
-已固定料理时，`cooker` 必须省略或为 `null`，厨具由料理数据推导。`max_extra_ingredients` 包含已经固定的额外食材，不是“本次最多再加几个”。
+已固定料理时，`cooker` 必须省略或为 `null`，厨具由 `recipe_id` 指向的食谱推导。未固定料理时，厨具条件作用于具体食谱候选；同一道料理下不使用该厨具的其他食谱不会进入候选。`max_extra_ingredients` 包含已经固定的额外食材，不是“本次最多再加几个”。
 
 `availability` 可以包含 `recipes`、`beverages` 和 `ingredients`，每个类别都是只允许 `include`、`exclude` 两个标准名称数组的 object。缺少整个 `availability`、缺少某个类别或显式空类别 object 均表示不限制该类别。类别中缺少 `include` 时以当前顾客 DLC 和生产数据规则允许的全部项目为初始集合；显式 `include: []` 表示该类别没有可用项。缺少 `exclude` 或显式 `exclude: []` 表示不额外排除。
 
@@ -662,7 +682,9 @@ Mod 连续两个周期没有收到对应 pong 时可以用标准 code `1011` 和
 {
 	"customer": "比那名居天子",
 	"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
-	"selection": { "recipe": { "name": "桃花羹", "extra_ingredients": [] } }
+	"selection": {
+		"recipe": { "name": "桃花羹", "recipe_id": 39, "extra_ingredients": [] }
+	}
 }
 ```
 
@@ -680,7 +702,11 @@ Mod 连续两个周期没有收到对应 pong 时可以用标准 code `1011` 和
 	"customer": "比那名居天子",
 	"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
 	"selection": {
-		"recipe": { "name": "桃花羹", "extra_ingredients": ["蜂蜜"] },
+		"recipe": {
+			"name": "桃花羹",
+			"recipe_id": 39,
+			"extra_ingredients": ["蜂蜜"]
+		},
 		"beverage": "教父"
 	}
 }
@@ -734,6 +760,8 @@ Mod 连续两个周期没有收到对应 pong 时可以用标准 code `1011` 和
 ## 十二、兼容性和运行模式
 
 ### 12.1 V1 永久兼容规则
+
+截至 2026-07-30，V1 尚未对外发布且没有使用方，以下永久兼容承诺尚未开始生效。多套食谱在首次发布前直接把必填 `recipe_id` 加入 V1 请求与响应，不新增 V2，也不保留缺少该字段的预发布形状。完成对应实现、长期 fixture、参考 Mod 和发布验收后，以本文修订后的消息结构作为首个冻结 V1。
 
 V1 一旦对外发布，账号功能可用的正式网页入口必须永久保留 V1 支持，不能要求外部 Mod 跟随网页发布同步升级。未来存在破坏性需求时新增并行的 V2；Mod 继续在启动描述中显式选择版本，网页不能把 V1 请求静默升级到 V2，也不能用最新版本校验器直接解释旧版本消息。
 
@@ -799,11 +827,11 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 - `app/features/recommendations/client/bridge/shared.ts`
     - 提供不依赖领域数据的协议版本常量和重复 JSON 成员检查，使 `instrumentation-client.ts` 可以在 Next App Router 读取初始 URL 前加载启动描述模块。
 - `app/features/recommendations/client/bridge/v1/protocol.ts`
-    - 冻结 V1 消息常量、公共 TypeScript 类型和严格 validator。
+    - 定义 V1 消息常量、公共 TypeScript 类型和严格 validator；多套食谱字段完成后重新冻结首发契约。
 - `app/features/recommendations/client/bridge/v1/requestAdapter.ts`
     - 把已经通过 V1 校验的名称、默认值和四种模式映射为当前内部 `ISuggestParams`，不复制游戏数据或推荐规则。
 - `app/features/recommendations/client/bridge/v1/responseSerializer.ts`
-    - 把当前内部结果和错误映射回永久兼容的 V1 JSON；内部类型变化不能直接改变 V1 输出。
+    - 把当前内部结果和错误映射回 V1 JSON；首发契约冻结后，内部类型变化不能直接改变 V1 输出。
 - `app/features/recommendations/client/bridge/launchDescriptor.ts`
     - 在浏览器模块首次求值时同步捕获原始 `game-bridge` fragment，保留 `history.state` 后立即清除，再执行包含重复键检测的严格解析；服务端求值只返回无描述，不能访问 DOM。
     - 返回仅存在于当前模块内存中的启动描述。
@@ -842,7 +870,7 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 - `app/features/account/sso/authorize/client/AuthorizeControls.tsx` 的第三方 redirect 保持原样，不能附带桥接信息。
 - `app/features/recommendations/client/suggestMeals.ts` 继续作为生产推荐入口，调用 `app/domain/recommendations/suggestMeals.ts` 的领域内核。
 - `app/domain/evaluation/rareCustomerMeal.ts` 继续作为唯一评级语义来源。
-- 不新增 API route、数据库表、环境变量、依赖、Store 字段、持久化或跨标签页消息。
+- 桥接连接层不新增 API route、数据库表、环境变量、依赖、Store 字段、持久化或跨标签页消息；多套食谱对套餐 Store 和账号同步的结构升级由[多套食谱方案](../多套食谱/README.md)统一实施，不属于桥接生命周期状态。
 
 ## 十四、实施任务与进度
 
@@ -896,6 +924,20 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 
 完成标准：Mod 开发者只阅读本文档即可生成启动 URL、完成握手、请求和取消推荐，并正确处理全部结果、错误和关闭路径。
 
+### Task 1A：重新冻结多套食谱 V1 消息
+
+- [x] 确认 V1 尚未发布且没有使用方，协议版本继续为 `1`。
+- [x] 确认游戏料理数据中的 `recipeId` 是稳定食谱身份。
+- [x] 确认固定料理请求和全部推荐结果都使用 `recipe_id`。
+- [x] 确认食材、厨具和基础烹饪时间由具体 `recipe_id` 解析，不在消息中重复传输。
+- [x] 更新 V1 validator，固定料理缺少、未知或料理不匹配的 `recipe_id` 均返回 `invalid-request`。
+- [x] 更新 V1 adapter、serializer、error path 和套餐身份。
+- [x] 更新 `recommendation-bridge-reference/fixtures.v1.json`、`cases.v1.json`、`Program.cs` 和 `README.md`。
+- [x] 重新运行四种模式、严格 JSON、冷/热缓存、取消和参考 Mod 编译验证。
+- [x] 将 frontmatter 的 `message-contract` 与 `multi-recipe-v1` 标为完成；真实发布验收继续由 `validation` 与 `publication` 跟踪。
+
+完成标准：修订后的 V1 是代码、长期 fixture、参考 Mod 和本文档共同表达的唯一首发契约；仓库中不存在仍接受或生成缺少 `recipe_id` 的桥接路径。
+
 ### Task 2：验证启动描述解析
 
 在仓库临时目录 `.tmp-recommendation-bridge-validation/` 先编写确定性校验脚本，覆盖：
@@ -910,7 +952,7 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 - [x] 同源且无 fragment 的跳转正确续接描述，新页面读取后再次清除。
 - [x] 外部 origin、非法 URL 和已有 fragment 的跳转不附加描述。
 
-完成后删除临时目录，不提交验证脚本。
+验证脚本和产物统一放在根 `.tmp/`；按当前维护者要求保留，直到维护者明确要求清理。
 
 ### Task 3：验证请求协议和领域映射
 
@@ -924,6 +966,11 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 - [x] 服务层结果与直接调用 `suggestMeals` 逐项一致。
 - [x] 不复制评分、排序、缓存或食材权重实现。
 - [x] 冷缓存和热缓存产生相同 JSON。
+- [x] 固定料理的合法 `recipe_id`、缺失、类型错误、不安全整数、未知 ID 和料理/ID 错配。
+- [x] 自动料理按具体食谱厨具过滤，固定料理的厨具从 `recipe_id` 推导。
+- [x] 具体食谱的基础食材参与槽位、可用范围和彩蛋校验。
+- [x] 服务结果与直接调用 `suggestMeals` 的料理名、`recipe_id`、额外食材、酒水、评级和价格逐项一致。
+- [x] 同料理不同食谱不增加料理多样性，但套餐去重身份包含 `recipe_id`。
 
 ### Task 4：实现无 UI 的连接生命周期
 
@@ -1003,7 +1050,7 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 - [x] 运行 `git diff --check`。
 - [x] 用开发数据库运行自托管 `pnpm build`。
 - [x] 运行 `pnpm build:offline`，确认离线替换不启动桥接。
-- [x] 删除临时验证目录和浏览器产物。
+- [x] 验证脚本、日志、截图和浏览器产物均位于根 `.tmp/`，并按当前维护者要求继续保留。
 - [ ] 完成真实 WSS 发布门槛后，更新本文档顶部状态和首个兼容 Mod 版本。
 - [x] 确认规范部分没有“草案”、待定值或未冻结语义，并用当前网页重放长期保留的全部 V1 fixture。
 
@@ -1060,45 +1107,49 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 | 刷新或 BFCache         | Abort 并丢弃描述，普通关闭不自动重拉起。               |
 | endpoint 域名变化      | 只要 URL、DNS、TLS 和 Origin 均合法即可连接。          |
 | 静态导出或离线包       | 不连接，因为账号能力不可用。                           |
-| 旧 V1 Mod 连接新网页   | 始终走 V1 validator、adapter 和 serializer。           |
-| 网页同时支持 V1/V2     | 按启动版本分派，V1 不被静默升级或最新 schema 解释。    |
+| 预发布 V1 缺少食谱 ID  | 返回 `invalid-request`，不回退默认食谱。               |
+| 修订 V1 固定料理       | 名称和 `recipe_id` 成对校验并解析完整制作属性。        |
+| 修订 V1 自动料理       | 结果包含实际采用的 `recipe_id`。                       |
+| 未来网页支持 V1/V2     | 按启动版本分派，V1 不被静默升级或最新 schema 解释。    |
 
 ## 十六、进度记录
 
-| 日期       | 状态   | 记录                                                                                         |
-| ---------- | ------ | -------------------------------------------------------------------------------------------- |
-| 2026-07-15 | 已完成 | 精确异步推荐算法以提交 `273a2e89` 落地，可作为浏览器本地推荐核心。                           |
-| 2026-07-15 | 已确认 | 放弃夜雀助手服务端 HTTP/WSS 推荐接口，改为网页直连 Mod 本地 WSS。                            |
-| 2026-07-15 | 已确认 | Mod 拉起网页并通过 fragment 提供动态 endpoint、实例标识和配对密钥。                          |
-| 2026-07-15 | 已确认 | 使用桥接需要登录，但首版不向 Mod 提供可验证的账号凭证。                                      |
-| 2026-07-15 | 已确认 | 不修改 UI；普通标签页不连接，启动标签页独占，同实例新连接替换旧连接。                        |
-| 2026-07-15 | 已确认 | 未登录启动页在注册、登录或强制改密完成后自动连接。                                           |
-| 2026-07-15 | 已确认 | 同源账号整页跳转通过 fragment 续接，第三方 SSO redirect 不携带描述。                         |
-| 2026-07-15 | 已完成 | 完成异步入参快照、领域类型下沉和 host-task 调度三项内核优化。                                |
-| 2026-07-15 | 已通过 | 四种模式乘全部评级上限共 20 组频繁/稀疏时间片结果逐项一致。                                  |
-| 2026-07-15 | 已通过 | Abort 后未写缓存；公平轮转顺序、浏览器 MessageChannel 路径均通过。                           |
-| 2026-07-15 | 已通过 | 受控浏览器计算无长任务，301 帧最大间隔 17.75 ms，控制台无错误警告。                          |
-| 2026-07-15 | 已审计 | 桥接改为全局 feature-client 生命周期，不再计划非可视 React 组件。                            |
-| 2026-07-15 | 已审计 | fragment 必须在 Analytics 前清除，离线模式清除后直接丢弃。                                   |
-| 2026-07-15 | 已审计 | 后续实现纳入 Chromium LNA 权限、pagehide、BFCache 和 CSP 验证。                              |
-| 2026-07-15 | 已审计 | Service Worker 不管理 socket；Store 同步不传递描述或请求。                                   |
-| 2026-07-15 | 已确认 | 本地处理不设每分钟限流，支持协商上限内的多请求公平并发。                                     |
-| 2026-07-15 | 已确认 | 已连接时升级用 `client-update`/`4006` 去重通知，由 Mod 只重拉起一次。                        |
-| 2026-07-15 | 已确认 | 建连前升级没有反向通道，不持久化描述，由 Mod 保持可取消等待。                                |
-| 2026-07-15 | 已审计 | 错误分为请求级、连接级和 fatal close；自定义 code 连续为 `4000～4006`。                      |
-| 2026-07-15 | 已确认 | V1 使用游戏简体中文标准名称和标签，不复制外部游戏数据目录。                                  |
-| 2026-07-15 | 已确认 | V1 发布后永久兼容；破坏性变更通过并行新版本，不静默升级旧请求。                              |
-| 2026-07-15 | 已审计 | token 改为单次页面启动所属，新连接认证后才撤销旧连接 token。                                 |
-| 2026-07-15 | 已审计 | 所有合法输入均清零连续协议错误；错误 details 只用于诊断。                                    |
-| 2026-07-15 | 已完成 | V1 validator、adapter、serializer、fragment parser 和无 UI 客户端已实现。                    |
-| 2026-07-15 | 已通过 | 严格 fragment fixture 覆盖重复键、显式端口、凭证、query、fragment、版本和 WS 拒绝。          |
-| 2026-07-15 | 已通过 | 本地 WS 临时补丁下，未登录不连接；注册后自动连接，退出后立即关闭。                           |
-| 2026-07-15 | 已通过 | 参考 Mod 完成四种模式并发、乱序结果、取消和业务错误；网页未发出推荐 HTTP 请求。              |
-| 2026-07-15 | 已通过 | 参考 Mod 使用 .NET 自带 WebSocket 能力编译，结果为 0 警告、0 错误。                          |
-| 2026-07-15 | 已修复 | 启动清理由 feature-client 前移到 instrumentation-client，避免 Next hydration 恢复 fragment。 |
-| 2026-07-15 | 已修复 | 参考 Mod 首次心跳不再误计丢失，单独收到 `4006` 时也进入去重升级重拉起路径。                  |
-| 2026-07-15 | 已通过 | 真实 Store 门禁临时验证覆盖未登录等待、单次建连、强制改密、pagehide、ping 重置与版本关闭。   |
-| 2026-07-15 | 未验证 | 真实 HTTPS + WSS、受信任 TLS、IPv4/IPv6、LNA 与 CSP 发布门槛尚未完成。                       |
+| 日期       | 状态   | 记录                                                                                                                                                                                            |
+| ---------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-15 | 已完成 | 精确异步推荐算法以提交 `273a2e89` 落地，可作为浏览器本地推荐核心。                                                                                                                              |
+| 2026-07-15 | 已确认 | 放弃夜雀助手服务端 HTTP/WSS 推荐接口，改为网页直连 Mod 本地 WSS。                                                                                                                               |
+| 2026-07-15 | 已确认 | Mod 拉起网页并通过 fragment 提供动态 endpoint、实例标识和配对密钥。                                                                                                                             |
+| 2026-07-15 | 已确认 | 使用桥接需要登录，但首版不向 Mod 提供可验证的账号凭证。                                                                                                                                         |
+| 2026-07-15 | 已确认 | 不修改 UI；普通标签页不连接，启动标签页独占，同实例新连接替换旧连接。                                                                                                                           |
+| 2026-07-15 | 已确认 | 未登录启动页在注册、登录或强制改密完成后自动连接。                                                                                                                                              |
+| 2026-07-15 | 已确认 | 同源账号整页跳转通过 fragment 续接，第三方 SSO redirect 不携带描述。                                                                                                                            |
+| 2026-07-15 | 已完成 | 完成异步入参快照、领域类型下沉和 host-task 调度三项内核优化。                                                                                                                                   |
+| 2026-07-15 | 已通过 | 四种模式乘全部评级上限共 20 组频繁/稀疏时间片结果逐项一致。                                                                                                                                     |
+| 2026-07-15 | 已通过 | Abort 后未写缓存；公平轮转顺序、浏览器 MessageChannel 路径均通过。                                                                                                                              |
+| 2026-07-15 | 已通过 | 受控浏览器计算无长任务，301 帧最大间隔 17.75 ms，控制台无错误警告。                                                                                                                             |
+| 2026-07-15 | 已审计 | 桥接改为全局 feature-client 生命周期，不再计划非可视 React 组件。                                                                                                                               |
+| 2026-07-15 | 已审计 | fragment 必须在 Analytics 前清除，离线模式清除后直接丢弃。                                                                                                                                      |
+| 2026-07-15 | 已审计 | 后续实现纳入 Chromium LNA 权限、pagehide、BFCache 和 CSP 验证。                                                                                                                                 |
+| 2026-07-15 | 已审计 | Service Worker 不管理 socket；Store 同步不传递描述或请求。                                                                                                                                      |
+| 2026-07-15 | 已确认 | 本地处理不设每分钟限流，支持协商上限内的多请求公平并发。                                                                                                                                        |
+| 2026-07-15 | 已确认 | 已连接时升级用 `client-update`/`4006` 去重通知，由 Mod 只重拉起一次。                                                                                                                           |
+| 2026-07-15 | 已确认 | 建连前升级没有反向通道，不持久化描述，由 Mod 保持可取消等待。                                                                                                                                   |
+| 2026-07-15 | 已审计 | 错误分为请求级、连接级和 fatal close；自定义 code 连续为 `4000～4006`。                                                                                                                         |
+| 2026-07-15 | 已确认 | V1 使用游戏简体中文标准名称和标签，不复制外部游戏数据目录。                                                                                                                                     |
+| 2026-07-15 | 已确认 | V1 发布后永久兼容；破坏性变更通过并行新版本，不静默升级旧请求。                                                                                                                                 |
+| 2026-07-15 | 已审计 | token 改为单次页面启动所属，新连接认证后才撤销旧连接 token。                                                                                                                                    |
+| 2026-07-15 | 已审计 | 所有合法输入均清零连续协议错误；错误 details 只用于诊断。                                                                                                                                       |
+| 2026-07-15 | 已完成 | V1 validator、adapter、serializer、fragment parser 和无 UI 客户端已实现。                                                                                                                       |
+| 2026-07-15 | 已通过 | 严格 fragment fixture 覆盖重复键、显式端口、凭证、query、fragment、版本和 WS 拒绝。                                                                                                             |
+| 2026-07-15 | 已通过 | 本地 WS 临时补丁下，未登录不连接；注册后自动连接，退出后立即关闭。                                                                                                                              |
+| 2026-07-15 | 已通过 | 参考 Mod 完成四种模式并发、乱序结果、取消和业务错误；网页未发出推荐 HTTP 请求。                                                                                                                 |
+| 2026-07-15 | 已通过 | 参考 Mod 使用 .NET 自带 WebSocket 能力编译，结果为 0 警告、0 错误。                                                                                                                             |
+| 2026-07-15 | 已修复 | 启动清理由 feature-client 前移到 instrumentation-client，避免 Next hydration 恢复 fragment。                                                                                                    |
+| 2026-07-15 | 已修复 | 参考 Mod 首次心跳不再误计丢失，单独收到 `4006` 时也进入去重升级重拉起路径。                                                                                                                     |
+| 2026-07-15 | 已通过 | 真实 Store 门禁临时验证覆盖未登录等待、单次建连、强制改密、pagehide、ping 重置与版本关闭。                                                                                                      |
+| 2026-07-15 | 未验证 | 真实 HTTPS + WSS、受信任 TLS、IPv4/IPv6、LNA 与 CSP 发布门槛尚未完成。                                                                                                                          |
+| 2026-07-30 | 已确认 | V1 尚未发布且没有使用方；多套食谱直接修订 V1，协议版本保持 `1`。                                                                                                                                |
+| 2026-07-30 | 已完成 | 请求与结果已加入稳定 `recipe_id`；validator、adapter、serializer、fixture 和参考 Mod 已更新并完成本地确定性验证。真实 HTTPS + WSS、受信任 TLS、IPv4/IPv6、LNA、Origin 和 CSP 发布验收仍未完成。 |
 
 ## 十七、完成前复审
 
@@ -1129,13 +1180,14 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 - 自定义 close code 从 `4000` 连续到 `4006`，标准 code、自动重连和 Mod 重拉起语义互不混淆。
 - 已连接升级的消息与 close code 在 Mod 端只触发一次重拉起；建连前升级明确承认无法反向通知。
 - 请求校验完整覆盖四种模式、名称、评级上限、固定项和 `availability` 白名单减黑名单语义。
-- 游戏简体中文标准名称和标签直接作为永久 V1 token，不创建第二份外部游戏数据目录，也不允许已公开 token 改名、复用或改变含义。
+- 固定料理请求和全部结果都包含稳定 `recipe_id`；料理名称与 ID 成对校验，食材、厨具和时间从该食谱解析。
+- 游戏简体中文标准名称、标签和游戏食谱 ID 直接作为永久 V1 token，不创建第二份外部游戏数据目录，也不允许已公开 token 改名、复用或改变含义。
 - V1 validator、adapter、serializer 和 error mapper 独立保留；未来 V2 与其并行，不能用最新 schema 解释或静默升级 V1。
 - `suggestMeals` 和 `evaluateMeal` 仍是唯一生产推荐与评级实现。
 - `suggestMeals` 的缓存键和计算使用同一份不可变调用快照，不读取调用方后续修改。
 - 默认与公平调度器只通过统一 host-task 队列让出，Abort ticket 会被清理且公平轮转不饥饿。
 - 领域评级和推荐工具从共享 types 获取 `ICustomerOrder`，不反向依赖页面 Store。
-- 没有 UI、Store、持久化、账号 schema、数据库、API route、依赖或环境变量变更。
+- 桥接自身没有 UI、Store、数据库、API route、依赖或环境变量变更；多套食谱所需领域、持久化和账号 schema 调整由对应方案统一实施。
 - 正式 endpoint parser 只允许 WSS；本地 WS 联调只使用验收期间的临时未提交补丁，最终 diff 不留下环境分支或降级开关。
 - V1 对外发布前已经完成真实 HTTPS + WSS、TLS、Origin、IPv4/IPv6 loopback 和 LNA 验收，且规范部分不存在“草案”或待定值。
 - 心跳、重连和计算过程不触发无关 React 重渲染。

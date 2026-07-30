@@ -2,6 +2,7 @@ import type { TAvailabilityItemWithPinyin } from '@/domain/catalog/shared/types'
 import type { TBeverages } from '@/domain/data/beverages/types';
 import type { TIngredients } from '@/domain/data/ingredients/types';
 import type { TPlace } from '@/domain/data/places/types';
+import type { IRecipeVariant } from '@/domain/data/recipes/schema';
 import type { TRecipes } from '@/domain/data/recipes/types';
 import type { IFoodBase } from '@/domain/data/shared/foodSchema';
 import type { TRecipeTag } from '@/domain/data/tags/types';
@@ -23,11 +24,18 @@ export type TProcessedIngredient = Prettify<
 	TIngredients[number] & { places: TPlace[] }
 >;
 
+export interface IProcessedRecipeVariant extends Omit<
+	IRecipeVariant,
+	'baseCookTime'
+> {
+	cookTime: { max: number; min: number };
+}
+
 export type TProcessedRecipe = Prettify<
-	Omit<TRecipes[number], 'baseCookTime' | 'positiveTags'> & {
-		cookTime: { max: number; min: number };
+	Omit<TRecipes[number], 'positiveTags' | 'recipes'> & {
 		places: TSourcePlace[];
 		positiveTags: TRecipeTag[];
+		recipes: [IProcessedRecipeVariant, ...IProcessedRecipeVariant[]];
 	}
 >;
 

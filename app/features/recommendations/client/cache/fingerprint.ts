@@ -173,24 +173,28 @@ export function createRecommendationDataFingerprint() {
 	const recipes = Recipe.getInstance().data.map(
 		({
 			availabilityPaths,
-			cooker,
 			dlc,
-			ingredients: fixedIngredients,
 			level,
 			name,
 			negativeTags,
 			positiveTags,
 			price,
+			recipes: recipeVariants,
 		}) => ({
 			availabilityPaths: projectAvailabilityPaths(availabilityPaths),
-			cooker,
 			dlc,
-			fixedIngredients: sortStrings(fixedIngredients),
 			level,
 			name,
 			negativeTags: sortStrings(negativeTags),
 			positiveTags: sortStrings(positiveTags),
 			price,
+			recipes: recipeVariants
+				.map(({ cooker, id, ingredients: fixedIngredients }) => ({
+					cooker,
+					fixedIngredients: sortStrings(fixedIngredients),
+					id,
+				}))
+				.sort((left, right) => left.id - right.id),
 		})
 	);
 

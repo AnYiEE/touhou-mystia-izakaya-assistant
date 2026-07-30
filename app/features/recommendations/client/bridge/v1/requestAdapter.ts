@@ -47,6 +47,7 @@ export function adaptV1RecommendationRequest({
 							...(selection.recipe.extra_ingredients ?? []),
 						],
 						name: selection.recipe.name,
+						recipeId: selection.recipe.recipe_id,
 					},
 		customerName: customer,
 		customerOrder: {

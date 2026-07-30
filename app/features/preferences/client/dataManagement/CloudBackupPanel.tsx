@@ -11,6 +11,8 @@ import Popover, {
 import Snippet from '@/design/ui/components/snippet';
 import TimeAgo from '@/design/ui/components/timeAgo';
 
+import { customerNormalMealsSerializer } from '@/features/account/sync/serializers/customerNormalMeals';
+import { customerRareMealsSerializer } from '@/features/account/sync/serializers/customerRareMeals';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { useAnonymousVisitorId } from '@/features/analytics/client/visitorIdentity';
 import { customerNormalStore } from '@/features/catalog/customers/normal/client/state/store';
@@ -107,8 +109,12 @@ export default memo(function CloudBackupPanel() {
 		[currentNormalMealData, currentRareMealData]
 	);
 
-	// For compatibility with older versions
-	type TMealData = typeof currentMealData | typeof currentRareMealData;
+	type TLegacyMealData =
+		| {
+				customer_normal: Record<string, object[]>;
+				customer_rare: Record<string, object[]>;
+		  }
+		| Record<string, object[]>;
 
 	const [isCloudDeleteButtonDisabled, setIsCloudDeleteButtonDisabled] =
 		useState(false);
@@ -292,24 +298,37 @@ export default memo(function CloudBackupPanel() {
 		setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.downloading);
 		let didDownload = false;
 
-		downloadLegacyBackup<TMealData>(code)
+		downloadLegacyBackup<TLegacyMealData>(code)
 			.then((data) => {
+				if ('customer_normal' in data) {
+					const combinedData = data as {
+						customer_normal: Record<string, object[]>;
+						customer_rare: Record<string, object[]>;
+					};
+					deleteIndexProperty(combinedData.customer_normal);
+					deleteIndexProperty(combinedData.customer_rare);
+					const normalMeals = customerNormalMealsSerializer.migrate(
+						combinedData.customer_normal,
+						1
+					);
+					const rareMeals = customerRareMealsSerializer.migrate(
+						combinedData.customer_rare,
+						1
+					);
+					customerNormalStore.persistence.meals.set(normalMeals);
+					customerRareStore.persistence.meals.set(rareMeals);
+				} else {
+					deleteIndexProperty(data);
+					compatibilityCustomerRareData(data);
+					customerRareStore.persistence.meals.set(
+						customerRareMealsSerializer.migrate(data, 1)
+					);
+				}
+
 				setCloudDownloadState('success');
 				setCloudDownloadButtonLabel(
 					cloudDownloadButtonLabelMap.success
 				);
-				if ('customer_normal' in data) {
-					deleteIndexProperty(data.customer_normal);
-					deleteIndexProperty(data.customer_rare);
-					customerNormalStore.persistence.meals.set(
-						data.customer_normal
-					);
-					customerRareStore.persistence.meals.set(data.customer_rare);
-				} else {
-					deleteIndexProperty(data);
-					compatibilityCustomerRareData(data);
-					customerRareStore.persistence.meals.set(data);
-				}
 				globalStore.persistence.cloudCode.set(code);
 				didDownload = true;
 				trackEvent(

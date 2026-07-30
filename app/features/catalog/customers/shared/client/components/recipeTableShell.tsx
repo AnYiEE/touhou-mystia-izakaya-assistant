@@ -33,7 +33,7 @@ interface IProps {
 		item: TRecipeSuitabilityRow,
 		columnKey: TRecipeTableColumnKey
 	) => ReactNode;
-	selectedKeys: Set<string>;
+	selectedKeys: Set<number>;
 	sortDescriptor: SortDescriptor;
 	topContent: ReactNode;
 	totalPages: number;
@@ -114,7 +114,7 @@ export default memo<IProps>(function RecipeTableShell({
 				items={items}
 			>
 				{(item) => (
-					<TableRow key={item.name}>
+					<TableRow key={item.recipeId}>
 						{(columnKey) => (
 							<TableCell>
 								{renderCell(

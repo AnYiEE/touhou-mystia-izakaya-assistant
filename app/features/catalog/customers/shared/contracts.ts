@@ -1,4 +1,8 @@
-import type { TBeverage, TRecipe } from '@/domain/catalog/food/types';
+import type {
+	IProcessedRecipeVariant,
+	TBeverage,
+	TRecipe,
+} from '@/domain/catalog/food/types';
 import type { TBeverageTag, TRecipeTag } from '@/domain/data/tags/types';
 
 import { type TTabVisibilityState } from './state/tabVisibility';
@@ -28,11 +32,13 @@ export type TIngredientsTabStyleMap = Record<
 export type TTab = 'beverage' | 'customer' | 'ingredient' | 'recipe';
 
 export type TRecipeSuitabilityRow = Prettify<
-	TRecipe & {
-		matchedNegativeTags?: TRecipeTag[];
-		matchedPositiveTags: TRecipeTag[];
-		suitability: number;
-	}
+	Omit<TRecipe, 'recipes'> &
+		Omit<IProcessedRecipeVariant, 'id'> & {
+			matchedNegativeTags?: TRecipeTag[];
+			matchedPositiveTags: TRecipeTag[];
+			recipeId: number;
+			suitability: number;
+		}
 >;
 
 export interface IRecipeSuitabilityRowsResult {

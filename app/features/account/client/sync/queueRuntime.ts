@@ -7,10 +7,8 @@ import {
 	readDirtyQueueEntry,
 	readIsolatedDirtyQueueNamespaces,
 } from './dirtyQueue/collisionEvidence';
-import {
-	checkSnapshotHashesEquivalent,
-	createSnapshotHash,
-} from './dirtyQueue/snapshotHash';
+import { migrateDirtyQueueEntrySchema } from './dirtyQueue/migrateEntrySchema';
+import { checkSnapshotHashesEquivalent } from './dirtyQueue/snapshotHash';
 import { writeDirtyQueueEntryIfCurrent } from './dirtyQueue/storageTransition';
 import { checkDirtyQueueEntryTerminalError } from './queue';
 import {
@@ -62,15 +60,15 @@ function migrateDirtyQueueEntryToCurrentSchema({
 	}
 
 	const serializer = getAccountSyncSerializer(entry.namespace);
-	const data = serializer.migrate(entry.data, entry.schema_version);
 	const migratedEntry = {
-		...entry,
-		data,
+		...migrateDirtyQueueEntrySchema({
+			entry,
+			serializer,
+			targetSchemaVersion: schemaVersion,
+		}),
 		...(entry.lastError === 'sync-schema-update-required'
 			? { attempts: 0, lastError: null }
 			: {}),
-		schema_version: schemaVersion,
-		snapshotHash: createSnapshotHash(data),
 	} satisfies IDirtyQueueEntry;
 
 	return writeDirtyQueueEntryIfCurrent({

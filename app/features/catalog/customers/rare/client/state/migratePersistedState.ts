@@ -1,3 +1,5 @@
+import { Recipe } from '@/domain/catalog/food/Recipe';
+
 import { migrateCustomerRarePlansSnapshot } from '@/features/account/sync/serializers/customerRarePlansMerge';
 
 import { type customerRareInitialState as state } from './initialState';
@@ -29,9 +31,11 @@ export const CUSTOMER_RARE_STORE_VERSION = {
 	planCustomerSort: 23,
 	virtualPlans: 24, // eslint-disable-next-line sort-keys
 	availabilityDlcFilter: 25,
+	mealRecipeId: 26,
 } as const;
 
 const storeVersion = CUSTOMER_RARE_STORE_VERSION;
+const recipeInstance = Recipe.getInstance();
 
 export function migrateCustomerRarePersistedState(
 	persistedState: unknown,
@@ -338,6 +342,26 @@ export function migrateCustomerRarePersistedState(
 		oldState.persistence.recipe.table.availabilityDlcs =
 			oldState.persistence.recipe.table.dlcs;
 		delete oldState.persistence.recipe.table.dlcs;
+	}
+	if (version < storeVersion.mealRecipeId) {
+		for (const meals of Object.values(
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+			oldState.persistence.meals
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		) as any) {
+			for (const meal of meals) {
+				const recipeName: unknown = meal?.recipe?.name;
+				const recipe =
+					typeof recipeName === 'string'
+						? recipeInstance.data.find(
+								({ name }) => name === recipeName
+							)
+						: undefined;
+				if (recipe !== undefined) {
+					meal.recipe.recipeId = recipe.recipes[0].id;
+				}
+			}
+		}
 	}
 	return persistedState as typeof state;
 }

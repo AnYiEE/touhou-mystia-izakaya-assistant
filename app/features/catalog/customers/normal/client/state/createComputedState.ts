@@ -3,6 +3,7 @@ import { type Selection } from '@heroui/table';
 
 import { filterAvailableItemsByHiddenDlcs } from '@/domain/availability';
 import type { TBeverage, TRecipe } from '@/domain/catalog/food/types';
+import type { TCookerName } from '@/domain/data/cookers/types';
 import { DYNAMIC_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type {
 	TBeverageTag,
@@ -107,7 +108,7 @@ export const createCustomerNormalComputedState = (
 
 		return buildRecipeSuitabilityRows({
 			customerPositiveTags,
-			getEasterEggScore: (recipe) => {
+			getEasterEggScore: (recipe, variant) => {
 				if (currentCustomerName === null) {
 					return null;
 				}
@@ -115,7 +116,10 @@ export const createCustomerNormalComputedState = (
 				const { recipe: easterEggRecipe, score } =
 					checkNormalCustomerEasterEgg({
 						currentCustomerName,
-						currentRecipe: recipe,
+						currentRecipe: {
+							...recipe,
+							ingredients: variant.ingredients,
+						},
 					});
 
 				return recipe.name === easterEggRecipe ? score : null;
@@ -149,9 +153,7 @@ export const createCustomerNormalComputedState = (
 				: currentStore.persistence.recipe.table.availabilityDlcs.use(),
 			selectedCookers: (shouldGet
 				? currentStore.persistence.recipe.table.cookers.get()
-				: currentStore.persistence.recipe.table.cookers.use()) as Array<
-				TRecipe['cooker']
-			>,
+				: currentStore.persistence.recipe.table.cookers.use()) as TCookerName[],
 			selectedRecipeTags: [
 				...(shouldGet
 					? currentStore.shared.customer.select.recipeTag.get()
@@ -187,10 +189,14 @@ export const createCustomerNormalComputedState = (
 			'positiveTags'
 		);
 		const {
-			ingredients: currentRecipeIngredients,
 			negativeTags: currentRecipeNegativeTags,
 			positiveTags: currentRecipePositiveTags,
 		} = instance_recipe.getPropsByName(currentRecipeData.name);
+		const { ingredients: currentRecipeIngredients } =
+			instance_recipe.getRecipeVariantById(
+				currentRecipeData.name,
+				currentRecipeData.recipeId
+			);
 
 		return getIngredientScoreChanges({
 			calculateIngredientTagsWithTrend: (ingredientTags) =>
@@ -307,10 +313,10 @@ export const createCustomerNormalComputedState = (
 				resolveItemRefs: (meal) => {
 					try {
 						const recipeIngredients =
-							instance_recipe.getPropsByName(
+							instance_recipe.getRecipeVariantById(
 								meal.recipe.name,
-								'ingredients'
-							);
+								meal.recipe.recipeId
+							).ingredients;
 						return {
 							beverageName: meal.beverage,
 							ingredientNames: [
@@ -492,15 +498,17 @@ export const createCustomerNormalComputedState = (
 		},
 		availableRecipeCookers: () => {
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return instance_recipe
-				.getValuesByProp(
-					'cooker',
-					true,
+			return [
+				...toSet(
 					filterAvailableItemsByHiddenDlcs(
 						instance_recipe.data,
 						hiddenDlcs
+					).flatMap(({ recipes }) =>
+						recipes.map(({ cooker }) => cooker)
 					)
-				)
+				),
+			]
+				.map(toGetValueCollection)
 				.sort(pinyinSort);
 		},
 		availableRecipeNames: () => {

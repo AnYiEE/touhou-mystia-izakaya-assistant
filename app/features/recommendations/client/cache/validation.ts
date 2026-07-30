@@ -3,11 +3,10 @@ import { Beverage } from '@/domain/catalog/food/Beverage';
 import { Ingredient } from '@/domain/catalog/food/Ingredient';
 import { Recipe } from '@/domain/catalog/food/Recipe';
 import type { TBeverageName } from '@/domain/data/beverages/types';
-import type { TIngredientName } from '@/domain/data/ingredients/types';
-import type { TRecipeName } from '@/domain/data/recipes/types';
 import { DYNAMIC_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTag, TRecipeTag } from '@/domain/data/tags/types';
 import type { TRatingKey } from '@/domain/evaluation/types';
+import type { IMealRecipe } from '@/domain/meals/types';
 import type { ISuggestedMeal } from '@/domain/recommendations/types';
 
 import type { IResolvedCustomerRarePlanGroup } from '@/features/customerPlans/contracts';
@@ -20,8 +19,6 @@ const ingredientInstance = Ingredient.getInstance();
 const recipeInstance = Recipe.getInstance();
 
 const beverageNames = new Set<string>(beverageInstance.getNames());
-const ingredientNames = new Set<string>(ingredientInstance.getNames());
-const recipeNames = new Set<string>(recipeInstance.getNames());
 const beverageTags = new Set<string>([
 	...beverageInstance.getValuesByProp('tags'),
 	...customerInstance.getValuesByProp('beverageTags'),
@@ -53,14 +50,6 @@ function isBeverageName(value: unknown): value is TBeverageName {
 	return typeof value === 'string' && beverageNames.has(value);
 }
 
-function isIngredientName(value: unknown): value is TIngredientName {
-	return typeof value === 'string' && ingredientNames.has(value);
-}
-
-function isRecipeName(value: unknown): value is TRecipeName {
-	return typeof value === 'string' && recipeNames.has(value);
-}
-
 function isBeverageTagOrNull(value: unknown): value is TBeverageTag | null {
 	return (
 		value === null || (typeof value === 'string' && beverageTags.has(value))
@@ -77,19 +66,15 @@ function isRatingKey(value: unknown): value is TRatingKey {
 	return typeof value === 'string' && ratingKeys.has(value);
 }
 
-function validateMealRecipe(value: unknown) {
-	if (
-		!isRecord(value) ||
-		!isRecipeName(value['name']) ||
-		!Array.isArray(value['extraIngredients']) ||
-		!value['extraIngredients'].every(isIngredientName)
-	) {
+function validateMealRecipe(value: unknown): IMealRecipe | undefined {
+	if (!recipeInstance.isMealRecipe(value)) {
 		return;
 	}
 
 	return {
-		extraIngredients: [...value['extraIngredients']],
-		name: value['name'],
+		extraIngredients: [...value.extraIngredients],
+		name: value.name,
+		recipeId: value.recipeId,
 	};
 }
 

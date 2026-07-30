@@ -9,10 +9,10 @@ import { getRestExtraIngredients } from '@/domain/meals/getRestExtraIngredients'
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 
 interface IProps extends Pick<HTMLDivElementAttributes, 'className'> {
-	extraIngredients: TIngredientName[];
+	extraIngredients: ReadonlyArray<TIngredientName>;
 	extraIngredientsClassName?: HTMLDivElementAttributes['className'];
 	onOpenIngredient: (ingredient: TIngredientName) => void;
-	originalIngredients: TIngredientName[];
+	originalIngredients: ReadonlyArray<TIngredientName>;
 }
 
 export default memo<IProps>(function SavedMealIngredientsStrip({

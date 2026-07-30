@@ -47,6 +47,7 @@ export interface IV1RecommendationSelection {
 	readonly recipe?: {
 		readonly extra_ingredients?: ReadonlyArray<TIngredientName>;
 		readonly name: TRecipeName;
+		readonly recipe_id: number;
 	};
 }
 
@@ -110,6 +111,11 @@ const beverageMap = new Map(
 	beverageInstance.data.map((item) => [item.name, item])
 );
 const recipeMap = new Map(recipeInstance.data.map((item) => [item.name, item]));
+const recipeVariantOwnerMap = new Map(
+	recipeInstance.data.flatMap(({ name, recipes }) =>
+		recipes.map(({ id }) => [id, name] as const)
+	)
+);
 const ingredientMap = new Map(
 	ingredientInstance.data.map((item) => [item.name, item])
 );
@@ -199,15 +205,33 @@ function checkIngredientAllowed(name: string, customerDlc: number) {
 	);
 }
 
+function checkRecipeBaseAllowed(
+	recipe: (typeof recipeInstance.data)[number],
+	customerDlc: number
+) {
+	return (
+		checkDlcAllowed(recipe.dlc, customerDlc) &&
+		!blockedRecipeNames.has(recipe.name)
+	);
+}
+
+function checkRecipeVariantAllowed(
+	recipe: (typeof recipeInstance.data)[number],
+	ingredients: ReadonlyArray<TIngredientName>,
+	customerDlc: number
+) {
+	return (
+		checkRecipeBaseAllowed(recipe, customerDlc) &&
+		ingredients.every((name) => checkIngredientAllowed(name, customerDlc))
+	);
+}
+
 function checkRecipeAllowed(name: string, customerDlc: number) {
 	const recipe = recipeMap.get(name as TRecipeName);
 	return (
-		recipe !== undefined &&
-		checkDlcAllowed(recipe.dlc, customerDlc) &&
-		!blockedRecipeNames.has(recipe.name) &&
-		recipe.ingredients.every((ingredientName) =>
-			checkIngredientAllowed(ingredientName, customerDlc)
-		)
+		recipe?.recipes.some(({ ingredients }) =>
+			checkRecipeVariantAllowed(recipe, ingredients, customerDlc)
+		) ?? false
 	);
 }
 
@@ -314,11 +338,18 @@ function validateRequest(
 			!checkExactKeys(
 				selectedRecipeValue,
 				['name'],
-				['extra_ingredients']
+				['extra_ingredients', 'recipe_id']
 			) ||
 			typeof selectedRecipeValue['name'] !== 'string')
 	) {
 		return invalid('invalid-value', 'payload.selection.recipe');
+	}
+	if (
+		selectedRecipeValue !== undefined &&
+		(!checkOwnProperty(selectedRecipeValue, 'recipe_id') ||
+			!Number.isSafeInteger(selectedRecipeValue['recipe_id']))
+	) {
+		return invalid('invalid-value', 'payload.selection.recipe.recipe_id');
 	}
 	const selectedRecipe =
 		selectedRecipeValue === undefined
@@ -327,11 +358,51 @@ function validateRequest(
 	if (
 		selectedRecipeValue !== undefined &&
 		(selectedRecipe === undefined ||
-			!checkRecipeAllowed(selectedRecipe.name, customer.dlc))
+			!checkRecipeBaseAllowed(selectedRecipe, customer.dlc))
 	) {
 		return invalid(
 			'unknown-or-unavailable-name',
 			'payload.selection.recipe.name'
+		);
+	}
+	const selectedRecipeId = selectedRecipeValue?.['recipe_id'] as
+		| number
+		| undefined;
+	const selectedRecipeOwner =
+		selectedRecipeId === undefined
+			? undefined
+			: recipeVariantOwnerMap.get(selectedRecipeId);
+	if (selectedRecipeId !== undefined && selectedRecipeOwner === undefined) {
+		return invalid(
+			'unknown-recipe-id',
+			'payload.selection.recipe.recipe_id'
+		);
+	}
+	if (
+		selectedRecipeValue !== undefined &&
+		selectedRecipeOwner !== selectedRecipeValue['name']
+	) {
+		return invalid(
+			'recipe-id-mismatch',
+			'payload.selection.recipe.recipe_id'
+		);
+	}
+	const selectedRecipeVariant =
+		selectedRecipe === undefined || selectedRecipeId === undefined
+			? undefined
+			: selectedRecipe.recipes.find(({ id }) => id === selectedRecipeId);
+	if (
+		selectedRecipe !== undefined &&
+		selectedRecipeVariant !== undefined &&
+		!checkRecipeVariantAllowed(
+			selectedRecipe,
+			selectedRecipeVariant.ingredients,
+			customer.dlc
+		)
+	) {
+		return invalid(
+			'unavailable-recipe-id',
+			'payload.selection.recipe.recipe_id'
 		);
 	}
 	const extraIngredients = selectedRecipeValue?.['extra_ingredients'] ?? [];
@@ -344,9 +415,9 @@ function validateRequest(
 		return extraResult;
 	}
 	if (
-		selectedRecipe !== undefined &&
+		selectedRecipeVariant !== undefined &&
 		(extraIngredients as string[]).some((name) =>
-			new Set<string>(selectedRecipe.ingredients).has(name)
+			new Set<string>(selectedRecipeVariant.ingredients).has(name)
 		)
 	) {
 		return invalid(
@@ -355,8 +426,8 @@ function validateRequest(
 		);
 	}
 	if (
-		selectedRecipe !== undefined &&
-		selectedRecipe.ingredients.length +
+		selectedRecipeVariant !== undefined &&
+		selectedRecipeVariant.ingredients.length +
 			(extraIngredients as string[]).length >
 			5
 	) {

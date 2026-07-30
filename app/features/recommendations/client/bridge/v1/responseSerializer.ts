@@ -18,6 +18,7 @@ export function serializeV1RecommendationResult(
 			recipe: {
 				extra_ingredients: [...recipe.extraIngredients],
 				name: recipe.name,
+				recipe_id: recipe.recipeId,
 			},
 		})),
 		request_id: requestId,

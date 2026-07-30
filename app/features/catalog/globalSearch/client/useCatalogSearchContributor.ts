@@ -9,11 +9,13 @@ import { CustomerRare } from '@/domain/catalog/customers/CustomerRare';
 import { Beverage } from '@/domain/catalog/food/Beverage';
 import { Ingredient } from '@/domain/catalog/food/Ingredient';
 import { Recipe } from '@/domain/catalog/food/Recipe';
+import type { TRecipe } from '@/domain/catalog/food/types';
 import { Clothes } from '@/domain/catalog/items/Clothes';
 import { Cooker } from '@/domain/catalog/items/Cooker';
 import { Currency } from '@/domain/catalog/items/Currency';
 import { Ornament } from '@/domain/catalog/items/Ornament';
 import { Partner } from '@/domain/catalog/items/Partner';
+import type { TIngredientName } from '@/domain/data/ingredients/types';
 import { ALL_PLACES, PLACE_DLC_MAP } from '@/domain/data/places/placeFacts';
 import type { TDlc } from '@/domain/data/shared/types';
 
@@ -28,6 +30,22 @@ import { ingredientsStore } from '@/features/catalog/items/ingredients/client/st
 import { ornamentsStore } from '@/features/catalog/items/ornaments/client/state/store';
 import { partnersStore } from '@/features/catalog/items/partners/client/state/store';
 import { recipesStore } from '@/features/catalog/items/recipes/client/state/store';
+
+function filterRecipeVariantsByHiddenIngredients(
+	recipes: TRecipe['recipes'],
+	hiddenIngredients: ReadonlySet<TIngredientName>
+): TRecipe['recipes'] | null {
+	const [firstRecipe, ...remainingRecipes] = recipes.filter(
+		({ ingredients: variantIngredients }) =>
+			!variantIngredients.some((ingredient) =>
+				hiddenIngredients.has(ingredient)
+			)
+	);
+
+	return firstRecipe === undefined
+		? null
+		: [firstRecipe, ...remainingRecipes];
+}
 
 export function useCatalogSearchContributor() {
 	const beverageHiddenDlcs = beveragesStore.shared.hiddenItems.dlcs.use();
@@ -87,30 +105,41 @@ export function useCatalogSearchContributor() {
 			}));
 		const recipes = recipeInstance.data
 			.filter(
-				({ availabilityPaths, ingredients: itemIngredients, name }) =>
+				({ availabilityPaths, name }) =>
 					isAvailableWithHiddenDlcs(
 						availabilityPaths,
 						recipeHiddenDlcs
-					) &&
-					!hiddenRecipes.has(name) &&
-					itemIngredients.every(
-						(ingredient) => !hiddenIngredients.has(ingredient)
-					)
+					) && !hiddenRecipes.has(name)
 			)
-			.map((item) => ({
-				...item,
-				positiveTags: recipeInstance.calculateTagsWithTrend(
-					recipeInstance.composeTagsWithPopularTrend(
-						item.ingredients,
-						[],
-						item.positiveTags,
-						[],
-						null
+			.flatMap((item) => {
+				const recipes = filterRecipeVariantsByHiddenIngredients(
+					item.recipes,
+					hiddenIngredients
+				);
+				if (recipes === null) {
+					return [];
+				}
+
+				const positiveTags = [
+					...new Set(
+						recipes.flatMap(({ ingredients: variantIngredients }) =>
+							recipeInstance.calculateTagsWithTrend(
+								recipeInstance.composeTagsWithPopularTrend(
+									variantIngredients,
+									[],
+									item.positiveTags,
+									[],
+									recipePopularTrend
+								),
+								recipePopularTrend,
+								recipeIsFamousShop
+							)
+						)
 					),
-					recipePopularTrend,
-					recipeIsFamousShop
-				),
-			}));
+				];
+
+				return [{ ...item, positiveTags, recipes }];
+			});
 
 		return buildCatalogSearchIndex({
 			beverages: Beverage.getInstance().data.filter(

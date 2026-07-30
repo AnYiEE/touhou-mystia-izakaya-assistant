@@ -237,10 +237,9 @@ export default function SavedMealCard() {
 										})()}
 										<div className="flex items-center gap-2">
 											{(() => {
-												const cooker =
-													instance_recipe.getPropsByName(
-														recipeData.name,
-														'cooker'
+												const { cooker } =
+													instance_recipe.resolveMealRecipe(
+														recipeData
 													);
 												const cookerLabel = `点击：在新窗口中查看厨具【${cooker}】的详情`;
 												return (
@@ -338,10 +337,11 @@ export default function SavedMealCard() {
 											onOpenIngredient={(name) => {
 												openWindow('ingredients', name);
 											}}
-											originalIngredients={instance_recipe.getPropsByName(
-												recipeData.name,
-												'ingredients'
-											)}
+											originalIngredients={
+												instance_recipe.resolveMealRecipe(
+													recipeData
+												).baseIngredients
+											}
 										/>
 									</div>
 									<SavedMealActionRail

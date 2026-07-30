@@ -4,14 +4,14 @@ import { getRecipeSourcePlaces } from '@/domain/catalog/queries/getRecipeSourceP
 import { CUSTOMER_RARE_LIST } from '@/domain/data/customers/rare/records';
 import type { TIngredientName } from '@/domain/data/ingredients/types';
 import { RECIPE_LIST } from '@/domain/data/recipes/records';
-import type { IRecipe } from '@/domain/data/recipes/schema';
+import type { IRecipe, IRecipeVariant } from '@/domain/data/recipes/schema';
 import type { TRecipeName, TRecipes } from '@/domain/data/recipes/types';
 import {
 	DARK_MATTER_META_MAP,
 	DYNAMIC_TAG_MAP,
 } from '@/domain/data/tags/tagFacts';
 import type { TIngredientTag, TRecipeTag } from '@/domain/data/tags/types';
-import type { IMealRecipe } from '@/domain/meals/types';
+import type { IMealRecipe, IResolvedMealRecipe } from '@/domain/meals/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import { toSet } from '@/shared/utilities/collections/convert';
@@ -19,26 +19,39 @@ import { cloneJsonObject } from '@/shared/utilities/objects/cloneJsonObject';
 
 import { Food } from './Food';
 import { Ingredient } from './Ingredient';
-import type { TProcessedRecipe, TRecipe } from './types';
+import type {
+	IProcessedRecipeVariant,
+	TProcessedRecipe,
+	TRecipe,
+} from './types';
 
-type TRecipeSuitabilityRowData = TRecipe & {
-	matchedNegativeTags?: TRecipeTag[];
-	matchedPositiveTags: TRecipeTag[];
-	suitability: number;
-};
+type TRecipeSuitabilityRowData = Omit<IProcessedRecipeVariant, 'id'> &
+	Omit<TRecipe, 'recipes'> & {
+		matchedNegativeTags?: TRecipeTag[];
+		matchedPositiveTags: TRecipeTag[];
+		recipeId: number;
+		suitability: number;
+	};
 
 function createRecipeSuitabilityRow(
 	recipe: TRecipe,
+	variant: IProcessedRecipeVariant,
 	matchedPositiveTags: TRecipeTag[],
 	suitability: number,
 	positiveTags: TRecipeTag[] = recipe.positiveTags,
 	matchedNegativeTags?: TRecipeTag[]
 ): TRecipeSuitabilityRowData {
+	const { recipes: _recipes, ...recipeData } = recipe;
+
 	return {
-		...recipe,
+		...recipeData,
+		cooker: variant.cooker,
+		cookTime: variant.cookTime,
+		ingredients: variant.ingredients,
 		...(matchedNegativeTags === undefined ? {} : { matchedNegativeTags }),
 		matchedPositiveTags,
 		positiveTags,
+		recipeId: variant.id,
 		suitability,
 	};
 }
@@ -132,8 +145,8 @@ export class Recipe extends Food<TProcessedRecipe[]> {
 		const clonedData = cloneJsonObject(data);
 
 		clonedData.forEach((item) => {
-			const recipe = item as unknown as IRecipe & TProcessedRecipe;
-			const { baseCookTime, name, positiveTags, price } = recipe;
+			const recipe = item as unknown as IRecipe;
+			const { name, positiveTags, price, recipes } = recipe;
 
 			if (name !== DARK_MATTER_META_MAP.name) {
 				if (price > 60) {
@@ -143,15 +156,23 @@ export class Recipe extends Food<TProcessedRecipe[]> {
 				}
 			}
 
-			delete (recipe as Partial<IRecipe>).baseCookTime;
-			recipe.cookTime = {
-				max: baseCookTime,
-				min: Math.round(baseCookTime * 0.6 * 10) / 10,
-			};
-			recipe.places = getRecipeSourcePlaces(
-				recipe.from,
-				CUSTOMER_RARE_LIST
-			);
+			const processedRecipes = recipes.map(
+				({
+					baseCookTime,
+					...variant
+				}: IRecipeVariant): IProcessedRecipeVariant => ({
+					...variant,
+					cookTime: {
+						max: baseCookTime,
+						min: Math.round(baseCookTime * 0.6 * 10) / 10,
+					},
+				})
+			) as [IProcessedRecipeVariant, ...IProcessedRecipeVariant[]];
+
+			Object.assign(recipe, {
+				places: getRecipeSourcePlaces(recipe.from, CUSTOMER_RARE_LIST),
+				recipes: processedRecipes,
+			});
 		});
 
 		super(clonedData as unknown as TProcessedRecipe[], 'recipe');
@@ -174,6 +195,79 @@ export class Recipe extends Food<TProcessedRecipe[]> {
 		DARK_MATTER_META_MAP.positiveTag
 	);
 
+	public getDefaultRecipeVariant(recipeName: TRecipeName) {
+		return this.getPropsByName(recipeName, 'recipes')[0];
+	}
+
+	public getRecipeVariantById(recipeName: TRecipeName, recipeId: number) {
+		const variant = this.getPropsByName(recipeName, 'recipes').find(
+			({ id }) => id === recipeId
+		);
+		if (variant === undefined) {
+			throw new Error(
+				`[domain/catalog/food/Recipe]: recipe variant \`${recipeId}\` not found for \`${recipeName}\``
+			);
+		}
+
+		return variant;
+	}
+
+	public isMealRecipe(data: unknown): data is IMealRecipe {
+		if (data === null || typeof data !== 'object' || Array.isArray(data)) {
+			return false;
+		}
+
+		const record = data as Record<string, unknown>;
+		const keys = Object.keys(record);
+		if (
+			keys.length !== 3 ||
+			!keys.includes('extraIngredients') ||
+			!keys.includes('name') ||
+			!keys.includes('recipeId') ||
+			typeof record['name'] !== 'string' ||
+			!Number.isSafeInteger(record['recipeId']) ||
+			!Array.isArray(record['extraIngredients']) ||
+			!record['extraIngredients'].every(
+				(value) =>
+					typeof value === 'string' &&
+					Ingredient.getInstance().data.some(
+						({ name }) => name === value
+					)
+			)
+		) {
+			return false;
+		}
+
+		const recipe = this.data.find(({ name }) => name === record['name']);
+		if (recipe === undefined) {
+			return false;
+		}
+		const variant = recipe.recipes.find(
+			({ id }) => id === record['recipeId']
+		);
+
+		return (
+			variant !== undefined &&
+			variant.ingredients.length + record['extraIngredients'].length <= 5
+		);
+	}
+
+	public resolveMealRecipe(recipeData: IMealRecipe): IResolvedMealRecipe {
+		const variant = this.getRecipeVariantById(
+			recipeData.name,
+			recipeData.recipeId
+		);
+
+		return {
+			baseIngredients: variant.ingredients,
+			cooker: variant.cooker,
+			cookTime: variant.cookTime,
+			extraIngredients: recipeData.extraIngredients,
+			name: recipeData.name,
+			recipeId: recipeData.recipeId,
+		};
+	}
+
 	/**
 	 * @description Build raw recipe suitability rows for table consumers without applying query-layer filtering, sorting or pagination.
 	 */
@@ -186,7 +280,10 @@ export class Recipe extends Food<TProcessedRecipe[]> {
 	}: {
 		customerNegativeTags?: ReadonlyArray<TRecipeTag>;
 		customerPositiveTags?: ReadonlyArray<TRecipeTag> | null;
-		getEasterEggScore?: (recipe: TRecipe) => number | null | undefined;
+		getEasterEggScore?: (
+			recipe: TRecipe,
+			variant: IProcessedRecipeVariant
+		) => number | null | undefined;
 		isFamousShop: boolean;
 		popularTrend: IPopularTrend;
 	}): TRecipeSuitabilityRowData[] {
@@ -195,59 +292,68 @@ export class Recipe extends Food<TProcessedRecipe[]> {
 		);
 
 		if (isNil(customerPositiveTags)) {
-			return data.map((recipe) =>
-				createRecipeSuitabilityRow(
-					recipe,
-					[],
-					0,
-					recipe.positiveTags,
-					customerNegativeTags === undefined ? undefined : []
+			return data.flatMap((recipe) =>
+				recipe.recipes.map((variant) =>
+					createRecipeSuitabilityRow(
+						recipe,
+						variant,
+						[],
+						0,
+						recipe.positiveTags,
+						customerNegativeTags === undefined ? undefined : []
+					)
 				)
 			);
 		}
 
-		return data.map((recipe) => {
-			const recipeTagsWithTrend = this.calculateTagsWithTrend(
-				this.composeTagsWithPopularTrend(
-					recipe.ingredients,
-					[],
-					recipe.positiveTags,
-					[],
-					popularTrend
-				),
-				popularTrend,
-				isFamousShop
-			);
-			const easterEggScore = getEasterEggScore?.(recipe);
+		return data.flatMap((recipe) =>
+			recipe.recipes.map((variant) => {
+				const recipeTagsWithTrend = this.calculateTagsWithTrend(
+					this.composeTagsWithPopularTrend(
+						variant.ingredients,
+						[],
+						recipe.positiveTags,
+						[],
+						popularTrend
+					),
+					popularTrend,
+					isFamousShop
+				);
+				const easterEggScore = getEasterEggScore?.(recipe, variant);
 
-			if (!isNil(easterEggScore)) {
+				if (!isNil(easterEggScore)) {
+					return createRecipeSuitabilityRow(
+						recipe,
+						variant,
+						[],
+						easterEggScore > 0 ? Infinity : -Infinity,
+						recipeTagsWithTrend,
+						customerNegativeTags === undefined ? undefined : []
+					);
+				}
+
+				const {
+					negativeTags,
+					positiveTags: matchedPositiveTags,
+					suitability,
+				} = this.getCustomerSuitability(
+					recipeTagsWithTrend,
+					customerPositiveTags,
+					customerNegativeTags
+				);
+
 				return createRecipeSuitabilityRow(
 					recipe,
-					[],
-					easterEggScore > 0 ? Infinity : -Infinity,
+					variant,
+					matchedPositiveTags,
+					suitability,
 					recipeTagsWithTrend,
-					customerNegativeTags === undefined ? undefined : []
+					customerNegativeTags === undefined
+						? undefined
+						: negativeTags
 				);
-			}
-
-			const {
-				negativeTags,
-				positiveTags: matchedPositiveTags,
-				suitability,
-			} = this.getCustomerSuitability(
-				recipeTagsWithTrend,
-				customerPositiveTags,
-				customerNegativeTags
-			);
-
-			return createRecipeSuitabilityRow(
-				recipe,
-				matchedPositiveTags,
-				suitability,
-				recipeTagsWithTrend,
-				customerNegativeTags === undefined ? undefined : negativeTags
-			);
-		});
+			})
+		);
 	}
 
 	/**

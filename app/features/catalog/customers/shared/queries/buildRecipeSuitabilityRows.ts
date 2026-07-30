@@ -1,6 +1,10 @@
 import { isAvailableWithHiddenDlcs } from '@/domain/availability';
 import { type Recipe } from '@/domain/catalog/food/Recipe';
-import type { TRecipe } from '@/domain/catalog/food/types';
+import type {
+	IProcessedRecipeVariant,
+	TRecipe,
+} from '@/domain/catalog/food/types';
+import type { TCookerName } from '@/domain/data/cookers/types';
 import type { TIngredientName } from '@/domain/data/ingredients/types';
 import type { TRecipeTag } from '@/domain/data/tags/types';
 import type { IPopularTrend } from '@/domain/trends/types';
@@ -32,25 +36,64 @@ function sortRecipeRows(
 ) {
 	const { column, direction } = sortDescriptor;
 	const isAscending = direction === 'ascending';
+	const compareWithStableFallback = (
+		left: TRecipeSuitabilityRow,
+		right: TRecipeSuitabilityRow,
+		primaryComparison: number
+	) => {
+		if (primaryComparison !== 0) {
+			return primaryComparison;
+		}
+
+		const nameComparison = pinyinSort(left.name, right.name);
+		if (nameComparison !== 0) {
+			return isAscending ? nameComparison : -nameComparison;
+		}
+
+		const recipeIdComparison = numberSort(left.recipeId, right.recipeId);
+		return isAscending ? recipeIdComparison : -recipeIdComparison;
+	};
 
 	switch (column) {
 		case 'recipe':
-			return copyArray(rows).sort(({ name: a }, { name: b }) =>
-				isAscending ? pinyinSort(a, b) : pinyinSort(b, a)
+			return copyArray(rows).sort((left, right) =>
+				compareWithStableFallback(
+					left,
+					right,
+					isAscending
+						? pinyinSort(left.name, right.name)
+						: pinyinSort(right.name, left.name)
+				)
 			);
 		case 'price':
-			return copyArray(rows).sort(({ price: a }, { price: b }) =>
-				isAscending ? numberSort(a, b) : numberSort(b, a)
+			return copyArray(rows).sort((left, right) =>
+				compareWithStableFallback(
+					left,
+					right,
+					isAscending
+						? numberSort(left.price, right.price)
+						: numberSort(right.price, left.price)
+				)
 			);
 		case 'suitability':
-			return copyArray(rows).sort(
-				({ suitability: a }, { suitability: b }) =>
-					isAscending ? numberSort(a, b) : numberSort(b, a)
+			return copyArray(rows).sort((left, right) =>
+				compareWithStableFallback(
+					left,
+					right,
+					isAscending
+						? numberSort(left.suitability, right.suitability)
+						: numberSort(right.suitability, left.suitability)
+				)
 			);
 		case 'time':
-			return copyArray(rows).sort(
-				({ cookTime: { min: a } }, { cookTime: { min: b } }) =>
-					isAscending ? numberSort(a, b) : numberSort(b, a)
+			return copyArray(rows).sort((left, right) =>
+				compareWithStableFallback(
+					left,
+					right,
+					isAscending
+						? numberSort(left.cookTime.min, right.cookTime.min)
+						: numberSort(right.cookTime.min, left.cookTime.min)
+				)
 			);
 		default:
 			return rows;
@@ -78,7 +121,10 @@ export function buildRecipeSuitabilityRows({
 }: {
 	customerNegativeTags?: ReadonlyArray<TRecipeTag>;
 	customerPositiveTags?: ReadonlyArray<TRecipeTag> | null;
-	getEasterEggScore?: (recipe: TRecipe) => number | null | undefined;
+	getEasterEggScore?: (
+		recipe: TRecipe,
+		variant: IProcessedRecipeVariant
+	) => number | null | undefined;
 	hiddenDlcs: ReadonlySet<TRecipe['dlc']>;
 	hiddenIngredients: ReadonlySet<TIngredientName>;
 	hiddenRecipes: ReadonlySet<TRecipe['name']>;
@@ -90,7 +136,7 @@ export function buildRecipeSuitabilityRows({
 	rowsPerPage: number;
 	searchValue?: string;
 	selectedAvailabilityDlcs?: ReadonlyArray<string>;
-	selectedCookers?: ReadonlyArray<TRecipe['cooker']>;
+	selectedCookers?: ReadonlyArray<TCookerName>;
 	selectedRecipeTags?: ReadonlyArray<TRecipeTag>;
 	sortDescriptor: ITableSortDescriptor<TRecipeTableSortKey>;
 }): IRecipeSuitabilityRowsResult {

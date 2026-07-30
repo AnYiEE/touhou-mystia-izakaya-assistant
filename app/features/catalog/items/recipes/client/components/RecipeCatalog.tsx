@@ -1,7 +1,6 @@
 import { memo, useRef } from 'react';
 
 import { type Recipe } from '@/domain/catalog/food/Recipe';
-import { DARK_MATTER_META_MAP } from '@/domain/data/tags/tagFacts';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { RECIPE_TAG_STYLE } from '@/features/catalog/presentation/tagStyles';
@@ -22,6 +21,7 @@ import { ItemShareButton } from '@/features/itemSharing/client/components/ItemSh
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 
 import RecipeSourceDetails from './RecipeSourceDetails';
+import RecipeVariantsDetails from './RecipeVariantsDetails';
 
 interface IProps {
 	data: TItemData<Recipe>;
@@ -38,19 +38,16 @@ export default memo<IProps>(function RecipeCatalog({ data }) {
 	return data.map(
 		(
 			{
-				cookTime,
-				cooker,
 				description,
 				dlc,
 				from,
 				id,
-				ingredients,
 				level,
 				name,
 				negativeTags,
 				positiveTags,
 				price,
-				recipeId,
+				recipes,
 			},
 			dataIndex
 		) => (
@@ -84,14 +81,10 @@ export default memo<IProps>(function RecipeCatalog({ data }) {
 					<ItemPopoverCard
 						target="recipe"
 						id={id}
-						recipeId={recipeId}
 						name={name}
 						description={{ description, level, price }}
+						details={<RecipeVariantsDetails recipes={recipes} />}
 						dlc={dlc}
-						cooker={
-							name === DARK_MATTER_META_MAP.name ? null : cooker
-						}
-						ingredients={ingredients}
 						tags={{
 							negative: negativeTags,
 							positive: positiveTags,
@@ -100,7 +93,6 @@ export default memo<IProps>(function RecipeCatalog({ data }) {
 						ref={popoverCardRef}
 					>
 						<RecipeSourceDetails
-							cookTime={cookTime}
 							from={from}
 							openWindow={openWindow}
 						/>

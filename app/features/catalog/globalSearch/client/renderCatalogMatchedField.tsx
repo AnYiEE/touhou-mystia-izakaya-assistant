@@ -286,9 +286,9 @@ export function renderCatalogMatchedField(
 
 	const spriteTokens = getMatchedFieldSpriteTokens(match);
 	if (spriteTokens !== null) {
-		return spriteTokens.map(({ isMatched, name, target }) => (
+		return spriteTokens.map(({ isMatched, name, target }, index) => (
 			<span
-				key={`${target}:${name}`}
+				key={`${target}:${name}:${index}`}
 				className={cn(
 					'inline-flex h-6 max-w-full items-center gap-1.5 rounded-small border px-1.5 pr-2',
 					isMatched

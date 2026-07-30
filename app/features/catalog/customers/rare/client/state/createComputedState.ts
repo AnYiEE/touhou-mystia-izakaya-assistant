@@ -5,6 +5,7 @@ import { filterAvailableItemsByHiddenDlcs } from '@/domain/availability';
 import type { TBeverage, TRecipe } from '@/domain/catalog/food/types';
 import { getBondRecipes } from '@/domain/catalog/queries/getBondRecipes';
 import { getBondRewards } from '@/domain/catalog/queries/getBondRewards';
+import type { TCookerName } from '@/domain/data/cookers/types';
 import type { TIngredientName } from '@/domain/data/ingredients/types';
 import {
 	DARK_MATTER_META_MAP,
@@ -162,9 +163,7 @@ export function createCustomerRareComputedState(
 				: currentStore.persistence.recipe.table.availabilityDlcs.use(),
 			selectedCookers: (shouldGet
 				? currentStore.persistence.recipe.table.cookers.get()
-				: currentStore.persistence.recipe.table.cookers.use()) as Array<
-				TRecipe['cooker']
-			>,
+				: currentStore.persistence.recipe.table.cookers.use()) as TCookerName[],
 			selectedRecipeTags: [
 				...(shouldGet
 					? currentStore.shared.customer.select.recipeTag.get()
@@ -277,12 +276,14 @@ export function createCustomerRareComputedState(
 		}
 
 		const {
-			ingredients: currentRecipeIngredientsData,
 			negativeTags: currentRecipeNegativeTags,
 			positiveTags: currentRecipePositiveTags,
 		} = instance_recipe.getPropsByName(currentRecipeData.name);
 		const currentRecipeIngredients: ReadonlyArray<TIngredientName> =
-			currentRecipeIngredientsData;
+			instance_recipe.getRecipeVariantById(
+				currentRecipeData.name,
+				currentRecipeData.recipeId
+			).ingredients;
 		const {
 			negativeTags: customerNegativeTags,
 			positiveTags: customerPositiveTags,
@@ -429,10 +430,10 @@ export function createCustomerRareComputedState(
 				resolveItemRefs: (meal) => {
 					try {
 						const recipeIngredients =
-							instance_recipe.getPropsByName(
+							instance_recipe.getRecipeVariantById(
 								meal.recipe.name,
-								'ingredients'
-							);
+								meal.recipe.recipeId
+							).ingredients;
 						return {
 							beverageName: meal.beverage,
 							ingredientNames: [
@@ -647,15 +648,17 @@ export function createCustomerRareComputedState(
 		},
 		availableRecipeCookers: () => {
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return instance_recipe
-				.getValuesByProp(
-					'cooker',
-					true,
+			return [
+				...toSet(
 					filterAvailableItemsByHiddenDlcs(
 						instance_recipe.data,
 						hiddenDlcs
+					).flatMap(({ recipes }) =>
+						recipes.map(({ cooker }) => cooker)
 					)
-				)
+				),
+			]
+				.map(toGetValueCollection)
 				.sort(pinyinSort);
 		},
 		availableRecipeNames: () => {

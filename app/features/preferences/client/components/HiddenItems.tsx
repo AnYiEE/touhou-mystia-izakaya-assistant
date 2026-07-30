@@ -450,8 +450,10 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 				.filter(({ name }) => !instance_recipe.blockedRecipes.has(name))
 				.map((recipe) => {
 					if (
-						recipe.ingredients.some((ingredientName) =>
-							hiddenIngredients.has(ingredientName)
+						recipe.recipes.every(({ ingredients }) =>
+							ingredients.some((ingredientName) =>
+								hiddenIngredients.has(ingredientName)
+							)
 						)
 					) {
 						return { ...recipe, isHiddenByIngredient: true };

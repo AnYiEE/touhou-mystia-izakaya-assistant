@@ -62,6 +62,23 @@ function getCustomerRareBondRewards(item: TItemData<CustomerRare>[number]) {
 	return bondRewards;
 }
 
+function createDistinctFields(
+	fieldType: Parameters<typeof createField>[0],
+	label: string,
+	values: ReadonlyArray<unknown>,
+	weight: number
+) {
+	const fields = new Map<string, ReturnType<typeof createField>[number]>();
+
+	values.forEach((value) => {
+		createField(fieldType, label, value, weight).forEach((field) => {
+			fields.set(field.text, field);
+		});
+	});
+
+	return [...fields.values()];
+}
+
 export function buildRecipeItems(data = Recipe.getInstance().data) {
 	return data.map((item) =>
 		createItem({
@@ -86,16 +103,16 @@ export function buildRecipeItems(data = Recipe.getInstance().data) {
 					item.price,
 					CATALOG_SEARCH_FIELD_WEIGHT.medium
 				),
-				...createField(
+				...createDistinctFields(
 					'ingredient',
 					'食材',
-					item.ingredients,
+					item.recipes.map(({ ingredients }) => ingredients),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
-				...createField(
+				...createDistinctFields(
 					'cooker',
 					'厨具',
-					item.cooker,
+					item.recipes.map(({ cooker }) => cooker),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(

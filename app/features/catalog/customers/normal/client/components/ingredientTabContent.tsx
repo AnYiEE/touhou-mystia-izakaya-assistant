@@ -32,7 +32,7 @@ export default memo<IProps>(function IngredientTabContent({
 	const currentRecipe = useMemo(
 		() =>
 			currentRecipeData
-				? instance_recipe.getPropsByName(currentRecipeData.name)
+				? instance_recipe.resolveMealRecipe(currentRecipeData)
 				: null,
 		[currentRecipeData, instance_recipe]
 	);
@@ -81,7 +81,7 @@ export default memo<IProps>(function IngredientTabContent({
 		);
 	}
 
-	const { ingredients: currentRecipeIngredients } = currentRecipe;
+	const { baseIngredients: currentRecipeIngredients } = currentRecipe;
 
 	const isFullFilled =
 		currentRecipeIngredients.length +

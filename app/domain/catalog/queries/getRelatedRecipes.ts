@@ -24,7 +24,9 @@ export function getRelatedRecipes(
 
 	recipes.forEach((recipe) => {
 		if (
-			(recipe.ingredients as TIngredientName[]).includes(ingredientName)
+			recipe.recipes.some(({ ingredients }) =>
+				ingredients.includes(ingredientName)
+			)
 		) {
 			relatedRecipes.push(recipe);
 		}

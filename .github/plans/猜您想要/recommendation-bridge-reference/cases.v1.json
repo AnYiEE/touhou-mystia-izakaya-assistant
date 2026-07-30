@@ -22,7 +22,9 @@
 			"payload": {
 				"customer": "比那名居天子",
 				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
-				"selection": { "recipe": { "name": "桃花羹" } },
+				"selection": {
+					"recipe": { "name": "桃花羹", "recipe_id": 39 }
+				},
 				"options": {
 					"availability": {
 						"recipes": { "include": ["桃花羹"] },
@@ -45,7 +47,7 @@
 				"options": {
 					"availability": {
 						"beverages": { "include": ["教父"] },
-						"recipes": { "include": ["桃花羹"] }
+						"recipes": { "include": ["华光玉煎包"] }
 					},
 					"cooker": "油锅",
 					"max_results": 3
@@ -62,20 +64,13 @@
 				"customer": "比那名居天子",
 				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
 				"selection": {
-					"recipe": {
-						"name": "桃花羹",
-						"extra_ingredients": ["蜂蜜"]
-					},
+					"recipe": { "name": "大奢宴", "recipe_id": 36 },
 					"beverage": "教父"
 				},
 				"options": {
 					"availability": {
-						"recipes": { "include": ["桃花羹"] },
-						"beverages": { "include": ["教父"] },
-						"ingredients": {
-							"include": ["蜂蜜"],
-							"exclude": ["辣椒"]
-						}
+						"recipes": { "include": ["大奢宴"] },
+						"beverages": { "include": ["教父"] }
 					},
 					"max_results": 3
 				}

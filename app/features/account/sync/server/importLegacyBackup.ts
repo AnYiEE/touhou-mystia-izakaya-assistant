@@ -16,14 +16,20 @@ import {
 } from '@/features/account/sync/constants';
 import {
 	checkBeverageName,
+	migrateMealRecipeV1,
+	normalizeMealRecipe,
 	validateMealRecipe,
+	validateMealRecipeV1,
 	validateMealSnapshot,
 } from '@/features/account/sync/serializers/meals';
 import {
 	checkBeverageTag,
 	checkRecipeTag,
 } from '@/features/account/sync/serializers/tags';
-import { stableJson } from '@/features/account/sync/serializers/utils';
+import {
+	hasExactKeys,
+	stableJson,
+} from '@/features/account/sync/serializers/utils';
 import {
 	compatibilityCustomerRareData,
 	deleteIndexProperty,
@@ -55,9 +61,13 @@ import {
 	getAccountSyncCapacityConfiguration,
 } from './capacity';
 
+type TMealSyncNamespace =
+	| typeof SYNC_NAMESPACE_MAP.customerNormalMeals
+	| typeof SYNC_NAMESPACE_MAP.customerRareMeals;
+
 interface IImportNamespaceData {
 	data: Record<string, object[]>;
-	namespace: TSyncNamespace;
+	namespace: TMealSyncNamespace;
 }
 
 interface IImportBackupResult {
@@ -140,12 +150,12 @@ async function getBackupImportResult(
 	};
 }
 
-function normalizeMealRecipe(data: unknown) {
-	if (!validateMealRecipe(data)) {
-		return null;
+function normalizeMealRecipeForSchema(data: unknown, schemaVersion: number) {
+	if (schemaVersion === 1) {
+		return validateMealRecipeV1(data) ? migrateMealRecipeV1(data) : null;
 	}
 
-	return { extraIngredients: [...data.extraIngredients], name: data.name };
+	return validateMealRecipe(data) ? normalizeMealRecipe(data) : null;
 }
 
 function checkMealRecord(value: unknown): value is Record<string, object[]> {
@@ -161,21 +171,25 @@ function checkMealRecord(value: unknown): value is Record<string, object[]> {
 }
 
 function validateCustomerNormalMeal(
-	data: unknown
+	data: unknown,
+	schemaVersion: number
 ): data is Record<string, unknown> {
 	return (
 		isObjectTagRecord(data) &&
+		hasExactKeys(data, ['beverage', 'recipe']) &&
 		(data['beverage'] === null || checkBeverageName(data['beverage'])) &&
-		validateMealRecipe(data['recipe'])
+		(schemaVersion === 1
+			? validateMealRecipeV1(data['recipe'])
+			: validateMealRecipe(data['recipe']))
 	);
 }
 
-function normalizeCustomerNormalMeal(data: unknown) {
-	if (!validateCustomerNormalMeal(data)) {
+function normalizeCustomerNormalMeal(data: unknown, schemaVersion: number) {
+	if (!validateCustomerNormalMeal(data, schemaVersion)) {
 		return null;
 	}
 
-	const recipe = normalizeMealRecipe(data['recipe']);
+	const recipe = normalizeMealRecipeForSchema(data['recipe'], schemaVersion);
 	if (recipe === null) {
 		return null;
 	}
@@ -184,27 +198,37 @@ function normalizeCustomerNormalMeal(data: unknown) {
 }
 
 function validateCustomerRareMeal(
-	data: unknown
+	data: unknown,
+	schemaVersion: number
 ): data is Record<string, unknown> {
 	return (
 		isObjectTagRecord(data) &&
+		hasExactKeys(data, [
+			'beverage',
+			'hasMystiaCooker',
+			'order',
+			'recipe',
+		]) &&
 		checkBeverageName(data['beverage']) &&
 		typeof data['hasMystiaCooker'] === 'boolean' &&
 		isObjectTagRecord(data['order']) &&
+		hasExactKeys(data['order'], ['beverageTag', 'recipeTag']) &&
 		(data['order']['beverageTag'] === null ||
 			checkBeverageTag(data['order']['beverageTag'])) &&
 		(data['order']['recipeTag'] === null ||
 			checkRecipeTag(data['order']['recipeTag'])) &&
-		validateMealRecipe(data['recipe'])
+		(schemaVersion === 1
+			? validateMealRecipeV1(data['recipe'])
+			: validateMealRecipe(data['recipe']))
 	);
 }
 
-function normalizeCustomerRareMeal(data: unknown) {
-	if (!validateCustomerRareMeal(data)) {
+function normalizeCustomerRareMeal(data: unknown, schemaVersion: number) {
+	if (!validateCustomerRareMeal(data, schemaVersion)) {
 		return null;
 	}
 
-	const recipe = normalizeMealRecipe(data['recipe']);
+	const recipe = normalizeMealRecipeForSchema(data['recipe'], schemaVersion);
 	if (recipe === null || !isObjectTagRecord(data['order'])) {
 		return null;
 	}
@@ -242,30 +266,37 @@ function normalizeMealRecord(
 	);
 }
 
-function validateImportNamespaceData(item: IImportNamespaceData) {
+function validateImportNamespaceData(
+	item: IImportNamespaceData,
+	schemaVersion: number
+) {
 	if (item.namespace === SYNC_NAMESPACE_MAP.customerNormalMeals) {
 		return validateMealSnapshot(item.data, {
 			customerType: 'normal',
-			validateMeal: validateCustomerNormalMeal,
+			validateMeal: (meal) =>
+				validateCustomerNormalMeal(meal, schemaVersion),
 		});
 	}
 
 	return validateMealSnapshot(item.data, {
 		customerType: 'rare',
-		validateMeal: validateCustomerRareMeal,
+		validateMeal: (meal) => validateCustomerRareMeal(meal, schemaVersion),
 	});
 }
 
-function normalizeImportNamespaceData(item: IImportNamespaceData) {
-	if (!validateImportNamespaceData(item)) {
+function normalizeImportNamespaceData(
+	item: IImportNamespaceData,
+	schemaVersion: number
+) {
+	if (!validateImportNamespaceData(item, schemaVersion)) {
 		return null;
 	}
 
 	const data = normalizeMealRecord(
 		item.data,
 		item.namespace === SYNC_NAMESPACE_MAP.customerNormalMeals
-			? normalizeCustomerNormalMeal
-			: normalizeCustomerRareMeal
+			? (meal) => normalizeCustomerNormalMeal(meal, schemaVersion)
+			: (meal) => normalizeCustomerRareMeal(meal, schemaVersion)
 	);
 
 	return data === null ? null : { ...item, data };
@@ -314,6 +345,21 @@ function normalizeBackupData(data: unknown): IImportNamespaceData[] | null {
 	return [{ data, namespace: SYNC_NAMESPACE_MAP.customerRareMeals }];
 }
 
+function normalizeLegacyBackupMealData(
+	data: unknown
+): IImportNamespaceData[] | null {
+	const namespaceData = normalizeBackupData(data);
+	if (namespaceData === null) {
+		return null;
+	}
+
+	const normalized = namespaceData
+		.map((item) => normalizeImportNamespaceData(item, 1))
+		.filter((item): item is IImportNamespaceData => item !== null);
+
+	return normalized.length === 0 ? null : normalized;
+}
+
 function createMealSignature(meal: object) {
 	return stableJson(meal);
 }
@@ -358,9 +404,9 @@ function mergeMealRecord(
 	return result;
 }
 
-function parseCloudMealRecord(
-	record: TUserState | null,
-	namespace: TSyncNamespace
+function normalizeCloudMealRecordForImport(
+	record: Pick<TUserState, 'data' | 'schema_version'> | null,
+	namespace: TMealSyncNamespace
 ) {
 	if (record === null) {
 		return null;
@@ -379,7 +425,10 @@ function parseCloudMealRecord(
 		throw new Error('server-misconfigured');
 	}
 
-	const normalized = normalizeImportNamespaceData({ data, namespace });
+	const normalized = normalizeImportNamespaceData(
+		{ data, namespace },
+		record.schema_version
+	);
 	if (normalized === null) {
 		throw new Error('server-misconfigured');
 	}
@@ -501,16 +550,12 @@ async function readImportBackupFile(
 		throw new Error('invalid-backup-file');
 	}
 
-	const namespaceData = normalizeBackupData(fileData)?.map(
-		normalizeImportNamespaceData
-	);
-	if (namespaceData === undefined || namespaceData.includes(null)) {
+	const namespaceData = normalizeLegacyBackupMealData(fileData);
+	if (namespaceData === null) {
 		throw new Error('invalid-backup-file');
 	}
 
-	return namespaceData.filter(
-		(item): item is IImportNamespaceData => item !== null
-	);
+	return namespaceData;
 }
 
 export async function importBackupData({
@@ -671,7 +716,10 @@ export async function importBackupData({
 				(current?.updated_at ?? 0) + 1
 			);
 			const mergedData = mergeMealRecord(
-				parseCloudMealRecord(current ?? null, item.namespace),
+				normalizeCloudMealRecordForImport(
+					current ?? null,
+					item.namespace
+				),
 				item.data
 			);
 			return {

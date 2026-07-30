@@ -64,6 +64,12 @@ const state = {
 
 const getNames = createNamesCache(instance);
 
+function getVisibleRecipeVariants(hiddenDlcs: ReadonlySet<TDlc>) {
+	return filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs).flatMap(
+		({ recipes }) => recipes
+	);
+}
+
 export const recipesStore = store(state, {
 	middlewares: [
 		createPersistMiddleware<typeof state>({
@@ -134,22 +140,24 @@ export const recipesStore = store(state, {
 	},
 	availableCookers: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-		return instance
-			.getValuesByProp(
-				'cooker',
-				true,
-				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
-			)
+		return [
+			...new Set(
+				getVisibleRecipeVariants(hiddenDlcs).map(({ cooker }) => cooker)
+			),
+		]
+			.map(toGetValueCollection)
 			.sort(pinyinSort);
 	},
 	availableIngredients: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-		return instance
-			.getValuesByProp(
-				'ingredients',
-				true,
-				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
-			)
+		return [
+			...new Set(
+				getVisibleRecipeVariants(hiddenDlcs).flatMap(
+					({ ingredients }) => ingredients
+				)
+			),
+		]
+			.map(toGetValueCollection)
 			.sort(pinyinSort);
 	},
 	availableLevels: () => {

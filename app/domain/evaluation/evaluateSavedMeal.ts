@@ -43,7 +43,7 @@ export function evaluateNormalSavedMeal({
 	customerName,
 	isFamousShop,
 	popularTrend,
-	recipeData: { extraIngredients, name: recipeName },
+	recipeData: { extraIngredients, name: recipeName, recipeId },
 }: {
 	customerName: TCustomerNormalName;
 	isFamousShop: boolean;
@@ -54,7 +54,7 @@ export function evaluateNormalSavedMeal({
 		customerName,
 		isFamousShop,
 		popularTrend,
-		recipeData: { extraIngredients, name: recipeName },
+		recipeData: { extraIngredients, name: recipeName, recipeId },
 	});
 	const cachedResult = normalSavedMealRatingCache.get(cacheKey);
 
@@ -69,6 +69,12 @@ export function evaluateNormalSavedMeal({
 				'tags'
 			) as TPopularTag[]
 	);
+	const { baseIngredients } = instance_recipe.resolveMealRecipe({
+		extraIngredients,
+		name: recipeName,
+		recipeId,
+	});
+	const recipe = instance_recipe.getPropsByName(recipeName);
 
 	const rating = evaluateNormalCustomerMeal({
 		currentCustomerName: customerName,
@@ -79,7 +85,11 @@ export function evaluateNormalSavedMeal({
 		),
 		currentExtraIngredientsLength: extraIngredients.length,
 		currentExtraTags: extraTags,
-		currentRecipe: instance_recipe.getPropsByName(recipeName),
+		currentRecipe: {
+			ingredients: baseIngredients,
+			name: recipeName,
+			positiveTags: recipe.positiveTags,
+		},
 		isFamousShop,
 	}) as TRatingKey;
 
@@ -95,7 +105,7 @@ export function evaluateRareSavedMeal({
 	hasMystiaCooker,
 	isFamousShop,
 	popularTrend,
-	recipeData: { extraIngredients, name: recipeName },
+	recipeData: { extraIngredients, name: recipeName, recipeId },
 }: {
 	beverageName: TBeverageName;
 	customerName: TCustomerRareName;
@@ -112,7 +122,7 @@ export function evaluateRareSavedMeal({
 		hasMystiaCooker,
 		isFamousShop,
 		popularTrend,
-		recipeData: { extraIngredients, name: recipeName },
+		recipeData: { extraIngredients, name: recipeName, recipeId },
 	});
 	const cachedResult = rareSavedMealRatingCache.get(cacheKey);
 
@@ -128,11 +138,15 @@ export function evaluateRareSavedMeal({
 	const { price: beveragePrice, tags: beverageTags } =
 		instance_beverage.getPropsByName(beverageName);
 	const {
-		ingredients,
 		negativeTags,
 		positiveTags,
 		price: originalRecipePrice,
 	} = instance_recipe.getPropsByName(recipeName);
+	const { baseIngredients } = instance_recipe.resolveMealRecipe({
+		extraIngredients,
+		name: recipeName,
+		recipeId,
+	});
 	const { extraTags, isDarkMatter } = instance_recipe.checkDarkMatter({
 		extraIngredients,
 		negativeTags,
@@ -141,7 +155,7 @@ export function evaluateRareSavedMeal({
 		? DARK_MATTER_META_MAP.price
 		: originalRecipePrice;
 	const composedRecipeTags = instance_recipe.composeTagsWithPopularTrend(
-		ingredients,
+		baseIngredients,
 		extraIngredients,
 		positiveTags,
 		extraTags,
@@ -160,7 +174,9 @@ export function evaluateRareSavedMeal({
 		currentCustomerNegativeTags: customerNegativeTags,
 		currentCustomerOrder: customerOrder,
 		currentCustomerPositiveTags: customerPositiveTags,
-		currentIngredients: [...new Set([...ingredients, ...extraIngredients])],
+		currentIngredients: [
+			...new Set([...baseIngredients, ...extraIngredients]),
+		],
 		currentRecipeName: recipeName,
 		currentRecipeTagsWithTrend: recipeTagsWithTrend,
 		hasMystiaCooker,

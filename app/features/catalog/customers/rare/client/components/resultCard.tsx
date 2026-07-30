@@ -51,16 +51,14 @@ export default function ResultCard() {
 		customerRareStore.unsatisfiedSelectionTip.use();
 
 	const instance_recipe = customerRareStore.instances.recipe.get();
-	const originalIngredients = useMemo(
+	const currentRecipe = useMemo(
 		() =>
 			currentRecipeData
-				? instance_recipe.getPropsByName(
-						currentRecipeData.name,
-						'ingredients'
-					)
-				: [],
+				? instance_recipe.resolveMealRecipe(currentRecipeData)
+				: null,
 		[currentRecipeData, instance_recipe]
 	);
+	const originalIngredients = currentRecipe?.baseIngredients ?? [];
 
 	const isSaveButtonDisabled =
 		currentCustomerName === null ||
@@ -143,22 +141,18 @@ export default function ResultCard() {
 				<div className="flex flex-col items-center gap-4 p-4 md:flex-row">
 					<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap">
 						<div className="flex items-center gap-2">
-							{currentRecipeData ? (
+							{currentRecipe ? (
 								(() => {
 									const isDarkMatterOrNormalMeal =
 										// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 										isDarkMatter || !hasMystiaCooker;
-									const originalCooker =
-										instance_recipe.getPropsByName(
-											currentRecipeData.name,
-											'cooker'
-										);
+									const originalCooker = currentRecipe.cooker;
 									const cooker = isDarkMatterOrNormalMeal
 										? originalCooker
 										: (`夜雀${originalCooker}` as const);
 									const recipeName = isDarkMatter
 										? DARK_MATTER_META_MAP.name
-										: currentRecipeData.name;
+										: currentRecipe.name;
 									const label = isDarkMatter
 										? originalCooker
 										: `点击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}【夜雀${originalCooker}】制作`;

@@ -57,10 +57,8 @@ export default function MealRow({
 		source,
 	} = meal;
 	const isDarkMatterOrNormalMeal = isDarkMatter || !hasMystiaCooker;
-	const originalCooker = instanceRecipe.getPropsByName(
-		recipeData.name,
-		'cooker'
-	);
+	const resolvedRecipe = instanceRecipe.resolveMealRecipe(recipeData);
+	const originalCooker = resolvedRecipe.cooker;
 	const cooker = isDarkMatterOrNormalMeal
 		? originalCooker
 		: (`夜雀${originalCooker}` as const);
@@ -191,10 +189,7 @@ export default function MealRow({
 						extraIngredients={recipeData.extraIngredients}
 						extraIngredientsClassName="gap-x-1 md:gap-x-3 min-[1202px]:gap-x-1"
 						onOpenIngredient={onOpenIngredient}
-						originalIngredients={instanceRecipe.getPropsByName(
-							recipeData.name,
-							'ingredients'
-						)}
+						originalIngredients={resolvedRecipe.baseIngredients}
 					/>
 				</div>
 			</div>

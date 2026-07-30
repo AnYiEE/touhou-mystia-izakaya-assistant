@@ -1,12 +1,14 @@
 interface IFilterableRecipe {
 	availabilityDlcs: ReadonlyArray<number>;
-	cooker: string;
 	dlc: number;
-	ingredients: ReadonlyArray<string>;
 	level: number;
 	negativeTags: ReadonlyArray<string>;
 	places: ReadonlyArray<string>;
-	positiveTags: ReadonlyArray<string>;
+	recipes: ReadonlyArray<{
+		cooker: string;
+		ingredients: ReadonlyArray<string>;
+		positiveTags: ReadonlyArray<string>;
+	}>;
 }
 
 export function filterRecipeData<TRecipe extends IFilterableRecipe>({
@@ -52,16 +54,7 @@ export function filterRecipeData<TRecipe extends IFilterableRecipe>({
 	const hasPositiveTagFilter = filterPositiveTags.length > 0;
 
 	return data.filter(
-		({
-			availabilityDlcs,
-			cooker,
-			dlc,
-			ingredients,
-			level,
-			negativeTags,
-			places,
-			positiveTags,
-		}) => {
+		({ availabilityDlcs, dlc, level, negativeTags, places, recipes }) => {
 			if (
 				hasAvailabilityDlcFilter &&
 				!filterAvailabilityDlcs.some((selectedDlc) =>
@@ -82,21 +75,35 @@ export function filterRecipeData<TRecipe extends IFilterableRecipe>({
 			if (hasLevelFilter && !filterLevels.includes(String(level))) {
 				return false;
 			}
-			if (hasCookerFilter && !filterCookers.includes(cooker)) {
-				return false;
-			}
 			if (
-				hasIngredientFilter &&
-				!filterIngredients.every((ingredient) =>
-					ingredients.includes(ingredient)
-				)
-			) {
-				return false;
-			}
-			if (
-				hasNoIngredientFilter &&
-				filterNoIngredients.some((ingredient) =>
-					ingredients.includes(ingredient)
+				(hasCookerFilter ||
+					hasIngredientFilter ||
+					hasNoIngredientFilter ||
+					hasNoPositiveTagFilter ||
+					hasPositiveTagFilter) &&
+				!recipes.some(
+					({
+						cooker,
+						ingredients,
+						positiveTags: variantPositiveTags,
+					}) =>
+						(!hasCookerFilter || filterCookers.includes(cooker)) &&
+						(!hasIngredientFilter ||
+							filterIngredients.every((ingredient) =>
+								ingredients.includes(ingredient)
+							)) &&
+						(!hasNoIngredientFilter ||
+							!filterNoIngredients.some((ingredient) =>
+								ingredients.includes(ingredient)
+							)) &&
+						(!hasPositiveTagFilter ||
+							filterPositiveTags.every((tag) =>
+								variantPositiveTags.includes(tag)
+							)) &&
+						(!hasNoPositiveTagFilter ||
+							!filterNoPositiveTags.some((tag) =>
+								variantPositiveTags.includes(tag)
+							))
 				)
 			) {
 				return false;
@@ -110,18 +117,6 @@ export function filterRecipeData<TRecipe extends IFilterableRecipe>({
 			if (
 				hasNoNegativeTagFilter &&
 				filterNoNegativeTags.some((tag) => negativeTags.includes(tag))
-			) {
-				return false;
-			}
-			if (
-				hasPositiveTagFilter &&
-				!filterPositiveTags.every((tag) => positiveTags.includes(tag))
-			) {
-				return false;
-			}
-			if (
-				hasNoPositiveTagFilter &&
-				filterNoPositiveTags.some((tag) => positiveTags.includes(tag))
 			) {
 				return false;
 			}

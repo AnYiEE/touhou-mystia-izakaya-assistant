@@ -12,22 +12,43 @@ import { cloneJsonObject } from '@/shared/utilities/objects/cloneJsonObject';
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
 
 import {
+	type IMealRecipeV1,
 	type TMealSnapshot,
 	checkBeverageName,
 	mergeMealSnapshot,
+	migrateMealRecipeV1,
 	normalizeMealRecipe,
 	normalizeMealSnapshot,
 	validateMealRecipe,
+	validateMealRecipeV1,
 	validateMealSnapshot,
 } from './meals';
+import { hasExactKeys } from './utils';
+
+type TCustomerNormalSavedMealSnapshotV1 = Omit<
+	ICustomerNormalSavedMealSnapshot,
+	'recipe'
+> & { recipe: IMealRecipeV1 };
 
 function validateCustomerNormalMeal(
 	data: unknown
 ): data is ICustomerNormalSavedMealSnapshot {
 	return (
 		isObjectTagRecord(data) &&
+		hasExactKeys(data, ['beverage', 'recipe']) &&
 		(data['beverage'] === null || checkBeverageName(data['beverage'])) &&
 		validateMealRecipe(data['recipe'])
+	);
+}
+
+function validateCustomerNormalMealV1(
+	data: unknown
+): data is TCustomerNormalSavedMealSnapshotV1 {
+	return (
+		isObjectTagRecord(data) &&
+		hasExactKeys(data, ['beverage', 'recipe']) &&
+		(data['beverage'] === null || checkBeverageName(data['beverage'])) &&
+		validateMealRecipeV1(data['recipe'])
 	);
 }
 
@@ -37,6 +58,15 @@ function normalizeCustomerNormalMeal(
 	return {
 		beverage: data.beverage,
 		recipe: normalizeMealRecipe(data.recipe),
+	};
+}
+
+function migrateCustomerNormalMealV1(
+	data: TCustomerNormalSavedMealSnapshotV1
+): ICustomerNormalSavedMealSnapshot {
+	return {
+		beverage: data.beverage,
+		recipe: migrateMealRecipeV1(data.recipe),
 	};
 }
 
@@ -71,7 +101,7 @@ function getLocalCustomerNormalMealsSnapshot(data: unknown) {
 
 export const customerNormalMealsSerializer = {
 	deserialize(data) {
-		return this.migrate(data, 1);
+		return this.migrate(data, 2);
 	},
 	getDefaultSnapshot() {
 		return {};
@@ -88,7 +118,23 @@ export const customerNormalMealsSerializer = {
 		});
 	},
 	migrate(data, version) {
-		if (version !== 1) {
+		if (version === 1) {
+			if (
+				!validateMealSnapshot(data, {
+					customerType: 'normal',
+					validateMeal: validateCustomerNormalMealV1,
+				})
+			) {
+				throw new Error('invalid-customer-normal-meals');
+			}
+
+			return normalizeMealSnapshot(
+				data,
+				migrateCustomerNormalMealV1,
+				'normal'
+			);
+		}
+		if (version !== 2) {
 			throw new Error('unsupported-customer-normal-meals-schema-version');
 		}
 

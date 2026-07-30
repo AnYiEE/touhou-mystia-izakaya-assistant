@@ -79,7 +79,9 @@
 			"payload": {
 				"customer": "比那名居天子",
 				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
-				"selection": { "recipe": { "name": "桃花羹" } },
+				"selection": {
+					"recipe": { "name": "桃花羹", "recipe_id": 39 }
+				},
 				"options": {
 					"availability": {
 						"recipes": { "include": ["桃花羹"] },
@@ -184,7 +186,9 @@
 			"payload": {
 				"customer": "比那名居天子",
 				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
-				"selection": { "recipe": { "name": "桃花羹" } },
+				"selection": {
+					"recipe": { "name": "桃花羹", "recipe_id": 39 }
+				},
 				"options": { "availability": { "recipes": { "include": [] } } }
 			}
 		}
@@ -217,6 +221,7 @@
 				"selection": {
 					"recipe": {
 						"name": "桃花羹",
+						"recipe_id": 39,
 						"extra_ingredients": ["蜂蜜"]
 					}
 				},
@@ -238,6 +243,7 @@
 				"selection": {
 					"recipe": {
 						"name": "桃花羹",
+						"recipe_id": 39,
 						"extra_ingredients": ["蜂蜜"]
 					}
 				},

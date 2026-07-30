@@ -6,6 +6,7 @@ export function isMealRecipeEqual(
 ) {
 	return (
 		mealRecipe.name === targetRecipe.name &&
+		mealRecipe.recipeId === targetRecipe.recipeId &&
 		mealRecipe.extraIngredients.length ===
 			targetRecipe.extraIngredients.length &&
 		mealRecipe.extraIngredients.every(

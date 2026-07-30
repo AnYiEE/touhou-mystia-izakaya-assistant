@@ -13,9 +13,9 @@ import { UnknownItemIcon } from './resultCardAtoms';
 import SlidingSprite from './slidingSprite';
 
 interface IProps {
-	extraIngredients: TIngredientName[];
+	extraIngredients: ReadonlyArray<TIngredientName>;
 	onRemoveExtraIngredient: (ingredient: TIngredientName) => void;
-	originalIngredients: TIngredientName[];
+	originalIngredients: ReadonlyArray<TIngredientName>;
 }
 
 export default memo<IProps>(function CurrentMealIngredientsList({
@@ -23,7 +23,7 @@ export default memo<IProps>(function CurrentMealIngredientsList({
 	onRemoveExtraIngredient,
 	originalIngredients,
 }) {
-	const filledIngredients = toArray<Array<TIngredientName | null>>(
+	const filledIngredients = toArray<ReadonlyArray<TIngredientName | null>>(
 		originalIngredients,
 		extraIngredients,
 		new Array<null>(5).fill(null)

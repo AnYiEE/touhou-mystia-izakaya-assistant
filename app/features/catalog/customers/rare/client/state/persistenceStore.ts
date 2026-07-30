@@ -41,7 +41,7 @@ export const customerRarePersistenceStore = store(customerRareInitialState, {
 					persistence: currentStore.persistence,
 				} as typeof currentStore;
 			},
-			version: CUSTOMER_RARE_STORE_VERSION.availabilityDlcFilter,
+			version: CUSTOMER_RARE_STORE_VERSION.mealRecipeId,
 		}),
 	],
 })

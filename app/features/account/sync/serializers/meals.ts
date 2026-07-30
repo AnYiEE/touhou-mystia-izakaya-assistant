@@ -4,6 +4,8 @@ import { CustomerRare } from '@/domain/catalog/customers/CustomerRare';
 import { Beverage } from '@/domain/catalog/food/Beverage';
 import { Ingredient } from '@/domain/catalog/food/Ingredient';
 import { Recipe } from '@/domain/catalog/food/Recipe';
+import type { TIngredientName } from '@/domain/data/ingredients/types';
+import type { TRecipeName } from '@/domain/data/recipes/types';
 import type { IMealRecipe } from '@/domain/meals/types';
 
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
@@ -12,6 +14,7 @@ import {
 	checkSnapshotEqual,
 	createMergeResult,
 	createSerializerConflict,
+	hasExactKeys,
 	stableJson,
 } from './utils';
 
@@ -27,9 +30,15 @@ const customerRareNames = new Set<string>(
 	CustomerRare.getInstance().getNames()
 );
 const ingredientNames = new Set<string>(Ingredient.getInstance().getNames());
-const recipeNames = new Set<string>(Recipe.getInstance().getNames());
+const recipeInstance = Recipe.getInstance();
+const recipeNames = new Set<string>(recipeInstance.getNames());
 
 export type TMealSnapshot<TMeal> = Partial<Record<string, TMeal[]>>;
+
+export interface IMealRecipeV1 {
+	extraIngredients: TIngredientName[];
+	name: TRecipeName;
+}
 
 function getCustomerNamesForType(customerType: 'normal' | 'rare') {
 	return customerType === 'normal' ? customerNormalNames : customerRareNames;
@@ -60,9 +69,10 @@ function sanitizeMealSnapshot<TMeal>(
 	);
 }
 
-export function validateMealRecipe(data: unknown): data is IMealRecipe {
+export function validateMealRecipeV1(data: unknown): data is IMealRecipeV1 {
 	return (
 		isObjectTagRecord(data) &&
+		hasExactKeys(data, ['extraIngredients', 'name']) &&
 		typeof data['name'] === 'string' &&
 		recipeNames.has(data['name']) &&
 		Array.isArray(data['extraIngredients']) &&
@@ -74,8 +84,24 @@ export function validateMealRecipe(data: unknown): data is IMealRecipe {
 	);
 }
 
+export function validateMealRecipe(data: unknown): data is IMealRecipe {
+	return recipeInstance.isMealRecipe(data);
+}
+
+export function migrateMealRecipeV1(data: IMealRecipeV1): IMealRecipe {
+	return {
+		extraIngredients: [...data.extraIngredients],
+		name: data.name,
+		recipeId: recipeInstance.getDefaultRecipeVariant(data.name).id,
+	};
+}
+
 export function normalizeMealRecipe(data: IMealRecipe): IMealRecipe {
-	return { extraIngredients: [...data.extraIngredients], name: data.name };
+	return {
+		extraIngredients: [...data.extraIngredients],
+		name: data.name,
+		recipeId: data.recipeId,
+	};
 }
 
 export function validateMealSnapshot<TMeal>(

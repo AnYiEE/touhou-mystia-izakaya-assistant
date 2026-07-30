@@ -22,6 +22,7 @@ import {
 	checkSupportedSyncSchemaVersion,
 } from './constants';
 import { parseClientSyncGeneration } from './protocol';
+import { validateMealRecipeV1 as checkMealRecipeV1 } from './serializers/meals';
 import {
 	checkBeverageTag,
 	checkPopularTag,
@@ -46,7 +47,8 @@ const customerRareNames = new Set<string>(
 	CustomerRare.getInstance().getNames()
 );
 const ingredientNames = new Set<string>(Ingredient.getInstance().getNames());
-const recipeNames = new Set<string>(Recipe.getInstance().getNames());
+const recipeInstance = Recipe.getInstance();
+const recipeNames = new Set<string>(recipeInstance.getNames());
 const dlcKeys = new Set<string>(Object.keys(DLC_LABEL_MAP));
 const beverageColumnKeys = new Set([
 	'beverage',
@@ -88,22 +90,14 @@ const legacyCustomerRarePlanKeys = customerRarePlanKeys.filter(
 	(key) => key !== 'customerSort'
 );
 
-function validateMealRecipe(data: unknown) {
-	return (
-		isObjectTagRecord(data) &&
-		hasExactKeys(data, ['extraIngredients', 'name']) &&
-		typeof data['name'] === 'string' &&
-		recipeNames.has(data['name']) &&
-		Array.isArray(data['extraIngredients']) &&
-		data['extraIngredients'].every(
-			(ingredient) =>
-				typeof ingredient === 'string' &&
-				ingredientNames.has(ingredient)
-		)
-	);
+function validateMealRecipeV2(data: unknown) {
+	return recipeInstance.isMealRecipe(data);
 }
 
-function validateCustomerNormalMeal(data: unknown) {
+function validateCustomerNormalMeal(
+	data: unknown,
+	validateMealRecipe: (recipe: unknown) => boolean
+) {
 	return (
 		isObjectTagRecord(data) &&
 		hasExactKeys(data, ['beverage', 'recipe']) &&
@@ -114,7 +108,10 @@ function validateCustomerNormalMeal(data: unknown) {
 	);
 }
 
-function validateCustomerRareMeal(data: unknown) {
+function validateCustomerRareMeal(
+	data: unknown,
+	validateMealRecipe: (recipe: unknown) => boolean
+) {
 	return (
 		isObjectTagRecord(data) &&
 		hasExactKeys(data, [
@@ -154,17 +151,38 @@ function validateMealSnapshot(
 	);
 }
 
-export function validateCustomerNormalMealsData(data: unknown) {
+export function validateCustomerNormalMealsData(
+	data: unknown,
+	schemaVersion: number = SYNC_SCHEMA_VERSION_MAP[
+		SYNC_NAMESPACE_MAP.customerNormalMeals
+	]
+) {
+	if (schemaVersion !== 1 && schemaVersion !== 2) {
+		return false;
+	}
+	const validateRecipe =
+		schemaVersion === 1 ? checkMealRecipeV1 : validateMealRecipeV2;
 	return validateMealSnapshot(data, {
 		customerNames: customerNormalNames,
-		validateMeal: validateCustomerNormalMeal,
+		validateMeal: (meal) =>
+			validateCustomerNormalMeal(meal, validateRecipe),
 	});
 }
 
-export function validateCustomerRareMealsData(data: unknown) {
+export function validateCustomerRareMealsData(
+	data: unknown,
+	schemaVersion: number = SYNC_SCHEMA_VERSION_MAP[
+		SYNC_NAMESPACE_MAP.customerRareMeals
+	]
+) {
+	if (schemaVersion !== 1 && schemaVersion !== 2) {
+		return false;
+	}
+	const validateRecipe =
+		schemaVersion === 1 ? checkMealRecipeV1 : validateMealRecipeV2;
 	return validateMealSnapshot(data, {
 		customerNames: customerRareNames,
-		validateMeal: validateCustomerRareMeal,
+		validateMeal: (meal) => validateCustomerRareMeal(meal, validateRecipe),
 	});
 }
 
@@ -331,10 +349,16 @@ function validateGlobalPreferences(data: unknown) {
 
 export function validateSyncStateData(change: ISyncStateChange) {
 	if (change.namespace === SYNC_NAMESPACE_MAP.customerNormalMeals) {
-		return validateCustomerNormalMealsData(change.data);
+		return validateCustomerNormalMealsData(
+			change.data,
+			change.schema_version
+		);
 	}
 	if (change.namespace === SYNC_NAMESPACE_MAP.customerRareMeals) {
-		return validateCustomerRareMealsData(change.data);
+		return validateCustomerRareMealsData(
+			change.data,
+			change.schema_version
+		);
 	}
 	if (change.namespace === SYNC_NAMESPACE_MAP.customerRarePlans) {
 		return validateCustomerRarePlansData(change.data, {

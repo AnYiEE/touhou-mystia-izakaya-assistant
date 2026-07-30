@@ -196,6 +196,7 @@ const changelog = [
 			'新增：资料页和全局Spotlight搜索支持分别按“内容归属”和“可获取于”筛选。',
 		],
 	},
+	{ version: 'v2.7', changes: ['新增：料理支持多套食谱。'] },
 ] as const satisfies Array<{
 	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;

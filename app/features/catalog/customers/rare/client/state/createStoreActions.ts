@@ -2,7 +2,6 @@ import { type State } from '@davstack/store';
 import { type Selection } from '@heroui/table';
 import { type Key } from 'react';
 
-import type { TRecipe } from '@/domain/catalog/food/types';
 import type { TBeverageName } from '@/domain/data/beverages/types';
 import type { TCustomerRareName } from '@/domain/data/customers/rare/types';
 import type { TIngredientName } from '@/domain/data/ingredients/types';
@@ -143,17 +142,19 @@ export const createCustomerRareStoreActions = (
 
 	onIngredientSelectedChange(ingredientName: TIngredientName) {
 		const recipeData = currentStore.shared.recipe.data.get();
-		let recipe: TRecipe | null = null;
-		if (recipeData !== null) {
-			recipe = instance_recipe.getPropsByName(recipeData.name);
-		}
-		if (recipe === null) {
+		if (recipeData === null) {
 			return;
 		}
+		const recipeVariant = instance_recipe.getRecipeVariantById(
+			recipeData.name,
+			recipeData.recipeId
+		);
 		currentStore.shared.recipe.data.set((prev) => {
 			if (
 				prev !== null &&
-				recipe.ingredients.length + prev.extraIngredients.length < 5
+				recipeVariant.ingredients.length +
+					prev.extraIngredients.length <
+					5
 			) {
 				prev.extraIngredients.push(ingredientName);
 			}
@@ -161,10 +162,11 @@ export const createCustomerRareStoreActions = (
 		trackEvent(trackEvent.category.select, 'Ingredient', ingredientName);
 	},
 
-	onRecipeTableAction(recipeName: TRecipeName) {
+	onRecipeTableAction(recipeName: TRecipeName, recipeId: number) {
 		currentStore.shared.recipe.data.set({
 			extraIngredients: [],
 			name: recipeName,
+			recipeId,
 		});
 		trackEvent(trackEvent.category.select, 'Recipe', recipeName);
 	},
@@ -233,10 +235,10 @@ export const createCustomerRareStoreActions = (
 			recipeData === null
 				? []
 				: [
-						...instance_recipe.getPropsByName(
+						...instance_recipe.getRecipeVariantById(
 							recipeData.name,
-							'ingredients'
-						),
+							recipeData.recipeId
+						).ingredients,
 						...recipeData.extraIngredients,
 					];
 		const recipeTagsWithTrend =
@@ -278,7 +280,7 @@ export const createCustomerRareStoreActions = (
 		) {
 			return;
 		}
-		const { extraIngredients, name: recipeName } = recipeData;
+		const { extraIngredients, name: recipeName, recipeId } = recipeData;
 		const customerOrder = currentStore.shared.customer.order.get();
 		const hasMystiaCooker =
 			currentStore.shared.customer.hasMystiaCooker.get();
@@ -290,7 +292,7 @@ export const createCustomerRareStoreActions = (
 				hasMystiaCooker && !isDarkMatter
 					? { beverageTag: null, recipeTag: null }
 					: customerOrder,
-			recipe: { extraIngredients, name: recipeName },
+			recipe: { extraIngredients, name: recipeName, recipeId },
 		} as const;
 		currentStore.persistence.meals.set((prev) => {
 			(prev[customerName] ??= []).push(saveObject);
@@ -362,9 +364,12 @@ export const createCustomerRareStoreActions = (
 		if (recipeData === null) {
 			currentStore.shared.recipe.tagsWithTrend.set([]);
 		} else {
-			const { extraIngredients, name } = recipeData;
-			const { ingredients, positiveTags } =
-				instance_recipe.getPropsByName(name);
+			const { extraIngredients, name, recipeId } = recipeData;
+			const { positiveTags } = instance_recipe.getPropsByName(name);
+			const { ingredients } = instance_recipe.getRecipeVariantById(
+				name,
+				recipeId
+			);
 			const extraTags = extraIngredients.flatMap((extraIngredient) =>
 				instance_ingredient.getPropsByName(extraIngredient, 'tags')
 			);

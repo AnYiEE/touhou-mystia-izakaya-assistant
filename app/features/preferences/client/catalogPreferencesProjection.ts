@@ -30,10 +30,12 @@ function checkRecipeDataHasHiddenBaseIngredient(
 ) {
 	try {
 		return recipeInstance
-			.getPropsByName(recipeData.name, 'ingredients')
-			.some((ingredientName) => hiddenIngredients.has(ingredientName));
+			.resolveMealRecipe(recipeData)
+			.baseIngredients.some((ingredientName) =>
+				hiddenIngredients.has(ingredientName)
+			);
 	} catch {
-		return false;
+		return true;
 	}
 }
 

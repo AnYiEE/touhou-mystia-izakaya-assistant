@@ -27,7 +27,7 @@ export const customerNormalStore = store(customerNormalInitialState, {
 		}),
 		createPersistMiddleware<typeof customerNormalInitialState>({
 			name: storeName,
-			version: CUSTOMER_NORMAL_STORE_VERSION.availabilityDlcFilter,
+			version: CUSTOMER_NORMAL_STORE_VERSION.mealRecipeId,
 
 			migrate: migrateCustomerNormalPersistedState,
 			partialize(currentStore) {

@@ -236,10 +236,9 @@ export default function SavedMealCard() {
 												isDarkMatter ||
 												!hasMystiaCooker;
 											const originalCooker =
-												instance_recipe.getPropsByName(
-													recipeData.name,
-													'cooker'
-												);
+												instance_recipe.resolveMealRecipe(
+													recipeData
+												).cooker;
 											const cooker =
 												isDarkMatterOrNormalMeal
 													? originalCooker
@@ -418,10 +417,11 @@ export default function SavedMealCard() {
 											onOpenIngredient={(name) => {
 												openWindow('ingredients', name);
 											}}
-											originalIngredients={instance_recipe.getPropsByName(
-												recipeData.name,
-												'ingredients'
-											)}
+											originalIngredients={
+												instance_recipe.resolveMealRecipe(
+													recipeData
+												).baseIngredients
+											}
 										/>
 									</div>
 									<SavedMealActionRail

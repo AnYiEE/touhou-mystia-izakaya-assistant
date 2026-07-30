@@ -64,20 +64,41 @@ export default function RecipesCatalogPage() {
 
 	const dataWithTrend = useMemo(
 		() =>
-			instance.data.map((data) => ({
-				...data,
-				positiveTags: instance.calculateTagsWithTrend(
-					instance.composeTagsWithPopularTrend(
-						data.ingredients,
-						[],
-						data.positiveTags,
-						[],
-						null
+			instance.data.map((data) => {
+				const calculateVariant = (
+					variant: (typeof data.recipes)[number]
+				) => ({
+					...variant,
+					positiveTags: instance.calculateTagsWithTrend(
+						instance.composeTagsWithPopularTrend(
+							variant.ingredients,
+							[],
+							data.positiveTags,
+							[],
+							currentPopularTrend
+						),
+						currentPopularTrend,
+						isFamousShop
 					),
-					currentPopularTrend,
-					isFamousShop
-				),
-			})) as unknown as typeof instance.data,
+				});
+				const recipes: [
+					ReturnType<typeof calculateVariant>,
+					...Array<ReturnType<typeof calculateVariant>>,
+				] = [
+					calculateVariant(data.recipes[0]),
+					...data.recipes.slice(1).map(calculateVariant),
+				];
+
+				return {
+					...data,
+					positiveTags: [
+						...new Set(
+							recipes.flatMap(({ positiveTags }) => positiveTags)
+						),
+					],
+					recipes,
+				};
+			}),
 		[currentPopularTrend, instance, isFamousShop]
 	);
 
