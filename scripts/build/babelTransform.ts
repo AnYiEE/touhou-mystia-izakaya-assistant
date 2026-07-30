@@ -14,7 +14,7 @@ function logError(filePath: string, error: unknown) {
 }
 
 function normalizePath(filePath: string) {
-	return filePath.replace('\\', '/');
+	return filePath.replace(/\\/gu, '/');
 }
 
 function isNextStaticScript(filePath: string) {
