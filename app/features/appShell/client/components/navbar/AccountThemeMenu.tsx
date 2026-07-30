@@ -1,0 +1,148 @@
+import { faChevronDown, faUser } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { NavbarItem } from '@heroui/navbar';
+import { cn } from '@heroui/theme';
+import { type Key } from 'react';
+
+import Button from '@/design/ui/components/button';
+import Dropdown, {
+	DropdownItem,
+	DropdownMenu,
+	DropdownSection,
+	DropdownTrigger,
+} from '@/design/ui/components/dropdown';
+
+import { NAVBAR_THEME_ITEMS } from './themeItems';
+
+const ACCOUNT_ACTION_MENU_ITEM_CLASS_NAME =
+	'flex min-w-0 items-center gap-1 py-0.5 text-small';
+
+const ACCOUNT_ACTION_MENU_SECTION_CLASS_NAMES = {
+	base: 'mb-0',
+	divider: 'mx-1 my-1 bg-default-200/70',
+	group: 'space-y-1',
+	heading:
+		'block px-2 pb-0.5 pt-2.5 text-tiny font-medium uppercase text-default-500',
+};
+
+interface IProps {
+	accountActionLabel: string;
+	accountMenuDisabledKeys: ReadonlyArray<string>;
+	accountSyncPauseLabel: string | null;
+	isAccountSyncPaused: boolean;
+	isHighAppearance: boolean;
+	onAction: (key: Key) => void;
+	onOpenChange: (isOpen: boolean) => void;
+	selectedThemeKeys: ReadonlyArray<string>;
+}
+
+export default function AccountThemeMenu({
+	accountActionLabel,
+	accountMenuDisabledKeys,
+	accountSyncPauseLabel,
+	isAccountSyncPaused,
+	isHighAppearance,
+	onAction,
+	onOpenChange,
+	selectedThemeKeys,
+}: IProps) {
+	const menu = (
+		<DropdownMenu
+			disabledKeys={accountMenuDisabledKeys}
+			disallowEmptySelection
+			onAction={onAction}
+			selectedKeys={selectedThemeKeys}
+			selectionMode="single"
+			aria-label="账号和主题"
+			itemClasses={{
+				base: 'my-px transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
+			}}
+		>
+			<DropdownSection
+				title={
+					/* HeroUI intersects its collection title with the DOM title string. */
+					(
+						<span className="inline-flex w-full items-center justify-between gap-2">
+							<span>账号</span>
+							{accountSyncPauseLabel !== null && (
+								<span className="rounded-full bg-warning/15 px-1.5 py-0.5 text-[10px] font-normal leading-none text-warning-700 dark:text-warning">
+									{accountSyncPauseLabel}
+								</span>
+							)}
+						</span>
+					) as unknown as string
+				}
+				hideSelectedIcon
+				showDivider
+				classNames={ACCOUNT_ACTION_MENU_SECTION_CLASS_NAMES}
+			>
+				<DropdownItem key="account" textValue={accountActionLabel}>
+					<div className={ACCOUNT_ACTION_MENU_ITEM_CLASS_NAME}>
+						<FontAwesomeIcon
+							icon={faUser}
+							className="w-4 shrink-0"
+						/>
+						<span className="min-w-0 truncate">
+							{accountActionLabel}
+						</span>
+					</div>
+				</DropdownItem>
+			</DropdownSection>
+			<DropdownSection
+				title="主题"
+				classNames={ACCOUNT_ACTION_MENU_SECTION_CLASS_NAMES}
+			>
+				{NAVBAR_THEME_ITEMS.map(({ icon, key, label }) => (
+					<DropdownItem key={key} textValue={label}>
+						<div className={ACCOUNT_ACTION_MENU_ITEM_CLASS_NAME}>
+							<FontAwesomeIcon icon={icon} className="w-4" />
+							{label}
+						</div>
+					</DropdownItem>
+				))}
+			</DropdownSection>
+		</DropdownMenu>
+	);
+
+	return (
+		<NavbarItem>
+			<Dropdown
+				shouldCloseOnScroll
+				onOpenChange={onOpenChange}
+				classNames={{
+					content: cn('m-1 min-w-36 max-w-36 p-1', {
+						'bg-background/70 backdrop-saturate-150':
+							isHighAppearance,
+					}),
+				}}
+			>
+				<DropdownTrigger>
+					<Button
+						size="sm"
+						variant="light"
+						aria-label="账号和主题"
+						title="账号和主题"
+						className="gap-1 text-base"
+					>
+						<FontAwesomeIcon icon={faUser} className="w-3.5" />
+						<span className="relative mr-1">
+							账号
+							{isAccountSyncPaused && (
+								<span
+									aria-hidden="true"
+									className="absolute -right-2 top-0 h-2 w-2 rounded-full bg-warning"
+								/>
+							)}
+						</span>
+						<FontAwesomeIcon
+							icon={faChevronDown}
+							size="sm"
+							className="w-3 opacity-70"
+						/>
+					</Button>
+				</DropdownTrigger>
+				{menu}
+			</Dropdown>
+		</NavbarItem>
+	);
+}

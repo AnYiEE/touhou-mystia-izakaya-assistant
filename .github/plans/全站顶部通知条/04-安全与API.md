@@ -60,17 +60,17 @@
 
 通知系统以共享领域服务为事实来源，API routes 做薄适配：
 
-- payload parser、业务校验、HTML 净化、等级、受众、关闭策略、关闭同步、排序、归档、版本历史和 DTO 转换放在 `app/lib/announcements/server/*`。
+- payload parser、业务校验、HTML 净化、等级、受众、关闭策略、关闭同步、排序、归档、版本历史和 DTO 转换放在 `app/features/announcements/server/**`。
 - API routes 只负责 HTTP guard、body 读取、调用同一服务、映射 no-store JSON 响应。
 - 不在 `app/api` 目录放可被页面反向导入的 helper/re-export 空壳。
 
-页面渲染和公开 API 必须复用同一个 `getVisibleAnnouncementsForRequestContext` 之类的 service。这个 service 统一处理：运行时边界、可选用户 session、受众过滤、cookie 关闭 token、数据库关闭记录、排序、数量限制和 sanitizer。`AnnouncementBar` 负责把 DTO 渲染成 HTML，`GET /api/v1/announcements` 负责把同一个 DTO 序列化为 JSON。
+页面渲染和公开 API 复用 `app/features/announcements/server/public/service.ts` 的 `getVisibleAnnouncementsForRequestContext()`。这个 service 统一处理受众过滤、cookie 关闭 token、数据库关闭记录、排序、数量限制、模板渲染和 sanitizer；运行时门禁分别由服务器组件和 route 在动态加载 service 前完成。`AnnouncementBar` 负责把 DTO 交给首屏宿主，`GET /api/v1/announcements` 负责把同一个 DTO 序列化为 JSON。
 
-已落地的运行时加载边界：后台公告 API routes 和公开公告关闭 route 均先执行对应 guard、body/payload 校验，再动态加载 `app/lib/announcements/server/service.ts`。这样未通过鉴权、同源、CSRF 或限流的请求不会提前拉起公告 service 及其 DB/净化/历史记录依赖链。
+已落地的运行时加载边界：后台公告 API routes 先执行 `app/features/announcements/server/admin/http/requestGuard.ts` 和 payload 校验，再动态加载后台 service；公开公告 route 先执行账号 guards/body 校验，再动态加载 `app/features/announcements/server/public/service.ts`。未通过鉴权、同源、CSRF 或限流的请求不会提前拉起公告 service 及其数据库依赖链。
 
 ## 站内后台调用链
 
-当前站内后台页面使用 `app/(pages)/admin/api.ts` 调用受保护 API，而不是公告 Server Actions。`app/(pages)/admin/announcements/server.ts` 只提供后台页面初始鉴权数据；创建、更新、归档、恢复、预览、清理和版本读取都由后台 API routes 承接。公开页面关闭通知通过 `/api/v1/announcements` 写请求同步已登录用户的关闭记录，匿名用户只保留 cookie。
+当前 `app/(pages)/admin/announcements/**` 页面只委托给 `app/features/announcements/admin/server/**` 的 PageContent；浏览器调用集中在 `app/features/announcements/admin/client/api.ts`，初始鉴权与数据读取集中在 `app/features/announcements/admin/server/initialData/**`。创建、更新、归档、恢复、预览、清理和版本读取都由后台 API routes 承接。公开页面关闭通知通过 `/api/v1/announcements` 写请求同步已登录用户的关闭记录，匿名用户只保留 cookie。
 
 ## 后台 API
 
@@ -82,7 +82,7 @@
 - 读取类请求也要做 same-origin、cookie security、rate limit、admin session。
 - 修改类请求必须要求 CSRF。
 
-鉴权顺序参考 `app/lib/account/server/adminRouteResponses.ts` 与 `app/lib/account/server/routeResponses.ts`：
+鉴权组合以 `app/features/announcements/server/admin/http/requestGuard.ts` 为当前权威；底层分别来自 `app/features/account/admin/server/http/**` 和 `app/features/account/server/http/**`：
 
 1. `checkAccountFeatureRouteResponse()`。
 2. `checkAdminFeatureRouteResponse()`。
@@ -109,14 +109,14 @@
 
 ## 站内客户端调用
 
-当前站内后台页面通过 `app/(pages)/admin/api.ts` 的相邻浏览器客户端调用 API；该模块沿用现有后台 API 客户端模式：
+当前站内后台页面通过 `app/features/announcements/admin/client/api.ts` 调用 API；该模块复用 `app/features/admin/client/api.ts` 的会话和响应处理：
 
 - `cache: 'no-store'`。
 - `credentials: 'same-origin'`。
 - 统一读取 `{ status: 'ok', data }` / `{ status: 'error', message }`。
 - 管理员 session 失效时沿用现有 `checkAdminSessionUnauthorized` / `clearAdminSession` 处理。
 
-通知后台 fetch helper 继续留在 `app/(pages)/admin/api.ts`，不并入 `app/lib/account/client/api.ts`。
+通知后台 fetch helper 留在 announcements admin client owner，不并入 account client API。
 
 ## 公开 API
 

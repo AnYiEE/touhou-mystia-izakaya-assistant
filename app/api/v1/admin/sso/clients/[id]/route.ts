@@ -1,13 +1,14 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
-import { getRequestAuditContext } from '@/lib/account/server/request';
-import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
+import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
+import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
+
+import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	readJsonBodyResult,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,17 +18,15 @@ export async function GET(
 	{ params }: { params: Promise<{ id: string }> }
 ) {
 	const { id } = await params;
-	const check = await checkAdminSsoClientRequest(
-		request,
-		'admin-sso-client-detail',
-		{ parts: [{ name: 'client', value: id }] }
-	);
+	const check = await checkAdminRequest(request, 'admin-sso-client-detail', {
+		parts: [{ name: 'client', value: id }],
+	});
 	if (check.status === 'error') {
 		return check.response;
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoClientService');
+		await import('@/features/account/sso/admin/server/services/clientService');
 	const result = await serviceModule.getAdminSsoClient(id);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
@@ -46,11 +45,10 @@ export async function PUT(
 	{ params }: { params: Promise<{ id: string }> }
 ) {
 	const { id } = await params;
-	const check = await checkAdminSsoClientRequest(
-		request,
-		'admin-update-sso-client',
-		{ csrf: true, parts: [{ name: 'client', value: id }] }
-	);
+	const check = await checkAdminRequest(request, 'admin-update-sso-client', {
+		csrf: true,
+		parts: [{ name: 'client', value: id }],
+	});
 	if (check.status === 'error') {
 		return check.response;
 	}
@@ -63,7 +61,7 @@ export async function PUT(
 		return createNoStoreErrorResponse('payload-too-large', 413);
 	}
 	const payloadModule =
-		await import('@/lib/account/server/adminSsoClientPayload');
+		await import('@/features/account/sso/admin/server/http/clientPayload');
 	const body = payloadModule.parseAdminSsoClientUpdateBody(
 		bodyResult.status === 'ok' ? bodyResult.data : null
 	);
@@ -72,7 +70,7 @@ export async function PUT(
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoClientService');
+		await import('@/features/account/sso/admin/server/services/clientService');
 	const result = await serviceModule.updateAdminSsoClient(id, body, {
 		adminId: check.auth.actorId,
 		...getRequestAuditContext(request),
@@ -94,17 +92,16 @@ export async function DELETE(
 	{ params }: { params: Promise<{ id: string }> }
 ) {
 	const { id } = await params;
-	const check = await checkAdminSsoClientRequest(
-		request,
-		'admin-delete-sso-client',
-		{ csrf: true, parts: [{ name: 'client', value: id }] }
-	);
+	const check = await checkAdminRequest(request, 'admin-delete-sso-client', {
+		csrf: true,
+		parts: [{ name: 'client', value: id }],
+	});
 	if (check.status === 'error') {
 		return check.response;
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoClientService');
+		await import('@/features/account/sso/admin/server/services/clientService');
 	const result = await serviceModule.deleteAdminSsoClient(id, {
 		adminId: check.auth.actorId,
 		...getRequestAuditContext(request),

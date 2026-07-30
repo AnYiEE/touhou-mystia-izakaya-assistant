@@ -1,13 +1,14 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
-import { getRequestAuditContext } from '@/lib/account/server/request';
-import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
+import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
+import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
+
+import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	readJsonBodyResult,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -47,7 +48,7 @@ export async function PATCH(
 	{ params }: { params: Promise<{ id: string; secretId: string }> }
 ) {
 	const { id, secretId } = await params;
-	const check = await checkAdminSsoClientRequest(
+	const check = await checkAdminRequest(
 		request,
 		'admin-update-sso-client-secret',
 		{
@@ -77,7 +78,7 @@ export async function PATCH(
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoClientSecretService');
+		await import('@/features/account/sso/admin/server/services/clientSecretService');
 	const result = await serviceModule.updateAdminSsoClientSecret(
 		id,
 		secretId,
@@ -104,7 +105,7 @@ export async function DELETE(
 	{ params }: { params: Promise<{ id: string; secretId: string }> }
 ) {
 	const { id, secretId } = await params;
-	const check = await checkAdminSsoClientRequest(
+	const check = await checkAdminRequest(
 		request,
 		'admin-revoke-sso-client-secret',
 		{
@@ -120,7 +121,7 @@ export async function DELETE(
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoClientSecretService');
+		await import('@/features/account/sso/admin/server/services/clientSecretService');
 	const result = await serviceModule.revokeAdminSsoClientSecret(
 		id,
 		secretId,

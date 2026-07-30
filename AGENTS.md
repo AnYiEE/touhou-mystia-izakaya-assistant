@@ -74,17 +74,17 @@ The root layout reads account state on the server and passes it through dedicate
 
 ### Local recommendation bridge
 
-The V1 recommendation bridge under `app/lib/recommendations/bridge/` connects an authenticated launch tab to the game Mod's local WSS server. Recommendations stay local and use the production recommendation utilities. It has no site API, visible UI, durable state, or cross-tab handoff; ordinary, static-export, and offline tabs do not connect.
+The V1 recommendation bridge under `app/features/recommendations/client/bridge/` connects an authenticated launch tab to the game Mod's local WSS server. Recommendations stay local and use the production recommendation utilities. It has no site API, visible UI, durable state, or cross-tab handoff; ordinary, static-export, and offline tabs do not connect.
 
 `instrumentation-client.ts` synchronously imports `launchDescriptor.ts` so its endpoint and pairing secret are captured and removed before URL canonicalization, hydration, analytics, and account initialization. Keep the descriptor out of durable/shared storage and logs. Same-origin full-page account transitions use the existing continuation helper; third-party SSO redirects do not carry it.
 
-`startRecommendationBridgeClient()` remains in the global account feature-client lifecycle, which jointly owns connection generation, scheduling, cancellation, reconnects, and the account gate. The offline feature client's bridge-specific behavior is to discard the descriptor without starting the bridge.
+`app/providers.tsx` starts the account and recommendation clients as separate global lifecycles and passes the read-only account gate into `startRecommendationClient()`. The recommendation client owns the bridge connection generation, scheduling, cancellation and reconnects; the account client owns account state and only exposes the gate contract. The offline recommendation client discards the descriptor without starting the bridge.
 
 Keep V1 parsing, validation, adaptation, and serialization under `bridge/v1/`; add future protocol versions alongside it. Launch descriptors accept only WSS endpoints with an explicit port; do not add an environment-based WS fallback.
 
 ### Existing UI and window coordination
 
-Use the wrappers in `app/design/ui/components` and the global overlay coordinator in `app/lib/overlayCoordinator`. The coordinator owns global overlay scheduling, stacking, shortcuts, backdrop, and inert behavior; `app/components/overlayCoordinatorHost.tsx` prepares blocking state.
+Use the wrappers in `app/design/ui/components`; business modals compose them through `app/features/overlays/client/CoordinatedModal.tsx`. The global overlay coordinator under `app/features/overlays/` owns scheduling, stacking, shortcuts, backdrop, and inert behavior; `app/features/overlays/client/OverlayCoordinatorHost.tsx` prepares blocking state.
 
 Prefer a project wrapper when one exists; otherwise follow neighboring HeroUI usage. Register global overlays in `OVERLAY_DEFINITION_MAP` and use coordinator ownership APIs. Keep `#modal-portal-container` inside `<main>` in `app/layout.tsx`.
 
@@ -114,7 +114,7 @@ Cross-tab behavior must work while several tabs remain visible; visibility chang
 
 ### Sync merge and migration policy
 
-Each account sync namespace has a serializer under `app/lib/account/sync/serializers` that owns client defaults, snapshots, validation, migration, serialization, and merge policy. Server request and backup validation remain aligned in `app/lib/account/sync/validation.ts`. `merged !== null` does not override `requiresConfirmation`.
+Each account sync namespace has a serializer under `app/features/account/sync/serializers` that owns client defaults, snapshots, validation, migration, serialization, and merge policy. Server request and backup validation remain aligned in `app/features/account/sync/validation.ts`. `merged !== null` does not override `requiresConfirmation`.
 
 Automatic conflict resolution is allowed only when the shared merge predicate permits it. A failed or stale attempt retains the evidence needed for manual resolution.
 
@@ -122,11 +122,11 @@ A namespace or schema-version change must preserve existing local, queued, confl
 
 ### Domain data and queries
 
-Raw game records and types come from `app/data/index.ts`; processed domain singletons and reusable query logic come from `app/utils/`. Use singleton APIs for application queries because they include derived data absent from raw records. Recommendation adapters call `suggestMeals` and existing evaluation helpers instead of reimplementing their rules.
+Raw game schemas, records and record-derived literal types live under `app/domain/data/**`; processed domain singletons and reusable queries live under their `app/domain/catalog/**`, `app/domain/evaluation/**`, `app/domain/meals/**` and other semantic owners. Use singleton APIs for application queries because they include derived data absent from raw records. Recommendation adapters call `suggestMeals` and existing evaluation helpers instead of reimplementing their rules.
 
 ### Recommendation cache versioning
 
-`app/lib/recommendations/persistentCache/constants.ts` owns the explicit recommendation cache versions. Any change that can alter recommendation candidates, ratings, ordering, diversity, availability interpretation, or request semantics must increment `RECOMMENDATION_ALGORITHM_VERSION` in the same patch. Equivalent refactors, performance-only optimizations, comments, and formatting do not increment it. Recommendation-relevant game data changes are covered automatically by the normalized data fingerprint and do not require an algorithm version change.
+`app/features/recommendations/client/cache/constants.ts` owns the explicit recommendation cache versions. Any change that can alter recommendation candidates, ratings, ordering, diversity, availability interpretation, or request semantics must increment `RECOMMENDATION_ALGORITHM_VERSION` in the same patch. Equivalent refactors, performance-only optimizations, comments, and formatting do not increment it. Recommendation-relevant game data changes are covered automatically by the normalized data fingerprint and do not require an algorithm version change.
 
 ### Database and deployment behavior
 
@@ -134,17 +134,25 @@ Server operations that validate state and update related rows use a Kysely trans
 
 Self-hosted `pnpm build` attempts to publish maintenance state through the configured SQLite database and atomically publishes a validated release under `.deploy/`. When verifying maintenance behavior, the build and verification runtime use the same writable development-only SQLite path. `pnpm start` launches the published release through `scripts/startSelfHosted.mjs`.
 
+External process managers may invoke `scripts/startSelfHosted.mjs` and other designated script entry points directly with plain `node`. Keep such entry points and their complete runtime import graph as JavaScript (`.mjs`/`.js`); do not convert them to TypeScript or require `tsx`, a custom loader, path aliases, or a precompile step.
+
 SQLite, uploads, backups, and environment files must use stable paths outside `.deploy/releases/`, shared by old and new processes. Defaults are project-root `sqlite.db` and `upload/`, with backups under `<UPLOAD_DIR>/backups/`; explicit persistence paths may be absolute locations elsewhere. This single-host SQLite design requires reliable local locking semantics.
 
 ### Browser compatibility
 
 `package.json#browserslist` is deliberate. Treat `eslint.config.mjs`, its declared polyfills, Next.js support, and enabled preference rules together as the code-level compatibility authority; add a workaround only for a demonstrated gap.
 
-Use `scripts/babelTransformFile.ts` for emitted-syntax transformations and the existing client instrumentation or polyfill layers for runtime APIs. Source-level compatibility must cover Turbopack as well as production builds; a Webpack-only mechanism is insufficient.
+Do not use `String.prototype.replaceAll`; Safari 12 does not support it and the application does not polyfill it. Use `String.prototype.replace` with a global regular expression, an allocation-aware loop, or an existing suitable helper. `eslint-plugin-compat` cannot infer every TypeScript receiver type and may miss calls such as `value.replaceAll(...)`, so the dedicated restricted-syntax rule is the enforcement authority for this API.
 
 ## Code conventions
 
 Apply these conventions to edited code while preserving established public contracts and neighboring style.
+
+### Existing capability reuse
+
+- Before adding or retaining a local implementation, inspect the whole project for an existing semantically equivalent capability. Reuse the correct owner, including domain queries, feature helpers/services, infrastructure adapters, design wrappers and shared utilities, instead of duplicating it.
+- Reuse must preserve dependency direction and ownership. Do not make a lower layer import a feature, turn a feature-specific policy into a generic helper, or add a forwarding facade merely to share code.
+- Do not mechanically replace allocation-sensitive loops or direct operations in rating, recommendation, catalog-query or other demonstrated hot paths. Keep a local implementation when reuse would add a `Set`, copy, intermediate collection, traversal, changed identity or short-circuit order; record the concrete performance reason during review.
 
 ### TypeScript and naming
 
@@ -157,17 +165,26 @@ Apply these conventions to edited code while preserving established public contr
 - Prefer literal unions and `as const satisfies Record<...>` over enums or widened objects.
 - Preserve exact optional-property semantics: missing, `undefined`, `null`, empty values, and domain defaults are not interchangeable. Parse external data as `unknown`, validate it, and avoid `any`, broad assertions, and non-null assertions unless a proven invariant cannot be expressed more safely.
 
-### Import grouping
+### Import ordering and type-only imports
 
-Blank lines define semantic import groups. Follow the neighboring order: React and general runtime libraries, Next.js and project hooks, raw UI/icon packages, project design components, feature modules, shared data/services/utilities, then side-effect styles. Preserve setup-dependent groups. ESLint does not require global declaration sorting.
-
-Preserve intentional semantic groups and do not reorder untouched imports.
+- Keep React, Next.js and other third-party binding imports together at the start of the import block.
+- Project-internal imports normally target the owning leaf instead of a broad re-export barrel. Keep an `index.ts` only when it deliberately defines a stable, curated package boundary; import such an entry through its directory path and never spell the trailing `/index`. Do not create an `index.ts` only to shorten paths or forward neighboring modules.
+- Group project-owned alias imports by their first owner segment, such as `@/design`, `@/domain`, `@/features`, `@/infrastructure` and `@/shared`. Order these owner groups A–Z, separate adjacent owner groups with one blank line, and sort every declaration within a group by its full module specifier in ascending A–Z order.
+- `#package-json` is the only root-project specifier. Treat it as a project-internal group after external imports and before `@/` owner groups; do not add other `#` specifiers or alias escapes.
+- Within `app/**`, use `./...` for a project-owned module in the importing file's directory or any descendant directory, such as `./customerCard` or `./components/customerCard`. Use the `@/...` alias when the target is outside that directory subtree; parent-relative `../...` imports are not allowed within `app/**`. Keep these local/descendant imports in a separate group after alias groups and sort them by full module specifier A–Z. Route aliases such as `@/(home)`, `@/(pages)` and `@/api` follow the same first-segment grouping rule. The only current exception is `app/design/theme/**`, which is loaded directly by external Prettier and editor Tailwind tooling while executing `tailwind.config.ts`. That subtree must not use the TypeScript `@/` alias; keep all of its project imports, including type-only imports, as ordinary resolvable relative paths. Do not extend this exception to `app/design/ui/**` or other application modules. Root configuration and `scripts/**` imports that cannot be represented by the app-only `@/` alias retain their resolvable relative paths.
+- Keep side-effect-only setup, polyfill and stylesheet imports in their required trailing or entry-point order. Do not mix them into binding-import sorting because their evaluation and CSS cascade order can be observable.
+- Sort named import specifiers A–Z by their local binding name (the name after `as`; without an alias, this is the imported name). Keep one import declaration per module specifier unless the JavaScript/TypeScript grammar requires separate declarations.
+- When the imported project module is runtime-free and exports only types, use declaration-level `import type { ... } from '...'`.
+- When the source module also exports runtime values, mark type-only named bindings inline, such as `import { runtimeValue, type TContract } from '...'`; when every named binding is type-only, use `import { type IContract, type TName } from '...'` rather than declaration-level `import type`.
+- Base this choice on the source module's actual runtime surface, not its filename. A `types.ts` or `contracts.ts` file may still be mixed, while another filename may be type-only.
+- Preserve declaration-level `import type` only where TypeScript syntax has no equivalent inline named-binding form, such as a type-only namespace import.
+- Import sorting is mechanical but does not authorize changing module initialization, CSS cascade, polyfill, or synchronous descriptor-capture behavior. If project-owned A–Z ordering exposes a real order dependency, make that dependency explicit in the owning module and verify it instead of restoring semantic subgroups.
 
 ## Configuration and secrets
 
 Use existing configuration and dependencies by default. If a new environment variable or dependency is materially required but not already implied by the user's request, obtain maintainer approval.
 
-Declare application environment variables in `app/types/environment.d.ts`; keep declarations, validation/defaults, and documentation aligned. Every value in `next.config.ts#env` is client-visible, so server secrets never belong there.
+Declare application environment variables in `app/declarations/environment.d.ts`; keep declarations, validation/defaults, and documentation aligned. Every value in `next.config.ts#env` is client-visible, so server secrets never belong there.
 
 `APP_SECRET` requires at least 32 UTF-8 bytes. Explicit `SQLITE_DATABASE_PATH` and `UPLOAD_DIR` values must be absolute. `TRUST_PROXY` is valid only behind a proxy that overwrites forwarded headers, and production account cookies require HTTPS unless the explicitly unsafe `ALLOW_INSECURE_COOKIES` override is enabled. `SKIP_LINT` is a production-only build escape hatch; offline builds manage their own skip mode.
 

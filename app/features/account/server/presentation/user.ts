@@ -1,0 +1,52 @@
+import { type TUserStatus, USER_STATUS_MAP } from '@/domain/account/contracts';
+
+import {
+	USERNAME_MAX_LENGTH,
+	checkUsernamePolicy as checkUsernamePolicyValue,
+} from '@/features/account/constants';
+import type { IAccountUserProfile } from '@/features/account/contracts';
+
+import type { TUser } from '@/infrastructure/database/schema';
+
+export {
+	checkNicknamePolicy,
+	checkUsernamePolicy,
+	normalizeNickname,
+} from '@/features/account/constants';
+
+export function normalizeUsername(username: string) {
+	return username.trim().toLowerCase();
+}
+
+export function createAutoAccountUsername(seed: string, attempt = 0) {
+	const prefix = 'user_';
+	const attemptSuffix = attempt === 0 ? '' : `_${attempt.toString(36)}`;
+	const suffix = seed
+		.replace(/[^a-z0-9]/giu, '')
+		.toLowerCase()
+		.slice(0, USERNAME_MAX_LENGTH - prefix.length - attemptSuffix.length);
+	const username = `${prefix}${suffix}${attemptSuffix}`;
+	if (!checkUsernamePolicyValue(username)) {
+		throw new Error('server-misconfigured');
+	}
+
+	return username;
+}
+
+export function checkUserStatus(value: string): value is TUserStatus {
+	return Object.values(USER_STATUS_MAP).includes(value as TUserStatus);
+}
+
+export function createAccountUserProfile(user: TUser): IAccountUserProfile {
+	return {
+		created_at: user.created_at,
+		id: user.id,
+		last_login_at: user.last_login_at,
+		nickname: user.nickname,
+		state_epoch: user.state_epoch,
+		status: user.status,
+		sync_generation: user.sync_generation,
+		sync_status: user.sync_status,
+		username: user.username,
+	};
+}

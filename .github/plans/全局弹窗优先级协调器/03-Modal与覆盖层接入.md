@@ -4,7 +4,7 @@
 
 ### 接入方式
 
-`app/design/ui/components/modal.tsx` 增加可选的协调配置：
+当前由 `app/features/overlays/client/CoordinatedModal.tsx` 在 `app/design/ui/components/modal.tsx` 的 `ModalPresentation` 外组合协调配置；基础视觉 Modal 不拥有业务协调策略：
 
 ```ts
 interface IModalCoordinationProps {
@@ -19,7 +19,7 @@ interface IModalProps {
 }
 ```
 
-基础 Modal 只负责：
+`CoordinatedModal` 只负责：
 
 1. 将业务 `isOpen` 与协调器的展示许可组合为实际 `isOpen`。
 2. 在必要时将打开/退出完成信号回报给协调器。
@@ -29,7 +29,7 @@ interface IModalProps {
 6. 默认由组件同步业务 `isOpen` 与协调 request；P0 使用 external ownership，组件只注册展示适配，mount/unmount 不得撤销业务 request。
 7. 组件所有模式下，如果一个此前未 requested 的新 P1 业务状态绕过入口变为 open，而协调请求被 P0/tutorial/其他任务拒绝，立即调用业务 close 回滚；已在栈中并被 P0 covered 的任务不回滚。
 
-基础 Modal 不负责：
+`CoordinatedModal` 不负责：
 
 - 自动猜测两个 Modal 的父子关系。
 - 根据 z-index 决定优先级。

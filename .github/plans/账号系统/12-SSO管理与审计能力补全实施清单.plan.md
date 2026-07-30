@@ -9,14 +9,16 @@ isProject: false
 > 日期：2026-06-17
 > 基准文档：[08-轻量SSO票据方案.plan.md](08-轻量SSO票据方案.plan.md)、[09-SSO外部服务接入文档.plan.md](09-SSO外部服务接入文档.plan.md)、[11-服务端渲染与ServerAction改造实施清单.plan.md](11-服务端渲染与ServerAction改造实施清单.plan.md)
 > 范围：SSO 授权关系、SSO client 管理、管理员用户详情、callback 队列、ticket 生命周期、secret 轮换、审计日志、外部 SSO 协议补强。
+>
+> 历史路径说明：本文的修改计划、任务清单和 2026-06-17 进度记录保留当时的 `app/lib/**`、`app/actions/**`、`app/(pages)/**` 客户端/服务端文件路径，用于还原实施来源，不代表当前 owner。现行实现由 `app/features/account/sso/**`、`app/features/account/admin/**`、`app/features/admin/**` 与 `app/infrastructure/database/**` 承担；`app/(pages)/admin/**/page.tsx` 只保留路由壳。
 
 ## 一、执行原则
 
 - 本计划按“全量补齐”执行，不因为改动大、跨层多、当前频率低或低优先级而跳过能力。
 - 不删除现有公开协议端点：`/api/v1/sso/authorize`、`/api/v1/sso/validate`、`/api/v1/sso/status`、`/api/v1/sso/dispatch-callbacks` 必须保持兼容。
-- 当前代码中，浏览器侧后台和 SSO 管理交互通过 `app/(pages)/admin/api.ts` 调用 `/api/v1/admin/*` API；页面 SSR 首载通过 server helper 直接读服务端 service/repository，不通过浏览器 API。
+- 当前代码中，普通后台浏览器交互通过 `app/features/admin/client/api.ts`，SSO 管理交互通过 `app/features/account/sso/admin/client/api/*` 调用 `/api/v1/admin/*` API；页面 SSR 首载通过 feature-owned server initial-data helper 直接读 service/repository，不通过浏览器 API。
 - 新增管理能力必须先落在稳定 API route、浏览器 API helper 和共享 service 上；SSR 首载只复用同一 service 读初始数据，不新增只有 Server Action 才能访问的能力。
-- `app/actions/*` 当前是普通服务端工具模块，不是浏览器可直接调用的 Next Server Actions；若后续另行引入真正 Server Action，必须显式标注并复用同一 service/guard，不替代 API 契约。
+- 当前源码没有账号或后台 Next Server Action；历史 `app/actions/*` 是当时的普通服务端工具路径。若后续另行引入真正 Server Action，必须显式标注并复用同一 service/guard，不替代 API 契约。
 - 管理端新增能力优先复用既有账号系统安全语义：账号功能门禁、管理员开关、cookie security、same-origin、rate limit、管理员 session、CSRF。
 - 所有 secret、ticket、签名材料只展示安全摘要或元数据，不在日志、URL、审计详情、页面 props 中写入明文。
 - 当前态表和历史表分离：当前授权、当前 secret、当前 callback queue 用于运行时判断；审计和历史表用于回溯，不反向影响协议判断。

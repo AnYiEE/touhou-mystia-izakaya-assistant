@@ -1,10 +1,13 @@
 import { type Metadata } from 'next';
 
-import { siteConfig } from '@/configs';
-import { getPageTitle, toArray } from '@/utilities';
-import { Currency } from '@/utils';
+import { Currency } from '@/domain/catalog/items/Currency';
 
-const { description, keywords } = siteConfig;
+import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
+
+import { SITE_METADATA } from '@/shared/site/metadata';
+import { toArray } from '@/shared/utilities/collections/convert';
+
+const { description, keywords } = SITE_METADATA;
 
 const currencies = Currency.getInstance().getNames(10);
 const title = getPageTitle('/currencies');
@@ -16,4 +19,4 @@ export const metadata: Metadata = {
 	keywords: toArray(keywords.slice(0, 18), currencies),
 };
 
-export { WithPreference as default } from '@/(pages)/layouts';
+export { default } from '@/features/preferences/client/components/PreferencesModalLayout';

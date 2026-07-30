@@ -1,20 +1,23 @@
 import { type NextRequest } from 'next/server';
 
+import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-	readJsonBodyResult,
-} from '@/lib/account/server/routeResponses';
-import {
-	createNoStoreErrorResponse,
-	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/features/account/server/http/routeGuards';
 import {
 	ANNOUNCEMENT_DISMISSED_COOKIE_NAME,
 	parseAnnouncementDismissedCookieValue,
-} from '@/lib/announcements/shared/dismissals';
+} from '@/features/announcements/dismissals';
+import { ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP } from '@/features/announcements/server/http/serviceErrorStatus';
+
+import {
+	createNoStoreErrorResponse,
+	createNoStoreJsonResponse,
+} from '@/infrastructure/http/server/responses';
+import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,6 +29,16 @@ interface IAnnouncementDismissBody {
 
 export async function GET(request: NextRequest) {
 	try {
+		const featureStatusModule =
+			await import('@/features/account/server/featureStatus');
+		const status = await featureStatusModule.getAccountFeatureStatus();
+		if (!status.enabled) {
+			return createNoStoreJsonResponse({
+				active: false,
+				announcements: [],
+			});
+		}
+
 		const rateLimitResponse = checkAccountRateLimitRouteResponse(
 			request,
 			'announcements-public-read',
@@ -36,19 +49,10 @@ export async function GET(request: NextRequest) {
 			return rateLimitResponse;
 		}
 
-		const [environmentModule, serviceModule, authModule] =
-			await Promise.all([
-				import('@/lib/announcements/server/environment'),
-				import('@/lib/announcements/server/service'),
-				import('@/lib/account/server/auth'),
-			]);
-		const status = await environmentModule.getAnnouncementFeatureStatus();
-		if (!status.enabled) {
-			return createNoStoreJsonResponse({
-				active: false,
-				announcements: [],
-			});
-		}
+		const [serviceModule, authModule] = await Promise.all([
+			import('@/features/announcements/server/public/service'),
+			import('@/features/account/server'),
+		]);
 
 		const dismissedTokens = parseAnnouncementDismissedCookieValue(
 			request.cookies.get(ANNOUNCEMENT_DISMISSED_COOKIE_NAME)?.value ??
@@ -74,7 +78,9 @@ export async function GET(request: NextRequest) {
 
 		return createNoStoreJsonResponse(data);
 	} catch (error) {
-		console.warn('Failed to read announcements API.', error);
+		console.warn('Failed to read announcements API.', {
+			errorCode: getLogSafeErrorCode(error),
+		});
 		return createNoStoreErrorResponse('server-misconfigured', 500);
 	}
 }
@@ -117,22 +123,28 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const authModule = await import('@/lib/account/server/auth');
+	const [authModule, csrfModule] = await Promise.all([
+		import('@/features/account/server'),
+		import('@/features/account/server/auth/accountCsrf'),
+	]);
 	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
 		return createNoStoreJsonResponse({ message: 'announcement-dismissed' });
 	}
-	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
+	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
-	const announcementModule =
-		await import('@/lib/announcements/server/service');
+	const [announcementModule, sessionsModule] = await Promise.all([
+		import('@/features/announcements/server/public/service'),
+		import('@/features/account/server/persistence/repositories/sessions'),
+	]);
 	const result = await announcementModule.dismissAnnouncementForUser(
 		body.id,
 		body.updatedAt,
 		auth.data.user.id,
-		{ id: auth.data.session.id, token_hash: auth.data.sessionTokenHash }
+		{ id: auth.data.session.id, token_hash: auth.data.sessionTokenHash },
+		sessionsModule.lockActiveUserSessionInTransaction
 	);
 	if (result.status === 'unauthorized') {
 		return createNoStoreJsonResponse({ message: 'announcement-dismissed' });
@@ -140,9 +152,7 @@ export async function POST(request: NextRequest) {
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
-			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
-				result.error
-			]
+			ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[result.error]
 		);
 	}
 

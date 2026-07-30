@@ -1,8 +1,8 @@
 import { type MetadataRoute } from 'next';
 
-import { siteConfig } from '@/configs';
+import { PUBLIC_RUNTIME_CONFIG } from './infrastructure/environment/publicRuntimeConfig';
 
-const { baseURL } = siteConfig;
+const { baseURL } = PUBLIC_RUNTIME_CONFIG;
 
 export const dynamic = 'force-static';
 

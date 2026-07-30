@@ -1,11 +1,15 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
-import { parsePositiveIntegerParam } from '@/lib/api/adminPagination';
+import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
+
+import {
+	getTrimmedSearchParam,
+	parsePositiveIntegerParam,
+} from '@/infrastructure/http/queryParameters';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,7 +23,7 @@ export async function GET(
 	{ params }: { params: Promise<{ id: string }> }
 ) {
 	const { id } = await params;
-	const check = await checkAdminSsoClientRequest(
+	const check = await checkAdminRequest(
 		request,
 		'admin-list-sso-client-users',
 		{ parts: [{ name: 'client', value: id }] }
@@ -42,13 +46,13 @@ export async function GET(
 		return createNoStoreErrorResponse('invalid-pagination', 400);
 	}
 
-	const query = request.nextUrl.searchParams.get('query')?.trim();
+	const query = getTrimmedSearchParam(request.nextUrl.searchParams, 'query');
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoGrantService');
+		await import('@/features/account/sso/admin/server/services/grantService');
 	const result = await serviceModule.listAdminSsoClientUsers(id, {
 		page,
 		pageSize,
-		...(query === undefined || query === '' ? {} : { query }),
+		...(query === undefined ? {} : { query }),
 	});
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(

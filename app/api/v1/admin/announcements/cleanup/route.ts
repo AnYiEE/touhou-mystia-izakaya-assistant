@@ -1,12 +1,14 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAdminAnnouncementRequest } from '@/lib/announcements/server/adminRouteResponses';
-import { getRequestAuditContext } from '@/lib/account/server/request';
+import { checkAdminAnnouncementRequest } from '@/features/announcements/server/admin/http/requestGuard';
+import { ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP } from '@/features/announcements/server/http/serviceErrorStatus';
+
+import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
-import { getLogSafeErrorCode } from '@/lib/logging';
+} from '@/infrastructure/http/server/responses';
+import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,17 +24,18 @@ export async function DELETE(request: NextRequest) {
 	}
 
 	try {
-		const announcementModule =
-			await import('@/lib/announcements/server/service');
+		const [announcementModule, auditModule] = await Promise.all([
+			import('@/features/announcements/server/admin/cleanup'),
+			import('@/features/account/admin/server/audit/service'),
+		]);
 		const result = await announcementModule.cleanupAdminAnnouncementRecords(
-			{ adminId: check.actorId, ...getRequestAuditContext(request) }
+			{ adminId: check.actorId, ...getRequestAuditContext(request) },
+			auditModule.writeAdminAuditLogInTransaction
 		);
 		if (result.status === 'error') {
 			return createNoStoreErrorResponse(
 				result.error,
-				announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
-					result.error
-				]
+				ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[result.error]
 			);
 		}
 

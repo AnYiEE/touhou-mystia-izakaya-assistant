@@ -1,16 +1,17 @@
 import { type NextRequest } from 'next/server';
 
+import type { TAccountMeResponse } from '@/features/account/contracts';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-} from '@/lib/account/server/routeResponses';
-import { type TAccountMeResponse } from '@/lib/account/shared/types';
+} from '@/features/account/server/http/routeGuards';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -42,11 +43,13 @@ export async function GET(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const [authModule, userModule, userStateModule] = await Promise.all([
-		import('@/lib/account/server/auth'),
-		import('@/lib/account/server/user'),
-		import('@/lib/account/server/repositories/userState'),
-	]);
+	const [authModule, csrfModule, userModule, userStateModule] =
+		await Promise.all([
+			import('@/features/account/server/auth/requestAuthentication'),
+			import('@/features/account/server/auth/accountCsrf'),
+			import('@/features/account/server/presentation/user'),
+			import('@/features/account/sync/server'),
+		]);
 	const auth = await authModule.authenticateAccountFromRequestWithTransaction(
 		request,
 		(trx, account) =>
@@ -84,7 +87,7 @@ export async function GET(request: NextRequest) {
 	);
 
 	return createNoStoreJsonResponse({
-		csrf_token: authModule.createAccountCsrfToken(
+		csrf_token: csrfModule.createAccountCsrfToken(
 			auth.data.sessionTokenHash
 		),
 		featureEnabled: true,

@@ -1,20 +1,18 @@
 'use client';
 
-import { type ComponentProps, memo } from 'react';
-
-import { useReducedMotion } from '@/design/ui/hooks';
-
 import { Avatar as HeroUIAvatar } from '@heroui/avatar';
 import {
 	type InternalForwardRefRenderFunction,
 	extendVariants,
 } from '@heroui/system';
+import { type ComponentProps, memo } from 'react';
 
-import { generateRatingVariants } from '@/design/ui/utils';
+import { createRatingVariants } from '@/design/theme/styles/rating/createRatingVariants';
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 const CustomHeroUIAvatar = extendVariants(
 	HeroUIAvatar,
-	generateRatingVariants('base')
+	createRatingVariants('base')
 );
 
 interface IProps extends ComponentProps<typeof CustomHeroUIAvatar> {}

@@ -1,22 +1,26 @@
 import { type NextRequest } from 'next/server';
 
+import { authenticateAdminFromRequest } from '@/features/account/admin/server/http/authentication';
+import {
+	checkAdminFeatureRouteResponse,
+	createAdminAuthErrorRouteResponse,
+} from '@/features/account/admin/server/http/routeResponses';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-} from '@/lib/account/server/routeResponses';
+} from '@/features/account/server/http/routeGuards';
+import { type IListUsersOptions } from '@/features/account/server/persistence/repositories/users';
+
 import {
-	authenticateAdminFromRequest,
-	checkAdminFeatureRouteResponse,
-	createAdminAuthErrorRouteResponse,
-} from '@/lib/account/server/adminRouteResponses';
-import { type IListUsersOptions } from '@/lib/account/server/repositories/users';
-import { parsePositiveIntegerParam } from '@/lib/api/adminPagination';
+	getTrimmedSearchParam,
+	parsePositiveIntegerParam,
+} from '@/infrastructure/http/queryParameters';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -65,14 +69,15 @@ export async function GET(request: NextRequest) {
 	}
 
 	const [usersModule, userModule] = await Promise.all([
-		import('@/lib/account/server/repositories/users'),
-		import('@/lib/account/server/user'),
+		import('@/features/account/server/persistence/repositories/users'),
+		import('@/features/account/server/presentation/user'),
 	]);
 
-	const rawStatus = request.nextUrl.searchParams.get('status');
-	const status =
-		rawStatus === null || rawStatus.trim() === '' ? null : rawStatus.trim();
-	if (status !== null && !userModule.checkUserStatus(status)) {
+	const status = getTrimmedSearchParam(
+		request.nextUrl.searchParams,
+		'status'
+	);
+	if (status !== undefined && !userModule.checkUserStatus(status)) {
 		return createNoStoreErrorResponse('invalid-user-status', 400);
 	}
 
@@ -99,7 +104,7 @@ export async function GET(request: NextRequest) {
 		query,
 	};
 
-	if (status !== null) {
+	if (status !== undefined) {
 		listUsersOptions.status = status;
 	}
 

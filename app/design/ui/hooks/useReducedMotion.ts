@@ -1,15 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { useMounted } from '@/hooks';
-
-import { addSafeMediaQueryEventListener } from '@/design/utils';
+import { addSafeMediaQueryEventListener } from '@/infrastructure/browser/compatibility/mediaQuery';
 
 export function useReducedMotion() {
 	const [isReducedMotion, setIsReducedMotion] = useState(false);
 
-	useMounted(() => {
+	useEffect(() => {
 		const mediaQueryList = globalThis.matchMedia(
 			'(prefers-reduced-motion: reduce)'
 		);
@@ -19,7 +17,7 @@ export function useReducedMotion() {
 		return addSafeMediaQueryEventListener(mediaQueryList, () => {
 			setIsReducedMotion(mediaQueryList.matches);
 		});
-	});
+	}, []);
 
 	return isReducedMotion;
 }

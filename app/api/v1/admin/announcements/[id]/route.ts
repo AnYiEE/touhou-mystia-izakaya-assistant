@@ -1,13 +1,15 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAdminAnnouncementRequest } from '@/lib/announcements/server/adminRouteResponses';
-import { parseAdminAnnouncementBody } from '@/lib/announcements/server/adminPayload';
-import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
+import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
+import { parseAdminAnnouncementBody } from '@/features/announcements/server/admin/http/payload';
+import { checkAdminAnnouncementRequest } from '@/features/announcements/server/admin/http/requestGuard';
+import { ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP } from '@/features/announcements/server/http/serviceErrorStatus';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	readJsonBodyResult,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,14 +28,12 @@ export async function GET(
 
 	const { id } = await params;
 	const announcementModule =
-		await import('@/lib/announcements/server/service');
+		await import('@/features/announcements/server/admin/service');
 	const result = await announcementModule.getAdminAnnouncement(id);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
-			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
-				result.error
-			]
+			ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[result.error]
 		);
 	}
 
@@ -69,7 +69,7 @@ export async function PUT(
 	}
 
 	const announcementModule =
-		await import('@/lib/announcements/server/service');
+		await import('@/features/announcements/server/admin/service');
 	const result = await announcementModule.updateAdminAnnouncement(
 		id,
 		body,
@@ -78,9 +78,7 @@ export async function PUT(
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
-			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
-				result.error
-			]
+			ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[result.error]
 		);
 	}
 
@@ -102,7 +100,7 @@ export async function DELETE(
 
 	const { id } = await params;
 	const announcementModule =
-		await import('@/lib/announcements/server/service');
+		await import('@/features/announcements/server/admin/service');
 	const result = await announcementModule.archiveAdminAnnouncement(
 		id,
 		check.actorId
@@ -110,9 +108,7 @@ export async function DELETE(
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
-			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
-				result.error
-			]
+			ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[result.error]
 		);
 	}
 
@@ -134,7 +130,7 @@ export async function PATCH(
 
 	const { id } = await params;
 	const announcementModule =
-		await import('@/lib/announcements/server/service');
+		await import('@/features/announcements/server/admin/service');
 	const result = await announcementModule.restoreAdminAnnouncement(
 		id,
 		check.actorId
@@ -142,9 +138,7 @@ export async function PATCH(
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
-			announcementModule.ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[
-				result.error
-			]
+			ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP[result.error]
 		);
 	}
 

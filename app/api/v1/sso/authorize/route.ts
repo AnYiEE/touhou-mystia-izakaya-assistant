@@ -1,34 +1,33 @@
 import { type NextRequest } from 'next/server';
 
+import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-	createAccountAuthErrorRouteResponse,
-	readJsonBodyResult,
-} from '@/lib/account/server/routeResponses';
+} from '@/features/account/server/http/routeGuards';
+import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 import {
 	clearSsoContextCookie,
-	createSsoRedirectUrl,
 	getSsoContextCookie,
-} from '@/lib/account/server/ssoContext';
-import { checkSsoRateLimitRouteResponse } from '@/lib/account/server/ssoRouteResponses';
+	setSsoContextCookie,
+} from '@/features/account/sso/server/context';
+import { checkSsoRateLimitRouteResponse } from '@/features/account/sso/server/http/routeResponses';
 import {
-	checkSsoClientEnabled,
 	checkSsoClientId,
 	checkSsoCodeChallenge,
 	checkSsoRedirectUriFormat,
 	checkSsoState,
-} from '@/lib/account/server/ssoValidation';
-import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
+} from '@/features/account/sso/server/validation';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	createNoStoreRedirectResponse,
-} from '@/lib/api/routeResponses';
-import { getLogSafeErrorCode } from '@/lib/logging';
-import { createMainSiteUrl } from '@/lib/siteUrl';
+} from '@/infrastructure/http/server/responses';
+import { createMainSiteUrl } from '@/infrastructure/http/siteUrl';
+import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -65,129 +64,30 @@ function createAuthorizePageJsonResponse(status?: string) {
 	});
 }
 
-function readSsoAuthorizeContext(request: NextRequest, transactionId: unknown) {
+function createSsoAuthorizationFlowLoadErrorResponse(
+	request: NextRequest,
+	intent: TSsoAuthorizeSubmitIntent,
+	transactionId: unknown,
+	error: unknown
+) {
 	const context = getSsoContextCookie(request);
 	if (context === null || transactionId !== context.transaction_id) {
-		return null;
-	}
-
-	return context;
-}
-
-async function submitSsoAuthorizeAgree(
-	request: NextRequest,
-	transactionId: unknown
-) {
-	const context = readSsoAuthorizeContext(request, transactionId);
-	if (context === null) {
 		return createAuthorizePageJsonResponse('expired');
 	}
 
-	try {
-		const [authModule, ssoModule, accountAuditModule] = await Promise.all([
-			import('@/lib/account/server/auth'),
-			import('@/lib/account/server/sso'),
-			import('@/lib/account/server/accountAuditService'),
-		]);
-		const [auth, client] = await Promise.all([
-			authModule.authenticateAccountFromRequest(request, true),
-			ssoModule.getSsoClientById(context.client_id),
-		]);
-		if (auth.status === 'error') {
-			return createAuthorizePageJsonResponse();
-		}
-		if (auth.data.credential.password_must_change === 1) {
-			return createAuthorizePageJsonResponse();
-		}
-		if (
-			client === null ||
-			!checkSsoClientEnabled(client) ||
-			!ssoModule.validateSsoRedirectUri(client, context.redirect_uri) ||
-			auth.data.user.status !== USER_STATUS_MAP.active
-		) {
-			return createAuthorizePageJsonResponse('invalid');
-		}
+	console.warn(
+		intent === 'agree'
+			? 'SSO authorize confirmation failed.'
+			: 'SSO authorize cancellation failed.',
+		{ errorCode: getLogSafeErrorCode(error) }
+	);
 
-		const ticketResult = await ssoModule.createSsoTicket(
-			context.client_id,
-			auth.data.user.id,
-			context.redirect_uri,
-			context.code_challenge,
-			{
-				id: auth.data.session.id,
-				token_hash: auth.data.sessionTokenHash,
-			},
-			(trx, auditNow) =>
-				accountAuditModule.writeAccountAuditLogInTransaction(
-					trx,
-					accountAuditModule.createAccountUserAuditLogInput({
-						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
-							.authorizeSsoClient,
-						metadata: {
-							client_id: context.client_id,
-							nickname: auth.data.user.nickname,
-							redirect_uri_digest:
-								accountAuditModule.createAccountAuditValueDigest(
-									context.redirect_uri
-								),
-							username: auth.data.user.username,
-						},
-						request,
-						userId: auth.data.user.id,
-					}),
-					auditNow
-				)
-		);
-		if (ticketResult.status === 'unauthorized') {
-			return createAuthorizePageJsonResponse();
-		}
-		const response = createNoStoreJsonResponse({
-			redirect_url: createSsoRedirectUrl(
-				context.redirect_uri,
-				ticketResult.ticket,
-				context.state
-			),
-		});
+	const response = createAuthorizePageJsonResponse(
+		intent === 'agree' ? 'invalid' : 'cancelled'
+	);
+	if (intent === 'cancel') {
 		clearSsoContextCookie(response, request);
-
-		return response;
-	} catch (error) {
-		console.warn('SSO authorize confirmation failed.', {
-			errorCode: getLogSafeErrorCode(error),
-		});
-
-		return createAuthorizePageJsonResponse('invalid');
 	}
-}
-
-async function submitSsoAuthorizeCancel(
-	request: NextRequest,
-	transactionId: unknown
-) {
-	const context = readSsoAuthorizeContext(request, transactionId);
-	if (context === null) {
-		return createAuthorizePageJsonResponse('expired');
-	}
-
-	let redirectUrl = createAuthorizePageUrl('cancelled');
-	try {
-		const ssoModule = await import('@/lib/account/server/sso');
-		const client = await ssoModule.getSsoClientById(context.client_id);
-		if (
-			client?.cancel_redirect_uri !== undefined &&
-			client.cancel_redirect_uri !== null &&
-			checkSsoRedirectUriFormat(client.cancel_redirect_uri)
-		) {
-			redirectUrl = client.cancel_redirect_uri;
-		}
-	} catch (error) {
-		console.warn('SSO authorize cancellation failed.', {
-			errorCode: getLogSafeErrorCode(error),
-		});
-	}
-
-	const response = createNoStoreJsonResponse({ redirect_url: redirectUrl });
-	clearSsoContextCookie(response, request);
 
 	return response;
 }
@@ -231,45 +131,33 @@ export async function GET(request: NextRequest) {
 	}
 
 	try {
-		const ssoModule = await import('@/lib/account/server/sso');
-		if (!(await ssoModule.hasAnySsoClient())) {
-			return createNoStoreErrorResponse('feature-disabled', 404);
-		}
-
-		const client = await ssoModule.getSsoClientById(clientId);
-		if (client === null) {
-			return createNoStoreErrorResponse('feature-disabled', 404);
-		}
-		if (!checkSsoClientEnabled(client)) {
-			return createNoStoreErrorResponse('client-disabled', 403);
-		}
-		if (!ssoModule.validateSsoRedirectUri(client, redirectUri)) {
-			return createNoStoreErrorResponse('invalid-redirect-uri', 400);
-		}
-
-		const authModule = await import('@/lib/account/server/auth');
-		const auth = await authModule.authenticateAccountFromRequest(
+		const authorizationFlowModule =
+			await import('@/features/account/sso/authorize/server/authorizationFlow');
+		const result = await authorizationFlowModule.prepareSsoAuthorization(
 			request,
-			true
+			{ clientId, codeChallenge, redirectUri, state }
 		);
-		if (auth.status === 'error' && auth.message !== 'unauthorized') {
-			return createAccountAuthErrorRouteResponse(auth, request);
+		if (result.status === 'account-auth-error') {
+			return createAccountAuthErrorRouteResponse(result.auth, request);
+		}
+		if (result.status === 'error') {
+			switch (result.error) {
+				case 'client-disabled':
+					return createNoStoreErrorResponse('client-disabled', 403);
+				case 'feature-disabled':
+					return createNoStoreErrorResponse('feature-disabled', 404);
+				case 'invalid-redirect-uri':
+					return createNoStoreErrorResponse(
+						'invalid-redirect-uri',
+						400
+					);
+			}
 		}
 
 		const redirectUrl = createMainSiteUrl('/sso/authorize');
 
 		const response = createNoStoreRedirectResponse(redirectUrl);
-		ssoModule.setSsoContextCookie(
-			response,
-			{
-				client_id: clientId,
-				code_challenge: codeChallenge,
-				redirect_uri: redirectUri,
-				state,
-				transaction_id: ssoModule.createSsoContextTransactionId(),
-			},
-			request
-		);
+		setSsoContextCookie(response, result.context, request);
 
 		return response;
 	} catch (error) {
@@ -317,7 +205,31 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	return intent === 'agree'
-		? submitSsoAuthorizeAgree(request, body?.transaction_id)
-		: submitSsoAuthorizeCancel(request, body?.transaction_id);
+	let authorizationFlowModule;
+	try {
+		authorizationFlowModule =
+			await import('@/features/account/sso/authorize/server/authorizationFlow');
+	} catch (error) {
+		return createSsoAuthorizationFlowLoadErrorResponse(
+			request,
+			intent,
+			body?.transaction_id,
+			error
+		);
+	}
+	const result = await authorizationFlowModule.submitSsoAuthorization(
+		request,
+		{ intent, transactionId: body?.transaction_id }
+	);
+	const response =
+		result.status === 'redirect'
+			? createNoStoreJsonResponse({ redirect_url: result.redirectUrl })
+			: createAuthorizePageJsonResponse(
+					result.status === 'resume' ? undefined : result.status
+				);
+	if (result.clearContext) {
+		clearSsoContextCookie(response, request);
+	}
+
+	return response;
 }

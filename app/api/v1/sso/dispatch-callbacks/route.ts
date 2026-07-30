@@ -1,15 +1,16 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAccountFeatureRouteResponse } from '@/lib/account/server/routeResponses';
+import { checkAccountFeatureRouteResponse } from '@/features/account/server/http/routeGuards';
 import {
 	checkDispatchSecretStatus,
 	checkSsoRateLimitRouteResponse,
-} from '@/lib/account/server/ssoRouteResponses';
+} from '@/features/account/sso/server/http/routeResponses';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
-import { getLogSafeErrorCode } from '@/lib/logging';
+} from '@/infrastructure/http/server/responses';
+import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	try {
-		const ssoModule = await import('@/lib/account/server/sso');
+		const ssoModule = await import('@/features/account/sso/server');
 		const result = await ssoModule.dispatchSsoCallbacks(
 			ssoModule.SSO_CALLBACK_DISPATCH_LIMIT
 		);

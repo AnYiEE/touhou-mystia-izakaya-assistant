@@ -1,6 +1,14 @@
 'use client';
 
 import {
+	Modal as HeroUIModal,
+	ModalBody,
+	ModalContent,
+	type ModalProps,
+} from '@heroui/modal';
+import { type InternalForwardRefRenderFunction } from '@heroui/system';
+import { cn } from '@heroui/theme';
+import {
 	type CSSProperties,
 	PropsWithChildren,
 	type ReactNode,
@@ -12,42 +20,26 @@ import {
 	useState,
 } from 'react';
 
-import { useCoordinatedOverlay } from '@/hooks';
-
-import {
-	Modal as HeroUIModal,
-	ModalBody,
-	ModalContent,
-	type ModalProps,
-} from '@heroui/modal';
-import { type InternalForwardRefRenderFunction } from '@heroui/system';
-
-import { useReducedMotion } from '@/design/ui/hooks';
-import { cn } from '@/design/ui/utils';
-
-import {
-	type IOverlayShortcutDefinition,
-	type TOverlayId,
-} from '@/lib/overlayCoordinator';
+import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import ScrollMask from './scrollMask';
-
-import { globalStore as store } from '@/stores';
+import {
+	DEFAULT_SCROLL_STATE,
+	type IScrollState,
+	getScrollState,
+} from './scrollState';
 
 interface IProps extends Omit<ModalProps, 'children'> {
 	children: ReactNode | ((onClose: () => void) => ReactNode);
 	classNames?: ModalProps['classNames'] & { content?: string };
-	coordination?: IModalCoordinationProps;
 	scrollMode?: 'mask' | 'shadow';
 	scrollShadow?: boolean;
 	scrollShadowSize?: number;
 }
 
-interface IModalCoordinationProps {
-	canActivate?: () => boolean;
-	id: TOverlayId;
-	requestOwnership?: 'component' | 'external';
-	shortcuts?: ReadonlyArray<IOverlayShortcutDefinition>;
+interface IModalPresentationProps extends IProps {
+	isReducedMotion: boolean;
 }
 
 interface IModalScrollBodyProps {
@@ -55,35 +47,6 @@ interface IModalScrollBodyProps {
 	isHighAppearance: boolean;
 	scrollMode: 'mask' | 'none' | 'shadow';
 	scrollShadowSize: number;
-}
-
-interface IScrollState {
-	bottom: boolean;
-	top: boolean;
-}
-
-const SCROLL_EDGE_THRESHOLD = 1;
-
-const DEFAULT_SCROLL_STATE: IScrollState = { bottom: false, top: false };
-
-function getActiveCoordinatedModal(id: TOverlayId) {
-	return [
-		...document.querySelectorAll<HTMLElement>(
-			'[data-coordinated-overlay-id][data-open="true"]'
-		),
-	].find(({ dataset }) => dataset['coordinatedOverlayId'] === id);
-}
-
-function getScrollState(element: HTMLDivElement): IScrollState {
-	const maxScrollTop = element.scrollHeight - element.clientHeight;
-	const canScroll = maxScrollTop > SCROLL_EDGE_THRESHOLD;
-
-	return {
-		bottom:
-			canScroll &&
-			element.scrollTop < maxScrollTop - SCROLL_EDGE_THRESHOLD,
-		top: canScroll && element.scrollTop > SCROLL_EDGE_THRESHOLD,
-	};
 }
 
 function ModalScrollBody({
@@ -234,158 +197,120 @@ function ModalScrollBody({
 	);
 }
 
-export default memo<IProps>(function Modal({
-	backdrop,
-	children,
-	classNames,
-	coordination,
-	disableAnimation,
-	isDismissable = true,
-	isKeyboardDismissDisabled,
-	isOpen = false,
-	onClose,
-	onOpenChange,
-	portalContainer,
-	scrollBehavior = 'inside',
-	scrollMode = 'shadow',
-	scrollShadow = true,
-	scrollShadowSize = 16,
-	size = '3xl',
-	...props
-}) {
+export const ModalPresentation = memo<IModalPresentationProps>(
+	function ModalPresentation({
+		backdrop,
+		children,
+		classNames,
+		disableAnimation,
+		isDismissable = true,
+		isKeyboardDismissDisabled,
+		isOpen = false,
+		isReducedMotion,
+		onClose,
+		onOpenChange,
+		portalContainer,
+		scrollBehavior = 'inside',
+		scrollMode = 'shadow',
+		scrollShadow = true,
+		scrollShadowSize = 16,
+		size = '3xl',
+		...props
+	}) {
+		const { isHighAppearance } = useDesignPreferences();
+
+		const {
+			body: bodyClassName,
+			content: contentClassName,
+			...modalClassNames
+		} = classNames ?? {};
+
+		const [defaultPortalContainer, setDefaultPortalContainer] =
+			useState<HTMLElement | null>(null);
+		const resolvedPortalContainer =
+			portalContainer ?? defaultPortalContainer ?? null;
+
+		const portalContainerProps =
+			resolvedPortalContainer === null
+				? {}
+				: { portalContainer: resolvedPortalContainer };
+		const keyboardDismissProps =
+			isKeyboardDismissDisabled === undefined
+				? {}
+				: { isKeyboardDismissDisabled };
+		const closeProps = onClose === undefined ? {} : { onClose };
+		const openChangeProps =
+			onOpenChange === undefined ? {} : { onOpenChange };
+		const resolvedScrollMode = scrollShadow ? scrollMode : 'none';
+
+		useEffect(() => {
+			setDefaultPortalContainer(
+				document.querySelector<HTMLElement>('#modal-portal-container')
+			);
+		}, []);
+
+		return (
+			<HeroUIModal
+				backdrop={backdrop ?? (isHighAppearance ? 'blur' : 'opaque')}
+				disableAnimation={disableAnimation ?? isReducedMotion}
+				isDismissable={isDismissable}
+				isOpen={isOpen}
+				scrollBehavior={scrollBehavior}
+				size={size}
+				classNames={{
+					...modalClassNames,
+					backdrop: cn(modalClassNames.backdrop),
+					base: cn(
+						isHighAppearance
+							? 'bg-blend-mystia'
+							: 'bg-background dark:bg-content1',
+						resolvedScrollMode === 'mask' && 'overflow-hidden',
+						modalClassNames.base
+					),
+					closeButton: cn(
+						'z-20 transition-background motion-reduce:transition-none',
+						isHighAppearance
+							? 'hover:bg-content1 active:bg-content2'
+							: 'dark:hover:bg-default-200 dark:active:bg-default',
+						modalClassNames.closeButton
+					),
+				}}
+				{...keyboardDismissProps}
+				{...closeProps}
+				{...openChangeProps}
+				{...portalContainerProps}
+				{...props}
+			>
+				<ModalContent
+					className={cn(
+						props.hideCloseButton ? 'py-0' : 'py-3',
+						contentClassName
+					)}
+				>
+					{(onModalClose) => (
+						<ModalScrollBody
+							bodyClassName={bodyClassName}
+							isHighAppearance={isHighAppearance}
+							scrollMode={resolvedScrollMode}
+							scrollShadowSize={scrollShadowSize}
+						>
+							{typeof children === 'function'
+								? children(onModalClose)
+								: children}
+						</ModalScrollBody>
+					)}
+				</ModalContent>
+			</HeroUIModal>
+		);
+	}
+) as InternalForwardRefRenderFunction<'div', IModalPresentationProps>;
+
+const Modal = memo<IProps>(function Modal(props) {
 	const isReducedMotion = useReducedMotion();
 
-	const isHighAppearance = store.persistence.highAppearance.use();
-
-	const coordinationId = coordination?.id;
-
-	const requestBusinessClose = useCallback(() => {
-		onOpenChange?.(false);
-		onClose?.();
-	}, [onClose, onOpenChange]);
-
-	const {
-		isPresentationOpen,
-		presentationState,
-		shouldSuppressBackdropBlur,
-	} = useCoordinatedOverlay({
-		canActivate: coordination?.canActivate,
-		dismissable: isDismissable && !(isKeyboardDismissDisabled ?? false),
-		exitDelayMs:
-			coordination !== undefined && isReducedMotion ? 0 : undefined,
-		getRootElement: () =>
-			coordinationId === undefined
-				? null
-				: (getActiveCoordinatedModal(coordinationId) ?? null),
-		id: coordinationId,
-		isOpen,
-		keepOpenWhenCovered: coordination !== undefined,
-		onRequestClose: requestBusinessClose,
-		requestOwnership: coordination?.requestOwnership,
-		shortcuts: coordination?.shortcuts,
-	});
-
-	const isCovered =
-		coordinationId !== undefined && presentationState === 'covered';
-
-	const handleClose = useCallback(() => {
-		if (!isCovered) {
-			onClose?.();
-		}
-	}, [isCovered, onClose]);
-
-	const handleOpenChange = useCallback(
-		(nextIsOpen: boolean) => {
-			if (!isCovered || nextIsOpen) {
-				onOpenChange?.(nextIsOpen);
-			}
-		},
-		[isCovered, onOpenChange]
-	);
-
-	const {
-		body: bodyClassName,
-		content: contentClassName,
-		...modalClassNames
-	} = classNames ?? {};
-
-	const [defaultPortalContainer, setDefaultPortalContainer] =
-		useState<HTMLElement | null>(null);
-	const resolvedPortalContainer =
-		portalContainer ?? defaultPortalContainer ?? null;
-
-	const portalContainerProps =
-		resolvedPortalContainer === null
-			? {}
-			: { portalContainer: resolvedPortalContainer };
-	const resolvedScrollMode = scrollShadow ? scrollMode : 'none';
-
-	useEffect(() => {
-		setDefaultPortalContainer(
-			document.querySelector<HTMLElement>('#modal-portal-container')
-		);
-	}, []);
-
-	return (
-		<HeroUIModal
-			backdrop={backdrop ?? (isHighAppearance ? 'blur' : 'opaque')}
-			data-coordinated-overlay-id={coordinationId}
-			disableAnimation={disableAnimation ?? isReducedMotion}
-			inert={isCovered}
-			isDismissable={!isCovered && isDismissable}
-			isKeyboardDismissDisabled={
-				isCovered || (isKeyboardDismissDisabled ?? false)
-			}
-			isOpen={isPresentationOpen}
-			onClose={handleClose}
-			onOpenChange={handleOpenChange}
-			scrollBehavior={scrollBehavior}
-			size={size}
-			classNames={{
-				...modalClassNames,
-				backdrop: cn(
-					modalClassNames.backdrop,
-					shouldSuppressBackdropBlur && '!backdrop-blur-none'
-				),
-				base: cn(
-					isHighAppearance
-						? 'bg-blend-mystia'
-						: 'bg-background dark:bg-content1',
-					resolvedScrollMode === 'mask' && 'overflow-hidden',
-					modalClassNames.base
-				),
-				closeButton: cn(
-					'z-20 transition-background motion-reduce:transition-none',
-					isHighAppearance
-						? 'hover:bg-content1 active:bg-content2'
-						: 'dark:hover:bg-default-200 dark:active:bg-default',
-					modalClassNames.closeButton
-				),
-			}}
-			{...portalContainerProps}
-			{...props}
-		>
-			<ModalContent
-				className={cn(
-					props.hideCloseButton ? 'py-0' : 'py-3',
-					contentClassName
-				)}
-			>
-				{(onModalClose) => (
-					<ModalScrollBody
-						bodyClassName={bodyClassName}
-						isHighAppearance={isHighAppearance}
-						scrollMode={resolvedScrollMode}
-						scrollShadowSize={scrollShadowSize}
-					>
-						{typeof children === 'function'
-							? children(onModalClose)
-							: children}
-					</ModalScrollBody>
-				)}
-			</ModalContent>
-		</HeroUIModal>
-	);
+	return <ModalPresentation {...props} isReducedMotion={isReducedMotion} />;
 }) as InternalForwardRefRenderFunction<'div', IProps>;
+
+export default Modal;
 
 export type { IProps as IModalProps };

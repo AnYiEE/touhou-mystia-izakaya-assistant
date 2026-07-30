@@ -1,14 +1,13 @@
 'use client';
 
-import { memo } from 'react';
-
-import { useReducedMotion } from '@/design/ui/hooks';
-
 import {
 	Pagination as HeroUIPagination,
 	type PaginationProps,
 } from '@heroui/pagination';
 import { type InternalForwardRefRenderFunction } from '@heroui/system';
+import { memo } from 'react';
+
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 interface IProps extends PaginationProps {}
 

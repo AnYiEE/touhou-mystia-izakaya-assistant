@@ -1,14 +1,18 @@
 import { type MetadataRoute } from 'next';
 
-import { type TSitePath, siteConfig } from '@/configs';
-import type { ILink } from '@/configs/site/types';
+import {
+	NAV_MENU_ITEMS,
+	type TSitePath,
+} from './features/appShell/navigation/config';
+import { PUBLIC_RUNTIME_CONFIG } from './infrastructure/environment/publicRuntimeConfig';
+import type { ILink } from './shared/site/contracts';
 
-const { baseURL, navMenuItems } = siteConfig;
+const { baseURL } = PUBLIC_RUNTIME_CONFIG;
 
 export const dynamic = 'force-static';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-	return (navMenuItems as Array<ILink<TSitePath>>)
+	return (NAV_MENU_ITEMS as Array<ILink<TSitePath>>)
 		.filter(
 			({ href }) =>
 				!['/admin', '/api', '/preferences', '/sso'].includes(href)

@@ -1,17 +1,19 @@
 import { spawn } from 'node:child_process';
 import { constants as fileSystemConstants } from 'node:fs';
-import { lstat, readFile } from 'node:fs/promises';
+import { lstat, readFile, realpath } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
+import { dirname, isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { cleanupObsoleteReleases } from './deployment/releaseCleanup.mjs';
 import {
-	cleanupObsoleteReleases,
+	checkPathInside,
+	getDeploymentPaths,
 	readCurrentRelease,
 	resolveReleaseDirectory,
-	validateCurrentReleaseDirectory,
 	validatePathAccess,
-} from './deployment/release.mjs';
+} from './deployment/releasePaths.mjs';
+import { validateCurrentReleaseDirectory } from './deployment/releaseValidation.mjs';
 
 const projectDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -76,15 +78,69 @@ async function validateStoragePath(path, expectedType, errorCode) {
 	await validatePathAccess(path, expectedType, errorCode);
 }
 
-/** @param {string} parentDirectory @param {string} candidatePath */
-function checkPathInside(parentDirectory, candidatePath) {
-	const relativePath = relative(parentDirectory, candidatePath);
+/** @param {unknown} error */
+function checkMissingPathError(error) {
 	return (
-		relativePath !== '' &&
-		!relativePath.startsWith(`..${sep}`) &&
-		relativePath !== '..' &&
-		!isAbsolute(relativePath)
+		typeof error === 'object' &&
+		error !== null &&
+		'code' in error &&
+		error.code === 'ENOENT'
 	);
+}
+
+/** @param {string} path */
+async function resolveNearestExistingPath(path) {
+	let existingPath = path;
+	while (true) {
+		try {
+			return await realpath(existingPath);
+		} catch (error) {
+			if (!checkMissingPathError(error)) {
+				throw error;
+			}
+			const parentPath = dirname(existingPath);
+			if (parentPath === existingPath) {
+				throw error;
+			}
+			existingPath = parentPath;
+		}
+	}
+}
+
+/**
+ * @param {string} releasesDirectory
+ * @param {string} storagePath
+ * @param {string} insideReleaseCode
+ * @param {string} accessCode
+ */
+async function validateStoragePathOutsideReleases(
+	releasesDirectory,
+	storagePath,
+	insideReleaseCode,
+	accessCode
+) {
+	if (
+		storagePath === releasesDirectory ||
+		checkPathInside(releasesDirectory, storagePath)
+	) {
+		throw createError(insideReleaseCode);
+	}
+	let realReleasesDirectory;
+	let realStoragePath;
+	try {
+		[realReleasesDirectory, realStoragePath] = await Promise.all([
+			realpath(releasesDirectory),
+			resolveNearestExistingPath(storagePath),
+		]);
+	} catch (error) {
+		throw createError(accessCode, error);
+	}
+	if (
+		realStoragePath === realReleasesDirectory ||
+		checkPathInside(realReleasesDirectory, realStoragePath)
+	) {
+		throw createError(insideReleaseCode);
+	}
 }
 
 /** @param {string} rootDirectory @param {string} serverPath */
@@ -166,14 +222,39 @@ export async function validateSelfHostedRuntime(
 		resolve(rootDirectory, 'upload'),
 		'upload-directory-path-must-be-absolute'
 	);
+	const { releasesDirectory } = getDeploymentPaths(rootDirectory);
+	await validateStoragePathOutsideReleases(
+		releasesDirectory,
+		sqliteDatabasePath,
+		'sqlite-database-path-inside-release',
+		'sqlite-database-not-accessible'
+	);
 	await validateStoragePath(
 		sqliteDatabasePath,
 		'isFile',
 		'sqlite-database-not-accessible'
 	);
+	await validateStoragePathOutsideReleases(
+		releasesDirectory,
+		sqliteDatabasePath,
+		'sqlite-database-path-inside-release',
+		'sqlite-database-not-accessible'
+	);
+	await validateStoragePathOutsideReleases(
+		releasesDirectory,
+		uploadDirectoryPath,
+		'upload-directory-path-inside-release',
+		'upload-directory-not-accessible'
+	);
 	await validateStoragePath(
 		uploadDirectoryPath,
 		'isDirectory',
+		'upload-directory-not-accessible'
+	);
+	await validateStoragePathOutsideReleases(
+		releasesDirectory,
+		uploadDirectoryPath,
+		'upload-directory-path-inside-release',
 		'upload-directory-not-accessible'
 	);
 	return {

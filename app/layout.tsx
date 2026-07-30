@@ -1,20 +1,19 @@
-import { type PropsWithChildren } from 'react';
+import { config as fontawesomeConfig } from '@fortawesome/fontawesome-svg-core';
 import { type Metadata, type Viewport } from 'next';
 import Script from 'next/script';
 import { execSync } from 'node:child_process';
+import { type PropsWithChildren } from 'react';
 
-import { ThemeScript } from '@/design/hooks';
-
-import Polyfills from '@/polyfills';
-import Providers, { AddHighAppearance } from '@/providers';
-import Footer from '@/(pages)/(layout)/footer';
-import Navbar from '@/(pages)/(layout)/navbar';
-import Analytics from '@/components/analytics';
-import AnnouncementBar from '@/components/announcementBar';
-import ErrorBoundary from '@/components/errorBoundary';
-
-import { config as fontawesomeConfig } from '@fortawesome/fontawesome-svg-core';
-import { siteConfig } from '@/configs';
+import ThemeScript from './design/theme/runtime/themeScript';
+import { AnalyticsClient } from './features/analytics/client';
+import AnnouncementBar from './features/announcements/server/AnnouncementBar';
+import ErrorBoundary from './features/appShell/client/components/ErrorBoundary';
+import Navbar from './features/appShell/client/components/navbar/Navbar';
+import Footer from './features/appShell/server/Footer';
+import { PUBLIC_RUNTIME_CONFIG } from './infrastructure/environment/publicRuntimeConfig';
+import Polyfills from './polyfills';
+import Providers, { AddHighAppearance } from './providers';
+import { SITE_METADATA } from './shared/site/metadata';
 
 import './globals.scss';
 import './assets/fonts/index.css';
@@ -25,20 +24,15 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 fontawesomeConfig.autoAddCss = false;
 
 const {
-	author,
 	cdnUrl,
-	description,
-	enName,
 	isAccountFeatureClientEnabled,
 	isAnalytics,
 	isOffline,
 	isProduction,
-	keywords,
-	locale,
-	name,
-	shortName,
 	vercelSha,
-} = siteConfig;
+} = PUBLIC_RUNTIME_CONFIG;
+const { author, description, enName, keywords, locale, name, shortName } =
+	SITE_METADATA;
 
 export const metadata: Metadata = {
 	title: {
@@ -95,7 +89,8 @@ async function readRootAccountFeatureInitialData() {
 		return null;
 	}
 
-	const initialDataModule = await import('@/lib/account/server/initialData');
+	const initialDataModule =
+		await import('./features/account/server/rootInitialData');
 
 	return initialDataModule.readAccountFeatureInitialData('/');
 }
@@ -104,6 +99,15 @@ export default async function RootLayout({
 	children,
 }: PropsWithChildren<IProps>) {
 	const accountFeatureInitialData = await readRootAccountFeatureInitialData();
+	const accountInitialData =
+		accountFeatureInitialData === null
+			? null
+			: {
+					account: accountFeatureInitialData.account,
+					sessions: accountFeatureInitialData.sessions,
+					ssoGrants: accountFeatureInitialData.ssoGrants,
+					webauthn: accountFeatureInitialData.webauthn,
+				};
 
 	return (
 		<html
@@ -131,18 +135,7 @@ export default async function RootLayout({
 				<AddHighAppearance />
 				<ErrorBoundary>
 					<Providers
-						accountInitialData={
-							accountFeatureInitialData?.account ?? null
-						}
-						accountSessionInitialData={
-							accountFeatureInitialData?.sessions ?? null
-						}
-						accountSsoGrantInitialData={
-							accountFeatureInitialData?.ssoGrants ?? null
-						}
-						accountWebauthnInitialData={
-							accountFeatureInitialData?.webauthn ?? null
-						}
+						accountInitialData={accountInitialData}
 						locale={locale}
 					>
 						<div className="flex min-h-dvh-safe flex-col">
@@ -159,7 +152,7 @@ export default async function RootLayout({
 							<Footer />
 						</div>
 					</Providers>
-					{isProduction && isAnalytics && <Analytics />}
+					{isProduction && isAnalytics && <AnalyticsClient />}
 				</ErrorBoundary>
 			</body>
 		</html>

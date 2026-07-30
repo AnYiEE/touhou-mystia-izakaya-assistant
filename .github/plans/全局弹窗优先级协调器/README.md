@@ -12,7 +12,7 @@
 - 当前阶段：阶段 7 —— 自动化验证和静态回归完成。
 - 扩展阶段：根覆盖层快捷键、Esc Host 与 NavbarMenu 关闭等待已完成；Modal/Drawer 真实动画完成信号尚未接入。
 - 当前焦点：按要求未启动浏览器；交互视觉验证留给人工观测。
-- 最后更新：2026-07-10。
+- 最后更新：2026-07-30（实现 owner 与覆盖层清单复核）。
 - 历史验证：协调状态机脚本、快捷键协调脚本、全量 TypeScript、全量 ESLint、Prettier 和静态覆盖层扫描；这些记录不替代发布前重新验证。
 
 ## 核心决策
@@ -49,14 +49,25 @@
 
 ## 扫描基线
 
-- 15 处业务/Host `<Modal>` JSX：14 处业务 Modal 均传入协调配置，另 1 处是 `OverlayCoordinatorHost` 在 P0 根尚未出现时展示的不可关闭准备层，不登记协调 ID。
-- 12 类逻辑 Modal，其中隐藏酒水/料理/食材是三个逻辑实例，普客/稀客信息是两个路由实例。
+- 16 处业务/Host Modal JSX：15 处业务 `CoordinatedModal` 调用均传入协调配置，另 1 处是 `OverlayCoordinatorHost` 在 P0 根尚未出现时复用基础 `Modal` 展示的不可关闭准备层，不登记协调 ID。
+- 13 类逻辑 Modal，其中账号数据管理已作为 `account.data-manager` 子 Modal 登记；隐藏酒水/料理/食材是三个逻辑实例，普客/稀客信息是两个路由实例。
 - 1 个自定义全屏 Drawer：营业预设。
 - 1 个 Driver.js 教程。
 - 1 个移动端全屏 NavbarMenu。
-- 37 处 Popover、15 处 Dropdown、27 处 Select、5 处 Autocomplete、113 处 Tooltip，它们不作为全局协调对象（2026-07-17 按根 JSX 标签复扫）。
+- 39 处 Popover、15 处 Dropdown、27 处 Select、5 处 Autocomplete、113 处 Tooltip，它们不作为全局协调对象（2026-07-30 按根 JSX 标签复扫）。
 - 没有绕过项目封装直接使用 HeroUI Modal 的业务组件。
 - 没有原生 `<dialog>`、`showModal()`、`window.alert/confirm` 或业务层 `createPortal()`。
+
+## 当前实现 owner
+
+- 协调契约与覆盖层 ID：`app/features/overlays/contracts.ts`。
+- 定义、纯策略、瞬时 store、hook 与统一入口：`app/features/overlays/client/**`、`app/features/overlays/client.ts`。
+- 统一协调 Modal 与键盘/P0 Host：`app/features/overlays/client/CoordinatedModal.tsx`、`app/features/overlays/client/OverlayCoordinatorHost.tsx`。
+- 基础视觉 Modal：`app/design/ui/components/modal.tsx`；它不拥有业务协调策略。
+- 全局生命周期挂载：`app/providers.tsx`。
+- 导航菜单与 Spotlight：`app/features/appShell/client/components/navbar/Navbar.tsx`、`app/features/globalSearch/client/components/GlobalSpotlightSearch.tsx`。
+
+早期计划中的 `app/lib/overlayCoordinator/**`、`app/hooks/useCoordinatedOverlay.ts`、`app/components/**` 和 `app/(pages)/(layout)/navbar.tsx` 是迁移前建议或实施记录，不是当前 owner。
 
 完整清单见 [01-现状清单与边界.md](01-现状清单与边界.md)。
 

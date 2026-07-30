@@ -1,12 +1,11 @@
+import { Divider } from '@heroui/divider';
 import { type Metadata } from 'next';
 
-import { Divider } from '@heroui/divider';
+import Button from './design/ui/components/button';
+import Link from './design/ui/components/link';
+import { SITE_LINKS } from './features/appShell/links';
 
-import { Button, Link } from '@/design/ui/components';
-
-import { siteConfig } from '@/configs';
-
-const { links } = siteConfig;
+const links = SITE_LINKS;
 
 export const metadata: Metadata = { title: 'Oops!' };
 

@@ -16,18 +16,18 @@ isProject: false
 
 ## 二、新增文件
 
-| 文件                                                       | 作用                                            |
-| ---------------------------------------------------------- | ----------------------------------------------- |
-| `app/lib/account/sync/constants.ts`                        | `SYNC_NAMESPACE_MAP`、`SYNC_SCHEMA_VERSION_MAP` |
-| `app/lib/account/sync/types.ts`                            | namespace 数据类型                              |
-| `app/lib/account/sync/serializers/customerNormalMeals.ts`  | 普客套餐                                        |
-| `app/lib/account/sync/serializers/customerRareMeals.ts`    | 稀客套餐                                        |
-| `app/lib/account/sync/serializers/customerRarePlans.ts`    | 稀客营业预设（当前 schema v3）                  |
-| `app/lib/account/sync/serializers/customerRareSettings.ts` | 稀客设置                                        |
-| `app/lib/account/sync/serializers/globalPreferences.ts`    | 全局设置白名单                                  |
-| `app/lib/account/sync/serializers/theme.ts`                | 主题                                            |
-| `app/lib/account/sync/serializers/tutorialCustomerRare.ts` | 稀客教程                                        |
-| `app/lib/account/sync/index.ts`                            | 同步常量与类型统一导出（不导出 serializer）     |
+| 文件                                                            | 作用                                             |
+| --------------------------------------------------------------- | ------------------------------------------------ |
+| `app/features/account/sync/constants.ts`                        | `SYNC_NAMESPACE_MAP`、`SYNC_SCHEMA_VERSION_MAP`  |
+| `app/features/account/sync/types.ts`                            | namespace 数据类型                               |
+| `app/features/account/sync/serializers/customerNormalMeals.ts`  | 普客套餐                                         |
+| `app/features/account/sync/serializers/customerRareMeals.ts`    | 稀客套餐                                         |
+| `app/features/account/sync/serializers/customerRarePlans.ts`    | 稀客营业预设（当前 schema v3）                   |
+| `app/features/account/sync/serializers/customerRareSettings.ts` | 稀客设置                                         |
+| `app/features/account/sync/serializers/globalPreferences.ts`    | 全局设置白名单                                   |
+| `app/features/account/sync/serializers/theme.ts`                | 主题                                             |
+| `app/features/account/sync/serializers/tutorialCustomerRare.ts` | 稀客教程                                         |
+| `app/features/account/sync/contracts.ts` / `protocol.ts`        | 同步领域契约与 HTTP 协议（无 serializer barrel） |
 
 ## 三、namespace 清单
 
@@ -271,12 +271,12 @@ if (localHas === baseHas) return cloudHas;
 
 **新增：**
 
-- `app/lib/account/sync/serializers/globalPreferencesMerge.ts`：纯函数模块，承载 donation 状态、集合成员和整份 global preferences 合并；不得导入 store、React、DOM、账号客户端或运行时配置。
+- `app/features/account/sync/serializers/globalPreferencesMerge.ts`：纯函数模块，承载 donation 状态、集合成员和整份 global preferences 合并；不得导入 store、React、DOM、账号客户端或运行时配置。
 
 **修改：**
 
-- `app/lib/account/sync/serializers/globalPreferences.ts`：保留 snapshot 获取、迁移、校验、序列化和本地写回；将 `merge()` 委托给纯合并模块，并提供 DLC、列、酒水、食材和料理的稳定允许值顺序。
-- `app/lib/account/client/syncClient.ts`：旧版仅 interaction count 冲突的恢复 shim 扩展为 donation-only 自动合并；其余字段必须完全相同且不得带 `localCollision`，先以 CAS 把新 `merged`/自动决议写回 paused entry，再由现有 journal 流程执行，自动选择由新 merge result 的 `cloud`/`merged` 决定。
+- `app/features/account/sync/serializers/globalPreferences.ts`：保留 snapshot 获取、迁移、校验、序列化和本地写回；将 `merge()` 委托给纯合并模块，并提供 DLC、列、酒水、食材和料理的稳定允许值顺序。
+- `app/features/account/client/sync/conflictOrchestration.ts` 与 `conflicts/*`：处理 donation-only 自动合并、CAS 写回 paused entry 和 journal 恢复；其余字段必须完全相同且不得带 `localCollision`，自动选择由 merge result 的 `cloud`/`merged` 决定。
 - `.github/plans/账号系统/05-namespace序列化与冲突合并落地.plan.md`：实现完成后把本节状态改为已落地，并记录真实验证结果。
 - `.github/plans/账号系统/07-验证清单与发布回归.plan.md`：实现完成后增加 donation 状态感知、正交子字段和集合成员的多设备回归项。
 - `.github/plans/账号系统/17-同步冲突语义与虚拟预设改造.plan.md`：保留原计划历史，并注明本节是后续细化的事实来源。
@@ -343,8 +343,8 @@ pnpm exec esbuild .tmp/tmiaa-sync-global-preferences-merge.ts \
 
 ## 十二、代码落地状态
 
-- 已新增 [app/lib/account/sync/serializers/customerNormalMeals.ts](../../../app/lib/account/sync/serializers/customerNormalMeals.ts)、[app/lib/account/sync/serializers/customerRareMeals.ts](../../../app/lib/account/sync/serializers/customerRareMeals.ts)、[app/lib/account/sync/serializers/customerRareSettings.ts](../../../app/lib/account/sync/serializers/customerRareSettings.ts)、[app/lib/account/sync/serializers/globalPreferences.ts](../../../app/lib/account/sync/serializers/globalPreferences.ts)、[app/lib/account/sync/serializers/theme.ts](../../../app/lib/account/sync/serializers/theme.ts) 和 [app/lib/account/sync/serializers/tutorialCustomerRare.ts](../../../app/lib/account/sync/serializers/tutorialCustomerRare.ts)。
-- 已新增 [app/lib/account/sync/serializers/meals.ts](../../../app/lib/account/sync/serializers/meals.ts) 和 [app/lib/account/sync/serializers/utils.ts](../../../app/lib/account/sync/serializers/utils.ts)，集中处理稳定签名、默认值比较、字段级合并与套餐纯新增合并。
-- 已新增 [app/lib/account/sync/serializers/customerRarePlans.ts](../../../app/lib/account/sync/serializers/customerRarePlans.ts) 与 [customerRarePlansMerge.ts](../../../app/lib/account/sync/serializers/customerRarePlansMerge.ts)，并由客户端共同基线、`requiresConfirmation` 和统一 merge-result 路由区分静默收敛、确认与真实冲突。
-- 已更新 [app/design/hooks/use-theme/useTheme.ts](../../../app/design/hooks/use-theme/useTheme.ts)，导出 `applyTheme`、`getStoredTheme` 和同标签监听，供 `theme` serializer 写回当前 DOM、storage 与 React 状态。
-- serializer 未从 [app/lib/account/sync/index.ts](../../../app/lib/account/sync/index.ts) 导出，避免服务端 API 路由导入浏览器 store/theme 代码。
+- [app/features/account/sync/serializers](../../../app/features/account/sync/serializers) 承载各 namespace 的 snapshot、迁移、校验、序列化、合并和本地写回策略。
+- [meals.ts](../../../app/features/account/sync/serializers/meals.ts) 和 [utils.ts](../../../app/features/account/sync/serializers/utils.ts) 集中处理稳定签名、默认值比较、字段级合并与套餐纯新增合并。
+- [customerRarePlans.ts](../../../app/features/account/sync/serializers/customerRarePlans.ts) 与 [customerRarePlansMerge.ts](../../../app/features/account/sync/serializers/customerRarePlansMerge.ts) 配合客户端共同基线、`requiresConfirmation` 和统一 merge-result 路由区分静默收敛、确认与真实冲突。
+- [useTheme.ts](../../../app/design/theme/runtime/useTheme.ts) 与 [accountSync.ts](../../../app/design/theme/runtime/accountSync.ts) 承担主题读取、应用和账号同步适配，供 `theme` serializer 写回当前 DOM、storage 与 React 状态。
+- serializer 不通过同步公共入口导出，服务端 API 只依赖 `contracts.ts`、`protocol.ts`、`types.ts` 和 `validation.ts` 等运行时安全边界，避免导入浏览器 store/theme 代码。

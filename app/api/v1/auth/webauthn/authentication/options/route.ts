@@ -1,14 +1,15 @@
 import { type NextRequest } from 'next/server';
 import { randomUUID } from 'node:crypto';
 
+import { WEBAUTHN_CHALLENGE_TTL_MS } from '@/features/account/constants';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-} from '@/lib/account/server/routeResponses';
-import { WEBAUTHN_CHALLENGE_TTL_MS } from '@/lib/account/shared/constants';
-import { createNoStoreJsonResponse } from '@/lib/api/routeResponses';
+} from '@/features/account/server/http/routeGuards';
+
+import { createNoStoreJsonResponse } from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -43,8 +44,8 @@ export async function POST(request: NextRequest) {
 	}
 
 	const [webauthnModule, challengesModule] = await Promise.all([
-		import('@/lib/account/server/webauthn'),
-		import('@/lib/account/server/repositories/webauthnChallenges'),
+		import('@/features/account/webauthn/server/service'),
+		import('@/features/account/webauthn/server/persistence/challenges'),
 	]);
 
 	const options = await webauthnModule.buildAuthenticationOptions();

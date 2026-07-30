@@ -1,16 +1,5 @@
-'use client';
-
-import { useMounted } from '@/hooks';
-
-import Content from './content';
-import Loading from '@/loading';
+import PreferencesPage from '@/features/preferences/client/components/PreferencesPage';
 
 export default function Preferences() {
-	const isMounted = useMounted();
-
-	if (!isMounted) {
-		return <Loading />;
-	}
-
-	return <Content />;
+	return <PreferencesPage />;
 }

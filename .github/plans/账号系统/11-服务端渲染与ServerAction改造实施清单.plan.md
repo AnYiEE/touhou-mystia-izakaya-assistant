@@ -11,33 +11,34 @@ isProject: false
 
 ## 一、当前实施状态
 
-| 范围             | 状态   | 当前实现                                                                  |
-| ---------------- | ------ | ------------------------------------------------------------------------- |
-| 根级账号首载     | 已落地 | `app/layout.tsx` → `app/lib/account/server/initialData.ts`                |
-| 客户端水合       | 已落地 | `providers.tsx` 中账号、会话、SSO grants、WebAuthn hydrator；随后权威刷新 |
-| 全局账号生命周期 | 已落地 | `providers.tsx` 启停 `startAccountFeatureClients()` 与全局账号 Modal      |
-| 普通账号交互     | 已落地 | `app/lib/account/client/api.ts` → `/api/v1/auth/*`、`account/*`、`sync/*` |
-| 后台首载         | 已落地 | 页面服务器组件和相邻 `server.ts` 直接复用 service/repository              |
-| 后台交互         | 已落地 | `app/(pages)/admin/api.ts` → `/api/v1/admin/*`                            |
-| SSO 授权页       | 已落地 | 服务器页面预读上下文/授权；浏览器确认调用公开协议 route                   |
-| Server Action    | 未采用 | 当前 `app/` 无 `use server`，原 action 文件均不存在                       |
+| 范围             | 状态   | 当前实现                                                                       |
+| ---------------- | ------ | ------------------------------------------------------------------------------ |
+| 根级账号首载     | 已落地 | `app/layout.tsx` → `app/features/account/server/rootInitialData.ts`            |
+| 客户端水合       | 已落地 | `providers.tsx` 中账号、会话、SSO grants、WebAuthn hydrator；随后权威刷新      |
+| 全局账号生命周期 | 已落地 | `providers.tsx` 启停 `startAccountFeatureClients()` 与全局账号 Modal           |
+| 普通账号交互     | 已落地 | `app/features/account/client/api.ts` → `/api/v1/auth/*`、`account/*`、`sync/*` |
+| 后台首载         | 已落地 | 页面服务器组件和相邻 `server.ts` 直接复用 service/repository                   |
+| 后台交互         | 已落地 | `app/features/admin/client/api.ts` 与 SSO 管理 API helpers → `/api/v1/admin/*` |
+| SSO 授权页       | 已落地 | 服务器页面预读上下文/授权；浏览器确认调用公开协议 route                        |
+| Server Action    | 未采用 | 当前 `app/` 无 `use server`，原 action 文件均不存在                            |
 
 ## 二、实际文件边界
 
 ### 服务器首载
 
 - [app/layout.tsx](../../../app/layout.tsx)
-- [app/lib/account/server/initialData.ts](../../../app/lib/account/server/initialData.ts)
-- [app/(pages)/admin/sso/server.ts](<../../../app/(pages)/admin/sso/server.ts>)
-- [app/(pages)/admin/announcements/server.ts](<../../../app/(pages)/admin/announcements/server.ts>)
+- [app/features/account/server/rootInitialData.ts](../../../app/features/account/server/rootInitialData.ts)
+- [app/features/account/sso/admin/server](../../../app/features/account/sso/admin/server)
+- [app/features/announcements/admin/server](../../../app/features/announcements/admin/server)
 - 各后台页面服务器组件及其 service/repository
 
 ### 客户端生命周期与调用
 
 - [app/providers.tsx](../../../app/providers.tsx)
-- [app/lib/account/client/featureClient.tsx](../../../app/lib/account/client/featureClient.tsx)
-- [app/lib/account/client/api.ts](../../../app/lib/account/client/api.ts)
-- [app/(pages)/admin/api.ts](<../../../app/(pages)/admin/api.ts>)
+- [app/features/account/client/featureClient.tsx](../../../app/features/account/client/featureClient.tsx)
+- [app/features/account/client/api.ts](../../../app/features/account/client/api.ts)
+- [app/features/admin/client/api.ts](../../../app/features/admin/client/api.ts)
+- [app/features/account/sso/admin/client/api](../../../app/features/account/sso/admin/client/api)
 - 账号 initial-data hydrator 组件
 
 ### 稳定 API

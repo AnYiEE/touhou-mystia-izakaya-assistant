@@ -1,20 +1,21 @@
 import { type NextRequest } from 'next/server';
 
+import { authenticateAdminFromRequest } from '@/features/account/admin/server/http/authentication';
+import {
+	checkAdminCsrfRouteResponse,
+	checkAdminFeatureRouteResponse,
+} from '@/features/account/admin/server/http/routeResponses';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-} from '@/lib/account/server/routeResponses';
-import {
-	authenticateAdminFromRequest,
-	checkAdminCsrfRouteResponse,
-	checkAdminFeatureRouteResponse,
-} from '@/lib/account/server/adminRouteResponses';
+} from '@/features/account/server/http/routeGuards';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
 		console.warn('Admin logout rate limit exceeded; continuing logout.');
 	}
 
-	const adminModule = await import('@/lib/account/server/admin');
+	const adminModule = await import('@/features/account/admin/server/auth');
 	const auth = await authenticateAdminFromRequest(request);
 	if (auth.status === 'error') {
 		return createNoStoreErrorResponse(auth.message, auth.httpStatus);

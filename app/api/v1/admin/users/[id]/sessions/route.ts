@@ -1,21 +1,22 @@
 import { type NextRequest } from 'next/server';
 
+import { authenticateAdminFromRequest } from '@/features/account/admin/server/http/authentication';
+import {
+	checkAdminCsrfRouteResponse,
+	checkAdminFeatureRouteResponse,
+	createAdminAuthErrorRouteResponse,
+} from '@/features/account/admin/server/http/routeResponses';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-} from '@/lib/account/server/routeResponses';
-import {
-	authenticateAdminFromRequest,
-	checkAdminCsrfRouteResponse,
-	checkAdminFeatureRouteResponse,
-	createAdminAuthErrorRouteResponse,
-} from '@/lib/account/server/adminRouteResponses';
+} from '@/features/account/server/http/routeGuards';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -72,9 +73,9 @@ export async function DELETE(
 
 	const [usersModule, sessionsModule, accountAuditModule] = await Promise.all(
 		[
-			import('@/lib/account/server/repositories/users'),
-			import('@/lib/account/server/repositories/sessions'),
-			import('@/lib/account/server/accountAuditService'),
+			import('@/features/account/server/persistence/repositories/users'),
+			import('@/features/account/server/persistence/repositories/sessions'),
+			import('@/features/account/server/audit/service'),
 		]
 	);
 	const user = await usersModule.findUserById(id);

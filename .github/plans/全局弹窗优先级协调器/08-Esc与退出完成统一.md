@@ -12,6 +12,8 @@
 
 ## 实施进度
 
+当前协调协议、Host、store 与 hook 位于 `app/features/overlays/client/**`，稳定契约位于 `app/features/overlays/contracts.ts`；Modal 适配层是 `app/features/overlays/client/CoordinatedModal.tsx`，基础视觉包装层是 `app/design/ui/components/modal.tsx`。Navbar、Spotlight 和各业务 Modal 只持有自身打开意图与关闭副作用。
+
 - 已完成：单一 `OverlayCoordinatorHost` 接管 Ctrl/⌘+K、`/` capture 监听。
 - 已完成：快捷键定义随 `global.search` 登记，协调器先完成门控或子任务压栈，再触发搜索业务状态。
 - 已完成：重复快捷键、教程拒绝、文本输入避让与事件消费规则的纯状态脚本。

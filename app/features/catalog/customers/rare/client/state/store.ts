@@ -1,0 +1,106 @@
+import { customerRarePersistenceStore } from './persistenceStore';
+
+export const customerRareStore = {
+	instances: customerRarePersistenceStore.instances,
+	persistence: {
+		beverage: customerRarePersistenceStore.persistence.beverage,
+		customer: customerRarePersistenceStore.persistence.customer,
+		ingredient: customerRarePersistenceStore.persistence.ingredient,
+		meals: customerRarePersistenceStore.persistence.meals,
+		recipe: customerRarePersistenceStore.persistence.recipe,
+	},
+	shared: {
+		beverage: customerRarePersistenceStore.shared.beverage,
+		customer: customerRarePersistenceStore.shared.customer,
+		hiddenItems: customerRarePersistenceStore.shared.hiddenItems,
+		ingredient: customerRarePersistenceStore.shared.ingredient,
+		recipe: customerRarePersistenceStore.shared.recipe,
+		tab: customerRarePersistenceStore.shared.tab,
+	},
+
+	availableBeverageAvailabilityDlcs:
+		customerRarePersistenceStore.availableBeverageAvailabilityDlcs,
+	availableBeverageNames: customerRarePersistenceStore.availableBeverageNames,
+	availableBeverageTags: customerRarePersistenceStore.availableBeverageTags,
+	availableCustomerAvailabilityDlcs:
+		customerRarePersistenceStore.availableCustomerAvailabilityDlcs,
+	availableCustomerNames: customerRarePersistenceStore.availableCustomerNames,
+	availableCustomerPlaces:
+		customerRarePersistenceStore.availableCustomerPlaces,
+	availableIngredientAvailabilityDlcs:
+		customerRarePersistenceStore.availableIngredientAvailabilityDlcs,
+	availableIngredientLevels:
+		customerRarePersistenceStore.availableIngredientLevels,
+	availableIngredientTags:
+		customerRarePersistenceStore.availableIngredientTags,
+	availableRecipeAvailabilityDlcs:
+		customerRarePersistenceStore.availableRecipeAvailabilityDlcs,
+	availableRecipeCookers: customerRarePersistenceStore.availableRecipeCookers,
+	availableRecipeNames: customerRarePersistenceStore.availableRecipeNames,
+	availableRecipeTags: customerRarePersistenceStore.availableRecipeTags,
+	beverageTableAvailabilityDlcs:
+		customerRarePersistenceStore.beverageTableAvailabilityDlcs,
+	beverageTableRows: customerRarePersistenceStore.beverageTableRows,
+	bondRewards: customerRarePersistenceStore.bondRewards,
+	currentMealPrice: customerRarePersistenceStore.currentMealPrice,
+	ingredientScoreChanges: customerRarePersistenceStore.ingredientScoreChanges,
+	recipeTableAvailabilityDlcs:
+		customerRarePersistenceStore.recipeTableAvailabilityDlcs,
+	recipeTableCookers: customerRarePersistenceStore.recipeTableCookers,
+	recipeTableRows: customerRarePersistenceStore.recipeTableRows,
+	savedCustomerMealsWithEvaluation:
+		customerRarePersistenceStore.savedCustomerMealsWithEvaluation,
+	unsatisfiedSelectionTip:
+		customerRarePersistenceStore.unsatisfiedSelectionTip,
+
+	evaluateMealResult: customerRarePersistenceStore.evaluateMealResult,
+	onBeverageTableAction: customerRarePersistenceStore.onBeverageTableAction,
+	onBeverageTablePageChange:
+		customerRarePersistenceStore.onBeverageTablePageChange,
+	onBeverageTableSearchValueChange:
+		customerRarePersistenceStore.onBeverageTableSearchValueChange,
+	onBeverageTableSelectedAvailabilityDlcsChange:
+		customerRarePersistenceStore.onBeverageTableSelectedAvailabilityDlcsChange,
+	onBeverageTableSelectedTagsChange:
+		customerRarePersistenceStore.onBeverageTableSelectedTagsChange,
+	onBeverageTableSortChange:
+		customerRarePersistenceStore.onBeverageTableSortChange,
+	onCustomerFilterBeverageTag:
+		customerRarePersistenceStore.onCustomerFilterBeverageTag,
+	onCustomerFilterRecipeTag:
+		customerRarePersistenceStore.onCustomerFilterRecipeTag,
+	onCustomerOrderBeverageTag:
+		customerRarePersistenceStore.onCustomerOrderBeverageTag,
+	onCustomerOrderRecipeTag:
+		customerRarePersistenceStore.onCustomerOrderRecipeTag,
+	onCustomerSelectedChange:
+		customerRarePersistenceStore.onCustomerSelectedChange,
+	onIngredientSelectedChange:
+		customerRarePersistenceStore.onIngredientSelectedChange,
+	onRecipeTableAction: customerRarePersistenceStore.onRecipeTableAction,
+	onRecipeTablePageChange:
+		customerRarePersistenceStore.onRecipeTablePageChange,
+	onRecipeTableSearchValueChange:
+		customerRarePersistenceStore.onRecipeTableSearchValueChange,
+	onRecipeTableSelectedAvailabilityDlcsChange:
+		customerRarePersistenceStore.onRecipeTableSelectedAvailabilityDlcsChange,
+	onRecipeTableSelectedCookersChange:
+		customerRarePersistenceStore.onRecipeTableSelectedCookersChange,
+	onRecipeTableSelectedPositiveTagsChange:
+		customerRarePersistenceStore.onRecipeTableSelectedPositiveTagsChange,
+	onRecipeTableSortChange:
+		customerRarePersistenceStore.onRecipeTableSortChange,
+	onTabSelectionChange: customerRarePersistenceStore.onTabSelectionChange,
+	refreshCustomer: customerRarePersistenceStore.refreshCustomer,
+	refreshCustomerSelectedItems:
+		customerRarePersistenceStore.refreshCustomerSelectedItems,
+	removeMealIngredient: customerRarePersistenceStore.removeMealIngredient,
+	saveMealResult: customerRarePersistenceStore.saveMealResult,
+	toggleCustomerTabVisibilityState:
+		customerRarePersistenceStore.toggleCustomerTabVisibilityState,
+	toggleIngredientTabVisibilityState:
+		customerRarePersistenceStore.toggleIngredientTabVisibilityState,
+	toggleMystiaCooker: customerRarePersistenceStore.toggleMystiaCooker,
+	updateRecipeTagsWithTrend:
+		customerRarePersistenceStore.updateRecipeTagsWithTrend,
+};

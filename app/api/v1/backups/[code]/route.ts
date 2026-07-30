@@ -1,14 +1,15 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { parseLegacyBackupCode } from '@/lib/account/server/legacyBackupCode';
-import { getLegacyBackupRequestMeta as getRequestMeta } from '@/lib/account/server/legacyBackupRequest';
-import { createRetryAfterHeaders } from '@/lib/api/http';
+import { parseLegacyBackupCode } from '@/features/legacyBackup/server/code';
+import { getLegacyBackupRequestMeta } from '@/features/legacyBackup/server/requestContext';
+
+import { createRetryAfterHeaders } from '@/infrastructure/http/headers';
+import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
 import {
 	NO_STORE_HEADERS,
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
-import { FILE_TYPE_JSON } from '@/utilities';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,9 +24,9 @@ export async function GET(
 		return createNoStoreErrorResponse('Invalid code', 400);
 	}
 
-	const requestMeta = getRequestMeta(request);
+	const requestMeta = getLegacyBackupRequestMeta(request);
 	const legacyBackupModule =
-		await import('@/lib/account/server/legacyBackup');
+		await import('@/features/legacyBackup/server/service');
 	const downloadResult = await legacyBackupModule.downloadLegacyBackupData({
 		code,
 		ip: requestMeta.ip,
@@ -52,9 +53,9 @@ export async function DELETE(
 		return createNoStoreErrorResponse('Invalid code', 400);
 	}
 
-	const requestMeta = getRequestMeta(request);
+	const requestMeta = getLegacyBackupRequestMeta(request);
 	const legacyBackupModule =
-		await import('@/lib/account/server/legacyBackup');
+		await import('@/features/legacyBackup/server/service');
 	const deleteResult = await legacyBackupModule.deleteLegacyBackupData({
 		code,
 		ip: requestMeta.ip,

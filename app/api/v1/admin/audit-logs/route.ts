@@ -1,15 +1,18 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
+import { type TSsoActorType } from '@/domain/account/contracts';
+
+import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
+
 import {
+	getTrimmedSearchParam,
 	parseNonNegativeIntegerParam,
 	parsePositiveIntegerParam,
-} from '@/lib/api/adminPagination';
+} from '@/infrastructure/http/queryParameters';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
-import { type TSsoActorType } from '@/lib/db/types';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,12 +22,6 @@ const MAX_AUDIT_LOG_OFFSET = 5000;
 const MAX_PAGE = 250;
 const MAX_PAGE_SIZE = 100;
 const MIN_AUDIT_LOG_QUERY_LENGTH = 2;
-
-function getTrimmedSearchParam(request: NextRequest, name: string) {
-	const value = request.nextUrl.searchParams.get(name)?.trim();
-
-	return value === undefined || value === '' ? undefined : value;
-}
 
 function parseActorType(value: string | undefined) {
 	if (value === undefined) {
@@ -37,10 +34,7 @@ function parseActorType(value: string | undefined) {
 }
 
 export async function GET(request: NextRequest) {
-	const check = await checkAdminSsoClientRequest(
-		request,
-		'admin-list-audit-logs'
-	);
+	const check = await checkAdminRequest(request, 'admin-list-audit-logs');
 	if (check.status === 'error') {
 		return check.response;
 	}
@@ -71,15 +65,27 @@ export async function GET(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const action = getTrimmedSearchParam(request, 'action');
-	const actorId = getTrimmedSearchParam(request, 'actor_id');
-	const actorType = parseActorType(
-		getTrimmedSearchParam(request, 'actor_type')
+	const action = getTrimmedSearchParam(
+		request.nextUrl.searchParams,
+		'action'
 	);
-	const query = getTrimmedSearchParam(request, 'query');
-	const scope = getTrimmedSearchParam(request, 'scope');
-	const targetId = getTrimmedSearchParam(request, 'target_id');
-	const targetType = getTrimmedSearchParam(request, 'target_type');
+	const actorId = getTrimmedSearchParam(
+		request.nextUrl.searchParams,
+		'actor_id'
+	);
+	const actorType = parseActorType(
+		getTrimmedSearchParam(request.nextUrl.searchParams, 'actor_type')
+	);
+	const query = getTrimmedSearchParam(request.nextUrl.searchParams, 'query');
+	const scope = getTrimmedSearchParam(request.nextUrl.searchParams, 'scope');
+	const targetId = getTrimmedSearchParam(
+		request.nextUrl.searchParams,
+		'target_id'
+	);
+	const targetType = getTrimmedSearchParam(
+		request.nextUrl.searchParams,
+		'target_type'
+	);
 	if (actorType === null) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
@@ -88,7 +94,7 @@ export async function GET(request: NextRequest) {
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminAuditService');
+		await import('@/features/account/admin/server/audit/service');
 	const result = await serviceModule.listAdminAuditLogs({
 		page,
 		pageSize,

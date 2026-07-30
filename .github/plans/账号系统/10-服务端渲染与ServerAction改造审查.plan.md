@@ -11,11 +11,11 @@ isProject: false
 
 ## 一、当前结论
 
-- 当前 `app/` 中没有 `"use server"` / `'use server'` 模块，也没有 `app/lib/account/actions/*` 或后台 `actions.ts` 实现。
-- [app/layout.tsx](../../../app/layout.tsx) 在账号启用的自托管运行时调用 [initialData.ts](../../../app/lib/account/server/initialData.ts)，读取账号、会话、SSO grants 与 WebAuthn 首屏数据；因此该运行模式的根布局具有请求期账号读取，不应再宣称普通页面仍全部保持 static/SSG。
+- 当前 `app/` 中没有 `"use server"` / `'use server'` 模块，也没有账号或后台 Server Action 实现；历史 `app/lib/account/actions/*` 仅是已放弃方案中的路径。
+- [app/layout.tsx](../../../app/layout.tsx) 在账号启用的自托管运行时调用 [rootInitialData.ts](../../../app/features/account/server/rootInitialData.ts)，读取账号、会话、SSO grants 与 WebAuthn 首屏数据；因此该运行模式的根布局具有请求期账号读取，不应再宣称普通页面仍全部保持 static/SSG。
 - [app/providers.tsx](../../../app/providers.tsx) 使用专用 hydrator 提交服务器快照，并在 hydration 后再次刷新账号权威状态，覆盖服务器响应到客户端监听器挂载之间的账号变化。
 - 管理后台服务器组件通过相邻 `server.ts` helper 直接复用 service/repository 读取首屏数据，不从服务器反向 fetch 自身 API。
-- 浏览器普通账号操作集中在 [app/lib/account/client/api.ts](../../../app/lib/account/client/api.ts)，后台操作集中在 [app/(pages)/admin/api.ts](<../../../app/(pages)/admin/api.ts>)；两者均通过 `fetchServiceApi` 请求 `/api/v1/*`。
+- 浏览器普通账号操作集中在 [app/features/account/client/api.ts](../../../app/features/account/client/api.ts)，后台操作集中在 [app/features/admin/client/api.ts](../../../app/features/admin/client/api.ts) 与 [app/features/account/sso/admin/client/api](../../../app/features/account/sso/admin/client/api)；它们均通过 `fetchServiceApi` 请求 `/api/v1/*`。
 - `/api/v1/auth/*`、`/api/v1/account/*`、`/api/v1/sync/*`、`/api/v1/admin/*`、`/api/v1/sso/*` 是当前运行契约，不是仅供外部兼容的旁路。
 - `navigator.sendBeacon` 的 `/api/v1/sync/ping`、外部 SSO validate/status/callback、旧备份和管理 API 必须继续保留 route 形态。
 

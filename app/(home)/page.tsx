@@ -1,27 +1,27 @@
 'use client';
 
+import { faQq } from '@fortawesome/free-brands-svg-icons';
 import { useMemo } from 'react';
 
-import { faQq } from '@fortawesome/free-brands-svg-icons';
-
-import {
-	Button,
-	Link,
-	Popover,
+import Button from '@/design/ui/components/button';
+import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
+import Link from '@/design/ui/components/link';
+import Placeholder from '@/design/ui/components/placeholder';
+import Popover, {
 	PopoverContent,
 	PopoverTrigger,
-	Tooltip,
-} from '@/design/ui/components';
+} from '@/design/ui/components/popover';
+import QRCode from '@/design/ui/components/qrCode';
+import Tooltip from '@/design/ui/components/tooltip';
+import Rednote from '@/design/ui/icons/Rednote';
 
-import { trackEvent } from '@/components/analytics';
-import FontAwesomeIconButton from '@/components/fontAwesomeIconButton';
-import Placeholder from '@/components/placeholder';
-import QRCode from '@/components/qrCode';
-import Rednote from '@/components/rednote';
+import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { SITE_LINKS } from '@/features/appShell/links';
 
-import { siteConfig } from '@/configs';
+import { SITE_METADATA } from '@/shared/site/metadata';
 
-const { links, shortName } = siteConfig;
+const links = SITE_LINKS;
+const { shortName } = SITE_METADATA;
 
 export default function Home() {
 	const qqCodeContent = useMemo(

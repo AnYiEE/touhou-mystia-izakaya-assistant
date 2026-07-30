@@ -1,21 +1,22 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAccountFeatureRouteResponse } from '@/lib/account/server/routeResponses';
-import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
-import { checkSsoRateLimitRouteResponse } from '@/lib/account/server/ssoRouteResponses';
+import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
+import { checkAccountFeatureRouteResponse } from '@/features/account/server/http/routeGuards';
+import { createAccountUserProfile } from '@/features/account/server/presentation/user';
+import { checkSsoRateLimitRouteResponse } from '@/features/account/sso/server/http/routeResponses';
 import {
 	checkSsoClientId,
 	checkSsoClientSecret,
 	checkSsoCodeVerifier,
 	checkSsoTicketFormat,
-} from '@/lib/account/server/ssoValidation';
-import { createAccountUserProfile } from '@/lib/account/server/user';
+} from '@/features/account/sso/server/validation';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	readJsonBodyResult,
-} from '@/lib/api/routeResponses';
-import { getLogSafeErrorCode } from '@/lib/logging';
+} from '@/infrastructure/http/server/responses';
+import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	try {
-		const ssoModule = await import('@/lib/account/server/sso');
+		const ssoModule = await import('@/features/account/sso/server');
 		const validation = await ssoModule.validateSsoTicketWithClientSecret(
 			clientId,
 			clientSecret,

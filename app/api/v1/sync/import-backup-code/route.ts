@@ -1,21 +1,21 @@
 import { type NextRequest } from 'next/server';
 import { validate } from 'uuid';
 
+import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-	createAccountAuthErrorRouteResponse,
-	readJsonBodyResult,
-} from '@/lib/account/server/routeResponses';
-import { AccountSyncCapacityExceededError } from '@/lib/account/server/syncCapacity';
-import { ACCOUNT_SYNC_STATUS_MAP } from '@/lib/account/shared/constants';
+} from '@/features/account/server/http/routeGuards';
+import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+import { type TImportLegacyBackupUseCaseResult } from '@/features/account/sync/server/importLegacyBackupUseCase';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -24,43 +24,46 @@ interface IImportBackupCodeBody {
 	code: string;
 }
 
-function createImportBackupErrorResponse(error: unknown) {
-	if (error instanceof AccountSyncCapacityExceededError) {
+function createImportBackupResponse(result: TImportLegacyBackupUseCaseResult) {
+	if (result.status === 'ok') {
+		return createNoStoreJsonResponse({ results: result.results });
+	}
+	if (result.error === 'sync-account-capacity-exceeded') {
 		return createNoStoreErrorResponse(
 			'sync-account-capacity-exceeded',
 			409,
 			{
-				candidate_bytes: error.details.candidateBytes,
-				current_bytes: error.details.currentBytes,
-				limit_bytes: error.details.limitBytes,
-				namespaces: error.details.namespaces,
+				candidate_bytes: result.details.candidateBytes,
+				current_bytes: result.details.currentBytes,
+				limit_bytes: result.details.limitBytes,
+				namespaces: result.details.namespaces,
 			}
 		);
 	}
-	if (!(error instanceof Error)) {
-		return null;
+	switch (result.error) {
+		case 'state-epoch-mismatch':
+		case 'sync-generation-mismatch':
+		case 'sync-paused':
+			return createNoStoreErrorResponse(result.error, 409, {
+				state_epoch: result.state.stateEpoch,
+				sync_generation: result.state.syncGeneration,
+				sync_status: result.state.syncStatus,
+			});
+		case 'unauthorized':
+			return createNoStoreErrorResponse('unauthorized', 401);
+		case 'backup-code-not-found':
+			return createNoStoreErrorResponse('backup-code-not-found', 404);
+		case 'invalid-backup-file':
+			return createNoStoreErrorResponse('invalid-backup-file', 400);
+		case 'server-misconfigured':
+			return createNoStoreErrorResponse('server-misconfigured', 500);
+		case 'sync-conflict':
+			return createNoStoreErrorResponse('sync-conflict', 409);
+		case 'backup-code-lock-lost':
+			return createNoStoreErrorResponse('backup-code-lock-lost', 409);
+		case 'backup-code-lock-timeout':
+			return createNoStoreErrorResponse('backup-code-lock-timeout', 409);
 	}
-
-	if (error.message === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
-	}
-	if (error.message === 'backup-code-not-found') {
-		return createNoStoreErrorResponse('backup-code-not-found', 404);
-	}
-	if (error.message === 'invalid-backup-file') {
-		return createNoStoreErrorResponse('invalid-backup-file', 400);
-	}
-	if (error.message === 'server-misconfigured') {
-		return createNoStoreErrorResponse('server-misconfigured', 500);
-	}
-	if (error.message === 'sync-conflict') {
-		return createNoStoreErrorResponse('sync-conflict', 409);
-	}
-	if (error.message === 'backup-code-lock-lost') {
-		return createNoStoreErrorResponse('backup-code-lock-lost', 409);
-	}
-
-	return null;
 }
 
 export async function POST(request: NextRequest) {
@@ -99,13 +102,11 @@ export async function POST(request: NextRequest) {
 	}
 	const code = rawCode.toLowerCase();
 
-	const [authModule, lockModule, backupImportModule, accountAuditModule] =
-		await Promise.all([
-			import('@/lib/account/server/auth'),
-			import('@/actions/backup/lock'),
-			import('@/lib/account/server/backupImport'),
-			import('@/lib/account/server/accountAuditService'),
-		]);
+	const [authModule, csrfModule, importModule] = await Promise.all([
+		import('@/features/account/server/auth/requestAuthentication'),
+		import('@/features/account/server/auth/accountCsrf'),
+		import('@/features/account/sync/server/importLegacyBackupUseCase'),
+	]);
 	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
 		return createAccountAuthErrorRouteResponse(auth, request);
@@ -121,142 +122,16 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
+	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
-	if (auth.data.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
-		return createNoStoreErrorResponse('sync-paused', 409, {
-			state_epoch: auth.data.user.state_epoch,
-			sync_generation: auth.data.user.sync_generation,
-			sync_status: auth.data.user.sync_status,
-		});
-	}
 
-	const codeDigest = accountAuditModule.createAccountAuditValueDigest(code);
-	const createAuditInput = (
-		result: 'already-imported' | 'imported',
-		namespaceCount: number,
-		stateEpoch: number
-	) =>
-		accountAuditModule.createAccountUserAuditLogInput({
-			action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
-				.accountDataImported,
-			metadata: {
-				backup_code_digest: codeDigest,
-				namespace_count: namespaceCount,
-				result,
-				state_epoch: stateEpoch,
-			},
-			request,
-			userId: auth.data.user.id,
-		});
+	const result = await importModule.importLegacyBackupUseCase({
+		code,
+		request,
+		session: auth.data.session,
+		user: auth.data.user,
+	});
 
-	try {
-		let importedBackupFileName: string | null | undefined;
-		const response = await lockModule.withBackupCodeLock(
-			code,
-			async (signal) => {
-				let importResult;
-				try {
-					importResult = await backupImportModule.importBackupData({
-						code,
-						expectedStateEpoch: auth.data.user.state_epoch,
-						expectedSyncGeneration: auth.data.user.sync_generation,
-						lockModule,
-						session: auth.data.session,
-						signal,
-						userId: auth.data.user.id,
-						writeAuditLog: (trx, now, result) =>
-							accountAuditModule.writeAccountAuditLogInTransaction(
-								trx,
-								createAuditInput(
-									'imported',
-									result.namespaceCount,
-									result.stateEpoch
-								),
-								now
-							),
-					});
-				} catch (error) {
-					const errorResponse =
-						createImportBackupErrorResponse(error);
-					if (errorResponse !== null) {
-						return errorResponse;
-					}
-					throw error;
-				}
-				if (importResult.status === 'not-found') {
-					return createNoStoreErrorResponse(
-						'backup-code-not-found',
-						404
-					);
-				}
-				if (importResult.status === 'state-epoch-mismatch') {
-					return createNoStoreErrorResponse(
-						'state-epoch-mismatch',
-						409,
-						{
-							state_epoch: importResult.state_epoch,
-							sync_generation: importResult.sync_generation,
-							sync_status: importResult.sync_status,
-						}
-					);
-				}
-				if (importResult.status === 'sync-generation-mismatch') {
-					return createNoStoreErrorResponse(
-						'sync-generation-mismatch',
-						409,
-						{
-							state_epoch: importResult.state_epoch,
-							sync_generation: importResult.sync_generation,
-							sync_status: importResult.sync_status,
-						}
-					);
-				}
-				if (importResult.status === 'sync-paused') {
-					return createNoStoreErrorResponse('sync-paused', 409, {
-						state_epoch: importResult.state_epoch,
-						sync_generation: importResult.sync_generation,
-						sync_status: importResult.sync_status,
-					});
-				}
-				if (importResult.status === 'already-imported') {
-					await accountAuditModule.writeAccountAuditLog(
-						createAuditInput(
-							'already-imported',
-							importResult.results.length,
-							auth.data.user.state_epoch
-						)
-					);
-					return createNoStoreJsonResponse({
-						results: importResult.results,
-					});
-				}
-
-				lockModule.markBackupCodeLockCommitted(signal);
-				importedBackupFileName = importResult.fileName;
-
-				return createNoStoreJsonResponse({
-					results: importResult.results,
-				});
-			}
-		);
-		if (importedBackupFileName !== undefined) {
-			void backupImportModule.cleanupImportedBackupFile(
-				code,
-				importedBackupFileName
-			);
-		}
-
-		return response;
-	} catch (error) {
-		if (lockModule.checkBackupCodeLockLostError(error)) {
-			return createNoStoreErrorResponse('backup-code-lock-lost', 409);
-		}
-		if (lockModule.checkBackupCodeLockTimeoutError(error)) {
-			return createNoStoreErrorResponse('backup-code-lock-timeout', 409);
-		}
-
-		throw error;
-	}
+	return createImportBackupResponse(result);
 }

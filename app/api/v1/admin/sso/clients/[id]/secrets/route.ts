@@ -1,13 +1,14 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
-import { getRequestAuditContext } from '@/lib/account/server/request';
-import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
+import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
+import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
+
+import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	readJsonBodyResult,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -38,7 +39,7 @@ export async function GET(
 	{ params }: { params: Promise<{ id: string }> }
 ) {
 	const { id } = await params;
-	const check = await checkAdminSsoClientRequest(
+	const check = await checkAdminRequest(
 		request,
 		'admin-list-sso-client-secrets',
 		{ parts: [{ name: 'client', value: id }] }
@@ -48,7 +49,7 @@ export async function GET(
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoClientSecretService');
+		await import('@/features/account/sso/admin/server/services/clientSecretService');
 	const result = await serviceModule.listAdminSsoClientSecrets(id);
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
@@ -67,7 +68,7 @@ export async function POST(
 	{ params }: { params: Promise<{ id: string }> }
 ) {
 	const { id } = await params;
-	const check = await checkAdminSsoClientRequest(
+	const check = await checkAdminRequest(
 		request,
 		'admin-create-sso-client-secret',
 		{ csrf: true, parts: [{ name: 'client', value: id }] }
@@ -91,7 +92,7 @@ export async function POST(
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoClientSecretService');
+		await import('@/features/account/sso/admin/server/services/clientSecretService');
 	const result = await serviceModule.createAdminSsoClientSecret(id, {
 		adminId: check.auth.actorId,
 		...getRequestAuditContext(request),

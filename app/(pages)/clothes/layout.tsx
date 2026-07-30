@@ -1,10 +1,13 @@
 import { type Metadata } from 'next';
 
-import { siteConfig } from '@/configs';
-import { getPageTitle, toArray } from '@/utilities';
-import { Clothes } from '@/utils';
+import { Clothes } from '@/domain/catalog/items/Clothes';
 
-const { description, keywords } = siteConfig;
+import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
+
+import { SITE_METADATA } from '@/shared/site/metadata';
+import { toArray } from '@/shared/utilities/collections/convert';
+
+const { description, keywords } = SITE_METADATA;
 
 const clothes = Clothes.getInstance().getNames(10);
 const title = getPageTitle('/clothes');
@@ -16,4 +19,4 @@ export const metadata: Metadata = {
 	keywords: toArray(keywords.slice(0, 18), clothes),
 };
 
-export { WithPreference as default } from '@/(pages)/layouts';
+export { default } from '@/features/preferences/client/components/PreferencesModalLayout';

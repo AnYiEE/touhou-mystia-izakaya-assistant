@@ -1,12 +1,11 @@
 'use client';
 
-import { memo } from 'react';
-
 import {
 	ScrollShadow as HeroUIScrollShadow,
 	type ScrollShadowProps,
 } from '@heroui/scroll-shadow';
 import { type InternalForwardRefRenderFunction } from '@heroui/system';
+import { memo } from 'react';
 
 interface IProps extends ScrollShadowProps {}
 

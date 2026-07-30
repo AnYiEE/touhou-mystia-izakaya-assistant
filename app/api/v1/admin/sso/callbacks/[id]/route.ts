@@ -1,38 +1,28 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
-import { getRequestAuditContext } from '@/lib/account/server/request';
+import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
+
+import { parsePositiveIntegerPathParam } from '@/infrastructure/http/pathParameters';
+import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-function parsePositiveIntegerId(value: string) {
-	if (!/^\d+$/u.test(value)) {
-		return null;
-	}
-
-	const parsedValue = Number.parseInt(value, 10);
-
-	return Number.isSafeInteger(parsedValue) && parsedValue >= 1
-		? parsedValue
-		: null;
-}
 
 export async function DELETE(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
 ) {
 	const { id } = await params;
-	const callbackId = parsePositiveIntegerId(id);
+	const callbackId = parsePositiveIntegerPathParam(id);
 	if (callbackId === null) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const check = await checkAdminSsoClientRequest(
+	const check = await checkAdminRequest(
 		request,
 		'admin-discard-sso-callback-queue-item',
 		{ csrf: true, parts: [{ name: 'callback', value: id }] }
@@ -42,7 +32,7 @@ export async function DELETE(
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoCallbackService');
+		await import('@/features/account/sso/admin/server/services/callbackService');
 	const result = await serviceModule.discardAdminSsoCallbackQueueItem(
 		callbackId,
 		{ adminId: check.auth.actorId, ...getRequestAuditContext(request) }

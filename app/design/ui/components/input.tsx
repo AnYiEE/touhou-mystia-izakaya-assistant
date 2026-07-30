@@ -1,15 +1,12 @@
 'use client';
 
-import { memo } from 'react';
-
-import { useReducedMotion } from '@/design/ui/hooks';
-
 import { Input as HeroUIInput, type InputProps } from '@heroui/input';
 import { type InternalForwardRefRenderFunction } from '@heroui/system';
+import { cn } from '@heroui/theme';
+import { memo } from 'react';
 
-import { cn } from '@/design/ui/utils';
-
-import { globalStore as store } from '@/stores';
+import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 interface IProps extends InputProps {}
 
@@ -19,8 +16,7 @@ export default memo<IProps>(function Input({
 	...props
 }) {
 	const isReducedMotion = useReducedMotion();
-
-	const isHighAppearance = store.persistence.highAppearance.use();
+	const { isHighAppearance } = useDesignPreferences();
 
 	return (
 		<HeroUIInput

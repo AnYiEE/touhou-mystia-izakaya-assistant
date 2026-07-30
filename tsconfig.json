@@ -19,7 +19,7 @@
 		"module": "ESNext",
 		"moduleResolution": "bundler",
 		"noUncheckedSideEffectImports": true,
-		"paths": { "@/*": ["./app/*"] },
+		"paths": { "#package-json": ["./package.json"], "@/*": ["./app/*"] },
 		"resolveJsonModule": true,
 
 		"newLine": "lf",

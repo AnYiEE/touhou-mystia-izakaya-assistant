@@ -1,23 +1,23 @@
 'use client';
 
-import { type ComponentProps, memo, useMemo } from 'react';
-
-import { useMotionProps, useReducedMotion } from '@/design/ui/hooks';
-
 import {
 	type InternalForwardRefRenderFunction,
 	extendVariants,
 } from '@heroui/system';
+import { cn } from '@heroui/theme';
 import { Tooltip as HeroUITooltip } from '@heroui/tooltip';
+import { type ComponentProps, memo, useMemo } from 'react';
 
-import { getStyleBlur } from '@/design/ui/components/popover';
-import { cn, generateRatingVariants } from '@/design/ui/utils';
+import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
+import { createRatingVariants } from '@/design/theme/styles/rating/createRatingVariants';
+import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
-import { globalStore as store } from '@/stores';
+import { getStyleBlur } from './popover';
 
 const CustomHeroUITooltip = extendVariants(
 	HeroUITooltip,
-	generateRatingVariants('content')
+	createRatingVariants('content')
 );
 
 interface IProps extends ComponentProps<typeof CustomHeroUITooltip> {
@@ -35,8 +35,7 @@ export default memo<IProps>(function Tooltip({
 }) {
 	const motionProps = useMotionProps('tooltip');
 	const isReducedMotion = useReducedMotion();
-
-	const isHighAppearance = store.persistence.highAppearance.use();
+	const { isHighAppearance } = useDesignPreferences();
 
 	const styleBlur = useMemo(
 		() => getStyleBlur(color, disableBlur, isHighAppearance),

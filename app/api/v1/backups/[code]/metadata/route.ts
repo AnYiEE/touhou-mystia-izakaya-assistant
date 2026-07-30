@@ -1,12 +1,13 @@
 import { type NextRequest } from 'next/server';
 
-import { parseLegacyBackupCode } from '@/lib/account/server/legacyBackupCode';
-import { getLegacyBackupRequestMeta as getRequestMeta } from '@/lib/account/server/legacyBackupRequest';
-import { createRetryAfterHeaders } from '@/lib/api/http';
+import { parseLegacyBackupCode } from '@/features/legacyBackup/server/code';
+import { getLegacyBackupRequestMeta } from '@/features/legacyBackup/server/requestContext';
+
+import { createRetryAfterHeaders } from '@/infrastructure/http/headers';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -21,9 +22,9 @@ export async function GET(
 		return createNoStoreErrorResponse('Invalid code', 400);
 	}
 
-	const requestMeta = getRequestMeta(request);
+	const requestMeta = getLegacyBackupRequestMeta(request);
 	const legacyBackupModule =
-		await import('@/lib/account/server/legacyBackup');
+		await import('@/features/legacyBackup/server/service');
 	const metadataResult = await legacyBackupModule.fetchLegacyBackupMetadata({
 		code,
 		ip: requestMeta.ip,

@@ -1,27 +1,11 @@
 import { type Metadata } from 'next';
 
-import AdminAnnouncementForm, {
-	type IAdminAnnouncementFormInitialData,
-} from '../form';
-import { readAdminAnnouncementAuthInitialData } from '../server';
+import { AdminAnnouncementCreatePageContent } from '@/features/announcements/admin/server/AdminAnnouncementCreatePageContent';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: '新建站点通知' };
 
-export default async function AdminAnnouncementCreatePage() {
-	const auth = await readAdminAnnouncementAuthInitialData(
-		'/admin/announcements/new'
-	);
-	const initialData: IAdminAnnouncementFormInitialData = {
-		admin: auth.admin,
-		announcement: null,
-		isAnnouncementServerLoaded: false,
-		isAuthLoading: false,
-		loadError: null,
-		message: auth.message,
-		versions: null,
-	};
-
-	return <AdminAnnouncementForm initialData={initialData} mode="create" />;
+export default function AdminAnnouncementCreatePage() {
+	return <AdminAnnouncementCreatePageContent />;
 }

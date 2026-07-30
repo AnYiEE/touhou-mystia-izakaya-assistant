@@ -671,33 +671,33 @@ CREATE TABLE external_users (
 
 ## 十四、本项目最小改动清单
 
-新增文件：
+当前实现文件：
 
 - `app/api/v1/sso/authorize/route.ts`
 - `app/api/v1/sso/validate/route.ts`
 - `app/api/v1/sso/status/route.ts`
 - `app/api/v1/sso/dispatch-callbacks/route.ts`：回调队列调度端点，由外部 cron 定时触发。
 - `app/api/v1/admin/sso/callbacks/dispatch/route.ts`：管理员后台即时投递回调队列端点，复用同一调度逻辑并写审计。
-- `app/lib/account/server/repositories/sso.ts`：client CRUD、secret 生成、回调队列写入与幂等刷新。
-- `app/lib/account/server/sso.ts`：redirect URI 校验、PKCE 校验、ticket 签发/校验、回调 HMAC 签名与调度。
-- `app/lib/db/migrations/sso.ts`：SSO 表、索引、外键、约束和旧表结构升级。
+- `app/features/account/sso/server/persistence/*`：client、secret、grant、ticket、回调队列与投递历史仓储。
+- `app/features/account/sso/server/*`：redirect URI、PKCE、ticket、callback、grant 与 client 领域能力。
+- `app/infrastructure/database/migrations/sso.ts`：SSO 表、索引、外键、约束和旧表结构升级。
 - `app/(pages)/sso/authorize/page.tsx`：授权确认页。
 - `app/(pages)/sso/authorize/page.offline.tsx`：离线授权提示页。
 - `app/(pages)/admin/sso/page.tsx`：SSO client 列表页。
 - `app/(pages)/admin/sso/new/page.tsx`：SSO client 新建页。
 - `app/(pages)/admin/sso/[id]/page.tsx`：SSO client 编辑页。
-- `app/(pages)/admin/sso/clientForm.tsx`：SSO client 表单。
-- `app/api/v1/admin/sso/clients/route.ts`、`app/api/v1/admin/sso/clients/[id]/route.ts`：管理员 SSO client CRUD API；payload 解析与错误映射复用 `app/lib/account/server/adminSsoClientPayload.ts`、`adminSsoClientRouteResponses.ts` 和 service 层。
+- `app/features/account/sso/admin/client/AdminSsoClientForm.tsx`：SSO client 表单；`app/(pages)/admin/sso/**/page.tsx` 仅保留路由壳。
+- `app/api/v1/admin/sso/clients/route.ts`、`app/api/v1/admin/sso/clients/[id]/route.ts`：管理员 SSO client CRUD API；payload 解析、错误映射和业务流程复用 `app/features/account/sso/admin/server/http`、`services` 与账号管理 guard。
 
-修改文件：
+现行 owner：
 
-- [app/lib/db/constant.ts](../../../app/lib/db/constant.ts)：新增 `ssoTicket`、`ssoClient`、`ssoCallbackQueue` 表名。
-- [app/lib/db/types.d.ts](../../../app/lib/db/types.d.ts)：新增 `ITableSsoTicket`、`ITableSsoClient`、`ITableSsoCallback` 等类型。
-- [app/lib/db/migrations/account.ts](../../../app/lib/db/migrations/account.ts)：接入 SSO 表迁移。
+- [tableNames.ts](../../../app/infrastructure/database/tableNames.ts)：登记 SSO 表名。
+- [schema.ts](../../../app/infrastructure/database/schema.ts)：登记 SSO 表类型。
+- [migrateApplicationDatabase.ts](../../../app/infrastructure/database/migrations/migrateApplicationDatabase.ts)：编排 SSO 与账号等应用迁移。
 - [app/api/v1/auth/login/route.ts](../../../app/api/v1/auth/login/route.ts) 与 [app/api/v1/auth/register/route.ts](../../../app/api/v1/auth/register/route.ts)：登录/注册完成后如存在 SSO 授权上下文，则跳转到授权确认页。
 - [app/(pages)/admin/page.tsx](<../../../app/(pages)/admin/page.tsx>)：新增 SSO 客户端管理入口。
-- [app/lib/account/client/api.ts](../../../app/lib/account/client/api.ts)：新增管理员 SSO client API 调用封装。
-- [app/lib/account/shared/constants.ts](../../../app/lib/account/shared/constants.ts) 与 [app/lib/account/shared/types.ts](../../../app/lib/account/shared/types.ts)：新增 SSO cookie 名称与 API 类型。
+- [app/features/account/sso/admin/client/api](../../../app/features/account/sso/admin/client/api)：管理员 SSO 浏览器 API helper。
+- [app/features/account/constants.ts](../../../app/features/account/constants.ts)、[contracts.ts](../../../app/features/account/contracts.ts) 与 [app/features/account/sso/admin/contracts.ts](../../../app/features/account/sso/admin/contracts.ts)：账号/SSO 常量及 API 类型。
 - [app/api/v1/admin/users/[id]/disable/route.ts](../../../app/api/v1/admin/users/[id]/disable/route.ts) 等管理员用户操作路由：用户状态变更后触发 SSO 回调。
 
 ## 十五、外部服务接入示例

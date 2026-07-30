@@ -1,6 +1,5 @@
+import { memoize } from '../../../shared/utilities/cache/memoize';
 import type { TColorScale } from './types';
-
-import { memoize } from '../../../utilities/memoize';
 
 export const swapColorScale = memoize(function swapColorScale(
 	colors: TColorScale

@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@heroui/theme';
 import {
 	type PropsWithChildren,
 	type UIEvent,
@@ -10,28 +11,13 @@ import {
 	useState,
 } from 'react';
 
-import { cn } from '@/design/ui/utils';
+import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 
-import { globalStore as store } from '@/stores';
-
-const EMPTY_SCROLL_STATE = { bottom: false, top: false };
-const SCROLL_EDGE_THRESHOLD = 1;
+import { DEFAULT_SCROLL_STATE, getScrollState } from './scrollState';
 
 interface IProps {
 	className?: string;
 	containerClassName?: string;
-}
-
-function getScrollState(element: HTMLDivElement) {
-	const maxScrollTop = element.scrollHeight - element.clientHeight;
-	const canScroll = maxScrollTop > SCROLL_EDGE_THRESHOLD;
-
-	return {
-		bottom:
-			canScroll &&
-			element.scrollTop < maxScrollTop - SCROLL_EDGE_THRESHOLD,
-		top: canScroll && element.scrollTop > SCROLL_EDGE_THRESHOLD,
-	};
 }
 
 export default memo<PropsWithChildren<IProps>>(function ScrollMask({
@@ -39,9 +25,9 @@ export default memo<PropsWithChildren<IProps>>(function ScrollMask({
 	className,
 	containerClassName,
 }) {
-	const [scrollState, setScrollState] = useState(EMPTY_SCROLL_STATE);
+	const [scrollState, setScrollState] = useState(DEFAULT_SCROLL_STATE);
 
-	const isHighAppearance = store.persistence.highAppearance.use();
+	const { isHighAppearance } = useDesignPreferences();
 
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const contentRef = useRef<HTMLDivElement>(null);

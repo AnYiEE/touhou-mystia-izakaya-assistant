@@ -4,7 +4,7 @@ export async function register() {
 	}
 
 	const { warmVisitorCountCache } =
-		await import('@/lib/siteStatus/server/visitors');
+		await import('@/features/siteStatus/server/visitors');
 
 	void warmVisitorCountCache();
 }

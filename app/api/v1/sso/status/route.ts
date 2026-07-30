@@ -1,19 +1,20 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAccountFeatureRouteResponse } from '@/lib/account/server/routeResponses';
-import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
-import { checkSsoRateLimitRouteResponse } from '@/lib/account/server/ssoRouteResponses';
+import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
+import { checkAccountFeatureRouteResponse } from '@/features/account/server/http/routeGuards';
+import { checkSsoRateLimitRouteResponse } from '@/features/account/sso/server/http/routeResponses';
 import {
 	checkSsoClientEnabled,
 	checkSsoClientId,
 	checkSsoClientSecret,
-} from '@/lib/account/server/ssoValidation';
+} from '@/features/account/sso/server/validation';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	readJsonBodyResult,
-} from '@/lib/api/routeResponses';
-import { getLogSafeErrorCode } from '@/lib/logging';
+} from '@/infrastructure/http/server/responses';
+import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	try {
-		const ssoModule = await import('@/lib/account/server/sso');
+		const ssoModule = await import('@/features/account/sso/server');
 		const client = await ssoModule.getSsoClientById(clientId);
 		if (
 			client === null ||

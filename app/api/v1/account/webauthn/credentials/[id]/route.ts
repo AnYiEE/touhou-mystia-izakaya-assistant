@@ -1,23 +1,24 @@
 import { type NextRequest } from 'next/server';
 
 import {
+	checkWebauthnCredentialNamePolicy,
+	normalizeWebauthnCredentialName,
+} from '@/features/account/constants';
+import type { IWebauthnCredentialListData } from '@/features/account/contracts';
+import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
+import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-	createAccountAuthErrorRouteResponse,
-	readJsonBodyResult,
-} from '@/lib/account/server/routeResponses';
-import {
-	checkWebauthnCredentialNamePolicy,
-	normalizeWebauthnCredentialName,
-} from '@/lib/account/shared/constants';
-import { type IWebauthnCredentialListData } from '@/lib/account/shared/types';
+} from '@/features/account/server/http/routeGuards';
+import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -58,7 +59,10 @@ export async function DELETE(
 		return preAuthRateLimitResponse;
 	}
 
-	const authModule = await import('@/lib/account/server/auth');
+	const [authModule, csrfModule] = await Promise.all([
+		import('@/features/account/server/auth/requestAuthentication'),
+		import('@/features/account/server/auth/accountCsrf'),
+	]);
 	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
 		return createAccountAuthErrorRouteResponse(auth, request);
@@ -74,13 +78,13 @@ export async function DELETE(
 		return rateLimitResponse;
 	}
 
-	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
+	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
 	const [credentialsModule, accountAuditModule] = await Promise.all([
-		import('@/lib/account/server/repositories/webauthnCredentials'),
-		import('@/lib/account/server/accountAuditService'),
+		import('@/features/account/webauthn/server/persistence/credentials'),
+		import('@/features/account/server/audit/service'),
 	]);
 	const deleteResult =
 		await credentialsModule.deleteCredentialForActiveSession(
@@ -149,7 +153,10 @@ export async function PATCH(
 		return preAuthRateLimitResponse;
 	}
 
-	const authModule = await import('@/lib/account/server/auth');
+	const [authModule, csrfModule] = await Promise.all([
+		import('@/features/account/server/auth/requestAuthentication'),
+		import('@/features/account/server/auth/accountCsrf'),
+	]);
 	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
 		return createAccountAuthErrorRouteResponse(auth, request);
@@ -165,7 +172,7 @@ export async function PATCH(
 		return rateLimitResponse;
 	}
 
-	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
+	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
@@ -185,9 +192,9 @@ export async function PATCH(
 
 	const [credentialsModule, presentationModule, webauthnModule] =
 		await Promise.all([
-			import('@/lib/account/server/repositories/webauthnCredentials'),
-			import('@/lib/account/server/webauthnPresentation'),
-			import('@/lib/account/server/webauthn'),
+			import('@/features/account/webauthn/server/persistence/credentials'),
+			import('@/features/account/webauthn/server/presentation'),
+			import('@/features/account/webauthn/server/service'),
 		]);
 	const renameResult =
 		await credentialsModule.renameCredentialForActiveSession(

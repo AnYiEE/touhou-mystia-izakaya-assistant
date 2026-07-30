@@ -1,11 +1,10 @@
 'use client';
 
-import { memo } from 'react';
-
-import { useReducedMotion } from '@/design/ui/hooks';
-
 import { type BadgeProps, Badge as HeroUIBadge } from '@heroui/badge';
 import { type InternalForwardRefRenderFunction } from '@heroui/system';
+import { memo } from 'react';
+
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 interface IProps extends BadgeProps {}
 

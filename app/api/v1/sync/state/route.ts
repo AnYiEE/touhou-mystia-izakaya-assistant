@@ -1,31 +1,33 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAccountRateLimitGuard } from '@/lib/account/server/guards';
+import { ACCOUNT_SYNC_STATUS_MAP } from '@/domain/account/contracts';
+
+import { checkAccountRateLimitGuard } from '@/features/account/server/http/guards';
+import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-	createAccountAuthErrorRouteResponse,
-	readJsonBodyResult,
-} from '@/lib/account/server/routeResponses';
-import {
-	checkSyncNamespace,
-	parseSyncStatePutBody,
-} from '@/lib/account/sync/validation';
-import { getAccountSyncCapacityConfiguration } from '@/lib/account/server/syncCapacity';
+} from '@/features/account/server/http/routeGuards';
+import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+import { getAccountSyncCapacityConfiguration } from '@/features/account/sync/server/capacity';
 import {
 	parseUserStateRecord,
 	putSyncStateChanges,
-} from '@/lib/account/server/syncState';
-import { ACCOUNT_SYNC_STATUS_MAP } from '@/lib/account/shared/constants';
-import { type ISyncStatePutBody } from '@/lib/account/sync';
+} from '@/features/account/sync/server/state';
+import type { ISyncStatePutBody } from '@/features/account/sync/types';
+import {
+	checkSyncNamespace,
+	parseSyncStatePutBody,
+} from '@/features/account/sync/validation';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
-import { getLogSafeErrorCode } from '@/lib/logging';
+} from '@/infrastructure/http/server/responses';
+import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -60,8 +62,8 @@ export async function GET(request: NextRequest) {
 	}
 
 	const [authModule, userStateModule] = await Promise.all([
-		import('@/lib/account/server/auth'),
-		import('@/lib/account/server/repositories/userState'),
+		import('@/features/account/server/auth/requestAuthentication'),
+		import('@/features/account/sync/server/repository'),
 	]);
 	const auth = await authModule.authenticateAccountFromRequestWithTransaction(
 		request,
@@ -157,7 +159,10 @@ export async function PUT(request: NextRequest) {
 		return preAuthRateLimitResponse;
 	}
 
-	const authModule = await import('@/lib/account/server/auth');
+	const [authModule, csrfModule] = await Promise.all([
+		import('@/features/account/server/auth/requestAuthentication'),
+		import('@/features/account/server/auth/accountCsrf'),
+	]);
 	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
 		return createAccountAuthErrorRouteResponse(auth, request);
@@ -171,7 +176,7 @@ export async function PUT(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
+	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 

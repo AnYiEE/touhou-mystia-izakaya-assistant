@@ -1,7 +1,7 @@
 import { type Metadata } from 'next';
 
-import { getPageTitle } from '@/utilities';
+import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
 
 export const metadata: Metadata = { title: getPageTitle('/about') };
 
-export { WithPreference as default } from '@/(pages)/layouts';
+export { default } from '@/features/preferences/client/components/PreferencesModalLayout';

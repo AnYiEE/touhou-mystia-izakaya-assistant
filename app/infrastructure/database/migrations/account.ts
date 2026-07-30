@@ -1,0 +1,747 @@
+import { type Kysely, sql } from 'kysely';
+
+import {
+	ACCOUNT_SYNC_STATUS_MAP,
+	USER_STATUS_MAP,
+} from '@/domain/account/contracts';
+
+import type { TDatabase } from '@/infrastructure/database/schema';
+import { dropMismatchedSqliteIndexes } from '@/infrastructure/database/sqlite/indexes';
+import {
+	type ISqliteMigrationColumnDefinition,
+	addMissingSqliteColumn,
+} from '@/infrastructure/database/sqlite/migrationColumns';
+import {
+	type ISqlitePrimaryKeyColumnInfo,
+	getForeignKeys,
+	getPrimaryKeyColumns,
+	getTableColumns,
+} from '@/infrastructure/database/sqlite/tableIntrospection';
+import { TABLE_NAME_MAP } from '@/infrastructure/database/tableNames';
+
+const SERVER_MISCONFIGURED_MESSAGE = 'server-misconfigured';
+
+type TAccountTableName = keyof typeof ACCOUNT_TABLE_COLUMNS_MAP;
+
+type TAccountColumnDefinition = ISqliteMigrationColumnDefinition & {
+	structural?: boolean;
+};
+
+interface IPragmaIndexInfoRow {
+	name: string;
+}
+
+interface IPragmaIndexListRow {
+	name: string;
+	unique: number;
+}
+
+const ACCOUNT_TABLE_COLUMNS_MAP = {
+	[TABLE_NAME_MAP.session]: [
+		'id',
+		'user_id',
+		'token_hash',
+		'created_at',
+		'last_seen_at',
+		'user_agent',
+		'ip_address',
+	],
+	[TABLE_NAME_MAP.user]: [
+		'id',
+		'username',
+		'username_normalized',
+		'nickname',
+		'status',
+		'state_epoch',
+		'sync_generation',
+		'sync_status',
+		'created_at',
+		'updated_at',
+		'last_login_at',
+		'deleted_at',
+	],
+	[TABLE_NAME_MAP.userCredential]: [
+		'user_id',
+		'password_hash',
+		'failed_attempts',
+		'locked_until',
+		'password_must_change',
+		'password_set',
+		'updated_at',
+	],
+	[TABLE_NAME_MAP.userState]: [
+		'user_id',
+		'namespace',
+		'schema_version',
+		'data',
+		'revision',
+		'updated_at',
+	],
+	[TABLE_NAME_MAP.userWebauthnCredential]: [
+		'id',
+		'user_id',
+		'credential_id',
+		'public_key',
+		'counter',
+		'transports',
+		'device_type',
+		'backed_up',
+		'aaguid',
+		'name',
+		'created_at',
+		'last_used_at',
+	],
+	[TABLE_NAME_MAP.webauthnChallenge]: [
+		'id',
+		'user_id',
+		'challenge',
+		'purpose',
+		'created_at',
+		'expires_at',
+	],
+	[TABLE_NAME_MAP.backupImportRecord]: [
+		'code',
+		'user_id',
+		'file_name',
+		'results',
+		'state_epoch',
+		'created_at',
+	],
+} as const;
+
+const ACCOUNT_TABLE_COLUMN_DEFINITION_MAP = {
+	[TABLE_NAME_MAP.session]: {
+		created_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		id: { dataType: 'text', structural: true },
+		ip_address: { dataType: 'text', defaultTo: '', notNull: true },
+		last_seen_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		token_hash: { dataType: 'text', defaultTo: '', notNull: true },
+		user_agent: { dataType: 'text', defaultTo: '', notNull: true },
+		user_id: { dataType: 'text', structural: true },
+	},
+	[TABLE_NAME_MAP.user]: {
+		created_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		deleted_at: { dataType: 'integer' },
+		id: { dataType: 'text', structural: true },
+		last_login_at: { dataType: 'integer' },
+		nickname: { dataType: 'text' },
+		state_epoch: { dataType: 'integer', defaultTo: 0, notNull: true },
+		status: {
+			dataType: 'text',
+			defaultTo: USER_STATUS_MAP.active,
+			notNull: true,
+		},
+		sync_generation: { dataType: 'integer', defaultTo: 0, notNull: true },
+		sync_status: {
+			dataType: 'text',
+			defaultTo: ACCOUNT_SYNC_STATUS_MAP.active,
+			notNull: true,
+		},
+		updated_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		username: { dataType: 'text', defaultTo: '', notNull: true },
+		username_normalized: { dataType: 'text', defaultTo: '', notNull: true },
+	},
+	[TABLE_NAME_MAP.userCredential]: {
+		failed_attempts: { dataType: 'integer', defaultTo: 0, notNull: true },
+		locked_until: { dataType: 'integer' },
+		password_hash: { dataType: 'text', defaultTo: '', notNull: true },
+		password_must_change: {
+			dataType: 'integer',
+			defaultTo: 0,
+			notNull: true,
+		},
+		password_set: { dataType: 'integer', defaultTo: 1, notNull: true },
+		updated_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		user_id: { dataType: 'text', structural: true },
+	},
+	[TABLE_NAME_MAP.userState]: {
+		data: { dataType: 'text', defaultTo: '{}', notNull: true },
+		namespace: { dataType: 'text', structural: true },
+		revision: { dataType: 'integer', defaultTo: 0, notNull: true },
+		schema_version: { dataType: 'integer', defaultTo: 1, notNull: true },
+		updated_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		user_id: { dataType: 'text', structural: true },
+	},
+	[TABLE_NAME_MAP.userWebauthnCredential]: {
+		aaguid: { dataType: 'text' },
+		backed_up: { dataType: 'integer', defaultTo: 0, notNull: true },
+		counter: { dataType: 'integer', defaultTo: 0, notNull: true },
+		created_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		credential_id: { dataType: 'text', defaultTo: '', notNull: true },
+		device_type: {
+			dataType: 'text',
+			defaultTo: 'singleDevice',
+			notNull: true,
+		},
+		id: { dataType: 'text', structural: true },
+		last_used_at: { dataType: 'integer' },
+		name: { dataType: 'text' },
+		public_key: { dataType: 'text', defaultTo: '', notNull: true },
+		transports: { dataType: 'text', defaultTo: '[]', notNull: true },
+		user_id: { dataType: 'text', structural: true },
+	},
+	[TABLE_NAME_MAP.webauthnChallenge]: {
+		challenge: { dataType: 'text', defaultTo: '', notNull: true },
+		created_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		expires_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		id: { dataType: 'text', structural: true },
+		purpose: { dataType: 'text', defaultTo: 'registration', notNull: true },
+		user_id: { dataType: 'text', structural: true },
+	},
+	[TABLE_NAME_MAP.backupImportRecord]: {
+		code: { dataType: 'text', structural: true },
+		created_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		file_name: { dataType: 'text' },
+		results: { dataType: 'text', defaultTo: '[]', notNull: true },
+		state_epoch: { dataType: 'integer', defaultTo: 0, notNull: true },
+		user_id: { dataType: 'text', structural: true },
+	},
+} as const satisfies Record<
+	keyof typeof ACCOUNT_TABLE_COLUMNS_MAP,
+	Record<string, TAccountColumnDefinition>
+>;
+
+async function ensureTableColumns(
+	database: Kysely<TDatabase>,
+	tableName: TAccountTableName
+) {
+	const columns = await getTableColumns(database, tableName);
+	const columnDefinitionMap = ACCOUNT_TABLE_COLUMN_DEFINITION_MAP[
+		tableName
+	] as Record<string, TAccountColumnDefinition>;
+	const missingColumns = ACCOUNT_TABLE_COLUMNS_MAP[tableName].filter(
+		(column) => !columns.includes(column)
+	);
+
+	const structuralMissingColumns = missingColumns.filter(
+		(column) => columnDefinitionMap[column]?.structural === true
+	);
+
+	if (structuralMissingColumns.length > 0) {
+		throw new Error(
+			`${SERVER_MISCONFIGURED_MESSAGE}: account table ${tableName} is missing structural columns: ${structuralMissingColumns.join(', ')}`
+		);
+	}
+
+	for (const column of missingColumns) {
+		const definition = columnDefinitionMap[column];
+		if (definition === undefined) {
+			throw new Error(
+				`${SERVER_MISCONFIGURED_MESSAGE}: account table ${tableName} has no definition for column: ${column}`
+			);
+		}
+
+		await addMissingSqliteColumn(database, tableName, column, definition);
+	}
+
+	const finalColumns = await getTableColumns(database, tableName);
+	const stillMissingColumns = ACCOUNT_TABLE_COLUMNS_MAP[tableName].filter(
+		(column) => !finalColumns.includes(column)
+	);
+	if (stillMissingColumns.length > 0) {
+		throw new Error(
+			`${SERVER_MISCONFIGURED_MESSAGE}: account table ${tableName} is missing columns after migration: ${stillMissingColumns.join(', ')}`
+		);
+	}
+}
+
+async function hasUniqueIndex(
+	database: Kysely<TDatabase>,
+	tableName: TAccountTableName,
+	columnName: string
+) {
+	const { rows: indexes } = await sql<IPragmaIndexListRow>`
+		select name, "unique"
+		from pragma_index_list(${tableName})
+	`.execute(database);
+
+	for (const index of indexes) {
+		if (index.unique !== 1) {
+			continue;
+		}
+
+		const { rows: columns } = await sql<IPragmaIndexInfoRow>`
+			select name
+			from pragma_index_info(${index.name})
+		`.execute(database);
+
+		if (columns.length === 1 && columns[0]?.name === columnName) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+function assertPrimaryKeyColumns(
+	tableName: TAccountTableName,
+	actualColumns: ISqlitePrimaryKeyColumnInfo[],
+	expectedColumns: string[]
+) {
+	const actualColumnNames = actualColumns.map((column) => column.name);
+	if (
+		actualColumnNames.length !== expectedColumns.length ||
+		actualColumnNames.some(
+			(column, index) => column !== expectedColumns[index]
+		)
+	) {
+		throw new Error(
+			`${SERVER_MISCONFIGURED_MESSAGE}: account table ${tableName} primary key must be ${expectedColumns.join(', ')}`
+		);
+	}
+
+	const nullableColumn = actualColumns.find((column) => !column.notNull);
+	if (nullableColumn !== undefined) {
+		throw new Error(
+			`${SERVER_MISCONFIGURED_MESSAGE}: account table ${tableName} primary key column ${nullableColumn.name} must be not null`
+		);
+	}
+}
+
+async function assertForeignKeyToUsers(
+	database: Kysely<TDatabase>,
+	tableName: TAccountTableName
+) {
+	const foreignKeys = await getForeignKeys(database, tableName);
+	const hasUserCascadeForeignKey = foreignKeys.some(
+		(foreignKey) =>
+			foreignKey.from === 'user_id' &&
+			foreignKey.table === TABLE_NAME_MAP.user &&
+			foreignKey.to === 'id' &&
+			foreignKey.on_delete.toLowerCase() === 'cascade'
+	);
+
+	if (!hasUserCascadeForeignKey) {
+		throw new Error(
+			`${SERVER_MISCONFIGURED_MESSAGE}: account table ${tableName} must reference users(id) on delete cascade`
+		);
+	}
+}
+
+async function ensureAccountTableStructure(database: Kysely<TDatabase>) {
+	assertPrimaryKeyColumns(
+		TABLE_NAME_MAP.user,
+		await getPrimaryKeyColumns(database, TABLE_NAME_MAP.user),
+		['id']
+	);
+	assertPrimaryKeyColumns(
+		TABLE_NAME_MAP.userCredential,
+		await getPrimaryKeyColumns(database, TABLE_NAME_MAP.userCredential),
+		['user_id']
+	);
+	assertPrimaryKeyColumns(
+		TABLE_NAME_MAP.session,
+		await getPrimaryKeyColumns(database, TABLE_NAME_MAP.session),
+		['id']
+	);
+	assertPrimaryKeyColumns(
+		TABLE_NAME_MAP.userState,
+		await getPrimaryKeyColumns(database, TABLE_NAME_MAP.userState),
+		['user_id', 'namespace']
+	);
+	assertPrimaryKeyColumns(
+		TABLE_NAME_MAP.backupImportRecord,
+		await getPrimaryKeyColumns(database, TABLE_NAME_MAP.backupImportRecord),
+		['code']
+	);
+	assertPrimaryKeyColumns(
+		TABLE_NAME_MAP.userWebauthnCredential,
+		await getPrimaryKeyColumns(
+			database,
+			TABLE_NAME_MAP.userWebauthnCredential
+		),
+		['id']
+	);
+	assertPrimaryKeyColumns(
+		TABLE_NAME_MAP.webauthnChallenge,
+		await getPrimaryKeyColumns(database, TABLE_NAME_MAP.webauthnChallenge),
+		['id']
+	);
+
+	await Promise.all([
+		assertForeignKeyToUsers(database, TABLE_NAME_MAP.userCredential),
+		assertForeignKeyToUsers(database, TABLE_NAME_MAP.session),
+		assertForeignKeyToUsers(database, TABLE_NAME_MAP.userState),
+		assertForeignKeyToUsers(database, TABLE_NAME_MAP.backupImportRecord),
+		assertForeignKeyToUsers(
+			database,
+			TABLE_NAME_MAP.userWebauthnCredential
+		),
+		assertForeignKeyToUsers(database, TABLE_NAME_MAP.webauthnChallenge),
+	]);
+
+	const hasUsernameUniqueIndex = await hasUniqueIndex(
+		database,
+		TABLE_NAME_MAP.user,
+		'username_normalized'
+	);
+	const hasSessionTokenUniqueIndex = await hasUniqueIndex(
+		database,
+		TABLE_NAME_MAP.session,
+		'token_hash'
+	);
+	const hasWebauthnCredentialUniqueIndex = await hasUniqueIndex(
+		database,
+		TABLE_NAME_MAP.userWebauthnCredential,
+		'credential_id'
+	);
+
+	if (!hasUsernameUniqueIndex) {
+		throw new Error(
+			`${SERVER_MISCONFIGURED_MESSAGE}: users.username_normalized must have a unique index`
+		);
+	}
+
+	if (!hasSessionTokenUniqueIndex) {
+		throw new Error(
+			`${SERVER_MISCONFIGURED_MESSAGE}: sessions.token_hash must have a unique index`
+		);
+	}
+
+	if (!hasWebauthnCredentialUniqueIndex) {
+		throw new Error(
+			`${SERVER_MISCONFIGURED_MESSAGE}: user_webauthn_credentials.credential_id must have a unique index`
+		);
+	}
+}
+
+export async function migrateAccountTables(database: Kysely<TDatabase>) {
+	await database.schema
+		.createTable(TABLE_NAME_MAP.user)
+		.ifNotExists()
+		.addColumn('id', 'text', (col) => col.notNull().primaryKey())
+		.addColumn('username', 'text', (col) => col.notNull())
+		.addColumn('username_normalized', 'text', (col) => col.notNull())
+		.addColumn('nickname', 'text')
+		.addColumn('status', 'text', (col) =>
+			col.notNull().defaultTo(USER_STATUS_MAP.active)
+		)
+		.addColumn('state_epoch', 'integer', (col) =>
+			col.notNull().defaultTo(0)
+		)
+		.addColumn('sync_generation', 'integer', (col) =>
+			col.notNull().defaultTo(0)
+		)
+		.addColumn('sync_status', 'text', (col) =>
+			col.notNull().defaultTo(ACCOUNT_SYNC_STATUS_MAP.active)
+		)
+		.addColumn('created_at', 'integer', (col) => col.notNull())
+		.addColumn('updated_at', 'integer', (col) => col.notNull())
+		.addColumn('last_login_at', 'integer')
+		.addColumn('deleted_at', 'integer')
+		.execute();
+
+	await database.schema
+		.createTable(TABLE_NAME_MAP.backupImportRecord)
+		.ifNotExists()
+		.addColumn('code', 'text', (col) => col.notNull().primaryKey())
+		.addColumn('user_id', 'text', (col) =>
+			col
+				.notNull()
+				.references(`${TABLE_NAME_MAP.user}.id`)
+				.onDelete('cascade')
+		)
+		.addColumn('file_name', 'text')
+		.addColumn('results', 'text', (col) => col.notNull())
+		.addColumn('state_epoch', 'integer', (col) => col.notNull())
+		.addColumn('created_at', 'integer', (col) => col.notNull())
+		.execute();
+
+	await database.schema
+		.createTable(TABLE_NAME_MAP.userCredential)
+		.ifNotExists()
+		.addColumn('user_id', 'text', (col) =>
+			col
+				.notNull()
+				.primaryKey()
+				.references(`${TABLE_NAME_MAP.user}.id`)
+				.onDelete('cascade')
+		)
+		.addColumn('password_hash', 'text', (col) => col.notNull())
+		.addColumn('failed_attempts', 'integer', (col) =>
+			col.notNull().defaultTo(0)
+		)
+		.addColumn('locked_until', 'integer')
+		.addColumn('password_must_change', 'integer', (col) =>
+			col.notNull().defaultTo(0)
+		)
+		.addColumn('password_set', 'integer', (col) =>
+			col.notNull().defaultTo(1)
+		)
+		.addColumn('updated_at', 'integer', (col) => col.notNull())
+		.execute();
+
+	await database.schema
+		.createTable(TABLE_NAME_MAP.session)
+		.ifNotExists()
+		.addColumn('id', 'text', (col) => col.notNull().primaryKey())
+		.addColumn('user_id', 'text', (col) =>
+			col
+				.notNull()
+				.references(`${TABLE_NAME_MAP.user}.id`)
+				.onDelete('cascade')
+		)
+		.addColumn('token_hash', 'text', (col) => col.notNull())
+		.addColumn('created_at', 'integer', (col) => col.notNull())
+		.addColumn('last_seen_at', 'integer', (col) => col.notNull())
+		.addColumn('user_agent', 'text', (col) => col.notNull().defaultTo(''))
+		.addColumn('ip_address', 'text', (col) => col.notNull().defaultTo(''))
+		.execute();
+
+	await database.schema
+		.createTable(TABLE_NAME_MAP.userState)
+		.ifNotExists()
+		.addColumn('user_id', 'text', (col) =>
+			col
+				.notNull()
+				.references(`${TABLE_NAME_MAP.user}.id`)
+				.onDelete('cascade')
+		)
+		.addColumn('namespace', 'text', (col) => col.notNull())
+		.addColumn('schema_version', 'integer', (col) =>
+			col.notNull().defaultTo(1)
+		)
+		.addColumn('data', 'text', (col) => col.notNull().defaultTo('{}'))
+		.addColumn('revision', 'integer', (col) => col.notNull().defaultTo(0))
+		.addColumn('updated_at', 'integer', (col) => col.notNull())
+		.addPrimaryKeyConstraint('user_state_primary_key', [
+			'user_id',
+			'namespace',
+		])
+		.execute();
+
+	await database.schema
+		.createTable(TABLE_NAME_MAP.userWebauthnCredential)
+		.ifNotExists()
+		.addColumn('id', 'text', (col) => col.notNull().primaryKey())
+		.addColumn('user_id', 'text', (col) =>
+			col
+				.notNull()
+				.references(`${TABLE_NAME_MAP.user}.id`)
+				.onDelete('cascade')
+		)
+		.addColumn('credential_id', 'text', (col) => col.notNull())
+		.addColumn('public_key', 'text', (col) => col.notNull())
+		.addColumn('counter', 'integer', (col) => col.notNull().defaultTo(0))
+		.addColumn('transports', 'text', (col) => col.notNull().defaultTo('[]'))
+		.addColumn('device_type', 'text', (col) =>
+			col.notNull().defaultTo('singleDevice')
+		)
+		.addColumn('backed_up', 'integer', (col) => col.notNull().defaultTo(0))
+		.addColumn('aaguid', 'text')
+		.addColumn('name', 'text')
+		.addColumn('created_at', 'integer', (col) => col.notNull())
+		.addColumn('last_used_at', 'integer')
+		.execute();
+
+	await database.schema
+		.createTable(TABLE_NAME_MAP.webauthnChallenge)
+		.ifNotExists()
+		.addColumn('id', 'text', (col) => col.notNull().primaryKey())
+		.addColumn('user_id', 'text', (col) =>
+			col.references(`${TABLE_NAME_MAP.user}.id`).onDelete('cascade')
+		)
+		.addColumn('challenge', 'text', (col) => col.notNull())
+		.addColumn('purpose', 'text', (col) => col.notNull())
+		.addColumn('created_at', 'integer', (col) => col.notNull())
+		.addColumn('expires_at', 'integer', (col) => col.notNull())
+		.execute();
+
+	for (const tableName of Object.keys(ACCOUNT_TABLE_COLUMNS_MAP)) {
+		await ensureTableColumns(
+			database,
+			tableName as keyof typeof ACCOUNT_TABLE_COLUMNS_MAP
+		);
+	}
+
+	await dropMismatchedSqliteIndexes(database, [
+		{
+			columns: ['username_normalized'],
+			indexName: 'users_username_normalized_unique_index',
+			tableName: TABLE_NAME_MAP.user,
+			unique: true,
+		},
+		{
+			columns: ['status'],
+			indexName: 'users_status_index',
+			tableName: TABLE_NAME_MAP.user,
+		},
+		{
+			columns: ['updated_at', 'id'],
+			indexName: 'users_updated_id_index',
+			tableName: TABLE_NAME_MAP.user,
+		},
+		{
+			columns: ['status', 'updated_at', 'id'],
+			indexName: 'users_status_updated_id_index',
+			tableName: TABLE_NAME_MAP.user,
+		},
+		{
+			columns: ['user_id'],
+			indexName: 'backup_imports_user_id_index',
+			tableName: TABLE_NAME_MAP.backupImportRecord,
+		},
+		{
+			columns: ['created_at'],
+			indexName: 'backup_imports_created_at_index',
+			tableName: TABLE_NAME_MAP.backupImportRecord,
+		},
+		{
+			columns: ['user_id', 'created_at'],
+			indexName: 'backup_imports_user_created_at_index',
+			tableName: TABLE_NAME_MAP.backupImportRecord,
+		},
+		{
+			columns: ['token_hash'],
+			indexName: 'sessions_token_hash_unique_index',
+			tableName: TABLE_NAME_MAP.session,
+			unique: true,
+		},
+		{
+			columns: ['user_id'],
+			indexName: 'sessions_user_id_index',
+			tableName: TABLE_NAME_MAP.session,
+		},
+		{
+			columns: ['user_id', 'last_seen_at', 'created_at'],
+			indexName: 'sessions_user_last_seen_created_index',
+			tableName: TABLE_NAME_MAP.session,
+		},
+		{
+			columns: ['last_seen_at', 'created_at', 'id'],
+			indexName: 'sessions_last_seen_created_id_index',
+			tableName: TABLE_NAME_MAP.session,
+		},
+		{
+			columns: ['created_at', 'last_seen_at', 'id'],
+			indexName: 'sessions_created_last_seen_id_index',
+			tableName: TABLE_NAME_MAP.session,
+		},
+		{
+			columns: ['credential_id'],
+			indexName: 'user_webauthn_credentials_credential_id_unique_index',
+			tableName: TABLE_NAME_MAP.userWebauthnCredential,
+			unique: true,
+		},
+		{
+			columns: ['user_id'],
+			indexName: 'user_webauthn_credentials_user_id_index',
+			tableName: TABLE_NAME_MAP.userWebauthnCredential,
+		},
+		{
+			columns: ['expires_at'],
+			indexName: 'webauthn_challenges_expires_at_index',
+			tableName: TABLE_NAME_MAP.webauthnChallenge,
+		},
+	]);
+
+	await database.schema
+		.createIndex('users_username_normalized_unique_index')
+		.ifNotExists()
+		.unique()
+		.on(TABLE_NAME_MAP.user)
+		.column('username_normalized')
+		.execute();
+
+	await database.schema
+		.createIndex('users_status_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.user)
+		.column('status')
+		.execute();
+
+	await database.schema
+		.createIndex('users_updated_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.user)
+		.columns(['updated_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('users_status_updated_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.user)
+		.columns(['status', 'updated_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('backup_imports_user_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.backupImportRecord)
+		.column('user_id')
+		.execute();
+
+	await database.schema
+		.createIndex('backup_imports_created_at_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.backupImportRecord)
+		.column('created_at')
+		.execute();
+
+	await database.schema
+		.createIndex('backup_imports_user_created_at_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.backupImportRecord)
+		.columns(['user_id', 'created_at'])
+		.execute();
+
+	await database.schema
+		.createIndex('sessions_token_hash_unique_index')
+		.ifNotExists()
+		.unique()
+		.on(TABLE_NAME_MAP.session)
+		.column('token_hash')
+		.execute();
+
+	await database.schema
+		.createIndex('sessions_user_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.session)
+		.column('user_id')
+		.execute();
+
+	await database.schema
+		.createIndex('sessions_user_last_seen_created_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.session)
+		.columns(['user_id', 'last_seen_at', 'created_at'])
+		.execute();
+
+	await database.schema
+		.createIndex('sessions_last_seen_created_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.session)
+		.columns(['last_seen_at', 'created_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('sessions_created_last_seen_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.session)
+		.columns(['created_at', 'last_seen_at', 'id'])
+		.execute();
+
+	await database.schema
+		.createIndex('user_webauthn_credentials_credential_id_unique_index')
+		.ifNotExists()
+		.unique()
+		.on(TABLE_NAME_MAP.userWebauthnCredential)
+		.column('credential_id')
+		.execute();
+
+	await database.schema
+		.createIndex('user_webauthn_credentials_user_id_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.userWebauthnCredential)
+		.column('user_id')
+		.execute();
+
+	await database.schema
+		.createIndex('webauthn_challenges_expires_at_index')
+		.ifNotExists()
+		.on(TABLE_NAME_MAP.webauthnChallenge)
+		.column('expires_at')
+		.execute();
+
+	await ensureAccountTableStructure(database);
+}

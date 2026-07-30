@@ -1,14 +1,18 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
-import { getRequestAuditContext } from '@/lib/account/server/request';
-import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
-import { parsePositiveIntegerParam } from '@/lib/api/adminPagination';
+import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
+import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
+
+import {
+	getTrimmedSearchParam,
+	parsePositiveIntegerParam,
+} from '@/infrastructure/http/queryParameters';
+import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	readJsonBodyResult,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -47,17 +51,8 @@ function parseStatusFilter(value: string | undefined) {
 	return value === 'active' || value === 'disabled' ? value : null;
 }
 
-function getTrimmedSearchParam(request: NextRequest, name: string) {
-	const value = request.nextUrl.searchParams.get(name)?.trim();
-
-	return value === undefined || value === '' ? undefined : value;
-}
-
 export async function GET(request: NextRequest) {
-	const check = await checkAdminSsoClientRequest(
-		request,
-		'admin-list-sso-clients'
-	);
+	const check = await checkAdminRequest(request, 'admin-list-sso-clients');
 	if (check.status === 'error') {
 		return check.response;
 	}
@@ -80,12 +75,14 @@ export async function GET(request: NextRequest) {
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoClientService');
+		await import('@/features/account/sso/admin/server/services/clientService');
 	const callback = parseCallbackFilter(
-		getTrimmedSearchParam(request, 'callback')
+		getTrimmedSearchParam(request.nextUrl.searchParams, 'callback')
 	);
-	const query = getTrimmedSearchParam(request, 'query');
-	const status = parseStatusFilter(getTrimmedSearchParam(request, 'status'));
+	const query = getTrimmedSearchParam(request.nextUrl.searchParams, 'query');
+	const status = parseStatusFilter(
+		getTrimmedSearchParam(request.nextUrl.searchParams, 'status')
+	);
 	if (callback === null || status === null) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
@@ -110,11 +107,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-	const check = await checkAdminSsoClientRequest(
-		request,
-		'admin-create-sso-client',
-		{ csrf: true }
-	);
+	const check = await checkAdminRequest(request, 'admin-create-sso-client', {
+		csrf: true,
+	});
 	if (check.status === 'error') {
 		return check.response;
 	}
@@ -128,7 +123,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	const payloadModule =
-		await import('@/lib/account/server/adminSsoClientPayload');
+		await import('@/features/account/sso/admin/server/http/clientPayload');
 	const body = payloadModule.parseAdminSsoClientCreateBody(
 		bodyResult.status === 'ok' ? bodyResult.data : null
 	);
@@ -137,7 +132,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoClientService');
+		await import('@/features/account/sso/admin/server/services/clientService');
 	const result = await serviceModule.createAdminSsoClient(body, {
 		adminId: check.auth.actorId,
 		...getRequestAuditContext(request),

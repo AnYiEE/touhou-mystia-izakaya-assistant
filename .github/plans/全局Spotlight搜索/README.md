@@ -43,6 +43,17 @@
 
 - 总体状态：首版已实现，当前设置索引组合符合运行模式要求。
 - 当前阶段：阶段 0 至阶段 5 均已完成；验证清单仍保留未逐项人工覆盖的场景。
-- 最后更新：2026-07-17。
+- 最后更新：2026-07-30（实现 owner 与路径复核）。
 - 运行模式：基础设置项始终进入 Spotlight；账号设置项只在 self-hosted 账号功能客户端追加，静态、offline 与 Vercel 模式不暴露账号入口。
 - 验证：历史 `pnpm exec tsc --noEmit` 与 `pnpm lint` 已通过；2026-07-17 的精确模式断言和 self-hosted/静态双模式 Playwright 复核确认设置项覆盖正确。Turbopack 开发服务受当前 `next/font` 内部模块解析基线错误阻塞，本轮浏览器核验改用 Next.js Webpack 开发模式完成。
+
+## 当前实现 owner
+
+- 搜索契约、解析、匹配和通用查询编辑：`app/features/globalSearch/contracts.ts`、`app/features/globalSearch/core/**`。
+- Spotlight 状态、命令、控制器、最近记录、导航和 UI：`app/features/globalSearch/client/**`。
+- 资料索引、字段格式化、筛选映射和资料导航：`app/features/catalog/globalSearch/**`；资料详情 transient target 由 `app/features/catalog/shared/client/hooks/useOpenedItemPopover.ts` 消费。
+- 设置项索引与定位：`app/features/preferences/client/globalSearch/**`。
+- 导航入口与挂载：`app/features/appShell/client/components/navbar/Navbar.tsx`。
+- 弹窗壳与全局快捷键所有权：`app/features/overlays/client/CoordinatedModal.tsx`、`app/features/overlays/client/OverlayCoordinatorHost.tsx`。
+
+2026-07-06 进度表和历史验证记录中的 `app/lib/globalSearch/**`、`app/components/globalSpotlightSearch.tsx`、`app/(pages)/(layout)/navbar.tsx` 等路径是迁移前证据，不是当前代码入口。

@@ -1,6 +1,6 @@
-import Content from './content';
+import { CustomerRare as Customer } from '@/domain/catalog/customers/CustomerRare';
 
-import { CustomerRare as Customer } from '@/utils';
+import { CustomerRarePageContent } from '@/features/catalog/customers/rare/client';
 
 export function generateStaticParams() {
 	return [
@@ -12,5 +12,5 @@ export function generateStaticParams() {
 }
 
 export default function CustomerRare() {
-	return <Content />;
+	return <CustomerRarePageContent />;
 }

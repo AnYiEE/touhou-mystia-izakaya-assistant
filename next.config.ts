@@ -1,9 +1,12 @@
 /* eslint-disable sort-keys, @typescript-eslint/require-await */
 
 import { type NextConfig } from 'next';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 
+import {
+	ACCOUNT_SYNC_REQUEST_MAX_BYTES,
+	getServerActionBodySizeLimit,
+} from './app/features/account/requestLimits';
+import { readSiteStatusBuildIdentity } from './scripts/deployment/siteStatusBuild';
 import {
 	CDN_URL,
 	IS_OFFLINE,
@@ -11,13 +14,8 @@ import {
 	IS_SELF_HOSTED,
 	IS_SKIP_LINT,
 	IS_VERCEL,
-	getSha,
-} from './scripts/utils';
-import {
-	ACCOUNT_SYNC_REQUEST_MAX_BYTES,
-	getServerActionBodySizeLimit,
-} from './app/lib/account/shared/requestLimits';
-import { SITE_STATUS_BUILD_IDENTITY_FILE_NAME } from './app/lib/siteStatus/shared/constants';
+} from './scripts/shared/environment';
+import { getSha } from './scripts/shared/git';
 
 const serverActionBodySizeLimit = getServerActionBodySizeLimit(
 	ACCOUNT_SYNC_REQUEST_MAX_BYTES
@@ -25,29 +23,7 @@ const serverActionBodySizeLimit = getServerActionBodySizeLimit(
 
 const exportMode = IS_OFFLINE || (!IS_SELF_HOSTED && !IS_VERCEL);
 
-function readSiteStatusBuildOperationId() {
-	try {
-		const operationId = readFileSync(
-			resolve(process.cwd(), SITE_STATUS_BUILD_IDENTITY_FILE_NAME),
-			'utf8'
-		).trim();
-		if (
-			!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
-				operationId
-			)
-		) {
-			throw new Error('invalid-site-status-build-operation-id');
-		}
-		return operationId;
-	} catch (error) {
-		if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-			return null;
-		}
-		throw error;
-	}
-}
-
-const siteStatusBuildOperationId = readSiteStatusBuildOperationId();
+const siteStatusBuildOperationId = readSiteStatusBuildIdentity(process.cwd());
 
 const nextConfig: NextConfig = {
 	compiler: {

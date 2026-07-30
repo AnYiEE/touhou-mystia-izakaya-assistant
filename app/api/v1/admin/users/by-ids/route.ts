@@ -1,21 +1,22 @@
 import { type NextRequest } from 'next/server';
 
+import { authenticateAdminFromRequest } from '@/features/account/admin/server/http/authentication';
+import {
+	checkAdminFeatureRouteResponse,
+	createAdminAuthErrorRouteResponse,
+} from '@/features/account/admin/server/http/routeResponses';
+import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-	readJsonBodyResult,
-} from '@/lib/account/server/routeResponses';
-import {
-	authenticateAdminFromRequest,
-	checkAdminFeatureRouteResponse,
-	createAdminAuthErrorRouteResponse,
-} from '@/lib/account/server/adminRouteResponses';
+} from '@/features/account/server/http/routeGuards';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -78,8 +79,8 @@ export async function POST(request: NextRequest) {
 	}
 
 	const [usersModule, userModule] = await Promise.all([
-		import('@/lib/account/server/repositories/users'),
-		import('@/lib/account/server/user'),
+		import('@/features/account/server/persistence/repositories/users'),
+		import('@/features/account/server/presentation/user'),
 	]);
 	const users = await usersModule.listUsersByIds(body.ids);
 

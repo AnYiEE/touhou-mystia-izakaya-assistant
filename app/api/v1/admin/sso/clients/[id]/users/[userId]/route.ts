@@ -1,44 +1,28 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
-import { getRequestAuditContext } from '@/lib/account/server/request';
-import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
+import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
+import {
+	type IAdminSsoRevokeBody,
+	parseAdminSsoRevokeBody,
+} from '@/features/account/sso/admin/server/http/revokePayload';
+import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
+
+import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	readJsonBodyResult,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-interface IRevokeGrantBody {
-	reason?: string;
-}
-
-function parseRevokeGrantBody(value: unknown): IRevokeGrantBody | null {
-	if (value === null || value === undefined) {
-		return {};
-	}
-	if (typeof value !== 'object') {
-		return null;
-	}
-
-	const reason = Object.getOwnPropertyDescriptor(value, 'reason')
-		?.value as unknown;
-	if (reason !== undefined && typeof reason !== 'string') {
-		return null;
-	}
-
-	return reason === undefined ? {} : { reason };
-}
 
 export async function DELETE(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string; userId: string }> }
 ) {
 	const { id, userId } = await params;
-	const check = await checkAdminSsoClientRequest(
+	const check = await checkAdminRequest(
 		request,
 		'admin-revoke-sso-client-user-grant',
 		{
@@ -53,14 +37,14 @@ export async function DELETE(
 		return check.response;
 	}
 
-	const bodyResult = await readJsonBodyResult<IRevokeGrantBody>(
+	const bodyResult = await readJsonBodyResult<IAdminSsoRevokeBody>(
 		request,
 		MAX_ACCOUNT_JSON_BODY_BYTES
 	);
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse('payload-too-large', 413);
 	}
-	const body = parseRevokeGrantBody(
+	const body = parseAdminSsoRevokeBody(
 		bodyResult.status === 'ok' ? bodyResult.data : null
 	);
 	if (body === null) {
@@ -68,7 +52,7 @@ export async function DELETE(
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoGrantService');
+		await import('@/features/account/sso/admin/server/services/grantService');
 	const result = await serviceModule.revokeAdminSsoGrant(id, userId, {
 		adminId: check.auth.actorId,
 		...(body.reason === undefined ? {} : { reason: body.reason }),

@@ -39,7 +39,7 @@ isProject: false
 
 > 当前状态：设计中，桥接功能尚未上线。
 >
-> 当前实现基线：夜雀助手 `v2.6.1`（来自 `package.json`）；首个对外兼容 Mod 版本未定。
+> 当前实现基线：夜雀助手 `v2.6.7`（来自 `package.json`）；首个对外兼容 Mod 版本未定。
 >
 > 文档日期：2026-07-15
 >
@@ -779,7 +779,7 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 
 - `suggestMeals` 在任何异步让出和缓存读取前建立本次调用的完整参数快照。快照复制 `customerOrder`、`popularTrend`、固定料理及其额外食材数组，以及三个隐藏项 Set；缓存键、搜索上下文和实际计算只使用同一份快照。调用方在 Promise 完成前继续修改原对象时，不得改变本次结果，也不得使缓存键和缓存内容不一致。
 - `ISuggestParams` 顶层字段声明为只读，明确一次调用对应一个不可替换的参数集合。`AbortSignal`、scheduler 和 task key 仍属于执行选项，不进入业务参数快照。
-- `ICustomerOrder` 从页面 Store 模块下沉到 `app/types/customerOrder.d.ts`，由 `app/types/index.ts` 统一导出。评级、推荐、已保存套餐评估和 React hook 只依赖领域类型；Store 继续持有实际状态，不改变字段、默认值、持久化或同步格式。
+- `ICustomerOrder` 从页面 Store 模块下沉到 `app/domain/orders/types.ts`。评级、推荐、已保存套餐评估和 React hook 只依赖领域类型；Store 继续持有实际状态，不改变字段、默认值、持久化或同步格式。
 - 推荐内核新增私有 host-task 队列。浏览器优先使用 `MessageChannel` 安排下一轮任务，无法使用时回退到 `setTimeout(0)`；默认 scheduler 和公平轮转 scheduler 复用该队列。公共 `ISuggestMealsYieldScheduler` 接口、默认 6 ms 时间片、task key、公平顺序和 Abort 行为保持不变。
 
 本阶段明确不提前创建 fragment parser、WSS 类型、消息 validator、账号连接组件或其他尚无生产调用方的桥接代码；不合并并发 Promise，不增加缓存版本、持久化、依赖、环境变量、Web Worker 或 UI。
@@ -793,23 +793,23 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 
 ### 新建文件
 
-- `app/lib/recommendations/bridge/protocol.ts`
+- `app/features/recommendations/client/bridge/protocol.ts`
     - 定义跨版本启动/握手边界、消息大小、close code 和按 `protocol_version` 分派的入口。
     - 在 `JSON.parse` 丢失重复键证据前校验原始文本的 object 成员唯一性，再把 `unknown` 交给对应版本 validator；不能用最新协议 validator 解释旧版本消息。
-- `app/lib/recommendations/bridge/shared.ts`
+- `app/features/recommendations/client/bridge/shared.ts`
     - 提供不依赖领域数据的协议版本常量和重复 JSON 成员检查，使 `instrumentation-client.ts` 可以在 Next App Router 读取初始 URL 前加载启动描述模块。
-- `app/lib/recommendations/bridge/v1/protocol.ts`
+- `app/features/recommendations/client/bridge/v1/protocol.ts`
     - 冻结 V1 消息常量、公共 TypeScript 类型和严格 validator。
-- `app/lib/recommendations/bridge/v1/requestAdapter.ts`
+- `app/features/recommendations/client/bridge/v1/requestAdapter.ts`
     - 把已经通过 V1 校验的名称、默认值和四种模式映射为当前内部 `ISuggestParams`，不复制游戏数据或推荐规则。
-- `app/lib/recommendations/bridge/v1/responseSerializer.ts`
+- `app/features/recommendations/client/bridge/v1/responseSerializer.ts`
     - 把当前内部结果和错误映射回永久兼容的 V1 JSON；内部类型变化不能直接改变 V1 输出。
-- `app/lib/recommendations/bridge/launchDescriptor.ts`
+- `app/features/recommendations/client/bridge/launchDescriptor.ts`
     - 在浏览器模块首次求值时同步捕获原始 `game-bridge` fragment，保留 `history.state` 后立即清除，再执行包含重复键检测的严格解析；服务端求值只返回无描述，不能访问 DOM。
     - 返回仅存在于当前模块内存中的启动描述。
     - 为无账号能力的运行模式提供只清除并丢弃描述的入口。
     - 提供 `createRecommendationBridgeContinuationUrl(targetUrl)`，只为同源、无 fragment 的整页跳转续接描述。
-- `app/lib/recommendations/bridge/client.ts`
+- `app/features/recommendations/client/bridge/client.ts`
     - 导出幂等的 `startRecommendationBridgeClient()`，管理账号订阅、只用于升级关闭的应用版本订阅、WebSocket、LNA 权限状态、`pagehide`、握手、心跳、重连、连接 generation、在途请求 Map、公平 scheduler、AbortController 和消息发送。
     - 不依赖 React，不读写 UI 或持久化 Store。
 - `.github/plans/猜您想要/recommendation-bridge-reference/`
@@ -821,18 +821,17 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 
 - `instrumentation-client.ts`
     - 在 Next App Router 建立初始 `canonicalUrl` 前静态导入启动描述模块。真实浏览器验证表明，只从 feature-client 导入会被 App Router 随后的 history 更新恢复原 fragment。
-- `app/lib/account/client/featureClient.tsx`
-    - 保留启动描述模块的静态导入，并在现有全局 feature-client 生命周期中启动和清理桥接客户端。
-    - 在现有 `startAccountFeatureClients()` 生命周期中启动并清理无 UI 桥接客户端。
-    - 不改变 `AccountFeatureModals` 的现有可见 UI、overlay 或交互。
-- `app/lib/account/client/featureClient.offline.tsx`
-    - 顶层静态导入清除入口，在模块求值时同步清除并丢弃 `game-bridge` fragment，避免等到 `startAccountFeatureClients()` effect 才处理。
-    - 不启动桥接，不解析为可连接描述。
-    - 保持账号状态为 `disabled`，不增加连接、账号能力或 UI。
-- `app/lib/account/client/components/accountManager.tsx`
+- `app/providers.tsx`
+    - 账号客户端和推荐客户端是两个独立全局生命周期。`startRecommendationClient({ accountGate })` 只读取账号 gate，不把 socket generation、调度或清理职责交给账号客户端。
+    - `AccountFeatureModals` 的可见 UI、overlay 和交互保持由账号 feature owner 管理。
+- `app/features/recommendations/client.ts` 与 `app/features/recommendations/client/startRecommendationClient.ts`
+    - 普通模式启动并清理无 UI 桥接客户端。
+- `app/features/recommendations/client.offline.ts`
+    - 顶层同步清除并丢弃 `game-bridge` fragment，不启动桥接，也不解析为可连接描述。
+- `app/features/account/client/components/accountManager/useAccountAuthentication.ts`
     - 三处用户名密码/WebAuthn 登录注册成功的 `redirect_to` 调用统一经过续接 helper。
     - 不改变登录、注册、SSO 授权或账号弹窗的可见行为。
-- `app/lib/account/client/components/accountPasswordMustChangeModal.tsx`
+- `app/features/account/client/components/AccountPasswordMustChangeModal.tsx`
     - 强制改密完成后恢复 SSO 的同源跳转经过续接 helper。
     - 不改变强制改密判断、弹窗内容或阻塞语义。
 - `.github/plans/猜您想要/稀客套餐推荐本地WSS桥接协议.plan.md`
@@ -840,10 +839,9 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 
 ### 保持不变
 
-- `app/providers.tsx` 页面结构和可见组件顺序不变。
-- `app/(pages)/sso/authorize/authorizeControls.tsx` 的第三方 redirect 保持原样，不能附带桥接信息。
-- `app/utils/customer/customer_rare/suggestMeals.ts` 继续作为唯一生产推荐入口；本次只收紧其异步入参和调度边界。
-- `app/utils/customer/customer_rare/evaluateMeal.ts` 继续作为唯一评级语义来源。
+- `app/features/account/sso/authorize/client/AuthorizeControls.tsx` 的第三方 redirect 保持原样，不能附带桥接信息。
+- `app/features/recommendations/client/suggestMeals.ts` 继续作为生产推荐入口，调用 `app/domain/recommendations/suggestMeals.ts` 的领域内核。
+- `app/domain/evaluation/rareCustomerMeal.ts` 继续作为唯一评级语义来源。
 - 不新增 API route、数据库表、环境变量、依赖、Store 字段、持久化或跨标签页消息。
 
 ## 十四、实施任务与进度
@@ -864,7 +862,7 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 
 修改文件：
 
-- `app/(pages)/customer-rare/useCustomerRarePlanRecommendations.ts`
+- `app/features/customerPlans/client/useCustomerRarePlanRecommendations.ts`
     - 把最多 280 个组合形成的异步递归 Promise 链改成逐批循环；每一批仍先通过共享公平调度器让出，再调用 `resolveRecommendedCustomerRarePlanMealBatch`。
     - 共享 LRU 缓存只保存已经完成的 `meals` 数组。部分结果、`nextIndex` 和完成状态只属于当前 hook 实例，不进入共享缓存。
 - `.github/plans/猜您想要/稀客套餐推荐本地WSS桥接协议.plan.md`

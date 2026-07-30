@@ -1,13 +1,11 @@
 'use client';
 
-import { memo } from 'react';
-
-import { useReducedMotion } from '@/design/ui/hooks';
-
 import { Link as HeroUILink, type LinkProps } from '@heroui/link';
 import { type InternalForwardRefRenderFunction } from '@heroui/system';
+import { cn } from '@heroui/theme';
+import { memo } from 'react';
 
-import { cn } from '@/design/ui/utils';
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 interface IProps extends Omit<LinkProps, 'referrerPolicy'> {
 	animationUnderline?: boolean;

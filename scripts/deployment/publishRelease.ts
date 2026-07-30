@@ -1,5 +1,5 @@
-import { publishRelease } from './release.mjs';
-import { getSha } from '../utils';
+import { getSha } from '../shared/git';
+import { publishRelease } from './releasePublication.mjs';
 
 interface IPublishSelfHostedReleaseOptions {
 	operationId: string;

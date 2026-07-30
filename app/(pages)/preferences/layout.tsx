@@ -1,6 +1,7 @@
 import { type Metadata } from 'next';
+import { type PropsWithChildren } from 'react';
 
-import { getPageTitle } from '@/utilities';
+import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
 
 export const metadata: Metadata = {
 	title: getPageTitle('/preferences'),
@@ -8,4 +9,8 @@ export const metadata: Metadata = {
 	robots: { index: false },
 };
 
-export { default } from '@/(pages)/layouts';
+export default function PreferencesLayout({
+	children,
+}: Readonly<PropsWithChildren>) {
+	return children;
+}

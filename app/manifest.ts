@@ -1,16 +1,16 @@
 /* eslint-disable sort-keys */
 import { type MetadataRoute } from 'next';
 
-import { COLOR_MAP } from '@/design/hooks';
-
-import { siteConfig } from '@/configs';
+import { COLOR_MAP } from './design/theme/runtime/constants';
+import { PUBLIC_RUNTIME_CONFIG } from './infrastructure/environment/publicRuntimeConfig';
+import { SITE_METADATA } from './shared/site/metadata';
 
 type TManifest = MetadataRoute.Manifest & {
 	edge_side_panel: Partial<{ preferred_width: number }>;
 };
 
-const { cdnUrl, description, id, isOffline, locale, name, shortName } =
-	siteConfig;
+const { cdnUrl, isOffline } = PUBLIC_RUNTIME_CONFIG;
+const { description, id, locale, name, shortName } = SITE_METADATA;
 
 export const dynamic = 'force-static';
 

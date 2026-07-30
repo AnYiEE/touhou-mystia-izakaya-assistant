@@ -1,19 +1,20 @@
 import { type NextRequest } from 'next/server';
 
+import type { IAccountSessionListData } from '@/features/account/contracts';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-	createAccountAuthErrorRouteResponse,
-} from '@/lib/account/server/routeResponses';
-import { createAccountSessionRecord } from '@/lib/account/server/sessionPresentation';
+} from '@/features/account/server/http/routeGuards';
+import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+import { createAccountSessionRecord } from '@/features/account/server/presentation/session';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
-import { type IAccountSessionListData } from '@/lib/account/shared/types';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -43,7 +44,8 @@ export async function GET(request: NextRequest) {
 		return preAuthRateLimitResponse;
 	}
 
-	const authModule = await import('@/lib/account/server/auth');
+	const authModule =
+		await import('@/features/account/server/auth/requestAuthentication');
 	const auth = await authModule.authenticateAccountFromRequest(request, true);
 	if (auth.status === 'error') {
 		return createAccountAuthErrorRouteResponse(auth, request);
@@ -58,7 +60,7 @@ export async function GET(request: NextRequest) {
 	}
 
 	const sessionsModule =
-		await import('@/lib/account/server/repositories/sessions');
+		await import('@/features/account/server/persistence/repositories/sessions');
 	const sessions = await sessionsModule.listSessionsForActiveUserSession(
 		auth.data.user.id,
 		{ id: auth.data.session.id, token_hash: auth.data.session.token_hash }

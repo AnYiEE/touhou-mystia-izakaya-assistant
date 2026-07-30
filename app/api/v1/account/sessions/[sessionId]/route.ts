@@ -6,12 +6,13 @@ import {
 	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-	createAccountAuthErrorRouteResponse,
-} from '@/lib/account/server/routeResponses';
+} from '@/features/account/server/http/routeGuards';
+import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -45,7 +46,10 @@ export async function DELETE(
 		return preAuthRateLimitResponse;
 	}
 
-	const authModule = await import('@/lib/account/server/auth');
+	const [authModule, csrfModule] = await Promise.all([
+		import('@/features/account/server/auth/requestAuthentication'),
+		import('@/features/account/server/auth/accountCsrf'),
+	]);
 	const auth = await authModule.authenticateAccountFromRequest(request, true);
 	if (auth.status === 'error') {
 		return createAccountAuthErrorRouteResponse(auth, request);
@@ -61,7 +65,7 @@ export async function DELETE(
 		return rateLimitResponse;
 	}
 
-	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
+	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 	if (sessionId === auth.data.session.id) {
@@ -69,8 +73,8 @@ export async function DELETE(
 	}
 
 	const [sessionsModule, accountAuditModule] = await Promise.all([
-		import('@/lib/account/server/repositories/sessions'),
-		import('@/lib/account/server/accountAuditService'),
+		import('@/features/account/server/persistence/repositories/sessions'),
+		import('@/features/account/server/audit/service'),
 	]);
 	const didDelete = await sessionsModule.deleteOtherSessionByUserIdWithAudit(
 		{

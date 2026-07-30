@@ -1,11 +1,10 @@
 'use client';
 
+import { Switch as HeroUISwitch, type SwitchProps } from '@heroui/switch';
+import { type InternalForwardRefRenderFunction } from '@heroui/system';
 import { memo } from 'react';
 
-import { useReducedMotion } from '@/design/ui/hooks';
-
-import { type InternalForwardRefRenderFunction } from '@heroui/system';
-import { Switch as HeroUISwitch, type SwitchProps } from '@heroui/switch';
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 interface IProps extends SwitchProps {}
 

@@ -1,15 +1,17 @@
-import { type NextRequest } from 'next/server';
 import { type AuthenticationResponseJSON } from '@simplewebauthn/server';
+import { type NextRequest } from 'next/server';
 
+import { USER_STATUS_MAP } from '@/domain/account/contracts';
+
+import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-	readJsonBodyResult,
-} from '@/lib/account/server/routeResponses';
-import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
-import { createNoStoreErrorResponse } from '@/lib/api/routeResponses';
+} from '@/features/account/server/http/routeGuards';
+
+import { createNoStoreErrorResponse } from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -74,21 +76,19 @@ export async function POST(request: NextRequest) {
 		challengesModule,
 		webauthnCredentialsModule,
 		usersModule,
-		credentialsModule,
-		authModule,
 		userModule,
 		accountAuditModule,
 		loginResponseModule,
+		loginWithPasskeyModule,
 	] = await Promise.all([
-		import('@/lib/account/server/webauthn'),
-		import('@/lib/account/server/repositories/webauthnChallenges'),
-		import('@/lib/account/server/repositories/webauthnCredentials'),
-		import('@/lib/account/server/repositories/users'),
-		import('@/lib/account/server/repositories/credentials'),
-		import('@/lib/account/server/auth'),
-		import('@/lib/account/server/user'),
-		import('@/lib/account/server/accountAuditService'),
-		import('@/lib/account/server/loginResponse'),
+		import('@/features/account/webauthn/server/service'),
+		import('@/features/account/webauthn/server/persistence/challenges'),
+		import('@/features/account/webauthn/server/persistence/credentials'),
+		import('@/features/account/server/persistence/repositories/users'),
+		import('@/features/account/server/presentation/user'),
+		import('@/features/account/server/audit/service'),
+		import('@/features/account/server/http/loginResponse'),
+		import('@/features/account/server/useCases/loginWithPasskey'),
 	]);
 
 	const respondInvalid = async (reason: string, targetId: string | null) => {
@@ -150,58 +150,23 @@ export async function POST(request: NextRequest) {
 		return respondInvalid('verification-failed', user.id);
 	}
 
-	const now = Date.now();
-	const passwordCredential = await credentialsModule.getCredentialByUserId(
-		user.id
-	);
-	const hasPassword = passwordCredential?.password_set === 1;
-	const passwordMustChange = passwordCredential?.password_must_change === 1;
-
-	const sessionResult = await authModule.createAccountSessionForActiveUser(
-		user.id,
+	const result = await loginWithPasskeyModule.loginWithPasskey({
+		credential,
+		nextCounter: verification.authenticationInfo.newCounter,
 		request,
-		{ last_login_at: now, updated_at: now },
-		undefined,
-		(trx, auditNow) =>
-			accountAuditModule.writeAccountAuditLogInTransaction(
-				trx,
-				accountAuditModule.createAccountUserAuditLogInput({
-					action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
-						.loginSucceeded,
-					metadata: {
-						method: 'passkey',
-						must_change_on_next_login: passwordMustChange,
-						nickname: user.nickname,
-						username: user.username,
-					},
-					request,
-					userId: user.id,
-				}),
-				auditNow
-			),
-		{
-			credentialId: credential.credential_id,
-			expectedCounter: credential.counter,
-			id: credential.id,
-			lastUsedAt: now,
-			nextCounter: verification.authenticationInfo.newCounter,
-		}
-	);
-	if (sessionResult.status !== 'ok') {
-		return respondInvalid('session-create-failed', user.id);
+		user,
+	});
+	if (result.status === 'error') {
+		return respondInvalid(result.reason, result.targetId);
 	}
 
 	const response =
 		await loginResponseModule.createAccountLoginSuccessResponse({
-			hasPassword,
-			passwordMustChange,
+			hasPassword: result.hasPassword,
+			passwordMustChange: result.passwordMustChange,
 			request,
-			session: sessionResult,
-			user: userModule.createAccountUserProfile({
-				...user,
-				last_login_at: now,
-				updated_at: now,
-			}),
+			session: result.session,
+			user: userModule.createAccountUserProfile(result.user),
 		});
 	webauthnModule.clearWebauthnChallengeCookie(response, request);
 

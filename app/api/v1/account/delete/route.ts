@@ -6,12 +6,13 @@ import {
 	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-	createAccountAuthErrorRouteResponse,
-} from '@/lib/account/server/routeResponses';
+} from '@/features/account/server/http/routeGuards';
+import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,7 +42,11 @@ export async function DELETE(request: NextRequest) {
 		return preAuthRateLimitResponse;
 	}
 
-	const authModule = await import('@/lib/account/server/auth');
+	const [authModule, csrfModule, sessionModule] = await Promise.all([
+		import('@/features/account/server/auth/requestAuthentication'),
+		import('@/features/account/server/auth/accountCsrf'),
+		import('@/features/account/server/auth/sessionLifecycle'),
+	]);
 	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
 		return createAccountAuthErrorRouteResponse(auth, request);
@@ -55,47 +60,19 @@ export async function DELETE(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
+	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
-	const [usersModule, accountAuditModule] = await Promise.all([
-		import('@/lib/account/server/repositories/users'),
-		import('@/lib/account/server/accountAuditService'),
-	]);
-	const deleteResult =
-		await usersModule.deleteActiveUserIfSessionCurrentWithAudit(
-			auth.data.user.id,
-			{
-				id: auth.data.session.id,
-				token_hash: auth.data.session.token_hash,
-			},
-			(trx, auditNow) =>
-				accountAuditModule.writeAccountAuditLogInTransaction(
-					trx,
-					accountAuditModule.createAccountUserAuditLogInput({
-						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
-							.accountDeleted,
-						metadata: {
-							auth_record_digest:
-								accountAuditModule.createAccountAuditValueDigest(
-									auth.data.session.id
-								),
-							nickname: auth.data.user.nickname,
-							username: auth.data.user.username,
-						},
-						request,
-						userId: auth.data.user.id,
-					}),
-					auditNow
-				)
-		);
+	const deleteModule =
+		await import('@/features/account/server/useCases/deleteAccount');
+	const deleteResult = await deleteModule.deleteAccount(auth.data, request);
 	if (deleteResult.status === 'unauthorized') {
 		return createNoStoreErrorResponse('unauthorized', 401);
 	}
 
 	const response = createNoStoreJsonResponse({ message: 'user-deleted' });
-	authModule.clearAccountSessionCookie(response, request);
+	sessionModule.clearAccountSessionCookie(response, request);
 
 	return response;
 }

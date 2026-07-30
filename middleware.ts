@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import {
 	applyServiceCorsHeaders,
 	createServiceCorsPreflightResponse,
-} from '@/lib/api/cors';
+} from '@/infrastructure/http/server/cors';
 
 export function middleware(request: NextRequest) {
 	if (request.method === 'OPTIONS') {

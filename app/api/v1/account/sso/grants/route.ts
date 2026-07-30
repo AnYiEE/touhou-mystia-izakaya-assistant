@@ -6,12 +6,13 @@ import {
 	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-	createAccountAuthErrorRouteResponse,
-} from '@/lib/account/server/routeResponses';
+} from '@/features/account/server/http/routeGuards';
+import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,7 +42,8 @@ export async function GET(request: NextRequest) {
 		return preAuthRateLimitResponse;
 	}
 
-	const authModule = await import('@/lib/account/server/auth');
+	const authModule =
+		await import('@/features/account/server/auth/requestAuthentication');
 	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
 		return createAccountAuthErrorRouteResponse(auth, request);
@@ -56,7 +58,7 @@ export async function GET(request: NextRequest) {
 	}
 
 	const { listSsoUserClientGrantsForActiveUserSession } =
-		await import('@/lib/account/server/sso');
+		await import('@/features/account/sso/server/grants');
 	const grants = await listSsoUserClientGrantsForActiveUserSession(
 		auth.data.user.id,
 		{ id: auth.data.session.id, token_hash: auth.data.session.token_hash }

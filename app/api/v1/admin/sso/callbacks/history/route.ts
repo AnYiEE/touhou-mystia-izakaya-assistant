@@ -1,20 +1,19 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
-import { getRequestAuditContext } from '@/lib/account/server/request';
-import { SSO_CALLBACK_EVENT_LIST } from '@/lib/account/shared/constants';
-import type {
-	TAdminSsoCallbackDeliveryStatus,
-	TAdminSsoCallbackEvent,
-} from '@/lib/account/shared/types';
+import type { TAdminSsoCallbackDeliveryStatus } from '@/features/account/contracts';
+import { parseAdminSsoCallbackEventQuery } from '@/features/account/sso/admin/server/http/callbackEventQuery';
+import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
+
 import {
+	getTrimmedSearchParam,
 	parseNonNegativeIntegerParam,
 	parsePositiveIntegerParam,
-} from '@/lib/api/adminPagination';
+} from '@/infrastructure/http/queryParameters';
+import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,22 +21,6 @@ export const dynamic = 'force-dynamic';
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE = 10_000;
 const MAX_PAGE_SIZE = 100;
-
-function getTrimmedSearchParam(request: NextRequest, name: string) {
-	const value = request.nextUrl.searchParams.get(name)?.trim();
-
-	return value === undefined || value === '' ? undefined : value;
-}
-
-function parseCallbackEvent(value: string | undefined) {
-	if (value === undefined) {
-		return;
-	}
-
-	return SSO_CALLBACK_EVENT_LIST.includes(value as TAdminSsoCallbackEvent)
-		? (value as TAdminSsoCallbackEvent)
-		: null;
-}
 
 function parseDeliveryStatus(value: string | undefined) {
 	if (value === undefined) {
@@ -50,7 +33,7 @@ function parseDeliveryStatus(value: string | undefined) {
 }
 
 export async function GET(request: NextRequest) {
-	const check = await checkAdminSsoClientRequest(
+	const check = await checkAdminRequest(
 		request,
 		'admin-list-sso-callback-deliveries'
 	);
@@ -83,19 +66,27 @@ export async function GET(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const clientId = getTrimmedSearchParam(request, 'client_id');
-	const event = parseCallbackEvent(getTrimmedSearchParam(request, 'event'));
-	const query = getTrimmedSearchParam(request, 'query');
-	const status = parseDeliveryStatus(
-		getTrimmedSearchParam(request, 'status')
+	const clientId = getTrimmedSearchParam(
+		request.nextUrl.searchParams,
+		'client_id'
 	);
-	const userId = getTrimmedSearchParam(request, 'user_id');
+	const event = parseAdminSsoCallbackEventQuery(
+		getTrimmedSearchParam(request.nextUrl.searchParams, 'event')
+	);
+	const query = getTrimmedSearchParam(request.nextUrl.searchParams, 'query');
+	const status = parseDeliveryStatus(
+		getTrimmedSearchParam(request.nextUrl.searchParams, 'status')
+	);
+	const userId = getTrimmedSearchParam(
+		request.nextUrl.searchParams,
+		'user_id'
+	);
 	if (event === null || status === null) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoCallbackService');
+		await import('@/features/account/sso/admin/server/services/callbackService');
 	const result = await serviceModule.listAdminSsoCallbackDeliveries({
 		page,
 		pageSize,
@@ -120,7 +111,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-	const check = await checkAdminSsoClientRequest(
+	const check = await checkAdminRequest(
 		request,
 		'admin-cleanup-sso-callback-deliveries',
 		{ csrf: true }
@@ -140,7 +131,7 @@ export async function DELETE(request: NextRequest) {
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoCallbackService');
+		await import('@/features/account/sso/admin/server/services/callbackService');
 	const result = await serviceModule.cleanupAdminSsoCallbackDeliveries({
 		adminId: check.auth.actorId,
 		...(before === undefined ? {} : { before }),

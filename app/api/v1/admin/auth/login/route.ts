@@ -1,19 +1,20 @@
 import { type NextRequest } from 'next/server';
 
+import { checkAdminCredentialLoginEnabled } from '@/features/account/admin/server/auth';
+import { checkAdminFeatureRouteResponse } from '@/features/account/admin/server/http/routeResponses';
+import type { IAdminLoginBody } from '@/features/account/contracts';
+import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-	readJsonBodyResult,
-} from '@/lib/account/server/routeResponses';
-import { checkAdminCredentialLoginEnabled } from '@/lib/account/server/admin';
-import { checkAdminFeatureRouteResponse } from '@/lib/account/server/adminRouteResponses';
-import { type IAdminLoginBody } from '@/lib/account/shared/types';
+} from '@/features/account/server/http/routeGuards';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const adminModule = await import('@/lib/account/server/admin');
+	const adminModule = await import('@/features/account/admin/server/auth');
 	if (!adminModule.checkAdminCredentials(username, body.password)) {
 		return createNoStoreErrorResponse('unauthorized', 401);
 	}

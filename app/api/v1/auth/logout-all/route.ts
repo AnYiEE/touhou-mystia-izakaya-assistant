@@ -6,11 +6,12 @@ import {
 	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-} from '@/lib/account/server/routeResponses';
+} from '@/features/account/server/http/routeGuards';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -42,7 +43,10 @@ export async function POST(request: NextRequest) {
 		return preAuthRateLimitResponse;
 	}
 
-	const authModule = await import('@/lib/account/server/auth');
+	const [authModule, csrfModule] = await Promise.all([
+		import('@/features/account/server/auth/requestAuthentication'),
+		import('@/features/account/server/auth/accountCsrf'),
+	]);
 	const auth = await authModule.authenticateAccountFromRequest(request, true);
 	if (auth.status === 'error') {
 		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
@@ -56,13 +60,13 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
+	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
 	const [sessionsModule, accountAuditModule] = await Promise.all([
-		import('@/lib/account/server/repositories/sessions'),
-		import('@/lib/account/server/accountAuditService'),
+		import('@/features/account/server/persistence/repositories/sessions'),
+		import('@/features/account/server/audit/service'),
 	]);
 	const deleteResult = await sessionsModule.deleteSessionsByUserIdWithAudit(
 		auth.data.user.id,

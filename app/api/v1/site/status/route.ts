@@ -1,13 +1,14 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAccountRateLimitRouteResponse } from '@/lib/account/server/routeResponses';
-import { checkAccountRuntimeEnabled } from '@/lib/account/server/environment';
-import { createNoStoreJsonResponse } from '@/lib/api/routeResponses';
-import { getLogSafeErrorCode } from '@/lib/logging';
-import { readDeploymentMaintenance } from '@/lib/siteStatus/server/service';
-import { readVisitorCount } from '@/lib/siteStatus/server/visitors';
-import { SITE_STATUS_RATE_LIMIT_OPTIONS } from '@/lib/siteStatus/shared/constants';
-import type { ISiteStatusData } from '@/lib/siteStatus/shared/types';
+import { checkAccountRuntimeEnabled } from '@/features/account/server/featureStatus';
+import { checkAccountRateLimitRouteResponse } from '@/features/account/server/http/routeGuards';
+import type { ISiteStatusData } from '@/features/siteStatus/contracts';
+import { SITE_STATUS_RATE_LIMIT_OPTIONS } from '@/features/siteStatus/server/httpPolicy';
+import { readDeploymentMaintenance } from '@/features/siteStatus/server/service';
+import { readVisitorCount } from '@/features/siteStatus/server/visitors';
+
+import { createNoStoreJsonResponse } from '@/infrastructure/http/server/responses';
+import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 export const dynamic = 'force-dynamic';
 

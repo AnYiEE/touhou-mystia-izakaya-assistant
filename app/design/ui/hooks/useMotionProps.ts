@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { globalStore as store } from '@/stores';
+import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 
 const MOTION_DEFAULT = {} as const;
 
@@ -81,7 +81,7 @@ export function getMotionProps<T extends TMotionType>(
 }
 
 export function useMotionProps<T extends TMotionType>(type: T) {
-	const isHighAppearance = store.persistence.highAppearance.use();
+	const { isHighAppearance } = useDesignPreferences();
 
 	const motionProps = useMemo(
 		() => getMotionProps(type, isHighAppearance),

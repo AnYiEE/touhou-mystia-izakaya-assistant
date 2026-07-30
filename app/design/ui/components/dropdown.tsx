@@ -1,17 +1,15 @@
 'use client';
 
-import { type JSX, memo } from 'react';
-
-import { useMotionProps, useReducedMotion } from '@/design/ui/hooks';
-
 import {
 	type DropdownProps,
 	Dropdown as HeroUIDropdown,
 } from '@heroui/dropdown';
+import { cn } from '@heroui/theme';
+import { type JSX, memo } from 'react';
 
-import { cn } from '@/design/ui/utils';
-
-import { globalStore as store } from '@/stores';
+import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
+import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 interface IProps extends DropdownProps {}
 
@@ -25,8 +23,7 @@ export default memo<IProps>(function Dropdown({
 }) {
 	const motionProps = useMotionProps('popover');
 	const isReducedMotion = useReducedMotion();
-
-	const isHighAppearance = store.persistence.highAppearance.use();
+	const { isHighAppearance } = useDesignPreferences();
 
 	return (
 		<HeroUIDropdown

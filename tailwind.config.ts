@@ -1,15 +1,15 @@
 /* eslint-disable sort-keys */
 
-import { type Config } from 'tailwindcss';
 import { heroui } from '@heroui/theme';
+import { type Config } from 'tailwindcss';
 
 import {
 	fontFamily,
 	getExtendConfig,
 	semanticColors,
 } from './app/design/theme';
-import { CDN_URL, IS_PRODUCTION } from './scripts/utils';
 import PACKAGE from './package.json';
+import { CDN_URL, IS_PRODUCTION } from './scripts/shared/environment';
 
 const herouiComponents = [
 	...Object.keys(PACKAGE.dependencies)

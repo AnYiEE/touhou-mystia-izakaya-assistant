@@ -6,10 +6,10 @@
 	"type": "module",
 	"scripts": {
 		"dev": "next dev --turbopack",
-		"build": "tsx scripts/build.ts",
-		"build:offline": "tsx scripts/buildOffline.ts",
-		"fonts:update": "tsx scripts/updateFonts.ts",
-		"sprites": "tsx scripts/generateSprites.ts",
+		"build": "tsx scripts/build/selfHosted.ts",
+		"build:offline": "tsx scripts/build/offline.ts",
+		"fonts:update": "tsx scripts/assets/updateFonts.ts",
+		"sprites": "tsx scripts/assets/sprites/generate.ts",
 		"start": "node scripts/startSelfHosted.mjs",
 		"serve": "pnpx serve out",
 		"lint": "eslint --cache .",
@@ -135,7 +135,8 @@
 		"sanitize-html": "^2.17.6",
 		"ua-parser-js": "^2.0.10",
 		"use-breakpoint": "^4.0.10",
-		"uuid": "^14.0.1"
+		"uuid": "^14.0.1",
+		"wicg-inert": "^3.1.3"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.29.7",

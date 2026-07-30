@@ -1,73 +1,107 @@
 'use client';
 
-import { type PropsWithChildren, useEffect } from 'react';
-import { compareVersions } from 'compare-versions';
-import FingerprintJS from '@fingerprintjs/fingerprintjs';
-
-import { useRouter } from 'next/navigation';
-
 import { HeroUIProvider } from '@heroui/system';
+import { compareVersions } from 'compare-versions';
+import { useRouter } from 'next/navigation';
+import { type PropsWithChildren, useEffect } from 'react';
 import { ProgressBar, ProgressBarProvider } from 'react-transition-progress';
 
-import CompatibleBrowser from '@/components/compatibleBrowser';
-import CustomerRareTutorial from '@/components/customerRareTutorial';
-import DonationModal from '@/components/donationModal';
-import OverlayCoordinatorHost from '@/components/overlayCoordinatorHost';
-import AccountInitialStateHydrator from '@/lib/account/client/components/accountInitialStateHydrator';
-import AccountSessionInitialDataHydrator from '@/lib/account/client/components/accountSessionInitialDataHydrator';
-import AccountSsoGrantInitialDataHydrator from '@/lib/account/client/components/accountSsoGrantInitialDataHydrator';
-import AccountWebauthnInitialDataHydrator from '@/lib/account/client/components/accountWebauthnInitialDataHydrator';
-import SiteStatusProvider from '@/lib/siteStatus/client/provider';
-
-import { siteConfig } from '@/configs';
-import { type TDlc } from '@/data';
+import { accountGate } from './features/account/client/accountGate';
+import AccountInitialStateHydrator from './features/account/client/components/AccountInitialStateHydrator';
+import AccountSessionInitialDataHydrator from './features/account/client/components/AccountSessionInitialDataHydrator';
+import AccountSsoGrantInitialDataHydrator from './features/account/client/components/AccountSsoGrantInitialDataHydrator';
+import AccountWebauthnInitialDataHydrator from './features/account/client/components/AccountWebauthnInitialDataHydrator';
 import {
 	AccountFeatureModals,
 	startAccountFeatureClients,
-} from '@/lib/account/client/featureClient';
+} from './features/account/client/featureClient';
+import type {
+	IAccountSessionInitialData,
+	IAccountSsoGrantInitialData,
+	IAccountWebauthnInitialData,
+	TAccountMeResponse,
+} from './features/account/contracts';
+import { startAnalyticsClient } from './features/analytics/client';
+import CompatibleBrowser from './features/appShell/client/CompatibleBrowser';
+import DonationModal from './features/donations/client/DonationModal';
+import { OverlayCoordinatorHost } from './features/overlays/client';
+import DesignPreferencesConnector from './features/preferences/client/designPreferencesConnector';
+import { startPreferencesClient } from './features/preferences/client/startPreferencesClient';
 import {
-	type IAccountSessionInitialData,
-	type IAccountSsoGrantInitialData,
-	type IAccountWebauthnInitialData,
-	type TAccountMeResponse,
-} from '@/lib/account/shared/types';
-import {
-	beveragesStore,
-	clothesStore,
-	cookersStore,
-	currenciesStore,
-	customerNormalStore,
-	customerRareStore,
 	globalSettingKeyIsHighAppearance,
 	globalStore,
-	ingredientsStore,
-	ornamentsStore,
-	partnersStore,
-	recipesStore,
-} from '@/stores';
-import { toSet } from '@/utilities';
+} from './features/preferences/client/state/globalPersistenceStore';
+import { startRecommendationClient } from './features/recommendations/client';
+import SiteStatusProvider from './features/siteStatus/client/SiteStatusProvider';
+import CustomerRareTutorial from './features/tutorials/customerRare/client/CustomerRareTutorial';
+import { PUBLIC_RUNTIME_CONFIG } from './infrastructure/environment/publicRuntimeConfig';
+import { SITE_METADATA } from './shared/site/metadata';
 
-const { cdnUrl, version } = siteConfig;
+const { cdnUrl } = PUBLIC_RUNTIME_CONFIG;
+const { version } = SITE_METADATA;
 
 interface IProps {
-	accountInitialData: TAccountMeResponse | null;
-	accountSessionInitialData: IAccountSessionInitialData | null;
-	accountSsoGrantInitialData: IAccountSsoGrantInitialData | null;
-	accountWebauthnInitialData: IAccountWebauthnInitialData | null;
+	accountInitialData: IAccountInitialData | null;
 	locale: string;
+}
+
+interface IAccountInitialData {
+	account: TAccountMeResponse;
+	sessions: IAccountSessionInitialData | null;
+	ssoGrants: IAccountSsoGrantInitialData | null;
+	webauthn: IAccountWebauthnInitialData | null;
+}
+
+function AccountInitialDataHydrators({
+	data,
+}: {
+	data: IAccountInitialData | null;
+}) {
+	const {
+		account = null,
+		sessions = null,
+		ssoGrants = null,
+		webauthn = null,
+	} = data ?? {};
+
+	return (
+		<>
+			<AccountInitialStateHydrator data={account} />
+			<AccountSessionInitialDataHydrator data={sessions} />
+			<AccountSsoGrantInitialDataHydrator data={ssoGrants} />
+			<AccountWebauthnInitialDataHydrator data={webauthn} />
+		</>
+	);
+}
+
+function ProviderStack({
+	children,
+	locale,
+}: PropsWithChildren<Pick<IProps, 'locale'>>) {
+	const router = useRouter();
+
+	return (
+		<SiteStatusProvider>
+			<DesignPreferencesConnector>
+				<HeroUIProvider locale={locale} navigate={router.push}>
+					<ProgressBarProvider>{children}</ProgressBarProvider>
+				</HeroUIProvider>
+			</DesignPreferencesConnector>
+		</SiteStatusProvider>
+	);
 }
 
 export default function Providers({
 	accountInitialData,
-	accountSessionInitialData,
-	accountSsoGrantInitialData,
-	accountWebauthnInitialData,
 	children,
 	locale,
 }: PropsWithChildren<IProps>) {
 	const shouldSkipInitialAccountBootstrap = accountInitialData !== null;
 
 	useEffect(() => {
+		const stopAnalyticsClient = startAnalyticsClient();
+		const stopPreferencesClient = startPreferencesClient();
+
 		// If the saved version is not set or outdated, initialize it with the current version.
 		// When an outdated version is detected, the current tab will update the saved version in local storage.
 		// Other tabs will monitor changes in the saved version and reload the page as needed.
@@ -79,177 +113,32 @@ export default function Providers({
 			globalStore.persistence.version.set(version);
 		}
 
-		// Initialize the user ID.
-		const globalUserId = globalStore.persistence.userId.get();
-		if (globalUserId === null) {
-			const fpPromise = FingerprintJS.load();
-			void fpPromise.then(async (fp) => {
-				const fpResult = await fp.get();
-				globalStore.persistence.userId.set(fpResult.visitorId);
-			});
-		}
-
-		const globalHiddenDlcs = globalStore.persistence.hiddenItems.dlcs.get();
-		const hiddenDlcs = globalHiddenDlcs.map(Number) as TDlc[];
-		beveragesStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-		clothesStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-		cookersStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-		currenciesStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-		customerNormalStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-		customerRareStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-		ingredientsStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-		ornamentsStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-		partnersStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-		recipesStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-
-		const globalSuggestMealsEnabled =
-			globalStore.persistence.suggestMeals.enabled.get();
-		const globalSuggestMealsMaxExtraIngredients =
-			globalStore.persistence.suggestMeals.maxExtraIngredients.get();
-		const globalSuggestMealsMaxRating =
-			globalStore.persistence.suggestMeals.maxRating.get();
-		const globalSuggestMealsMaxResults =
-			globalStore.persistence.suggestMeals.maxResults.get();
-		const globalSuggestSelectableMaxResults =
-			globalStore.shared.suggestMeals.selectableMaxResults.get();
-		customerRareStore.shared.suggestMeals.enabled.set(
-			globalSuggestMealsEnabled
-		);
-		customerRareStore.shared.suggestMeals.maxExtraIngredients.set(
-			globalSuggestMealsMaxExtraIngredients
-		);
-		customerRareStore.shared.suggestMeals.maxRating.set(
-			globalSuggestMealsMaxRating
-		);
-		customerRareStore.shared.suggestMeals.maxResults.set(
-			globalSuggestMealsMaxResults
-		);
-		customerRareStore.shared.suggestMeals.selectableMaxResults.set(
-			globalSuggestSelectableMaxResults
-		);
-
-		// Initialize famous shop state based on the persistence state.
-		const globalFamousShop = globalStore.persistence.famousShop.get();
-		customerNormalStore.shared.customer.famousShop.set(globalFamousShop);
-		customerRareStore.shared.customer.famousShop.set(globalFamousShop);
-		ingredientsStore.shared.famousShop.set(globalFamousShop);
-		recipesStore.shared.famousShop.set(globalFamousShop);
-
-		// Initialize popular trend based on the persistence data.
-		const globalPopularTrend = globalStore.persistence.popularTrend.get();
-		customerNormalStore.shared.customer.popularTrend.set(
-			globalPopularTrend
-		);
-		customerRareStore.shared.customer.popularTrend.set(globalPopularTrend);
-		ingredientsStore.shared.popularTrend.set(globalPopularTrend);
-		recipesStore.shared.popularTrend.set(globalPopularTrend);
-
-		// Initialize table state based on the persistence data.
-		const globalBeverageTableColumns =
-			globalStore.persistence.table.columns.beverage.get();
-		const globalRecipeTableColumns =
-			globalStore.persistence.table.columns.recipe.get();
-		const globalTableRow = globalStore.persistence.table.row.get();
-		const globalTableSelectableRows =
-			globalStore.shared.table.selectableRows.get();
-		const tableRowSet = toSet(globalTableRow.toString());
-		customerNormalStore.shared.beverage.table.columns.set(
-			toSet(globalBeverageTableColumns)
-		);
-		customerNormalStore.shared.beverage.table.row.set(globalTableRow);
-		customerNormalStore.shared.beverage.table.rows.set(tableRowSet);
-		customerNormalStore.shared.beverage.table.selectableRows.set(
-			globalTableSelectableRows
-		);
-		customerNormalStore.shared.recipe.table.columns.set(
-			toSet(globalRecipeTableColumns)
-		);
-		customerNormalStore.shared.recipe.table.row.set(globalTableRow);
-		customerNormalStore.shared.recipe.table.rows.set(tableRowSet);
-		customerNormalStore.shared.recipe.table.selectableRows.set(
-			globalTableSelectableRows
-		);
-		customerRareStore.shared.beverage.table.columns.set(
-			toSet(globalBeverageTableColumns)
-		);
-		customerRareStore.shared.beverage.table.row.set(globalTableRow);
-		customerRareStore.shared.beverage.table.rows.set(tableRowSet);
-		customerRareStore.shared.beverage.table.selectableRows.set(
-			globalTableSelectableRows
-		);
-		customerRareStore.shared.recipe.table.columns.set(
-			toSet(globalRecipeTableColumns)
-		);
-		customerRareStore.shared.recipe.table.row.set(globalTableRow);
-		customerRareStore.shared.recipe.table.rows.set(tableRowSet);
-		customerRareStore.shared.recipe.table.selectableRows.set(
-			globalTableSelectableRows
-		);
-
-		const globalHiddenBeverages =
-			globalStore.persistence.table.hiddenItems.beverages.get();
-		const globalHiddenIngredients =
-			globalStore.persistence.table.hiddenItems.ingredients.get();
-		const globalHiddenRecipes =
-			globalStore.persistence.table.hiddenItems.recipes.get();
-		customerNormalStore.shared.beverage.table.hiddenBeverages.set(
-			toSet(globalHiddenBeverages)
-		);
-		customerNormalStore.shared.recipe.table.hiddenIngredients.set(
-			toSet(globalHiddenIngredients)
-		);
-		customerNormalStore.shared.recipe.table.hiddenRecipes.set(
-			toSet(globalHiddenRecipes)
-		);
-		customerRareStore.shared.beverage.table.hiddenBeverages.set(
-			toSet(globalHiddenBeverages)
-		);
-		customerRareStore.shared.recipe.table.hiddenIngredients.set(
-			toSet(globalHiddenIngredients)
-		);
-		customerRareStore.shared.recipe.table.hiddenRecipes.set(
-			toSet(globalHiddenRecipes)
-		);
-
 		const stopAccountFeatureClients = startAccountFeatureClients({
 			skipInitialBootstrap: shouldSkipInitialAccountBootstrap,
 		});
+		const stopRecommendationClient = startRecommendationClient({
+			accountGate,
+		});
 
 		return () => {
+			stopRecommendationClient();
 			stopAccountFeatureClients();
+			stopPreferencesClient();
+			stopAnalyticsClient();
 		};
 	}, [shouldSkipInitialAccountBootstrap]);
 
-	const router = useRouter();
-
 	return (
-		<HeroUIProvider locale={locale} navigate={router.push}>
-			<SiteStatusProvider>
-				<ProgressBarProvider>
-					<OverlayCoordinatorHost />
-					{children}
-					<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-primary dark:lg:h-0.5" />
-					<CompatibleBrowser />
-					{accountInitialData !== null && (
-						<AccountInitialStateHydrator
-							data={accountInitialData}
-						/>
-					)}
-					<AccountSessionInitialDataHydrator
-						data={accountSessionInitialData}
-					/>
-					<AccountSsoGrantInitialDataHydrator
-						data={accountSsoGrantInitialData}
-					/>
-					<AccountWebauthnInitialDataHydrator
-						data={accountWebauthnInitialData}
-					/>
-					<AccountFeatureModals />
-					<CustomerRareTutorial />
-					<DonationModal />
-				</ProgressBarProvider>
-			</SiteStatusProvider>
-		</HeroUIProvider>
+		<ProviderStack locale={locale}>
+			<AccountInitialDataHydrators data={accountInitialData} />
+			<CompatibleBrowser />
+			<OverlayCoordinatorHost />
+			{children}
+			<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-primary dark:lg:h-0.5" />
+			<AccountFeatureModals />
+			<CustomerRareTutorial />
+			<DonationModal />
+		</ProviderStack>
 	);
 }
 

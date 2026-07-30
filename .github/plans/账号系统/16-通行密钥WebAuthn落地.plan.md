@@ -10,6 +10,8 @@ isProject: false
 > 来源：账号系统在用户名口令之外补充无密码强认证的需求评估结论。
 > 依赖：账号系统服务端已落地（见 [01-服务端与数据库落地.plan.md](01-服务端与数据库落地.plan.md)、[02-认证会话与管理员落地.plan.md](02-认证会话与管理员落地.plan.md)、[13-账号系统本体补强实施清单.plan.md](13-账号系统本体补强实施清单.plan.md)）。
 > 当前状态：初版 P1～P8 与第十五节“通行密钥优先登录/注册”增量均已实现；第十五节覆盖初版“注册阶段不创建通行密钥”的旧边界，手测项仍保留为待手测。
+>
+> 历史路径说明：第三至十三节保留 2026-06-26 初版实施计划中的 `app/lib/**`、`app/stores/**` 与旧组件路径，第十五节保留后续增量实施口径；这些路径用于还原迁移来源，不代表当前 owner。现行 WebAuthn 实现位于 `app/features/account/webauthn/**`、`app/features/account/server/useCases/*Passkey*`、`app/features/account/client/**` 与 `app/infrastructure/database/**`。
 
 ## 一、范围与目标
 
@@ -28,15 +30,15 @@ isProject: false
 
 ## 二、现有能力与可复用点
 
-- 账号能力运行门禁与动态导入：账号服务端、SQLite、Argon2 仅在 `SELF_HOSTED` 为真且非 Vercel/offline、SQLite 可写时启用并动态加载（见 [app/lib/account/server/environment.ts](../../../app/lib/account/server/environment.ts)、[app/lib/account/server/db.ts](../../../app/lib/account/server/db.ts)）。通行密钥服务端模块沿用同一门禁与动态导入约束。
-- 会话与 Cookie：[app/lib/account/server/auth.ts](../../../app/lib/account/server/auth.ts) 的 `createAccountSessionForActiveUser`、`setAccountSessionCookie`、`createAccountCsrfToken`，以及 [app/lib/account/server/session.ts](../../../app/lib/account/server/session.ts) 的 token/HMAC/cookie 选项，**通行密钥登录直接复用**，产出与口令登录完全一致的 `mystia-session` 会话与 CSRF。
+- 账号能力运行门禁与动态导入：账号服务端、SQLite、Argon2 仅在自托管账号能力门禁通过时启用；现行入口见 [featureStatus.ts](../../../app/features/account/server/featureStatus.ts)、[persistence/database.ts](../../../app/features/account/server/persistence/database.ts) 与 [applicationDatabase.ts](../../../app/infrastructure/database/applicationDatabase.ts)。通行密钥服务端模块沿用同一门禁与动态导入约束。
+- 会话与 Cookie：[app/features/account/server/auth](../../../app/features/account/server/auth) 的 session、cookie、CSRF 与登录收尾能力由口令和通行密钥用例复用，产出一致的 `mystia-session` 会话与 CSRF。
 - 登录收尾：[app/api/v1/auth/login/route.ts](../../../app/api/v1/auth/login/route.ts) 中“建会话 → SSO context 重定向或 JSON 返回 → 写 cookie”这一段需抽取为共享收尾函数，供口令登录与通行密钥登录复用。
-- 审计：[app/lib/account/server/accountAuditService.ts](../../../app/lib/account/server/accountAuditService.ts) 的 `ACCOUNT_AUDIT_ACTION_MAP`、`createAccountUserAuditLogInput`、`createAccountAdminAuditLogInput`、`writeAccountAuditLogInTransaction`、`writeAccountAuditLogBestEffort`，新增动作常量即可接入既有 `/admin/audit`。
-- 凭证锁定/限流：[app/lib/account/server/repositories/credentials.ts](../../../app/lib/account/server/repositories/credentials.ts) 的失败计数与锁定仅作用于口令；通行密钥认证使用请求维度限流，不复用口令的 `failed_attempts`（见“安全与边界”）。
-- 迁移与表名：[app/lib/db/migrations/account.ts](../../../app/lib/db/migrations/account.ts) 的 Kysely `createTable().ifNotExists()` + 索引幂等 + 列补齐 + 结构断言（主键/外键/唯一索引）；[app/lib/db/constant.ts](../../../app/lib/db/constant.ts) 的 `TABLE_NAME_MAP`；[app/lib/db/types.d.ts](../../../app/lib/db/types.d.ts) 的 `ITable*` 与 `TDatabase`。
-- 账号生命周期仓储：[app/lib/account/server/repositories/users.ts](../../../app/lib/account/server/repositories/users.ts) 的 `setUserStatusAndDeleteSessionsWithAudit`（删除账号）、`disableUserAndDeleteSessionsWithSsoCallbacksAndAudit`（禁用），以及 [credentials.ts](../../../app/lib/account/server/repositories/credentials.ts) 的 `updateCredentialAndDeleteSessionsWithAudit`（管理员重置密码），均在事务内补一条“删除该用户通行密钥”的语句即可联动。
-- 客户端状态与广播：[app/stores/account.ts](../../../app/stores/account.ts)（davstack store）、[app/lib/account/client/broadcast.ts](../../../app/lib/account/client/broadcast.ts)（broadcast-channel 多标签页）、[app/lib/account/client/api.ts](../../../app/lib/account/client/api.ts)、[app/lib/account/client/components/accountManager.tsx](../../../app/lib/account/client/components/accountManager.tsx) 复用为通行密钥管理与登录入口。
-- SSO 登录流程：登录界面即 [accountManager.tsx](../../../app/lib/account/client/components/accountManager.tsx)（无独立 SSO 登录页，仅有 [(pages)/sso/authorize](<../../../app/(pages)/sso/authorize/page.tsx>) 授权确认页）。[login/route.ts](../../../app/api/v1/auth/login/route.ts) 已据 `getSsoContextCookie` 处理：top-level 导航请求 302 到授权页，fetch/JSON 请求在响应体返回 `redirect_to` 由客户端导航。通行密钥登录复用同一登录界面与同一 SSO 收尾逻辑（P8）。
+- 审计：[app/features/account/server/audit](../../../app/features/account/server/audit) 的 action、输入构造、事务写入和 best-effort 写入能力接入既有 `/admin/audit`。
+- 凭证锁定/限流：[credentials.ts](../../../app/features/account/server/persistence/repositories/credentials.ts) 的失败计数与锁定仅作用于口令；通行密钥认证使用请求维度限流，不复用口令的 `failed_attempts`（见“安全与边界”）。
+- 迁移与表名：[migrations/account.ts](../../../app/infrastructure/database/migrations/account.ts) 承载 Kysely 幂等建表、索引、列补齐与结构断言；[tableNames.ts](../../../app/infrastructure/database/tableNames.ts) 与 [schema.ts](../../../app/infrastructure/database/schema.ts) 分别登记 `TABLE_NAME_MAP` 和数据库类型。
+- 账号生命周期联动由 `app/features/account/server/useCases`、`app/features/account/admin/server/useCases` 和 [app/features/account/webauthn/server/persistence](../../../app/features/account/webauthn/server/persistence) 在事务内编排。
+- 客户端状态与广播由 [accountStore.ts](../../../app/features/account/client/state/accountStore.ts)、[broadcast.ts](../../../app/features/account/client/sync/broadcast.ts)、[api.ts](../../../app/features/account/client/api.ts) 和 [app/features/account/client/components/accountManager](../../../app/features/account/client/components/accountManager) 共同承担。
+- SSO 登录流程复用 [AccountManager.tsx](../../../app/features/account/client/components/accountManager/AccountManager.tsx)；[app/(pages)/sso/authorize/page.tsx](<../../../app/(pages)/sso/authorize/page.tsx>) 仍是授权路由壳，实际授权流程由 `app/features/account/sso/authorize/**` 承载。通行密钥登录复用同一登录收尾与 SSO continuation（P8）。
 
 ## 三、关键设计决策
 
@@ -50,7 +52,7 @@ isProject: false
 6. **通行密钥认证不走口令锁定**：通行密钥是强抗钓鱼凭证，不存在口令暴力破解面；认证端点使用请求维度（IP/全局）限流，不读写 `user_credentials.failed_attempts`，也不因口令被锁而拒绝通行密钥登录。但**始终校验 `users.status === 'active'`**。
 7. **生命周期联动以“吊销”为安全默认**（P4/P7）：
     - 用户删除账号（status→`deleted`）：事务内删除其全部通行密钥（与删除 sessions 并列）。
-    - 管理员重置密码（含强制改密弹窗交互）：视为凭证吊销/疑似失陷场景，事务内删除全部通行密钥（与现有“删除全部 sessions + `password_must_change=1`”并列）。完整时序：吊销通行密钥 + 删除会话 + 置强制改密 → 用户用新临时口令登录（此时已无通行密钥可用，且口令登录响应 `password_must_change: true` 触发[强制改密弹窗](../../../app/lib/account/client/components/accountPasswordMustChangeModal.tsx)）→ **强制改密未完成前不允许新增通行密钥**（注册端点走 `authenticateAccountFromRequest(request)` 默认 `allowPasswordMustChange=false`，被守卫 `403 password-must-change` 自动拦截，无需额外判断）→ 用户完成强制改密（`change-password` 轮换会话并清 `password_must_change`）后方可重新添加通行密钥。详见第七节阶段 F 与第九节。
+    - 管理员重置密码（含强制改密弹窗交互）：视为凭证吊销/疑似失陷场景，事务内删除全部通行密钥（与现有“删除全部 sessions + `password_must_change=1`”并列）。完整时序：吊销通行密钥 + 删除会话 + 置强制改密 → 用户用新临时口令登录（此时已无通行密钥可用，且口令登录响应 `password_must_change: true` 触发当前 [AccountPasswordMustChangeModal.tsx](../../../app/features/account/client/components/AccountPasswordMustChangeModal.tsx)）→ **强制改密未完成前不允许新增通行密钥**（注册端点走 `authenticateAccountFromRequest(request)` 默认 `allowPasswordMustChange=false`，被守卫 `403 password-must-change` 自动拦截，无需额外判断）→ 用户完成强制改密（`change-password` 轮换会话并清 `password_must_change`）后方可重新添加通行密钥。详见第七节阶段 F 与第九节。
     - 管理员禁用账号：保留通行密钥行（禁用可逆），但认证期按 `status` 拦截，禁用期间通行密钥不可登录；启用后恢复可用。
     - 用户自助改密：**明确不**吊销通行密钥（用户本人知悉其设备，与管理员重置的疑似失陷场景本质不同）；改密只轮换会话，通行密钥保持可用。仅**管理员手动重置密码**才连带吊销通行密钥。
 
@@ -90,9 +92,9 @@ isProject: false
 
 ### 4.3 类型与常量
 
-- [app/lib/db/constant.ts](../../../app/lib/db/constant.ts) `TABLE_NAME_MAP` 增加：`userWebauthnCredential: 'user_webauthn_credentials'`、`webauthnChallenge: 'webauthn_challenges'`。
-- [app/lib/db/types.d.ts](../../../app/lib/db/types.d.ts) 新增 `ITableUserWebauthnCredential`、`ITableWebauthnChallenge`，对应 `T*`/`T*New`/`T*Update`，并注册进 `TDatabase`。
-- [app/lib/account/shared/constants.ts](../../../app/lib/account/shared/constants.ts)：`ACCOUNT_COOKIE_NAME_MAP` 增加 `webauthnChallenge: 'mystia-webauthn'`；新增 `WEBAUTHN_CHALLENGE_TTL_MS`（5 分钟）、`WEBAUTHN_CREDENTIAL_NAME_MAX_LENGTH`（如 50）、`WEBAUTHN_MAX_CREDENTIALS_PER_USER`（如 20）。
+- 历史 `app/lib/db/constant.ts` 的 `TABLE_NAME_MAP` 增加 `userWebauthnCredential` 与 `webauthnChallenge`；当前 owner 为 `app/infrastructure/database/tableNames.ts`。
+- 历史 `app/lib/db/types.d.ts` 增加对应表类型；当前 owner 为 `app/infrastructure/database/schema.ts`。
+- 历史 `app/lib/account/shared/constants.ts` 增加 WebAuthn cookie 与时限常量；当前 owner 为 `app/features/account/constants.ts` 与 `app/features/account/webauthn/server.ts`。
 - RP 配置走服务端 env（复用 `SERVICE_ALLOWED_ORIGINS` 作 `expectedOrigin`、`ACCOUNT_COOKIE_DOMAIN` 推 `rpID`、可选 `WEBAUTHN_RP_ID` 覆盖），不进 `shared/constants.ts`，避免泄露到客户端打包；客户端无需知道 `rpID`，由服务端下发的 options 自带。
 
 ## 五、依赖与配置
@@ -122,21 +124,21 @@ isProject: false
 
 ### 修改
 
-| 文件                                                                                                                  | 修改点                                                                                                                                                |
-| --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [app/lib/db/constant.ts](../../../app/lib/db/constant.ts)                                                             | `TABLE_NAME_MAP` 增表名                                                                                                                               |
-| [app/lib/db/types.d.ts](../../../app/lib/db/types.d.ts)                                                               | 新增两表类型并注册 `TDatabase`                                                                                                                        |
-| [app/lib/account/shared/constants.ts](../../../app/lib/account/shared/constants.ts)                                   | cookie 名、TTL、名称长度、单用户上限                                                                                                                  |
-| [app/lib/account/shared/types.ts](../../../app/lib/account/shared/types.ts)                                           | 新增通行密钥列表项、注册/认证 options 与 verify 的请求/响应类型；登录成功响应可加 `method` 提示（可选）                                               |
-| [app/lib/account/server/auth.ts](../../../app/lib/account/server/auth.ts)                                             | 抽取共享“登录收尾”函数（建会话已在，重点抽 SSO context 重定向/JSON 返回/写 cookie），新增 `authenticateAccountByWebAuthnAssertion` 编排或在路由内编排 |
-| [app/api/v1/auth/login/route.ts](../../../app/api/v1/auth/login/route.ts)                                             | 改用共享登录收尾函数；`loginSucceeded` metadata 增加 `method: 'password'`                                                                             |
-| [app/lib/account/server/accountAuditService.ts](../../../app/lib/account/server/accountAuditService.ts)               | `ACCOUNT_AUDIT_ACTION_MAP` 增加通行密钥相关动作                                                                                                       |
-| [app/lib/account/server/repositories/users.ts](../../../app/lib/account/server/repositories/users.ts)                 | `setUserStatusAndDeleteSessionsWithAudit`：status→deleted 时事务内删除该用户通行密钥                                                                  |
-| [app/lib/account/server/repositories/credentials.ts](../../../app/lib/account/server/repositories/credentials.ts)     | `updateCredentialAndDeleteSessionsWithAudit`（管理员重置密码路径）：事务内删除该用户通行密钥                                                          |
-| [app/lib/account/server/request.ts](../../../app/lib/account/server/request.ts) 或限流配置                            | 新增限流动作：`webauthnRegisterOptions`、`webauthnRegisterVerify`、`webauthnAuthOptions`、`webauthnAuthVerify`                                        |
-| [app/lib/account/client/api.ts](../../../app/lib/account/client/api.ts)                                               | 新增 6 个客户端函数（见第八节）                                                                                                                       |
-| [app/lib/account/client/components/accountManager.tsx](../../../app/lib/account/client/components/accountManager.tsx) | 账号窗口新增“通行密钥”区块；登录区新增“使用通行密钥登录”入口                                                                                          |
-| `package.json`                                                                                                        | 增加 `@simplewebauthn/server`、`@simplewebauthn/browser`                                                                                              |
+| 文件                                                                      | 修改点                                                                                                                                                |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/lib/db/constant.ts`（历史路径）                                      | `TABLE_NAME_MAP` 增表名                                                                                                                               |
+| `app/lib/db/types.d.ts`（历史路径）                                       | 新增两表类型并注册 `TDatabase`                                                                                                                        |
+| `app/lib/account/shared/constants.ts`（历史路径）                         | cookie 名、TTL、名称长度、单用户上限                                                                                                                  |
+| `app/lib/account/shared/types.ts`（历史路径）                             | 新增通行密钥列表项、注册/认证 options 与 verify 的请求/响应类型；登录成功响应可加 `method` 提示（可选）                                               |
+| `app/lib/account/server/auth.ts`（历史路径）                              | 抽取共享“登录收尾”函数（建会话已在，重点抽 SSO context 重定向/JSON 返回/写 cookie），新增 `authenticateAccountByWebAuthnAssertion` 编排或在路由内编排 |
+| [app/api/v1/auth/login/route.ts](../../../app/api/v1/auth/login/route.ts) | 改用共享登录收尾函数；`loginSucceeded` metadata 增加 `method: 'password'`                                                                             |
+| `app/lib/account/server/accountAuditService.ts`（历史路径）               | `ACCOUNT_AUDIT_ACTION_MAP` 增加通行密钥相关动作                                                                                                       |
+| `app/lib/account/server/repositories/users.ts`（历史路径）                | `setUserStatusAndDeleteSessionsWithAudit`：status→deleted 时事务内删除该用户通行密钥                                                                  |
+| `app/lib/account/server/repositories/credentials.ts`（历史路径）          | `updateCredentialAndDeleteSessionsWithAudit`（管理员重置密码路径）：事务内删除该用户通行密钥                                                          |
+| `app/lib/account/server/request.ts`（历史路径）或限流配置                 | 新增限流动作：`webauthnRegisterOptions`、`webauthnRegisterVerify`、`webauthnAuthOptions`、`webauthnAuthVerify`                                        |
+| `app/lib/account/client/api.ts`（历史路径）                               | 新增 6 个客户端函数（见第八节）                                                                                                                       |
+| `app/lib/account/client/components/accountManager.tsx`（历史路径）        | 账号窗口新增“通行密钥”区块；登录区新增“使用通行密钥登录”入口                                                                                          |
+| `package.json`                                                            | 增加 `@simplewebauthn/server`、`@simplewebauthn/browser`                                                                                              |
 
 ## 七、服务端实施步骤
 
@@ -179,13 +181,13 @@ isProject: false
 
 ## 八、客户端实施步骤
 
-17. [api.ts](../../../app/lib/account/client/api.ts) 新增：
+17. 历史 `app/lib/account/client/api.ts` 新增：
     - `startWebAuthnRegistration(csrfToken)`：POST options → `@simplewebauthn/browser` `startRegistration` → POST verify。
     - `listWebAuthnCredentials()`、`deleteWebAuthnCredential(id, csrfToken)`、（可选 `renameWebAuthnCredential`）。
     - `startWebAuthnLogin()`：POST authentication/options → `startAuthentication` → POST verify，返回与口令登录一致的成功数据（含 `redirect_to`）。
-18. [accountManager.tsx](../../../app/lib/account/client/components/accountManager.tsx)：
+18. 历史 `app/lib/account/client/components/accountManager.tsx`：
     - 账号资料区新增“通行密钥”区块：列表（名称/添加时间/最近使用/设备类型）、添加按钮、删除确认、空态/加载/错误态；列表刷新跟随窗口打开与增删事件，不轮询。
-    - 登录区新增“使用通行密钥登录”按钮；成功后与口令登录同路径更新 [account store](../../../app/stores/account.ts) 并 `postAccountSyncBroadcastMessage` 通知多标签页；**响应含 `redirect_to` 时导航到 SSO 授权页**，与口令登录的 `redirect_to` 处理完全一致。该登录界面同时用于普通登录与 SSO 登录（无独立 SSO 登录页），故通行密钥按钮在 SSO 引导登录时自动出现（P8）。
+    - 登录区新增“使用通行密钥登录”按钮；成功后与口令登录同路径更新历史 `app/stores/account.ts` 并 `postAccountSyncBroadcastMessage` 通知多标签页；**响应含 `redirect_to` 时导航到 SSO 授权页**，与口令登录的 `redirect_to` 处理完全一致。该登录界面同时用于普通登录与 SSO 登录（无独立 SSO 登录页），故通行密钥按钮在 SSO 引导登录时自动出现（P8）。
     - 能力探测：`browserSupportsWebAuthn()` 为假或账号 feature 未启用或非安全上下文时，隐藏通行密钥入口；可选用 `browserSupportsWebAuthnAutofill()` 做条件式自动填充（本期可不做，仅保留按钮触发）。
     - 强制改密态：`accountStore.shared.passwordMustChange` 为真（如管理员刚重置密码）时，强制改密弹窗优先，隐藏/禁用通行密钥管理区块，避免用户点击后撞 `403 password-must-change`；服务端已强制拦截，此处仅为体验一致。
 

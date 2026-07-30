@@ -6,11 +6,12 @@ import {
 	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-} from '@/lib/account/server/routeResponses';
+} from '@/features/account/server/http/routeGuards';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -40,7 +41,11 @@ export async function POST(request: NextRequest) {
 		return preAuthRateLimitResponse;
 	}
 
-	const authModule = await import('@/lib/account/server/auth');
+	const [authModule, csrfModule, sessionModule] = await Promise.all([
+		import('@/features/account/server/auth/requestAuthentication'),
+		import('@/features/account/server/auth/accountCsrf'),
+		import('@/features/account/server/auth/sessionLifecycle'),
+	]);
 	const auth = await authModule.authenticateAccountFromRequest(request, true);
 	if (auth.status === 'error') {
 		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
@@ -54,13 +59,13 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	if (!authModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
+	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
 		return createNoStoreErrorResponse('forbidden', 403);
 	}
 
 	const [sessionsModule, accountAuditModule] = await Promise.all([
-		import('@/lib/account/server/repositories/sessions'),
-		import('@/lib/account/server/accountAuditService'),
+		import('@/features/account/server/persistence/repositories/sessions'),
+		import('@/features/account/server/audit/service'),
 	]);
 	const didLogout = await sessionsModule.deleteSessionByIdWithAudit(
 		auth.data.user.id,
@@ -89,7 +94,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	const response = createNoStoreJsonResponse({ message: 'logged-out' });
-	authModule.clearAccountSessionCookie(response, request);
+	sessionModule.clearAccountSessionCookie(response, request);
 
 	return response;
 }

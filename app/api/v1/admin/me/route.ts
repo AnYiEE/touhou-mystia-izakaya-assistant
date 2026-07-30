@@ -1,17 +1,18 @@
 import { type NextRequest } from 'next/server';
 
+import { authenticateAdminFromRequest } from '@/features/account/admin/server/http/authentication';
+import {
+	checkAdminFeatureRouteResponse,
+	createAdminAuthErrorRouteResponse,
+} from '@/features/account/admin/server/http/routeResponses';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-} from '@/lib/account/server/routeResponses';
-import {
-	authenticateAdminFromRequest,
-	checkAdminFeatureRouteResponse,
-	createAdminAuthErrorRouteResponse,
-} from '@/lib/account/server/adminRouteResponses';
-import { createNoStoreJsonResponse } from '@/lib/api/routeResponses';
+} from '@/features/account/server/http/routeGuards';
+
+import { createNoStoreJsonResponse } from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -55,7 +56,7 @@ export async function GET(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	const adminModule = await import('@/lib/account/server/admin');
+	const adminModule = await import('@/features/account/admin/server/auth');
 
 	return createNoStoreJsonResponse({
 		auth_source: auth.source,

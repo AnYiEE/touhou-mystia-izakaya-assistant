@@ -1,18 +1,17 @@
 'use client';
 
-import { type ComponentProps, memo, useMemo } from 'react';
-
-import { useMotionProps, useReducedMotion } from '@/design/ui/hooks';
-
 import { Popover as HeroUIPopover } from '@heroui/popover';
 import {
 	type InternalForwardRefRenderFunction,
 	extendVariants,
 } from '@heroui/system';
+import { cn } from '@heroui/theme';
+import { type ComponentProps, memo, useMemo } from 'react';
 
-import { cn, generateRatingVariants } from '@/design/ui/utils';
-
-import { globalStore as store } from '@/stores';
+import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
+import { createRatingVariants } from '@/design/theme/styles/rating/createRatingVariants';
+import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 export function getStyleBlur(
 	color: IProps['color'],
@@ -54,7 +53,7 @@ export function getStyleBlur(
 
 const CustomHeroUIPopover = extendVariants(
 	HeroUIPopover,
-	generateRatingVariants('content')
+	createRatingVariants('content')
 );
 
 interface IProps extends ComponentProps<typeof CustomHeroUIPopover> {
@@ -75,8 +74,7 @@ export default memo<IProps>(function Popover({
 }) {
 	const motionProps = useMotionProps('popover');
 	const isReducedMotion = useReducedMotion();
-
-	const isHighAppearance = store.persistence.highAppearance.use();
+	const { isHighAppearance } = useDesignPreferences();
 
 	const styleBlur = useMemo(
 		() => getStyleBlur(color, disableBlur, isHighAppearance),

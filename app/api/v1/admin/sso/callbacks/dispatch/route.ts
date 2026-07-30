@@ -1,18 +1,19 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
-import { getRequestAuditContext } from '@/lib/account/server/request';
+import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
+
+import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
-import { getLogSafeErrorCode } from '@/lib/logging';
+} from '@/infrastructure/http/server/responses';
+import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
-	const check = await checkAdminSsoClientRequest(
+	const check = await checkAdminRequest(
 		request,
 		'admin-dispatch-sso-callbacks',
 		{ csrf: true }
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	try {
-		const ssoModule = await import('@/lib/account/server/sso');
+		const ssoModule = await import('@/features/account/sso/server');
 		const result = await ssoModule.dispatchSsoCallbacks(
 			ssoModule.SSO_CALLBACK_DISPATCH_LIMIT
 		);
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
 		}
 
 		const auditModule =
-			await import('@/lib/account/server/adminAuditService');
+			await import('@/features/account/admin/server/audit/service');
 		const auditResult = await auditModule.writeAdminAuditLog({
 			action: 'admin-dispatch-sso-callbacks',
 			actorId: check.auth.actorId,

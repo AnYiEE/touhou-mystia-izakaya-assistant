@@ -1,24 +1,24 @@
 import { type NextRequest } from 'next/server';
 
+import { authenticateAdminFromRequest } from '@/features/account/admin/server/http/authentication';
+import {
+	checkAdminCsrfRouteResponse,
+	checkAdminFeatureRouteResponse,
+	createAdminAuthErrorRouteResponse,
+} from '@/features/account/admin/server/http/routeResponses';
+import type { IAdminResetPasswordBody } from '@/features/account/contracts';
+import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-	readJsonBodyResult,
-} from '@/lib/account/server/routeResponses';
-import {
-	authenticateAdminFromRequest,
-	checkAdminCsrfRouteResponse,
-	checkAdminFeatureRouteResponse,
-	createAdminAuthErrorRouteResponse,
-} from '@/lib/account/server/adminRouteResponses';
-import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
-import { type IAdminResetPasswordBody } from '@/lib/account/shared/types';
+} from '@/features/account/server/http/routeGuards';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -83,85 +83,29 @@ export async function POST(
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
-	const [
-		passwordModule,
-		usersModule,
-		credentialsModule,
-		webauthnCredentialsModule,
-		accountAuditModule,
-	] = await Promise.all([
-		import('@/lib/account/server/password'),
-		import('@/lib/account/server/repositories/users'),
-		import('@/lib/account/server/repositories/credentials'),
-		import('@/lib/account/server/repositories/webauthnCredentials'),
-		import('@/lib/account/server/accountAuditService'),
+	const [passwordModule, resetPasswordModule] = await Promise.all([
+		import('@/features/account/server/auth/password'),
+		import('@/features/account/admin/server/useCases/resetUserPassword'),
 	]);
 
 	if (!passwordModule.checkPasswordPolicy(body.password)) {
 		return createNoStoreErrorResponse('invalid-password-rule', 400);
 	}
-	const user = await usersModule.findUserById(id);
-	if (user === null) {
-		return createNoStoreErrorResponse('target-user-not-found', 404);
-	}
-	if (user.status === USER_STATUS_MAP.deleted) {
-		return createNoStoreErrorResponse('invalid-user-status', 403);
-	}
-
-	const revokedPasskeys =
-		await webauthnCredentialsModule.countCredentialsByUserId(id);
-
-	try {
-		const now = Date.now();
-		await credentialsModule.updateCredentialAndDeleteSessionsWithAudit(
-			id,
-			{
-				failed_attempts: 0,
-				locked_until: null,
-				password_hash: await passwordModule.hashPassword(body.password),
-				password_must_change: 1,
-				password_set: 1,
-				updated_at: now,
-			},
-			(trx, auditNow) =>
-				accountAuditModule.writeAccountAuditLogInTransaction(
-					trx,
-					accountAuditModule.createAccountAdminAuditLogInput({
-						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
-							.adminResetPassword,
-						adminId: auth.actorId,
-						metadata: {
-							must_change_on_next_login: true,
-							revoked_passkeys: revokedPasskeys,
-							target_nickname: user.nickname,
-							target_user_id: id,
-							target_username: user.username,
-						},
-						request,
-						targetId: id,
-						targetType: 'user',
-					}),
-					auditNow
-				)
+	const result = await resetPasswordModule.resetUserPassword({
+		actorId: auth.actorId,
+		password: body.password,
+		request,
+		userId: id,
+	});
+	if (result.status === 'error') {
+		return createNoStoreErrorResponse(
+			result.message,
+			result.message === 'target-user-not-found'
+				? 404
+				: result.message === 'invalid-user-status'
+					? 403
+					: 500
 		);
-	} catch (error) {
-		if (error instanceof Error) {
-			if (error.message === 'user-not-found') {
-				return createNoStoreErrorResponse('target-user-not-found', 404);
-			}
-			if (error.message === 'invalid-user-status') {
-				return createNoStoreErrorResponse('invalid-user-status', 403);
-			}
-			if (error.message === 'credential-not-found') {
-				console.warn(
-					'Account credential is missing during password reset.'
-				);
-
-				return createNoStoreErrorResponse('server-misconfigured', 500);
-			}
-		}
-
-		throw error;
 	}
 	return createNoStoreJsonResponse({ message: 'password-reset' });
 }

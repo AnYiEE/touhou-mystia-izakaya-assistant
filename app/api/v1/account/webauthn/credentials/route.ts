@@ -1,18 +1,19 @@
 import { type NextRequest } from 'next/server';
 
+import type { IWebauthnCredentialListData } from '@/features/account/contracts';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountPreAuthRateLimitRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-	createAccountAuthErrorRouteResponse,
-} from '@/lib/account/server/routeResponses';
-import { type IWebauthnCredentialListData } from '@/lib/account/shared/types';
+} from '@/features/account/server/http/routeGuards';
+import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -44,7 +45,8 @@ export async function GET(request: NextRequest) {
 		return preAuthRateLimitResponse;
 	}
 
-	const authModule = await import('@/lib/account/server/auth');
+	const authModule =
+		await import('@/features/account/server/auth/requestAuthentication');
 	const auth = await authModule.authenticateAccountFromRequest(request, true);
 	if (auth.status === 'error') {
 		return createAccountAuthErrorRouteResponse(auth, request);
@@ -60,9 +62,9 @@ export async function GET(request: NextRequest) {
 
 	const [credentialsModule, presentationModule, webauthnModule] =
 		await Promise.all([
-			import('@/lib/account/server/repositories/webauthnCredentials'),
-			import('@/lib/account/server/webauthnPresentation'),
-			import('@/lib/account/server/webauthn'),
+			import('@/features/account/webauthn/server/persistence/credentials'),
+			import('@/features/account/webauthn/server/presentation'),
+			import('@/features/account/webauthn/server/service'),
 		]);
 	const credentials =
 		await credentialsModule.listCredentialsForActiveUserSession(

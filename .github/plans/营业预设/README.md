@@ -31,7 +31,7 @@
 
 ## 不可偏移的约束
 
-- 新 UI 的样式、背景、颜色、边距、层级和响应式断点必须参考项目中的具体实现文件，不局限于 `app/components`。优先对照稀客页、账号登录弹窗、全局搜索面板、Navbar、Popover、Card、浮动按钮、保存套餐卡片、`app/design` 设计系统和 `app/design/theme` 主题 token。
+- 新 UI 的样式、背景、颜色、边距、层级和响应式断点必须参考项目中的具体实现文件，不局限于 `app/design/ui/components`。优先对照稀客页、账号登录弹窗、全局搜索面板、Navbar、Popover、Card、浮动按钮、保存套餐卡片、`app/design` 设计系统和 `app/design/theme` 主题 token。
 - 必须使用项目现有动效能力，优先复用 Framer Motion、`useMotionProps`、`FadeMotionDiv` 和 `useReducedMotion` 处理方式。
 - 必须接入 `useVibrate` 和 `trackEvent`，禁用态或无实际状态变化的操作不得误触发埋点。
 - 预设保存稀客选择规则和套餐来源，不复制套餐。已保存套餐来源从 `customerRareStore.persistence.meals` 动态读取；自动推荐来源复用现有稀客推荐算法动态生成展示数据。

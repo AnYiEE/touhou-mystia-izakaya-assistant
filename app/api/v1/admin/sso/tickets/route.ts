@@ -1,15 +1,19 @@
 import { type NextRequest } from 'next/server';
 
-import { checkAdminSsoClientRequest } from '@/lib/account/server/adminSsoClientRouteResponses';
-import { getRequestAuditContext } from '@/lib/account/server/request';
-import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
-import type { TAdminSsoTicketStatus } from '@/lib/account/shared/types';
-import { parsePositiveIntegerParam } from '@/lib/api/adminPagination';
+import type { TAdminSsoTicketStatus } from '@/features/account/contracts';
+import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
+import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
+
+import {
+	getTrimmedSearchParam,
+	parsePositiveIntegerParam,
+} from '@/infrastructure/http/queryParameters';
+import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	readJsonBodyResult,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -24,12 +28,6 @@ interface ITicketMutationBody {
 	expired_at?: number;
 	mode: TTicketMutationMode;
 	reason?: string;
-}
-
-function getTrimmedSearchParam(request: NextRequest, name: string) {
-	const value = request.nextUrl.searchParams.get(name)?.trim();
-
-	return value === undefined || value === '' ? undefined : value;
 }
 
 function parseTicketStatus(value: string | undefined) {
@@ -80,10 +78,7 @@ function parseTicketMutationBody(value: unknown): ITicketMutationBody | null {
 }
 
 export async function GET(request: NextRequest) {
-	const check = await checkAdminSsoClientRequest(
-		request,
-		'admin-list-sso-tickets'
-	);
+	const check = await checkAdminRequest(request, 'admin-list-sso-tickets');
 	if (check.status === 'error') {
 		return check.response;
 	}
@@ -102,16 +97,24 @@ export async function GET(request: NextRequest) {
 		return createNoStoreErrorResponse('invalid-pagination', 400);
 	}
 
-	const clientId = getTrimmedSearchParam(request, 'client_id');
-	const query = getTrimmedSearchParam(request, 'query');
-	const status = parseTicketStatus(getTrimmedSearchParam(request, 'status'));
-	const userId = getTrimmedSearchParam(request, 'user_id');
+	const clientId = getTrimmedSearchParam(
+		request.nextUrl.searchParams,
+		'client_id'
+	);
+	const query = getTrimmedSearchParam(request.nextUrl.searchParams, 'query');
+	const status = parseTicketStatus(
+		getTrimmedSearchParam(request.nextUrl.searchParams, 'status')
+	);
+	const userId = getTrimmedSearchParam(
+		request.nextUrl.searchParams,
+		'user_id'
+	);
 	if (status === null) {
 		return createNoStoreErrorResponse('invalid-object-structure', 400);
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoTicketService');
+		await import('@/features/account/sso/admin/server/services/ticketService');
 	const result = await serviceModule.listAdminSsoTicketRecords({
 		page,
 		pageSize,
@@ -133,11 +136,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-	const check = await checkAdminSsoClientRequest(
-		request,
-		'admin-mutate-sso-tickets',
-		{ csrf: true }
-	);
+	const check = await checkAdminRequest(request, 'admin-mutate-sso-tickets', {
+		csrf: true,
+	});
 	if (check.status === 'error') {
 		return check.response;
 	}
@@ -157,9 +158,15 @@ export async function DELETE(request: NextRequest) {
 	}
 
 	const serviceModule =
-		await import('@/lib/account/server/adminSsoTicketService');
-	const clientId = getTrimmedSearchParam(request, 'client_id');
-	const userId = getTrimmedSearchParam(request, 'user_id');
+		await import('@/features/account/sso/admin/server/services/ticketService');
+	const clientId = getTrimmedSearchParam(
+		request.nextUrl.searchParams,
+		'client_id'
+	);
+	const userId = getTrimmedSearchParam(
+		request.nextUrl.searchParams,
+		'user_id'
+	);
 	const auditContext = {
 		adminId: check.auth.actorId,
 		...getRequestAuditContext(request),

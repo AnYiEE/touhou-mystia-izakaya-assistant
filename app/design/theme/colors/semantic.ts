@@ -1,6 +1,6 @@
 import { readableColor } from 'color2k';
 
-import { colors } from './constants';
+import { colors } from './palette';
 import type { TSemanticBaseColors, TThemeColors } from './types';
 import { swapColorScale } from './utils';
 

@@ -2,13 +2,12 @@
 
 import { useEffect } from 'react';
 
+import { trackEvent } from './features/analytics/client/trackEvent';
+import { ErrorFallback } from './features/appShell/client/components/ErrorBoundary';
 import Polyfills from './polyfills';
-import { trackEvent } from '@/components/analytics';
-import { ErrorFallback } from '@/components/errorBoundary';
+import { SITE_METADATA } from './shared/site/metadata';
 
-import { siteConfig } from '@/configs';
-
-const { locale } = siteConfig;
+const { locale } = SITE_METADATA;
 
 interface IProps {
 	error: Prettify<Error & { digest?: string }>;

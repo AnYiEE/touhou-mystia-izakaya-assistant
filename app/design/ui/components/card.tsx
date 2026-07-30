@@ -1,11 +1,10 @@
 'use client';
 
-import { memo } from 'react';
-
-import { useReducedMotion } from '@/design/ui/hooks';
-
 import { type CardProps, Card as HeroUICard } from '@heroui/card';
 import { type InternalForwardRefRenderFunction } from '@heroui/system';
+import { memo } from 'react';
+
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 interface IProps extends CardProps {}
 

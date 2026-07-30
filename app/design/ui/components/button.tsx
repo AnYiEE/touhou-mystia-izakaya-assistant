@@ -1,15 +1,12 @@
 'use client';
 
-import { memo, useMemo } from 'react';
-
-import { useReducedMotion } from '@/design/ui/hooks';
-
 import { type ButtonProps, Button as HeroUIButton } from '@heroui/button';
 import { type InternalForwardRefRenderFunction } from '@heroui/system';
+import { cn } from '@heroui/theme';
+import { memo, useMemo } from 'react';
 
-import { cn } from '@/design/ui/utils';
-
-import { globalStore as store } from '@/stores';
+import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 interface IProps extends ButtonProps {}
 
@@ -23,8 +20,7 @@ export default memo<IProps>(function Button({
 	...props
 }) {
 	const isReducedMotion = useReducedMotion();
-
-	const isHighAppearance = store.persistence.highAppearance.use();
+	const { isHighAppearance } = useDesignPreferences();
 
 	const styleBase = useMemo(() => {
 		const effect = cn(
@@ -139,7 +135,7 @@ export default memo<IProps>(function Button({
 						return cn(
 							'text-default-600',
 							'data-[hover=true]:text-default-foreground data-[hover=true]:brightness-100 dark:data-[hover=true]:text-foreground',
-							'data-[pressed=true]:bg-danger data-[pressed=true]:text-default-foreground data-[pressed=true]:brightness-100 dark:data-[pressed=true]:text-foreground'
+							'data-[pressed=true]:bg-default data-[pressed=true]:text-default-foreground data-[pressed=true]:brightness-100 dark:data-[pressed=true]:text-foreground'
 						);
 				}
 			case 'light':

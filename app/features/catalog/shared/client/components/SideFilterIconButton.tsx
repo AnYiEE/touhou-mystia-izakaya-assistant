@@ -1,0 +1,263 @@
+'use client';
+
+import { faFilter } from '@fortawesome/free-solid-svg-icons';
+import { Select, SelectItem, type SelectProps } from '@heroui/select';
+import { type Selection } from '@heroui/table';
+import { cn } from '@heroui/theme';
+import { type Dispatch, memo, useCallback, useMemo } from 'react';
+
+import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
+import Button from '@/design/ui/components/button';
+import FontAwesomeIconButton, {
+	type IFontAwesomeIconButtonProps,
+} from '@/design/ui/components/fontAwesomeIconButton';
+import Popover, {
+	PopoverContent,
+	PopoverTrigger,
+} from '@/design/ui/components/popover';
+import Tooltip from '@/design/ui/components/tooltip';
+import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+
+import { DLC_LABEL_MAP } from '@/domain/availability/messages';
+import type { TDlc } from '@/domain/data/shared/types';
+import type { TSpriteTarget } from '@/domain/data/sprites/types';
+import type { TItemName } from '@/domain/data/types';
+
+import { useVibrate } from '@/features/preferences/client/useVibrate';
+
+import { checkLengthEmpty } from '@/shared/utilities/collections/check';
+import { toArray } from '@/shared/utilities/collections/convert';
+import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
+
+import Sprite from './Sprite';
+
+interface ISelectConfigItem extends Pick<
+	SelectProps,
+	'label' | 'selectionMode'
+> {
+	items: Array<ValueCollection<number | string>>;
+	selectedKeys: string[];
+	setSelectedKeys: Dispatch<ISelectConfigItem['selectedKeys']>;
+	spriteTarget?: TSpriteTarget;
+	valueType?: 'dlc';
+}
+export type TSelectConfig = ISelectConfigItem[];
+
+interface IProps extends Omit<
+	IFontAwesomeIconButtonProps,
+	'aria-label' | 'color' | 'icon' | 'variant' | 'onPress'
+> {
+	selectConfig: TSelectConfig;
+}
+
+export default memo<IProps>(function SideFilterIconButton({
+	className,
+	selectConfig,
+	...props
+}) {
+	const selectMotionProps = useMotionProps('select');
+	const isReducedMotion = useReducedMotion();
+	const vibrate = useVibrate();
+
+	const { isHighAppearance } = useDesignPreferences();
+
+	const filteredSelectConfig = useMemo(
+		() =>
+			selectConfig.filter(
+				({ items, valueType }) =>
+					!(valueType === 'dlc' && items.length <= 1)
+			),
+		[selectConfig]
+	);
+
+	const hasFilter = useMemo(
+		() =>
+			filteredSelectConfig.some(
+				({ selectedKeys }) => !checkLengthEmpty(selectedKeys)
+			),
+		[filteredSelectConfig]
+	);
+
+	const handleSelectionChange = useCallback(
+		(setSelectedKeys: ISelectConfigItem['setSelectedKeys']) =>
+			(key: Selection) => {
+				setSelectedKeys(toArray(key as Set<string>).sort(pinyinSort));
+			},
+		[]
+	);
+
+	const handleResetFilters = useCallback(() => {
+		vibrate();
+		filteredSelectConfig.forEach(({ selectedKeys, setSelectedKeys }) => {
+			if (!checkLengthEmpty(selectedKeys)) {
+				setSelectedKeys([]);
+			}
+		});
+	}, [filteredSelectConfig, vibrate]);
+
+	if (checkLengthEmpty(filteredSelectConfig)) {
+		return null;
+	}
+
+	const content = `筛选（${hasFilter ? '已' : '未'}激活）`;
+
+	return (
+		<Popover
+			shouldBlockScroll
+			/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/3736} is fixed. */
+			// backdrop="opaque"
+			placement="left"
+			onOpenChange={vibrate}
+		>
+			<Tooltip showArrow content={content} placement="left">
+				<span className="flex">
+					<PopoverTrigger>
+						<FontAwesomeIconButton
+							color={hasFilter ? 'warning' : 'primary'}
+							icon={faFilter}
+							variant="shadow"
+							aria-label={content}
+							className={cn(
+								hasFilter ? 'bg-warning-600' : 'bg-primary-600',
+								className
+							)}
+							{...props}
+						/>
+					</PopoverTrigger>
+				</span>
+			</Tooltip>
+			<PopoverContent className="max-h-[calc(var(--safe-h-dvh)-5.5rem)] w-64 overflow-hidden">
+				<div className="flex min-h-0 w-full flex-col gap-1">
+					<div className="min-h-0 space-y-1 overflow-y-auto scrollbar-hide">
+						{filteredSelectConfig.map(
+							(
+								{
+									items,
+									label,
+									selectedKeys,
+									selectionMode,
+									setSelectedKeys,
+									spriteTarget,
+									valueType,
+								},
+								index
+							) => (
+								<Select
+									key={index}
+									disableAnimation={isReducedMotion}
+									isVirtualized={false}
+									items={items}
+									label={label}
+									selectedKeys={selectedKeys}
+									selectionMode={selectionMode ?? 'multiple'}
+									size="sm"
+									onSelectionChange={handleSelectionChange(
+										setSelectedKeys
+									)}
+									popoverProps={{
+										motionProps: selectMotionProps,
+										shouldCloseOnScroll: false,
+									}}
+									classNames={{
+										listboxWrapper: cn(
+											'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
+											{
+												'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
+													isHighAppearance,
+											}
+										),
+										popoverContent: cn({
+											'bg-content1/70 backdrop-blur-lg':
+												isHighAppearance,
+										}),
+										trigger: cn(
+											'transition-background motion-reduce:transition-none',
+											isHighAppearance
+												? 'bg-default/40 data-[hover=true]:bg-default-400/40'
+												: 'bg-default-200 data-[hover=true]:bg-default'
+										),
+									}}
+								>
+									{({ value }) =>
+										spriteTarget ? (
+											<SelectItem
+												key={value}
+												textValue={value as TItemName}
+												classNames={{
+													base: '[&>span]:inline-flex',
+												}}
+											>
+												<span className="inline-flex items-center">
+													{spriteTarget ===
+													'customer_normal' ? (
+														<div className="h-6 w-6 overflow-hidden rounded-full">
+															<Sprite
+																target={
+																	spriteTarget
+																}
+																name={
+																	value as TItemName
+																}
+																size={2.15}
+																className="-translate-x-[0.315rem] -translate-y-px"
+															/>
+														</div>
+													) : spriteTarget ===
+													  'customer_rare' ? (
+														<Sprite
+															target={
+																spriteTarget
+															}
+															name={
+																value as TItemName
+															}
+															size={1.5}
+															className="rounded-full"
+														/>
+													) : (
+														<Sprite
+															target={
+																spriteTarget
+															}
+															name={
+																value as TItemName
+															}
+															size={1}
+														/>
+													)}
+													<span className="ml-1">
+														{value}
+													</span>
+												</span>
+											</SelectItem>
+										) : (
+											<SelectItem key={value}>
+												{valueType === 'dlc'
+													? DLC_LABEL_MAP[
+															value as TDlc
+														].label
+													: value.toString()}
+											</SelectItem>
+										)
+									}
+								</Select>
+							)
+						)}
+					</div>
+					<Button
+						fullWidth
+						className="shrink-0"
+						color="danger"
+						isDisabled={!hasFilter}
+						size="sm"
+						variant="flat"
+						onPress={handleResetFilters}
+					>
+						重置当前筛选
+					</Button>
+				</div>
+			</PopoverContent>
+		</Popover>
+	);
+});

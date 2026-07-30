@@ -1,20 +1,24 @@
 import { type NextRequest } from 'next/server';
 
+import { MAX_BACKUP_UPLOAD_JSON_BODY_BYTES } from '@/features/account/requestLimits';
 import {
 	type IBackupUploadBody,
 	type IBackupUploadSuccessResponse,
 	type ILegacyBackupErrorPayload,
 	LEGACY_BACKUP_FREQUENCY_TTL,
-} from '@/lib/account/legacyBackup/shared';
-import { getLegacyBackupRequestMeta as getRequestMeta } from '@/lib/account/server/legacyBackupRequest';
-import { MAX_BACKUP_UPLOAD_JSON_BODY_BYTES } from '@/lib/account/shared/requestLimits';
-import { createRetryAfterHeaders } from '@/lib/api/http';
+} from '@/features/legacyBackup/contracts';
+import { getLegacyBackupRequestMeta } from '@/features/legacyBackup/server/requestContext';
+
+import { createRetryAfterHeaders } from '@/infrastructure/http/headers';
+import {
+	FILE_TYPE_JSON,
+	normalizeMediaType,
+} from '@/infrastructure/http/mediaTypes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
 	readJsonBodyResult,
-} from '@/lib/api/routeResponses';
-import { FILE_TYPE_JSON } from '@/utilities';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -34,15 +38,13 @@ function createLegacyBackupRouteErrorResponse(message: string, status: number) {
 	);
 }
 
-function normalizeMediaType(contentType: string | null | undefined) {
-	return contentType?.split(';', 1).at(0)?.trim().toLowerCase() ?? null;
-}
-
 function checkLegacyBackupUploadMeta({
 	contentType,
 	ip,
 	ua,
-}: ReturnType<typeof getRequestMeta>): ILegacyBackupErrorPayload | null {
+}: ReturnType<
+	typeof getLegacyBackupRequestMeta
+>): ILegacyBackupErrorPayload | null {
 	if (normalizeMediaType(contentType) !== FILE_TYPE_JSON) {
 		return { message: 'Invalid content type', status: 400 };
 	}
@@ -57,7 +59,7 @@ function checkLegacyBackupUploadMeta({
 }
 
 export async function POST(request: NextRequest) {
-	const requestMeta = getRequestMeta(request);
+	const requestMeta = getLegacyBackupRequestMeta(request);
 	const metaError = checkLegacyBackupUploadMeta(requestMeta);
 	if (metaError !== null) {
 		return createLegacyBackupRouteErrorResponse(
@@ -75,7 +77,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	const legacyBackupModule =
-		await import('@/lib/account/server/legacyBackup');
+		await import('@/features/legacyBackup/server/service');
 	const uploadResult = await legacyBackupModule.uploadLegacyBackupData({
 		body: jsonResult.status === 'ok' ? jsonResult.data : null,
 		meta: requestMeta,

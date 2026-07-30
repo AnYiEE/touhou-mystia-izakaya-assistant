@@ -1,22 +1,22 @@
 import { type NextRequest } from 'next/server';
 
+import { authenticateAdminFromRequest } from '@/features/account/admin/server/http/authentication';
+import {
+	checkAdminCsrfRouteResponse,
+	checkAdminFeatureRouteResponse,
+	createAdminAuthErrorRouteResponse,
+} from '@/features/account/admin/server/http/routeResponses';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
-} from '@/lib/account/server/routeResponses';
-import {
-	authenticateAdminFromRequest,
-	checkAdminCsrfRouteResponse,
-	checkAdminFeatureRouteResponse,
-	createAdminAuthErrorRouteResponse,
-} from '@/lib/account/server/adminRouteResponses';
-import { USER_STATUS_MAP } from '@/lib/account/shared/constants';
+} from '@/features/account/server/http/routeGuards';
+
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
-} from '@/lib/api/routeResponses';
+} from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -71,48 +71,23 @@ export async function POST(
 		return csrfResponse;
 	}
 
-	const [usersModule, accountAuditModule] = await Promise.all([
-		import('@/lib/account/server/repositories/users'),
-		import('@/lib/account/server/accountAuditService'),
-	]);
-	const user = await usersModule.findUserById(id);
-	if (user === null) {
-		return createNoStoreErrorResponse('target-user-not-found', 404);
+	const changeStatusModule =
+		await import('@/features/account/admin/server/useCases/changeUserStatus');
+	const result = await changeStatusModule.changeUserStatus({
+		actorId: auth.actorId,
+		operation: 'disable',
+		request,
+		userId: id,
+	});
+	if (result.status === 'ok') {
+		return createNoStoreJsonResponse({ message: result.message });
 	}
-	if (user.status === USER_STATUS_MAP.deleted) {
-		return createNoStoreErrorResponse('user-deleted', 403);
-	}
-	if (user.status !== USER_STATUS_MAP.active) {
-		return createNoStoreErrorResponse('update-not-applied', 409);
-	}
-
-	const isUpdated =
-		await usersModule.disableUserAndDeleteSessionsWithSsoCallbacksAndAudit(
-			id,
-			(trx, auditNow) =>
-				accountAuditModule.writeAccountAuditLogInTransaction(
-					trx,
-					accountAuditModule.createAccountAdminAuditLogInput({
-						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
-							.adminDisableUser,
-						adminId: auth.actorId,
-						metadata: {
-							next_status: USER_STATUS_MAP.disabled,
-							previous_status: USER_STATUS_MAP.active,
-							target_nickname: user.nickname,
-							target_user_id: id,
-							target_username: user.username,
-						},
-						request,
-						targetId: id,
-						targetType: 'user',
-					}),
-					auditNow
-				)
-		);
-	if (isUpdated) {
-		return createNoStoreJsonResponse({ message: 'user-disabled' });
-	}
-
-	return createNoStoreErrorResponse('update-not-applied', 409);
+	return createNoStoreErrorResponse(
+		result.message,
+		result.message === 'target-user-not-found'
+			? 404
+			: result.message === 'user-deleted'
+				? 403
+				: 409
+	);
 }

@@ -1,6 +1,6 @@
-import Content from './content';
+import { CustomerNormal as Customer } from '@/domain/catalog/customers/CustomerNormal';
 
-import { CustomerNormal as Customer } from '@/utils';
+import { CustomerNormalPageContent } from '@/features/catalog/customers/normal/client';
 
 export function generateStaticParams() {
 	return [
@@ -12,5 +12,5 @@ export function generateStaticParams() {
 }
 
 export default function CustomerNormal() {
-	return <Content />;
+	return <CustomerNormalPageContent />;
 }
