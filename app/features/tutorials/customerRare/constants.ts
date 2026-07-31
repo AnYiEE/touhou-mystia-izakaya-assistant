@@ -13,4 +13,4 @@ export const CUSTOMER_RARE_TUTORIAL_EGG_POSITION =
 export const CUSTOMER_RARE_TUTORIAL_HONEY_POSITION =
 	'[aria-label="点击：加入额外食材【蜂蜜】，匹配度+1"]';
 export const CUSTOMER_RARE_TUTORIAL_RECIPE_POSITION =
-	'[aria-label="料理选择表格"] tbody>tr[data-key="香炸蝉蜕"]>:last-child button';
+	'[aria-label="料理选择表格"] tbody>tr[data-key="24"]>:last-child button';
