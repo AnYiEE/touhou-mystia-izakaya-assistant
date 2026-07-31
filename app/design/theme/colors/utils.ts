@@ -24,4 +24,4 @@ export const swapColorScale = memoize(function swapColorScale(
 	}, {} as TColorScale);
 
 	return swappedColorScale;
-});
+}, 'WeakMap');
