@@ -53,6 +53,8 @@ export default memo<IProps>(function RecipeTableShell({
 	topContent,
 	totalPages,
 }) {
+	const tableSelectedKeys = new Set(Array.from(selectedKeys, String));
+
 	return (
 		<Table
 			isHeaderSticky
@@ -78,7 +80,7 @@ export default memo<IProps>(function RecipeTableShell({
 			}
 			bottomContentPlacement="outside"
 			disableAnimation={isReducedMotion}
-			selectedKeys={selectedKeys}
+			selectedKeys={tableSelectedKeys}
 			selectionMode="single"
 			sortDescriptor={sortDescriptor}
 			topContent={topContent}
@@ -114,7 +116,7 @@ export default memo<IProps>(function RecipeTableShell({
 				items={items}
 			>
 				{(item) => (
-					<TableRow key={item.recipeId}>
+					<TableRow key={String(item.recipeId)}>
 						{(columnKey) => (
 							<TableCell>
 								{renderCell(
