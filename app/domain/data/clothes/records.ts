@@ -44,7 +44,7 @@ export const CLOTHES_LIST = [
 		id: 25,
 		name: '褪色的巫女服',
 		description:
-			'博丽灵梦收拾仓库时找到的有点儿褪色的旧巫女服。穿上后感觉自己多少能体会到巫女的身份之重，但绝不可以自称巫女。',
+			'博丽灵梦收拾仓库时找到的有点褪色的旧巫女服。穿上后感觉自己多少能体会到巫女的身份之重，但绝不可以自称巫女。',
 		dlc: 0,
 		gif: false,
 		izakaya: false,
@@ -63,7 +63,7 @@ export const CLOTHES_LIST = [
 	{
 		id: 27,
 		name: '访问着和服',
-		description: '蓬莱山辉夜送的制式严谨的访问着，穿起来有点儿费劲。',
+		description: '蓬莱山辉夜送的制式严谨的访问着，穿起来有点费劲。',
 		dlc: 0,
 		gif: false,
 		izakaya: false,
@@ -197,7 +197,7 @@ export const CLOTHES_LIST = [
 		id: 1002,
 		name: '魔女服',
 		description:
-			'魔理沙小姐用业余的时间设计出来的衣服，因为她最近有了点儿钱，设计的方面就张扬了很多。她说如果下次异变的时候，就穿这个出去让灵梦羡慕羡慕。',
+			'魔理沙小姐用业余的时间设计出来的衣服，因为她最近有了点钱，设计的方面就张扬了很多。她说如果下次异变的时候，就穿这个出去让灵梦羡慕羡慕。',
 		dlc: 1,
 		gif: false,
 		izakaya: false,

@@ -58,7 +58,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 3,
 		name: '鹿肉',
-		description: '猎人们在山间猎回来的鹿肉，有点儿珍贵。',
+		description: '猎人们在山间猎回来的鹿肉，有点珍贵。',
 		type: '肉类',
 		tags: ['肉'],
 		dlc: 0,
@@ -274,7 +274,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 13,
 		name: '三文鱼',
-		description: '一种高度洄游海鱼，但在幻想乡的河流湖泊可见。有点儿珍贵。',
+		description: '一种高度洄游海鱼，但在幻想乡的河流湖泊可见。有点珍贵。',
 		type: '海鲜',
 		tags: ['水产', '高级', '鲜'],
 		dlc: 0,
@@ -321,8 +321,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 14,
 		name: '金枪鱼',
-		description:
-			'一种大洋性洄游海鱼，但在幻想乡的河流湖泊可见。有点儿珍贵。',
+		description: '一种大洋性洄游海鱼，但在幻想乡的河流湖泊可见。有点珍贵。',
 		type: '海鲜',
 		tags: ['水产', '高级', '鲜'],
 		dlc: 0,
@@ -661,7 +660,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 27,
 		name: '露水',
-		description: '清晨采回来的露水，有点儿珍贵。',
+		description: '清晨采回来的露水，有点珍贵。',
 		type: '其他',
 		tags: ['清淡'],
 		dlc: 0,
@@ -1145,7 +1144,7 @@ export const INGREDIENT_LIST = [
 		id: 5000,
 		name: '可可豆',
 		description:
-			'可可树的果实。据说在不同地区有不同的风味，有的会带点儿果香，有的带有烟熏的风味。可以磨成粉食用，是制作巧克力的基本原料。',
+			'可可树的果实。据说在不同地区有不同的风味，有的会带点果香，有的带有烟熏的风味。可以磨成粉食用，是制作巧克力的基本原料。',
 		type: '其他',
 		tags: ['甜', '不可思议'],
 		dlc: 5,
@@ -1323,8 +1322,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 11006,
 		name: '炼乳',
-		description:
-			'经过精炼的奶制品，具备非同寻常的甜度，适合用来制作甜点一类的料理。',
+		description: '经过精炼的奶制品，甜度非同寻常，适合用来制作甜点类料理。',
 		type: '其他',
 		tags: ['甜'],
 		dlc: 9,

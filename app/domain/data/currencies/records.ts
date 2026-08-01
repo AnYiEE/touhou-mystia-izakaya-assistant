@@ -5,7 +5,7 @@ export const CURRENCY_LIST = [
 	{
 		id: 3,
 		name: '奇怪的石头',
-		description: '兽道散落的奇形怪状的石头，还有点儿重。',
+		description: '兽道散落的奇形怪状的石头，还有点重。',
 		dlc: 0,
 		from: [{ task: '妖怪兽道' }],
 	},
@@ -19,7 +19,7 @@ export const CURRENCY_LIST = [
 	{
 		id: 5,
 		name: '破损的符咒',
-		description: '博丽神社散落的破损的符咒，拼拼凑凑似乎也能得到点儿信息。',
+		description: '博丽神社散落的破损的符咒，拼拼凑凑似乎也能得到点信息。',
 		dlc: 0,
 		from: [{ task: '博丽神社' }],
 	},
