@@ -322,7 +322,7 @@ export default function MobileNavigationMenu({
 				inert={!isMenuActiveTask}
 				className={cn(
 					'top-[calc(var(--navbar-height)_+_var(--announcement-bar-offset))]',
-					'h-[calc(var(--safe-h-dvh)_-_var(--navbar-height)_-_var(--announcement-bar-offset))]',
+					'max-h-[calc(var(--safe-h-dvh)_-_var(--navbar-height)_-_var(--announcement-bar-offset))]',
 					'mobile-navbar-menu-scroll gap-3.5 overflow-y-auto overflow-x-hidden px-6 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-4 sm:px-8'
 				)}
 			>
