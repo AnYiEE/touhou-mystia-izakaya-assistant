@@ -142,7 +142,7 @@ export default function SuggestedMealCard() {
 								role="button"
 								tabIndex={0}
 								aria-label="推荐说明"
-								className="inline-flex cursor-pointer items-center text-default-500 transition-opacity hover:opacity-hover"
+								className="inline-flex cursor-pointer items-center text-default-500 transition-opacity hover:opacity-hover active:opacity-hover"
 							>
 								<FontAwesomeIcon
 									icon={faCircleQuestion}

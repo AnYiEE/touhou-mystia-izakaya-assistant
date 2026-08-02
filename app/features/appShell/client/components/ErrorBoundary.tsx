@@ -41,7 +41,7 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 			shouldClear = false,
 		}: PropsWithChildren<{ shouldClear?: boolean }>) => (
 			<button
-				className="mx-auto block w-1/2 cursor-pointer rounded-medium bg-content1 p-2 transition-background hover:bg-content2 motion-reduce:transition-none"
+				className="mx-auto block w-1/2 cursor-pointer rounded-medium bg-content1 p-2 transition-background hover:bg-content2 active:bg-content2 motion-reduce:transition-none"
 				onClick={() => {
 					void handleButtonPress(shouldClear);
 				}}
@@ -79,7 +79,7 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 					onClick={() => {
 						handleLinkPress(1);
 					}}
-					className="font-medium text-primary hover:underline hover:underline-offset-2"
+					className="font-medium text-primary hover:underline hover:underline-offset-2 active:underline active:underline-offset-2"
 				>
 					{links.qqGroup1.label}
 				</a>
@@ -91,7 +91,7 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 					onClick={() => {
 						handleLinkPress(2);
 					}}
-					className="font-medium text-primary hover:underline hover:underline-offset-2"
+					className="font-medium text-primary hover:underline hover:underline-offset-2 active:underline active:underline-offset-2"
 				>
 					{links.qqGroup2.label}
 				</a>

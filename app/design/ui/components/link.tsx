@@ -42,7 +42,7 @@ export default memo<IProps>(function Link({
 				!disableAnimation && [
 					'hover:opacity-100 active:opacity-100',
 					'motion-reduce:transition-none',
-					'transition hover:brightness-95',
+					'transition hover:brightness-95 active:brightness-90',
 				],
 				{
 					'group relative transition motion-reduce:transition-none':
@@ -59,7 +59,7 @@ export default memo<IProps>(function Link({
 			{animationUnderline && (
 				<span
 					className={cn(
-						'absolute bottom-0.5 left-1/2 h-px w-0 -translate-x-1/2 rounded-small bg-current transition-width group-hover:w-full motion-reduce:transition-none',
+						'absolute bottom-0.5 left-1/2 h-px w-0 -translate-x-1/2 rounded-small bg-current transition-width group-hover:w-full group-active:w-full motion-reduce:transition-none',
 						{ 'h-0.5': !showAnchorIcon, 'w-full': forcedUnderline },
 						classNames?.underline
 					)}

@@ -37,7 +37,7 @@ export const AdminTableActionLink = memo<IAdminTableActionLinkProps>(
 		return (
 			<Link
 				animationUnderline={false}
-				className="rounded-small px-2 py-1 text-small text-primary-600 transition-background hover:bg-primary/15 motion-reduce:transition-none dark:text-primary"
+				className="rounded-small px-2 py-1 text-small text-primary-600 transition-background hover:bg-primary/15 active:bg-primary/15 motion-reduce:transition-none dark:text-primary"
 				href={href}
 				{...(onPress === undefined ? {} : { onPress })}
 			>

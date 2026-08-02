@@ -35,8 +35,8 @@ export default memo<IProps>(function MobileAccountActionButton({
 			{...pressProps}
 			className={cn(
 				'group flex h-auto min-h-14 w-full min-w-0 items-center justify-start gap-3 rounded-small border border-default-200/75 bg-content1/45 px-3 py-2.5 shadow-[0_1px_0_rgba(0,0,0,0.025)]',
-				'transition-[background-color,border-color] hover:border-default-300 hover:bg-content1/65 motion-reduce:transition-none',
-				'dark:border-default-200/60 dark:bg-default-50/10 dark:shadow-none dark:hover:bg-default-50/15',
+				'transition-[background-color,border-color] hover:border-default-300 hover:bg-content1/65 data-[pressed=true]:border-default-300 data-[pressed=true]:bg-content1/65 motion-reduce:transition-none',
+				'dark:border-default-200/60 dark:bg-default-50/10 dark:shadow-none dark:hover:bg-default-50/15 dark:data-[pressed=true]:bg-default-50/15',
 				className
 			)}
 		>
@@ -58,7 +58,7 @@ export default memo<IProps>(function MobileAccountActionButton({
 			)}
 			<FontAwesomeIcon
 				icon={faChevronRight}
-				className="w-2.5 shrink-0 text-default-400 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+				className="w-2.5 shrink-0 text-default-400 transition-transform group-hover:translate-x-0.5 group-data-[pressed=true]:translate-x-0.5 motion-reduce:transition-none"
 			/>
 		</Button>
 	);

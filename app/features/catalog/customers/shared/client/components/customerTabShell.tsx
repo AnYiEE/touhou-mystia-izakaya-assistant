@@ -166,7 +166,7 @@ export default memo(function CustomerTabShell<TItemName extends string>({
 									{renderAvatar(name)}
 									<span
 										className={cn(
-											'whitespace-nowrap text-tiny text-default-800 transition-colors group-hover:text-default-900 motion-reduce:transition-none',
+											'whitespace-nowrap text-tiny text-default-800 transition-colors group-hover:text-default-900 group-data-[pressed=true]:text-default-900 motion-reduce:transition-none',
 											{
 												'text-default-900':
 													name ===

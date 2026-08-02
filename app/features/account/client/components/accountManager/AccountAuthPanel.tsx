@@ -112,7 +112,7 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 						'flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-small border transition-all duration-200 ease-out active:scale-90 motion-reduce:transition-none',
 						hasAcceptedAuthTerms
 							? 'border-primary bg-primary text-primary-foreground'
-							: 'border-default-300 bg-transparent text-transparent group-hover:border-primary-400'
+							: 'border-default-300 bg-transparent text-transparent group-hover:border-primary-400 group-active:border-primary-400'
 					)}
 				>
 					<FontAwesomeIcon

@@ -784,7 +784,7 @@ export default memo<IProps>(function AccountConflictModal() {
 				>
 					<button
 						aria-expanded={isTechnicalDetailsOpen}
-						className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left text-small font-medium text-foreground-600 transition-background hover:bg-default-100/60 motion-reduce:transition-none"
+						className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left text-small font-medium text-foreground-600 transition-background hover:bg-default-100/60 active:bg-default-100/60 motion-reduce:transition-none"
 						type="button"
 						onClick={handleToggleTechnicalDetails}
 					>

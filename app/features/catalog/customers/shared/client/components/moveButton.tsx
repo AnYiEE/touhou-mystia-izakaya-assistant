@@ -45,9 +45,9 @@ const MoveButtonComponent = memo<IMoveButtonProps>(function MoveButton({
 				onClick={onClick}
 				aria-label={label}
 				className={cn(
-					'inline-flex cursor-pointer border-0 bg-transparent p-0 text-default transition-colors hover:text-default-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none',
+					'inline-flex cursor-pointer border-0 bg-transparent p-0 text-default transition-colors hover:text-default-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:text-default-400 motion-reduce:transition-none',
 					{
-						'cursor-not-allowed hover:text-default-200 focus-visible:outline-none':
+						'cursor-not-allowed hover:text-default-200 focus-visible:outline-none active:text-default-200':
 							isDisabled,
 					}
 				)}

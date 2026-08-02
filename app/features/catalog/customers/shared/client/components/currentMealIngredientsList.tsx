@@ -60,7 +60,7 @@ export default memo<IProps>(function CurrentMealIngredientsList({
 									role="button"
 									tabIndex={1}
 									title={ingredient}
-									className="absolute inset-0 z-10 flex cursor-pointer items-center justify-center rounded-small bg-foreground/50 text-background opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100 group-hover:opacity-100 motion-reduce:transition-none"
+									className="absolute inset-0 z-10 flex cursor-pointer items-center justify-center rounded-small bg-foreground/50 text-background opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100 active:opacity-100 group-hover:opacity-100 motion-reduce:transition-none"
 								>
 									<FontAwesomeIcon
 										icon={faCircleXmark}

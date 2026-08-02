@@ -60,10 +60,10 @@ export default memo<IProps>(function CustomerTabContent({
 				role="button"
 				classNames={{
 					base: cn(
-						'h-16 w-16 ring-default transition-shadow group-hover:ring-warning motion-reduce:transition-none lg:h-20 lg:w-20 [&>span]:data-[focus-visible=true]:scale-125',
+						'h-16 w-16 ring-default transition-shadow group-hover:ring-warning group-data-[pressed=true]:ring-warning motion-reduce:transition-none lg:h-20 lg:w-20 [&>span]:data-[focus-visible=true]:scale-125',
 						{ 'ring-primary': name === currentCustomerName }
 					),
-					icon: 'inline-table transition group-hover:scale-125 motion-reduce:transition-none lg:inline-block',
+					icon: 'inline-table transition group-hover:scale-125 group-data-[pressed=true]:scale-125 motion-reduce:transition-none lg:inline-block',
 				}}
 			/>
 		),

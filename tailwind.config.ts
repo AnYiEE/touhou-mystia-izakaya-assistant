@@ -29,6 +29,7 @@ const config: Config = {
 		`./node_modules/@heroui/theme/dist/components/(${herouiComponents.join('|')}).js`,
 	],
 	darkMode: 'selector',
+	future: { hoverOnlyWhenSupported: true },
 	safelist: IS_PRODUCTION
 		? [
 				// For compatible with browsers that do not support the `gap` property.
