@@ -3,16 +3,23 @@ import {
 	type TSyncNamespace,
 } from '@/domain/account/contracts';
 
+import { accountStore } from '@/features/account/client/state/accountStore';
+import { readAccountSyncBaseSnapshot } from '@/features/account/client/sync/baseSnapshot';
 import {
 	getAccountSyncConflictResolutionRecoveryAction,
 	readAccountSyncConflictResolutionJournal,
-	removeAccountSyncConflictResolutionJournal,
+	removeAccountSyncConflictResolutionJournalIfRawCurrent,
 } from '@/features/account/client/sync/conflictResolutionJournal';
 import {
+	createDirtyQueueNamespaceGenerationHash,
+	readDirtyQueueCollisionState,
 	readDirtyQueueEntry,
 	readIsolatedDirtyQueueNamespaces,
 } from '@/features/account/client/sync/dirtyQueue/collisionEvidence';
-import { createSnapshotHash } from '@/features/account/client/sync/dirtyQueue/snapshotHash';
+import {
+	checkSnapshotHashMatches,
+	createSnapshotHash,
+} from '@/features/account/client/sync/dirtyQueue/snapshotHash';
 import {
 	captureAccountSyncResetGeneration,
 	checkAccountSyncResetWriteAllowed,
@@ -22,45 +29,291 @@ import {
 	getAccountSyncSerializer,
 	readAccountSyncMeta,
 } from '@/features/account/client/sync/snapshot';
+import type {
+	IDirtyQueueEntry,
+	ISyncNamespaceSerializer,
+} from '@/features/account/sync/types';
 
 import { resolveAccountSyncConflictUnlocked } from './resolution';
 import { withAccountSyncNamespaceTransitionLock } from './transitionLock';
 
+export type TAccountSyncConflictJournalRecoveryStatus =
+	| 'busy'
+	| 'none'
+	| 'recovered'
+	| 'stale'
+	| 'storage-unavailable'
+	| 'unsupported';
+
+export interface IAccountSyncConflictJournalRecoveryResult {
+	recoveredCount: number;
+	status: TAccountSyncConflictJournalRecoveryStatus;
+}
+
+export interface IAccountSyncConflictJournalRecoverySummary {
+	hasIsolatedJournal: boolean;
+	recoveredCount: number;
+	results: Partial<
+		Record<TSyncNamespace, IAccountSyncConflictJournalRecoveryResult>
+	>;
+}
+
+interface IStaleJournalRetirementEvidence {
+	baseHash: string;
+	entry: IDirtyQueueEntry;
+	entryHash: string;
+	metaHash: string;
+	queueGenerationHash: string;
+}
+
 const activeJournalRecoveries = new Map<
 	string,
-	Promise<{ hasIsolatedJournal: boolean; recoveredCount: number }>
+	Promise<IAccountSyncConflictJournalRecoverySummary>
 >();
 
-export function recoverAccountSyncConflictResolutionJournalUnlocked(
-	generationToken: string | null,
-	userId: string,
-	namespace: TSyncNamespace
+function createRecoveryResult(
+	status: TAccountSyncConflictJournalRecoveryStatus,
+	recoveredCount = 0
+): IAccountSyncConflictJournalRecoveryResult {
+	return { recoveredCount, status };
+}
+
+function checkSnapshotSupported(
+	serializer: ISyncNamespaceSerializer<unknown>,
+	data: unknown,
+	schemaVersion?: number
 ) {
-	const result = readAccountSyncConflictResolutionJournal(userId, namespace);
-
-	if (result === null) {
-		return { hasIsolatedJournal: false, recoveredCount: 0 };
+	try {
+		const snapshot =
+			schemaVersion === undefined
+				? serializer.deserialize(data)
+				: serializer.migrate(data, schemaVersion);
+		return serializer.validate(snapshot);
+	} catch {
+		return false;
 	}
-	if (result.status !== 'current') {
-		return { hasIsolatedJournal: true, recoveredCount: 0 };
-	}
+}
 
-	const { journal } = result;
+function captureStaleJournalRetirementEvidence({
+	generationToken,
+	namespace,
+	userId,
+}: {
+	generationToken: string | null;
+	namespace: TSyncNamespace;
+	userId: string;
+}): IStaleJournalRetirementEvidence | null {
 	if (
-		journal.generationToken !== generationToken ||
-		journal.resetGeneration !==
-			getAccountSyncResetGenerationIdFromToken(generationToken) ||
+		accountStore.shared.user.get()?.id !== userId ||
 		!checkAccountSyncResetWriteAllowed({
 			expectedGeneration: generationToken,
 			userId,
 		})
 	) {
-		return { hasIsolatedJournal: true, recoveredCount: 0 };
+		return null;
 	}
-	const entry = readDirtyQueueEntry(userId, namespace);
 
+	const entry = readDirtyQueueEntry(userId, namespace);
+	if (
+		entry?.paused !== 'conflict' ||
+		entry.conflict === null ||
+		readIsolatedDirtyQueueNamespaces(userId).includes(namespace) ||
+		readDirtyQueueCollisionState(userId, namespace) !== null
+	) {
+		return null;
+	}
+
+	const serializer = getAccountSyncSerializer(namespace);
+	const {
+		baseRevision,
+		conflict,
+		data,
+		schema_version: schemaVersion,
+		snapshotHash,
+	} = entry;
+	const local = serializer.getLocalSnapshot();
+	if (
+		!serializer.validate(local) ||
+		!checkSnapshotSupported(serializer, data, schemaVersion) ||
+		!checkSnapshotSupported(serializer, conflict.cloud) ||
+		!checkSnapshotSupported(serializer, conflict.local) ||
+		(conflict.merged !== null &&
+			!checkSnapshotSupported(serializer, conflict.merged)) ||
+		!checkSnapshotHashMatches(conflict.local, snapshotHash) ||
+		conflict.localCollision?.candidates.some(
+			(candidate) =>
+				!checkSnapshotSupported(
+					serializer,
+					candidate.data,
+					candidate.schemaVersion
+				)
+		) === true
+	) {
+		return null;
+	}
+
+	const meta = readAccountSyncMeta(userId);
+	const base = readAccountSyncBaseSnapshot(
+		userId,
+		namespace,
+		baseRevision,
+		serializer
+	);
+	return {
+		baseHash: createSnapshotHash(base),
+		entry,
+		entryHash: createSnapshotHash(entry),
+		metaHash: createSnapshotHash(meta),
+		queueGenerationHash: createDirtyQueueNamespaceGenerationHash(
+			userId,
+			namespace
+		),
+	};
+}
+
+function checkStaleJournalRetirementEvidenceCurrent({
+	evidence,
+	generationToken,
+	namespace,
+	userId,
+}: {
+	evidence: IStaleJournalRetirementEvidence;
+	generationToken: string | null;
+	namespace: TSyncNamespace;
+	userId: string;
+}) {
+	if (
+		accountStore.shared.user.get()?.id !== userId ||
+		!checkAccountSyncResetWriteAllowed({
+			expectedGeneration: generationToken,
+			userId,
+		}) ||
+		readIsolatedDirtyQueueNamespaces(userId).includes(namespace) ||
+		readDirtyQueueCollisionState(userId, namespace) !== null ||
+		createDirtyQueueNamespaceGenerationHash(userId, namespace) !==
+			evidence.queueGenerationHash ||
+		createSnapshotHash(readAccountSyncMeta(userId)) !== evidence.metaHash
+	) {
+		return false;
+	}
+
+	const currentEntry = readDirtyQueueEntry(userId, namespace);
+	if (
+		currentEntry?.paused !== 'conflict' ||
+		currentEntry.conflict === null ||
+		createSnapshotHash(currentEntry) !== evidence.entryHash
+	) {
+		return false;
+	}
+	const serializer = getAccountSyncSerializer(namespace);
+	const currentBase = readAccountSyncBaseSnapshot(
+		userId,
+		namespace,
+		currentEntry.baseRevision,
+		serializer
+	);
+	const currentLocal = serializer.getLocalSnapshot();
+	return (
+		createSnapshotHash(currentBase) === evidence.baseHash &&
+		serializer.validate(currentLocal)
+	);
+}
+
+async function retireStaleJournal({
+	generationToken,
+	namespace,
+	raw,
+	userId,
+}: {
+	generationToken: string | null;
+	namespace: TSyncNamespace;
+	raw: string;
+	userId: string;
+}) {
+	const evidence = captureStaleJournalRetirementEvidence({
+		generationToken,
+		namespace,
+		userId,
+	});
+	if (evidence === null) {
+		return createRecoveryResult('unsupported');
+	}
+	if (
+		readAccountSyncConflictResolutionJournal(userId, namespace)?.raw !==
+			raw ||
+		!checkStaleJournalRetirementEvidenceCurrent({
+			evidence,
+			generationToken,
+			namespace,
+			userId,
+		})
+	) {
+		return createRecoveryResult('stale');
+	}
+
+	const removal =
+		await removeAccountSyncConflictResolutionJournalIfRawCurrent({
+			expectedRaw: raw,
+			generationToken,
+			namespace,
+			userId,
+		});
+	if (removal !== 'removed') {
+		return createRecoveryResult(removal);
+	}
+	if (
+		readAccountSyncConflictResolutionJournal(userId, namespace) !== null ||
+		!checkStaleJournalRetirementEvidenceCurrent({
+			evidence,
+			generationToken,
+			namespace,
+			userId,
+		})
+	) {
+		return createRecoveryResult('stale');
+	}
+
+	return createRecoveryResult('recovered', 1);
+}
+
+export async function recoverAccountSyncConflictResolutionJournalUnlocked(
+	generationToken: string | null,
+	userId: string,
+	namespace: TSyncNamespace
+): Promise<IAccountSyncConflictJournalRecoveryResult> {
+	const result = readAccountSyncConflictResolutionJournal(userId, namespace);
+
+	if (result === null) {
+		return createRecoveryResult('none');
+	}
+	if (result.status === 'future') {
+		return createRecoveryResult('unsupported');
+	}
+	if (result.status !== 'current') {
+		return retireStaleJournal({
+			generationToken,
+			namespace,
+			raw: result.raw,
+			userId,
+		});
+	}
+
+	const { journal, raw } = result;
+	const canRecoverNormally =
+		journal.generationToken === generationToken &&
+		journal.resetGeneration ===
+			getAccountSyncResetGenerationIdFromToken(generationToken) &&
+		checkAccountSyncResetWriteAllowed({
+			expectedGeneration: generationToken,
+			userId,
+		});
+	if (!canRecoverNormally) {
+		return retireStaleJournal({ generationToken, namespace, raw, userId });
+	}
+
+	const entry = readDirtyQueueEntry(userId, namespace);
 	if (readIsolatedDirtyQueueNamespaces(userId).includes(namespace)) {
-		return { hasIsolatedJournal: true, recoveredCount: 0 };
+		return createRecoveryResult('unsupported');
 	}
 
 	const serializer = getAccountSyncSerializer(namespace);
@@ -100,9 +353,12 @@ export function recoverAccountSyncConflictResolutionJournalUnlocked(
 						},
 	});
 
+	if (action === 'isolate') {
+		return retireStaleJournal({ generationToken, namespace, raw, userId });
+	}
 	if (action === 'finalize-selection') {
 		if (conflict === null || entry === null) {
-			return { hasIsolatedJournal: true, recoveredCount: 0 };
+			return createRecoveryResult('stale');
 		}
 		const didFinalize = resolveAccountSyncConflictUnlocked({
 			conflict,
@@ -115,31 +371,35 @@ export function recoverAccountSyncConflictResolutionJournalUnlocked(
 			userId,
 		});
 		if (!didFinalize) {
-			return { hasIsolatedJournal: true, recoveredCount: 0 };
+			return createRecoveryResult('stale');
 		}
 	}
 
-	if (
-		['accept-committed', 'finalize-selection', 'resume-conflict'].includes(
-			action
-		)
-	) {
-		removeAccountSyncConflictResolutionJournal({
+	const removal =
+		await removeAccountSyncConflictResolutionJournalIfRawCurrent({
+			expectedRaw: raw,
 			generationToken,
 			namespace,
-			operationId: journal.operationId,
 			userId,
 		});
-		return { hasIsolatedJournal: false, recoveredCount: 1 };
-	}
-
-	return { hasIsolatedJournal: true, recoveredCount: 0 };
+	return removal === 'removed'
+		? createRecoveryResult('recovered', 1)
+		: createRecoveryResult(removal);
 }
 
 export function checkAccountSyncConflictResolutionJournalsPending(
 	userId: string
 ) {
 	return Object.values(SYNC_NAMESPACE_MAP).some(
+		(namespace) =>
+			readAccountSyncConflictResolutionJournal(userId, namespace) !== null
+	);
+}
+
+export function readAccountSyncConflictResolutionJournalNamespaces(
+	userId: string
+) {
+	return Object.values(SYNC_NAMESPACE_MAP).filter(
 		(namespace) =>
 			readAccountSyncConflictResolutionJournal(userId, namespace) !== null
 	);
@@ -153,24 +413,34 @@ export function recoverAccountSyncConflictResolutionJournals(userId: string) {
 
 	const generationToken = captureAccountSyncResetGeneration(userId);
 	const recovery = Promise.all(
-		Object.values(SYNC_NAMESPACE_MAP).map((namespace) =>
-			withAccountSyncNamespaceTransitionLock(userId, namespace, () =>
-				recoverAccountSyncConflictResolutionJournalUnlocked(
-					generationToken,
-					userId,
-					namespace
-				)
-			)
-		)
-	).then((results) => ({
-		hasIsolatedJournal: results.some(
-			(result) => result === null || result.hasIsolatedJournal
-		),
-		recoveredCount: results.reduce(
-			(count, result) => count + (result?.recoveredCount ?? 0),
-			0
-		),
-	}));
+		Object.values(SYNC_NAMESPACE_MAP).map(async (namespace) => ({
+			namespace,
+			result: await withAccountSyncNamespaceTransitionLock(
+				userId,
+				namespace,
+				() =>
+					recoverAccountSyncConflictResolutionJournalUnlocked(
+						generationToken,
+						userId,
+						namespace
+					)
+			),
+		}))
+	).then((namespaceResults) => {
+		const results: IAccountSyncConflictJournalRecoverySummary['results'] =
+			{};
+		let recoveredCount = 0;
+		let hasIsolatedJournal = false;
+		for (const { namespace, result } of namespaceResults) {
+			const resolvedResult = result ?? createRecoveryResult('busy');
+			results[namespace] = resolvedResult;
+			recoveredCount += resolvedResult.recoveredCount;
+			hasIsolatedJournal ||= !['none', 'recovered'].includes(
+				resolvedResult.status
+			);
+		}
+		return { hasIsolatedJournal, recoveredCount, results };
+	});
 	activeJournalRecoveries.set(userId, recovery);
 	void recovery
 		.finally(() => {

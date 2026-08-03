@@ -1,5 +1,7 @@
 import { PASSWORD_RULE_DESCRIPTION } from '@/features/account/constants';
 
+import { ACCOUNT_SYNC_CONFLICT_MESSAGE_MAP } from './sync/conflictCopy';
+
 const ACCOUNT_CLIENT_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'account-disabled-offline': '离线包不支持账号功能',
 	'account-sync-pause-incomplete': '云端数据已清空，请刷新页面后再恢复云同步',
@@ -14,6 +16,8 @@ const ACCOUNT_CLIENT_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'challenge-expired': '通行密钥操作已超时，请重试',
 	'challenge-not-found': '通行密钥操作已失效，请重试',
 	conflict: '数据冲突，请在冲突解决面板中处理',
+	'conflict-storage-unavailable':
+		ACCOUNT_SYNC_CONFLICT_MESSAGE_MAP.storageUnavailable,
 	'credential-changed': '账号凭据已在其他页面更新，请重新确认账号状态',
 	'credential-state-stale': '登录状态刚刚变化，请刷新后重试',
 	forbidden: '登录状态已变化，请刷新后重试',

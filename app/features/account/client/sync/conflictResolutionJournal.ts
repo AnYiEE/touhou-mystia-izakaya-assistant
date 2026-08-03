@@ -52,11 +52,19 @@ export interface IAccountSyncConflictResolutionJournal {
 	version: 2;
 }
 
-type TAccountSyncConflictResolutionJournalReadResult =
+type TParsedAccountSyncConflictResolutionJournalResult =
 	| { journal: IAccountSyncConflictResolutionJournal; status: 'current' }
 	| { status: 'invalid'; version: number | null }
 	| { status: 'legacy'; version: 1 }
 	| { status: 'future'; version: number };
+
+export type TAccountSyncConflictResolutionJournalReadResult =
+	TParsedAccountSyncConflictResolutionJournalResult & { raw: string };
+
+export type TAccountSyncConflictResolutionJournalRemovalResult =
+	| 'removed'
+	| 'stale'
+	| 'storage-unavailable';
 
 type TAccountSyncConflictResolutionQueueObservation =
 	| {
@@ -196,7 +204,7 @@ export function parseAccountSyncConflictResolutionJournalValue({
 	namespace: TSyncNamespace;
 	userId: string;
 	value: string;
-}): TAccountSyncConflictResolutionJournalReadResult | null {
+}): TParsedAccountSyncConflictResolutionJournalResult | null {
 	let parsed: unknown;
 	try {
 		parsed = JSON.parse(value);
@@ -329,7 +337,59 @@ export function readAccountSyncConflictResolutionJournal(
 		userId,
 		value,
 	});
-	return result;
+	return result === null ? null : { ...result, raw: value };
+}
+
+function waitForAccountSyncStorageMutationDelivery() {
+	return new Promise<void>((resolve) => {
+		setTimeout(resolve, 0);
+	});
+}
+
+export async function removeAccountSyncConflictResolutionJournalIfRawCurrent({
+	expectedRaw,
+	generationToken,
+	namespace,
+	userId,
+}: {
+	expectedRaw: string;
+	generationToken: string | null;
+	namespace: TSyncNamespace;
+	userId: string;
+}): Promise<TAccountSyncConflictResolutionJournalRemovalResult> {
+	const checkGeneration = () =>
+		checkAccountSyncResetWriteAllowed({
+			expectedGeneration: generationToken,
+			userId,
+		});
+	if (!checkGeneration()) {
+		return 'stale';
+	}
+
+	const key = createAccountSyncConflictResolutionJournalKey(
+		userId,
+		namespace
+	);
+	if (readAccountStorage(key) !== expectedRaw) {
+		return 'stale';
+	}
+
+	try {
+		removeAccountStorage(key);
+	} catch {
+		return 'storage-unavailable';
+	}
+	await waitForAccountSyncStorageMutationDelivery();
+
+	if (!checkGeneration()) {
+		return 'stale';
+	}
+	const currentRaw = readAccountStorage(key);
+	if (currentRaw === null) {
+		return 'removed';
+	}
+
+	return currentRaw === expectedRaw ? 'storage-unavailable' : 'stale';
 }
 
 export function writeAccountSyncConflictResolutionJournal(
@@ -448,12 +508,6 @@ export function removeAccountSyncConflictResolutionJournals(userId: string) {
 			createAccountSyncConflictResolutionJournalKey(userId, namespace)
 		);
 	}
-}
-
-function waitForAccountSyncStorageMutationDelivery() {
-	return new Promise<void>((resolve) => {
-		setTimeout(resolve, 0);
-	});
 }
 
 export async function runAccountSyncConflictResolutionJournalTransaction({

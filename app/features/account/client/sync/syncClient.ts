@@ -85,6 +85,7 @@ import {
 import {
 	addAccountSyncRemoteConflictNotices,
 	removeAccountSyncRemoteConflictNotices,
+	setAccountSyncConflictResolutionReadinesses,
 } from './syncRuntimeState';
 
 const ACCOUNT_STATE_RESUME_REFRESH_DEDUPE_MS = 1000;
@@ -94,6 +95,21 @@ function runAfterAccountSyncPromiseSettles(
 	callback: () => void
 ) {
 	void promise.finally(callback).catch(() => {});
+}
+
+function setCurrentConflictReadiness(
+	userId: string,
+	readiness: 'busy' | 'ready'
+) {
+	const readinesses: Parameters<
+		typeof setAccountSyncConflictResolutionReadinesses
+	>[1] = {};
+	for (const conflict of accountStore.shared.sync.conflicts.get()) {
+		if (conflict.userId === userId) {
+			readinesses[conflict.namespace] = readiness;
+		}
+	}
+	setAccountSyncConflictResolutionReadinesses(userId, readinesses);
 }
 
 export function invalidateAccountSyncClientRuns(userId?: string) {
@@ -235,6 +251,7 @@ export function startAccountSyncClient() {
 					message.syncOperation.status === 'started' ||
 					message.syncOperation.status === 'renewed'
 				) {
+					setCurrentConflictReadiness(context.user.id, 'busy');
 					invalidateAccountSyncClientRuns();
 					scheduleAccountSyncFlushAfter(
 						ACCOUNT_SYNC_OPERATION_TTL + 100,
@@ -244,9 +261,13 @@ export function startAccountSyncClient() {
 					);
 					return;
 				} else {
+					setCurrentConflictReadiness(context.user.id, 'ready');
 					runAfterAccountSyncPromiseSettles(
 						reconcileAccountSyncPausedConflicts(context.user.id),
-						scheduleAccountSyncFlush
+						() => {
+							restoreAccountSyncRuntimeState(context.user.id);
+							scheduleAccountSyncFlush();
+						}
 					);
 					return;
 				}
@@ -526,6 +547,7 @@ export function startAccountSyncClient() {
 				`${ACCOUNT_STORAGE_KEY_MAP.syncOperation}:${context.user.id}`
 		) {
 			if (checkAccountSyncOperationActive(context.user.id)) {
+				setCurrentConflictReadiness(context.user.id, 'busy');
 				invalidateAccountSyncClientRuns();
 				scheduleAccountSyncFlushAfter(
 					ACCOUNT_SYNC_OPERATION_TTL + 100,
@@ -534,9 +556,13 @@ export function startAccountSyncClient() {
 					}
 				);
 			} else {
+				setCurrentConflictReadiness(context.user.id, 'ready');
 				runAfterAccountSyncPromiseSettles(
 					reconcileAccountSyncPausedConflicts(context.user.id),
-					scheduleAccountSyncFlush
+					() => {
+						restoreAccountSyncRuntimeState(context.user.id);
+						scheduleAccountSyncFlush();
+					}
 				);
 			}
 			return;

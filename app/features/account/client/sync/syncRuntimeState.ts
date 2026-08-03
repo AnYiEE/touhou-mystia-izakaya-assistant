@@ -1,7 +1,10 @@
 import { type TSyncNamespace } from '@/domain/account/contracts';
 
 import { createAccountClientId } from '@/features/account/client/clientId';
-import { accountStore } from '@/features/account/client/state/accountStore';
+import {
+	type TAccountSyncConflictResolutionReadiness,
+	accountStore,
+} from '@/features/account/client/state/accountStore';
 import type { ISyncConflictItem } from '@/features/account/sync/types';
 import { setExternallyOwnedOverlayRequested } from '@/features/overlays/client';
 
@@ -19,6 +22,13 @@ const TRANSIENT_CONFLICT_ERROR_SET = new Set([
 	'conflict',
 	'remote-conflict-source-unavailable',
 ]);
+const PRESERVED_RESOLUTION_READINESS_SET =
+	new Set<TAccountSyncConflictResolutionReadiness>([
+		'busy',
+		'recovering',
+		'storage-unavailable',
+		'unsupported',
+	]);
 
 function createRemoteConflictNoticeKey(
 	userId: string,
@@ -89,6 +99,74 @@ function reconcileAccountSyncConflictLastError(
 	if (lastError !== null && TRANSIENT_CONFLICT_ERROR_SET.has(lastError)) {
 		accountStore.shared.sync.lastError.set(null);
 	}
+}
+
+export function getAccountSyncConflictResolutionReadiness(
+	userId: string,
+	namespace: TSyncNamespace
+) {
+	if (!checkCurrentSyncUser(userId)) {
+		return 'stale' as const;
+	}
+
+	return (
+		accountStore.shared.sync.resolutionReadiness.get()[namespace] ?? 'ready'
+	);
+}
+
+export function setAccountSyncConflictResolutionReadiness(
+	userId: string,
+	namespace: TSyncNamespace,
+	readiness: TAccountSyncConflictResolutionReadiness
+) {
+	if (!checkCurrentSyncUser(userId)) {
+		return false;
+	}
+
+	accountStore.shared.sync.resolutionReadiness.set({
+		...accountStore.shared.sync.resolutionReadiness.get(),
+		[namespace]: readiness,
+	});
+	if (readiness === 'storage-unavailable' || readiness === 'unsupported') {
+		accountStore.shared.sync.hasIsolatedState.set(true);
+		accountStore.shared.sync.lastError.set(
+			readiness === 'storage-unavailable'
+				? 'conflict-storage-unavailable'
+				: 'sync-client-update-required'
+		);
+		reconcileConflictBlocker(userId);
+	}
+	return true;
+}
+
+export function setAccountSyncConflictResolutionReadinesses(
+	userId: string,
+	readinesses: Partial<
+		Record<TSyncNamespace, TAccountSyncConflictResolutionReadiness>
+	>
+) {
+	if (!checkCurrentSyncUser(userId)) {
+		return false;
+	}
+
+	accountStore.shared.sync.resolutionReadiness.set({
+		...accountStore.shared.sync.resolutionReadiness.get(),
+		...readinesses,
+	});
+	const values = Object.values(readinesses);
+	if (
+		values.includes('storage-unavailable') ||
+		values.includes('unsupported')
+	) {
+		accountStore.shared.sync.hasIsolatedState.set(true);
+		accountStore.shared.sync.lastError.set(
+			values.includes('storage-unavailable')
+				? 'conflict-storage-unavailable'
+				: 'sync-client-update-required'
+		);
+		reconcileConflictBlocker(userId);
+	}
+	return true;
 }
 
 export function beginAccountSyncAutoResolution(
@@ -298,13 +376,25 @@ export function replaceAccountSyncConflicts(
 		return false;
 	}
 
-	accountStore.shared.sync.conflicts.set(
-		conflicts.filter(
-			(conflict) =>
-				conflict.userId === userId &&
-				conflict.automaticResolution === undefined
-		)
+	const nextConflicts = conflicts.filter(
+		(conflict) =>
+			conflict.userId === userId &&
+			conflict.automaticResolution === undefined
 	);
+	accountStore.shared.sync.conflicts.set(nextConflicts);
+	const currentReadiness = accountStore.shared.sync.resolutionReadiness.get();
+	const nextReadinesses: Partial<
+		Record<TSyncNamespace, TAccountSyncConflictResolutionReadiness>
+	> = {};
+	for (const conflict of nextConflicts) {
+		const readiness = currentReadiness[conflict.namespace];
+		nextReadinesses[conflict.namespace] =
+			readiness !== undefined &&
+			PRESERVED_RESOLUTION_READINESS_SET.has(readiness)
+				? readiness
+				: 'ready';
+	}
+	accountStore.shared.sync.resolutionReadiness.set(nextReadinesses);
 
 	reconcileAccountSyncConflictLastError(userId);
 	reconcileConflictBlocker(userId);
@@ -329,6 +419,17 @@ export function removeAccountSyncConflict(
 					conflict.namespace !== namespace
 			)
 	);
+	const nextReadiness = Object.entries(
+		accountStore.shared.sync.resolutionReadiness.get()
+	).reduce<
+		Partial<Record<TSyncNamespace, TAccountSyncConflictResolutionReadiness>>
+	>((readinesses, [currentNamespace, readiness]) => {
+		if (currentNamespace !== namespace) {
+			readinesses[currentNamespace as TSyncNamespace] = readiness;
+		}
+		return readinesses;
+	}, {});
+	accountStore.shared.sync.resolutionReadiness.set(nextReadiness);
 
 	reconcileAccountSyncConflictLastError(userId);
 	reconcileConflictBlocker(userId);
@@ -354,6 +455,18 @@ export function upsertAccountSyncConflict(conflict: ISyncConflictItem) {
 			),
 		conflict,
 	]);
+	const currentReadiness =
+		accountStore.shared.sync.resolutionReadiness.get()[conflict.namespace];
+	if (
+		currentReadiness === undefined ||
+		!PRESERVED_RESOLUTION_READINESS_SET.has(currentReadiness)
+	) {
+		setAccountSyncConflictResolutionReadiness(
+			conflict.userId,
+			conflict.namespace,
+			'ready'
+		);
+	}
 
 	reconcileAccountSyncConflictLastError(conflict.userId);
 	reconcileConflictBlocker(conflict.userId);
@@ -382,6 +495,7 @@ export function clearAccountSyncRuntimeConflicts() {
 	accountStore.shared.sync.autoResolvingNamespaces.set([]);
 	accountStore.shared.sync.hasIsolatedState.set(false);
 	accountStore.shared.sync.remoteConflictNamespaces.set([]);
+	accountStore.shared.sync.resolutionReadiness.set({});
 	if (userId !== undefined) {
 		reconcileAccountSyncConflictLastError(userId);
 	}

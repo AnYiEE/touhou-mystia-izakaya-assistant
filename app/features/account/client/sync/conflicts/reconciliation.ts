@@ -318,13 +318,13 @@ export async function reconcileAccountSyncPausedConflictLocalChange({
 			if (!checkActiveConflictUser(userId)) {
 				return 'stale' as const;
 			}
-			if (
-				recoverAccountSyncConflictResolutionJournalUnlocked(
+			const recovery =
+				await recoverAccountSyncConflictResolutionJournalUnlocked(
 					generationToken,
 					userId,
 					namespace
-				).hasIsolatedJournal
-			) {
+				);
+			if (recovery.status !== 'none' && recovery.status !== 'recovered') {
 				return 'stale' as const;
 			}
 

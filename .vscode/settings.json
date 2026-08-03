@@ -90,6 +90,7 @@
 		"PRIMARYKEY",
 		"proto",
 		"qrcode",
+		"readinesses",
 		"rednote",
 		"repell",
 		"Rescan",

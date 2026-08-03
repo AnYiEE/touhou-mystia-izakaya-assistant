@@ -29,6 +29,14 @@ export type TAccountBootstrapStatus =
 
 export type TAccountSyncResult = 'failed' | 'idle' | 'partial' | 'success';
 
+export type TAccountSyncConflictResolutionReadiness =
+	| 'busy'
+	| 'ready'
+	| 'recovering'
+	| 'stale'
+	| 'storage-unavailable'
+	| 'unsupported';
+
 const storeVersion = { initial: 0 } as const;
 
 const state = {
@@ -58,6 +66,9 @@ const state = {
 			pendingCount: 0,
 			queueRevision: 0,
 			remoteConflictNamespaces: [] as TSyncNamespace[],
+			resolutionReadiness: {} as Partial<
+				Record<TSyncNamespace, TAccountSyncConflictResolutionReadiness>
+			>,
 		},
 		user: null as IAccountUserProfile | null,
 		webauthnInitialData: null as IAccountWebauthnInitialData | null,

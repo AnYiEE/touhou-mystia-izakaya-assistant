@@ -23,6 +23,12 @@ import {
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
 import { accountStore } from '@/features/account/client/state/accountStore';
 import { checkAccountSyncBroadcastSupported } from '@/features/account/client/sync/broadcast';
+import {
+	ACCOUNT_SYNC_CONTROL_LABEL_MAP,
+	ACCOUNT_SYNC_NAMESPACE_STATUS_LABEL_MAP,
+	ACCOUNT_SYNC_STATUS_FALLBACK_MESSAGE_MAP,
+	getAccountSyncNamespaceStatusLabel,
+} from '@/features/account/client/sync/conflictCopy';
 import { readDirtyQueueEntries } from '@/features/account/client/sync/dirtyQueue/collisionEvidence';
 import { retryAccountSyncQueue } from '@/features/account/client/sync/flush';
 import { rebuildAccountSyncCloudFromLocal } from '@/features/account/client/sync/rebuild';
@@ -149,7 +155,7 @@ export default memo<IProps>(function AccountSyncStatus() {
 						error instanceof Error
 							? error.message
 							: 'sync-rebuild-failed',
-						'恢复云同步失败，请稍后重试'
+						ACCOUNT_SYNC_STATUS_FALLBACK_MESSAGE_MAP.rebuildFailed
 					)
 				);
 			})
@@ -182,8 +188,8 @@ export default memo<IProps>(function AccountSyncStatus() {
 				<AccountConfirmButton
 					buttonLabel={
 						isRebuilding
-							? '正在恢复云同步'
-							: '用本设备数据恢复云同步'
+							? ACCOUNT_SYNC_CONTROL_LABEL_MAP.restoring
+							: ACCOUNT_SYNC_CONTROL_LABEL_MAP.restore
 					}
 					color="warning"
 					confirmColor="warning"
@@ -224,14 +230,20 @@ export default memo<IProps>(function AccountSyncStatus() {
 					{shouldShowManualSyncButton && (
 						<Tooltip
 							showArrow
-							content={sync.isSyncing ? '正在同步' : '立即同步'}
+							content={
+								sync.isSyncing
+									? ACCOUNT_SYNC_CONTROL_LABEL_MAP.syncing
+									: ACCOUNT_SYNC_CONTROL_LABEL_MAP.sync
+							}
 							placement="left"
 						>
 							<span className="inline-flex shrink-0">
 								<Button
 									isIconOnly
 									aria-label={
-										sync.isSyncing ? '正在同步' : '立即同步'
+										sync.isSyncing
+											? ACCOUNT_SYNC_CONTROL_LABEL_MAP.syncing
+											: ACCOUNT_SYNC_CONTROL_LABEL_MAP.sync
 									}
 									className="h-8 w-8 min-w-8 text-primary-600"
 									color="primary"
@@ -258,7 +270,11 @@ export default memo<IProps>(function AccountSyncStatus() {
 					)}
 					<Tooltip
 						showArrow
-						content={isDetailOpen ? '收起同步详情' : '展开同步详情'}
+						content={
+							isDetailOpen
+								? ACCOUNT_SYNC_CONTROL_LABEL_MAP.collapseDetails
+								: ACCOUNT_SYNC_CONTROL_LABEL_MAP.expandDetails
+						}
 						placement="left"
 					>
 						<span className="inline-flex shrink-0">
@@ -266,8 +282,8 @@ export default memo<IProps>(function AccountSyncStatus() {
 								isIconOnly
 								aria-label={
 									isDetailOpen
-										? '收起同步详情'
-										: '展开同步详情'
+										? ACCOUNT_SYNC_CONTROL_LABEL_MAP.collapseDetails
+										: ACCOUNT_SYNC_CONTROL_LABEL_MAP.expandDetails
 								}
 								className="h-8 w-8 min-w-8 text-primary-600"
 								radius="full"
@@ -315,7 +331,7 @@ export default memo<IProps>(function AccountSyncStatus() {
 				<p className="leading-5 text-danger-600 dark:text-danger">
 					{getAccountClientErrorMessage(
 						sync.lastError,
-						'同步异常，请稍后重试'
+						ACCOUNT_SYNC_STATUS_FALLBACK_MESSAGE_MAP.syncFailed
 					)}
 					{sync.failedAttempts > 0
 						? `（已失败${sync.failedAttempts}次）`
@@ -355,8 +371,8 @@ export default memo<IProps>(function AccountSyncStatus() {
 							</p>
 							<p className="text-small font-medium text-foreground-700">
 								{supportsNativeLock
-									? '浏览器原生'
-									: '浏览器兼容锁'}
+									? ACCOUNT_SYNC_CONTROL_LABEL_MAP.nativeLock
+									: ACCOUNT_SYNC_CONTROL_LABEL_MAP.compatibleLock}
 							</p>
 						</div>
 						<div className="rounded-medium border border-default-200 bg-default-50/40 px-3 py-2">
@@ -364,7 +380,9 @@ export default memo<IProps>(function AccountSyncStatus() {
 								跨标签广播
 							</p>
 							<p className="text-small font-medium text-foreground-700">
-								{supportsBroadcast ? '可用' : '不可用'}
+								{supportsBroadcast
+									? ACCOUNT_SYNC_CONTROL_LABEL_MAP.broadcastAvailable
+									: ACCOUNT_SYNC_CONTROL_LABEL_MAP.broadcastUnavailable}
 							</p>
 						</div>
 					</div>
@@ -376,6 +394,8 @@ export default memo<IProps>(function AccountSyncStatus() {
 					<div className="space-y-2">
 						{syncNamespaces.map((namespace) => {
 							const dirtyEntry = dirtyEntryMap.get(namespace);
+							const resolutionReadiness =
+								sync.resolutionReadiness[namespace];
 							const isAutomaticResolution =
 								dirtyEntry?.paused === 'conflict' &&
 								dirtyEntry.conflict?.automaticResolution !==
@@ -391,33 +411,35 @@ export default memo<IProps>(function AccountSyncStatus() {
 								conflictNamespaceSet.has(namespace) ||
 								(dirtyEntry?.paused === 'conflict' &&
 									!isAutomaticResolution);
-							const statusLabel = isAutomaticResolution
-								? '正在协调'
+							const statusLabel =
+								getAccountSyncNamespaceStatusLabel({
+									hasConflict: hasNamespaceConflict,
+									isAutomaticResolution,
+									isDirty: dirtyEntry !== undefined,
+									resolutionReadiness,
+									terminalError,
+								});
+							const isResolutionUnavailable =
+								resolutionReadiness === 'storage-unavailable' ||
+								resolutionReadiness === 'unsupported';
+							const statusClassName = isResolutionUnavailable
+								? 'bg-danger/10 text-danger-700 dark:text-danger'
 								: hasNamespaceConflict
-									? '冲突待处理'
-									: terminalError ===
-										  'sync-account-capacity-exceeded'
-										? '容量超限'
-										: terminalError ===
-											  'sync-request-too-large'
-											? '请求过大'
-											: dirtyEntry === undefined
-												? '已同步'
-												: '待上传';
-							const statusClassName = hasNamespaceConflict
-								? 'bg-warning/10 text-warning-700 dark:text-warning'
-								: terminalError === null
-									? dirtyEntry === undefined
-										? 'bg-default-100 text-foreground-500 dark:bg-default-50/20'
-										: 'bg-primary/10 text-primary-700 dark:text-primary'
-									: 'bg-danger/10 text-danger-700 dark:text-danger';
-							const rowClassName = hasNamespaceConflict
-								? 'border-warning/40 bg-warning/5'
-								: terminalError === null
-									? dirtyEntry === undefined
-										? 'border-default-200 bg-default-50/40'
-										: 'border-primary/30 bg-primary/5'
-									: 'border-danger/40 bg-danger/5';
+									? 'bg-warning/10 text-warning-700 dark:text-warning'
+									: terminalError === null
+										? dirtyEntry === undefined
+											? 'bg-default-100 text-foreground-500 dark:bg-default-50/20'
+											: 'bg-primary/10 text-primary-700 dark:text-primary'
+										: 'bg-danger/10 text-danger-700 dark:text-danger';
+							const rowClassName = isResolutionUnavailable
+								? 'border-danger/40 bg-danger/5'
+								: hasNamespaceConflict
+									? 'border-warning/40 bg-warning/5'
+									: terminalError === null
+										? dirtyEntry === undefined
+											? 'border-default-200 bg-default-50/40'
+											: 'border-primary/30 bg-primary/5'
+										: 'border-danger/40 bg-danger/5';
 							return (
 								<div
 									key={namespace}
@@ -462,7 +484,7 @@ export default memo<IProps>(function AccountSyncStatus() {
 												<span>
 													暂停：
 													{isAutomaticResolution
-														? '自动协调中'
+														? ACCOUNT_SYNC_NAMESPACE_STATUS_LABEL_MAP.automaticResolutionPaused
 														: pausedReasonLabelMap[
 																dirtyEntry
 																	.paused

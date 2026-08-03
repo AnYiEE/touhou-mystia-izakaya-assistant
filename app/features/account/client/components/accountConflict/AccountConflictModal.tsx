@@ -32,7 +32,15 @@ import {
 	type TSyncConflictResolution,
 	resolveAccountSyncConflict,
 } from '@/features/account/client/sync/conflict';
+import {
+	ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_MAP,
+	ACCOUNT_SYNC_CONFLICT_MESSAGE_MAP,
+	ACCOUNT_SYNC_CONFLICT_READINESS_MESSAGE_MAP,
+	ACCOUNT_SYNC_CONFLICT_RESULT_MESSAGE_MAP,
+	ACCOUNT_SYNC_CONTROL_LABEL_MAP,
+} from '@/features/account/client/sync/conflictCopy';
 import { scheduleAccountSyncFlush } from '@/features/account/client/sync/flush';
+import { setAccountSyncConflictResolutionReadiness } from '@/features/account/client/sync/syncRuntimeState';
 import type { ISyncConflictItem } from '@/features/account/sync/types';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { CoordinatedModal } from '@/features/overlays/client';
@@ -131,6 +139,8 @@ export default memo<IProps>(function AccountConflictModal() {
 	const lastError = accountStore.shared.sync.lastError.use();
 	const remoteConflictNamespaces =
 		accountStore.shared.sync.remoteConflictNamespaces.use();
+	const resolutionReadinessMap =
+		accountStore.shared.sync.resolutionReadiness.use();
 	const user = accountStore.shared.user.use();
 
 	const [resolvingResolution, setResolvingResolution] =
@@ -139,6 +149,8 @@ export default memo<IProps>(function AccountConflictModal() {
 		useState<ISyncConflictItem | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
 	const [pendingResolution, setPendingResolution] =
+		useState<TSyncConflictResolution | null>(null);
+	const [resolutionIntent, setResolutionIntent] =
 		useState<TSyncConflictResolution | null>(null);
 	const [isTechnicalDetailsOpen, setIsTechnicalDetailsOpen] = useState(false);
 
@@ -176,6 +188,7 @@ export default memo<IProps>(function AccountConflictModal() {
 		setResolvingResolution(null);
 		setMessage(null);
 		setPendingResolution(null);
+		setResolutionIntent(null);
 		setIsTechnicalDetailsOpen(false);
 	}, [conflictSnapshotKey, user?.id]);
 
@@ -232,6 +245,7 @@ export default memo<IProps>(function AccountConflictModal() {
 			};
 			resolvingTokenRef.current = resolvingToken;
 			setResolvingResolution(resolution);
+			setResolutionIntent(resolution);
 			setMessage(null);
 
 			try {
@@ -247,23 +261,16 @@ export default memo<IProps>(function AccountConflictModal() {
 					currentConflict === undefined ||
 					!checkConflictSnapshotUnchanged(currentConflict, conflict)
 				) {
-					setMessage('冲突状态已变化，请重新选择');
+					setResolutionIntent(null);
+					setMessage(ACCOUNT_SYNC_CONFLICT_MESSAGE_MAP.stale);
 					return;
 				}
 
-				const didResolve = await resolveAccountSyncConflict({
+				const result = await resolveAccountSyncConflict({
 					conflict: currentConflict,
 					resolution,
 					userId: user.id,
 				});
-
-				if (!didResolve) {
-					if (!checkPresentationAttemptCurrent()) {
-						return;
-					}
-					setMessage('冲突暂时无法保存，请稍后重试');
-					return;
-				}
 
 				if (
 					resolvingTokenRef.current !==
@@ -273,7 +280,21 @@ export default memo<IProps>(function AccountConflictModal() {
 				) {
 					return;
 				}
-				scheduleAccountSyncFlush();
+				if (
+					result.status === 'resolved' ||
+					result.status === 'resolved-elsewhere'
+				) {
+					setResolutionIntent(null);
+					scheduleAccountSyncFlush();
+					return;
+				}
+				setMessage(
+					ACCOUNT_SYNC_CONFLICT_RESULT_MESSAGE_MAP[result.status]
+				);
+				if (result.status === 'busy') {
+					return;
+				}
+				setResolutionIntent(null);
 			} catch (error) {
 				console.error('Failed to resolve conflict.', {
 					errorCode: getLogSafeErrorCode(error),
@@ -281,7 +302,8 @@ export default memo<IProps>(function AccountConflictModal() {
 				if (!checkPresentationAttemptCurrent()) {
 					return;
 				}
-				setMessage('冲突保存失败，请稍后重试');
+				setResolutionIntent(null);
+				setMessage(ACCOUNT_SYNC_CONFLICT_MESSAGE_MAP.unexpected);
 			} finally {
 				if (resolvingTokenRef.current === resolvingToken) {
 					resolvingTokenRef.current = null;
@@ -291,6 +313,40 @@ export default memo<IProps>(function AccountConflictModal() {
 		},
 		[conflict, user, vibrate]
 	);
+
+	const currentResolutionReadiness =
+		conflict === undefined
+			? null
+			: (resolutionReadinessMap[conflict.namespace] ?? 'ready');
+
+	useEffect(() => {
+		if (
+			currentResolutionReadiness !== 'ready' ||
+			resolutionIntent === null ||
+			resolvingTokenRef.current !== null
+		) {
+			return;
+		}
+
+		void resolveConflict(resolutionIntent);
+	}, [currentResolutionReadiness, resolutionIntent, resolveConflict]);
+
+	useEffect(() => {
+		if (
+			currentResolutionReadiness !== 'stale' ||
+			conflict === undefined ||
+			user === null
+		) {
+			return;
+		}
+
+		setMessage(ACCOUNT_SYNC_CONFLICT_MESSAGE_MAP.stale);
+		setAccountSyncConflictResolutionReadiness(
+			user.id,
+			conflict.namespace,
+			'ready'
+		);
+	}, [currentResolutionReadiness, conflict, user]);
 
 	const handleUseCloud = useCallback(() => {
 		setMessage(null);
@@ -386,19 +442,17 @@ export default memo<IProps>(function AccountConflictModal() {
 			const isolatedStateMessage = getAccountClientErrorMessage(
 				lastError ?? 'sync-client-update-required'
 			);
-			const isInvalidResetMarker =
-				lastError === 'sync-reset-marker-invalid';
-			const isQuarantineStorageFailed =
-				lastError === 'quarantine-storage-failed';
-			const isolatedStateTitle = isInvalidResetMarker
-				? '本地同步状态需要处理'
-				: isQuarantineStorageFailed
-					? '本地同步数据无法安全隔离'
-					: '需要更新同步客户端';
+			const isolatedStateCopy =
+				lastError !== null &&
+				lastError in ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_MAP
+					? ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_MAP[
+							lastError as keyof typeof ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_MAP
+						]
+					: ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_MAP.default;
 
 			return (
 				<CoordinatedModal
-					aria-label={isolatedStateTitle}
+					aria-label={isolatedStateCopy.title}
 					coordination={{
 						id: 'account.sync-conflict',
 						requestOwnership: 'external',
@@ -414,14 +468,10 @@ export default memo<IProps>(function AccountConflictModal() {
 							isFirst
 							subTitle={isolatedStateMessage}
 						>
-							{isolatedStateTitle}
+							{isolatedStateCopy.title}
 						</Heading>
 						<p className="text-small text-foreground-600">
-							{isInvalidResetMarker
-								? '原始数据仍保留在当前浏览器中。请先导出需要保留的数据，再通过明确的数据清理操作重置此状态。'
-								: isQuarantineStorageFailed
-									? '原始数据仍保留在当前浏览器中。请释放本地存储空间后刷新页面重试。'
-									: '请刷新页面确认已加载最新版本；若仍然出现此提示，请更新应用后重试。'}
+							{isolatedStateCopy.detail}
 						</p>
 					</div>
 				</CoordinatedModal>
@@ -447,7 +497,12 @@ export default memo<IProps>(function AccountConflictModal() {
 	const unresolvedConflictCount = conflicts.filter(
 		(item) => item.userId === user?.id
 	).length;
-	const isResolving = resolvingResolution !== null;
+	const resolutionReadiness = currentResolutionReadiness ?? 'ready';
+	const isResolutionReady = resolutionReadiness === 'ready';
+	const isResolving =
+		resolvingResolution !== null || resolutionIntent !== null;
+	const readinessMessage =
+		ACCOUNT_SYNC_CONFLICT_READINESS_MESSAGE_MAP[resolutionReadiness];
 	const canUseMergedResult = merged !== null;
 	const confirmationText =
 		pendingResolution === 'cloud'
@@ -459,7 +514,9 @@ export default memo<IProps>(function AccountConflictModal() {
 			<ConflictPreview label="当前设备原始数据" value={local} />
 			<ConflictPreview
 				label="合并后的原始数据"
-				value={merged ?? '无法自动合并'}
+				value={
+					merged ?? ACCOUNT_SYNC_CONTROL_LABEL_MAP.mergedUnavailable
+				}
 			/>
 		</div>
 	);
@@ -493,6 +550,14 @@ export default memo<IProps>(function AccountConflictModal() {
 						{localCollision.invalidEvidenceCount > 0 &&
 							` 另有 ${localCollision.invalidEvidenceCount} 份无法解析的旧证据仍会保留。`}
 					</div>
+					{readinessMessage !== null && (
+						<p
+							aria-live="polite"
+							className="rounded-medium bg-warning/10 px-4 py-3 text-small text-warning-800 dark:text-warning-500"
+						>
+							{readinessMessage}
+						</p>
+					)}
 					<div className="grid gap-4 md:grid-cols-2">
 						{localCollision.candidates.map((candidate, index) => {
 							const resolution =
@@ -517,7 +582,9 @@ export default memo<IProps>(function AccountConflictModal() {
 									<Button
 										className="w-full"
 										color="primary"
-										isDisabled={isResolving}
+										isDisabled={
+											isResolving || !isResolutionReady
+										}
 										isLoading={
 											resolvingResolution === resolution
 										}
@@ -589,6 +656,15 @@ export default memo<IProps>(function AccountConflictModal() {
 					</p>
 				</div>
 
+				{readinessMessage !== null && (
+					<p
+						aria-live="polite"
+						className="rounded-medium bg-warning/10 px-4 py-3 text-small text-warning-800 dark:text-warning-500"
+					>
+						{readinessMessage}
+					</p>
+				)}
+
 				{canUseMergedResult ? (
 					<div
 						className={cn(
@@ -621,7 +697,7 @@ export default memo<IProps>(function AccountConflictModal() {
 							<Button
 								className="w-full sm:w-auto"
 								color="primary"
-								isDisabled={isResolving}
+								isDisabled={isResolving || !isResolutionReady}
 								isLoading={resolvingResolution === 'merged'}
 								variant="solid"
 								onPress={handleUseMerged}
@@ -686,7 +762,7 @@ export default memo<IProps>(function AccountConflictModal() {
 							description="来自账号云端的数据，将覆盖当前设备上的对应修改。"
 							differences={differences}
 							icon={faCloud}
-							isDisabled={isResolving}
+							isDisabled={isResolving || !isResolutionReady}
 							isHighAppearance={isHighAppearance}
 							isLoading={resolvingResolution === 'cloud'}
 							title="云端版本"
@@ -698,7 +774,7 @@ export default memo<IProps>(function AccountConflictModal() {
 							description="当前浏览器中尚未同步的数据，将上传并覆盖云端修改。"
 							differences={differences}
 							icon={faLaptop}
-							isDisabled={isResolving}
+							isDisabled={isResolving || !isResolutionReady}
 							isHighAppearance={isHighAppearance}
 							isLoading={resolvingResolution === 'local'}
 							title="当前设备版本"

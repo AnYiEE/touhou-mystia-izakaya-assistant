@@ -196,21 +196,42 @@ function tryResolveStoredAutomaticConflict(
 		resolution,
 		userId,
 	})
-		.then((didResolve) => {
-			if (didResolve) {
+		.then((result) => {
+			if (
+				result.status === 'resolved' ||
+				result.status === 'resolved-elsewhere'
+			) {
 				if (resolution === 'merged') {
 					getAccountSyncLifecyclePort().scheduleFlush();
 				}
 				return;
 			}
-			if (!checkCurrentAccountUser(userId)) {
+			if (result.status === 'busy') {
+				setTimeout(() => {
+					if (!checkCurrentAccountUser(userId)) {
+						return;
+					}
+					const entry = readDirtyQueueEntry(
+						userId,
+						conflict.namespace
+					);
+					if (
+						entry?.paused === 'conflict' &&
+						entry.conflict?.automaticResolution !== undefined &&
+						checkConflictSnapshotsEqual(entry.conflict, conflict)
+					) {
+						tryResolveStoredAutomaticConflict(
+							entry.conflict,
+							userId
+						);
+					}
+				}, CONFLICT_HEARTBEAT_INTERVAL);
 				return;
 			}
-			setTimeout(() => {
-				if (checkCurrentAccountUser(userId)) {
-					exposeAutomaticConflictForUser(conflict, userId);
-				}
-			}, AUTOMATIC_CONFLICT_REVEAL_DELAY);
+			if (!checkCurrentAccountUser(userId) || result.status !== 'stale') {
+				return;
+			}
+			getAccountSyncLifecyclePort().restoreRuntimeState(userId);
 		})
 		.catch((error: unknown) => {
 			if (!checkCurrentAccountUser(userId)) {
@@ -222,7 +243,11 @@ function tryResolveStoredAutomaticConflict(
 			accountStore.shared.sync.lastError.set(
 				'conflict-auto-resolution-failed'
 			);
-			exposeAutomaticConflictForUser(conflict, userId);
+			setTimeout(() => {
+				if (checkCurrentAccountUser(userId)) {
+					exposeAutomaticConflictForUser(conflict, userId);
+				}
+			}, AUTOMATIC_CONFLICT_REVEAL_DELAY);
 		})
 		.finally(() => {
 			endAccountSyncAutoResolution(userId, conflict.namespace);

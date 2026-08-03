@@ -6,7 +6,10 @@ import {
 
 import { fetchSyncState } from '@/features/account/client/api';
 import { createAccountClientId } from '@/features/account/client/clientId';
-import { accountStore } from '@/features/account/client/state/accountStore';
+import {
+	type TAccountSyncConflictResolutionReadiness,
+	accountStore,
+} from '@/features/account/client/state/accountStore';
 import { SYNC_SCHEMA_VERSION_MAP } from '@/features/account/sync/constants';
 import type { IAccountSyncMeta } from '@/features/account/sync/contracts';
 import {
@@ -42,10 +45,17 @@ import {
 } from './conflictResolutionJournal';
 import {
 	checkAccountSyncConflictResolutionJournalsPending,
+	readAccountSyncConflictResolutionJournalNamespaces,
 	recoverAccountSyncConflictResolutionJournals,
 } from './conflicts/journalRecovery';
-import { reconcileAccountSyncDirtyQueueCollisions } from './conflicts/reconciliation';
-import { withAccountSyncNamespaceTransitionLock } from './conflicts/transitionLock';
+import {
+	reconcileAccountSyncDirtyQueueCollisions,
+	reconcileAccountSyncPausedConflicts,
+} from './conflicts/reconciliation';
+import {
+	CONFLICT_RESOLUTION_FALLBACK_LOCK_TTL,
+	withAccountSyncNamespaceTransitionLock,
+} from './conflicts/transitionLock';
 import {
 	readDirtyQueueCollisionState,
 	readDirtyQueueEntries,
@@ -98,6 +108,7 @@ import {
 	clearAccountSyncRuntimeConflicts,
 	removeAccountSyncConflict,
 	replaceAccountSyncConflicts,
+	setAccountSyncConflictResolutionReadinesses,
 	setAccountSyncFutureStateIsolated,
 } from './syncRuntimeState';
 
@@ -487,10 +498,81 @@ export function restoreAccountSyncRuntimeState(
 	const hasPendingJournal =
 		checkAccountSyncConflictResolutionJournalsPending(userId);
 	if (hasPendingJournal && !skipJournalRecovery) {
+		const recoveringReadinesses: Partial<
+			Record<TSyncNamespace, TAccountSyncConflictResolutionReadiness>
+		> = {};
+		for (const namespace of readAccountSyncConflictResolutionJournalNamespaces(
+			userId
+		)) {
+			recoveringReadinesses[namespace] = 'recovering';
+		}
+		setAccountSyncConflictResolutionReadinesses(
+			userId,
+			recoveringReadinesses
+		);
 		void recoverAccountSyncConflictResolutionJournals(userId)
-			.then(() => {
-				if (checkCurrentAccountUser(userId)) {
-					restoreAccountSyncRuntimeState(userId, true);
+			.then(async (summary) => {
+				if (!checkCurrentAccountUser(userId)) {
+					return;
+				}
+				const readinesses: Partial<
+					Record<
+						TSyncNamespace,
+						TAccountSyncConflictResolutionReadiness
+					>
+				> = {};
+				const recoveryResults = Object.values(
+					SYNC_NAMESPACE_MAP
+				).flatMap((namespace) => {
+					const result = summary.results[namespace];
+					if (result === undefined) {
+						return [];
+					}
+					readinesses[namespace] =
+						result.status === 'none' ||
+						result.status === 'recovered'
+							? 'ready'
+							: result.status;
+					return [result];
+				});
+				const hasTransientRecovery = recoveryResults.some(
+					(result) =>
+						result.status === 'busy' || result.status === 'stale'
+				);
+				if (hasTransientRecovery) {
+					setAccountSyncConflictResolutionReadinesses(
+						userId,
+						readinesses
+					);
+					const retryDelay = recoveryResults.some(
+						(result) => result.status === 'busy'
+					)
+						? CONFLICT_RESOLUTION_FALLBACK_LOCK_TTL + 100
+						: 0;
+					setTimeout(() => {
+						if (checkCurrentAccountUser(userId)) {
+							restoreAccountSyncRuntimeState(userId);
+						}
+					}, retryDelay);
+					return;
+				}
+				const hasUnsupportedRecovery = recoveryResults.some(
+					(result) =>
+						result.status === 'storage-unavailable' ||
+						result.status === 'unsupported'
+				);
+				let didRebase = false;
+				if (!hasUnsupportedRecovery) {
+					didRebase =
+						await reconcileAccountSyncPausedConflicts(userId);
+				}
+				setAccountSyncConflictResolutionReadinesses(
+					userId,
+					readinesses
+				);
+				restoreAccountSyncRuntimeState(userId, true);
+				if (didRebase) {
+					getAccountSyncLifecyclePort().scheduleFlush();
 				}
 			})
 			.catch((error: unknown) => {
@@ -502,6 +584,7 @@ export function restoreAccountSyncRuntimeState(
 					setAccountSyncFutureStateIsolated(userId, true);
 				}
 			});
+		return;
 	}
 	const runtimeGenerationToken =
 		resetGeneration.status === 'current' ? resetGeneration.raw : null;
