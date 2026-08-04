@@ -2,6 +2,7 @@ import { type RegistrationResponseJSON } from '@simplewebauthn/server';
 import { type NextRequest } from 'next/server';
 import { randomUUID } from 'node:crypto';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import {
 	WEBAUTHN_MAX_CREDENTIALS_PER_USER,
 	checkWebauthnCredentialNamePolicy,
@@ -18,6 +19,7 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -76,13 +78,19 @@ export async function POST(request: NextRequest) {
 	}
 
 	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
-		return createNoStoreErrorResponse('forbidden', 403);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.forbidden,
+			403
+		);
 	}
 
 	const bodyResult =
 		await readJsonBodyResult<IWebauthnRegistrationVerifyBody>(request);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
@@ -91,7 +99,10 @@ export async function POST(request: NextRequest) {
 		typeof body.response !== 'object' ||
 		body.response === null
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const registrationResponse = body.response as RegistrationResponseJSON;
@@ -99,7 +110,10 @@ export async function POST(request: NextRequest) {
 		typeof body.name === 'string' ? body.name : ''
 	);
 	if (!checkWebauthnCredentialNamePolicy(name)) {
-		return createNoStoreErrorResponse('invalid-passkey-name', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.invalidPasskeyName,
+			400
+		);
 	}
 
 	const [
@@ -116,7 +130,10 @@ export async function POST(request: NextRequest) {
 
 	const challengeCookie = webauthnModule.getWebauthnChallengeCookie(request);
 	if (challengeCookie === undefined) {
-		return createNoStoreErrorResponse('challenge-not-found', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.challengeNotFound,
+			400
+		);
 	}
 
 	const challengeResult =
@@ -126,10 +143,16 @@ export async function POST(request: NextRequest) {
 			{ id: auth.data.session.id, token_hash: auth.data.sessionTokenHash }
 		);
 	if (challengeResult.status === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 	if (challengeResult.status === 'not-found') {
-		const response = createNoStoreErrorResponse('challenge-expired', 400);
+		const response = createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.challengeExpired,
+			400
+		);
 		webauthnModule.clearWebauthnChallengeCookie(response, request);
 
 		return response;
@@ -144,7 +167,7 @@ export async function POST(request: NextRequest) {
 		});
 	} catch {
 		const response = createNoStoreErrorResponse(
-			'webauthn-verification-failed',
+			ACCOUNT_API_RESPONSE_CODE_MAP.webauthnVerificationFailed,
 			400
 		);
 		webauthnModule.clearWebauthnChallengeCookie(response, request);
@@ -154,7 +177,7 @@ export async function POST(request: NextRequest) {
 
 	if (!verification.verified) {
 		const response = createNoStoreErrorResponse(
-			'webauthn-verification-failed',
+			ACCOUNT_API_RESPONSE_CODE_MAP.webauthnVerificationFailed,
 			400
 		);
 		webauthnModule.clearWebauthnChallengeCookie(response, request);
@@ -210,10 +233,16 @@ export async function POST(request: NextRequest) {
 				)
 		);
 	if (createResult.status === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 	if (createResult.status === 'too-many') {
-		const response = createNoStoreErrorResponse('too-many-passkeys', 409);
+		const response = createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.tooManyPasskeys,
+			409
+		);
 		webauthnModule.clearWebauthnChallengeCookie(response, request);
 
 		return response;

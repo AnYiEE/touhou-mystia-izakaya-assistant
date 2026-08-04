@@ -29,6 +29,10 @@ import {
 	AdminShell,
 } from '@/features/admin/client/components/shell';
 import type { IAdminPageInitialData } from '@/features/admin/contracts';
+import {
+	ADMIN_MESSAGE_MAP,
+	ADMIN_STATUS_LABEL_MAP,
+} from '@/features/admin/copy';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
 import { AdminLoginPanel } from './AdminLoginPanel';
@@ -83,8 +87,8 @@ export default function AdminUsersClient({
 			return (
 				<AdminLoadingState
 					icon={faShieldHalved}
-					label="读取会话状态"
-					subtitle="正在校验管理员会话"
+					label={ADMIN_STATUS_LABEL_MAP.sessionReading}
+					subtitle={ADMIN_MESSAGE_MAP.adminSessionChecking}
 					title="管理员"
 				/>
 			);
@@ -95,7 +99,7 @@ export default function AdminUsersClient({
 				<AdminErrorRetryState
 					icon={faShieldHalved}
 					message={message}
-					subtitle="管理员会话检查失败"
+					subtitle={ADMIN_MESSAGE_MAP.adminSessionCheckFailed}
 					title="管理员"
 					onRetry={checkAdminAuth}
 				/>

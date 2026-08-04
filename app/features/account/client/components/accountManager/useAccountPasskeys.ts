@@ -44,6 +44,7 @@ import {
 	handleUnauthorizedAccountActionError,
 	handleUnauthorizedAccountError,
 } from './controller';
+import { ACCOUNT_MANAGER_MESSAGE_MAP } from './copy';
 
 type TWebAuthnSupportStatus = 'supported' | 'unsupported';
 
@@ -300,7 +301,7 @@ export function useAccountPasskeys({
 						setMessage(
 							error instanceof Error
 								? error.message
-								: '通行密钥刷新失败'
+								: ACCOUNT_MANAGER_MESSAGE_MAP.passkeyRefreshFailed
 						);
 					}
 
@@ -453,7 +454,7 @@ export function useAccountPasskeys({
 				passkeyListUpdatedAtRef.current = Date.now();
 				setNewPasskeyName('');
 				setIsAddPasskeyFormOpen(false);
-				setMessage('通行密钥已添加');
+				setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.passkeyAdded);
 				if (expectedAuthContext.expectedUserId !== null) {
 					broadcastPasskeyChange(expectedAuthContext.expectedUserId);
 				}
@@ -465,7 +466,9 @@ export function useAccountPasskeys({
 					return;
 				}
 				setMessage(
-					error instanceof Error ? error.message : '通行密钥添加失败'
+					error instanceof Error
+						? error.message
+						: ACCOUNT_MANAGER_MESSAGE_MAP.passkeyAddFailed
 				);
 			})
 			.finally(() => {
@@ -548,7 +551,7 @@ export function useAccountPasskeys({
 				);
 				setPasskeysUserId(expectedAuthContext.expectedUserId);
 				passkeyListUpdatedAtRef.current = Date.now();
-				setMessage('通行密钥已删除');
+				setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.passkeyDeleted);
 				if (expectedAuthContext.expectedUserId !== null) {
 					broadcastPasskeyChange(expectedAuthContext.expectedUserId);
 				}
@@ -560,7 +563,9 @@ export function useAccountPasskeys({
 					return;
 				}
 				setMessage(
-					error instanceof Error ? error.message : '通行密钥删除失败'
+					error instanceof Error
+						? error.message
+						: ACCOUNT_MANAGER_MESSAGE_MAP.passkeyDeleteFailed
 				);
 			})
 			.finally(() => {
@@ -645,7 +650,7 @@ export function useAccountPasskeys({
 				passkeyListUpdatedAtRef.current = Date.now();
 				setEditingPasskeyId(null);
 				setEditingPasskeyName('');
-				setMessage('通行密钥已重命名');
+				setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.passkeyRenamed);
 				if (expectedAuthContext.expectedUserId !== null) {
 					broadcastPasskeyChange(expectedAuthContext.expectedUserId);
 				}
@@ -659,7 +664,7 @@ export function useAccountPasskeys({
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '通行密钥重命名失败'
+						: ACCOUNT_MANAGER_MESSAGE_MAP.passkeyRenameFailed
 				);
 			})
 			.finally(() => {

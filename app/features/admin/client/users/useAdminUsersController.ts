@@ -32,6 +32,7 @@ import type {
 	IAdminPageInitialData,
 	TAdminAuthStatus,
 } from '@/features/admin/contracts';
+import { ADMIN_MESSAGE_MAP } from '@/features/admin/copy';
 import { getAdminListHref } from '@/features/admin/navigation';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
@@ -134,7 +135,7 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '读取用户列表失败'
+							: ADMIN_MESSAGE_MAP.userListReadFailed
 					);
 				})
 				.finally(() => {
@@ -188,7 +189,7 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '检查管理员登录状态失败'
+						: ADMIN_MESSAGE_MAP.adminAuthCheckFailed
 				);
 			});
 	}, []);
@@ -230,7 +231,9 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 				}
 
 				setMessage(
-					error instanceof Error ? error.message : '管理员登录失败'
+					error instanceof Error
+						? error.message
+						: ADMIN_MESSAGE_MAP.adminLoginFailed
 				);
 			})
 			.finally(() => {
@@ -289,7 +292,9 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 				}
 
 				setMessage(
-					error instanceof Error ? error.message : '退出管理员失败'
+					error instanceof Error
+						? error.message
+						: ADMIN_MESSAGE_MAP.adminLogoutFailed
 				);
 			})
 			.finally(() => {

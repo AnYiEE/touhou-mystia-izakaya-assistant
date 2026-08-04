@@ -23,6 +23,10 @@ import {
 	AdminShell,
 } from '@/features/admin/client/components/shell';
 import type { IAdminAuditInitialData } from '@/features/admin/contracts';
+import {
+	ADMIN_MESSAGE_MAP,
+	ADMIN_STATUS_LABEL_MAP,
+} from '@/features/admin/copy';
 
 import { AdminAuditFilters } from './AdminAuditFilters';
 import { AdminAuditTable } from './AdminAuditTable';
@@ -74,8 +78,8 @@ export default function AdminAuditClient({
 		return (
 			<AdminLoadingState
 				icon={faShieldHalved}
-				label="读取会话状态"
-				subtitle="正在校验管理员会话"
+				label={ADMIN_STATUS_LABEL_MAP.sessionReading}
+				subtitle={ADMIN_MESSAGE_MAP.adminSessionChecking}
 				title="审计日志"
 			/>
 		);
@@ -91,7 +95,7 @@ export default function AdminAuditClient({
 						</AdminHeaderActionLink>
 					}
 					icon={faShieldHalved}
-					subtitle={message ?? '请先返回管理员页登录'}
+					subtitle={message ?? ADMIN_MESSAGE_MAP.adminSignInRequired}
 					title="审计日志"
 				/>
 			</AdminShell>
@@ -124,16 +128,28 @@ export default function AdminAuditClient({
 			<AdminMetricPanel className="sm:grid-cols-2 xl:grid-cols-4">
 				<AdminMetric
 					label="当前页日志"
-					value={logs === null ? '读取中' : logs.logs.length}
+					value={
+						logs === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: logs.logs.length
+					}
 				/>
 				<AdminMetric
 					label="筛选总数"
-					value={logs === null ? '读取中' : logs.total_count}
+					value={
+						logs === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: logs.total_count
+					}
 				/>
 				<AdminMetric label="范围" value={getScopeLabel(scope)} />
 				<AdminMetric
 					label="页码"
-					value={logs === null ? '读取中' : logs.page}
+					value={
+						logs === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: logs.page
+					}
 				/>
 			</AdminMetricPanel>
 

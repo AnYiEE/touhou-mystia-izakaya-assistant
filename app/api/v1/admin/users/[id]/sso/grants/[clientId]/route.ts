@@ -7,6 +7,7 @@ import {
 } from '@/features/account/sso/admin/server/http/revokePayload';
 import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
@@ -42,13 +43,19 @@ export async function DELETE(
 		MAX_ACCOUNT_JSON_BODY_BYTES
 	);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 	const body = parseAdminSsoRevokeBody(
 		bodyResult.status === 'ok' ? bodyResult.data : null
 	);
 	if (body === null) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const serviceModule =

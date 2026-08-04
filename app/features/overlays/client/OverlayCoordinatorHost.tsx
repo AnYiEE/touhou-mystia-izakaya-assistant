@@ -9,6 +9,7 @@ import {
 
 import Modal from '@/design/ui/components/modal';
 
+import { OVERLAY_COORDINATOR_MESSAGE_MAP } from './copy';
 import {
 	getOverlayCoordinatorSnapshot,
 	handleOverlayCoordinatorKeyDown,
@@ -216,10 +217,10 @@ export default function OverlayCoordinatorHost() {
 		>
 			<p aria-live="polite" role="status">
 				{preparationTimedOut
-					? '当前版本暂时无法打开账号处理面板，请刷新页面或更新应用。'
+					? OVERLAY_COORDINATOR_MESSAGE_MAP.accountBlockerUnavailable
 					: blockerId === 'account.password-required'
-						? '正在准备账号安全验证…'
-						: '正在准备云同步冲突处理…'}
+						? OVERLAY_COORDINATOR_MESSAGE_MAP.preparingAccountSecurity
+						: OVERLAY_COORDINATOR_MESSAGE_MAP.preparingSyncConflict}
 			</p>
 		</Modal>
 	);

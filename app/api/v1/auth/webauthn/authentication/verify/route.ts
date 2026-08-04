@@ -3,6 +3,7 @@ import { type NextRequest } from 'next/server';
 
 import { USER_STATUS_MAP } from '@/domain/account/contracts';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
@@ -11,6 +12,7 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import { createNoStoreErrorResponse } from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
@@ -53,7 +55,10 @@ export async function POST(request: NextRequest) {
 	const bodyResult =
 		await readJsonBodyResult<IWebauthnAuthenticationVerifyBody>(request);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
@@ -62,13 +67,19 @@ export async function POST(request: NextRequest) {
 		typeof body.response !== 'object' ||
 		body.response === null
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const authenticationResponse = body.response as AuthenticationResponseJSON;
 	const credentialId: unknown = authenticationResponse.id;
 	if (typeof credentialId !== 'string') {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const [
@@ -108,7 +119,10 @@ export async function POST(request: NextRequest) {
 
 	const challengeCookie = webauthnModule.getWebauthnChallengeCookie(request);
 	if (challengeCookie === undefined) {
-		return createNoStoreErrorResponse('challenge-not-found', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.challengeNotFound,
+			400
+		);
 	}
 
 	const challenge = await challengesModule.consumeChallenge(
@@ -116,7 +130,10 @@ export async function POST(request: NextRequest) {
 		'authentication'
 	);
 	if (challenge === null) {
-		const response = createNoStoreErrorResponse('challenge-expired', 400);
+		const response = createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.challengeExpired,
+			400
+		);
 		webauthnModule.clearWebauthnChallengeCookie(response, request);
 
 		return response;

@@ -8,6 +8,11 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+import { FEATURE_DISABLED_MESSAGE } from '@/features/account/server/featureStatus';
+import {
+	ACCOUNT_SSO_API_RESPONSE_CODE_MAP,
+	SSO_AUTHORIZE_PAGE_STATUS_MAP,
+} from '@/features/account/sso/apiResponseCodes';
 import {
 	clearSsoContextCookie,
 	getSsoContextCookie,
@@ -21,6 +26,8 @@ import {
 	checkSsoState,
 } from '@/features/account/sso/server/validation';
 
+import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -72,7 +79,9 @@ function createSsoAuthorizationFlowLoadErrorResponse(
 ) {
 	const context = getSsoContextCookie(request);
 	if (context === null || transactionId !== context.transaction_id) {
-		return createAuthorizePageJsonResponse('expired');
+		return createAuthorizePageJsonResponse(
+			SSO_AUTHORIZE_PAGE_STATUS_MAP.expired
+		);
 	}
 
 	console.warn(
@@ -83,7 +92,9 @@ function createSsoAuthorizationFlowLoadErrorResponse(
 	);
 
 	const response = createAuthorizePageJsonResponse(
-		intent === 'agree' ? 'invalid' : 'cancelled'
+		intent === 'agree'
+			? SSO_AUTHORIZE_PAGE_STATUS_MAP.invalid
+			: SSO_AUTHORIZE_PAGE_STATUS_MAP.cancelled
 	);
 	if (intent === 'cancel') {
 		clearSsoContextCookie(response, request);
@@ -118,7 +129,10 @@ export async function GET(request: NextRequest) {
 		!checkSsoState(state) ||
 		!checkSsoCodeChallenge(codeChallenge)
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const rateLimitResponse = checkSsoRateLimitRouteResponse(
@@ -143,12 +157,18 @@ export async function GET(request: NextRequest) {
 		if (result.status === 'error') {
 			switch (result.error) {
 				case 'client-disabled':
-					return createNoStoreErrorResponse('client-disabled', 403);
+					return createNoStoreErrorResponse(
+						ACCOUNT_SSO_API_RESPONSE_CODE_MAP.clientDisabled,
+						403
+					);
 				case 'feature-disabled':
-					return createNoStoreErrorResponse('feature-disabled', 404);
+					return createNoStoreErrorResponse(
+						FEATURE_DISABLED_MESSAGE,
+						404
+					);
 				case 'invalid-redirect-uri':
 					return createNoStoreErrorResponse(
-						'invalid-redirect-uri',
+						ACCOUNT_SSO_API_RESPONSE_CODE_MAP.invalidRedirectUri,
 						400
 					);
 			}
@@ -165,7 +185,7 @@ export async function GET(request: NextRequest) {
 			errorCode: getLogSafeErrorCode(error),
 		});
 
-		return createNoStoreErrorResponse('server-misconfigured', 500);
+		return createNoStoreErrorResponse(SERVER_MISCONFIGURED_MESSAGE, 500);
 	}
 }
 
@@ -189,12 +209,18 @@ export async function POST(request: NextRequest) {
 	const bodyResult =
 		await readJsonBodyResult<ISsoAuthorizeSubmitBody>(request);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	const intent = getSsoAuthorizeSubmitIntent(body?.intent);
 	if (intent === null) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(

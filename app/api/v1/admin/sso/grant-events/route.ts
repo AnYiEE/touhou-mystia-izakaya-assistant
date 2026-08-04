@@ -5,6 +5,7 @@ import { type TSsoActorType } from '@/domain/account/contracts';
 import type { TAdminSsoGrantEvent } from '@/features/account/contracts';
 import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	getTrimmedSearchParam,
 	parseNonNegativeIntegerParam,
@@ -53,7 +54,10 @@ export async function GET(request: NextRequest) {
 		startTime === null ||
 		endTime === null
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const actorId = getTrimmedSearchParam(

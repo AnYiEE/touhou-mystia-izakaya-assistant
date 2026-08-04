@@ -5,6 +5,10 @@ import { useCallback, useRef, useState } from 'react';
 import Button from '@/design/ui/components/button';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import {
+	SSO_AUTHORIZE_MESSAGE_MAP,
+	createSsoAuthorizeRateLimitedMessage,
+} from '@/features/account/sso/authorize/copy';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { fetchServiceApi } from '@/infrastructure/http/client/fetchServiceApi';
@@ -25,15 +29,15 @@ function createSubmitErrorMessage(error: unknown) {
 	if (error instanceof ServiceApiError) {
 		if (error.status === 429) {
 			return error.retryAfter === null
-				? '操作过于频繁，请稍后再试。'
-				: `操作过于频繁，请${Math.ceil(error.retryAfter)}秒后再试。`;
+				? SSO_AUTHORIZE_MESSAGE_MAP.rateLimited
+				: createSsoAuthorizeRateLimitedMessage(error.retryAfter);
 		}
 		if (error.status === 0) {
-			return '网络连接失败，请稍后重试。';
+			return SSO_AUTHORIZE_MESSAGE_MAP.networkFailed;
 		}
 	}
 
-	return '授权请求无效或已失效，请从外部服务重新发起登录。';
+	return SSO_AUTHORIZE_MESSAGE_MAP.invalidRequest;
 }
 
 export default function SsoAuthorizeControls({

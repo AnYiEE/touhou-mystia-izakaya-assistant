@@ -1,5 +1,6 @@
 import type { IAdminAuditLogListData } from '@/features/account/contracts';
 import type { IAdminAuditInitialData } from '@/features/admin/contracts';
+import { ADMIN_MESSAGE_MAP } from '@/features/admin/copy';
 import {
 	type IAdminSearchParams,
 	getAdminActorTypeFromSearchValue,
@@ -140,7 +141,9 @@ export async function readAdminAuditInitialData(
 		return {
 			...initialData,
 			message:
-				error instanceof Error ? error.message : '读取审计日志失败',
+				error instanceof Error
+					? error.message
+					: ADMIN_MESSAGE_MAP.auditLogReadFailed,
 		};
 	}
 }

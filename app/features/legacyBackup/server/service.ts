@@ -1,6 +1,7 @@
 import { v7 as uuid, validate } from 'uuid';
 
 import { MAX_BACKUP_DATA_BYTES } from '@/features/account/requestLimits';
+import { LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP } from '@/features/legacyBackup/apiResponseMessages';
 import {
 	type IBackupCheckSuccessResponse,
 	type IBackupUploadBody,
@@ -65,9 +66,11 @@ function createLegacyBackupServerError(message: string, status: number) {
 }
 
 function createLegacyBackupRateLimitError(retryAfter: number) {
-	return createLegacyBackupErrorResult('Requests are too frequent', 429, {
-		retry_after: retryAfter,
-	});
+	return createLegacyBackupErrorResult(
+		LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.requestsTooFrequent,
+		429,
+		{ retry_after: retryAfter }
+	);
 }
 
 function checkLegacyBackupCodeRateLimit({
@@ -80,7 +83,10 @@ function checkLegacyBackupCodeRateLimit({
 	scope: string;
 }) {
 	if (ip === null) {
-		return createLegacyBackupServerError('Invalid IP address', 400);
+		return createLegacyBackupServerError(
+			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidIpAddress,
+			400
+		);
 	}
 
 	const result = checkRateLimit(JSON.stringify([scope, code, ip]), {
@@ -95,7 +101,10 @@ function checkLegacyBackupCodeRateLimit({
 
 function checkLegacyBackupUploadRateLimit(ip: string | null) {
 	if (ip === null) {
-		return createLegacyBackupServerError('Invalid IP address', 400);
+		return createLegacyBackupServerError(
+			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidIpAddress,
+			400
+		);
 	}
 
 	const result = checkRateLimit(JSON.stringify(['upload', ip]), {
@@ -140,7 +149,10 @@ function createBackupCode(rawCode: unknown) {
 		return { code, status: 'ok' as const };
 	}
 
-	return createLegacyBackupServerError('Invalid code', 400);
+	return createLegacyBackupServerError(
+		LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidCode,
+		400
+	);
 }
 
 function normalizeBackupUserId(rawUserId: unknown) {
@@ -162,13 +174,22 @@ export async function uploadLegacyBackupData({
 	const { contentType, ip, ua } = meta;
 
 	if (normalizeMediaType(contentType) !== FILE_TYPE_JSON) {
-		return createLegacyBackupServerError('Invalid content type', 400);
+		return createLegacyBackupServerError(
+			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidContentType,
+			400
+		);
 	}
 	if (ip === null) {
-		return createLegacyBackupServerError('Invalid IP address', 400);
+		return createLegacyBackupServerError(
+			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidIpAddress,
+			400
+		);
 	}
 	if (ua === null || ua === undefined) {
-		return createLegacyBackupServerError('Invalid user agent', 400);
+		return createLegacyBackupServerError(
+			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidUserAgent,
+			400
+		);
 	}
 	const uploadRateLimitError = checkLegacyBackupUploadRateLimit(ip);
 	if (uploadRateLimitError !== null) {
@@ -188,7 +209,10 @@ export async function uploadLegacyBackupData({
 		(typeof rawUserId !== 'string' && rawUserId !== null) ||
 		('code' in body && body.code !== null && typeof body.code !== 'string')
 	) {
-		return createLegacyBackupServerError('Invalid object structure', 400);
+		return createLegacyBackupServerError(
+			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const codeResult = createBackupCode(body.code);
@@ -199,7 +223,10 @@ export async function uploadLegacyBackupData({
 
 	const jsonString = JSON.stringify(backupData);
 	if (new Blob([jsonString]).size > MAX_BACKUP_DATA_BYTES) {
-		return createLegacyBackupServerError('The data is too large', 413);
+		return createLegacyBackupServerError(
+			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.dataTooLarge,
+			413
+		);
 	}
 
 	const userId = normalizeBackupUserId(rawUserId);
@@ -229,7 +256,10 @@ export async function uploadLegacyBackupData({
 		{ ip, ua, userId }
 	);
 	if (recentRecord.status === 429) {
-		return createLegacyBackupServerError('Requests are too frequent', 429);
+		return createLegacyBackupServerError(
+			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.requestsTooFrequent,
+			429
+		);
 	}
 
 	try {
@@ -245,7 +275,7 @@ export async function uploadLegacyBackupData({
 				savedFile = await saveFile(code, jsonString);
 			} catch {
 				return createLegacyBackupServerError(
-					'Failed to save file',
+					LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.fileSaveFailed,
 					500
 				);
 			}
@@ -296,7 +326,7 @@ export async function uploadLegacyBackupData({
 
 				if (checkBackupCodeLockLostError(error)) {
 					return createLegacyBackupServerError(
-						'backup-code-lock-lost',
+						LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.backupCodeLockLost,
 						409
 					);
 				}
@@ -307,7 +337,7 @@ export async function uploadLegacyBackupData({
 				});
 
 				return createLegacyBackupServerError(
-					'Failed to save record',
+					LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.fileRecordSaveFailed,
 					500
 				);
 			}
@@ -323,11 +353,14 @@ export async function uploadLegacyBackupData({
 		});
 	} catch (error) {
 		if (checkBackupCodeLockLostError(error)) {
-			return createLegacyBackupServerError('backup-code-lock-lost', 409);
+			return createLegacyBackupServerError(
+				LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.backupCodeLockLost,
+				409
+			);
 		}
 		if (checkBackupCodeLockTimeoutError(error)) {
 			return createLegacyBackupServerError(
-				'backup-code-lock-timeout',
+				LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.backupCodeLockTimeout,
 				409
 			);
 		}
@@ -356,7 +389,7 @@ export async function fetchLegacyBackupMetadata({
 	const record = await getRecord(code);
 	if (record.status === 404) {
 		return createLegacyBackupServerError(
-			'The file record does not exist or has been deleted',
+			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.fileRecordMissing,
 			404
 		);
 	}
@@ -374,7 +407,10 @@ export async function downloadLegacyBackupData({
 	ip: string | null;
 }): Promise<TLegacyBackupDownloadResult> {
 	if (ip === null) {
-		return createLegacyBackupServerError('Invalid IP address', 400);
+		return createLegacyBackupServerError(
+			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidIpAddress,
+			400
+		);
 	}
 
 	const now = Date.now();
@@ -397,7 +433,10 @@ export async function downloadLegacyBackupData({
 		{ ip }
 	);
 	if (recentRecord.status === 429) {
-		return createLegacyBackupServerError('Requests are too frequent', 429);
+		return createLegacyBackupServerError(
+			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.requestsTooFrequent,
+			429
+		);
 	}
 
 	try {
@@ -407,7 +446,7 @@ export async function downloadLegacyBackupData({
 
 			if (record.status === 404) {
 				return createLegacyBackupServerError(
-					'The file record does not exist or has been deleted',
+					LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.fileRecordMissing,
 					404
 				);
 			}
@@ -419,13 +458,13 @@ export async function downloadLegacyBackupData({
 			} catch (error) {
 				if (checkBackupCodeLockLostError(error)) {
 					return createLegacyBackupServerError(
-						'backup-code-lock-lost',
+						LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.backupCodeLockLost,
 						409
 					);
 				}
 				if (checkBackupFileNotFoundError(error)) {
 					return createLegacyBackupServerError(
-						'The file does not exist or has been deleted',
+						LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.fileMissing,
 						404
 					);
 				}
@@ -435,7 +474,7 @@ export async function downloadLegacyBackupData({
 					errorCode: getLogSafeErrorCode(error),
 				});
 				return createLegacyBackupServerError(
-					'Failed to read file',
+					LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.fileReadFailed,
 					500
 				);
 			}
@@ -446,7 +485,7 @@ export async function downloadLegacyBackupData({
 			);
 			if (timeoutResult.status !== 200) {
 				return createLegacyBackupServerError(
-					'Failed to update record timeout',
+					LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.fileRecordTimeoutUpdateFailed,
 					500
 				);
 			}
@@ -455,11 +494,14 @@ export async function downloadLegacyBackupData({
 		});
 	} catch (error) {
 		if (checkBackupCodeLockLostError(error)) {
-			return createLegacyBackupServerError('backup-code-lock-lost', 409);
+			return createLegacyBackupServerError(
+				LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.backupCodeLockLost,
+				409
+			);
 		}
 		if (checkBackupCodeLockTimeoutError(error)) {
 			return createLegacyBackupServerError(
-				'backup-code-lock-timeout',
+				LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.backupCodeLockTimeout,
 				409
 			);
 		}
@@ -505,7 +547,7 @@ export async function deleteLegacyBackupData({
 
 			if (record.status === 404) {
 				return createLegacyBackupServerError(
-					'The file record does not exist or has been deleted',
+					LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.fileRecordMissing,
 					404
 				);
 			}
@@ -522,13 +564,13 @@ export async function deleteLegacyBackupData({
 			} catch (error) {
 				if (checkBackupCodeLockLostError(error)) {
 					return createLegacyBackupServerError(
-						'backup-code-lock-lost',
+						LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.backupCodeLockLost,
 						409
 					);
 				}
 				if (checkBackupCodeLockTimeoutError(error)) {
 					return createLegacyBackupServerError(
-						'backup-code-lock-timeout',
+						LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.backupCodeLockTimeout,
 						409
 					);
 				}
@@ -539,7 +581,7 @@ export async function deleteLegacyBackupData({
 				});
 
 				return createLegacyBackupServerError(
-					'Failed to delete record',
+					LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.fileRecordDeleteFailed,
 					500
 				);
 			}
@@ -559,18 +601,22 @@ export async function deleteLegacyBackupData({
 			return {
 				data: {
 					deletedFile,
-					message: 'The file record has been deleted',
+					message:
+						LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.fileRecordDeleted,
 				},
 				status: 'ok',
 			};
 		});
 	} catch (error) {
 		if (checkBackupCodeLockLostError(error)) {
-			return createLegacyBackupServerError('backup-code-lock-lost', 409);
+			return createLegacyBackupServerError(
+				LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.backupCodeLockLost,
+				409
+			);
 		}
 		if (checkBackupCodeLockTimeoutError(error)) {
 			return createLegacyBackupServerError(
-				'backup-code-lock-timeout',
+				LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.backupCodeLockTimeout,
 				409
 			);
 		}

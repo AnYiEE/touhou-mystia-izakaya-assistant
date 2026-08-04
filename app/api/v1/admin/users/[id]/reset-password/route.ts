@@ -6,6 +6,7 @@ import {
 	checkAdminFeatureRouteResponse,
 	createAdminAuthErrorRouteResponse,
 } from '@/features/account/admin/server/http/routeResponses';
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import type { IAdminResetPasswordBody } from '@/features/account/contracts';
 import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
@@ -15,6 +16,7 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -75,12 +77,18 @@ export async function POST(
 	const bodyResult =
 		await readJsonBodyResult<IAdminResetPasswordBody>(request);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (typeof body?.password !== 'string') {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const [passwordModule, resetPasswordModule] = await Promise.all([
@@ -89,7 +97,10 @@ export async function POST(
 	]);
 
 	if (!passwordModule.checkPasswordPolicy(body.password)) {
-		return createNoStoreErrorResponse('invalid-password-rule', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.invalidPasswordRule,
+			400
+		);
 	}
 	const result = await resetPasswordModule.resetUserPassword({
 		actorId: auth.actorId,
@@ -107,5 +118,7 @@ export async function POST(
 					: 500
 		);
 	}
-	return createNoStoreJsonResponse({ message: 'password-reset' });
+	return createNoStoreJsonResponse({
+		message: ACCOUNT_API_RESPONSE_CODE_MAP.passwordReset,
+	});
 }

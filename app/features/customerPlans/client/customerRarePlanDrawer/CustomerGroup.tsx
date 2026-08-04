@@ -38,6 +38,7 @@ import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import MealRow from './MealRow';
+import { CUSTOMER_RARE_PLAN_RECOMMENDATION_MESSAGE_MAP } from './copy';
 import {
 	isCustomerGroupToggleGuarded,
 	isCustomerRarePlanInteractiveTarget,
@@ -259,22 +260,25 @@ export default function CustomerGroup({
 		isRecommendedMealsLoading &&
 		checkLengthEmpty(displayMeals);
 	const recommendedStatusNotice = isRecommendedMealsLoading
-		? { className: 'text-foreground-500', text: '正在生成更多推荐套餐…' }
+		? {
+				className: 'text-foreground-500',
+				text: CUSTOMER_RARE_PLAN_RECOMMENDATION_MESSAGE_MAP.loadingMore,
+			}
 		: isRecommendedMealsError
 			? {
 					className: 'text-danger-600',
-					text: '部分推荐套餐生成失败，收起后可重试',
+					text: CUSTOMER_RARE_PLAN_RECOMMENDATION_MESSAGE_MAP.partialFailure,
 				}
 			: null;
 	const mealCountLabel = isRecommendedSource
 		? checkLengthEmpty(displayMeals)
 			? isRecommendedMealsPending
-				? '生成中'
+				? CUSTOMER_RARE_PLAN_RECOMMENDATION_MESSAGE_MAP.pending
 				: isRecommendedMealsError
-					? '生成失败'
+					? CUSTOMER_RARE_PLAN_RECOMMENDATION_MESSAGE_MAP.failed
 					: isRecommendedMealsComplete
 						? '0个套餐'
-						: '自动推荐'
+						: CUSTOMER_RARE_PLAN_RECOMMENDATION_MESSAGE_MAP.automatic
 			: isRecommendedFilterActive
 				? `${filteredDisplayMeals.length}/${activeRecommendedSetMeals.length}个套餐`
 				: `${activeRecommendedSetMeals.length}个套餐`
@@ -622,12 +626,16 @@ export default function CustomerGroup({
 								)}
 							{isRecommendedMealsPending ? (
 								<Placeholder className="rounded-small border border-dashed border-default-200/80 bg-background/35 px-3 py-5 text-small dark:bg-default-50/5">
-									正在生成推荐套餐
+									{
+										CUSTOMER_RARE_PLAN_RECOMMENDATION_MESSAGE_MAP.loading
+									}
 								</Placeholder>
 							) : isRecommendedMealsError &&
 							  checkLengthEmpty(filteredDisplayMeals) ? (
 								<Placeholder className="rounded-small border border-dashed border-default-200/80 bg-background/35 px-3 py-5 text-small dark:bg-default-50/5">
-									推荐套餐生成失败，请收起后重试
+									{
+										CUSTOMER_RARE_PLAN_RECOMMENDATION_MESSAGE_MAP.totalFailure
+									}
 								</Placeholder>
 							) : checkLengthEmpty(filteredDisplayMeals) ? (
 								<Placeholder className="space-y-3 rounded-small border border-dashed border-default-200/80 bg-background/35 px-3 py-5 text-small dark:bg-default-50/5">
@@ -635,9 +643,9 @@ export default function CustomerGroup({
 										<p>
 											{isRecommendedFilterActive
 												? isRecommendedMealsComplete
-													? '暂无符合当前筛选的推荐套餐'
-													: '正在生成更多推荐套餐，稍后可能出现符合筛选的结果'
-												: '暂无匹配的推荐套餐'}
+													? CUSTOMER_RARE_PLAN_RECOMMENDATION_MESSAGE_MAP.filteredEmpty
+													: CUSTOMER_RARE_PLAN_RECOMMENDATION_MESSAGE_MAP.filteredPending
+												: CUSTOMER_RARE_PLAN_RECOMMENDATION_MESSAGE_MAP.noMatch}
 										</p>
 									) : (
 										<>

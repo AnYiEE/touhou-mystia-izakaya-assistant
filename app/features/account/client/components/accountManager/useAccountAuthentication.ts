@@ -46,12 +46,11 @@ import {
 	type TAccountAuthContext,
 	handleUnauthorizedAccountError,
 } from './controller';
+import { ACCOUNT_MANAGER_MESSAGE_MAP } from './copy';
 import { type IUseAccountPasskeysResult } from './useAccountPasskeys';
 
 type TAuthMode = 'login' | 'register';
 export type TAuthEntryMode = 'passkey' | 'password';
-const AUTH_TERMS_REQUIRED_MESSAGE = '请先阅读并同意法律声明';
-
 interface IUseAccountAuthenticationOptions {
 	bootstrapStatus: ReturnType<typeof accountStore.shared.bootstrapStatus.get>;
 	controller: IAccountActionController;
@@ -256,12 +255,14 @@ export function useAccountAuthentication({
 		}
 
 		if (normalizedUsername.length === 0 || password.length === 0) {
-			setMessage('请输入用户名和密码');
+			setMessage(
+				ACCOUNT_MANAGER_MESSAGE_MAP.authenticationCredentialsRequired
+			);
 			return;
 		}
 		if (!hasAcceptedAuthTerms) {
 			setShouldHighlightAuthTerms(true);
-			setMessage(AUTH_TERMS_REQUIRED_MESSAGE);
+			setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.termsRequired);
 			return;
 		}
 		if (authMode === 'register' && !checkPasswordPolicy(password)) {
@@ -311,7 +312,11 @@ export function useAccountAuthentication({
 				}
 
 				setPassword('');
-				setMessage(authMode === 'login' ? '登录成功' : '注册成功');
+				setMessage(
+					authMode === 'login'
+						? ACCOUNT_MANAGER_MESSAGE_MAP.loginSuccess
+						: ACCOUNT_MANAGER_MESSAGE_MAP.registrationSuccess
+				);
 
 				void publishAccountRuntimeInvalidation({
 					reason: 'login',
@@ -348,7 +353,11 @@ export function useAccountAuthentication({
 				});
 			})
 			.catch((error: unknown) => {
-				setMessage(error instanceof Error ? error.message : '认证失败');
+				setMessage(
+					error instanceof Error
+						? error.message
+						: ACCOUNT_MANAGER_MESSAGE_MAP.authenticationFailed
+				);
 			})
 			.finally(() => {
 				setIsSubmitting(false);
@@ -415,7 +424,7 @@ export function useAccountAuthentication({
 
 		if (!hasAcceptedAuthTerms) {
 			setShouldHighlightAuthTerms(true);
-			setMessage(AUTH_TERMS_REQUIRED_MESSAGE);
+			setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.termsRequired);
 			return;
 		}
 
@@ -450,7 +459,7 @@ export function useAccountAuthentication({
 			if (checked) {
 				setShouldHighlightAuthTerms(false);
 				setMessage((currentMessage) =>
-					currentMessage === AUTH_TERMS_REQUIRED_MESSAGE
+					currentMessage === ACCOUNT_MANAGER_MESSAGE_MAP.termsRequired
 						? null
 						: currentMessage
 				);
@@ -518,7 +527,7 @@ export function useAccountAuthentication({
 				return;
 			}
 
-			setMessage('登录成功');
+			setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.loginSuccess);
 
 			void publishAccountRuntimeInvalidation({
 				reason: 'login',
@@ -606,7 +615,11 @@ export function useAccountAuthentication({
 					return;
 				}
 
-				setMessage(error instanceof Error ? error.message : '认证失败');
+				setMessage(
+					error instanceof Error
+						? error.message
+						: ACCOUNT_MANAGER_MESSAGE_MAP.authenticationFailed
+				);
 			});
 	}, [handleWebAuthnLoginResult, isWebauthnAutofillLoginReady, setMessage]);
 
@@ -657,7 +670,7 @@ export function useAccountAuthentication({
 
 		if (!hasAcceptedAuthTerms) {
 			setShouldHighlightAuthTerms(true);
-			setMessage(AUTH_TERMS_REQUIRED_MESSAGE);
+			setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.termsRequired);
 			return;
 		}
 
@@ -703,7 +716,11 @@ export function useAccountAuthentication({
 					return;
 				}
 
-				setMessage(error instanceof Error ? error.message : '认证失败');
+				setMessage(
+					error instanceof Error
+						? error.message
+						: ACCOUNT_MANAGER_MESSAGE_MAP.authenticationFailed
+				);
 			})
 			.finally(() => {
 				clearTimeout(slowTimerId);
@@ -728,7 +745,7 @@ export function useAccountAuthentication({
 
 		if (!hasAcceptedAuthTerms) {
 			setShouldHighlightAuthTerms(true);
-			setMessage(AUTH_TERMS_REQUIRED_MESSAGE);
+			setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.termsRequired);
 			return;
 		}
 
@@ -775,7 +792,7 @@ export function useAccountAuthentication({
 
 				setPassword('');
 				setIsPasskeyRegistrationPromptVisible(false);
-				setMessage('注册成功');
+				setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.registrationSuccess);
 
 				void publishAccountRuntimeInvalidation({
 					reason: 'login',
@@ -816,7 +833,11 @@ export function useAccountAuthentication({
 					return;
 				}
 
-				setMessage(error instanceof Error ? error.message : '注册失败');
+				setMessage(
+					error instanceof Error
+						? error.message
+						: ACCOUNT_MANAGER_MESSAGE_MAP.registrationFailed
+				);
 			})
 			.finally(() => {
 				clearTimeout(slowTimerId);

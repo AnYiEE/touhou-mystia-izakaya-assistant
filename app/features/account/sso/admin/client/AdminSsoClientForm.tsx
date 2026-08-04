@@ -36,6 +36,11 @@ import type {
 	IAdminSsoClientFormInitialData,
 	TAdminSsoClientApiResult,
 } from '@/features/account/sso/admin/contracts';
+import {
+	ADMIN_SSO_CLIENT_SECRET_STATUS_LABEL_MAP,
+	ADMIN_SSO_CLIENT_STATUS_LABEL_MAP,
+	ADMIN_SSO_MESSAGE_MAP,
+} from '@/features/account/sso/admin/copy';
 import { fetchAdminMe } from '@/features/admin/client/api';
 import { AdminConfirmButton } from '@/features/admin/client/components/confirmation';
 import {
@@ -63,6 +68,10 @@ import {
 	clearAdminSession,
 	isAdminSessionInvalidResult,
 } from '@/features/admin/client/session';
+import {
+	ADMIN_MESSAGE_MAP,
+	ADMIN_STATUS_LABEL_MAP,
+} from '@/features/admin/copy';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
 import { checkOrderedArrayEqual } from '@/shared/utilities/collections/check';
@@ -158,14 +167,7 @@ function createSecretDisplayName(secret: IAdminSsoClientSecretRecord) {
 }
 
 function createSecretStatusText(secret: IAdminSsoClientSecretRecord) {
-	if (secret.status === 'revoked') {
-		return '已撤销';
-	}
-	if (secret.status === 'disabled') {
-		return '已禁用';
-	}
-
-	return '可用';
+	return ADMIN_SSO_CLIENT_SECRET_STATUS_LABEL_MAP[secret.status];
 }
 
 function AdminSecretStatusBadge({
@@ -377,7 +379,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 
 	const handleUnauthorized = useCallback(() => {
 		clearPageData();
-		setMessage('管理员登录已失效，请重新登录');
+		setMessage(ADMIN_MESSAGE_MAP.adminSessionExpired);
 	}, [clearPageData]);
 
 	const applySecretMutationResult = useCallback(
@@ -467,7 +469,9 @@ export default memo<IProps>(function AdminSsoClientForm({
 					return;
 				}
 				setLoadError(
-					error instanceof Error ? error.message : '读取SSO客户端失败'
+					error instanceof Error
+						? error.message
+						: ADMIN_SSO_MESSAGE_MAP.clientReadFailed
 				);
 			})
 			.finally(() => {
@@ -521,7 +525,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '读取SSO客户端Secret失败'
+						: ADMIN_SSO_MESSAGE_MAP.clientSecretReadFailed
 				);
 			})
 			.finally(() => {
@@ -562,7 +566,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '读取管理员状态失败'
+						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
 			})
 			.finally(() => {
@@ -611,8 +615,8 @@ export default memo<IProps>(function AdminSsoClientForm({
 					applyMutationResult(
 						result,
 						isEditMode
-							? 'SSO客户端已保存'
-							: 'SSO客户端已创建，请保存本次显示的客户端Secret'
+							? ADMIN_SSO_MESSAGE_MAP.clientSavedOnly
+							: ADMIN_SSO_MESSAGE_MAP.clientCreatedSaveSecret
 					);
 					return;
 				}
@@ -634,9 +638,9 @@ export default memo<IProps>(function AdminSsoClientForm({
 					result,
 					changedSecretLabels.length === 0
 						? isEditMode
-							? 'SSO客户端已保存'
-							: 'SSO客户端已创建，请保存本次显示的客户端Secret'
-						: 'SSO客户端已保存，正在保存Secret备注'
+							? ADMIN_SSO_MESSAGE_MAP.clientSavedOnly
+							: ADMIN_SSO_MESSAGE_MAP.clientCreatedSaveSecret
+						: ADMIN_SSO_MESSAGE_MAP.clientSavedSavingSecret
 				);
 
 				if (changedSecretLabels.length === 0) {
@@ -674,7 +678,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					}));
 				}
 
-				setMessage('SSO客户端和Secret备注已保存');
+				setMessage(ADMIN_SSO_MESSAGE_MAP.clientSaved);
 			})
 			.catch((error: unknown) => {
 				if (mutationGenerationRef.current !== mutationGeneration) {
@@ -683,7 +687,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '保存SSO客户端或Secret备注失败'
+						: ADMIN_SSO_MESSAGE_MAP.clientSaveFailed
 				);
 			})
 			.finally(() => {
@@ -770,7 +774,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '生成SSO客户端Secret失败'
+						: ADMIN_SSO_MESSAGE_MAP.clientSecretGenerateFailed
 				);
 			})
 			.finally(() => {
@@ -854,8 +858,8 @@ export default memo<IProps>(function AdminSsoClientForm({
 					applySecretMutationResult(
 						result,
 						disabled
-							? 'SSO客户端Secret已禁用'
-							: 'SSO客户端Secret已启用'
+							? ADMIN_SSO_MESSAGE_MAP.clientSecretDisabled
+							: ADMIN_SSO_MESSAGE_MAP.clientSecretEnabled
 					);
 				})
 				.catch((error: unknown) => {
@@ -865,7 +869,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '更新SSO客户端Secret状态失败'
+							: ADMIN_SSO_MESSAGE_MAP.clientSecretStatusUpdateFailed
 					);
 				})
 				.finally(() => {
@@ -916,7 +920,10 @@ export default memo<IProps>(function AdminSsoClientForm({
 					if (mutationGenerationRef.current !== mutationGeneration) {
 						return;
 					}
-					applySecretMutationResult(result, 'SSO客户端Secret已撤销');
+					applySecretMutationResult(
+						result,
+						ADMIN_SSO_MESSAGE_MAP.clientSecretRevoked
+					);
 				})
 				.catch((error: unknown) => {
 					if (mutationGenerationRef.current !== mutationGeneration) {
@@ -925,7 +932,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '撤销SSO客户端Secret失败'
+							: ADMIN_SSO_MESSAGE_MAP.clientSecretRevokeFailed
 					);
 				})
 				.finally(() => {
@@ -981,7 +988,9 @@ export default memo<IProps>(function AdminSsoClientForm({
 				}
 				applyMutationResult(
 					result,
-					shouldDisableClient ? 'SSO客户端已禁用' : 'SSO客户端已启用'
+					shouldDisableClient
+						? ADMIN_MESSAGE_MAP.ssoClientDisabled
+						: ADMIN_SSO_MESSAGE_MAP.clientEnabled
 				);
 			})
 			.catch((error: unknown) => {
@@ -991,7 +1000,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '更新SSO客户端状态失败'
+						: ADMIN_SSO_MESSAGE_MAP.clientStatusUpdateFailed
 				);
 			})
 			.finally(() => {
@@ -1041,7 +1050,9 @@ export default memo<IProps>(function AdminSsoClientForm({
 					return;
 				}
 				setMessage(
-					error instanceof Error ? error.message : '删除SSO客户端失败'
+					error instanceof Error
+						? error.message
+						: ADMIN_SSO_MESSAGE_MAP.clientDeleteFailed
 				);
 			})
 			.finally(() => {
@@ -1196,8 +1207,8 @@ export default memo<IProps>(function AdminSsoClientForm({
 		return (
 			<AdminLoadingState
 				icon={faServer}
-				label="读取会话状态"
-				subtitle="正在校验管理员会话"
+				label={ADMIN_STATUS_LABEL_MAP.sessionReading}
+				subtitle={ADMIN_MESSAGE_MAP.adminSessionChecking}
 				title={title}
 			/>
 		);
@@ -1213,7 +1224,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 						</AdminHeaderActionLink>
 					}
 					icon={faServer}
-					subtitle={message ?? '请先返回管理员页登录'}
+					subtitle={message ?? ADMIN_MESSAGE_MAP.adminSignInRequired}
 					title={title}
 				/>
 			</AdminShell>
@@ -1225,10 +1236,12 @@ export default memo<IProps>(function AdminSsoClientForm({
 			<AdminShell>
 				<AdminHeader
 					icon={faServer}
-					subtitle="正在读取SSO客户端配置"
+					subtitle={ADMIN_SSO_MESSAGE_MAP.clientConfigReading}
 					title={title}
 				/>
-				<AdminEmptyState icon={faRotate}>读取中</AdminEmptyState>
+				<AdminEmptyState icon={faRotate}>
+					{ADMIN_STATUS_LABEL_MAP.reading}
+				</AdminEmptyState>
 			</AdminShell>
 		);
 	}
@@ -1250,7 +1263,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					title={title}
 				/>
 				<AdminEmptyState icon={faServer}>
-					读取SSO客户端失败
+					{ADMIN_SSO_MESSAGE_MAP.clientReadFailed}
 				</AdminEmptyState>
 				<Button
 					color="primary"
@@ -1266,7 +1279,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					variant="flat"
 					onPress={refreshClient}
 				>
-					重试
+					{ADMIN_STATUS_LABEL_MAP.retry}
 				</Button>
 			</AdminShell>
 		);
@@ -1381,7 +1394,9 @@ export default memo<IProps>(function AdminSsoClientForm({
 							)}
 						>
 							<div className="font-medium">
-								{isClientDisabled ? '已禁用' : '已启用'}
+								{isClientDisabled
+									? ADMIN_SSO_CLIENT_STATUS_LABEL_MAP.disabled
+									: ADMIN_SSO_CLIENT_STATUS_LABEL_MAP.active}
 							</div>
 							<div className="text-tiny opacity-80">
 								{isClientDisabled
@@ -1503,8 +1518,8 @@ export default memo<IProps>(function AdminSsoClientForm({
 							{secrets.length === 0 ? (
 								<AdminEmptyState icon={faKey}>
 									{isSecretLoading
-										? '读取中'
-										: '暂无客户端Secret'}
+										? ADMIN_STATUS_LABEL_MAP.reading
+										: ADMIN_SSO_MESSAGE_MAP.clientSecretsEmpty}
 								</AdminEmptyState>
 							) : (
 								<div className="grid min-w-0 gap-3">
@@ -1517,7 +1532,11 @@ export default memo<IProps>(function AdminSsoClientForm({
 							<AdminPanelTitle icon={faKey}>
 								客户端Secret
 							</AdminPanelTitle>
-							<AdminMessage message="创建后会显示一次客户端Secret，后台仅展示Secret元数据和Hash前缀" />
+							<AdminMessage
+								message={
+									ADMIN_SSO_MESSAGE_MAP.clientSecretCreationNotice
+								}
+							/>
 						</>
 					)}
 				</AdminPanel>

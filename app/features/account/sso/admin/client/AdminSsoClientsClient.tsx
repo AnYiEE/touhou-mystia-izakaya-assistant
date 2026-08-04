@@ -29,6 +29,13 @@ import type {
 	IAdminSsoClientListData,
 } from '@/features/account/contracts';
 import type { IAdminSsoClientsInitialData } from '@/features/account/sso/admin/contracts';
+import {
+	ADMIN_SSO_CALLBACK_CONFIGURATION_FILTER_OPTIONS,
+	ADMIN_SSO_CALLBACK_CONFIGURATION_LABEL_MAP,
+	ADMIN_SSO_CLIENT_STATUS_FILTER_OPTIONS,
+	ADMIN_SSO_GRANT_PRESENCE_FILTER_OPTIONS,
+	ADMIN_SSO_MESSAGE_MAP,
+} from '@/features/account/sso/admin/copy';
 import { fetchAdminMe } from '@/features/admin/client/api';
 import {
 	AdminEmptyState,
@@ -71,6 +78,10 @@ import {
 	clearAdminSession,
 	isAdminSessionInvalidResult,
 } from '@/features/admin/client/session';
+import {
+	ADMIN_MESSAGE_MAP,
+	ADMIN_STATUS_LABEL_MAP,
+} from '@/features/admin/copy';
 import { createAdminHref } from '@/features/admin/navigation';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
@@ -87,24 +98,6 @@ type TCallbackFilter = '' | 'configured' | 'missing';
 type TGrantFilter = '' | 'has' | 'none';
 
 const pageInputRegexp = /^\d*$/u;
-
-const clientStatusOptions = [
-	{ label: '全部状态', value: '' },
-	{ label: '已启用', value: 'active' },
-	{ label: '已禁用', value: 'disabled' },
-] as const;
-
-const callbackOptions = [
-	{ label: '全部Callback', value: '' },
-	{ label: '已配置Callback', value: 'configured' },
-	{ label: '未配置Callback', value: 'missing' },
-] as const;
-
-const grantOptions = [
-	{ label: '全部授权', value: '' },
-	{ label: '已有授权', value: 'has' },
-	{ label: '暂无授权', value: 'none' },
-] as const;
 
 interface IAdminSsoClientsClientProps {
 	initialData: IAdminSsoClientsInitialData;
@@ -151,10 +144,10 @@ const AdminSsoClientRow = memo<{
 			</AdminTableCell>
 			<AdminTableCell isNowrap>
 				{client.status_callback_url === null
-					? '无'
+					? ADMIN_SSO_CALLBACK_CONFIGURATION_LABEL_MAP.missing
 					: isDisabled
-						? '已暂停'
-						: '已配置'}
+						? ADMIN_SSO_CALLBACK_CONFIGURATION_LABEL_MAP.paused
+						: ADMIN_SSO_CALLBACK_CONFIGURATION_LABEL_MAP.configured}
 			</AdminTableCell>
 			<AdminTableCell isNowrap>
 				{createAdminDateTimeText(client.last_secret_used_at)}
@@ -297,7 +290,7 @@ export default function AdminSsoClientsClient({
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '读取SSO客户端失败'
+							: ADMIN_SSO_MESSAGE_MAP.clientReadFailed
 					);
 				})
 				.finally(() => {
@@ -340,7 +333,7 @@ export default function AdminSsoClientsClient({
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '读取管理员状态失败'
+						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
 			})
 			.finally(() => {
@@ -480,8 +473,8 @@ export default function AdminSsoClientsClient({
 		return (
 			<AdminLoadingState
 				icon={faShieldHalved}
-				label="读取会话状态"
-				subtitle="正在校验管理员会话"
+				label={ADMIN_STATUS_LABEL_MAP.sessionReading}
+				subtitle={ADMIN_MESSAGE_MAP.adminSessionChecking}
 				title="SSO客户端"
 			/>
 		);
@@ -497,7 +490,7 @@ export default function AdminSsoClientsClient({
 						</AdminHeaderActionLink>
 					}
 					icon={faShieldHalved}
-					subtitle={message ?? '请先返回管理员页登录'}
+					subtitle={message ?? ADMIN_MESSAGE_MAP.adminSignInRequired}
 					title="SSO客户端"
 				/>
 			</AdminShell>
@@ -546,7 +539,7 @@ export default function AdminSsoClientsClient({
 					label="启用客户端"
 					value={
 						clients === null
-							? '读取中'
+							? ADMIN_STATUS_LABEL_MAP.reading
 							: clients.metrics.active_client_count
 					}
 				/>
@@ -554,7 +547,7 @@ export default function AdminSsoClientsClient({
 					label="已禁用"
 					value={
 						clients === null
-							? '读取中'
+							? ADMIN_STATUS_LABEL_MAP.reading
 							: clients.metrics.disabled_client_count
 					}
 				/>
@@ -562,7 +555,7 @@ export default function AdminSsoClientsClient({
 					label="有效授权"
 					value={
 						clients === null
-							? '读取中'
+							? ADMIN_STATUS_LABEL_MAP.reading
 							: clients.metrics.active_grant_count
 					}
 				/>
@@ -570,7 +563,7 @@ export default function AdminSsoClientsClient({
 					label="待投递Callback"
 					value={
 						clients === null
-							? '读取中'
+							? ADMIN_STATUS_LABEL_MAP.reading
 							: clients.metrics.pending_callback_count
 					}
 				/>
@@ -578,7 +571,7 @@ export default function AdminSsoClientsClient({
 					label="失败Callback"
 					value={
 						clients === null
-							? '读取中'
+							? ADMIN_STATUS_LABEL_MAP.reading
 							: clients.metrics.failed_callback_count
 					}
 				/>
@@ -586,7 +579,7 @@ export default function AdminSsoClientsClient({
 					label="未消费Ticket"
 					value={
 						clients === null
-							? '读取中'
+							? ADMIN_STATUS_LABEL_MAP.reading
 							: clients.metrics.pending_ticket_count
 					}
 				/>
@@ -602,19 +595,19 @@ export default function AdminSsoClientsClient({
 				/>
 				<AdminDropdownFilter
 					ariaLabel="筛选客户端状态"
-					options={clientStatusOptions}
+					options={ADMIN_SSO_CLIENT_STATUS_FILTER_OPTIONS}
 					value={statusFilter}
 					onAction={handleStatusAction}
 				/>
 				<AdminDropdownFilter
 					ariaLabel="筛选Callback配置"
-					options={callbackOptions}
+					options={ADMIN_SSO_CALLBACK_CONFIGURATION_FILTER_OPTIONS}
 					value={callbackFilter}
 					onAction={handleCallbackAction}
 				/>
 				<AdminDropdownFilter
 					ariaLabel="筛选授权状态"
-					options={grantOptions}
+					options={ADMIN_SSO_GRANT_PRESENCE_FILTER_OPTIONS}
 					value={grantFilter}
 					onAction={handleGrantAction}
 				/>
@@ -630,7 +623,7 @@ export default function AdminSsoClientsClient({
 
 			{clients === null ? (
 				<AdminEmptyState icon={faClock}>
-					正在读取SSO客户端
+					{ADMIN_SSO_MESSAGE_MAP.clientListReading}
 				</AdminEmptyState>
 			) : clients.clients.length === 0 ? (
 				<AdminEmptyState icon={faServer}>暂无SSO客户端</AdminEmptyState>

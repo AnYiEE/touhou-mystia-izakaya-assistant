@@ -7,12 +7,15 @@ import {
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
+import { ANNOUNCEMENT_API_RESPONSE_CODE_MAP } from '@/features/announcements/apiResponseCodes';
 import {
 	ANNOUNCEMENT_DISMISSED_COOKIE_NAME,
 	parseAnnouncementDismissedCookieValue,
 } from '@/features/announcements/dismissals';
 import { ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP } from '@/features/announcements/server/http/serviceErrorStatus';
 
+import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -81,7 +84,7 @@ export async function GET(request: NextRequest) {
 		console.warn('Failed to read announcements API.', {
 			errorCode: getLogSafeErrorCode(error),
 		});
-		return createNoStoreErrorResponse('server-misconfigured', 500);
+		return createNoStoreErrorResponse(SERVER_MISCONFIGURED_MESSAGE, 500);
 	}
 }
 
@@ -110,7 +113,10 @@ export async function POST(request: NextRequest) {
 		typeof body.updatedAt !== 'number' ||
 		!Number.isSafeInteger(body.updatedAt)
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
@@ -129,10 +135,15 @@ export async function POST(request: NextRequest) {
 	]);
 	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
-		return createNoStoreJsonResponse({ message: 'announcement-dismissed' });
+		return createNoStoreJsonResponse({
+			message: ANNOUNCEMENT_API_RESPONSE_CODE_MAP.dismissed,
+		});
 	}
 	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
-		return createNoStoreErrorResponse('forbidden', 403);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.forbidden,
+			403
+		);
 	}
 
 	const [announcementModule, sessionsModule] = await Promise.all([
@@ -147,7 +158,9 @@ export async function POST(request: NextRequest) {
 		sessionsModule.lockActiveUserSessionInTransaction
 	);
 	if (result.status === 'unauthorized') {
-		return createNoStoreJsonResponse({ message: 'announcement-dismissed' });
+		return createNoStoreJsonResponse({
+			message: ANNOUNCEMENT_API_RESPONSE_CODE_MAP.dismissed,
+		});
 	}
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(

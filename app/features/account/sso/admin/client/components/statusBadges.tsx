@@ -8,6 +8,13 @@ import type {
 	TAdminSsoCallbackQueueStatus,
 	TAdminSsoTicketStatus,
 } from '@/features/account/contracts';
+import {
+	ADMIN_SSO_CALLBACK_DELIVERY_STATUS_LABEL_MAP,
+	ADMIN_SSO_CALLBACK_EVENT_LABEL_MAP,
+	ADMIN_SSO_CALLBACK_QUEUE_STATUS_LABEL_MAP,
+	ADMIN_SSO_CLIENT_STATUS_LABEL_MAP,
+	ADMIN_SSO_TICKET_STATUS_LABEL_MAP,
+} from '@/features/account/sso/admin/copy';
 import { AdminBadge } from '@/features/admin/client/components/statusBadges';
 
 interface IAdminSsoClientStatusBadgeProps {
@@ -20,28 +27,15 @@ export const AdminSsoClientStatusBadge = memo<IAdminSsoClientStatusBadgeProps>(
 
 		return (
 			<AdminBadge tone={isDisabled ? 'warning' : 'success'}>
-				{isDisabled ? '已禁用' : '已启用'}
+				{isDisabled
+					? ADMIN_SSO_CLIENT_STATUS_LABEL_MAP.disabled
+					: ADMIN_SSO_CLIENT_STATUS_LABEL_MAP.active}
 			</AdminBadge>
 		);
 	}
 );
 export function getAdminSsoCallbackEventLabel(event: TAdminSsoCallbackEvent) {
-	switch (event) {
-		case 'client_deleted':
-			return '客户端删除';
-		case 'client_disabled':
-			return '客户端禁用';
-		case 'grant_revoked':
-			return '授权撤销';
-		case 'secret_rotated':
-			return 'Secret轮换';
-		case 'user_deleted':
-			return '用户删除';
-		case 'user_disabled':
-			return '用户禁用';
-		case 'user_profile_updated':
-			return '资料更新';
-	}
+	return ADMIN_SSO_CALLBACK_EVENT_LABEL_MAP[event];
 }
 
 export const AdminSsoCallbackQueueStatusBadge = memo<{
@@ -49,11 +43,23 @@ export const AdminSsoCallbackQueueStatusBadge = memo<{
 }>(function AdminSsoCallbackQueueStatusBadge({ status }) {
 	switch (status) {
 		case 'final_failed':
-			return <AdminBadge tone="danger">最终失败</AdminBadge>;
+			return (
+				<AdminBadge tone="danger">
+					{ADMIN_SSO_CALLBACK_QUEUE_STATUS_LABEL_MAP.final_failed}
+				</AdminBadge>
+			);
 		case 'pending':
-			return <AdminBadge tone="primary">待投递</AdminBadge>;
+			return (
+				<AdminBadge tone="primary">
+					{ADMIN_SSO_CALLBACK_QUEUE_STATUS_LABEL_MAP.pending}
+				</AdminBadge>
+			);
 		case 'retrying':
-			return <AdminBadge tone="warning">重试中</AdminBadge>;
+			return (
+				<AdminBadge tone="warning">
+					{ADMIN_SSO_CALLBACK_QUEUE_STATUS_LABEL_MAP.retrying}
+				</AdminBadge>
+			);
 	}
 });
 
@@ -62,11 +68,23 @@ export const AdminSsoCallbackDeliveryStatusBadge = memo<{
 }>(function AdminSsoCallbackDeliveryStatusBadge({ status }) {
 	switch (status) {
 		case 'failed':
-			return <AdminBadge tone="warning">失败</AdminBadge>;
+			return (
+				<AdminBadge tone="warning">
+					{ADMIN_SSO_CALLBACK_DELIVERY_STATUS_LABEL_MAP.failed}
+				</AdminBadge>
+			);
 		case 'final_failed':
-			return <AdminBadge tone="danger">最终失败</AdminBadge>;
+			return (
+				<AdminBadge tone="danger">
+					{ADMIN_SSO_CALLBACK_DELIVERY_STATUS_LABEL_MAP.final_failed}
+				</AdminBadge>
+			);
 		case 'succeeded':
-			return <AdminBadge tone="success">成功</AdminBadge>;
+			return (
+				<AdminBadge tone="success">
+					{ADMIN_SSO_CALLBACK_DELIVERY_STATUS_LABEL_MAP.succeeded}
+				</AdminBadge>
+			);
 	}
 });
 
@@ -75,12 +93,28 @@ export const AdminSsoTicketStatusBadge = memo<{
 }>(function AdminSsoTicketStatusBadge({ status }) {
 	switch (status) {
 		case 'expired':
-			return <AdminBadge tone="warning">已过期</AdminBadge>;
+			return (
+				<AdminBadge tone="warning">
+					{ADMIN_SSO_TICKET_STATUS_LABEL_MAP.expired}
+				</AdminBadge>
+			);
 		case 'pending':
-			return <AdminBadge tone="primary">未消费</AdminBadge>;
+			return (
+				<AdminBadge tone="primary">
+					{ADMIN_SSO_TICKET_STATUS_LABEL_MAP.pending}
+				</AdminBadge>
+			);
 		case 'revoked':
-			return <AdminBadge tone="danger">已撤销</AdminBadge>;
+			return (
+				<AdminBadge tone="danger">
+					{ADMIN_SSO_TICKET_STATUS_LABEL_MAP.revoked}
+				</AdminBadge>
+			);
 		case 'used':
-			return <AdminBadge tone="success">已消费</AdminBadge>;
+			return (
+				<AdminBadge tone="success">
+					{ADMIN_SSO_TICKET_STATUS_LABEL_MAP.used}
+				</AdminBadge>
+			);
 	}
 });

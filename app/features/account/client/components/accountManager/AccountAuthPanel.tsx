@@ -23,6 +23,7 @@ import {
 	USERNAME_RULE_DESCRIPTION,
 } from '@/features/account/constants';
 
+import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
 import {
 	AccountAuthEntryMotion,
 	AccountCollapseMotion,
@@ -187,8 +188,8 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 														)
 													: isWebauthnLoginPending ||
 														  isWebauthnAccountRegistrationPending
-														? '正在等待系统验证…'
-														: '无需输入密码，按系统提示确认即可')}
+														? ACCOUNT_MANAGER_STATUS_LABEL_MAP.awaitingSystemVerification
+														: ACCOUNT_MANAGER_STATUS_LABEL_MAP.passkeyPrompt)}
 										</p>
 									</div>
 								</div>

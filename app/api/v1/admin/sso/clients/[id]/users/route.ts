@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	getTrimmedSearchParam,
 	parsePositiveIntegerParam,
@@ -43,7 +44,10 @@ export async function GET(
 		MAX_PAGE_SIZE
 	);
 	if (page === null || pageSize === null) {
-		return createNoStoreErrorResponse('invalid-pagination', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidPagination,
+			400
+		);
 	}
 
 	const query = getTrimmedSearchParam(request.nextUrl.searchParams, 'query');

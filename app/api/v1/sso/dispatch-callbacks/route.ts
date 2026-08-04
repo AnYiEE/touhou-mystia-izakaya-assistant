@@ -1,11 +1,13 @@
 import { type NextRequest } from 'next/server';
 
 import { checkAccountFeatureRouteResponse } from '@/features/account/server/http/routeGuards';
+import { ACCOUNT_SSO_API_RESPONSE_CODE_MAP } from '@/features/account/sso/apiResponseCodes';
 import {
 	checkDispatchSecretStatus,
 	checkSsoRateLimitRouteResponse,
 } from '@/features/account/sso/server/http/routeResponses';
 
+import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
 		request.headers.get('x-dispatch-secret')
 	);
 	if (secretStatus === 'misconfigured') {
-		return createNoStoreErrorResponse('server-misconfigured', 500);
+		return createNoStoreErrorResponse(SERVER_MISCONFIGURED_MESSAGE, 500);
 	}
 	if (secretStatus === 'invalid') {
 		const invalidSecretRateLimitResponse = checkSsoRateLimitRouteResponse(
@@ -46,7 +48,10 @@ export async function POST(request: NextRequest) {
 			return invalidSecretRateLimitResponse;
 		}
 
-		return createNoStoreErrorResponse('invalid-secret', 401);
+		return createNoStoreErrorResponse(
+			ACCOUNT_SSO_API_RESPONSE_CODE_MAP.invalidSecret,
+			401
+		);
 	}
 
 	try {
@@ -72,6 +77,6 @@ export async function POST(request: NextRequest) {
 			errorCode: getLogSafeErrorCode(error),
 		});
 
-		return createNoStoreErrorResponse('server-misconfigured', 500);
+		return createNoStoreErrorResponse(SERVER_MISCONFIGURED_MESSAGE, 500);
 	}
 }

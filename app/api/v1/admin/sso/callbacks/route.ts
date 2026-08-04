@@ -4,6 +4,7 @@ import type { TAdminSsoCallbackQueueStatus } from '@/features/account/contracts'
 import { parseAdminSsoCallbackEventQuery } from '@/features/account/sso/admin/server/http/callbackEventQuery';
 import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	getTrimmedSearchParam,
 	parseNonNegativeIntegerParam,
@@ -62,7 +63,10 @@ export async function GET(request: NextRequest) {
 		startTime === null ||
 		endTime === null
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const clientId = getTrimmedSearchParam(
@@ -81,7 +85,10 @@ export async function GET(request: NextRequest) {
 		'user_id'
 	);
 	if (event === null || status === null) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const serviceModule =

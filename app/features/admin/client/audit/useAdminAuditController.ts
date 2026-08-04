@@ -30,6 +30,7 @@ import type {
 	IAdminAuditInitialData,
 	TAdminApiResult,
 } from '@/features/admin/contracts';
+import { ADMIN_MESSAGE_MAP } from '@/features/admin/copy';
 import { createAdminHref } from '@/features/admin/navigation';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
@@ -136,7 +137,7 @@ export function useAdminAuditController(initialData: IAdminAuditInitialData) {
 		(nextPage = page) => {
 			const query = queryInput.trim();
 			if (query !== '' && query.length < ADMIN_AUDIT_MIN_QUERY_LENGTH) {
-				setMessage('搜索关键字至少需要 2 个字符');
+				setMessage(ADMIN_MESSAGE_MAP.auditQueryTooShort);
 				return;
 			}
 
@@ -165,7 +166,7 @@ export function useAdminAuditController(initialData: IAdminAuditInitialData) {
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '读取审计日志失败'
+							: ADMIN_MESSAGE_MAP.auditLogReadFailed
 					);
 				})
 				.finally(() => {
@@ -202,7 +203,7 @@ export function useAdminAuditController(initialData: IAdminAuditInitialData) {
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '读取管理员状态失败'
+						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
 			})
 			.finally(() => {

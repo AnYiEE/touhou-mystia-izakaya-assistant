@@ -12,6 +12,8 @@ import { useDesignPreferences } from '@/design/preferences/DesignPreferencesCont
 import Button, { type IButtonProps } from '@/design/ui/components/button';
 import Placeholder from '@/design/ui/components/placeholder';
 
+import { ADMIN_STATUS_LABEL_MAP } from '@/features/admin/copy';
+
 import { AdminPanel } from './panels';
 import { AdminHeader, AdminHeaderActionButton, AdminShell } from './shell';
 
@@ -87,7 +89,7 @@ export const AdminLoadingState = memo<IAdminLoadingStateProps>(
 				<AdminHeader icon={icon} subtitle={subtitle} title={title} />
 				<AdminPanel className="flex items-center gap-3 text-small text-foreground-500">
 					<Button isLoading variant="flat">
-						加载中
+						{ADMIN_STATUS_LABEL_MAP.loading}
 					</Button>
 					<span>{label}</span>
 				</AdminPanel>
@@ -115,7 +117,7 @@ export const AdminErrorRetryState = memo<IAdminErrorRetryStateProps>(
 							icon={faRotate}
 							onPress={onRetry}
 						>
-							重试
+							{ADMIN_STATUS_LABEL_MAP.retry}
 						</AdminHeaderActionButton>
 					}
 					icon={icon}

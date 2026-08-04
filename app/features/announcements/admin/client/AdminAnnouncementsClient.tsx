@@ -68,8 +68,20 @@ import {
 	isAdminSessionInvalidResult,
 } from '@/features/admin/client/session';
 import type { TAdminApiResult } from '@/features/admin/contracts';
+import {
+	ADMIN_MESSAGE_MAP,
+	ADMIN_STATUS_LABEL_MAP,
+} from '@/features/admin/copy';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import type { IAdminAnnouncementsInitialData } from '@/features/announcements/admin/contracts';
+import {
+	ADMIN_ANNOUNCEMENT_MESSAGE_MAP,
+	ANNOUNCEMENT_AUDIENCE_FILTER_OPTIONS,
+	ANNOUNCEMENT_AUDIENCE_LABEL_MAP,
+	ANNOUNCEMENT_LEVEL_FILTER_OPTIONS,
+	ANNOUNCEMENT_STATUS_FILTER_OPTIONS,
+	createAnnouncementCleanupSuccessMessage,
+} from '@/features/announcements/admin/copy';
 import {
 	type IAdminAnnouncementListData,
 	type IAdminAnnouncementProfile,
@@ -83,45 +95,6 @@ import {
 } from './statusBadges';
 
 const pageInputRegexp = /^\d*$/u;
-
-const AUDIENCE_LABEL_MAP = {
-	all: '全部',
-	anonymous: '未登录',
-	authenticated: '已登录',
-	targeted: '指定用户',
-} as const satisfies Record<TAnnouncementAudience, string>;
-
-const STATUS_FILTER_OPTIONS = [
-	{ label: '全部状态', value: '' },
-	{ label: '展示中', value: 'active' },
-	{ label: '待开始', value: 'scheduled' },
-	{ label: '已结束', value: 'ended' },
-	{ label: '已停用', value: 'disabled' },
-	{ label: '已归档', value: 'archived' },
-] as const satisfies Array<{
-	label: string;
-	value: TAnnouncementComputedStatus | '';
-}>;
-
-const LEVEL_FILTER_OPTIONS = [
-	{ label: '全部等级', value: '' },
-	{ label: '信息', value: 'info' },
-	{ label: '成功', value: 'success' },
-	{ label: '警告', value: 'warning' },
-	{ label: '危险', value: 'danger' },
-	{ label: '重要', value: 'critical' },
-] as const satisfies Array<{ label: string; value: TAnnouncementLevel | '' }>;
-
-const AUDIENCE_FILTER_OPTIONS = [
-	{ label: '全部受众', value: '' },
-	{ label: '全部用户', value: 'all' },
-	{ label: '未登录', value: 'anonymous' },
-	{ label: '已登录', value: 'authenticated' },
-	{ label: '指定用户', value: 'targeted' },
-] as const satisfies Array<{
-	label: string;
-	value: TAnnouncementAudience | '';
-}>;
 
 type TConfirmAction = 'cleanup' | null;
 
@@ -160,7 +133,7 @@ const AdminAnnouncementRow = memo<IAdminAnnouncementRowProps>(
 					<AdminAnnouncementLevelBadge level={announcement.level} />
 				</AdminTableCell>
 				<AdminTableCell isNowrap>
-					{AUDIENCE_LABEL_MAP[announcement.audience]}
+					{ANNOUNCEMENT_AUDIENCE_LABEL_MAP[announcement.audience]}
 					{announcement.audience === 'targeted' && (
 						<span className="ml-1 text-foreground-400">
 							({announcement.target_user_ids.length})
@@ -274,7 +247,7 @@ export default function AdminAnnouncementsClient({
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '读取站点通知失败'
+							: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.listReadFailed
 					);
 				})
 				.finally(() => {
@@ -324,7 +297,7 @@ export default function AdminAnnouncementsClient({
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '读取管理员状态失败'
+						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
 			})
 			.finally(() => {
@@ -382,7 +355,7 @@ export default function AdminAnnouncementsClient({
 
 		const csrfToken = admin?.csrf_token;
 		if (csrfToken === undefined) {
-			setMessage('管理员登录已失效，请重新登录。');
+			setMessage(ADMIN_ANNOUNCEMENT_MESSAGE_MAP.adminSessionExpired);
 			return;
 		}
 		trackEvent(
@@ -402,13 +375,18 @@ export default function AdminAnnouncementsClient({
 				}
 
 				setMessage(
-					`已清理${result.data.deleted_dismissals}条关闭记录、${result.data.deleted_versions}条历史版本`
+					createAnnouncementCleanupSuccessMessage({
+						deletedDismissals: result.data.deleted_dismissals,
+						deletedVersions: result.data.deleted_versions,
+					})
 				);
 				refreshAnnouncements();
 			})
 			.catch((error: unknown) => {
 				setMessage(
-					error instanceof Error ? error.message : '清理通知记录失败'
+					error instanceof Error
+						? error.message
+						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.cleanupFailed
 				);
 			})
 			.finally(() => {
@@ -539,8 +517,8 @@ export default function AdminAnnouncementsClient({
 		return (
 			<AdminLoadingState
 				icon={faShieldHalved}
-				label="读取会话状态"
-				subtitle="正在校验管理员会话"
+				label={ADMIN_STATUS_LABEL_MAP.sessionReading}
+				subtitle={ADMIN_MESSAGE_MAP.adminSessionChecking}
 				title="站点通知"
 			/>
 		);
@@ -556,7 +534,7 @@ export default function AdminAnnouncementsClient({
 						</AdminHeaderActionLink>
 					}
 					icon={faShieldHalved}
-					subtitle={message ?? '请先返回管理员页登录'}
+					subtitle={message ?? ADMIN_MESSAGE_MAP.adminSignInRequired}
 					title="站点通知"
 				/>
 			</AdminShell>
@@ -619,19 +597,26 @@ export default function AdminAnnouncementsClient({
 					label="当前页通知"
 					value={
 						announcements === null
-							? '读取中'
+							? ADMIN_STATUS_LABEL_MAP.reading
 							: announcements.announcements.length
 					}
 				/>
 				<AdminMetric
 					label="全局展示中"
-					value={activeCount ?? '读取中'}
+					value={activeCount ?? ADMIN_STATUS_LABEL_MAP.reading}
 				/>
 				<AdminMetric
 					label="全局已归档"
-					value={announcements === null ? '读取中' : archivedCount}
+					value={
+						announcements === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: archivedCount
+					}
 				/>
-				<AdminMetric label="全局总数" value={totalCount ?? '读取中'} />
+				<AdminMetric
+					label="全局总数"
+					value={totalCount ?? ADMIN_STATUS_LABEL_MAP.reading}
+				/>
 			</AdminMetricPanel>
 
 			<AdminFilterPanel icon={faSearch}>
@@ -654,19 +639,19 @@ export default function AdminAnnouncementsClient({
 				<AdminDropdownFilter
 					ariaLabel="筛选通知状态"
 					onAction={handleStatusFilterAction}
-					options={STATUS_FILTER_OPTIONS}
+					options={ANNOUNCEMENT_STATUS_FILTER_OPTIONS}
 					value={statusFilter}
 				/>
 				<AdminDropdownFilter
 					ariaLabel="筛选通知等级"
 					onAction={handleLevelFilterAction}
-					options={LEVEL_FILTER_OPTIONS}
+					options={ANNOUNCEMENT_LEVEL_FILTER_OPTIONS}
 					value={levelFilter}
 				/>
 				<AdminDropdownFilter
 					ariaLabel="筛选通知受众"
 					onAction={handleAudienceFilterAction}
-					options={AUDIENCE_FILTER_OPTIONS}
+					options={ANNOUNCEMENT_AUDIENCE_FILTER_OPTIONS}
 					value={audienceFilter}
 				/>
 				<AdminFilterActionButton
@@ -681,7 +666,7 @@ export default function AdminAnnouncementsClient({
 
 			{announcements === null ? (
 				<AdminEmptyState icon={faClock}>
-					正在读取站点通知
+					{ADMIN_ANNOUNCEMENT_MESSAGE_MAP.listReading}
 				</AdminEmptyState>
 			) : announcements.announcements.length === 0 ? (
 				<AdminEmptyState icon={faBullhorn}>

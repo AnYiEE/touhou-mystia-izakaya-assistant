@@ -3,6 +3,7 @@ import { type NextRequest } from 'next/server';
 import { checkAdminCredentialLoginEnabled } from '@/features/account/admin/server/auth';
 import { checkAdminFeatureRouteResponse } from '@/features/account/admin/server/http/routeResponses';
 import type { IAdminLoginBody } from '@/features/account/contracts';
+import { FEATURE_DISABLED_MESSAGE } from '@/features/account/server/featureStatus';
 import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
@@ -11,6 +12,7 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -30,7 +32,7 @@ export async function POST(request: NextRequest) {
 		return adminFeatureResponse;
 	}
 	if (!checkAdminCredentialLoginEnabled()) {
-		return createNoStoreErrorResponse('feature-disabled', 404);
+		return createNoStoreErrorResponse(FEATURE_DISABLED_MESSAGE, 404);
 	}
 
 	const sameOriginResponse = checkSameOriginRouteResponse(request);
@@ -46,7 +48,10 @@ export async function POST(request: NextRequest) {
 
 	const bodyResult = await readJsonBodyResult<IAdminLoginBody>(request);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
@@ -55,12 +60,18 @@ export async function POST(request: NextRequest) {
 		typeof body.username !== 'string' ||
 		typeof body.password !== 'string'
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const username = body.username.trim();
 	if (username === '' || username.length > 128 || body.password === '') {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const usernameRateLimitKey = username.toLowerCase();
@@ -76,7 +87,10 @@ export async function POST(request: NextRequest) {
 
 	const adminModule = await import('@/features/account/admin/server/auth');
 	if (!adminModule.checkAdminCredentials(username, body.password)) {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 
 	const token = adminModule.createAdminSessionToken(username);

@@ -23,6 +23,7 @@ import {
 } from '@/features/account/constants';
 import type { IWebauthnCredentialSummary } from '@/features/account/contracts';
 
+import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
 import {
 	AccountAnimatedList,
 	AccountAnimatedListItem,
@@ -184,13 +185,17 @@ export default memo<IAccountPasskeysPanelProps>(
 							isPasskeyListLoading && !isPasskeyListReady ? (
 								<AccountAnimatedListItem key="loading">
 									<p className="text-small leading-5 text-foreground-500">
-										正在读取通行密钥
+										{
+											ACCOUNT_MANAGER_STATUS_LABEL_MAP.readingPasskeys
+										}
 									</p>
 								</AccountAnimatedListItem>
 							) : visiblePasskeys.length === 0 ? (
 								<AccountAnimatedListItem key="empty">
 									<p className="text-small leading-5 text-foreground-500">
-										暂无通行密钥
+										{
+											ACCOUNT_MANAGER_STATUS_LABEL_MAP.noPasskeys
+										}
 									</p>
 								</AccountAnimatedListItem>
 							) : (
@@ -392,7 +397,9 @@ export default memo<IAccountPasskeysPanelProps>(
 						) : (
 							<AccountAnimatedListItem key="unsupported">
 								<p className="text-small leading-5 text-foreground-500">
-									当前环境不支持通行密钥
+									{
+										ACCOUNT_MANAGER_STATUS_LABEL_MAP.passkeysUnsupported
+									}
 								</p>
 							</AccountAnimatedListItem>
 						)}

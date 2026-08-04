@@ -39,6 +39,12 @@ import {
 	getAdminSsoCallbackEventLabel,
 } from '@/features/account/sso/admin/client/components/statusBadges';
 import type { IAdminSsoCallbackHistoryInitialData } from '@/features/account/sso/admin/contracts';
+import {
+	ADMIN_SSO_CALLBACK_DELIVERY_STATUS_FILTER_OPTIONS,
+	ADMIN_SSO_CALLBACK_EVENT_FILTER_OPTIONS,
+	ADMIN_SSO_MESSAGE_MAP,
+	createAdminSsoCallbackHistoryCleanupMessage,
+} from '@/features/account/sso/admin/copy';
 import { fetchAdminMe } from '@/features/admin/client/api';
 import { AdminConfirmButton } from '@/features/admin/client/components/confirmation';
 import {
@@ -87,6 +93,10 @@ import {
 	isAdminSessionInvalidResult,
 } from '@/features/admin/client/session';
 import type { TAdminApiResult } from '@/features/admin/contracts';
+import {
+	ADMIN_MESSAGE_MAP,
+	ADMIN_STATUS_LABEL_MAP,
+} from '@/features/admin/copy';
 import { createAdminHref } from '@/features/admin/navigation';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
@@ -96,36 +106,18 @@ type TConfirmAction = 'cleanup' | null;
 
 const pageInputRegexp = /^\d*$/u;
 
-const eventOptions = [
-	{ label: '全部事件', value: '' },
-	{ label: '客户端删除', value: 'client_deleted' },
-	{ label: '客户端禁用', value: 'client_disabled' },
-	{ label: '授权撤销', value: 'grant_revoked' },
-	{ label: 'Secret轮换', value: 'secret_rotated' },
-	{ label: '用户删除', value: 'user_deleted' },
-	{ label: '用户禁用', value: 'user_disabled' },
-	{ label: '资料更新', value: 'user_profile_updated' },
-] as const;
-
-const statusOptions = [
-	{ label: '全部状态', value: '' },
-	{ label: '成功', value: 'succeeded' },
-	{ label: '失败', value: 'failed' },
-	{ label: '最终失败', value: 'final_failed' },
-] as const;
-
 const callbackHistoryFilterReferenceGroups = [
 	{
 		label: '事件',
-		values: eventOptions
-			.filter((option) => option.value !== '')
-			.map((option) => ({ label: option.label, value: option.value })),
+		values: ADMIN_SSO_CALLBACK_EVENT_FILTER_OPTIONS.filter(
+			(option) => option.value !== ''
+		).map((option) => ({ label: option.label, value: option.value })),
 	},
 	{
 		label: '状态',
-		values: statusOptions
-			.filter((option) => option.value !== '')
-			.map((option) => ({ label: option.label, value: option.value })),
+		values: ADMIN_SSO_CALLBACK_DELIVERY_STATUS_FILTER_OPTIONS.filter(
+			(option) => option.value !== ''
+		).map((option) => ({ label: option.label, value: option.value })),
 	},
 ] as const;
 
@@ -319,7 +311,7 @@ export default function AdminSsoCallbackHistoryClient({
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '读取SSO投递历史失败'
+							: ADMIN_SSO_MESSAGE_MAP.callbackHistoryReadFailed
 					);
 				})
 				.finally(() => {
@@ -362,7 +354,7 @@ export default function AdminSsoCallbackHistoryClient({
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '读取管理员状态失败'
+						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
 			})
 			.finally(() => {
@@ -468,7 +460,7 @@ export default function AdminSsoCallbackHistoryClient({
 	const handleCleanup = useCallback(() => {
 		const csrfToken = admin?.csrf_token;
 		if (csrfToken === undefined) {
-			setMessage('admin-session-expired');
+			setMessage(ADMIN_MESSAGE_MAP.adminSessionExpired);
 			return;
 		}
 		trackEvent(
@@ -488,13 +480,19 @@ export default function AdminSsoCallbackHistoryClient({
 				}
 
 				setMessage(
-					`已清理${result.data.deleted_count}条投递历史，按时间${result.data.deleted_by_age}条，按上限${result.data.deleted_by_cap}条`
+					createAdminSsoCallbackHistoryCleanupMessage({
+						deletedByAge: result.data.deleted_by_age,
+						deletedByCap: result.data.deleted_by_cap,
+						deletedCount: result.data.deleted_count,
+					})
 				);
 				refreshCurrentDeliveries();
 			})
 			.catch((error: unknown) => {
 				setMessage(
-					error instanceof Error ? error.message : '清理投递历史失败'
+					error instanceof Error
+						? error.message
+						: ADMIN_SSO_MESSAGE_MAP.callbackCleanupFailed
 				);
 			})
 			.finally(() => {
@@ -581,8 +579,8 @@ export default function AdminSsoCallbackHistoryClient({
 		return (
 			<AdminLoadingState
 				icon={faShieldHalved}
-				label="读取会话状态"
-				subtitle="正在校验管理员会话"
+				label={ADMIN_STATUS_LABEL_MAP.sessionReading}
+				subtitle={ADMIN_MESSAGE_MAP.adminSessionChecking}
 				title="SSO投递历史"
 			/>
 		);
@@ -606,7 +604,7 @@ export default function AdminSsoCallbackHistoryClient({
 						</>
 					}
 					icon={faShieldHalved}
-					subtitle={message ?? '请先返回管理员页登录'}
+					subtitle={message ?? ADMIN_MESSAGE_MAP.adminSignInRequired}
 					title="SSO投递历史"
 				/>
 			</AdminShell>
@@ -652,23 +650,33 @@ export default function AdminSsoCallbackHistoryClient({
 					label="当前页历史"
 					value={
 						deliveries === null
-							? '读取中'
+							? ADMIN_STATUS_LABEL_MAP.reading
 							: deliveries.deliveries.length
 					}
 				/>
 				<AdminMetric
 					label="筛选总数"
 					value={
-						deliveries === null ? '读取中' : deliveries.total_count
+						deliveries === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: deliveries.total_count
 					}
 				/>
 				<AdminMetric
 					label="当前页异常"
-					value={deliveries === null ? '读取中' : failedCount}
+					value={
+						deliveries === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: failedCount
+					}
 				/>
 				<AdminMetric
 					label="页码"
-					value={deliveries === null ? '读取中' : deliveries.page}
+					value={
+						deliveries === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: deliveries.page
+					}
 				/>
 			</AdminMetricPanel>
 
@@ -725,13 +733,13 @@ export default function AdminSsoCallbackHistoryClient({
 				</AdminAdvancedFilterPopover>
 				<AdminDropdownFilter
 					ariaLabel="筛选事件"
-					options={eventOptions}
+					options={ADMIN_SSO_CALLBACK_EVENT_FILTER_OPTIONS}
 					value={eventFilter}
 					onAction={handleEventAction}
 				/>
 				<AdminDropdownFilter
 					ariaLabel="筛选状态"
-					options={statusOptions}
+					options={ADMIN_SSO_CALLBACK_DELIVERY_STATUS_FILTER_OPTIONS}
 					value={statusFilter}
 					onAction={handleStatusAction}
 				/>
@@ -768,7 +776,7 @@ export default function AdminSsoCallbackHistoryClient({
 
 			{deliveries === null ? (
 				<AdminEmptyState icon={faClock}>
-					正在读取投递历史
+					{ADMIN_SSO_MESSAGE_MAP.callbackHistoryReading}
 				</AdminEmptyState>
 			) : deliveries.deliveries.length === 0 ? (
 				<AdminEmptyState icon={faClockRotateLeft}>

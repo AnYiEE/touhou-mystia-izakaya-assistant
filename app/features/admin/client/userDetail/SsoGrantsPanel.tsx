@@ -33,6 +33,10 @@ import {
 	AdminTableHeader,
 	AdminTableRow,
 } from '@/features/admin/client/components/table';
+import {
+	ADMIN_MESSAGE_MAP,
+	ADMIN_STATUS_LABEL_MAP,
+} from '@/features/admin/copy';
 
 import type { TAdminUserDetailConfirmAction } from './contracts';
 
@@ -47,7 +51,7 @@ export function SsoGrantCallbackNotice({
 }: ISsoGrantCallbackNoticeProps) {
 	const ssoCallbackNotice =
 		userStatus === 'disabled' && ssoGrantTotalCount !== 0
-			? '禁用用户会为仍有授权且配置了回调的SSO客户端入队user_disabled callback，可在Callback队列中查看投递状态。'
+			? ADMIN_MESSAGE_MAP.ssoGrantUserDisabledCallbackNotice
 			: null;
 
 	return (
@@ -199,7 +203,9 @@ export function SsoGrantsPanel({
 			</AdminPanelToolbar>
 			{ssoGrants.length === 0 ? (
 				<AdminEmptyState icon={faServer}>
-					{isSsoGrantLoading ? '读取中' : '暂无SSO授权'}
+					{isSsoGrantLoading
+						? ADMIN_STATUS_LABEL_MAP.reading
+						: ADMIN_MESSAGE_MAP.ssoGrantEmpty}
 				</AdminEmptyState>
 			) : (
 				<AdminTable>

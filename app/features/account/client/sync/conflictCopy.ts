@@ -23,7 +23,7 @@ export const ACCOUNT_SYNC_CONFLICT_READINESS_MESSAGE_MAP = {
 	null | string
 >;
 
-export const ACCOUNT_SYNC_CONFLICT_READINESS_LABEL_MAP = {
+const ACCOUNT_SYNC_CONFLICT_READINESS_LABEL_MAP = {
 	busy: '其他页面处理中',
 	ready: '冲突待处理',
 	recovering: '正在恢复',
@@ -45,6 +45,36 @@ export const ACCOUNT_SYNC_STATUS_FALLBACK_MESSAGE_MAP = {
 	syncFailed: '同步异常，请稍后重试',
 } as const;
 
+export const ACCOUNT_SYNC_STATUS_MESSAGE_MAP = {
+	noPendingData: '暂无待同步数据',
+	noSuccessfulRecord: '暂无成功记录',
+	paused: '云同步已暂停',
+	pausedEmptyDescription: '云端当前没有数据，本设备的数据仅保存在本地。',
+	sessionQueueFallback:
+		'同步队列当前无法跨标签持久化，将仅在本会话内尽力同步。',
+	sessionQueueWarning:
+		'当前存储无法持久跨标签同步队列，关闭页面前请等待同步完成。',
+} as const;
+
+export const ACCOUNT_SYNC_STORAGE_MODE_LABEL_MAP = {
+	local: '本地持久化',
+	memory: '内存兜底',
+	session: '会话兜底',
+} as const;
+
+export const ACCOUNT_SYNC_PAUSED_REASON_LABEL_MAP = {
+	'applying-remote': '应用云端中',
+	bootstrap: '初始化中',
+	'cloud-paused': '云同步已暂停',
+	conflict: ACCOUNT_SYNC_NAMESPACE_STATUS_LABEL_MAP.conflict,
+	'delete-data': '清空数据中',
+	'importing-backup': '导入旧备份中',
+} as const;
+
+export function createAccountSyncFailedAttemptsMessage(attempts: number) {
+	return `（已失败${attempts}次）`;
+}
+
 export const ACCOUNT_SYNC_CONTROL_LABEL_MAP = {
 	broadcastAvailable: '可用',
 	broadcastUnavailable: '不可用',
@@ -59,7 +89,7 @@ export const ACCOUNT_SYNC_CONTROL_LABEL_MAP = {
 	syncing: '正在同步',
 } as const;
 
-export const ACCOUNT_SYNC_TERMINAL_ERROR_LABEL_MAP = {
+const ACCOUNT_SYNC_TERMINAL_ERROR_LABEL_MAP = {
 	'sync-account-capacity-exceeded': '容量超限',
 	'sync-request-too-large': '请求过大',
 } as const;

@@ -5,6 +5,7 @@ import {
 	checkAdminFeatureRouteResponse,
 	createAdminAuthErrorRouteResponse,
 } from '@/features/account/admin/server/http/routeResponses';
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
@@ -13,6 +14,7 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { type IListUsersOptions } from '@/features/account/server/persistence/repositories/users';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	getTrimmedSearchParam,
 	parsePositiveIntegerParam,
@@ -78,7 +80,10 @@ export async function GET(request: NextRequest) {
 		'status'
 	);
 	if (status !== undefined && !userModule.checkUserStatus(status)) {
-		return createNoStoreErrorResponse('invalid-user-status', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.invalidUserStatus,
+			400
+		);
 	}
 
 	const page = parsePositiveIntegerParam(
@@ -92,7 +97,10 @@ export async function GET(request: NextRequest) {
 		MAX_PAGE_SIZE
 	);
 	if (page === null || pageSize === null) {
-		return createNoStoreErrorResponse('invalid-pagination', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidPagination,
+			400
+		);
 	}
 
 	const query = userModule.normalizeUsername(

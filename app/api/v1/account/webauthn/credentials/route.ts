@@ -10,6 +10,7 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -75,7 +76,10 @@ export async function GET(request: NextRequest) {
 			}
 		);
 	if (credentials.status === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 	const { rpID } = webauthnModule.getWebAuthnRelyingParty();
 

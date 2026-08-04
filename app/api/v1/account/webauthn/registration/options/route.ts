@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 import { randomUUID } from 'node:crypto';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import {
 	WEBAUTHN_CHALLENGE_TTL_MS,
 	WEBAUTHN_MAX_CREDENTIALS_PER_USER,
@@ -14,6 +15,7 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -67,7 +69,10 @@ export async function POST(request: NextRequest) {
 	}
 
 	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
-		return createNoStoreErrorResponse('forbidden', 403);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.forbidden,
+			403
+		);
 	}
 
 	const [webauthnModule, credentialsModule, challengesModule] =
@@ -81,7 +86,10 @@ export async function POST(request: NextRequest) {
 		auth.data.user.id
 	);
 	if (existingCredentials.length >= WEBAUTHN_MAX_CREDENTIALS_PER_USER) {
-		return createNoStoreErrorResponse('too-many-passkeys', 409);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.tooManyPasskeys,
+			409
+		);
 	}
 
 	const options = await webauthnModule.buildRegistrationOptions({
@@ -109,10 +117,16 @@ export async function POST(request: NextRequest) {
 			WEBAUTHN_MAX_CREDENTIALS_PER_USER
 		);
 	if (createResult.status === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 	if (createResult.status === 'too-many') {
-		return createNoStoreErrorResponse('too-many-passkeys', 409);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.tooManyPasskeys,
+			409
+		);
 	}
 
 	const response = createNoStoreJsonResponse({ options });

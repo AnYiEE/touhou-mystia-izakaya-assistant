@@ -39,6 +39,11 @@ import type {
 	IAdminUserDetailInitialData,
 	TAdminUserDetailApiResult,
 } from '@/features/admin/contracts';
+import {
+	ADMIN_MESSAGE_MAP,
+	createAdminSsoGrantRevokeAllSuccessMessage,
+	createAdminSuccessWithDetailRefreshFailureMessage,
+} from '@/features/admin/copy';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
 import type { TAdminUserDetailConfirmAction } from './contracts';
@@ -205,7 +210,9 @@ export function useAdminUserDetailController(
 					return false;
 				}
 				setMessage(
-					error instanceof Error ? error.message : '读取用户详情失败'
+					error instanceof Error
+						? error.message
+						: ADMIN_MESSAGE_MAP.userDetailReadFailed
 				);
 				return false;
 			})
@@ -240,7 +247,10 @@ export function useAdminUserDetailController(
 					if (result.status === 'mutation-committed-detail-error') {
 						onSuccess?.();
 						setMessage(
-							`${success}，但详情刷新失败：${result.detailError.displayMessage}`
+							createAdminSuccessWithDetailRefreshFailureMessage(
+								success,
+								result.detailError.displayMessage
+							)
 						);
 						return;
 					}
@@ -258,7 +268,9 @@ export function useAdminUserDetailController(
 						return;
 					}
 					setMessage(
-						error instanceof Error ? error.message : '操作失败'
+						error instanceof Error
+							? error.message
+							: ADMIN_MESSAGE_MAP.operationFailed
 					);
 				})
 				.finally(() => {
@@ -417,7 +429,7 @@ export function useAdminUserDetailController(
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '读取SSO授权失败'
+							: ADMIN_MESSAGE_MAP.ssoGrantReadFailed
 					);
 				})
 				.finally(() => {
@@ -498,11 +510,9 @@ export function useAdminUserDetailController(
 				}
 
 				setMessage(
-					`SSO授权已全部撤销${
-						result.data.revoked_count === undefined
-							? ''
-							: `：${result.data.revoked_count}个`
-					}`
+					createAdminSsoGrantRevokeAllSuccessMessage(
+						result.data.revoked_count
+					)
 				);
 				refreshSsoGrants(1);
 			})
@@ -513,7 +523,7 @@ export function useAdminUserDetailController(
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '撤销全部SSO授权失败'
+						: ADMIN_MESSAGE_MAP.ssoGrantRevokeAllFailed
 				);
 			})
 			.finally(() => {
@@ -611,7 +621,7 @@ export function useAdminUserDetailController(
 						return;
 					}
 
-					setMessage('SSO授权已撤销');
+					setMessage(ADMIN_MESSAGE_MAP.ssoGrantRevoked);
 					refreshSsoGrants(ssoGrantPage);
 				})
 				.catch((error: unknown) => {
@@ -621,7 +631,7 @@ export function useAdminUserDetailController(
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '撤销SSO授权失败'
+							: ADMIN_MESSAGE_MAP.ssoGrantRevokeFailed
 					);
 				})
 				.finally(() => {
@@ -686,7 +696,7 @@ export function useAdminUserDetailController(
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '读取管理员状态失败'
+						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
 			})
 			.finally(() => {

@@ -12,6 +12,7 @@ import {
 	logoutAllAccount,
 } from '@/features/account/client/api';
 import { createAccountClientId } from '@/features/account/client/clientId';
+import { ACCOUNT_CLIENT_MESSAGE_MAP } from '@/features/account/client/copy';
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
 import {
 	checkCurrentAccountAuthContext,
@@ -45,6 +46,7 @@ import {
 	handleUnauthorizedAccountActionError,
 	handleUnauthorizedAccountError,
 } from './controller';
+import { ACCOUNT_MANAGER_MESSAGE_MAP } from './copy';
 
 const LOGOUT_SKIPPED = Symbol('logout-skipped');
 type TLogoutAfterFlushResult =
@@ -133,7 +135,9 @@ export function useAccountDestructiveActions(
 							return LOGOUT_SKIPPED;
 						}
 
-						setMessage('同步尚未完成，请先重试同步后再退出');
+						setMessage(
+							ACCOUNT_MANAGER_MESSAGE_MAP.syncPendingBeforeLogout
+						);
 
 						return LOGOUT_SKIPPED;
 					}
@@ -186,7 +190,7 @@ export function useAccountDestructiveActions(
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '退出前同步失败'
+							: ACCOUNT_MANAGER_MESSAGE_MAP.logoutSyncFailed
 					);
 				})
 				.finally(() => {
@@ -251,7 +255,7 @@ export function useAccountDestructiveActions(
 		)
 			.then(async (leaseResult) => {
 				if (leaseResult === null) {
-					setMessage('账号数据操作正在其他标签页进行，请稍后重试');
+					setMessage(ACCOUNT_CLIENT_MESSAGE_MAP.operationBusy);
 					return;
 				}
 				const { operationId, pauseResult, result } = leaseResult;
@@ -274,7 +278,9 @@ export function useAccountDestructiveActions(
 						(result.message === 'state-epoch-mismatch' ||
 							result.message === 'sync-generation-mismatch')
 					) {
-						setMessage('云端数据已发生变化，正在刷新账号状态…');
+						setMessage(
+							ACCOUNT_MANAGER_MESSAGE_MAP.cloudDataChangedRefreshing
+						);
 						try {
 							await refreshAccountState();
 						} catch (error) {
@@ -289,7 +295,9 @@ export function useAccountDestructiveActions(
 							) {
 								return;
 							}
-							setMessage('账号状态刷新失败，请稍后重试');
+							setMessage(
+								ACCOUNT_CLIENT_MESSAGE_MAP.accountStateRefreshFailed
+							);
 							return;
 						}
 						if (
@@ -298,7 +306,7 @@ export function useAccountDestructiveActions(
 							)
 						) {
 							setMessage(
-								'云端数据已发生变化，请重新确认后再清空'
+								ACCOUNT_MANAGER_MESSAGE_MAP.cloudDataChangedReconfirm
 							);
 						}
 						return;
@@ -332,7 +340,9 @@ export function useAccountDestructiveActions(
 							return;
 						}
 
-						setMessage('云端数据已清空');
+						setMessage(
+							ACCOUNT_MANAGER_MESSAGE_MAP.cloudDataCleared
+						);
 					})
 					.catch((error: unknown) => {
 						console.warn(
@@ -345,7 +355,9 @@ export function useAccountDestructiveActions(
 							return;
 						}
 
-						setMessage('云端数据已清空');
+						setMessage(
+							ACCOUNT_MANAGER_MESSAGE_MAP.cloudDataCleared
+						);
 					});
 			})
 			.catch((error: unknown) => {
@@ -361,7 +373,10 @@ export function useAccountDestructiveActions(
 					accountStore.shared.sync.lastError.set(errorCode);
 				}
 				setMessage(
-					getAccountClientErrorMessage(errorCode, '清空云端数据失败')
+					getAccountClientErrorMessage(
+						errorCode,
+						ACCOUNT_MANAGER_MESSAGE_MAP.cloudDataClearFailed
+					)
 				);
 			})
 			.finally(() => {
@@ -466,7 +481,9 @@ export function useAccountDestructiveActions(
 				}
 
 				setMessage(
-					error instanceof Error ? error.message : '删除账号失败'
+					error instanceof Error
+						? error.message
+						: ACCOUNT_MANAGER_MESSAGE_MAP.accountDeleteFailed
 				);
 			})
 			.finally(() => {

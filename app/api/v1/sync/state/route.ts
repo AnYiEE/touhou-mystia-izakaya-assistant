@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import { ACCOUNT_SYNC_STATUS_MAP } from '@/domain/account/contracts';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import { checkAccountRateLimitGuard } from '@/features/account/server/http/guards';
 import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
@@ -12,6 +13,7 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+import { ACCOUNT_SYNC_API_RESPONSE_CODE_MAP } from '@/features/account/sync/apiResponseCodes';
 import { getAccountSyncCapacityConfiguration } from '@/features/account/sync/server/capacity';
 import {
 	parseUserStateRecord,
@@ -23,6 +25,7 @@ import {
 	parseSyncStatePutBody,
 } from '@/features/account/sync/validation';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -33,7 +36,10 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 function createCorruptUserStateResponse() {
-	return createNoStoreErrorResponse('corrupt-user-state', 500);
+	return createNoStoreErrorResponse(
+		ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.corruptUserState,
+		500
+	);
 }
 
 export async function GET(request: NextRequest) {
@@ -114,7 +120,10 @@ export async function GET(request: NextRequest) {
 		);
 	}
 	if (auth.result.status === 'unknown-namespace') {
-		return createNoStoreErrorResponse('unknown-namespace', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.unknownNamespace,
+			400
+		);
 	}
 
 	const { snapshot } = auth.result;
@@ -177,7 +186,10 @@ export async function PUT(request: NextRequest) {
 	}
 
 	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
-		return createNoStoreErrorResponse('forbidden', 403);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.forbidden,
+			403
+		);
 	}
 
 	const capacityConfiguration = getAccountSyncCapacityConfiguration();
@@ -186,37 +198,54 @@ export async function PUT(request: NextRequest) {
 		capacityConfiguration.requestMaxBytes
 	);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('sync-request-too-large', 413, {
-			limit_bytes: capacityConfiguration.requestMaxBytes,
-		});
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.requestTooLarge,
+			413,
+			{ limit_bytes: capacityConfiguration.requestMaxBytes }
+		);
 	}
 
 	const body = parseSyncStatePutBody(
 		bodyResult.status === 'ok' ? bodyResult.data : null
 	);
 	if (body === null) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 	if (auth.data.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
-		return createNoStoreErrorResponse('sync-paused', 409, {
-			state_epoch: auth.data.user.state_epoch,
-			sync_generation: auth.data.user.sync_generation,
-			sync_status: auth.data.user.sync_status,
-		});
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.paused,
+			409,
+			{
+				state_epoch: auth.data.user.state_epoch,
+				sync_generation: auth.data.user.sync_generation,
+				sync_status: auth.data.user.sync_status,
+			}
+		);
 	}
 	if (body.state_epoch !== auth.data.user.state_epoch) {
-		return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
-			state_epoch: auth.data.user.state_epoch,
-			sync_generation: auth.data.user.sync_generation,
-			sync_status: auth.data.user.sync_status,
-		});
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.stateEpochMismatch,
+			409,
+			{
+				state_epoch: auth.data.user.state_epoch,
+				sync_generation: auth.data.user.sync_generation,
+				sync_status: auth.data.user.sync_status,
+			}
+		);
 	}
 	if (body.sync_generation !== auth.data.user.sync_generation) {
-		return createNoStoreErrorResponse('sync-generation-mismatch', 409, {
-			state_epoch: auth.data.user.state_epoch,
-			sync_generation: auth.data.user.sync_generation,
-			sync_status: auth.data.user.sync_status,
-		});
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.generationMismatch,
+			409,
+			{
+				state_epoch: auth.data.user.state_epoch,
+				sync_generation: auth.data.user.sync_generation,
+				sync_status: auth.data.user.sync_status,
+			}
+		);
 	}
 
 	const writeResult = await putSyncStateChanges({
@@ -226,28 +255,43 @@ export async function PUT(request: NextRequest) {
 		userId: auth.data.user.id,
 	});
 	if (writeResult.status === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 	if (writeResult.status === 'state-epoch-mismatch') {
-		return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
-			state_epoch: writeResult.state_epoch,
-			sync_generation: writeResult.sync_generation,
-			sync_status: writeResult.sync_status,
-		});
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.stateEpochMismatch,
+			409,
+			{
+				state_epoch: writeResult.state_epoch,
+				sync_generation: writeResult.sync_generation,
+				sync_status: writeResult.sync_status,
+			}
+		);
 	}
 	if (writeResult.status === 'sync-paused') {
-		return createNoStoreErrorResponse('sync-paused', 409, {
-			state_epoch: writeResult.state_epoch,
-			sync_generation: writeResult.sync_generation,
-			sync_status: writeResult.sync_status,
-		});
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.paused,
+			409,
+			{
+				state_epoch: writeResult.state_epoch,
+				sync_generation: writeResult.sync_generation,
+				sync_status: writeResult.sync_status,
+			}
+		);
 	}
 	if (writeResult.status === 'sync-generation-mismatch') {
-		return createNoStoreErrorResponse('sync-generation-mismatch', 409, {
-			state_epoch: writeResult.state_epoch,
-			sync_generation: writeResult.sync_generation,
-			sync_status: writeResult.sync_status,
-		});
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.generationMismatch,
+			409,
+			{
+				state_epoch: writeResult.state_epoch,
+				sync_generation: writeResult.sync_generation,
+				sync_status: writeResult.sync_status,
+			}
+		);
 	}
 	if (writeResult.status === 'corrupt-user-state') {
 		return createCorruptUserStateResponse();

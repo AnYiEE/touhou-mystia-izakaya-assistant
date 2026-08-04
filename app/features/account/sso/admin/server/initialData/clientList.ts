@@ -1,4 +1,5 @@
 import type { IAdminSsoClientsInitialData } from '@/features/account/sso/admin/contracts';
+import { ADMIN_SSO_MESSAGE_MAP } from '@/features/account/sso/admin/copy';
 import {
 	type IAdminSsoSearchParams,
 	getAdminSsoCallbackConfigFromSearchValue,
@@ -66,7 +67,9 @@ export async function readAdminSsoClientsInitialData(
 		return {
 			...initialData,
 			message:
-				error instanceof Error ? error.message : '读取SSO客户端失败',
+				error instanceof Error
+					? error.message
+					: ADMIN_SSO_MESSAGE_MAP.clientReadFailed,
 		};
 	}
 }

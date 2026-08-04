@@ -4,6 +4,7 @@ import {
 	readAdminAuthInitialData,
 } from '@/features/admin/server/initialData/auth';
 import type { IAdminAnnouncementFormInitialData } from '@/features/announcements/admin/contracts';
+import { ADMIN_ANNOUNCEMENT_MESSAGE_MAP } from '@/features/announcements/admin/copy';
 
 function createFormInitialData(
 	authResult: TAdminAuthInitialDataResult
@@ -72,7 +73,9 @@ export async function readAdminAnnouncementEditInitialData(
 		return {
 			...initialData,
 			loadError:
-				error instanceof Error ? error.message : '读取站点通知失败',
+				error instanceof Error
+					? error.message
+					: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.listReadFailed,
 		};
 	}
 }

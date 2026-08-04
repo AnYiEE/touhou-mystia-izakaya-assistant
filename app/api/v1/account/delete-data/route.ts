@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import { ACCOUNT_SYNC_STATUS_MAP } from '@/domain/account/contracts';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
@@ -11,8 +12,10 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+import { ACCOUNT_SYNC_API_RESPONSE_CODE_MAP } from '@/features/account/sync/apiResponseCodes';
 import { parseClientSyncGeneration } from '@/features/account/sync/protocol';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -89,35 +92,52 @@ export async function DELETE(request: NextRequest) {
 	}
 
 	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
-		return createNoStoreErrorResponse('forbidden', 403);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.forbidden,
+			403
+		);
 	}
 
 	const bodyResult =
 		await readJsonBodyResult<IDeleteAccountDataBody>(request);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 	const body = parseDeleteAccountDataBody(
 		bodyResult.status === 'ok' ? bodyResult.data : null
 	);
 	if (body === null) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 	const expectedStateEpoch = body.state_epoch;
 	const expectedSyncGeneration = body.sync_generation;
 	if (expectedSyncGeneration !== auth.data.user.sync_generation) {
-		return createNoStoreErrorResponse('sync-generation-mismatch', 409, {
-			state_epoch: auth.data.user.state_epoch,
-			sync_generation: auth.data.user.sync_generation,
-			sync_status: auth.data.user.sync_status,
-		});
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.generationMismatch,
+			409,
+			{
+				state_epoch: auth.data.user.state_epoch,
+				sync_generation: auth.data.user.sync_generation,
+				sync_status: auth.data.user.sync_status,
+			}
+		);
 	}
 	if (expectedStateEpoch !== auth.data.user.state_epoch) {
-		return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
-			state_epoch: auth.data.user.state_epoch,
-			sync_generation: auth.data.user.sync_generation,
-			sync_status: auth.data.user.sync_status,
-		});
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.stateEpochMismatch,
+			409,
+			{
+				state_epoch: auth.data.user.state_epoch,
+				sync_generation: auth.data.user.sync_generation,
+				sync_status: auth.data.user.sync_status,
+			}
+		);
 	}
 
 	const [userStateModule, accountAuditModule] = await Promise.all([
@@ -153,28 +173,43 @@ export async function DELETE(request: NextRequest) {
 				)
 		);
 	if (clearResult.status === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 	if (clearResult.status === 'state-epoch-mismatch') {
-		return createNoStoreErrorResponse('state-epoch-mismatch', 409, {
-			state_epoch: clearResult.state_epoch,
-			sync_generation: clearResult.sync_generation,
-			sync_status: clearResult.sync_status,
-		});
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.stateEpochMismatch,
+			409,
+			{
+				state_epoch: clearResult.state_epoch,
+				sync_generation: clearResult.sync_generation,
+				sync_status: clearResult.sync_status,
+			}
+		);
 	}
 	if (clearResult.status === 'sync-paused') {
-		return createNoStoreErrorResponse('sync-paused', 409, {
-			state_epoch: clearResult.state_epoch,
-			sync_generation: clearResult.sync_generation,
-			sync_status: clearResult.sync_status,
-		});
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.paused,
+			409,
+			{
+				state_epoch: clearResult.state_epoch,
+				sync_generation: clearResult.sync_generation,
+				sync_status: clearResult.sync_status,
+			}
+		);
 	}
 	if (clearResult.status === 'sync-generation-mismatch') {
-		return createNoStoreErrorResponse('sync-generation-mismatch', 409, {
-			state_epoch: clearResult.state_epoch,
-			sync_generation: clearResult.sync_generation,
-			sync_status: clearResult.sync_status,
-		});
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.generationMismatch,
+			409,
+			{
+				state_epoch: clearResult.state_epoch,
+				sync_generation: clearResult.sync_generation,
+				sync_status: clearResult.sync_status,
+			}
+		);
 	}
 	return createNoStoreJsonResponse({
 		state_epoch: clearResult.state_epoch,

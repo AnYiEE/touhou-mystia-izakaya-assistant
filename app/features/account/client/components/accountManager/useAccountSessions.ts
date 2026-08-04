@@ -30,6 +30,7 @@ import {
 	handleUnauthorizedAccountActionError,
 	handleUnauthorizedAccountError,
 } from './controller';
+import { ACCOUNT_MANAGER_MESSAGE_MAP } from './copy';
 
 interface IUseAccountSessionsOptions {
 	bootstrapStatus: ReturnType<typeof accountStore.shared.bootstrapStatus.get>;
@@ -162,7 +163,7 @@ export function useAccountSessions(
 						setMessage(
 							error instanceof Error
 								? error.message
-								: '登录设备刷新失败'
+								: ACCOUNT_MANAGER_MESSAGE_MAP.sessionRefreshFailed
 						);
 					}
 
@@ -305,7 +306,7 @@ export function useAccountSessions(
 					prev.filter((session) => session.id !== sessionId)
 				);
 				sessionListUpdatedAtRef.current = Date.now();
-				setMessage('已下线登录设备');
+				setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.sessionRevoked);
 			})
 			.catch((error: unknown) => {
 				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
@@ -318,7 +319,9 @@ export function useAccountSessions(
 				}
 
 				setMessage(
-					error instanceof Error ? error.message : '登录设备撤销失败'
+					error instanceof Error
+						? error.message
+						: ACCOUNT_MANAGER_MESSAGE_MAP.sessionRevokeFailed
 				);
 			})
 			.finally(() => {

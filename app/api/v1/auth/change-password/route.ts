@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import type {
 	IAuthChangePasswordBody,
 	IAuthLoginSuccessResponse,
@@ -14,6 +15,7 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import { createRetryAfterHeaders } from '@/infrastructure/http/headers';
 import {
 	createNoStoreErrorResponse,
@@ -51,7 +53,10 @@ export async function POST(request: NextRequest) {
 	const bodyResult =
 		await readJsonBodyResult<IAuthChangePasswordBody>(request);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
@@ -59,7 +64,10 @@ export async function POST(request: NextRequest) {
 		typeof body?.current_password !== 'string' ||
 		typeof body.new_password !== 'string'
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const [
@@ -81,13 +89,22 @@ export async function POST(request: NextRequest) {
 		return createAccountAuthErrorRouteResponse(auth, request);
 	}
 	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
-		return createNoStoreErrorResponse('forbidden', 403);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.forbidden,
+			403
+		);
 	}
 	if (auth.data.credential.password_set !== 1) {
-		return createNoStoreErrorResponse('password-not-set', 409);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.passwordNotSet,
+			409
+		);
 	}
 	if (!passwordModule.checkPasswordPolicy(body.new_password)) {
-		return createNoStoreErrorResponse('invalid-password-rule', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.invalidPasswordRule,
+			400
+		);
 	}
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
@@ -107,7 +124,7 @@ export async function POST(request: NextRequest) {
 	});
 	if (result.status === 'locked') {
 		return createNoStoreErrorResponse(
-			'too-many-requests',
+			HTTP_API_RESPONSE_CODE_MAP.tooManyRequests,
 			429,
 			{ retry_after: result.retryAfter },
 			{ headers: createRetryAfterHeaders(result.retryAfter) }

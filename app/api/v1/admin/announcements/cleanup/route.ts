@@ -3,6 +3,7 @@ import { type NextRequest } from 'next/server';
 import { checkAdminAnnouncementRequest } from '@/features/announcements/server/admin/http/requestGuard';
 import { ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP } from '@/features/announcements/server/http/serviceErrorStatus';
 
+import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
 import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
@@ -45,6 +46,6 @@ export async function DELETE(request: NextRequest) {
 			errorCode: getLogSafeErrorCode(error),
 		});
 
-		return createNoStoreErrorResponse('server-misconfigured', 500);
+		return createNoStoreErrorResponse(SERVER_MISCONFIGURED_MESSAGE, 500);
 	}
 }

@@ -26,7 +26,11 @@ import { checkAccountSyncBroadcastSupported } from '@/features/account/client/sy
 import {
 	ACCOUNT_SYNC_CONTROL_LABEL_MAP,
 	ACCOUNT_SYNC_NAMESPACE_STATUS_LABEL_MAP,
+	ACCOUNT_SYNC_PAUSED_REASON_LABEL_MAP,
 	ACCOUNT_SYNC_STATUS_FALLBACK_MESSAGE_MAP,
+	ACCOUNT_SYNC_STATUS_MESSAGE_MAP,
+	ACCOUNT_SYNC_STORAGE_MODE_LABEL_MAP,
+	createAccountSyncFailedAttemptsMessage,
 	getAccountSyncNamespaceStatusLabel,
 } from '@/features/account/client/sync/conflictCopy';
 import { readDirtyQueueEntries } from '@/features/account/client/sync/dirtyQueue/collisionEvidence';
@@ -46,21 +50,6 @@ interface IProps {}
 
 const SYNC_DETAIL_ACCORDION_KEY = 'sync-detail';
 const syncNamespaces = Object.values(SYNC_NAMESPACE_MAP);
-
-const storageModeLabelMap = {
-	local: '本地持久化',
-	memory: '内存兜底',
-	session: '会话兜底',
-} as const satisfies Record<ReturnType<typeof getSafeStorageMode>, string>;
-
-const pausedReasonLabelMap = {
-	'applying-remote': '应用云端中',
-	bootstrap: '初始化中',
-	'cloud-paused': '云同步已暂停',
-	conflict: '冲突待处理',
-	'delete-data': '清空数据中',
-	'importing-backup': '导入旧备份中',
-} as const;
 
 function getNamespaceLabel(namespace: TSyncNamespace) {
 	return namespace.replace('.', ' / ');
@@ -183,7 +172,7 @@ export default memo<IProps>(function AccountSyncStatus() {
 					<span className="font-medium">云同步已暂停</span>
 				</div>
 				<p className="leading-5 text-foreground-500">
-					云端当前没有数据，本设备的数据仅保存在本地。
+					{ACCOUNT_SYNC_STATUS_MESSAGE_MAP.pausedEmptyDescription}
 				</p>
 				<AccountConfirmButton
 					buttonLabel={
@@ -303,18 +292,20 @@ export default memo<IProps>(function AccountSyncStatus() {
 				</div>
 			</div>
 			{isIdleWithoutSyncRecord ? (
-				<p className="leading-5 text-foreground-500">暂无待同步数据</p>
+				<p className="leading-5 text-foreground-500">
+					{ACCOUNT_SYNC_STATUS_MESSAGE_MAP.noPendingData}
+				</p>
 			) : (
 				<div className="flex flex-wrap gap-x-4 gap-y-1 text-foreground-500">
 					<span>待上传：{sync.pendingCount}</span>
 					<span>冲突：{sync.conflicts.length}</span>
 					{sync.isSyncing ? (
-						<span>正在同步</span>
+						<span>{ACCOUNT_SYNC_CONTROL_LABEL_MAP.syncing}</span>
 					) : (
 						<span>
 							最近同步：
 							{sync.lastSyncedAt === null ? (
-								'暂无成功记录'
+								ACCOUNT_SYNC_STATUS_MESSAGE_MAP.noSuccessfulRecord
 							) : (
 								<TimeAgo timestamp={sync.lastSyncedAt} />
 							)}
@@ -324,7 +315,7 @@ export default memo<IProps>(function AccountSyncStatus() {
 			)}
 			{storageMode !== 'local' && (
 				<p className="leading-5 text-foreground-500">
-					同步队列当前无法跨标签持久化，将仅在本会话内尽力同步。
+					{ACCOUNT_SYNC_STATUS_MESSAGE_MAP.sessionQueueFallback}
 				</p>
 			)}
 			{sync.lastError !== null && (
@@ -334,7 +325,9 @@ export default memo<IProps>(function AccountSyncStatus() {
 						ACCOUNT_SYNC_STATUS_FALLBACK_MESSAGE_MAP.syncFailed
 					)}
 					{sync.failedAttempts > 0
-						? `（已失败${sync.failedAttempts}次）`
+						? createAccountSyncFailedAttemptsMessage(
+								sync.failedAttempts
+							)
 						: ''}
 				</p>
 			)}
@@ -362,7 +355,11 @@ export default memo<IProps>(function AccountSyncStatus() {
 								存储
 							</p>
 							<p className="text-small font-medium text-foreground-700">
-								{storageModeLabelMap[storageMode]}
+								{
+									ACCOUNT_SYNC_STORAGE_MODE_LABEL_MAP[
+										storageMode
+									]
+								}
 							</p>
 						</div>
 						<div className="rounded-medium border border-default-200 bg-default-50/40 px-3 py-2">
@@ -388,7 +385,9 @@ export default memo<IProps>(function AccountSyncStatus() {
 					</div>
 					{storageMode !== 'local' && (
 						<p className="rounded-medium bg-warning/10 px-3 py-2 text-small leading-5 text-warning-700 dark:text-warning">
-							当前存储无法持久跨标签同步队列，关闭页面前请等待同步完成。
+							{
+								ACCOUNT_SYNC_STATUS_MESSAGE_MAP.sessionQueueWarning
+							}
 						</p>
 					)}
 					<div className="space-y-2">
@@ -485,7 +484,7 @@ export default memo<IProps>(function AccountSyncStatus() {
 													暂停：
 													{isAutomaticResolution
 														? ACCOUNT_SYNC_NAMESPACE_STATUS_LABEL_MAP.automaticResolutionPaused
-														: pausedReasonLabelMap[
+														: ACCOUNT_SYNC_PAUSED_REASON_LABEL_MAP[
 																dirtyEntry
 																	.paused
 															]}

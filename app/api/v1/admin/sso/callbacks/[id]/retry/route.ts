@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import { parsePositiveIntegerPathParam } from '@/infrastructure/http/pathParameters';
 import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
@@ -19,7 +20,10 @@ export async function POST(
 	const { id } = await params;
 	const callbackId = parsePositiveIntegerPathParam(id);
 	if (callbackId === null) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const check = await checkAdminRequest(

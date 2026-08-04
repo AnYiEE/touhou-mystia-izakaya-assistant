@@ -9,6 +9,7 @@ import { useDesignPreferences } from '@/design/preferences/DesignPreferencesCont
 import { useTheme } from '@/design/theme/runtime/useTheme';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
+import { getAccountActionLabel } from '@/features/account/client/copy';
 import { accountStore } from '@/features/account/client/state/accountStore';
 import { getAccountSyncPauseIndicator } from '@/features/account/client/sync/accountSyncPauseIndicator';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
@@ -58,14 +59,10 @@ export default function Navbar() {
 
 	const shouldShowAccountAction =
 		isAccountFeatureClientEnabled && accountBootstrapStatus !== 'disabled';
-	const accountActionLabel =
-		accountBootstrapStatus === 'error'
-			? '账号不可用'
-			: accountBootstrapStatus === 'unknown'
-				? '欢迎您'
-				: accountUser === null
-					? '未登录'
-					: (accountUser.nickname ?? accountUser.username);
+	const accountActionLabel = getAccountActionLabel(
+		accountBootstrapStatus,
+		accountUser
+	);
 	const accountMenuDisabledKeys =
 		accountBootstrapStatus === 'unknown' ? ['account'] : [];
 	const selectedThemeKeys = [`theme:${theme}`];

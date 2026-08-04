@@ -1,0 +1,18 @@
+export const ACCOUNT_SYNC_API_RESPONSE_CODE_MAP = {
+	accountCapacityExceeded: 'sync-account-capacity-exceeded',
+	backupCodeLockLost: 'backup-code-lock-lost',
+	backupCodeLockTimeout: 'backup-code-lock-timeout',
+	backupCodeNotFound: 'backup-code-not-found',
+	conflict: 'sync-conflict',
+	corruptUserState: 'corrupt-user-state',
+	generationMismatch: 'sync-generation-mismatch',
+	internalWriteError: 'internal-write-error',
+	invalidBackupCode: 'invalid-backup-code',
+	invalidBackupFile: 'invalid-backup-file',
+	notPaused: 'sync-not-paused',
+	paused: 'sync-paused',
+	rebuildConflict: 'sync-rebuild-conflict',
+	requestTooLarge: 'sync-request-too-large',
+	schemaUpdateRequired: 'sync-schema-update-required',
+	unknownNamespace: 'unknown-namespace',
+} as const;

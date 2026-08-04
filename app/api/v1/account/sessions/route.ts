@@ -11,6 +11,7 @@ import {
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 import { createAccountSessionRecord } from '@/features/account/server/presentation/session';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -66,7 +67,10 @@ export async function GET(request: NextRequest) {
 		{ id: auth.data.session.id, token_hash: auth.data.session.token_hash }
 	);
 	if (sessions.status === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 
 	return createNoStoreJsonResponse({

@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
@@ -8,8 +9,10 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+import { ACCOUNT_SSO_API_RESPONSE_CODE_MAP } from '@/features/account/sso/apiResponseCodes';
 import { checkSsoClientId } from '@/features/account/sso/server/validation';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
@@ -59,7 +62,10 @@ export async function DELETE(
 	}
 
 	if (!checkSsoClientId(clientId)) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
@@ -73,7 +79,10 @@ export async function DELETE(
 	}
 
 	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
-		return createNoStoreErrorResponse('forbidden', 403);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.forbidden,
+			403
+		);
 	}
 
 	const [ssoRepository, auditModule, accountAuditModule] = await Promise.all([
@@ -128,11 +137,19 @@ export async function DELETE(
 			}
 		);
 	if (deleteResult.status === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 	if (deleteResult.status === 'not-found') {
-		return createNoStoreErrorResponse('sso-grant-not-found', 404);
+		return createNoStoreErrorResponse(
+			ACCOUNT_SSO_API_RESPONSE_CODE_MAP.grantNotFound,
+			404
+		);
 	}
 
-	return createNoStoreJsonResponse({ message: 'sso-grant-revoked' });
+	return createNoStoreJsonResponse({
+		message: ACCOUNT_API_RESPONSE_CODE_MAP.ssoGrantRevoked,
+	});
 }

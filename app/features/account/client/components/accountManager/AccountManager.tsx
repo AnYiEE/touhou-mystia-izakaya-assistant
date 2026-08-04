@@ -35,6 +35,11 @@ import AccountProfilePanel, {
 import AccountSessionsPanel from './AccountSessionsPanel';
 import AccountSsoGrantsPanel from './AccountSsoGrantsPanel';
 import { type IAccountActionController } from './controller';
+import {
+	ACCOUNT_MANAGER_STATUS_LABEL_MAP,
+	ACCOUNT_MANAGER_SUCCESS_MESSAGE_SET,
+	getAccountBootstrapErrorMessage,
+} from './copy';
 import { AccountPanel, AccountPanelTitle } from './layout';
 import { useAccountAuthentication } from './useAccountAuthentication';
 import { useAccountDestructiveActions } from './useAccountDestructiveActions';
@@ -42,18 +47,6 @@ import { useAccountPasskeys } from './useAccountPasskeys';
 import { useAccountProfile } from './useAccountProfile';
 import { useAccountSessions } from './useAccountSessions';
 import { useAccountSsoGrants } from './useAccountSsoGrants';
-
-const BOOTSTRAP_ERROR_MESSAGE_MAP: Record<string, string> = {
-	'bootstrap-failed': '账号服务初始化失败，请刷新页面重试',
-	'server-misconfigured': '服务器配置异常',
-};
-
-function getBootstrapErrorMessage(errorCode: string | null) {
-	if (errorCode === null) {
-		return '账号功能暂不可用：服务器配置异常';
-	}
-	return `账号功能暂不可用：${BOOTSTRAP_ERROR_MESSAGE_MAP[errorCode] ?? errorCode}`;
-}
 
 interface IProps {}
 
@@ -199,7 +192,7 @@ export default memo<IProps>(function AccountManager() {
 					账号
 				</Heading>
 				<p className="text-small leading-5 text-danger-600 dark:text-danger">
-					{getBootstrapErrorMessage(lastError)}
+					{getAccountBootstrapErrorMessage(lastError)}
 				</p>
 			</div>
 		);
@@ -214,20 +207,7 @@ export default memo<IProps>(function AccountManager() {
 	}
 
 	const isMessageSuccess =
-		message !== null &&
-		[
-			'登录成功',
-			'注册成功',
-			'密码已更新',
-			'登录密码已设置',
-			'资料已更新',
-			'已撤销授权',
-			'已下线登录设备',
-			'通行密钥已添加',
-			'通行密钥已删除',
-			'通行密钥已重命名',
-			'云端数据已清空',
-		].includes(message);
+		message !== null && ACCOUNT_MANAGER_SUCCESS_MESSAGE_SET.has(message);
 	const messageText =
 		message === null ? null : getAccountClientErrorMessage(message);
 	const authErrorMessage =
@@ -245,8 +225,8 @@ export default memo<IProps>(function AccountManager() {
 	const isAccountSyncPaused =
 		user?.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty;
 	const accountStatusDescription = isAccountSyncPaused
-		? '云同步已暂停'
-		: (accountStatusMessage ?? '账号同步已连接');
+		? ACCOUNT_MANAGER_STATUS_LABEL_MAP.paused
+		: (accountStatusMessage ?? ACCOUNT_MANAGER_STATUS_LABEL_MAP.connected);
 	const passwordDescription =
 		authCredentialErrorMessage === null
 			? authMode === 'register'

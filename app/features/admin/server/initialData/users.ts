@@ -2,6 +2,7 @@ import { type TUserStatus } from '@/domain/account/contracts';
 
 import { checkAdminCredentialLoginEnabled } from '@/features/account/admin/server/auth';
 import type { IAdminPageInitialData } from '@/features/admin/contracts';
+import { ADMIN_MESSAGE_MAP } from '@/features/admin/copy';
 import {
 	getAdminListPageFromSearchValue,
 	getAdminListStatusFromSearchValue,
@@ -94,7 +95,10 @@ export async function readAdminUsersInitialData(
 	try {
 		users = await readInitialUsers({ page, query, status });
 	} catch (error) {
-		message = error instanceof Error ? error.message : '读取用户列表失败';
+		message =
+			error instanceof Error
+				? error.message
+				: ADMIN_MESSAGE_MAP.userListReadFailed;
 	}
 
 	return {

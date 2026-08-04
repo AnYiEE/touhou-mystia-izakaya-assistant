@@ -11,6 +11,7 @@ import {
 	checkAdminFeatureRouteResponse,
 	createAdminAuthErrorRouteResponse,
 } from '@/features/account/admin/server/http/routeResponses';
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
@@ -84,10 +85,16 @@ export async function DELETE(
 		]);
 	const user = await usersModule.findUserById(id);
 	if (user === null) {
-		return createNoStoreErrorResponse('target-user-not-found', 404);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.targetUserNotFound,
+			404
+		);
 	}
 	if (user.status === USER_STATUS_MAP.deleted) {
-		return createNoStoreErrorResponse('invalid-user-status', 403);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.invalidUserStatus,
+			403
+		);
 	}
 
 	try {
@@ -124,13 +131,22 @@ export async function DELETE(
 	} catch (error) {
 		if (error instanceof Error) {
 			if (error.message === 'user-not-found') {
-				return createNoStoreErrorResponse('target-user-not-found', 404);
+				return createNoStoreErrorResponse(
+					ACCOUNT_API_RESPONSE_CODE_MAP.targetUserNotFound,
+					404
+				);
 			}
 			if (error.message === 'invalid-user-status') {
-				return createNoStoreErrorResponse('invalid-user-status', 403);
+				return createNoStoreErrorResponse(
+					ACCOUNT_API_RESPONSE_CODE_MAP.invalidUserStatus,
+					403
+				);
 			}
 			if (error.message === 'update-not-applied') {
-				return createNoStoreErrorResponse('update-not-applied', 409);
+				return createNoStoreErrorResponse(
+					ACCOUNT_API_RESPONSE_CODE_MAP.updateNotApplied,
+					409
+				);
 			}
 		}
 

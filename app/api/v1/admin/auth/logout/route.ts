@@ -11,6 +11,7 @@ import {
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
+import { ADMIN_API_RESPONSE_CODE_MAP } from '@/features/admin/apiResponseCodes';
 
 import {
 	createNoStoreErrorResponse,
@@ -61,7 +62,9 @@ export async function POST(request: NextRequest) {
 		return csrfResponse;
 	}
 
-	const response = createNoStoreJsonResponse({ message: 'admin-logged-out' });
+	const response = createNoStoreJsonResponse({
+		message: ADMIN_API_RESPONSE_CODE_MAP.loggedOut,
+	});
 	adminModule.clearAdminSessionCookie(response, request);
 
 	return response;

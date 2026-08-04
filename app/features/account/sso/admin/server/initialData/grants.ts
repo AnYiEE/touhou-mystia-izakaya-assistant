@@ -1,4 +1,5 @@
 import type { IAdminSsoGrantsInitialData } from '@/features/account/sso/admin/contracts';
+import { ADMIN_SSO_MESSAGE_MAP } from '@/features/account/sso/admin/copy';
 import {
 	type IAdminSsoSearchParams,
 	getAdminSsoClientStatusFromSearchValue,
@@ -66,7 +67,9 @@ export async function readAdminSsoGrantsInitialData(
 		return {
 			...initialData,
 			message:
-				error instanceof Error ? error.message : '读取SSO授权关系失败',
+				error instanceof Error
+					? error.message
+					: ADMIN_SSO_MESSAGE_MAP.grantReadFailed,
 		};
 	}
 }

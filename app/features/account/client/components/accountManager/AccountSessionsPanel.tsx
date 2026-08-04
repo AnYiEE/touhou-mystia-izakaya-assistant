@@ -16,6 +16,7 @@ import Tooltip from '@/design/ui/components/tooltip';
 import AccountConfirmButton from '@/features/account/client/components/AccountConfirmButton';
 import type { IAccountSessionRecord } from '@/features/account/contracts';
 
+import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
 import {
 	AccountAnimatedList,
 	AccountAnimatedListItem,
@@ -92,13 +93,15 @@ export default memo<IAccountSessionsPanelProps>(
 					{isSessionListLoading && !isAccountSessionsReady ? (
 						<AccountAnimatedListItem key="loading">
 							<p className="text-small leading-5 text-foreground-500">
-								正在读取登录设备
+								{
+									ACCOUNT_MANAGER_STATUS_LABEL_MAP.readingSessions
+								}
 							</p>
 						</AccountAnimatedListItem>
 					) : visibleAccountSessions.length === 0 ? (
 						<AccountAnimatedListItem key="empty">
 							<p className="text-small leading-5 text-foreground-500">
-								暂无可见会话
+								{ACCOUNT_MANAGER_STATUS_LABEL_MAP.noSessions}
 							</p>
 						</AccountAnimatedListItem>
 					) : (

@@ -30,6 +30,12 @@ import type {
 	TAdminSsoTicketStatus,
 } from '@/features/account/contracts';
 import type { IAdminSsoTicketsInitialData } from '@/features/account/sso/admin/contracts';
+import {
+	ADMIN_SSO_MESSAGE_MAP,
+	ADMIN_SSO_TICKET_STATUS_FILTER_OPTIONS,
+	createAdminSsoTicketCleanupSuccessMessage,
+	createAdminSsoTicketRevokeSuccessMessage,
+} from '@/features/account/sso/admin/copy';
 import { fetchAdminMe } from '@/features/admin/client/api';
 import { AdminConfirmButton } from '@/features/admin/client/components/confirmation';
 import {
@@ -78,6 +84,10 @@ import {
 	isAdminSessionInvalidResult,
 } from '@/features/admin/client/session';
 import type { TAdminApiResult } from '@/features/admin/contracts';
+import {
+	ADMIN_MESSAGE_MAP,
+	ADMIN_STATUS_LABEL_MAP,
+} from '@/features/admin/copy';
 import { createAdminHref } from '@/features/admin/navigation';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
@@ -98,20 +108,12 @@ type TConfirmAction = 'cleanup' | 'revoke-client' | 'revoke-user' | null;
 
 const pageInputRegexp = /^\d*$/u;
 
-const statusOptions = [
-	{ label: '全部状态', value: '' },
-	{ label: '未消费', value: 'pending' },
-	{ label: '已消费', value: 'used' },
-	{ label: '已撤销', value: 'revoked' },
-	{ label: '已过期', value: 'expired' },
-] as const;
-
 const ticketFilterReferenceGroups = [
 	{
 		label: 'Ticket状态',
-		values: statusOptions
-			.filter((option) => option.value !== '')
-			.map((option) => ({ label: option.label, value: option.value })),
+		values: ADMIN_SSO_TICKET_STATUS_FILTER_OPTIONS.filter(
+			(option) => option.value !== ''
+		).map((option) => ({ label: option.label, value: option.value })),
 	},
 ] as const;
 
@@ -296,7 +298,7 @@ export default function AdminSsoTicketsClient({
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '读取SSO Ticket失败'
+							: ADMIN_SSO_MESSAGE_MAP.ticketReadFailed
 					);
 				})
 				.finally(() => {
@@ -339,7 +341,7 @@ export default function AdminSsoTicketsClient({
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '读取管理员状态失败'
+						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
 			})
 			.finally(() => {
@@ -442,7 +444,7 @@ export default function AdminSsoTicketsClient({
 
 			const csrfToken = admin?.csrf_token;
 			if (csrfToken === undefined) {
-				setMessage('admin-session-expired');
+				setMessage(ADMIN_MESSAGE_MAP.adminSessionExpired);
 				return;
 			}
 
@@ -474,7 +476,7 @@ export default function AdminSsoTicketsClient({
 				eventName = 'Revoke User Tickets';
 				eventValue = userId;
 			} else {
-				setMessage('请先填写客户端ID或用户ID');
+				setMessage(ADMIN_SSO_MESSAGE_MAP.ticketFilterRequired);
 				return;
 			}
 
@@ -499,8 +501,12 @@ export default function AdminSsoTicketsClient({
 					const deletedCount = result.data.deleted_count;
 					setMessage(
 						typeof deletedCount === 'number'
-							? `已清理${deletedCount}条过期Ticket`
-							: `已撤销${result.data.revoked_count ?? 0}条未消费Ticket`
+							? createAdminSsoTicketCleanupSuccessMessage(
+									deletedCount
+								)
+							: createAdminSsoTicketRevokeSuccessMessage(
+									result.data.revoked_count ?? 0
+								)
 					);
 					refreshCurrentTickets();
 				})
@@ -508,7 +514,7 @@ export default function AdminSsoTicketsClient({
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '更新SSO Ticket失败'
+							: ADMIN_SSO_MESSAGE_MAP.ticketUpdateFailed
 					);
 				})
 				.finally(() => {
@@ -587,8 +593,8 @@ export default function AdminSsoTicketsClient({
 		return (
 			<AdminLoadingState
 				icon={faShieldHalved}
-				label="读取会话状态"
-				subtitle="正在校验管理员会话"
+				label={ADMIN_STATUS_LABEL_MAP.sessionReading}
+				subtitle={ADMIN_MESSAGE_MAP.adminSessionChecking}
 				title="SSO Tickets"
 			/>
 		);
@@ -612,7 +618,7 @@ export default function AdminSsoTicketsClient({
 						</>
 					}
 					icon={faShieldHalved}
-					subtitle={message ?? '请先返回管理员页登录'}
+					subtitle={message ?? ADMIN_MESSAGE_MAP.adminSignInRequired}
 					title="SSO Tickets"
 				/>
 			</AdminShell>
@@ -652,19 +658,35 @@ export default function AdminSsoTicketsClient({
 			<AdminMetricPanel className="sm:grid-cols-2 xl:grid-cols-4">
 				<AdminMetric
 					label="当前页Ticket"
-					value={tickets === null ? '读取中' : tickets.tickets.length}
+					value={
+						tickets === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: tickets.tickets.length
+					}
 				/>
 				<AdminMetric
 					label="筛选总数"
-					value={tickets === null ? '读取中' : tickets.total_count}
+					value={
+						tickets === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: tickets.total_count
+					}
 				/>
 				<AdminMetric
 					label="当前页未消费"
-					value={tickets === null ? '读取中' : pendingCount}
+					value={
+						tickets === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: pendingCount
+					}
 				/>
 				<AdminMetric
 					label="页码"
-					value={tickets === null ? '读取中' : tickets.page}
+					value={
+						tickets === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: tickets.page
+					}
 				/>
 			</AdminMetricPanel>
 
@@ -703,7 +725,7 @@ export default function AdminSsoTicketsClient({
 				</AdminAdvancedFilterPopover>
 				<AdminDropdownFilter
 					ariaLabel="筛选Ticket状态"
-					options={statusOptions}
+					options={ADMIN_SSO_TICKET_STATUS_FILTER_OPTIONS}
 					value={statusFilter}
 					onAction={handleStatusAction}
 				/>
@@ -774,7 +796,7 @@ export default function AdminSsoTicketsClient({
 
 			{tickets === null ? (
 				<AdminEmptyState icon={faClock}>
-					正在读取SSO Tickets
+					{ADMIN_SSO_MESSAGE_MAP.ticketListReading}
 				</AdminEmptyState>
 			) : tickets.tickets.length === 0 ? (
 				<AdminEmptyState icon={faKey}>暂无SSO Tickets</AdminEmptyState>

@@ -1,7 +1,9 @@
 import { type NextRequest } from 'next/server';
 
+import { ADMIN_SSO_API_RESPONSE_CODE_MAP } from '@/features/account/sso/admin/apiResponseCodes';
 import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
 
+import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
 import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
@@ -63,13 +65,13 @@ export async function POST(request: NextRequest) {
 		return createNoStoreJsonResponse({
 			...result,
 			deleted_expired_tickets: ticketsDeleted,
-			message: 'sso-callbacks-dispatched',
+			message: ADMIN_SSO_API_RESPONSE_CODE_MAP.callbacksDispatched,
 		});
 	} catch (error) {
 		console.warn('Admin SSO callback dispatch failed.', {
 			errorCode: getLogSafeErrorCode(error),
 		});
 
-		return createNoStoreErrorResponse('server-misconfigured', 500);
+		return createNoStoreErrorResponse(SERVER_MISCONFIGURED_MESSAGE, 500);
 	}
 }

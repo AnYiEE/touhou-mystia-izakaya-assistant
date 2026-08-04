@@ -7,6 +7,7 @@ import {
 	AdminMetric,
 	AdminMetricPanel,
 } from '@/features/admin/client/components/panels';
+import { ADMIN_STATUS_LABEL_MAP } from '@/features/admin/copy';
 
 interface IAdminUserMetricsProps {
 	page: number;
@@ -33,7 +34,9 @@ export const AdminUserMetrics = memo<IAdminUserMetricsProps>(
 				<AdminMetric
 					label="用户总数"
 					value={
-						users === null ? '读取中' : `${totalCount ?? userCount}`
+						users === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: `${totalCount ?? userCount}`
 					}
 				/>
 				<AdminMetric
@@ -47,7 +50,9 @@ export const AdminUserMetrics = memo<IAdminUserMetricsProps>(
 				<AdminMetric
 					label="本页用户"
 					value={
-						users === null ? '读取中' : `${userCount} / ${pageSize}`
+						users === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: `${userCount} / ${pageSize}`
 					}
 				/>
 				<AdminMetric label="筛选状态" value={statusFilterLabel} />

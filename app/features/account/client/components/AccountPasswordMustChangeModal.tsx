@@ -34,6 +34,7 @@ import {
 	changeAccountPassword,
 	logoutAccount,
 } from '@/features/account/client/api';
+import { ACCOUNT_CLIENT_MESSAGE_MAP } from '@/features/account/client/copy';
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
 import {
 	applyAccountAuthSuccessResponse,
@@ -220,7 +221,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 										error instanceof Error
 											? error.message
 											: '',
-										'账号状态刷新失败，请稍后重试'
+										ACCOUNT_CLIENT_MESSAGE_MAP.accountStateRefreshFailed
 									)
 								);
 							}
@@ -289,7 +290,11 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 				});
 			})
 			.catch((error: unknown) => {
-				setMessage(error instanceof Error ? error.message : '改密失败');
+				setMessage(
+					error instanceof Error
+						? error.message
+						: ACCOUNT_CLIENT_MESSAGE_MAP.passwordChangeFailed
+				);
 			})
 			.finally(() => {
 				setIsSubmitting(false);
@@ -390,7 +395,11 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 				}
 			})
 			.catch((error: unknown) => {
-				setMessage(error instanceof Error ? error.message : '退出失败');
+				setMessage(
+					error instanceof Error
+						? error.message
+						: ACCOUNT_CLIENT_MESSAGE_MAP.logoutFailed
+				);
 			})
 			.finally(() => {
 				setIsSubmitting(false);
@@ -590,14 +599,14 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 									/>
 									<p>
 										{shouldResumeSso
-											? '密码更新前无法完成SSO授权，也不会签发登录票据。'
-											: '密码更新前，账号同步、云端数据操作和冲突处理会暂时暂停。'}
+											? ACCOUNT_CLIENT_MESSAGE_MAP.passwordMustChangeAuthorizePaused
+											: ACCOUNT_CLIENT_MESSAGE_MAP.passwordMustChangeAccountPaused}
 									</p>
 								</div>
 								<p>
 									{shouldResumeSso
-										? '如果暂时不处理，可以退出当前账号返回首页。'
-										: '如果暂时不处理，可以退出当前账号；本设备未完成的同步队列会留在本地，之后重新登录再继续。'}
+										? ACCOUNT_CLIENT_MESSAGE_MAP.passwordMustChangeLogoutAuthorize
+										: ACCOUNT_CLIENT_MESSAGE_MAP.passwordMustChangeLogoutAccount}
 								</p>
 							</div>
 						</div>

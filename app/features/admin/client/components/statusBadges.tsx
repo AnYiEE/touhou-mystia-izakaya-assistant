@@ -5,10 +5,12 @@ import { type PropsWithChildren, memo } from 'react';
 
 import { type TUserStatus } from '@/domain/account/contracts';
 
+import { ADMIN_USER_STATUS_LABEL_MAP } from '@/features/admin/copy';
+
 const STATUS_META_MAP = {
-	active: { label: '正常', tone: 'success' },
-	deleted: { label: '已删除', tone: 'danger' },
-	disabled: { label: '已禁用', tone: 'warning' },
+	active: { label: ADMIN_USER_STATUS_LABEL_MAP.active, tone: 'success' },
+	deleted: { label: ADMIN_USER_STATUS_LABEL_MAP.deleted, tone: 'danger' },
+	disabled: { label: ADMIN_USER_STATUS_LABEL_MAP.disabled, tone: 'warning' },
 } as const satisfies Record<
 	TUserStatus,
 	{ label: string; tone: TAdminBadgeTone }

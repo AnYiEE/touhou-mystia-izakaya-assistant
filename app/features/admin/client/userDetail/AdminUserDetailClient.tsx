@@ -25,6 +25,10 @@ import {
 } from '@/features/admin/client/components/shell';
 import { createAdminUserDisplayName } from '@/features/admin/client/components/userPresentation';
 import type { IAdminUserDetailInitialData } from '@/features/admin/contracts';
+import {
+	ADMIN_MESSAGE_MAP,
+	ADMIN_STATUS_LABEL_MAP,
+} from '@/features/admin/copy';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
 import { BackupImportsPanel } from './BackupImportsPanel';
@@ -85,7 +89,7 @@ export default function AdminUserDetailClient({
 			<AdminLoadingState
 				icon={faShieldHalved}
 				label="校验后台访问权限"
-				subtitle="正在读取管理员会话"
+				subtitle={ADMIN_MESSAGE_MAP.adminSessionReading}
 				title="用户详情"
 			/>
 		);
@@ -104,7 +108,7 @@ export default function AdminUserDetailClient({
 						</AdminHeaderActionLink>
 					}
 					icon={faShieldHalved}
-					subtitle={message ?? '请先返回管理员页登录'}
+					subtitle={message ?? ADMIN_MESSAGE_MAP.adminSignInRequired}
 					title="用户详情"
 				/>
 			</AdminShell>
@@ -141,11 +145,13 @@ export default function AdminUserDetailClient({
 						</>
 					}
 					icon={faUser}
-					subtitle="正在读取账号资料"
+					subtitle={ADMIN_MESSAGE_MAP.userDetailReading}
 					title="用户详情"
 				/>
 				{message !== null && <AdminMessage message={message} />}
-				<AdminEmptyState icon={faClock}>等待详情数据</AdminEmptyState>
+				<AdminEmptyState icon={faClock}>
+					{ADMIN_MESSAGE_MAP.userDetailWaiting}
+				</AdminEmptyState>
 			</AdminShell>
 		);
 	}
@@ -155,14 +161,14 @@ export default function AdminUserDetailClient({
 			<AdminShell>
 				<AdminHeader
 					icon={faUser}
-					subtitle="正在切换目标用户"
+					subtitle={ADMIN_MESSAGE_MAP.userDetailTargetSwitching}
 					title="用户详情"
 				/>
 				<AdminPanel className="flex items-center gap-3 text-small text-foreground-500">
 					<Button isLoading={isLoading} variant="flat">
-						加载中
+						{ADMIN_STATUS_LABEL_MAP.loading}
 					</Button>
-					<span>同步目标用户资料</span>
+					<span>{ADMIN_MESSAGE_MAP.userDetailTargetSyncing}</span>
 				</AdminPanel>
 			</AdminShell>
 		);

@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
@@ -9,6 +10,7 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -61,17 +63,25 @@ export async function DELETE(request: NextRequest) {
 	}
 
 	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
-		return createNoStoreErrorResponse('forbidden', 403);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.forbidden,
+			403
+		);
 	}
 
 	const deleteModule =
 		await import('@/features/account/server/useCases/deleteAccount');
 	const deleteResult = await deleteModule.deleteAccount(auth.data, request);
 	if (deleteResult.status === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 
-	const response = createNoStoreJsonResponse({ message: 'user-deleted' });
+	const response = createNoStoreJsonResponse({
+		message: ACCOUNT_API_RESPONSE_CODE_MAP.userDeleted,
+	});
 	sessionModule.clearAccountSessionCookie(response, request);
 
 	return response;

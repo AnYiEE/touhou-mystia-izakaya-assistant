@@ -32,26 +32,13 @@ import { globalStore } from '@/features/preferences/client/state/globalPersisten
 
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
-const cloudDeleteButtonLabelMap = {
-	delete: '删除云备份',
-	deleting: '正在删除数据',
-	fail: '删除失败',
-	success: '删除成功',
-} as const;
-
-const cloudDownloadButtonLabelMap = {
-	download: '还原云备份',
-	downloading: '正在获取数据',
-	fail: '还原失败',
-	success: '还原成功',
-} as const;
-
-const cloudUploadButtonLabelMap = {
-	fail: '上传失败',
-	success: '上传成功',
-	upload: '备份至云端',
-	uploading: '正在上传数据',
-} as const;
+import {
+	LEGACY_CLOUD_BACKUP_MESSAGE_MAP,
+	LEGACY_CLOUD_DELETE_BUTTON_LABEL_MAP,
+	LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_MAP,
+	LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_MAP,
+	createLegacyCloudBackupRetryMessage,
+} from './copy';
 
 type TCloudState = 'danger' | 'default' | 'success';
 
@@ -81,13 +68,15 @@ function setErrorState({
 		console.error({ message, status });
 		const errorMessage =
 			status === 400
-				? '无效的备份码'
+				? LEGACY_CLOUD_BACKUP_MESSAGE_MAP.invalidCode
 				: status === 404
-					? '目标文件不存在'
+					? LEGACY_CLOUD_BACKUP_MESSAGE_MAP.targetNotFound
 					: status === 409
-						? '备份正在处理中，请稍后重试'
+						? LEGACY_CLOUD_BACKUP_MESSAGE_MAP.busy
 						: status === 429
-							? `请${LEGACY_BACKUP_FREQUENCY_TTL / 1000 / 60}分钟后再试`
+							? createLegacyCloudBackupRetryMessage(
+									LEGACY_BACKUP_FREQUENCY_TTL / 1000 / 60
+								)
 							: status;
 		setLabel(`${label}（${errorMessage}）`);
 		if (type === 'Delete' && status === 404) {
@@ -119,7 +108,7 @@ export default memo(function CloudBackupPanel() {
 	const [isCloudDeleteButtonDisabled, setIsCloudDeleteButtonDisabled] =
 		useState(false);
 	const [cloudDeleteButtonLabel, setCloudDeleteButtonLabel] = useState(
-		cloudDeleteButtonLabelMap.delete as string
+		LEGACY_CLOUD_DELETE_BUTTON_LABEL_MAP.delete as string
 	);
 	const [cloudDeleteState, setCloudDeleteState] =
 		useState<TCloudState>('default');
@@ -127,7 +116,7 @@ export default memo(function CloudBackupPanel() {
 	const [isCloudDownloadButtonDisabled, setIsCloudDownloadButtonDisabled] =
 		useState(false);
 	const [cloudDownloadButtonLabel, setCloudDownloadButtonLabel] = useState(
-		cloudDownloadButtonLabelMap.download as string
+		LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_MAP.download as string
 	);
 	const [cloudDownloadState, setCloudDownloadState] =
 		useState<TCloudState>('default');
@@ -135,7 +124,7 @@ export default memo(function CloudBackupPanel() {
 	const [isCloudUploadButtonDisabled, setIsCloudUploadButtonDisabled] =
 		useState(false);
 	const [cloudUploadButtonLabel, setCloudUploadButtonLabel] = useState(
-		cloudUploadButtonLabelMap.upload as string
+		LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_MAP.upload as string
 	);
 	const [cloudUploadState, setCloudUploadState] =
 		useState<TCloudState>('default');
@@ -211,19 +200,25 @@ export default memo(function CloudBackupPanel() {
 					if (isObject(error) && 'status' in error) {
 						const message =
 							error.status === 404
-								? '云端未记录此备份码，可能已于他处删除？'
+								? LEGACY_CLOUD_BACKUP_MESSAGE_MAP.codeNotFound
 								: error.status === 409
-									? '备份正在处理中，请稍后重试'
+									? LEGACY_CLOUD_BACKUP_MESSAGE_MAP.busy
 									: error.status === 429
-										? `请${LEGACY_BACKUP_FREQUENCY_TTL / 1000 / 60}分钟后再试`
-										: '无效的备份码';
+										? createLegacyCloudBackupRetryMessage(
+												LEGACY_BACKUP_FREQUENCY_TTL /
+													1000 /
+													60
+											)
+										: LEGACY_CLOUD_BACKUP_MESSAGE_MAP.invalidCode;
 						setCloudCodeInfo(
 							<span className="text-tiny">（{message}）</span>
 						);
 					} else {
 						setCloudCodeInfo(
 							<span className="text-tiny">
-								（获取备份码信息失败）
+								（
+								{LEGACY_CLOUD_BACKUP_MESSAGE_MAP.codeInfoFailed}
+								）
 							</span>
 						);
 					}
@@ -247,12 +242,16 @@ export default memo(function CloudBackupPanel() {
 		}
 
 		setIsCloudDeleteButtonDisabled(true);
-		setCloudDeleteButtonLabel(cloudDeleteButtonLabelMap.deleting);
+		setCloudDeleteButtonLabel(
+			LEGACY_CLOUD_DELETE_BUTTON_LABEL_MAP.deleting
+		);
 
 		deleteLegacyBackup(normalizedCode)
 			.then(() => {
 				setCloudDeleteState('success');
-				setCloudDeleteButtonLabel(cloudDeleteButtonLabelMap.success);
+				setCloudDeleteButtonLabel(
+					LEGACY_CLOUD_DELETE_BUTTON_LABEL_MAP.success
+				);
 				globalStore.persistence.cloudCode.set(null);
 				trackEvent(
 					trackEvent.category.click,
@@ -263,7 +262,7 @@ export default memo(function CloudBackupPanel() {
 			.catch((error: unknown) => {
 				setErrorState({
 					error,
-					label: cloudDeleteButtonLabelMap.fail,
+					label: LEGACY_CLOUD_DELETE_BUTTON_LABEL_MAP.fail,
 					setLabel: setCloudDeleteButtonLabel,
 					setState: setCloudDeleteState,
 					type: 'Delete',
@@ -273,7 +272,9 @@ export default memo(function CloudBackupPanel() {
 				const timerId = setTimeout(() => {
 					setCloudDeleteState('default');
 					setIsCloudDeleteButtonDisabled(false);
-					setCloudDeleteButtonLabel(cloudDeleteButtonLabelMap.delete);
+					setCloudDeleteButtonLabel(
+						LEGACY_CLOUD_DELETE_BUTTON_LABEL_MAP.delete
+					);
 					cloudTimers.current = cloudTimers.current.filter(
 						(id) => id !== timerId
 					);
@@ -295,7 +296,9 @@ export default memo(function CloudBackupPanel() {
 		}
 
 		setIsCloudDownloadButtonDisabled(true);
-		setCloudDownloadButtonLabel(cloudDownloadButtonLabelMap.downloading);
+		setCloudDownloadButtonLabel(
+			LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_MAP.downloading
+		);
 		let didDownload = false;
 
 		downloadLegacyBackup<TLegacyMealData>(code)
@@ -327,7 +330,7 @@ export default memo(function CloudBackupPanel() {
 
 				setCloudDownloadState('success');
 				setCloudDownloadButtonLabel(
-					cloudDownloadButtonLabelMap.success
+					LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_MAP.success
 				);
 				globalStore.persistence.cloudCode.set(code);
 				didDownload = true;
@@ -340,7 +343,7 @@ export default memo(function CloudBackupPanel() {
 			.catch((error: unknown) => {
 				setErrorState({
 					error,
-					label: cloudDownloadButtonLabelMap.fail,
+					label: LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_MAP.fail,
 					setLabel: setCloudDownloadButtonLabel,
 					setState: setCloudDownloadState,
 					type: 'Download',
@@ -356,7 +359,7 @@ export default memo(function CloudBackupPanel() {
 					setCloudDownloadState('default');
 					setIsCloudDownloadButtonDisabled(false);
 					setCloudDownloadButtonLabel(
-						cloudDownloadButtonLabelMap.download
+						LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_MAP.download
 					);
 					cloudTimers.current = cloudTimers.current.filter(
 						(id) => id !== timerId
@@ -368,7 +371,9 @@ export default memo(function CloudBackupPanel() {
 
 	const handleCloudUploadButtonPress = useCallback(() => {
 		setIsCloudUploadButtonDisabled(true);
-		setCloudUploadButtonLabel(cloudUploadButtonLabelMap.uploading);
+		setCloudUploadButtonLabel(
+			LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_MAP.uploading
+		);
 
 		let cloudCodeToRefresh = currentCloudCode;
 		const cloudCode = currentCloudCode?.trim();
@@ -381,7 +386,9 @@ export default memo(function CloudBackupPanel() {
 			.then(({ code }) => {
 				cloudCodeToRefresh = code;
 				setCloudUploadState('success');
-				setCloudUploadButtonLabel(cloudUploadButtonLabelMap.success);
+				setCloudUploadButtonLabel(
+					LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_MAP.success
+				);
 				globalStore.persistence.cloudCode.set(code);
 				trackEvent(
 					trackEvent.category.click,
@@ -392,7 +399,7 @@ export default memo(function CloudBackupPanel() {
 			.catch((error: unknown) => {
 				setErrorState({
 					error,
-					label: cloudUploadButtonLabelMap.fail,
+					label: LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_MAP.fail,
 					setLabel: setCloudUploadButtonLabel,
 					setState: setCloudUploadState,
 					type: 'Upload',
@@ -403,7 +410,9 @@ export default memo(function CloudBackupPanel() {
 				const timerId = setTimeout(() => {
 					setCloudUploadState('default');
 					setIsCloudUploadButtonDisabled(false);
-					setCloudUploadButtonLabel(cloudUploadButtonLabelMap.upload);
+					setCloudUploadButtonLabel(
+						LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_MAP.upload
+					);
 					cloudTimers.current = cloudTimers.current.filter(
 						(id) => id !== timerId
 					);

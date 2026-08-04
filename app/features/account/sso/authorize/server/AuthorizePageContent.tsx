@@ -1,5 +1,6 @@
 import AccountInitialStateHydrator from '@/features/account/client/components/AccountInitialStateHydrator';
 import AccountSsoGrantInitialDataHydrator from '@/features/account/client/components/AccountSsoGrantInitialDataHydrator';
+import { SSO_AUTHORIZE_MESSAGE_MAP } from '@/features/account/sso/authorize/copy';
 import {
 	SsoAuthorizeAccountGate,
 	SsoAuthorizeAccountGateButton,
@@ -16,10 +17,10 @@ import { readSsoAuthorizeInitialData } from './initialData';
 function SsoAuthorizeMessage({ status }: { status: string | null }) {
 	const message =
 		status === 'cancelled'
-			? '授权已取消。'
+			? SSO_AUTHORIZE_MESSAGE_MAP.authorizationCancelled
 			: status === 'expired'
-				? '授权上下文已过期，请从外部服务重新发起登录。'
-				: '授权请求无效或已失效，请从外部服务重新发起登录。';
+				? SSO_AUTHORIZE_MESSAGE_MAP.authorizationExpired
+				: SSO_AUTHORIZE_MESSAGE_MAP.invalidRequest;
 
 	return (
 		<div className="min-h-main-content text-foreground">

@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
@@ -9,6 +10,7 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -66,10 +68,16 @@ export async function DELETE(
 	}
 
 	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
-		return createNoStoreErrorResponse('forbidden', 403);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.forbidden,
+			403
+		);
 	}
 	if (sessionId === auth.data.session.id) {
-		return createNoStoreErrorResponse('cannot-revoke-current-session', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.cannotRevokeCurrentSession,
+			400
+		);
 	}
 
 	const [sessionsModule, accountAuditModule] = await Promise.all([
@@ -104,11 +112,19 @@ export async function DELETE(
 			)
 	);
 	if (didDelete.status === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 	if (didDelete.status === 'not-found') {
-		return createNoStoreErrorResponse('session-not-found', 404);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.sessionNotFound,
+			404
+		);
 	}
 
-	return createNoStoreJsonResponse({ message: 'session-revoked' });
+	return createNoStoreJsonResponse({
+		message: ACCOUNT_API_RESPONSE_CODE_MAP.sessionRevoked,
+	});
 }

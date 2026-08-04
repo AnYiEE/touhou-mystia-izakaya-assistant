@@ -1,5 +1,6 @@
 import type { IAdminSsoUserGrantsData } from '@/features/account/contracts';
 import type { IAdminUserDetailInitialData } from '@/features/admin/contracts';
+import { ADMIN_MESSAGE_MAP } from '@/features/admin/copy';
 import {
 	getAdminListHref,
 	getAdminListPageFromSearchValue,
@@ -131,7 +132,9 @@ export async function readAdminUserDetailInitialData(
 				ssoGrants = await readInitialSsoGrants(id);
 			} catch (error) {
 				message =
-					error instanceof Error ? error.message : '读取SSO授权失败';
+					error instanceof Error
+						? error.message
+						: ADMIN_MESSAGE_MAP.ssoGrantReadFailed;
 			}
 		}
 
@@ -148,7 +151,9 @@ export async function readAdminUserDetailInitialData(
 			...initialData,
 			admin: authResult.admin,
 			message:
-				error instanceof Error ? error.message : '读取用户详情失败',
+				error instanceof Error
+					? error.message
+					: ADMIN_MESSAGE_MAP.userDetailReadFailed,
 		};
 	}
 }

@@ -41,6 +41,11 @@ import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
+import {
+	SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP,
+	SUGGESTED_MEAL_STATUS_MESSAGE_MAP,
+} from './suggestedMealCopy';
+
 const REFRESHING_NOTICE_DELAY_MS = 160;
 const STATUS_NOTICE_TRANSITION_DURATION_SECONDS = 0.14;
 
@@ -119,11 +124,14 @@ export default function SuggestedMealCard() {
 			suggestedMealRows !== null && !checkLengthEmpty(suggestedMealRows);
 		const isResultInteractionDisabled = suggestionStatus !== 'success';
 		const statusNotice = isRefreshingNoticeVisible
-			? { className: 'text-default-500', text: '正在更新推荐结果…' }
+			? {
+					className: 'text-default-500',
+					text: SUGGESTED_MEAL_STATUS_MESSAGE_MAP.refreshing,
+				}
 			: suggestionStatus === 'error' && hasSuggestedMealRows
 				? {
 						className: 'text-danger-600',
-						text: '推荐更新失败，仍显示上次结果',
+						text: SUGGESTED_MEAL_STATUS_MESSAGE_MAP.refreshFailed,
 					}
 				: null;
 
@@ -350,12 +358,20 @@ export default function SuggestedMealCard() {
 					<Divider className="md:hidden" />
 					{hasUnsetPopularOrderTag ? (
 						<Placeholder className="space-y-2 py-4">
-							<p>选定的点单需求包含流行趋势标签</p>
-							<p>请您先在设置中指定「流行趋势」</p>
+							<p>
+								{
+									SUGGESTED_MEAL_STATUS_MESSAGE_MAP.popularTrendUnset
+								}
+							</p>
+							<p>
+								{
+									SUGGESTED_MEAL_STATUS_MESSAGE_MAP.popularTrendRequired
+								}
+							</p>
 						</Placeholder>
 					) : suggestionStatus === 'pending' ? (
 						<Placeholder className="py-4">
-							正在计算推荐套餐…
+							{SUGGESTED_MEAL_STATUS_MESSAGE_MAP.loading}
 						</Placeholder>
 					) : hasSuggestedMealRows ? (
 						suggestedMealRows.map(
@@ -636,15 +652,15 @@ export default function SuggestedMealCard() {
 																							'pending' ||
 																						alternativesStatus ===
 																							'idle'
-																							? '正在查找…'
+																							? SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.loading
 																							: alternativesStatus ===
 																								  'error'
-																								? '加载失败'
+																								? SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.failed
 																								: checkLengthEmpty(
 																											alternatives
 																									  )
-																									? '无可用替换'
-																									: '可替换为'}
+																									? SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.empty
+																									: SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.ready}
 																					</span>
 																					{!checkLengthEmpty(
 																						alternatives
@@ -752,11 +768,11 @@ export default function SuggestedMealCard() {
 						)
 					) : suggestionStatus === 'error' ? (
 						<Placeholder className="py-4">
-							推荐计算失败，请调整条件后重试
+							{SUGGESTED_MEAL_STATUS_MESSAGE_MAP.failed}
 						</Placeholder>
 					) : (
 						<Placeholder className="py-4">
-							未找到匹配的推荐套餐
+							{SUGGESTED_MEAL_STATUS_MESSAGE_MAP.noMatch}
 						</Placeholder>
 					)}
 				</div>

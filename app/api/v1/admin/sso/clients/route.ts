@@ -3,6 +3,7 @@ import { type NextRequest } from 'next/server';
 import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
 import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	getTrimmedSearchParam,
 	parsePositiveIntegerParam,
@@ -71,7 +72,10 @@ export async function GET(request: NextRequest) {
 		request.nextUrl.searchParams.get('has_grants')
 	);
 	if (page === null || pageSize === null || hasGrants === null) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const serviceModule =
@@ -84,7 +88,10 @@ export async function GET(request: NextRequest) {
 		getTrimmedSearchParam(request.nextUrl.searchParams, 'status')
 	);
 	if (callback === null || status === null) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 	const result = await serviceModule.listAdminSsoClients({
 		page,
@@ -119,7 +126,10 @@ export async function POST(request: NextRequest) {
 		MAX_ACCOUNT_JSON_BODY_BYTES
 	);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 
 	const payloadModule =
@@ -128,7 +138,10 @@ export async function POST(request: NextRequest) {
 		bodyResult.status === 'ok' ? bodyResult.data : null
 	);
 	if (body === null) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const serviceModule =

@@ -57,6 +57,13 @@ export const isolatedFutureSchemaNamespaces = new Map<
 
 const dirtyIntentCollisionNamespaces = new Map<string, Set<TSyncNamespace>>();
 
+const DIRTY_QUEUE_COLLISION_SOURCE_LABEL_MAP = {
+	canonicalQueue: '兼容队列版本',
+	legacyQueue: '旧标签页版本',
+	nextClient: '新客户端保留版本',
+	preMigration: '转换前保留版本',
+} as const;
+
 function setDirtyIntentCollisionDetected(
 	userId: string,
 	namespace: TSyncNamespace,
@@ -763,25 +770,25 @@ export function readDirtyQueueCollisionState(
 	const evidence = [
 		...intentState.intents.flatMap((intent) => [
 			{
-				label: '新客户端保留版本',
+				label: DIRTY_QUEUE_COLLISION_SOURCE_LABEL_MAP.nextClient,
 				sourceKey: null,
 				value: intent.resultValue,
 			},
 			{
-				label: '转换前保留版本',
+				label: DIRTY_QUEUE_COLLISION_SOURCE_LABEL_MAP.preMigration,
 				sourceKey: null,
 				value: intent.expectedValue,
 			},
 		]),
 		{
-			label: '兼容队列版本',
+			label: DIRTY_QUEUE_COLLISION_SOURCE_LABEL_MAP.canonicalQueue,
 			sourceKey: canonicalKey,
 			value: canonicalValue,
 		},
 		...(namespace === SYNC_NAMESPACE_MAP.customerRarePlans
 			? [
 					{
-						label: '旧标签页版本',
+						label: DIRTY_QUEUE_COLLISION_SOURCE_LABEL_MAP.legacyQueue,
 						sourceKey: legacyKey,
 						value: legacyValue,
 					},

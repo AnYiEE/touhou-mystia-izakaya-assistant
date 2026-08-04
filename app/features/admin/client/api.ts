@@ -1,5 +1,6 @@
 import { type TAccountSyncStatus } from '@/domain/account/contracts';
 
+import { type ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import type {
 	IAccountUserProfile,
 	IAdminAuditLogListData,
@@ -9,10 +10,16 @@ import type {
 	IAdminUserDetailData,
 	IAdminUserListData,
 } from '@/features/account/contracts';
+import { type ADMIN_API_RESPONSE_CODE_MAP } from '@/features/admin/apiResponseCodes';
 import type {
 	TAdminApiResult,
 	TAdminUserDetailApiResult,
 } from '@/features/admin/contracts';
+import {
+	ADMIN_CLIENT_ERROR_MESSAGE_MAP,
+	ADMIN_CLIENT_REQUEST_FALLBACK_MESSAGE_MAP,
+	createAdminRateLimitErrorMessage,
+} from '@/features/admin/copy';
 
 import { createJsonRequestInit } from '@/infrastructure/http/client/createJsonRequestInit';
 import { fetchServiceApi } from '@/infrastructure/http/client/fetchServiceApi';
@@ -30,51 +37,24 @@ import {
 type TAdminAuditActorType =
 	IAdminAuditLogListData['logs'][number]['actor_type'];
 
-const ADMIN_ERROR_MESSAGE_MAP: Record<string, string> = {
-	'admin-session-expired': '管理员登录已失效，请重新登录',
-	'announcement-conflict': '通知已被其他管理员更新，请刷新后再编辑',
-	'announcement-not-found': '通知不存在或已被删除',
-	'announcement-not-visible':
-		'通知当前不可见，请检查启用状态、时间和受众设置',
-	'client-disabled': 'SSO客户端已禁用',
-	'feature-disabled': '功能暂不可用',
-	'invalid-object-structure': '提交内容格式无效，请检查后重试',
-	'invalid-password-rule': '新密码不符合密码规则',
-	'invalid-user-status': '用户状态无效，无法完成操作',
-	'last-active-secret': '至少需要保留一个可用的客户端Secret',
-	'payload-too-large': '提交内容过大',
-	'rate-limit': '操作过于频繁，请稍后重试',
-	'server-misconfigured': '服务器配置异常，请查看服务端日志',
-	'sso-callback-queue-busy': '回调正在处理中，请稍后重试',
-	'sso-callback-queue-not-found': '回调队列记录不存在或已处理',
-	'sso-client-conflict': 'SSO客户端ID已存在，请更换后重试',
-	'sso-client-not-found': 'SSO客户端不存在或已被删除',
-	'sso-client-secret-not-found': 'SSO客户端Secret不存在或已被删除',
-	'sso-grant-not-found': 'SSO授权不存在或已被撤销',
-	'target-user-not-found': '目标用户不存在或已被删除',
-	unauthorized: '管理员登录已失效，请重新登录',
-	'update-not-applied': '数据已变化，请刷新后重试',
-	'user-deleted': '用户已删除，无法完成操作',
-};
-
 function getAdminClientErrorMessage(error: ServiceApiError) {
-	const mappedMessage = ADMIN_ERROR_MESSAGE_MAP[error.message];
+	const mappedMessage = ADMIN_CLIENT_ERROR_MESSAGE_MAP[error.message];
 	if (mappedMessage !== undefined) {
 		return mappedMessage;
 	}
 	if (error.status === 0) {
-		return '网络连接失败，请稍后重试。';
+		return ADMIN_CLIENT_REQUEST_FALLBACK_MESSAGE_MAP.networkFailed;
 	}
 	if (error.status === 429) {
 		return error.retryAfter === null
-			? '操作过于频繁，请稍后重试。'
-			: `操作过于频繁，请${Math.ceil(error.retryAfter)}秒后重试。`;
+			? ADMIN_CLIENT_REQUEST_FALLBACK_MESSAGE_MAP.rateLimited
+			: createAdminRateLimitErrorMessage(error.retryAfter);
 	}
 	if (error.status >= 500) {
-		return '服务器暂时无法完成操作，请稍后重试。';
+		return ADMIN_CLIENT_REQUEST_FALLBACK_MESSAGE_MAP.serverFailed;
 	}
 
-	return '操作失败，请稍后重试。';
+	return ADMIN_CLIENT_REQUEST_FALLBACK_MESSAGE_MAP.unexpected;
 }
 
 export async function fetchAdminApiResult<TData>(
@@ -128,7 +108,9 @@ export function loginAdmin(body: IAdminLoginBody) {
 }
 
 export function logoutAdmin(csrfToken: string) {
-	return fetchAdminApiResult<{ message: 'admin-logged-out' }>(
+	return fetchAdminApiResult<{
+		message: typeof ADMIN_API_RESPONSE_CODE_MAP.loggedOut;
+	}>(
 		'/api/v1/admin/auth/logout',
 		createAdminCsrfRequestInit('POST', csrfToken)
 	);
@@ -213,7 +195,9 @@ export function resetAdminUserPassword(
 	body: IAdminResetPasswordBody,
 	csrfToken: string
 ) {
-	return mutateAdminUserDetail<{ message: 'password-reset' }>(
+	return mutateAdminUserDetail<{
+		message: typeof ACCOUNT_API_RESPONSE_CODE_MAP.passwordReset;
+	}>(
 		id,
 		`/api/v1/admin/users/${encodeURIComponent(id)}/reset-password`,
 		createJsonRequestInit('POST', body, csrfToken)
@@ -221,7 +205,9 @@ export function resetAdminUserPassword(
 }
 
 export function disableAdminUser(id: string, csrfToken: string) {
-	return mutateAdminUserDetail<{ message: 'user-disabled' }>(
+	return mutateAdminUserDetail<{
+		message: typeof ACCOUNT_API_RESPONSE_CODE_MAP.userDisabled;
+	}>(
 		id,
 		`/api/v1/admin/users/${encodeURIComponent(id)}/disable`,
 		createAdminCsrfRequestInit('POST', csrfToken)
@@ -229,7 +215,9 @@ export function disableAdminUser(id: string, csrfToken: string) {
 }
 
 export function enableAdminUser(id: string, csrfToken: string) {
-	return mutateAdminUserDetail<{ message: 'user-enabled' }>(
+	return mutateAdminUserDetail<{
+		message: typeof ACCOUNT_API_RESPONSE_CODE_MAP.userEnabled;
+	}>(
 		id,
 		`/api/v1/admin/users/${encodeURIComponent(id)}/enable`,
 		createAdminCsrfRequestInit('POST', csrfToken)
@@ -237,7 +225,9 @@ export function enableAdminUser(id: string, csrfToken: string) {
 }
 
 export function restoreAdminUser(id: string, csrfToken: string) {
-	return mutateAdminUserDetail<{ message: 'user-restored' }>(
+	return mutateAdminUserDetail<{
+		message: typeof ACCOUNT_API_RESPONSE_CODE_MAP.userRestored;
+	}>(
 		id,
 		`/api/v1/admin/users/${encodeURIComponent(id)}/restore`,
 		createAdminCsrfRequestInit('POST', csrfToken)
@@ -245,7 +235,9 @@ export function restoreAdminUser(id: string, csrfToken: string) {
 }
 
 export function deleteAdminUserSessions(id: string, csrfToken: string) {
-	return mutateAdminUserDetail<{ message: 'sessions-deleted' }>(
+	return mutateAdminUserDetail<{
+		message: typeof ACCOUNT_API_RESPONSE_CODE_MAP.sessionsDeleted;
+	}>(
 		id,
 		`/api/v1/admin/users/${encodeURIComponent(id)}/sessions`,
 		createAdminCsrfRequestInit('DELETE', csrfToken)

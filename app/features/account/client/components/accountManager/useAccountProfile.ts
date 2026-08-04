@@ -10,6 +10,7 @@ import {
 	setInitialAccountPassword,
 } from '@/features/account/client/api';
 import { createAccountClientId } from '@/features/account/client/clientId';
+import { ACCOUNT_CLIENT_MESSAGE_MAP } from '@/features/account/client/copy';
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
 import {
 	applyAccountAuthSuccessResponse,
@@ -35,6 +36,7 @@ import {
 	handleUnauthorizedAccountActionError,
 	handleUnauthorizedAccountError,
 } from './controller';
+import { ACCOUNT_MANAGER_MESSAGE_MAP } from './copy';
 import { type IUseAccountPasskeysResult } from './useAccountPasskeys';
 
 interface IUseAccountProfileOptions {
@@ -218,7 +220,7 @@ export function useAccountProfile({
 										error instanceof Error
 											? error.message
 											: '',
-										'账号状态刷新失败，请稍后重试'
+										ACCOUNT_CLIENT_MESSAGE_MAP.accountStateRefreshFailed
 									)
 								);
 							}
@@ -262,7 +264,9 @@ export function useAccountProfile({
 				setNewPassword('');
 				setPasswordChangeError(null);
 				setMessage(
-					isInitialPasswordSetup ? '登录密码已设置' : '密码已更新'
+					isInitialPasswordSetup
+						? ACCOUNT_MANAGER_MESSAGE_MAP.passwordSet
+						: ACCOUNT_MANAGER_MESSAGE_MAP.passwordUpdated
 				);
 				void publishAccountRuntimeInvalidation({
 					reason: 'password-changed',
@@ -286,7 +290,11 @@ export function useAccountProfile({
 				});
 			})
 			.catch((error: unknown) => {
-				setMessage(error instanceof Error ? error.message : '改密失败');
+				setMessage(
+					error instanceof Error
+						? error.message
+						: ACCOUNT_CLIENT_MESSAGE_MAP.passwordChangeFailed
+				);
 			})
 			.finally(() => {
 				setIsSubmitting(false);
@@ -355,7 +363,7 @@ export function useAccountProfile({
 			isProfileNicknameUnchanged
 		) {
 			setProfileError(null);
-			setMessage('资料已更新');
+			setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.profileUpdated);
 			return;
 		}
 		if (isProfileNicknameInvalid) {
@@ -426,7 +434,7 @@ export function useAccountProfile({
 										error instanceof Error
 											? error.message
 											: '',
-										'账号状态刷新失败，请稍后重试'
+										ACCOUNT_CLIENT_MESSAGE_MAP.accountStateRefreshFailed
 									)
 								);
 							}
@@ -474,7 +482,7 @@ export function useAccountProfile({
 				setProfileNickname(data.user.nickname ?? '');
 				setProfileUsername(data.user.username);
 				setProfileError(null);
-				setMessage('资料已更新');
+				setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.profileUpdated);
 				signalCurrentWebAuthnUserDetails({
 					displayName: data.user.nickname ?? data.user.username,
 					userId: data.user.id,
@@ -501,7 +509,9 @@ export function useAccountProfile({
 				}
 
 				setProfileError(
-					error instanceof Error ? error.message : '资料修改失败'
+					error instanceof Error
+						? error.message
+						: ACCOUNT_MANAGER_MESSAGE_MAP.profileUpdateFailed
 				);
 			})
 			.finally(() => {

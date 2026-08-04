@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
@@ -8,6 +9,7 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -60,7 +62,10 @@ export async function POST(request: NextRequest) {
 	}
 
 	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
-		return createNoStoreErrorResponse('forbidden', 403);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.forbidden,
+			403
+		);
 	}
 
 	const [sessionsModule, accountAuditModule] = await Promise.all([
@@ -90,10 +95,15 @@ export async function POST(request: NextRequest) {
 			)
 	);
 	if (!didLogout) {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 
-	const response = createNoStoreJsonResponse({ message: 'logged-out' });
+	const response = createNoStoreJsonResponse({
+		message: ACCOUNT_API_RESPONSE_CODE_MAP.loggedOut,
+	});
 	sessionModule.clearAccountSessionCookie(response, request);
 
 	return response;

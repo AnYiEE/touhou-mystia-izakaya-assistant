@@ -1,6 +1,7 @@
 import { type RegistrationResponseJSON } from '@simplewebauthn/server';
 import { type NextRequest } from 'next/server';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import {
 	checkWebauthnCredentialNamePolicy,
 	normalizeWebauthnCredentialName,
@@ -13,6 +14,7 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import { createNoStoreErrorResponse } from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
@@ -57,7 +59,10 @@ export async function POST(request: NextRequest) {
 			request
 		);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
@@ -66,7 +71,10 @@ export async function POST(request: NextRequest) {
 		typeof body.response !== 'object' ||
 		body.response === null
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const registrationResponse = body.response as RegistrationResponseJSON;
@@ -74,7 +82,10 @@ export async function POST(request: NextRequest) {
 		typeof body.name === 'string' ? body.name : ''
 	);
 	if (!checkWebauthnCredentialNamePolicy(name)) {
-		return createNoStoreErrorResponse('invalid-passkey-name', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.invalidPasskeyName,
+			400
+		);
 	}
 
 	const [
@@ -93,7 +104,10 @@ export async function POST(request: NextRequest) {
 
 	const challengeCookie = webauthnModule.getWebauthnChallengeCookie(request);
 	if (challengeCookie === undefined) {
-		return createNoStoreErrorResponse('challenge-not-found', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.challengeNotFound,
+			400
+		);
 	}
 
 	const challenge = await challengesModule.consumeChallenge(
@@ -101,7 +115,10 @@ export async function POST(request: NextRequest) {
 		'account_registration'
 	);
 	if (challenge === null) {
-		const response = createNoStoreErrorResponse('challenge-expired', 400);
+		const response = createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.challengeExpired,
+			400
+		);
 		webauthnModule.clearWebauthnChallengeCookie(response, request);
 
 		return response;
@@ -115,7 +132,7 @@ export async function POST(request: NextRequest) {
 		});
 	} catch {
 		const response = createNoStoreErrorResponse(
-			'webauthn-verification-failed',
+			ACCOUNT_API_RESPONSE_CODE_MAP.webauthnVerificationFailed,
 			400
 		);
 		webauthnModule.clearWebauthnChallengeCookie(response, request);
@@ -125,7 +142,7 @@ export async function POST(request: NextRequest) {
 
 	if (!verification.verified) {
 		const response = createNoStoreErrorResponse(
-			'webauthn-verification-failed',
+			ACCOUNT_API_RESPONSE_CODE_MAP.webauthnVerificationFailed,
 			400
 		);
 		webauthnModule.clearWebauthnChallengeCookie(response, request);

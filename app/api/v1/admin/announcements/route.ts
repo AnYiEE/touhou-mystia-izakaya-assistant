@@ -10,6 +10,7 @@ import {
 	checkAnnouncementLevel,
 } from '@/features/announcements/validation';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import { parsePositiveIntegerParam } from '@/infrastructure/http/queryParameters';
 import {
 	createNoStoreErrorResponse,
@@ -44,7 +45,10 @@ export async function GET(request: NextRequest) {
 		MAX_PAGE_SIZE
 	);
 	if (page === null || pageSize === null) {
-		return createNoStoreErrorResponse('invalid-pagination', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidPagination,
+			400
+		);
 	}
 
 	const includeArchived =
@@ -59,7 +63,10 @@ export async function GET(request: NextRequest) {
 			!checkAnnouncementComputedStatus(rawComputedStatus)) ||
 		(rawLevel !== '' && !checkAnnouncementLevel(rawLevel))
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const announcementModule =
@@ -97,14 +104,20 @@ export async function POST(request: NextRequest) {
 		MAX_ACCOUNT_JSON_BODY_BYTES
 	);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 
 	const body = parseAdminAnnouncementBody(
 		bodyResult.status === 'ok' ? bodyResult.data : null
 	);
 	if (body === null) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const announcementModule =

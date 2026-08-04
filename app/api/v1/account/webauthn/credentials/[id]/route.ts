@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import {
 	checkWebauthnCredentialNamePolicy,
 	normalizeWebauthnCredentialName,
@@ -15,6 +16,7 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -79,7 +81,10 @@ export async function DELETE(
 	}
 
 	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
-		return createNoStoreErrorResponse('forbidden', 403);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.forbidden,
+			403
+		);
 	}
 
 	const [credentialsModule, accountAuditModule] = await Promise.all([
@@ -115,13 +120,21 @@ export async function DELETE(
 				)
 		);
 	if (deleteResult.status === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 	if (deleteResult.status === 'not-found') {
-		return createNoStoreErrorResponse('passkey-not-found', 404);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.passkeyNotFound,
+			404
+		);
 	}
 
-	return createNoStoreJsonResponse({ message: 'passkey-deleted' });
+	return createNoStoreJsonResponse({
+		message: ACCOUNT_API_RESPONSE_CODE_MAP.passkeyDeleted,
+	});
 }
 
 export async function PATCH(
@@ -173,13 +186,19 @@ export async function PATCH(
 	}
 
 	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
-		return createNoStoreErrorResponse('forbidden', 403);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.forbidden,
+			403
+		);
 	}
 
 	const bodyResult =
 		await readJsonBodyResult<IWebauthnCredentialRenameBody>(request);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
@@ -187,7 +206,10 @@ export async function PATCH(
 		typeof body?.name === 'string' ? body.name : ''
 	);
 	if (!checkWebauthnCredentialNamePolicy(name)) {
-		return createNoStoreErrorResponse('invalid-passkey-name', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.invalidPasskeyName,
+			400
+		);
 	}
 
 	const [credentialsModule, presentationModule, webauthnModule] =
@@ -204,10 +226,16 @@ export async function PATCH(
 			{ id: auth.data.session.id, token_hash: auth.data.sessionTokenHash }
 		);
 	if (renameResult.status === 'unauthorized') {
-		return createNoStoreErrorResponse('unauthorized', 401);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 	if (renameResult.status === 'not-found') {
-		return createNoStoreErrorResponse('passkey-not-found', 404);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.passkeyNotFound,
+			404
+		);
 	}
 	const { rpID } = webauthnModule.getWebAuthnRelyingParty();
 

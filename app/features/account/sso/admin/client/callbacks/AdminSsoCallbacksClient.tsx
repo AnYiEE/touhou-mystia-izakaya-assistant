@@ -41,6 +41,13 @@ import {
 	getAdminSsoCallbackEventLabel,
 } from '@/features/account/sso/admin/client/components/statusBadges';
 import type { IAdminSsoCallbacksInitialData } from '@/features/account/sso/admin/contracts';
+import {
+	ADMIN_SSO_CALLBACK_EVENT_FILTER_OPTIONS,
+	ADMIN_SSO_CALLBACK_QUEUE_STATUS_FILTER_OPTIONS,
+	ADMIN_SSO_CALLBACK_QUEUE_STATUS_LABEL_MAP,
+	ADMIN_SSO_MESSAGE_MAP,
+	createAdminSsoCallbackDispatchMessage,
+} from '@/features/account/sso/admin/copy';
 import { fetchAdminMe } from '@/features/admin/client/api';
 import { AdminConfirmButton } from '@/features/admin/client/components/confirmation';
 import {
@@ -89,6 +96,10 @@ import {
 	isAdminSessionInvalidResult,
 } from '@/features/admin/client/session';
 import type { TAdminApiResult } from '@/features/admin/contracts';
+import {
+	ADMIN_MESSAGE_MAP,
+	ADMIN_STATUS_LABEL_MAP,
+} from '@/features/admin/copy';
 import { createAdminHref } from '@/features/admin/navigation';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
@@ -102,36 +113,18 @@ type TConfirmAction =
 
 const pageInputRegexp = /^\d*$/u;
 
-const eventOptions = [
-	{ label: '全部事件', value: '' },
-	{ label: '客户端删除', value: 'client_deleted' },
-	{ label: '客户端禁用', value: 'client_disabled' },
-	{ label: '授权撤销', value: 'grant_revoked' },
-	{ label: 'Secret轮换', value: 'secret_rotated' },
-	{ label: '用户删除', value: 'user_deleted' },
-	{ label: '用户禁用', value: 'user_disabled' },
-	{ label: '资料更新', value: 'user_profile_updated' },
-] as const;
-
-const statusOptions = [
-	{ label: '全部状态', value: '' },
-	{ label: '待投递', value: 'pending' },
-	{ label: '重试中', value: 'retrying' },
-	{ label: '最终失败', value: 'final_failed' },
-] as const;
-
 const callbackFilterReferenceGroups = [
 	{
 		label: '事件',
-		values: eventOptions
-			.filter((option) => option.value !== '')
-			.map((option) => ({ label: option.label, value: option.value })),
+		values: ADMIN_SSO_CALLBACK_EVENT_FILTER_OPTIONS.filter(
+			(option) => option.value !== ''
+		).map((option) => ({ label: option.label, value: option.value })),
 	},
 	{
 		label: '状态',
-		values: statusOptions
-			.filter((option) => option.value !== '')
-			.map((option) => ({ label: option.label, value: option.value })),
+		values: ADMIN_SSO_CALLBACK_QUEUE_STATUS_FILTER_OPTIONS.filter(
+			(option) => option.value !== ''
+		).map((option) => ({ label: option.label, value: option.value })),
 	},
 ] as const;
 
@@ -238,7 +231,7 @@ const AdminSsoCallbackRow = memo<IAdminSsoCallbackRowProps>(
 								onRetry(callback.id);
 							}}
 						>
-							重试
+							{ADMIN_STATUS_LABEL_MAP.retry}
 						</AdminConfirmButton>
 						<AdminConfirmButton
 							color="danger"
@@ -378,7 +371,7 @@ export default function AdminSsoCallbacksClient({
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '读取SSO Callback队列失败'
+							: ADMIN_SSO_MESSAGE_MAP.callbackQueueReadFailed
 					);
 				})
 				.finally(() => {
@@ -421,7 +414,7 @@ export default function AdminSsoCallbacksClient({
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '读取管理员状态失败'
+						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
 			})
 			.finally(() => {
@@ -532,7 +525,7 @@ export default function AdminSsoCallbacksClient({
 
 			const csrfToken = admin?.csrf_token;
 			if (csrfToken === undefined) {
-				setMessage('admin-session-expired');
+				setMessage(ADMIN_MESSAGE_MAP.adminSessionExpired);
 				return;
 			}
 			trackEvent(
@@ -558,8 +551,8 @@ export default function AdminSsoCallbacksClient({
 
 					setMessage(
 						action === 'retry'
-							? 'SSO Callback已重置为待投递'
-							: 'SSO Callback已丢弃'
+							? ADMIN_SSO_MESSAGE_MAP.callbackResetForRetry
+							: ADMIN_SSO_MESSAGE_MAP.callbackDiscarded
 					);
 					refreshCurrentCallbacks();
 				})
@@ -567,7 +560,7 @@ export default function AdminSsoCallbacksClient({
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '更新SSO Callback失败'
+							: ADMIN_SSO_MESSAGE_MAP.callbackUpdateFailed
 					);
 				})
 				.finally(() => {
@@ -604,7 +597,7 @@ export default function AdminSsoCallbacksClient({
 
 		const csrfToken = admin?.csrf_token;
 		if (csrfToken === undefined) {
-			setMessage('admin-session-expired');
+			setMessage(ADMIN_MESSAGE_MAP.adminSessionExpired);
 			return;
 		}
 		trackEvent(
@@ -624,7 +617,15 @@ export default function AdminSsoCallbacksClient({
 				}
 
 				setMessage(
-					`已投递${result.data.succeeded}条，失败${result.data.failed}条，最终失败${result.data.final_failed}条，清理过期Ticket${result.data.deleted_expired_tickets}条，清理最终失败Callback${result.data.deleted_final_failed_callbacks}条`
+					createAdminSsoCallbackDispatchMessage({
+						deletedExpiredTickets:
+							result.data.deleted_expired_tickets,
+						deletedFinalFailedCallbacks:
+							result.data.deleted_final_failed_callbacks,
+						failed: result.data.failed,
+						finalFailed: result.data.final_failed,
+						succeeded: result.data.succeeded,
+					})
 				);
 				refreshCurrentCallbacks();
 			})
@@ -632,7 +633,7 @@ export default function AdminSsoCallbacksClient({
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '投递SSO Callback失败'
+						: ADMIN_SSO_MESSAGE_MAP.callbackDispatchFailed
 				);
 			})
 			.finally(() => {
@@ -738,8 +739,8 @@ export default function AdminSsoCallbacksClient({
 		return (
 			<AdminLoadingState
 				icon={faShieldHalved}
-				label="读取会话状态"
-				subtitle="正在校验管理员会话"
+				label={ADMIN_STATUS_LABEL_MAP.sessionReading}
+				subtitle={ADMIN_MESSAGE_MAP.adminSessionChecking}
 				title="SSO Callback"
 			/>
 		);
@@ -763,7 +764,7 @@ export default function AdminSsoCallbacksClient({
 						</>
 					}
 					icon={faShieldHalved}
-					subtitle={message ?? '请先返回管理员页登录'}
+					subtitle={message ?? ADMIN_MESSAGE_MAP.adminSignInRequired}
 					title="SSO Callback"
 				/>
 			</AdminShell>
@@ -812,23 +813,35 @@ export default function AdminSsoCallbacksClient({
 					label="当前页队列"
 					value={
 						callbacks === null
-							? '读取中'
+							? ADMIN_STATUS_LABEL_MAP.reading
 							: callbacks.callbacks.length
 					}
 				/>
 				<AdminMetric
 					label="筛选总数"
 					value={
-						callbacks === null ? '读取中' : callbacks.total_count
+						callbacks === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: callbacks.total_count
 					}
 				/>
 				<AdminMetric
 					label="待投递"
-					value={callbacks === null ? '读取中' : pendingCount}
+					value={
+						callbacks === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: pendingCount
+					}
 				/>
 				<AdminMetric
-					label="最终失败"
-					value={callbacks === null ? '读取中' : finalFailedCount}
+					label={
+						ADMIN_SSO_CALLBACK_QUEUE_STATUS_LABEL_MAP.final_failed
+					}
+					value={
+						callbacks === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: finalFailedCount
+					}
 				/>
 			</AdminMetricPanel>
 
@@ -885,13 +898,13 @@ export default function AdminSsoCallbacksClient({
 				</AdminAdvancedFilterPopover>
 				<AdminDropdownFilter
 					ariaLabel="筛选Callback事件"
-					options={eventOptions}
+					options={ADMIN_SSO_CALLBACK_EVENT_FILTER_OPTIONS}
 					value={eventFilter}
 					onAction={handleEventAction}
 				/>
 				<AdminDropdownFilter
 					ariaLabel="筛选Callback状态"
-					options={statusOptions}
+					options={ADMIN_SSO_CALLBACK_QUEUE_STATUS_FILTER_OPTIONS}
 					value={statusFilter}
 					onAction={handleStatusAction}
 				/>
@@ -929,7 +942,7 @@ export default function AdminSsoCallbacksClient({
 
 			{callbacks === null ? (
 				<AdminEmptyState icon={faClock}>
-					正在读取Callback队列
+					{ADMIN_SSO_MESSAGE_MAP.callbackQueueReading}
 				</AdminEmptyState>
 			) : callbacks.callbacks.length === 0 ? (
 				<AdminEmptyState icon={faRotate}>

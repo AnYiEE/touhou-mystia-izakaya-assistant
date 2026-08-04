@@ -20,13 +20,7 @@ import { type TUserStatus } from '@/domain/account/contracts';
 import { AdminSearchInput } from '@/features/admin/client/components/filters';
 import { AdminFilterPanel } from '@/features/admin/client/components/panels';
 import { getAdminStatusLabel } from '@/features/admin/client/components/statusBadges';
-
-const statusOptions: Array<{ label: string; value: TUserStatus | 'all' }> = [
-	{ label: '全部状态', value: 'all' },
-	{ label: '正常', value: 'active' },
-	{ label: '已禁用', value: 'disabled' },
-	{ label: '已删除', value: 'deleted' },
-];
+import { ADMIN_USER_STATUS_FILTER_OPTIONS } from '@/features/admin/copy';
 
 export function getFilterStatusLabel(status: TUserStatus | '') {
 	return status === '' ? '全部状态' : getAdminStatusLabel(status);
@@ -93,7 +87,7 @@ export const AdminUserFilterPanel = memo<IAdminUserFilterPanelProps>(
 						}}
 						onAction={onStatusAction}
 					>
-						{statusOptions.map((option) => (
+						{ADMIN_USER_STATUS_FILTER_OPTIONS.map((option) => (
 							<DropdownItem
 								key={option.value}
 								textValue={option.label}

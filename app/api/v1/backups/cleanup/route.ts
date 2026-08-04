@@ -1,5 +1,8 @@
 import { type NextRequest } from 'next/server';
 
+import { LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP } from '@/features/legacyBackup/apiResponseMessages';
+
+import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
 import { createRetryAfterHeaders } from '@/infrastructure/http/headers';
 import { checkRateLimit } from '@/infrastructure/http/rateLimit/inMemory';
 import { getRequestIp } from '@/infrastructure/http/server/requestContext';
@@ -36,13 +39,13 @@ export async function DELETE(request: NextRequest) {
 	const configuredSecret = process.env.CLEANUP_SECRET;
 
 	if (typeof configuredSecret !== 'string' || configuredSecret.length === 0) {
-		return createNoStoreErrorResponse('server-misconfigured', 500);
+		return createNoStoreErrorResponse(SERVER_MISCONFIGURED_MESSAGE, 500);
 	}
 
 	if (!checkCleanupSecret(secret, configuredSecret)) {
 		const retryAfter = checkCleanupSecretFailureRateLimit(request);
 		return createNoStoreErrorResponse(
-			'Invalid secret',
+			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidSecret,
 			retryAfter === null ? 401 : 429,
 			retryAfter === null ? undefined : { retry_after: retryAfter },
 			retryAfter === null

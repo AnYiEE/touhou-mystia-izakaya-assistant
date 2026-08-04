@@ -2,6 +2,10 @@
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
+import {
+	SITE_VISITOR_STATUS_MESSAGE_MAP,
+	createSiteVisitorCountMessage,
+} from './copy';
 import { useSiteVisitors } from './SiteStatusProvider';
 
 export default function FooterVisitors() {
@@ -14,10 +18,10 @@ export default function FooterVisitors() {
 	) {
 		return null;
 	} else if (!hasLoaded) {
-		return <span>正在获取在线人数</span>;
+		return <span>{SITE_VISITOR_STATUS_MESSAGE_MAP.loading}</span>;
 	} else if (visitors === null) {
-		return <span>获取在线人数失败</span>;
+		return <span>{SITE_VISITOR_STATUS_MESSAGE_MAP.failed}</span>;
 	}
 
-	return <span>实时{visitors}人在线</span>;
+	return <span>{createSiteVisitorCountMessage(visitors)}</span>;
 }

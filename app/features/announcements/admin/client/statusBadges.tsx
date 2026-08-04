@@ -5,14 +5,27 @@ import { memo } from 'react';
 import { type TAnnouncementLevel } from '@/domain/announcements/contracts';
 
 import { AdminBadge } from '@/features/admin/client/components/statusBadges';
+import {
+	ANNOUNCEMENT_LEVEL_LABEL_MAP,
+	ANNOUNCEMENT_STATUS_LABEL_MAP,
+} from '@/features/announcements/admin/copy';
 import { type TAnnouncementComputedStatus } from '@/features/announcements/contracts';
 
 const ANNOUNCEMENT_STATUS_META_MAP = {
-	active: { label: '展示中', tone: 'success' },
-	archived: { label: '已归档', tone: 'default' },
-	disabled: { label: '已停用', tone: 'warning' },
-	ended: { label: '已结束', tone: 'default' },
-	scheduled: { label: '待开始', tone: 'primary' },
+	active: { label: ANNOUNCEMENT_STATUS_LABEL_MAP.active, tone: 'success' },
+	archived: {
+		label: ANNOUNCEMENT_STATUS_LABEL_MAP.archived,
+		tone: 'default',
+	},
+	disabled: {
+		label: ANNOUNCEMENT_STATUS_LABEL_MAP.disabled,
+		tone: 'warning',
+	},
+	ended: { label: ANNOUNCEMENT_STATUS_LABEL_MAP.ended, tone: 'default' },
+	scheduled: {
+		label: ANNOUNCEMENT_STATUS_LABEL_MAP.scheduled,
+		tone: 'primary',
+	},
 } as const satisfies Record<
 	TAnnouncementComputedStatus,
 	{
@@ -22,11 +35,11 @@ const ANNOUNCEMENT_STATUS_META_MAP = {
 >;
 
 const ANNOUNCEMENT_LEVEL_META_MAP = {
-	critical: { label: '重要', tone: 'primary' },
-	danger: { label: '危险', tone: 'danger' },
-	info: { label: '信息', tone: 'default' },
-	success: { label: '成功', tone: 'success' },
-	warning: { label: '警告', tone: 'warning' },
+	critical: { label: ANNOUNCEMENT_LEVEL_LABEL_MAP.critical, tone: 'primary' },
+	danger: { label: ANNOUNCEMENT_LEVEL_LABEL_MAP.danger, tone: 'danger' },
+	info: { label: ANNOUNCEMENT_LEVEL_LABEL_MAP.info, tone: 'default' },
+	success: { label: ANNOUNCEMENT_LEVEL_LABEL_MAP.success, tone: 'success' },
+	warning: { label: ANNOUNCEMENT_LEVEL_LABEL_MAP.warning, tone: 'warning' },
 } as const satisfies Record<
 	TAnnouncementLevel,
 	{

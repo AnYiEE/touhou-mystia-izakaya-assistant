@@ -3,6 +3,7 @@ import {
 	readAdminAuthInitialData,
 } from '@/features/admin/server/initialData/auth';
 import type { IAdminAnnouncementsInitialData } from '@/features/announcements/admin/contracts';
+import { ADMIN_ANNOUNCEMENT_MESSAGE_MAP } from '@/features/announcements/admin/copy';
 
 async function readInitialAnnouncements(): Promise<
 	IAdminAnnouncementsInitialData['announcements']
@@ -36,7 +37,9 @@ export async function readAdminAnnouncementsInitialData(): Promise<IAdminAnnounc
 		return {
 			...initialData,
 			message:
-				error instanceof Error ? error.message : '读取站点通知失败',
+				error instanceof Error
+					? error.message
+					: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.listReadFailed,
 		};
 	}
 }

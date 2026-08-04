@@ -3,6 +3,7 @@ import { type NextRequest } from 'next/server';
 import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
 import { checkAccountFeatureRouteResponse } from '@/features/account/server/http/routeGuards';
 import { createAccountUserProfile } from '@/features/account/server/presentation/user';
+import { ACCOUNT_SSO_API_RESPONSE_CODE_MAP } from '@/features/account/sso/apiResponseCodes';
 import { checkSsoRateLimitRouteResponse } from '@/features/account/sso/server/http/routeResponses';
 import {
 	checkSsoClientId,
@@ -11,6 +12,8 @@ import {
 	checkSsoTicketFormat,
 } from '@/features/account/sso/server/validation';
 
+import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -39,7 +42,10 @@ export async function POST(request: NextRequest) {
 		MAX_ACCOUNT_JSON_BODY_BYTES
 	);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (
@@ -49,7 +55,10 @@ export async function POST(request: NextRequest) {
 		typeof body.ticket !== 'string' ||
 		typeof body.code_verifier !== 'string'
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const clientId = body.client_id.trim();
@@ -62,7 +71,10 @@ export async function POST(request: NextRequest) {
 		!checkSsoTicketFormat(ticket) ||
 		!checkSsoCodeVerifier(codeVerifier)
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const rateLimitResponse = checkSsoRateLimitRouteResponse(
@@ -87,7 +99,10 @@ export async function POST(request: NextRequest) {
 		);
 		switch (validation.status) {
 			case 'client-disabled':
-				return createNoStoreErrorResponse('client-disabled', 403);
+				return createNoStoreErrorResponse(
+					ACCOUNT_SSO_API_RESPONSE_CODE_MAP.clientDisabled,
+					403
+				);
 			case 'invalid-client': {
 				const invalidClientRateLimitResponse =
 					checkSsoRateLimitRouteResponse(
@@ -99,7 +114,10 @@ export async function POST(request: NextRequest) {
 					return invalidClientRateLimitResponse;
 				}
 
-				return createNoStoreErrorResponse('invalid-client', 401);
+				return createNoStoreErrorResponse(
+					ACCOUNT_SSO_API_RESPONSE_CODE_MAP.invalidClient,
+					401
+				);
 			}
 			case 'invalid-ticket': {
 				const invalidTicketRateLimitResponse =
@@ -115,7 +133,10 @@ export async function POST(request: NextRequest) {
 					return invalidTicketRateLimitResponse;
 				}
 
-				return createNoStoreErrorResponse('invalid-ticket', 401);
+				return createNoStoreErrorResponse(
+					ACCOUNT_SSO_API_RESPONSE_CODE_MAP.invalidTicket,
+					401
+				);
 			}
 			case 'validated': {
 				const validationResult = validation.validation;
@@ -139,7 +160,10 @@ export async function POST(request: NextRequest) {
 						return invalidTicketRateLimitResponse;
 					}
 
-					return createNoStoreErrorResponse('invalid-ticket', 401);
+					return createNoStoreErrorResponse(
+						ACCOUNT_SSO_API_RESPONSE_CODE_MAP.invalidTicket,
+						401
+					);
 				}
 
 				const profile = createAccountUserProfile(validationResult.user);
@@ -159,6 +183,6 @@ export async function POST(request: NextRequest) {
 			errorCode: getLogSafeErrorCode(error),
 		});
 
-		return createNoStoreErrorResponse('server-misconfigured', 500);
+		return createNoStoreErrorResponse(SERVER_MISCONFIGURED_MESSAGE, 500);
 	}
 }

@@ -10,8 +10,11 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+import { ACCOUNT_SYNC_API_RESPONSE_CODE_MAP } from '@/features/account/sync/apiResponseCodes';
 import { type TImportLegacyBackupUseCaseResult } from '@/features/account/sync/server/importLegacyBackupUseCase';
 
+import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -30,7 +33,7 @@ function createImportBackupResponse(result: TImportLegacyBackupUseCaseResult) {
 	}
 	if (result.error === 'sync-account-capacity-exceeded') {
 		return createNoStoreErrorResponse(
-			'sync-account-capacity-exceeded',
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.accountCapacityExceeded,
 			409,
 			{
 				candidate_bytes: result.details.candidateBytes,
@@ -50,19 +53,40 @@ function createImportBackupResponse(result: TImportLegacyBackupUseCaseResult) {
 				sync_status: result.state.syncStatus,
 			});
 		case 'unauthorized':
-			return createNoStoreErrorResponse('unauthorized', 401);
+			return createNoStoreErrorResponse(
+				HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+				401
+			);
 		case 'backup-code-not-found':
-			return createNoStoreErrorResponse('backup-code-not-found', 404);
+			return createNoStoreErrorResponse(
+				ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.backupCodeNotFound,
+				404
+			);
 		case 'invalid-backup-file':
-			return createNoStoreErrorResponse('invalid-backup-file', 400);
+			return createNoStoreErrorResponse(
+				ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.invalidBackupFile,
+				400
+			);
 		case 'server-misconfigured':
-			return createNoStoreErrorResponse('server-misconfigured', 500);
+			return createNoStoreErrorResponse(
+				SERVER_MISCONFIGURED_MESSAGE,
+				500
+			);
 		case 'sync-conflict':
-			return createNoStoreErrorResponse('sync-conflict', 409);
+			return createNoStoreErrorResponse(
+				ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.conflict,
+				409
+			);
 		case 'backup-code-lock-lost':
-			return createNoStoreErrorResponse('backup-code-lock-lost', 409);
+			return createNoStoreErrorResponse(
+				ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.backupCodeLockLost,
+				409
+			);
 		case 'backup-code-lock-timeout':
-			return createNoStoreErrorResponse('backup-code-lock-timeout', 409);
+			return createNoStoreErrorResponse(
+				ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.backupCodeLockTimeout,
+				409
+			);
 	}
 }
 
@@ -93,12 +117,18 @@ export async function POST(request: NextRequest) {
 
 	const bodyResult = await readJsonBodyResult<IImportBackupCodeBody>(request);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	const rawCode = typeof body?.code === 'string' ? body.code.trim() : '';
 	if (rawCode === '' || !validate(rawCode)) {
-		return createNoStoreErrorResponse('invalid-backup-code', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.invalidBackupCode,
+			400
+		);
 	}
 	const code = rawCode.toLowerCase();
 
@@ -123,7 +153,10 @@ export async function POST(request: NextRequest) {
 	}
 
 	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
-		return createNoStoreErrorResponse('forbidden', 403);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.forbidden,
+			403
+		);
 	}
 
 	const result = await importModule.importLegacyBackupUseCase({

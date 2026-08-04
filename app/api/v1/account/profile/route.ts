@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import type { IAccountProfileUpdateBody } from '@/features/account/contracts';
 import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
@@ -11,6 +12,7 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import { createRetryAfterHeaders } from '@/infrastructure/http/headers';
 import {
 	createNoStoreErrorResponse,
@@ -48,38 +50,56 @@ export async function POST(request: NextRequest) {
 	const bodyResult =
 		await readJsonBodyResult<IAccountProfileUpdateBody>(request);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (body === null || typeof body !== 'object') {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 	const bodyRecord = body as Record<string, unknown>;
 	if (
 		bodyRecord['username'] !== undefined &&
 		typeof bodyRecord['username'] !== 'string'
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 	if (
 		bodyRecord['nickname'] !== undefined &&
 		typeof bodyRecord['nickname'] !== 'string' &&
 		bodyRecord['nickname'] !== null
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 	if (
 		bodyRecord['current_password'] !== undefined &&
 		typeof bodyRecord['current_password'] !== 'string'
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 	if (
 		bodyRecord['username'] === undefined &&
 		bodyRecord['nickname'] === undefined
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const [authModule, csrfModule, userModule, updateProfileModule] =
@@ -95,7 +115,10 @@ export async function POST(request: NextRequest) {
 		return createAccountAuthErrorRouteResponse(auth, request);
 	}
 	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
-		return createNoStoreErrorResponse('forbidden', 403);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.forbidden,
+			403
+		);
 	}
 
 	const username =
@@ -115,10 +138,16 @@ export async function POST(request: NextRequest) {
 						: ''
 				);
 	if (username !== undefined && !userModule.checkUsernamePolicy(username)) {
-		return createNoStoreErrorResponse('invalid-username', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.invalidUsername,
+			400
+		);
 	}
 	if (nickname !== undefined && !userModule.checkNicknamePolicy(nickname)) {
-		return createNoStoreErrorResponse('invalid-nickname', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.invalidNickname,
+			400
+		);
 	}
 
 	const willChange =
@@ -148,7 +177,7 @@ export async function POST(request: NextRequest) {
 	});
 	if (result.status === 'locked') {
 		return createNoStoreErrorResponse(
-			'too-many-requests',
+			HTTP_API_RESPONSE_CODE_MAP.tooManyRequests,
 			429,
 			{ retry_after: result.retryAfter },
 			{ headers: createRetryAfterHeaders(result.retryAfter) }

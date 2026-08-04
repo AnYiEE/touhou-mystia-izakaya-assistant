@@ -1,4 +1,5 @@
 import type { IAdminSsoCallbacksInitialData } from '@/features/account/sso/admin/contracts';
+import { ADMIN_SSO_MESSAGE_MAP } from '@/features/account/sso/admin/copy';
 import {
 	type IAdminSsoSearchParams,
 	getAdminSsoCallbackEventFromSearchValue,
@@ -77,7 +78,7 @@ export async function readAdminSsoCallbackQueueInitialData(
 			message:
 				error instanceof Error
 					? error.message
-					: '读取SSO Callback队列失败',
+					: ADMIN_SSO_MESSAGE_MAP.callbackQueueReadFailed,
 		};
 	}
 }

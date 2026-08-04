@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import { MAX_BACKUP_UPLOAD_JSON_BODY_BYTES } from '@/features/account/requestLimits';
+import { LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP } from '@/features/legacyBackup/apiResponseMessages';
 import {
 	type IBackupUploadBody,
 	type IBackupUploadSuccessResponse,
@@ -46,13 +47,22 @@ function checkLegacyBackupUploadMeta({
 	typeof getLegacyBackupRequestMeta
 >): ILegacyBackupErrorPayload | null {
 	if (normalizeMediaType(contentType) !== FILE_TYPE_JSON) {
-		return { message: 'Invalid content type', status: 400 };
+		return {
+			message: LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidContentType,
+			status: 400,
+		};
 	}
 	if (ip === null) {
-		return { message: 'Invalid IP address', status: 400 };
+		return {
+			message: LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidIpAddress,
+			status: 400,
+		};
 	}
 	if (ua === null) {
-		return { message: 'Invalid user agent', status: 400 };
+		return {
+			message: LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidUserAgent,
+			status: 400,
+		};
 	}
 
 	return null;
@@ -73,7 +83,10 @@ export async function POST(request: NextRequest) {
 		MAX_BACKUP_UPLOAD_JSON_BODY_BYTES
 	);
 	if (jsonResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('The data is too large', 413);
+		return createNoStoreErrorResponse(
+			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.dataTooLarge,
+			413
+		);
 	}
 
 	const legacyBackupModule =

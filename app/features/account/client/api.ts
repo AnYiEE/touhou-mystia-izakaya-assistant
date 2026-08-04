@@ -7,6 +7,7 @@ import {
 
 import { type TAccountSyncStatus } from '@/domain/account/contracts';
 
+import { type ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import type {
 	IAccountProfileUpdateBody,
 	IAccountSessionListData,
@@ -177,16 +178,15 @@ export function changeAccountProfile(
 }
 
 export function logoutAccount(csrfToken: string) {
-	return fetchAccountApiResult<{ message: 'logged-out' }>(
-		'/api/v1/auth/logout',
-		createCsrfRequestInit('POST', csrfToken)
-	);
+	return fetchAccountApiResult<{
+		message: typeof ACCOUNT_API_RESPONSE_CODE_MAP.loggedOut;
+	}>('/api/v1/auth/logout', createCsrfRequestInit('POST', csrfToken));
 }
 
 export function logoutAllAccount(csrfToken: string) {
 	return fetchAccountApiResult<{
 		deleted_current_session: boolean;
-		message: 'logged-out-all';
+		message: typeof ACCOUNT_API_RESPONSE_CODE_MAP.loggedOutAll;
 	}>('/api/v1/auth/logout-all', createCsrfRequestInit('POST', csrfToken));
 }
 
@@ -200,7 +200,9 @@ export async function revokeAccountSession(
 	sessionId: string,
 	csrfToken: string
 ) {
-	const result = await fetchAccountApiResult<{ message: 'session-revoked' }>(
+	const result = await fetchAccountApiResult<{
+		message: typeof ACCOUNT_API_RESPONSE_CODE_MAP.sessionRevoked;
+	}>(
 		`/api/v1/account/sessions/${encodeURIComponent(sessionId)}`,
 		createCsrfRequestInit('DELETE', csrfToken)
 	);
@@ -294,7 +296,9 @@ export function listWebAuthnCredentials() {
 }
 
 export async function deleteWebAuthnCredential(id: string, csrfToken: string) {
-	const result = await fetchAccountApiResult<{ message: 'passkey-deleted' }>(
+	const result = await fetchAccountApiResult<{
+		message: typeof ACCOUNT_API_RESPONSE_CODE_MAP.passkeyDeleted;
+	}>(
 		`/api/v1/account/webauthn/credentials/${encodeURIComponent(id)}`,
 		createCsrfRequestInit('DELETE', csrfToken)
 	);
@@ -374,10 +378,9 @@ export function deleteAccountData(
 }
 
 export function deleteAccount(csrfToken: string) {
-	return fetchAccountApiResult<{ message: 'user-deleted' }>(
-		'/api/v1/account/delete',
-		createCsrfRequestInit('DELETE', csrfToken)
-	);
+	return fetchAccountApiResult<{
+		message: typeof ACCOUNT_API_RESPONSE_CODE_MAP.userDeleted;
+	}>('/api/v1/account/delete', createCsrfRequestInit('DELETE', csrfToken));
 }
 
 export function refreshAccountSsoGrants() {
@@ -391,7 +394,7 @@ export async function revokeAccountSsoGrant(
 	csrfToken: string
 ) {
 	const result = await fetchAccountApiResult<{
-		message: 'sso-grant-revoked';
+		message: typeof ACCOUNT_API_RESPONSE_CODE_MAP.ssoGrantRevoked;
 	}>(
 		`/api/v1/account/sso/grants/${encodeURIComponent(clientId)}`,
 		createCsrfRequestInit('DELETE', csrfToken)

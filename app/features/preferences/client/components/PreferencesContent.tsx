@@ -6,6 +6,7 @@ import Heading from '@/design/ui/components/heading';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import MobileAccountActionButton from '@/features/account/client/components/MobileAccountActionButton';
+import { getAccountActionLabel } from '@/features/account/client/copy';
 import { accountStore } from '@/features/account/client/state/accountStore';
 import { getAccountSyncPauseIndicator } from '@/features/account/client/sync/accountSyncPauseIndicator';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
@@ -55,14 +56,10 @@ export default memo<IProps>(function Content({ onModalClose }) {
 		preferencesModalOpenSource === 'sideButton' &&
 		isAccountFeatureClientEnabled &&
 		accountBootstrapStatus !== 'disabled';
-	const accountActionLabel =
-		accountBootstrapStatus === 'error'
-			? '账号不可用'
-			: accountBootstrapStatus === 'unknown'
-				? '欢迎您'
-				: accountUser === null
-					? '未登录'
-					: (accountUser.nickname ?? accountUser.username);
+	const accountActionLabel = getAccountActionLabel(
+		accountBootstrapStatus,
+		accountUser
+	);
 
 	const handleAccountButtonPress = useCallback(() => {
 		vibrate();

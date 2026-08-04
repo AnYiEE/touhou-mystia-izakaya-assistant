@@ -25,6 +25,7 @@ import type {
 	IAdminSsoClientUserGrant,
 	IAdminSsoClientUsersData,
 } from '@/features/account/contracts';
+import { ADMIN_SSO_MESSAGE_MAP } from '@/features/account/sso/admin/copy';
 import { listAdminAuditLogs } from '@/features/admin/client/api';
 import { AdminConfirmButton } from '@/features/admin/client/components/confirmation';
 import { AdminEmptyState } from '@/features/admin/client/components/feedback';
@@ -50,6 +51,10 @@ import {
 	isAdminSessionInvalidResult,
 } from '@/features/admin/client/session';
 import type { TAdminApiResult } from '@/features/admin/contracts';
+import {
+	ADMIN_MESSAGE_MAP,
+	ADMIN_STATUS_LABEL_MAP,
+} from '@/features/admin/copy';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
 import { listAdminSsoCallbacks } from './api/callbacks';
@@ -84,7 +89,9 @@ function createMetricValue(value: number | null, isLoading: boolean) {
 		return value;
 	}
 
-	return isLoading ? '读取中' : '未读取';
+	return isLoading
+		? ADMIN_STATUS_LABEL_MAP.reading
+		: ADMIN_SSO_MESSAGE_MAP.notRead;
 }
 
 export default memo<IProps>(function AdminSsoClientGrantPanel({
@@ -202,7 +209,7 @@ export default memo<IProps>(function AdminSsoClientGrantPanel({
 				onMessage(
 					error instanceof Error
 						? error.message
-						: '读取SSO客户端摘要失败'
+						: ADMIN_SSO_MESSAGE_MAP.clientSummaryReadFailed
 				);
 			})
 			.finally(() => {
@@ -241,7 +248,7 @@ export default memo<IProps>(function AdminSsoClientGrantPanel({
 					onMessage(
 						error instanceof Error
 							? error.message
-							: '读取授权用户失败'
+							: ADMIN_SSO_MESSAGE_MAP.grantUsersReadFailed
 					);
 				})
 				.finally(() => {
@@ -334,7 +341,7 @@ export default memo<IProps>(function AdminSsoClientGrantPanel({
 						return;
 					}
 
-					onMessage('SSO授权已撤销');
+					onMessage(ADMIN_MESSAGE_MAP.ssoGrantRevoked);
 					refreshCurrentGrants();
 					refreshSummary();
 				})
@@ -342,7 +349,7 @@ export default memo<IProps>(function AdminSsoClientGrantPanel({
 					onMessage(
 						error instanceof Error
 							? error.message
-							: '撤销SSO授权失败'
+							: ADMIN_MESSAGE_MAP.ssoGrantRevokeFailed
 					);
 				})
 				.finally(() => {
@@ -392,7 +399,7 @@ export default memo<IProps>(function AdminSsoClientGrantPanel({
 				onMessage(
 					error instanceof Error
 						? error.message
-						: '批量撤销SSO授权失败'
+						: ADMIN_SSO_MESSAGE_MAP.grantBatchRevokeFailed
 				);
 			})
 			.finally(() => {
@@ -589,7 +596,9 @@ export default memo<IProps>(function AdminSsoClientGrantPanel({
 			</div>
 			{grants.length === 0 ? (
 				<AdminEmptyState icon={faUsers}>
-					{isGrantLoading ? '读取中' : '暂无授权用户'}
+					{isGrantLoading
+						? ADMIN_STATUS_LABEL_MAP.reading
+						: ADMIN_SSO_MESSAGE_MAP.grantUsersEmpty}
 				</AdminEmptyState>
 			) : (
 				<AdminTable>

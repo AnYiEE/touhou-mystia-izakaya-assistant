@@ -4,6 +4,7 @@ import { type TSsoActorType } from '@/domain/account/contracts';
 
 import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	getTrimmedSearchParam,
 	parseNonNegativeIntegerParam,
@@ -62,7 +63,10 @@ export async function GET(request: NextRequest) {
 		endTime === null ||
 		(page - 1) * pageSize > MAX_AUDIT_LOG_OFFSET
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const action = getTrimmedSearchParam(
@@ -87,10 +91,16 @@ export async function GET(request: NextRequest) {
 		'target_type'
 	);
 	if (actorType === null) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 	if (query !== undefined && query.length < MIN_AUDIT_LOG_QUERY_LENGTH) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const serviceModule =

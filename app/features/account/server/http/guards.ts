@@ -9,6 +9,7 @@ import {
 } from '@/features/account/server/featureStatus';
 
 import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import { createRetryAfterHeaders } from '@/infrastructure/http/headers';
 import { checkRateLimit } from '@/infrastructure/http/rateLimit/inMemory';
 import {
@@ -95,7 +96,11 @@ export function checkSameOriginGuard(
 		return { status: 'ok' };
 	}
 
-	return { httpStatus: 403, message: 'forbidden', status: 'error' };
+	return {
+		httpStatus: 403,
+		message: HTTP_API_RESPONSE_CODE_MAP.forbidden,
+		status: 'error',
+	};
 }
 
 export function checkAccountCookieSecurityGuard(
@@ -242,7 +247,7 @@ export function checkAccountRateLimitGuard(
 			data: { retry_after: retryAfter },
 			headers: createRetryAfterHeaders(retryAfter),
 			httpStatus: 429,
-			message: 'too-many-requests',
+			message: HTTP_API_RESPONSE_CODE_MAP.tooManyRequests,
 			status: 'error',
 		};
 	}
@@ -267,7 +272,7 @@ export function checkAccountRateLimitGuard(
 		data: { retry_after: result.retryAfter },
 		headers: createRetryAfterHeaders(result.retryAfter),
 		httpStatus: 429,
-		message: 'too-many-requests',
+		message: HTTP_API_RESPONSE_CODE_MAP.tooManyRequests,
 		status: 'error',
 	};
 }

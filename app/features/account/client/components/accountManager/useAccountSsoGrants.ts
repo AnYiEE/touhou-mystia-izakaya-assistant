@@ -33,6 +33,7 @@ import {
 	handleUnauthorizedAccountActionError,
 	handleUnauthorizedAccountError,
 } from './controller';
+import { ACCOUNT_MANAGER_MESSAGE_MAP } from './copy';
 
 const accountSsoGrantsRequestMap = new Map<
 	string,
@@ -188,7 +189,7 @@ export function useAccountSsoGrants(
 						setMessage(
 							error instanceof Error
 								? error.message
-								: '已授权应用刷新失败'
+								: ACCOUNT_MANAGER_MESSAGE_MAP.ssoGrantRefreshFailed
 						);
 					}
 
@@ -340,7 +341,7 @@ export function useAccountSsoGrants(
 					prev.filter((grant) => grant.client.id !== clientId)
 				);
 				ssoGrantListUpdatedAtRef.current = Date.now();
-				setMessage('已撤销授权');
+				setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.ssoGrantRevoked);
 			})
 			.catch((error: unknown) => {
 				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
@@ -354,7 +355,9 @@ export function useAccountSsoGrants(
 				}
 
 				setMessage(
-					error instanceof Error ? error.message : '撤销授权失败'
+					error instanceof Error
+						? error.message
+						: ACCOUNT_MANAGER_MESSAGE_MAP.ssoGrantRevokeFailed
 				);
 			})
 			.finally(() => {

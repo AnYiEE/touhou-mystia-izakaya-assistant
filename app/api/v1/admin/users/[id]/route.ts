@@ -5,6 +5,7 @@ import {
 	checkAdminFeatureRouteResponse,
 	createAdminAuthErrorRouteResponse,
 } from '@/features/account/admin/server/http/routeResponses';
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import {
 	checkAccountCookieSecurityRouteResponse,
 	checkAccountFeatureRouteResponse,
@@ -84,7 +85,10 @@ export async function GET(
 	]);
 	const user = await usersModule.findUserById(id);
 	if (user === null) {
-		return createNoStoreErrorResponse('target-user-not-found', 404);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.targetUserNotFound,
+			404
+		);
 	}
 
 	const [backupImports, credential, sessions, namespaces, passkeys] =

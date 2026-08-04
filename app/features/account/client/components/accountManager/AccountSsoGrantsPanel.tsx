@@ -10,6 +10,7 @@ import Tooltip from '@/design/ui/components/tooltip';
 import AccountConfirmButton from '@/features/account/client/components/AccountConfirmButton';
 import type { IAccountSsoGrant } from '@/features/account/contracts';
 
+import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
 import { AccountAnimatedList, AccountAnimatedListItem } from './layout';
 
 interface IAccountSsoGrantsPanelProps {
@@ -84,13 +85,15 @@ export default memo<IAccountSsoGrantsPanelProps>(
 					{isSsoGrantListLoading && !isSsoGrantsReady ? (
 						<AccountAnimatedListItem key="loading">
 							<p className="text-small leading-5 text-foreground-500">
-								正在读取已授权应用
+								{
+									ACCOUNT_MANAGER_STATUS_LABEL_MAP.readingSsoGrants
+								}
 							</p>
 						</AccountAnimatedListItem>
 					) : visibleSsoGrants.length === 0 ? (
 						<AccountAnimatedListItem key="empty">
 							<p className="text-small leading-5 text-foreground-500">
-								暂无已授权应用
+								{ACCOUNT_MANAGER_STATUS_LABEL_MAP.noSsoGrants}
 							</p>
 						</AccountAnimatedListItem>
 					) : (

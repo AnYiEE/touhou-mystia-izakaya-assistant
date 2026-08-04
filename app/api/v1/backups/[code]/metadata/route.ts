@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
 
+import { LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP } from '@/features/legacyBackup/apiResponseMessages';
 import { parseLegacyBackupCode } from '@/features/legacyBackup/server/code';
 import { getLegacyBackupRequestMeta } from '@/features/legacyBackup/server/requestContext';
 
@@ -19,7 +20,10 @@ export async function GET(
 	const { code: rawCode } = await params;
 	const code = parseLegacyBackupCode(rawCode);
 	if (code === null) {
-		return createNoStoreErrorResponse('Invalid code', 400);
+		return createNoStoreErrorResponse(
+			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidCode,
+			400
+		);
 	}
 
 	const requestMeta = getLegacyBackupRequestMeta(request);

@@ -16,6 +16,10 @@ import {
 	importBackupCode,
 } from '@/features/account/client/api';
 import {
+	ACCOUNT_CLIENT_MESSAGE_MAP,
+	LEGACY_BACKUP_IMPORT_MESSAGE_MAP,
+} from '@/features/account/client/copy';
+import {
 	getAccountClientErrorMessage,
 	isLegacyBackupImportErrorMessage,
 } from '@/features/account/client/errorMessage';
@@ -58,7 +62,8 @@ export default function LegacyBackupImport() {
 	const previousCloudCodeRef = useRef(cloudCode ?? '');
 
 	const normalizedCode = code.trim();
-	const isSuccessMessage = message === '导入成功，可继续导入下一个旧备份码';
+	const isSuccessMessage =
+		message === LEGACY_BACKUP_IMPORT_MESSAGE_MAP.success;
 	const importErrorMessage =
 		message !== null && !isSuccessMessage ? message : null;
 
@@ -100,7 +105,9 @@ export default function LegacyBackupImport() {
 					return;
 				}
 				if (!isFlushed) {
-					throw new Error('当前账号同步尚未完成，请稍后重试');
+					throw new Error(
+						LEGACY_BACKUP_IMPORT_MESSAGE_MAP.syncPending
+					);
 				}
 
 				const operationResult = await withAccountSyncOperationLease(
@@ -125,7 +132,7 @@ export default function LegacyBackupImport() {
 						}
 						if (!hasTakenOverLocalData) {
 							throw new Error(
-								'本地数据接管失败，请刷新页面后重试'
+								LEGACY_BACKUP_IMPORT_MESSAGE_MAP.localTakeoverFailed
 							);
 						}
 
@@ -135,9 +142,7 @@ export default function LegacyBackupImport() {
 					}
 				);
 				if (operationResult === null) {
-					throw new Error(
-						'账号数据操作正在其他标签页进行，请稍后重试'
-					);
+					throw new Error(ACCOUNT_CLIENT_MESSAGE_MAP.operationBusy);
 				}
 			})
 			.then(() => {
@@ -145,7 +150,7 @@ export default function LegacyBackupImport() {
 					return;
 				}
 				if (hasCompletedImport) {
-					setMessage('导入成功，可继续导入下一个旧备份码');
+					setMessage(LEGACY_BACKUP_IMPORT_MESSAGE_MAP.success);
 				}
 			})
 			.catch((error: unknown) => {
@@ -159,9 +164,9 @@ export default function LegacyBackupImport() {
 					error instanceof Error
 						? getAccountClientErrorMessage(
 								error.message,
-								'导入失败，请稍后重试'
+								LEGACY_BACKUP_IMPORT_MESSAGE_MAP.failed
 							)
-						: '导入失败，请稍后重试'
+						: LEGACY_BACKUP_IMPORT_MESSAGE_MAP.failed
 				);
 				if (error instanceof AccountApiError && error.status === 401) {
 					resetAccountStateAfterSessionExpired({

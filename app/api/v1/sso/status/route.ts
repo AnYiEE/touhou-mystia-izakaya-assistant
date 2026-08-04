@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
 import { checkAccountFeatureRouteResponse } from '@/features/account/server/http/routeGuards';
+import { ACCOUNT_SSO_API_RESPONSE_CODE_MAP } from '@/features/account/sso/apiResponseCodes';
 import { checkSsoRateLimitRouteResponse } from '@/features/account/sso/server/http/routeResponses';
 import {
 	checkSsoClientEnabled,
@@ -9,6 +10,8 @@ import {
 	checkSsoClientSecret,
 } from '@/features/account/sso/server/validation';
 
+import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -36,7 +39,10 @@ export async function POST(request: NextRequest) {
 		MAX_ACCOUNT_JSON_BODY_BYTES
 	);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (
@@ -45,7 +51,10 @@ export async function POST(request: NextRequest) {
 		typeof body.client_secret !== 'string' ||
 		typeof body.user_id !== 'string'
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const clientId = body.client_id.trim();
@@ -57,7 +66,10 @@ export async function POST(request: NextRequest) {
 		userId.length === 0 ||
 		userId.length > 128
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const rateLimitResponse = checkSsoRateLimitRouteResponse(
@@ -92,15 +104,24 @@ export async function POST(request: NextRequest) {
 				return invalidClientRateLimitResponse;
 			}
 
-			return createNoStoreErrorResponse('invalid-client', 401);
+			return createNoStoreErrorResponse(
+				ACCOUNT_SSO_API_RESPONSE_CODE_MAP.invalidClient,
+				401
+			);
 		}
 		if (!checkSsoClientEnabled(client)) {
-			return createNoStoreErrorResponse('client-disabled', 403);
+			return createNoStoreErrorResponse(
+				ACCOUNT_SSO_API_RESPONSE_CODE_MAP.clientDisabled,
+				403
+			);
 		}
 
 		const user = await ssoModule.getSsoUserById(userId);
 		if (user === null) {
-			return createNoStoreErrorResponse('user-not-found', 404);
+			return createNoStoreErrorResponse(
+				ACCOUNT_SSO_API_RESPONSE_CODE_MAP.userNotFound,
+				404
+			);
 		}
 
 		const hasGrant = await ssoModule.hasSsoUserClientGrant(
@@ -108,7 +129,10 @@ export async function POST(request: NextRequest) {
 			userId
 		);
 		if (!hasGrant) {
-			return createNoStoreErrorResponse('user-not-found', 404);
+			return createNoStoreErrorResponse(
+				ACCOUNT_SSO_API_RESPONSE_CODE_MAP.userNotFound,
+				404
+			);
 		}
 
 		const statusError = ssoModule.getSsoUserStatusError(user);
@@ -124,6 +148,6 @@ export async function POST(request: NextRequest) {
 			errorCode: getLogSafeErrorCode(error),
 		});
 
-		return createNoStoreErrorResponse('server-misconfigured', 500);
+		return createNoStoreErrorResponse(SERVER_MISCONFIGURED_MESSAGE, 500);
 	}
 }

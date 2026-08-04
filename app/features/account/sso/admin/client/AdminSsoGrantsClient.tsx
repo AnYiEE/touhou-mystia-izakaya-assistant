@@ -31,6 +31,12 @@ import type {
 	IAdminSsoGrantListData,
 } from '@/features/account/contracts';
 import type { IAdminSsoGrantsInitialData } from '@/features/account/sso/admin/contracts';
+import {
+	ADMIN_SSO_GRANT_CLIENT_STATUS_FILTER_OPTIONS,
+	ADMIN_SSO_GRANT_USER_STATUS_FILTER_OPTIONS,
+	ADMIN_SSO_MESSAGE_MAP,
+	createAdminSsoGrantBatchResultMessage,
+} from '@/features/account/sso/admin/copy';
 import { fetchAdminMe } from '@/features/admin/client/api';
 import { AdminConfirmButton } from '@/features/admin/client/components/confirmation';
 import {
@@ -78,6 +84,10 @@ import {
 	isAdminSessionInvalidResult,
 } from '@/features/admin/client/session';
 import type { TAdminApiResult } from '@/features/admin/contracts';
+import {
+	ADMIN_MESSAGE_MAP,
+	ADMIN_STATUS_LABEL_MAP,
+} from '@/features/admin/copy';
 import { createAdminHref } from '@/features/admin/navigation';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
@@ -113,31 +123,18 @@ function parseGrantSelectionKey(key: string) {
 	return null;
 }
 
-const clientStatusOptions = [
-	{ label: '全部客户端', value: '' },
-	{ label: '正常客户端', value: 'active' },
-	{ label: '已禁用客户端', value: 'disabled' },
-] as const;
-
-const userStatusOptions = [
-	{ label: '全部用户', value: '' },
-	{ label: '正常用户', value: 'active' },
-	{ label: '已禁用用户', value: 'disabled' },
-	{ label: '已删除用户', value: 'deleted' },
-] as const;
-
 const grantFilterReferenceGroups = [
 	{
 		label: '客户端状态',
-		values: clientStatusOptions
-			.filter((option) => option.value !== '')
-			.map((option) => ({ label: option.label, value: option.value })),
+		values: ADMIN_SSO_GRANT_CLIENT_STATUS_FILTER_OPTIONS.filter(
+			(option) => option.value !== ''
+		).map((option) => ({ label: option.label, value: option.value })),
 	},
 	{
 		label: '用户状态',
-		values: userStatusOptions
-			.filter((option) => option.value !== '')
-			.map((option) => ({ label: option.label, value: option.value })),
+		values: ADMIN_SSO_GRANT_USER_STATUS_FILTER_OPTIONS.filter(
+			(option) => option.value !== ''
+		).map((option) => ({ label: option.label, value: option.value })),
 	},
 ] as const;
 
@@ -162,7 +159,7 @@ function summarizeGrantRevocationBatch<TData>(
 			firstFailureMessage ??=
 				result.reason instanceof Error
 					? result.reason.message
-					: '批量撤销SSO授权失败';
+					: ADMIN_SSO_MESSAGE_MAP.grantBatchRevokeFailed;
 			continue;
 		}
 
@@ -408,7 +405,7 @@ export default function AdminSsoGrantsClient({
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '读取SSO授权关系失败'
+							: ADMIN_SSO_MESSAGE_MAP.grantReadFailed
 					);
 				})
 				.finally(() => {
@@ -451,7 +448,7 @@ export default function AdminSsoGrantsClient({
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '读取管理员状态失败'
+						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
 			})
 			.finally(() => {
@@ -556,7 +553,7 @@ export default function AdminSsoGrantsClient({
 
 			const csrfToken = admin?.csrf_token;
 			if (csrfToken === undefined) {
-				setMessage('admin-session-expired');
+				setMessage(ADMIN_MESSAGE_MAP.adminSessionExpired);
 				return;
 			}
 
@@ -582,14 +579,14 @@ export default function AdminSsoGrantsClient({
 						return;
 					}
 
-					setMessage('SSO授权已撤销');
+					setMessage(ADMIN_MESSAGE_MAP.ssoGrantRevoked);
 					refreshCurrentGrants();
 				})
 				.catch((error: unknown) => {
 					setMessage(
 						error instanceof Error
 							? error.message
-							: '撤销SSO授权失败'
+							: ADMIN_MESSAGE_MAP.ssoGrantRevokeFailed
 					);
 				})
 				.finally(() => {
@@ -612,7 +609,7 @@ export default function AdminSsoGrantsClient({
 
 		const csrfToken = admin?.csrf_token;
 		if (csrfToken === undefined) {
-			setMessage('admin-session-expired');
+			setMessage(ADMIN_MESSAGE_MAP.adminSessionExpired);
 			return;
 		}
 		const keys = [...selectedKeys];
@@ -650,7 +647,11 @@ export default function AdminSsoGrantsClient({
 				}
 				if (summary.failedKeys.length === 0) {
 					setMessage(
-						`已撤销${summary.successfulKeys.length}条SSO授权`
+						createAdminSsoGrantBatchResultMessage({
+							failedCount: 0,
+							failureMessage: null,
+							successfulCount: summary.successfulKeys.length,
+						})
 					);
 					return;
 				}
@@ -662,7 +663,11 @@ export default function AdminSsoGrantsClient({
 					return;
 				}
 				setMessage(
-					`已撤销${summary.successfulKeys.length}条SSO授权，${summary.failedKeys.length}条失败${summary.firstFailureMessage === null ? '' : `：${summary.firstFailureMessage}`}`
+					createAdminSsoGrantBatchResultMessage({
+						failedCount: summary.failedKeys.length,
+						failureMessage: summary.firstFailureMessage,
+						successfulCount: summary.successfulKeys.length,
+					})
 				);
 			})
 			.finally(() => {
@@ -784,8 +789,8 @@ export default function AdminSsoGrantsClient({
 		return (
 			<AdminLoadingState
 				icon={faShieldHalved}
-				label="读取会话状态"
-				subtitle="正在校验管理员会话"
+				label={ADMIN_STATUS_LABEL_MAP.sessionReading}
+				subtitle={ADMIN_MESSAGE_MAP.adminSessionChecking}
 				title="SSO授权关系"
 			/>
 		);
@@ -809,7 +814,7 @@ export default function AdminSsoGrantsClient({
 						</>
 					}
 					icon={faShieldHalved}
-					subtitle={message ?? '请先返回管理员页登录'}
+					subtitle={message ?? ADMIN_MESSAGE_MAP.adminSignInRequired}
 					title="SSO授权关系"
 				/>
 			</AdminShell>
@@ -842,15 +847,27 @@ export default function AdminSsoGrantsClient({
 			<AdminMetricPanel className="sm:grid-cols-2 xl:grid-cols-4">
 				<AdminMetric
 					label="当前页授权"
-					value={grants === null ? '读取中' : grants.grants.length}
+					value={
+						grants === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: grants.grants.length
+					}
 				/>
 				<AdminMetric
 					label="筛选总数"
-					value={grants === null ? '读取中' : grants.total_count}
+					value={
+						grants === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: grants.total_count
+					}
 				/>
 				<AdminMetric
 					label="页码"
-					value={grants === null ? '读取中' : grants.page}
+					value={
+						grants === null
+							? ADMIN_STATUS_LABEL_MAP.reading
+							: grants.page
+					}
 				/>
 				<AdminMetric label="已选择" value={selectedCount} />
 			</AdminMetricPanel>
@@ -892,13 +909,13 @@ export default function AdminSsoGrantsClient({
 				</AdminAdvancedFilterPopover>
 				<AdminDropdownFilter
 					ariaLabel="筛选客户端状态"
-					options={clientStatusOptions}
+					options={ADMIN_SSO_GRANT_CLIENT_STATUS_FILTER_OPTIONS}
 					value={clientStatus}
 					onAction={handleClientStatusAction}
 				/>
 				<AdminDropdownFilter
 					ariaLabel="筛选用户状态"
-					options={userStatusOptions}
+					options={ADMIN_SSO_GRANT_USER_STATUS_FILTER_OPTIONS}
 					value={userStatus}
 					onAction={handleUserStatusAction}
 				/>
@@ -935,7 +952,7 @@ export default function AdminSsoGrantsClient({
 
 			{grants === null ? (
 				<AdminEmptyState icon={faClock}>
-					正在读取授权关系
+					{ADMIN_SSO_MESSAGE_MAP.grantListReading}
 				</AdminEmptyState>
 			) : grants.grants.length === 0 ? (
 				<AdminEmptyState icon={faListCheck}>

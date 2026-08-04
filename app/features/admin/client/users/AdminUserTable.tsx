@@ -20,6 +20,7 @@ import {
 } from '@/features/admin/client/components/table';
 import { createAdminUserDisplayName } from '@/features/admin/client/components/userPresentation';
 import type { IAdminListLocationState } from '@/features/admin/contracts';
+import { ADMIN_MESSAGE_MAP } from '@/features/admin/copy';
 import { getAdminUserDetailHref } from '@/features/admin/navigation';
 
 interface IAdminUserListRowProps {
@@ -138,7 +139,7 @@ export const AdminUserListContent = memo<IAdminUserListContentProps>(
 		if (users === null) {
 			return (
 				<AdminEmptyState icon={faClock}>
-					正在读取用户列表
+					{ADMIN_MESSAGE_MAP.userListReading}
 				</AdminEmptyState>
 			);
 		}

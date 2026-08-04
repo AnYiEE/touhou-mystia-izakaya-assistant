@@ -15,6 +15,7 @@ import {
 	AdminTableRow,
 } from '@/features/admin/client/components/table';
 import { createAdminDateTimeText } from '@/features/admin/client/inputValues';
+import { ADMIN_MESSAGE_MAP } from '@/features/admin/copy';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
 import {
@@ -122,7 +123,9 @@ export function AdminAuditTable({ logs }: IAdminAuditTableProps) {
 	);
 
 	return logs === null ? (
-		<AdminEmptyState icon={faClock}>正在读取审计日志</AdminEmptyState>
+		<AdminEmptyState icon={faClock}>
+			{ADMIN_MESSAGE_MAP.auditLogReading}
+		</AdminEmptyState>
 	) : logs.logs.length === 0 ? (
 		<AdminEmptyState icon={faClipboardList}>暂无审计日志</AdminEmptyState>
 	) : (

@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
@@ -8,6 +9,7 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 
+import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import { createNoStoreErrorResponse } from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
@@ -33,7 +35,10 @@ export async function POST(request: NextRequest) {
 	const bodyResult =
 		await readJsonBodyResult<Record<string, unknown>>(request);
 	if (bodyResult.status === 'payload-too-large') {
-		return createNoStoreErrorResponse('payload-too-large', 413);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.payloadTooLarge,
+			413
+		);
 	}
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	const usernameValue = body?.['username'];
@@ -46,7 +51,10 @@ export async function POST(request: NextRequest) {
 			typeof nicknameValue !== 'string' &&
 			nicknameValue !== null)
 	) {
-		return createNoStoreErrorResponse('invalid-object-structure', 400);
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
 	}
 
 	const [passwordModule, userModule, registerModule] = await Promise.all([
@@ -57,17 +65,26 @@ export async function POST(request: NextRequest) {
 
 	const username = usernameValue.trim();
 	if (!userModule.checkUsernamePolicy(username)) {
-		return createNoStoreErrorResponse('invalid-username', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.invalidUsername,
+			400
+		);
 	}
 	if (!passwordModule.checkPasswordPolicy(passwordValue)) {
-		return createNoStoreErrorResponse('invalid-password-rule', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.invalidPasswordRule,
+			400
+		);
 	}
 	const nickname =
 		nicknameValue === undefined || nicknameValue === null
 			? null
 			: userModule.normalizeNickname(nicknameValue);
 	if (!userModule.checkNicknamePolicy(nickname)) {
-		return createNoStoreErrorResponse('invalid-nickname', 400);
+		return createNoStoreErrorResponse(
+			ACCOUNT_API_RESPONSE_CODE_MAP.invalidNickname,
+			400
+		);
 	}
 
 	const usernameNormalized = userModule.normalizeUsername(username);

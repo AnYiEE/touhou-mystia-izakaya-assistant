@@ -1,5 +1,6 @@
 import { createAdminSsoClientListHrefFromSearchParams } from '@/features/account/sso/admin/client/navigation';
 import type { IAdminSsoClientFormInitialData } from '@/features/account/sso/admin/contracts';
+import { ADMIN_SSO_MESSAGE_MAP } from '@/features/account/sso/admin/copy';
 import { type IAdminSsoSearchParams } from '@/features/account/sso/admin/searchParams';
 import { getAdminSingleSearchValue } from '@/features/admin/searchParams';
 import {
@@ -82,7 +83,7 @@ export async function readAdminSsoClientEditInitialData(
 				message =
 					error instanceof Error
 						? error.message
-						: '读取SSO授权用户失败';
+						: ADMIN_SSO_MESSAGE_MAP.grantUsersReadFailed;
 			}
 		}
 
@@ -104,7 +105,7 @@ export async function readAdminSsoClientEditInitialData(
 				loadError:
 					error instanceof Error
 						? error.message
-						: '读取SSO客户端失败',
+						: ADMIN_SSO_MESSAGE_MAP.clientReadFailed,
 			},
 			listHref,
 		};

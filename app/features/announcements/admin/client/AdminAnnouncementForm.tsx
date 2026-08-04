@@ -83,7 +83,16 @@ import {
 	isAdminSessionInvalidResult,
 } from '@/features/admin/client/session';
 import type { TAdminApiResult } from '@/features/admin/contracts';
+import {
+	ADMIN_MESSAGE_MAP,
+	ADMIN_STATUS_LABEL_MAP,
+} from '@/features/admin/copy';
 import type { IAdminAnnouncementFormInitialData } from '@/features/announcements/admin/contracts';
+import {
+	ADMIN_ANNOUNCEMENT_MESSAGE_MAP,
+	ANNOUNCEMENT_LEVEL_LABEL_MAP,
+	ANNOUNCEMENT_STATUS_LABEL_MAP as STATUS_LABEL_MAP,
+} from '@/features/announcements/admin/copy';
 import { AnnouncementHtml } from '@/features/announcements/client/components/AnnouncementHtml';
 import { ANNOUNCEMENT_LEVEL_PRESENTATION } from '@/features/announcements/client/presentation';
 import {
@@ -91,7 +100,6 @@ import {
 	type IAdminAnnouncementPreviewData,
 	type IAdminAnnouncementProfile,
 	type IAdminAnnouncementVersionListData,
-	type TAnnouncementComputedStatus,
 } from '@/features/announcements/contracts';
 
 import { checkOrderedArrayEqual } from '@/shared/utilities/collections/check';
@@ -114,11 +122,11 @@ interface ITargetUserOption {
 }
 
 const LEVEL_OPTIONS = [
-	{ key: 'info', label: '信息' },
-	{ key: 'success', label: '成功' },
-	{ key: 'warning', label: '警告' },
-	{ key: 'danger', label: '危险' },
-	{ key: 'critical', label: '重要' },
+	{ key: 'info', label: ANNOUNCEMENT_LEVEL_LABEL_MAP.info },
+	{ key: 'success', label: ANNOUNCEMENT_LEVEL_LABEL_MAP.success },
+	{ key: 'warning', label: ANNOUNCEMENT_LEVEL_LABEL_MAP.warning },
+	{ key: 'danger', label: ANNOUNCEMENT_LEVEL_LABEL_MAP.danger },
+	{ key: 'critical', label: ANNOUNCEMENT_LEVEL_LABEL_MAP.critical },
 ] as const satisfies Array<{ key: TAnnouncementLevel; label: string }>;
 
 function AdminAnnouncementUserPreview({
@@ -212,14 +220,6 @@ const AUDIENCE_OPTIONS = [
 	{ key: 'authenticated', label: '已登录用户' },
 	{ key: 'targeted', label: '指定用户' },
 ] as const satisfies Array<{ key: TAnnouncementAudience; label: string }>;
-
-const STATUS_LABEL_MAP = {
-	active: '展示中',
-	archived: '已归档',
-	disabled: '已停用',
-	ended: '已结束',
-	scheduled: '待开始',
-} as const satisfies Record<TAnnouncementComputedStatus, string>;
 
 const VERSION_ACTION_LABEL_MAP = {
 	archive: '归档',
@@ -664,7 +664,9 @@ export default function AdminAnnouncementForm({
 					return;
 				}
 				setLoadError(
-					error instanceof Error ? error.message : '读取站点通知失败'
+					error instanceof Error
+						? error.message
+						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.listReadFailed
 				);
 			})
 			.finally(() => {
@@ -706,7 +708,7 @@ export default function AdminAnnouncementForm({
 				setMessage(
 					error instanceof Error
 						? error.message
-						: '读取管理员状态失败'
+						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
 			})
 			.finally(() => {
@@ -735,7 +737,11 @@ export default function AdminAnnouncementForm({
 				setPreview(result.data);
 			})
 			.catch((error: unknown) => {
-				setMessage(error instanceof Error ? error.message : '预览失败');
+				setMessage(
+					error instanceof Error
+						? error.message
+						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.previewFailed
+				);
 			})
 			.finally(() => {
 				setIsSaving(false);
@@ -768,7 +774,11 @@ export default function AdminAnnouncementForm({
 				}
 
 				applyAnnouncement(result.data.announcement);
-				setMessage(isEditMode ? '站点通知已保存' : '站点通知已创建');
+				setMessage(
+					isEditMode
+						? ADMIN_ANNOUNCEMENT_MESSAGE_MAP.saved
+						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.created
+				);
 				refreshVersions(result.data.announcement.id);
 				if (!isEditMode) {
 					router.replace(
@@ -779,7 +789,11 @@ export default function AdminAnnouncementForm({
 				}
 			})
 			.catch((error: unknown) => {
-				setMessage(error instanceof Error ? error.message : '保存失败');
+				setMessage(
+					error instanceof Error
+						? error.message
+						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.saveFailed
+				);
 			})
 			.finally(() => {
 				setIsSaving(false);
@@ -812,11 +826,15 @@ export default function AdminAnnouncementForm({
 				}
 
 				applyAnnouncement(result.data.announcement);
-				setMessage('站点通知已归档');
+				setMessage(ADMIN_ANNOUNCEMENT_MESSAGE_MAP.archived);
 				refreshVersions(result.data.announcement.id);
 			})
 			.catch((error: unknown) => {
-				setMessage(error instanceof Error ? error.message : '归档失败');
+				setMessage(
+					error instanceof Error
+						? error.message
+						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.archiveFailed
+				);
 			})
 			.finally(() => {
 				setIsSaving(false);
@@ -847,11 +865,15 @@ export default function AdminAnnouncementForm({
 				}
 
 				applyAnnouncement(result.data.announcement);
-				setMessage('站点通知已恢复');
+				setMessage(ADMIN_ANNOUNCEMENT_MESSAGE_MAP.restored);
 				refreshVersions(result.data.announcement.id);
 			})
 			.catch((error: unknown) => {
-				setMessage(error instanceof Error ? error.message : '恢复失败');
+				setMessage(
+					error instanceof Error
+						? error.message
+						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.restoreFailed
+				);
 			})
 			.finally(() => {
 				setIsSaving(false);
@@ -928,7 +950,9 @@ export default function AdminAnnouncementForm({
 				}
 
 				setMessage(
-					error instanceof Error ? error.message : '读取指定用户失败'
+					error instanceof Error
+						? error.message
+						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.targetUserReadFailed
 				);
 			});
 	}, [admin, missingTargetUserIds]);
@@ -998,7 +1022,9 @@ export default function AdminAnnouncementForm({
 					}
 
 					setMessage(
-						error instanceof Error ? error.message : '搜索用户失败'
+						error instanceof Error
+							? error.message
+							: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.userSearchFailed
 					);
 				})
 				.finally(() => {
@@ -1044,8 +1070,8 @@ export default function AdminAnnouncementForm({
 		return (
 			<AdminLoadingState
 				icon={faShieldHalved}
-				label="读取会话状态"
-				subtitle="正在校验管理员会话"
+				label={ADMIN_STATUS_LABEL_MAP.sessionReading}
+				subtitle={ADMIN_MESSAGE_MAP.adminSessionChecking}
 				title="站点通知"
 			/>
 		);
@@ -1061,7 +1087,7 @@ export default function AdminAnnouncementForm({
 						</AdminHeaderActionLink>
 					}
 					icon={faShieldHalved}
-					subtitle={message ?? '请先返回管理员页登录'}
+					subtitle={message ?? ADMIN_MESSAGE_MAP.adminSignInRequired}
 					title="站点通知"
 				/>
 			</AdminShell>
@@ -1093,7 +1119,7 @@ export default function AdminAnnouncementForm({
 								variant="flat"
 								onPress={refreshAnnouncement}
 							>
-								重试
+								{ADMIN_STATUS_LABEL_MAP.retry}
 							</Button>
 						</>
 					}
@@ -1110,7 +1136,7 @@ export default function AdminAnnouncementForm({
 		preview?.computed_status ?? announcement?.computed_status ?? null;
 	const isArchived = announcement?.computed_status === 'archived';
 	const isConflictMessage =
-		message === '通知已被其他管理员更新，请刷新后再编辑。';
+		message === ADMIN_ANNOUNCEMENT_MESSAGE_MAP.conflictRefresh;
 	const hasVersionRows = versions !== null && versions.versions.length > 0;
 
 	return (
