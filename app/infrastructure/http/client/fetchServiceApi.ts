@@ -7,6 +7,16 @@ import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
 
 import { ServiceApiError } from './serviceApiError';
 
+export const MAX_SERVICE_RETRY_AFTER_SECONDS = 5 * 60;
+
+export function normalizeServiceRetryAfterSeconds(value: unknown) {
+	if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+		return null;
+	}
+
+	return Math.min(value, MAX_SERVICE_RETRY_AFTER_SECONDS);
+}
+
 function createPathUrl(path: string) {
 	return new URL(path, globalThis.location.origin).toString();
 }
@@ -19,7 +29,7 @@ function readRetryAfterHeader(headers: Headers) {
 
 	const value = Number.parseFloat(retryAfter);
 
-	return Number.isFinite(value) ? value : null;
+	return normalizeServiceRetryAfterSeconds(value);
 }
 
 function readRetryAfterData(data: unknown) {
@@ -29,9 +39,7 @@ function readRetryAfterData(data: unknown) {
 
 	const retryAfter = (data as Record<string, unknown>)['retry_after'];
 
-	return typeof retryAfter === 'number' && Number.isFinite(retryAfter)
-		? retryAfter
-		: null;
+	return normalizeServiceRetryAfterSeconds(retryAfter);
 }
 
 function createServiceApiHeaders(headersInit: HeadersInit | undefined) {

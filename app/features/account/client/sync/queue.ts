@@ -8,6 +8,8 @@ import type {
 	TSyncPausedReason,
 } from '@/features/account/sync/types';
 
+import { canIncrementNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+
 import {
 	readDirtyQueueEntries,
 	readDirtyQueueEntry,
@@ -331,7 +333,9 @@ export function setDirtyQueueEntryError({
 		generationToken,
 		nextEntry: {
 			...currentEntry,
-			attempts: currentEntry.attempts + 1,
+			attempts: canIncrementNonNegativeSafeInteger(currentEntry.attempts)
+				? currentEntry.attempts + 1
+				: currentEntry.attempts,
 			lastError: message,
 		},
 		userId,

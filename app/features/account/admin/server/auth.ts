@@ -13,6 +13,11 @@ import {
 } from '@/features/account/server/auth/csrf';
 import { createAccountCookieDomainOptions } from '@/features/account/server/auth/session';
 
+import {
+	canAddNonNegativeSafeIntegers,
+	isNonNegativeSafeInteger,
+} from '@/shared/utilities/numbers/check';
+
 export const ADMIN_SESSION_MAX_AGE = 60 * 60 * 12;
 export type TAdminAuthSource = 'credentials' | 'user';
 
@@ -34,8 +39,9 @@ function decodeAdminPayload(value: string): IAdminSessionPayload | null {
 		) as IAdminSessionPayload;
 
 		if (
-			typeof payload.expires_at !== 'number' ||
-			typeof payload.issued_at !== 'number' ||
+			!isNonNegativeSafeInteger(payload.expires_at) ||
+			!isNonNegativeSafeInteger(payload.issued_at) ||
+			payload.expires_at < payload.issued_at ||
 			typeof payload.nonce !== 'string' ||
 			typeof payload.username !== 'string'
 		) {
@@ -121,9 +127,13 @@ export function createAdminSessionToken(username: string, now = Date.now()) {
 	if (!checkAdminCredentialLoginEnabled() || username !== adminUsername) {
 		throw new Error('feature-disabled');
 	}
+	const maxAgeMs = ADMIN_SESSION_MAX_AGE * 1000;
+	if (!canAddNonNegativeSafeIntegers(now, maxAgeMs)) {
+		throw new Error('invalid-admin-session-time');
+	}
 
 	const payload = encodeAdminPayload({
-		expires_at: now + ADMIN_SESSION_MAX_AGE * 1000,
+		expires_at: now + maxAgeMs,
 		issued_at: now,
 		nonce: randomBytes(16).toString('base64url'),
 		username,
@@ -137,6 +147,10 @@ export function createAdminSessionToken(username: string, now = Date.now()) {
 }
 
 export function verifyAdminSessionToken(token: string, now = Date.now()) {
+	if (!isNonNegativeSafeInteger(now)) {
+		return null;
+	}
+
 	const [payloadValue, signature, extra] = token.split('.');
 	if (!payloadValue || !signature || extra !== undefined) {
 		return null;

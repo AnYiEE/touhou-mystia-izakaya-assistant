@@ -13,6 +13,8 @@ import type {
 } from '@/infrastructure/database/schema';
 import { TABLE_NAME_MAP } from '@/infrastructure/database/tableNames';
 
+import { canAddNonNegativeSafeIntegers } from '@/shared/utilities/numbers/check';
+
 import { enqueueSsoClientCallbackInTransaction } from './callbackQueue';
 
 const CLIENT_TABLE_NAME = TABLE_NAME_MAP.ssoClient;
@@ -23,6 +25,7 @@ export type TSsoClientSecretMutationError =
 	| 'client-disabled'
 	| 'last-active-secret'
 	| 'sso-client-not-found'
+	| 'sso-client-secret-invalid-state'
 	| 'sso-client-secret-not-found';
 
 export type TSsoClientSecretMutationResult =
@@ -211,7 +214,13 @@ async function getNextSsoClientSecretPositionInTransaction(
 		.limit(1)
 		.executeTakeFirst();
 
-	return record === undefined ? 0 : record.position + 1;
+	if (record === undefined) {
+		return 0;
+	}
+
+	return canAddNonNegativeSafeIntegers(record.position, 2)
+		? record.position + 1
+		: null;
 }
 
 export async function listSsoClientSecrets(clientId: TSsoClient['id']) {
@@ -253,6 +262,12 @@ export async function createSsoClientSecretForClient(
 			trx,
 			clientId
 		);
+		if (position === null) {
+			return {
+				error: 'sso-client-secret-invalid-state',
+				status: 'error',
+			};
+		}
 		const record = createSsoClientSecretRecord(
 			clientId,
 			secret.secret_hash,

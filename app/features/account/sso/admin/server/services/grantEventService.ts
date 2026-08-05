@@ -20,6 +20,11 @@ import { checkAdminTimeRange } from '@/features/admin/server/validation/timeRang
 
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
+import {
+	isNonNegativeSafeInteger,
+	isPositiveSafeInteger,
+} from '@/shared/utilities/numbers/check';
+
 export type TAdminSsoGrantEventServiceError = 'invalid-object-structure';
 
 export type TAdminSsoGrantEventServiceResult<TData> =
@@ -113,6 +118,13 @@ function createNullableUserProfile(
 function createGrantEventRecord(
 	event: Awaited<ReturnType<typeof listAdminSsoGrantEvents>>['events'][number]
 ): IAdminSsoGrantEventRecord {
+	if (
+		!isPositiveSafeInteger(event.event_id) ||
+		!isNonNegativeSafeInteger(event.event_created_at)
+	) {
+		throw new Error('invalid-sso-grant-event-record');
+	}
+
 	return {
 		actor_id: event.actor_id,
 		actor_type: event.actor_type,

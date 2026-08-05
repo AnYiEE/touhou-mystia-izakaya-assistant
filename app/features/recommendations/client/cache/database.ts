@@ -5,6 +5,13 @@ import { type IDBPDatabase, type IDBPTransaction, deleteDB, openDB } from 'idb';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 import {
+	canAddNonNegativeSafeIntegers,
+	canIncrementNonNegativeSafeInteger,
+	isNonNegativeSafeInteger,
+	isPositiveSafeInteger,
+} from '@/shared/utilities/numbers/check';
+
+import {
 	RECOMMENDATION_CACHE_DATABASE_VERSION,
 	RECOMMENDATION_CACHE_OLD_NAMESPACE_DELETE_BATCH_SIZE,
 	RECOMMENDATION_CACHE_RECORD_VERSION,
@@ -88,10 +95,6 @@ function createEmptyMetadata(
 	};
 }
 
-function isPositiveInteger(value: unknown): value is number {
-	return typeof value === 'number' && Number.isInteger(value) && value > 0;
-}
-
 function isValidMetadata(
 	value: unknown,
 	namespace: string,
@@ -105,14 +108,33 @@ function isValidMetadata(
 		metadata['id'] === createMetadataId(namespace, storeName) &&
 		metadata['namespace'] === namespace &&
 		metadata['storeName'] === storeName &&
-		isPositiveInteger(metadata['entryCount']) &&
-		isPositiveInteger(metadata['logicalWeight']) &&
+		isPositiveSafeInteger(metadata['entryCount']) &&
+		isPositiveSafeInteger(metadata['logicalWeight']) &&
 		metadata['logicalWeight'] >= metadata['entryCount']
 	);
 }
 
 function getRecordLogicalWeight(record: IRecommendationCacheRecord) {
-	return isPositiveInteger(record.logicalWeight) ? record.logicalWeight : 1;
+	return isPositiveSafeInteger(record.logicalWeight)
+		? record.logicalWeight
+		: 1;
+}
+
+function addMetadataLogicalWeight(
+	metadata: IRecommendationCacheMetadata,
+	logicalWeight: number
+) {
+	if (!canAddNonNegativeSafeIntegers(metadata.logicalWeight, logicalWeight)) {
+		throw new Error('recommendation-cache-metadata-overflow');
+	}
+	metadata.logicalWeight += logicalWeight;
+}
+
+function incrementMetadataEntryCount(metadata: IRecommendationCacheMetadata) {
+	if (!canIncrementNonNegativeSafeInteger(metadata.entryCount)) {
+		throw new Error('recommendation-cache-metadata-overflow');
+	}
+	metadata.entryCount++;
 }
 
 function disableCache() {
@@ -238,8 +260,11 @@ async function calculateMetadataForNamespace(
 		.index('namespace')
 		.openCursor(namespace);
 	while (cursor !== null) {
-		metadata.entryCount++;
-		metadata.logicalWeight += getRecordLogicalWeight(cursor.value);
+		incrementMetadataEntryCount(metadata);
+		addMetadataLogicalWeight(
+			metadata,
+			getRecordLogicalWeight(cursor.value)
+		);
 		cursor = await cursor.continue();
 	}
 	return metadata;
@@ -297,8 +322,19 @@ async function updateMetadataForDeletedRecords(
 			namespace: record.namespace,
 			storeName: record.storeName,
 		};
+		if (!canIncrementNonNegativeSafeInteger(delta.entryCount)) {
+			throw new Error('recommendation-cache-metadata-overflow');
+		}
 		delta.entryCount++;
-		if (isPositiveInteger(record.logicalWeight)) {
+		if (isPositiveSafeInteger(record.logicalWeight)) {
+			if (
+				!canAddNonNegativeSafeIntegers(
+					delta.logicalWeight,
+					record.logicalWeight
+				)
+			) {
+				throw new Error('recommendation-cache-metadata-overflow');
+			}
 			delta.logicalWeight += record.logicalWeight;
 		} else {
 			delta.hasInvalidLogicalWeight = true;
@@ -534,9 +570,9 @@ export async function readRecommendationCacheResult<T>(
 			record.recordVersion === RECOMMENDATION_CACHE_RECORD_VERSION &&
 			record.namespace === namespace &&
 			record.requestKey === requestKey &&
-			Number.isFinite(record.createdAt) &&
-			Number.isFinite(record.lastAccessedAt) &&
-			Number.isInteger(record.logicalWeight)
+			isNonNegativeSafeInteger(record.createdAt) &&
+			isNonNegativeSafeInteger(record.lastAccessedAt) &&
+			isPositiveSafeInteger(record.logicalWeight)
 				? validate(record.result)
 				: undefined;
 		if (
@@ -575,7 +611,10 @@ async function evictCurrentNamespaceRecords(
 			metadata.logicalWeight > limits.maxLogicalWeight)
 	) {
 		metadata.entryCount--;
-		metadata.logicalWeight -= getRecordLogicalWeight(cursor.value);
+		metadata.logicalWeight = Math.max(
+			0,
+			metadata.logicalWeight - getRecordLogicalWeight(cursor.value)
+		);
 		await cursor.delete();
 		cursor = await cursor.continue();
 	}
@@ -601,17 +640,30 @@ async function writeRecordTransaction(
 		const metadataStore = transaction.objectStore('metadata');
 		const metadataId = createMetadataId(namespace, storeName);
 		const existing = await resultStore.get(id);
-		const { metadata } = await readMetadataOrRebuild(
+		let { metadata } = await readMetadataOrRebuild(
 			transaction,
 			namespace,
 			storeName
 		);
 		if (existing === undefined) {
-			metadata.entryCount++;
+			incrementMetadataEntryCount(metadata);
 		} else {
-			metadata.logicalWeight -= getRecordLogicalWeight(existing);
+			const existingLogicalWeight = getRecordLogicalWeight(existing);
+			if (metadata.logicalWeight < existingLogicalWeight) {
+				const rebuilt = await readMetadataOrRebuild(
+					transaction,
+					namespace,
+					storeName,
+					true
+				);
+				metadata = rebuilt.metadata;
+			}
+			metadata.logicalWeight = Math.max(
+				0,
+				metadata.logicalWeight - existingLogicalWeight
+			);
 		}
-		metadata.logicalWeight += logicalWeight;
+		addMetadataLogicalWeight(metadata, logicalWeight);
 		const record: IRecommendationCacheRecord = {
 			createdAt: existing?.createdAt ?? now,
 			id,
@@ -675,8 +727,9 @@ export async function writeRecommendationCacheResult(
 ) {
 	if (
 		isWriteDisabled ||
-		!Number.isInteger(logicalWeight) ||
-		logicalWeight <= 0 ||
+		!isPositiveSafeInteger(logicalWeight) ||
+		!isPositiveSafeInteger(limits.maxEntries) ||
+		!isPositiveSafeInteger(limits.maxLogicalWeight) ||
 		logicalWeight > limits.maxLogicalWeight
 	) {
 		return false;

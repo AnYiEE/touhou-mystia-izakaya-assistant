@@ -6,6 +6,8 @@ import type {
 } from '@/features/account/contracts';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 
+import { normalizeServiceRetryAfterSeconds } from '@/infrastructure/http/client/fetchServiceApi';
+
 import { publishAccountRuntimeInvalidation } from './accountRuntimeInvalidation';
 import { AccountApiError, fetchAccountMe, importBackupCode } from './api';
 import { accountStore } from './state/accountStore';
@@ -439,10 +441,9 @@ async function runAccountStateRefresh() {
 			throw new AccountApiError(
 				accountMeResult.message,
 				accountMeResult.httpStatus,
-				typeof accountMeResult.data?.['retry_after'] === 'number' &&
-					Number.isFinite(accountMeResult.data['retry_after'])
-					? accountMeResult.data['retry_after']
-					: null
+				normalizeServiceRetryAfterSeconds(
+					accountMeResult.data?.['retry_after']
+				)
 			);
 		}
 

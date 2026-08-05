@@ -42,6 +42,8 @@ import type {
 } from '@/infrastructure/database/schema';
 import { checkSqlitePrimaryKeyOrUniqueConstraintError } from '@/infrastructure/database/sqlite/constraintErrors';
 
+import { canIncrementNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+
 import { cleanupAnnouncementRecordsBestEffort } from './cleanup';
 import {
 	createAnnouncementChangedFields,
@@ -61,7 +63,9 @@ export interface IListAdminAnnouncementsOptions {
 }
 
 function createMonotonicTimestamp(previousTimestamp: number) {
-	return Math.max(Date.now(), previousTimestamp + 1);
+	return canIncrementNonNegativeSafeInteger(previousTimestamp)
+		? Math.max(Date.now(), previousTimestamp + 1)
+		: null;
 }
 
 function createAnnouncementRecordFromBody(
@@ -183,7 +187,7 @@ export async function getAdminAnnouncement(
 
 	const profile = createAdminAnnouncementProfile(announcement);
 	if (profile === null) {
-		return { error: 'invalid-object-structure', status: 'error' };
+		return { error: 'announcement-invalid-state', status: 'error' };
 	}
 
 	return { data: { announcement: profile }, status: 'ok' };
@@ -259,7 +263,7 @@ export async function createAdminAnnouncement(
 			error instanceof Error &&
 			error.message === 'invalid-announcement-profile'
 		) {
-			return { error: 'invalid-object-structure', status: 'error' };
+			return { error: 'announcement-invalid-state', status: 'error' };
 		}
 
 		throw error;
@@ -289,13 +293,19 @@ export async function updateAdminAnnouncement(
 
 			const previousProfile = createAdminAnnouncementProfile(current);
 			if (previousProfile === null) {
-				return 'invalid-object-structure';
+				return 'announcement-invalid-state';
 			}
 			if (body.expected_revision !== current.revision) {
 				return 'announcement-conflict';
 			}
 
 			const now = createMonotonicTimestamp(current.updated_at);
+			if (
+				now === null ||
+				!canIncrementNonNegativeSafeInteger(current.revision)
+			) {
+				return 'announcement-invalid-state';
+			}
 			const updated = await updateAnnouncementRecord(
 				id,
 				{
@@ -321,7 +331,7 @@ export async function updateAdminAnnouncement(
 
 			const nextProfile = createAdminAnnouncementProfile(updated, now);
 			if (nextProfile === null) {
-				return 'invalid-object-structure';
+				return 'announcement-invalid-state';
 			}
 
 			await insertAnnouncementVersion(
@@ -343,10 +353,9 @@ export async function updateAdminAnnouncement(
 		if (profile === 'announcement-conflict') {
 			return { error: 'announcement-conflict', status: 'error' };
 		}
-		if (profile === 'invalid-object-structure') {
-			return { error: 'invalid-object-structure', status: 'error' };
+		if (profile === 'announcement-invalid-state') {
+			return { error: 'announcement-invalid-state', status: 'error' };
 		}
-
 		invalidateActiveAnnouncementCandidateCache();
 		void cleanupAnnouncementRecordsBestEffort();
 
@@ -373,10 +382,16 @@ export async function archiveAdminAnnouncement(
 
 			const previousProfile = createAdminAnnouncementProfile(current);
 			if (previousProfile === null) {
-				return 'invalid-object-structure';
+				return 'announcement-invalid-state';
 			}
 
 			const now = createMonotonicTimestamp(current.updated_at);
+			if (
+				now === null ||
+				!canIncrementNonNegativeSafeInteger(current.revision)
+			) {
+				return 'announcement-invalid-state';
+			}
 			const updated = await updateAnnouncementRecord(
 				id,
 				{
@@ -392,7 +407,7 @@ export async function archiveAdminAnnouncement(
 
 			const nextProfile = createAdminAnnouncementProfile(updated, now);
 			if (nextProfile === null) {
-				return 'invalid-object-structure';
+				return 'announcement-invalid-state';
 			}
 
 			await insertAnnouncementVersion(
@@ -414,10 +429,9 @@ export async function archiveAdminAnnouncement(
 		if (profile === 'announcement-conflict') {
 			return { error: 'announcement-conflict', status: 'error' };
 		}
-		if (profile === 'invalid-object-structure') {
-			return { error: 'invalid-object-structure', status: 'error' };
+		if (profile === 'announcement-invalid-state') {
+			return { error: 'announcement-invalid-state', status: 'error' };
 		}
-
 		invalidateActiveAnnouncementCandidateCache();
 		void cleanupAnnouncementRecordsBestEffort();
 
@@ -444,13 +458,19 @@ export async function restoreAdminAnnouncement(
 
 			const previousProfile = createAdminAnnouncementProfile(current);
 			if (previousProfile === null) {
-				return 'invalid-object-structure';
+				return 'announcement-invalid-state';
 			}
 			if (current.deleted_at === null) {
 				return previousProfile;
 			}
 
 			const now = createMonotonicTimestamp(current.updated_at);
+			if (
+				now === null ||
+				!canIncrementNonNegativeSafeInteger(current.revision)
+			) {
+				return 'announcement-invalid-state';
+			}
 			const updated = await updateAnnouncementRecord(
 				id,
 				{
@@ -466,7 +486,7 @@ export async function restoreAdminAnnouncement(
 
 			const nextProfile = createAdminAnnouncementProfile(updated, now);
 			if (nextProfile === null) {
-				return 'invalid-object-structure';
+				return 'announcement-invalid-state';
 			}
 
 			await insertAnnouncementVersion(
@@ -488,10 +508,9 @@ export async function restoreAdminAnnouncement(
 		if (profile === 'announcement-conflict') {
 			return { error: 'announcement-conflict', status: 'error' };
 		}
-		if (profile === 'invalid-object-structure') {
-			return { error: 'invalid-object-structure', status: 'error' };
+		if (profile === 'announcement-invalid-state') {
+			return { error: 'announcement-invalid-state', status: 'error' };
 		}
-
 		invalidateActiveAnnouncementCandidateCache();
 		void cleanupAnnouncementRecordsBestEffort();
 

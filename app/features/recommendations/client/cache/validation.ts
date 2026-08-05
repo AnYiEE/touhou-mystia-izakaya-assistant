@@ -11,6 +11,11 @@ import type { ISuggestedMeal } from '@/domain/recommendations/types';
 
 import type { IResolvedCustomerRarePlanGroup } from '@/features/customerPlans/contracts';
 
+import {
+	isNonNegativeSafeInteger,
+	isNullableNonNegativeSafeInteger,
+} from '@/shared/utilities/numbers/check';
+
 type TCustomerRarePlanMeals = IResolvedCustomerRarePlanGroup['meals'];
 
 const beverageInstance = Beverage.getInstance();
@@ -37,13 +42,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isFiniteNumber(value: unknown): value is number {
 	return typeof value === 'number' && Number.isFinite(value);
-}
-
-function isNonNegativeIntegerOrNull(value: unknown): value is number | null {
-	return (
-		value === null ||
-		(typeof value === 'number' && Number.isInteger(value) && value >= 0)
-	);
 }
 
 function isBeverageName(value: unknown): value is TBeverageName {
@@ -122,12 +120,10 @@ function validateCustomerRarePlanMeal(
 ): TCustomerRarePlanMeals[number] | undefined {
 	if (
 		!isRecord(value) ||
-		!isNonNegativeIntegerOrNull(value['dataIndex']) ||
-		!isNonNegativeIntegerOrNull(value['recommendedSetIndex']) ||
+		!isNullableNonNegativeSafeInteger(value['dataIndex']) ||
+		!isNullableNonNegativeSafeInteger(value['recommendedSetIndex']) ||
 		value['source'] !== 'recommended' ||
-		typeof value['visibleIndex'] !== 'number' ||
-		!Number.isInteger(value['visibleIndex']) ||
-		value['visibleIndex'] < 0 ||
+		!isNonNegativeSafeInteger(value['visibleIndex']) ||
 		!isRecord(value['evaluation']) ||
 		typeof value['evaluation']['isDarkMatter'] !== 'boolean' ||
 		!isFiniteNumber(value['evaluation']['price']) ||

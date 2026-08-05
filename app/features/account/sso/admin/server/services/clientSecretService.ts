@@ -15,11 +15,18 @@ import { createSsoClientPublicProfile } from '@/features/account/sso/server/vali
 
 import type { TSsoClientSecret } from '@/infrastructure/database/schema';
 
+import {
+	canIncrementNonNegativeSafeInteger,
+	isNonNegativeSafeInteger,
+	isNullableNonNegativeSafeInteger,
+} from '@/shared/utilities/numbers/check';
+
 export type TAdminSsoClientSecretServiceError =
 	| 'client-disabled'
 	| 'invalid-object-structure'
 	| 'last-active-secret'
 	| 'sso-client-not-found'
+	| 'sso-client-secret-invalid-state'
 	| 'sso-client-secret-not-found';
 
 export type TAdminSsoClientSecretServiceResult<TData> =
@@ -34,6 +41,7 @@ export const ADMIN_SSO_CLIENT_SECRET_SERVICE_ERROR_STATUS_MAP: Record<
 	'invalid-object-structure': 400,
 	'last-active-secret': 409,
 	'sso-client-not-found': 404,
+	'sso-client-secret-invalid-state': 500,
 	'sso-client-secret-not-found': 404,
 };
 
@@ -65,6 +73,16 @@ function normalizeLabel(value: string | null | undefined) {
 function createSecretRecord(
 	secret: TSsoClientSecret
 ): IAdminSsoClientSecretRecord {
+	if (
+		!isNonNegativeSafeInteger(secret.created_at) ||
+		!isNullableNonNegativeSafeInteger(secret.disabled_at) ||
+		!isNullableNonNegativeSafeInteger(secret.last_used_at) ||
+		!canIncrementNonNegativeSafeInteger(secret.position) ||
+		!isNullableNonNegativeSafeInteger(secret.revoked_at)
+	) {
+		throw new Error('invalid-sso-client-secret-record');
+	}
+
 	let status: IAdminSsoClientSecretRecord['status'] = 'active';
 	if (secret.revoked_at !== null) {
 		status = 'revoked';

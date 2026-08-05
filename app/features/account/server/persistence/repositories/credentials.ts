@@ -16,6 +16,8 @@ import type {
 } from '@/infrastructure/database/schema';
 import { TABLE_NAME_MAP } from '@/infrastructure/database/tableNames';
 
+import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+
 import {
 	type TSessionMutablePatch,
 	lockActiveUserSessionInTransaction,
@@ -40,6 +42,12 @@ export function getCredentialLockState(
 	credential: Pick<TUserCredential, 'locked_until'>,
 	now = Date.now()
 ): Extract<TCredentialAttemptState, { status: 'locked' }> | { status: 'ok' } {
+	if (
+		credential.locked_until !== null &&
+		!isNonNegativeSafeInteger(credential.locked_until)
+	) {
+		throw new Error('invalid-credential-lock-time');
+	}
 	if (credential.locked_until !== null && credential.locked_until > now) {
 		return {
 			retryAfter: getCredentialRetryAfter(credential.locked_until, now),
@@ -371,25 +379,6 @@ export async function updateCredentialAndKeepCurrentSession({
 	});
 }
 
-export async function incrementFailedAttempts(userId: TUser['id']) {
-	const db = await getAccountDatabase();
-	const record = await db
-		.updateTable(TABLE_NAME)
-		.set(({ eb, ref }) => ({
-			failed_attempts: eb(ref('failed_attempts'), '+', 1),
-			updated_at: Date.now(),
-		}))
-		.where('user_id', '=', userId)
-		.returning('failed_attempts')
-		.executeTakeFirst();
-
-	if (record === undefined) {
-		throw new Error('credential-not-found');
-	}
-
-	return record.failed_attempts;
-}
-
 export async function recordFailedCredentialAttempt({
 	expectedPasswordHash,
 	now = Date.now(),
@@ -436,8 +425,19 @@ export async function recordFailedCredentialAttempt({
 			.where('password_hash', '=', expectedPasswordHash)
 			.where((eb) =>
 				eb.or([
-					eb('locked_until', 'is', null),
-					eb('locked_until', '<=', now),
+					eb.and([
+						eb('locked_until', 'is not', null),
+						eb('locked_until', '<=', now),
+					]),
+					eb.and([
+						eb('locked_until', 'is', null),
+						eb('failed_attempts', '>=', 0),
+						eb(
+							'failed_attempts',
+							'<',
+							CREDENTIAL_FAILED_ATTEMPT_LIMIT
+						),
+					]),
 				])
 			)
 			.returning(['failed_attempts', 'locked_until'])
@@ -455,6 +455,14 @@ export async function recordFailedCredentialAttempt({
 
 			if (credential.password_hash !== expectedPasswordHash) {
 				return { status: 'stale' as const };
+			}
+			if (
+				!isNonNegativeSafeInteger(credential.failed_attempts) ||
+				(credential.locked_until === null &&
+					credential.failed_attempts >=
+						CREDENTIAL_FAILED_ATTEMPT_LIMIT)
+			) {
+				throw new Error('invalid-credential-attempt-state');
 			}
 
 			const lockState = getCredentialLockState(credential, now);

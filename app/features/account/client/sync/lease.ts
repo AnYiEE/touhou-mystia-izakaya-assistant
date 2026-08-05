@@ -9,6 +9,11 @@ import {
 
 import { withCrossTabLock } from '@/infrastructure/browser/crossTab/withCrossTabLock';
 
+import {
+	canAddNonNegativeSafeIntegers,
+	isNonNegativeSafeInteger,
+} from '@/shared/utilities/numbers/check';
+
 export const ACCOUNT_SYNC_LEASE_TTL = 15 * 1000;
 export const ACCOUNT_SYNC_LEASE_RENEW_INTERVAL = 5 * 1000;
 
@@ -43,13 +48,9 @@ function checkAccountSyncLease(value: unknown): value is IAccountSyncLease {
 		!Array.isArray(value) &&
 		typeof value === 'object' &&
 		'expiresAt' in value &&
-		typeof value.expiresAt === 'number' &&
-		Number.isFinite(value.expiresAt) &&
-		value.expiresAt >= 0 &&
+		isNonNegativeSafeInteger(value.expiresAt) &&
 		'renewedAt' in value &&
-		typeof value.renewedAt === 'number' &&
-		Number.isFinite(value.renewedAt) &&
-		value.renewedAt >= 0 &&
+		isNonNegativeSafeInteger(value.renewedAt) &&
 		'ownerRunId' in value &&
 		typeof value.ownerRunId === 'string' &&
 		value.ownerRunId !== '' &&
@@ -80,12 +81,17 @@ function writeAccountSyncLease(
 	ownerRunId: string,
 	now: number
 ) {
+	if (!canAddNonNegativeSafeIntegers(now, ACCOUNT_SYNC_LEASE_TTL)) {
+		return false;
+	}
+
 	writeAccountJsonStorage(createAccountSyncLeaseKey(userId), {
 		expiresAt: now + ACCOUNT_SYNC_LEASE_TTL,
 		ownerRunId,
 		ownerTabId,
 		renewedAt: now,
 	} satisfies IAccountSyncLease);
+	return true;
 }
 
 function tryAcquireAccountSyncLease(
@@ -103,7 +109,9 @@ function tryAcquireAccountSyncLease(
 		return false;
 	}
 
-	writeAccountSyncLease(userId, ownerTabId, ownerRunId, now);
+	if (!writeAccountSyncLease(userId, ownerTabId, ownerRunId, now)) {
+		return false;
+	}
 
 	const nextLease = readAccountSyncLease(userId);
 	return (
@@ -128,9 +136,7 @@ function tryRenewAccountSyncLease(
 		return false;
 	}
 
-	writeAccountSyncLease(userId, ownerTabId, ownerRunId, now);
-
-	return true;
+	return writeAccountSyncLease(userId, ownerTabId, ownerRunId, now);
 }
 
 function tryReleaseAccountSyncLease(

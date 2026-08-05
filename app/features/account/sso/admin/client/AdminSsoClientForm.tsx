@@ -75,6 +75,7 @@ import {
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
 import { checkOrderedArrayEqual } from '@/shared/utilities/collections/check';
+import { canIncrementNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 
 import AdminSsoClientGrantPanel from './AdminSsoClientGrantPanel';
 import {
@@ -163,7 +164,12 @@ type TConfirmAction =
 	| null;
 
 function createSecretDisplayName(secret: IAdminSsoClientSecretRecord) {
-	return secret.label ?? `secret #${secret.position + 1}`;
+	return (
+		secret.label ??
+		(canIncrementNonNegativeSafeInteger(secret.position)
+			? `secret #${secret.position + 1}`
+			: 'secret')
+	);
 }
 
 function createSecretStatusText(secret: IAdminSsoClientSecretRecord) {

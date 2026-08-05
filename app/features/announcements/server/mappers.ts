@@ -10,7 +10,27 @@ import {
 
 import type { TAnnouncement, TUser } from '@/infrastructure/database/schema';
 
+import {
+	isNonNegativeSafeInteger,
+	isNullableNonNegativeSafeInteger,
+	isPositiveSafeInteger,
+} from '@/shared/utilities/numbers/check';
+
 import { sanitizeAnnouncementHtml } from './html';
+
+export function checkAnnouncementNumericState(announcement: TAnnouncement) {
+	return (
+		isNonNegativeSafeInteger(announcement.created_at) &&
+		isNullableNonNegativeSafeInteger(announcement.deleted_at) &&
+		isNullableNonNegativeSafeInteger(announcement.ends_at) &&
+		Number.isSafeInteger(announcement.priority) &&
+		isPositiveSafeInteger(announcement.revision) &&
+		isNullableNonNegativeSafeInteger(announcement.starts_at) &&
+		isNonNegativeSafeInteger(announcement.updated_at) &&
+		(announcement.dismissible === 0 || announcement.dismissible === 1) &&
+		(announcement.enabled === 0 || announcement.enabled === 1)
+	);
+}
 
 export function normalizeAnnouncementBoolean(value: number) {
 	return value === 1;
@@ -95,6 +115,7 @@ export function createAdminAnnouncementProfile(
 	if (
 		!checkAnnouncementLevel(announcement.level) ||
 		!checkAnnouncementAudience(announcement.audience) ||
+		!checkAnnouncementNumericState(announcement) ||
 		targetUserIds === null
 	) {
 		return null;
@@ -126,7 +147,8 @@ export function createPublicAnnouncementItem(
 ): IAnnouncementPublicItem | null {
 	if (
 		!checkAnnouncementLevel(announcement.level) ||
-		!checkAnnouncementAudience(announcement.audience)
+		!checkAnnouncementAudience(announcement.audience) ||
+		!checkAnnouncementNumericState(announcement)
 	) {
 		return null;
 	}

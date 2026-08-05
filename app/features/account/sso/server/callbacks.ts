@@ -12,6 +12,8 @@ import { TABLE_NAME_MAP } from '@/infrastructure/database/tableNames';
 import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
+import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+
 import {
 	SSO_CALLBACK_CLAIM_LEASE_MS,
 	SSO_CALLBACK_DELIVERY_CLEANUP_INTERVAL_MS,
@@ -273,13 +275,14 @@ async function writeSsoCallbackDeliveryBestEffort(
 	record: TSsoCallbackQueue,
 	status: TSsoCallbackDeliveryStatus,
 	attempt: ISsoCallbackDeliveryAttempt,
+	attemptNumber: number,
 	now = Date.now()
 ) {
 	try {
 		await writeSsoCallbackDelivery(
 			record,
 			{
-				attempt: record.attempts + 1,
+				attempt: attemptNumber,
 				durationMs: attempt.durationMs,
 				error: attempt.error,
 				httpStatus: attempt.httpStatus,
@@ -367,12 +370,12 @@ async function claimSsoCallbackQueueRecord(
 async function markSsoCallbackFailed(
 	record: TSsoCallbackQueue,
 	errorMessage: string,
+	nextAttempts: number,
 	now: number,
 	leaseToken: string,
 	leaseExpiresAt: number
 ) {
 	const db = await getAccountDatabase();
-	const nextAttempts = record.attempts + 1;
 	const isFinalFailed = nextAttempts >= SSO_CALLBACK_MAX_ATTEMPTS;
 	const nextRetryAt = isFinalFailed
 		? SSO_CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT
@@ -427,6 +430,10 @@ export async function dispatchSsoCallbacks(
 		.selectFrom(CALLBACK_QUEUE_TABLE_NAME)
 		.selectAll()
 		.where('next_retry_at', '<=', now)
+		.where('attempts', '>=', 0)
+		.where('attempts', '<', SSO_CALLBACK_MAX_ATTEMPTS)
+		.where('generation', '>=', 0)
+		.where('generation', '<', Number.MAX_SAFE_INTEGER)
 		.where((eb) =>
 			eb.or([
 				eb('lease_expires_at', 'is', null),
@@ -443,6 +450,13 @@ export async function dispatchSsoCallbacks(
 	let succeeded = 0;
 
 	for (const record of records) {
+		if (
+			!isNonNegativeSafeInteger(record.attempts) ||
+			record.attempts >= SSO_CALLBACK_MAX_ATTEMPTS
+		) {
+			continue;
+		}
+		const nextAttempts = record.attempts + 1;
 		const claimNow = Date.now();
 		const lease = await claimSsoCallbackQueueRecord(record, claimNow);
 		if (lease === null) {
@@ -456,7 +470,8 @@ export async function dispatchSsoCallbacks(
 					await writeSsoCallbackDeliveryBestEffort(
 						record,
 						'succeeded',
-						result.delivery
+						result.delivery,
+						nextAttempts
 					);
 				}
 				if (
@@ -476,15 +491,17 @@ export async function dispatchSsoCallbacks(
 			const failedAt = Date.now();
 			await writeSsoCallbackDeliveryBestEffort(
 				record,
-				record.attempts + 1 >= SSO_CALLBACK_MAX_ATTEMPTS
+				nextAttempts >= SSO_CALLBACK_MAX_ATTEMPTS
 					? 'final_failed'
 					: 'failed',
 				result.delivery,
+				nextAttempts,
 				failedAt
 			);
 			const isFinalFailed = await markSsoCallbackFailed(
 				record,
 				result.message,
+				nextAttempts,
 				failedAt,
 				lease.leaseToken,
 				lease.leaseExpiresAt
@@ -502,15 +519,17 @@ export async function dispatchSsoCallbacks(
 			const failedAt = Date.now();
 			await writeSsoCallbackDeliveryBestEffort(
 				record,
-				record.attempts + 1 >= SSO_CALLBACK_MAX_ATTEMPTS
+				nextAttempts >= SSO_CALLBACK_MAX_ATTEMPTS
 					? 'final_failed'
 					: 'failed',
 				{ durationMs: null, error: errorMessage, httpStatus: null },
+				nextAttempts,
 				failedAt
 			);
 			const isFinalFailed = await markSsoCallbackFailed(
 				record,
 				errorMessage,
+				nextAttempts,
 				failedAt,
 				lease.leaseToken,
 				lease.leaseExpiresAt

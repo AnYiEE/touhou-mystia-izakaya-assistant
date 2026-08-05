@@ -9,6 +9,11 @@ import {
 
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
+import {
+	canAddNonNegativeSafeIntegers,
+	isNonNegativeSafeInteger,
+} from '@/shared/utilities/numbers/check';
+
 const CROSS_TAB_LOCK_DATABASE_NAME = 'touhou-mystia-izakaya-cross-tab-locks';
 const CROSS_TAB_LOCK_DATABASE_VERSION = 1;
 const CROSS_TAB_LOCK_STORE_NAME = 'locks';
@@ -58,9 +63,7 @@ function checkCrossTabLockRecord(
 		record.name === name &&
 		typeof record.ownerId === 'string' &&
 		record.ownerId !== '' &&
-		typeof record.expiresAt === 'number' &&
-		Number.isFinite(record.expiresAt) &&
-		record.expiresAt >= 0
+		isNonNegativeSafeInteger(record.expiresAt)
 	);
 }
 
@@ -212,6 +215,10 @@ export function acquireCrossTabIdbLock({
 			return 'busy' as const;
 		}
 
+		if (!canAddNonNegativeSafeIntegers(now, fallbackTtl)) {
+			return 'unavailable' as const;
+		}
+
 		await store.put({ expiresAt: now + fallbackTtl, name, ownerId });
 		return 'acquired' as const;
 	});
@@ -259,6 +266,9 @@ export function renewCrossTabIdbLock({
 		}
 
 		const now = Date.now();
+		if (!canAddNonNegativeSafeIntegers(now, fallbackTtl)) {
+			return 'unavailable' as const;
+		}
 		await store.put({ expiresAt: now + fallbackTtl, name, ownerId });
 		return 'renewed' as const;
 	});

@@ -1,11 +1,17 @@
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 
+import { canIncrementNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+
 const trackedInteractionCountAccessor =
 	globalStore.persistence.donationModal.interactionCount;
 
 export function incrementTrackedInteractionCount() {
 	trackedInteractionCountAccessor.set((count) =>
-		count === Number.MAX_SAFE_INTEGER ? count : count + 1
+		canIncrementNonNegativeSafeInteger(count)
+			? count + 1
+			: count === Number.MAX_SAFE_INTEGER
+				? count
+				: 1
 	);
 }
 

@@ -154,6 +154,7 @@ const LOADED_SIGNAL = '__loaded__';
 
 interface ISyncOptions<T> {
 	name: string;
+	normalizeRemoteState?: (state: unknown) => Partial<T> | null;
 	remoteStateApplicationGuard: IRemoteStateApplicationGuard;
 	watch: Array<Extract<TNestedKeys<T>, `persistence${string}`>>;
 }
@@ -218,7 +219,12 @@ export function createStoreSyncMiddleware<T>(options: ISyncOptions<T>) {
 		}
 
 		return (set, get, api) => {
-			const { name, remoteStateApplicationGuard, watch } = options;
+			const {
+				name,
+				normalizeRemoteState,
+				remoteStateApplicationGuard,
+				watch,
+			} = options;
 			const channel = createStoreBroadcastChannel(name);
 
 			postStoreBroadcastMessage(channel, LOADED_SIGNAL);
@@ -238,7 +244,13 @@ export function createStoreSyncMiddleware<T>(options: ISyncOptions<T>) {
 
 					postStoreBroadcastMessage(channel, watchedState);
 				} else {
-					set((state) => merge(state, data as Partial<T>));
+					const remoteState =
+						normalizeRemoteState === undefined
+							? (data as Partial<T>)
+							: normalizeRemoteState(data);
+					if (remoteState !== null) {
+						set((state) => merge(state, remoteState));
+					}
 				}
 			});
 

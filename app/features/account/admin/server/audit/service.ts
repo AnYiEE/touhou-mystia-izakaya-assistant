@@ -22,6 +22,10 @@ import { checkAdminTimeRange } from '@/features/admin/server/validation/timeRang
 import type { TDatabase } from '@/infrastructure/database/schema';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
+import {
+	isNonNegativeSafeInteger,
+	isPositiveSafeInteger,
+} from '@/shared/utilities/numbers/check';
 import { parseJsonObjectOrEmpty } from '@/shared/utilities/objects/parseJsonObjectOrEmpty';
 
 export const ADMIN_AUDIT_LOG_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
@@ -83,6 +87,13 @@ function checkListOptions(options: IAdminAuditLogListOptions) {
 function createAuditLogRecord(
 	log: Awaited<ReturnType<typeof listAuditLogs>>['logs'][number]
 ): IAdminAuditLogRecord {
+	if (
+		!isPositiveSafeInteger(log.id) ||
+		!isNonNegativeSafeInteger(log.created_at)
+	) {
+		throw new Error('invalid-admin-audit-log-record');
+	}
+
 	return {
 		action: log.action,
 		actor_id: log.actor_id,

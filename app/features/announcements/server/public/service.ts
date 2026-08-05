@@ -15,6 +15,7 @@ import {
 import {
 	checkAnnouncementIsActive,
 	checkAnnouncementMatchesRequestContext,
+	checkAnnouncementNumericState,
 	createPublicAnnouncementItem,
 	getComputedAnnouncementStatus,
 } from '@/features/announcements/server/mappers';
@@ -31,6 +32,8 @@ import type {
 	TDatabase,
 	TUser,
 } from '@/infrastructure/database/schema';
+
+import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 
 const DEFAULT_VISIBLE_ANNOUNCEMENT_LIMIT = 5;
 const ACTIVE_CANDIDATE_BATCH_SIZE = 50;
@@ -148,6 +151,16 @@ export async function getVisibleAnnouncementsForRequestContext({
 						userId,
 						visibleCandidates.map((announcement) => announcement.id)
 					);
+		if (
+			!databaseDismissals.every(
+				(dismissal) =>
+					isNonNegativeSafeInteger(
+						dismissal.announcement_updated_at
+					) && isNonNegativeSafeInteger(dismissal.dismissed_at)
+			)
+		) {
+			throw new Error('invalid-announcement-dismissal');
+		}
 		const databaseDismissalTokenSet = new Set(
 			databaseDismissals.map((dismissal) =>
 				createAnnouncementDismissalToken(
@@ -221,6 +234,12 @@ export async function dismissAnnouncementForUser(
 		if (announcement === null) {
 			return {
 				error: 'announcement-not-found' as const,
+				status: 'error' as const,
+			};
+		}
+		if (!checkAnnouncementNumericState(announcement)) {
+			return {
+				error: 'announcement-invalid-state' as const,
 				status: 'error' as const,
 			};
 		}

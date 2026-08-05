@@ -1,5 +1,6 @@
 export type TAnnouncementServiceError =
 	| 'announcement-conflict'
+	| 'announcement-invalid-state'
 	| 'announcement-not-found'
 	| 'announcement-not-visible'
 	| 'invalid-object-structure';

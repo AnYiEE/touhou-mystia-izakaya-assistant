@@ -33,6 +33,10 @@ import { checkAdminTimeRange } from '@/features/admin/server/validation/timeRang
 
 import type { TSsoCallbackQueue } from '@/infrastructure/database/schema';
 
+import {
+	isNonNegativeSafeInteger,
+	isPositiveSafeInteger,
+} from '@/shared/utilities/numbers/check';
 import { parseJsonObjectOrEmpty } from '@/shared/utilities/objects/parseJsonObjectOrEmpty';
 
 const ADMIN_SSO_CALLBACK_DELIVERY_CLEANUP_GRACE_MS = 60 * 1000;
@@ -45,6 +49,7 @@ const SENSITIVE_ADMIN_SSO_CALLBACK_KEY_PATTERN =
 export type TAdminSsoCallbackServiceError =
 	| 'invalid-object-structure'
 	| 'sso-callback-queue-busy'
+	| 'sso-callback-queue-invalid-state'
 	| 'sso-callback-queue-not-found';
 
 export type TAdminSsoCallbackServiceResult<TData> =
@@ -57,6 +62,7 @@ export const ADMIN_SSO_CALLBACK_SERVICE_ERROR_STATUS_MAP: Record<
 > = {
 	'invalid-object-structure': 400,
 	'sso-callback-queue-busy': 409,
+	'sso-callback-queue-invalid-state': 500,
 	'sso-callback-queue-not-found': 404,
 };
 
@@ -223,6 +229,16 @@ function getCallbackQueueStatus(
 function createCallbackQueueRecord(
 	callback: TSsoCallbackQueue
 ): IAdminSsoCallbackQueueRecord {
+	if (
+		!isPositiveSafeInteger(callback.id) ||
+		!isNonNegativeSafeInteger(callback.attempts) ||
+		!isNonNegativeSafeInteger(callback.created_at) ||
+		!isNonNegativeSafeInteger(callback.next_retry_at) ||
+		!isNonNegativeSafeInteger(callback.timestamp)
+	) {
+		throw new Error('invalid-sso-callback-queue-record');
+	}
+
 	return {
 		attempts: callback.attempts,
 		client_id: callback.client_id,
@@ -424,6 +440,18 @@ export async function listAdminSsoCallbackDeliveries(
 		data: {
 			cleanup_count: cleanupCount,
 			deliveries: deliveries.map((delivery) => {
+				if (
+					!isPositiveSafeInteger(delivery.id) ||
+					!isPositiveSafeInteger(delivery.attempt) ||
+					!isNonNegativeSafeInteger(delivery.created_at) ||
+					(delivery.duration_ms !== null &&
+						!isNonNegativeSafeInteger(delivery.duration_ms)) ||
+					(delivery.http_status !== null &&
+						!isNonNegativeSafeInteger(delivery.http_status))
+				) {
+					throw new Error('invalid-sso-callback-delivery-record');
+				}
+
 				const { metadata_json: metadataJson, ...deliveryRecord } =
 					delivery;
 

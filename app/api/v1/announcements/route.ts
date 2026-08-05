@@ -22,6 +22,8 @@ import {
 } from '@/infrastructure/http/server/responses';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
+import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -110,8 +112,7 @@ export async function POST(request: NextRequest) {
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (
 		typeof body?.id !== 'string' ||
-		typeof body.updatedAt !== 'number' ||
-		!Number.isSafeInteger(body.updatedAt)
+		!isNonNegativeSafeInteger(body.updatedAt)
 	) {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,

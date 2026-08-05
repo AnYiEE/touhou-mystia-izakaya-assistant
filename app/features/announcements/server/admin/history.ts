@@ -12,6 +12,12 @@ import {
 
 import type { TAnnouncementVersion } from '@/infrastructure/database/schema';
 
+import {
+	isNonNegativeSafeInteger,
+	isNullableNonNegativeSafeInteger,
+	isPositiveSafeInteger,
+} from '@/shared/utilities/numbers/check';
+
 function parseJsonObject(value: string) {
 	try {
 		const parsed: unknown = JSON.parse(value);
@@ -93,9 +99,10 @@ function parseAnnouncementSnapshot(
 		typeof snapshot['enabled'] !== 'boolean' ||
 		typeof snapshot['dismissible'] !== 'boolean' ||
 		typeof snapshot['priority'] !== 'number' ||
-		typeof snapshot['revision'] !== 'number' ||
-		typeof snapshot['created_at'] !== 'number' ||
-		typeof snapshot['updated_at'] !== 'number'
+		!Number.isSafeInteger(snapshot['priority']) ||
+		!isPositiveSafeInteger(snapshot['revision']) ||
+		!isNonNegativeSafeInteger(snapshot['created_at']) ||
+		!isNonNegativeSafeInteger(snapshot['updated_at'])
 	) {
 		return null;
 	}
@@ -105,9 +112,9 @@ function parseAnnouncementSnapshot(
 	const deletedAt = snapshot['deleted_at'];
 	const targetUserIds = parseTargetUserIds(snapshot['target_user_ids'] ?? []);
 	if (
-		(startsAt !== null && typeof startsAt !== 'number') ||
-		(endsAt !== null && typeof endsAt !== 'number') ||
-		(deletedAt !== null && typeof deletedAt !== 'number') ||
+		!isNullableNonNegativeSafeInteger(startsAt) ||
+		!isNullableNonNegativeSafeInteger(endsAt) ||
+		!isNullableNonNegativeSafeInteger(deletedAt) ||
 		targetUserIds === null
 	) {
 		return null;
@@ -137,7 +144,13 @@ export function createAnnouncementVersionProfile(
 	version: TAnnouncementVersion
 ): IAdminAnnouncementVersionProfile | null {
 	const snapshot = parseAnnouncementSnapshot(version.snapshot_json);
-	if (snapshot === null || !checkAnnouncementVersionAction(version.action)) {
+	if (
+		snapshot === null ||
+		!checkAnnouncementVersionAction(version.action) ||
+		!isPositiveSafeInteger(version.id) ||
+		!isPositiveSafeInteger(version.revision) ||
+		!isNonNegativeSafeInteger(version.changed_at)
+	) {
 		return null;
 	}
 

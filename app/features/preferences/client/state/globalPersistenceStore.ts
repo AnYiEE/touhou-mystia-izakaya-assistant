@@ -42,8 +42,11 @@ import {
 	toGetItemWithKey,
 	toGetValueCollection,
 } from '@/shared/utilities/objects/convertCollection';
+import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
+
+import { normalizeDonationModalPersistence } from './normalizeDonationModalPersistence';
 
 import '@/infrastructure/state/enableImmerMapSet';
 
@@ -195,14 +198,71 @@ const hiddenRecipeSetCache = new WeakMap<
 	Set<TRecipeName>
 >();
 
+function normalizeGlobalStoreRemoteState(value: unknown) {
+	if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+		return null;
+	}
+
+	const remoteState = value as Partial<typeof state>;
+	const remotePersistence = remoteState.persistence;
+	if (
+		remotePersistence === undefined ||
+		!isObjectTagRecord(remotePersistence) ||
+		!Object.hasOwn(remotePersistence, 'donationModal')
+	) {
+		return remoteState;
+	}
+
+	return {
+		...remoteState,
+		persistence: {
+			...remotePersistence,
+			donationModal: normalizeDonationModalPersistence(
+				remotePersistence.donationModal
+			),
+		},
+	} as Partial<typeof state>;
+}
+
 export const globalStore = store(state, {
 	middlewares: [
 		createStoreSyncMiddleware<typeof state>({
 			name: storeName,
+			normalizeRemoteState: normalizeGlobalStoreRemoteState,
 			remoteStateApplicationGuard: accountRemoteStateApplicationGuard,
 			watch: ['persistence'],
 		}),
 		createPersistMiddleware<typeof state>({
+			merge(persistedState, currentState) {
+				if (
+					persistedState === null ||
+					typeof persistedState !== 'object' ||
+					Array.isArray(persistedState)
+				) {
+					return currentState;
+				}
+
+				const persisted = persistedState as Partial<typeof state>;
+				const persistedPersistence = persisted.persistence;
+				if (
+					persistedPersistence === undefined ||
+					!isObjectTagRecord(persistedPersistence)
+				) {
+					return { ...currentState, ...persisted };
+				}
+
+				return {
+					...currentState,
+					...persisted,
+					persistence: {
+						...currentState.persistence,
+						...persistedPersistence,
+						donationModal: normalizeDonationModalPersistence(
+							persistedPersistence.donationModal
+						),
+					},
+				};
+			},
 			name: storeName,
 			version: storeVersion.suggestMealsExtra,
 

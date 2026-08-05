@@ -15,6 +15,8 @@ import type {
 import { escapeSqliteLikePattern } from '@/infrastructure/database/sqlite/queryValues';
 import { TABLE_NAME_MAP } from '@/infrastructure/database/tableNames';
 
+import { canIncrementNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+
 const CLIENT_TABLE_NAME = TABLE_NAME_MAP.ssoClient;
 
 const CALLBACK_QUEUE_TABLE_NAME = TABLE_NAME_MAP.ssoCallbackQueue;
@@ -57,6 +59,7 @@ export interface ISsoFinalFailedCallbackQueueCleanupResult {
 
 export type TSsoCallbackQueueMutationError =
 	| 'sso-callback-queue-busy'
+	| 'sso-callback-queue-invalid-state'
 	| 'sso-callback-queue-not-found';
 
 export type TSsoCallbackQueueMutationResult =
@@ -119,7 +122,7 @@ export async function enqueueSsoCallbackInTransaction(
 		metadata
 	);
 
-	await trx
+	const result = await trx
 		.insertInto(CALLBACK_QUEUE_TABLE_NAME)
 		.values(record)
 		.onConflict((oc) =>
@@ -127,8 +130,13 @@ export async function enqueueSsoCallbackInTransaction(
 				.columns(['client_id', 'user_id', 'event'])
 				.where('user_id', 'is not', null)
 				.doUpdateSet(createCallbackQueueUpdate(timestamp, metadata))
+				.where('generation', '>=', 0)
+				.where('generation', '<', Number.MAX_SAFE_INTEGER)
 		)
-		.execute();
+		.executeTakeFirst();
+	if (result.numInsertedOrUpdatedRows !== 1n) {
+		throw new Error('invalid-sso-callback-generation');
+	}
 }
 
 export async function enqueueSsoClientCallbackInTransaction(
@@ -146,7 +154,7 @@ export async function enqueueSsoClientCallbackInTransaction(
 		metadata
 	);
 
-	await trx
+	const result = await trx
 		.insertInto(CALLBACK_QUEUE_TABLE_NAME)
 		.values(record)
 		.onConflict((oc) =>
@@ -154,8 +162,13 @@ export async function enqueueSsoClientCallbackInTransaction(
 				.columns(['client_id', 'event'])
 				.where('user_id', 'is', null)
 				.doUpdateSet(createCallbackQueueUpdate(timestamp, metadata))
+				.where('generation', '>=', 0)
+				.where('generation', '<', Number.MAX_SAFE_INTEGER)
 		)
-		.execute();
+		.executeTakeFirst();
+	if (result.numInsertedOrUpdatedRows !== 1n) {
+		throw new Error('invalid-sso-callback-generation');
+	}
 }
 
 export async function enqueueSsoCallback(
@@ -400,6 +413,12 @@ export async function retrySsoCallbackQueueRecord(
 		if (record === null) {
 			return { error: 'sso-callback-queue-not-found', status: 'error' };
 		}
+		if (!canIncrementNonNegativeSafeInteger(record.generation)) {
+			return {
+				error: 'sso-callback-queue-invalid-state',
+				status: 'error',
+			};
+		}
 		if (isCallbackQueueBusy(record, now)) {
 			return { error: 'sso-callback-queue-busy', status: 'error' };
 		}
@@ -416,6 +435,8 @@ export async function retrySsoCallbackQueueRecord(
 			})
 			.where('id', '=', id)
 			.where('generation', '=', record.generation)
+			.where('generation', '>=', 0)
+			.where('generation', '<', Number.MAX_SAFE_INTEGER)
 			.where((eb) =>
 				eb.or([
 					eb('lease_expires_at', 'is', null),
@@ -503,7 +524,7 @@ export async function enqueueSsoCallbacksForUserEventInTransaction(
 		return;
 	}
 
-	await trx
+	const result = await trx
 		.insertInto(CALLBACK_QUEUE_TABLE_NAME)
 		.values(
 			clients.map((client) =>
@@ -521,6 +542,11 @@ export async function enqueueSsoCallbacksForUserEventInTransaction(
 				.columns(['client_id', 'user_id', 'event'])
 				.where('user_id', 'is not', null)
 				.doUpdateSet(createCallbackQueueUpdate(timestamp, metadata))
+				.where('generation', '>=', 0)
+				.where('generation', '<', Number.MAX_SAFE_INTEGER)
 		)
-		.execute();
+		.executeTakeFirst();
+	if (Number(result.numInsertedOrUpdatedRows) !== clients.length) {
+		throw new Error('invalid-sso-callback-generation');
+	}
 }

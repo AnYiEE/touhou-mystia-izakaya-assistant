@@ -51,7 +51,10 @@ import type {
 import { TABLE_NAME_MAP } from '@/infrastructure/database/tableNames';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
-import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+import {
+	canAddNonNegativeSafeIntegers,
+	canIncrementNonNegativeSafeInteger,
+} from '@/shared/utilities/numbers/check';
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
 
 import {
@@ -91,9 +94,7 @@ function checkSyncNamespaceValue(value: unknown): value is TSyncNamespace {
 }
 
 function canIncrementSyncRevision(value: unknown): value is number {
-	return (
-		isNonNegativeSafeInteger(value) && value < Number.MAX_SAFE_INTEGER - 1
-	);
+	return canAddNonNegativeSafeIntegers(value, 2);
 }
 
 function parseImportBackupResults(data: string) {
@@ -111,8 +112,7 @@ function parseImportBackupResults(data: string) {
 				isObjectTagRecord(item) &&
 				item['status'] === 'ok' &&
 				checkSyncNamespaceValue(item['namespace']) &&
-				isNonNegativeSafeInteger(item['revision']) &&
-				item['revision'] < Number.MAX_SAFE_INTEGER
+				canIncrementNonNegativeSafeInteger(item['revision'])
 		)
 	) {
 		return null;

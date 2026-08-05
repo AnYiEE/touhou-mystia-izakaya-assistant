@@ -25,7 +25,11 @@ import type {
 import { checkRetryableSqliteLockError } from '@/infrastructure/database/sqlite/lockErrors';
 import { TABLE_NAME_MAP } from '@/infrastructure/database/tableNames';
 
-import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+import {
+	canAddNonNegativeSafeIntegers,
+	canIncrementNonNegativeSafeInteger,
+	isNonNegativeSafeInteger,
+} from '@/shared/utilities/numbers/check';
 
 import {
 	calculateAccountSyncCapacity,
@@ -76,8 +80,7 @@ function parseBackupImportResults(value: TBackupImportRecord['results']) {
 		if (
 			status !== 'ok' ||
 			!checkSyncNamespace(namespace) ||
-			!isNonNegativeSafeInteger(revision) ||
-			revision >= Number.MAX_SAFE_INTEGER
+			!canIncrementNonNegativeSafeInteger(revision)
 		) {
 			return [];
 		}
@@ -87,19 +90,16 @@ function parseBackupImportResults(value: TBackupImportRecord['results']) {
 }
 
 function canIncrementSyncRevision(value: unknown): value is number {
-	return (
-		isNonNegativeSafeInteger(value) && value < Number.MAX_SAFE_INTEGER - 1
-	);
+	return canAddNonNegativeSafeIntegers(value, 2);
 }
 
 function canIncrementSyncTimestamp(value: unknown): value is number {
-	return isNonNegativeSafeInteger(value) && value < Number.MAX_SAFE_INTEGER;
+	return canIncrementNonNegativeSafeInteger(value);
 }
 
 function checkNewUserStateEntryCounters(entry: TUserStateNew) {
 	return (
-		isNonNegativeSafeInteger(entry.revision) &&
-		entry.revision < Number.MAX_SAFE_INTEGER &&
+		canIncrementNonNegativeSafeInteger(entry.revision) &&
 		isNonNegativeSafeInteger(entry.schema_version) &&
 		isNonNegativeSafeInteger(entry.updated_at)
 	);
@@ -109,10 +109,8 @@ function canIncrementUserSyncCounters(
 	user: Pick<TUser, 'state_epoch' | 'sync_generation'>
 ) {
 	return (
-		isNonNegativeSafeInteger(user.state_epoch) &&
-		user.state_epoch < Number.MAX_SAFE_INTEGER &&
-		isNonNegativeSafeInteger(user.sync_generation) &&
-		user.sync_generation < Number.MAX_SAFE_INTEGER
+		canIncrementNonNegativeSafeInteger(user.state_epoch) &&
+		canIncrementNonNegativeSafeInteger(user.sync_generation)
 	);
 }
 

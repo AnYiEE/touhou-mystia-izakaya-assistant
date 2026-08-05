@@ -3,6 +3,12 @@ import 'client-only';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 import {
+	canAddNonNegativeSafeIntegers,
+	isNonNegativeSafeInteger,
+	isPositiveSafeInteger,
+} from '@/shared/utilities/numbers/check';
+
+import {
 	acquireCrossTabIdbLock,
 	releaseCrossTabIdbLock,
 	renewCrossTabIdbLock,
@@ -115,9 +121,7 @@ function parseCrossTabFallbackLockRecord(
 			Record<keyof ICrossTabFallbackLockRecord, unknown>
 		>;
 		if (
-			typeof expiresAt !== 'number' ||
-			!Number.isFinite(expiresAt) ||
-			expiresAt < 0 ||
+			!isNonNegativeSafeInteger(expiresAt) ||
 			typeof ownerId !== 'string' ||
 			ownerId === ''
 		) {
@@ -137,10 +141,14 @@ function writeCrossTabLocalStorageLock(
 	fallbackTtl: number
 ) {
 	try {
+		const now = Date.now();
+		if (!canAddNonNegativeSafeIntegers(now, fallbackTtl)) {
+			return false;
+		}
 		storage.setItem(
 			key,
 			JSON.stringify({
-				expiresAt: Date.now() + fallbackTtl,
+				expiresAt: now + fallbackTtl,
 				ownerId,
 			} satisfies ICrossTabFallbackLockRecord)
 		);
@@ -314,12 +322,17 @@ async function acquireCrossTabLocalStorageFallbackLock(
 	ownerId: string,
 	fallbackTtl: number,
 	ifAvailable: boolean,
-	deadline = Date.now() + fallbackTtl
+	deadline?: number
 ): Promise<TCrossTabFallbackLockOwnership | null> {
 	const storage = getCrossTabLockLocalStorage();
 	if (storage === null) {
 		return null;
 	}
+	const now = Date.now();
+	if (!canAddNonNegativeSafeIntegers(now, fallbackTtl)) {
+		return null;
+	}
+	const resolvedDeadline = deadline ?? now + fallbackTtl;
 
 	const key = createCrossTabFallbackLockKey(name);
 	const tryAcquire = () =>
@@ -339,7 +352,7 @@ async function acquireCrossTabLocalStorageFallbackLock(
 		return null;
 	}
 
-	while (Date.now() < deadline) {
+	while (Date.now() < resolvedDeadline) {
 		await delay(FALLBACK_RETRY_DELAY_MS);
 		const result = tryAcquire();
 		if (result === 'acquired') {
@@ -383,7 +396,11 @@ async function acquireCrossTabFallbackLock(
 		return null;
 	}
 
-	const deadline = Date.now() + fallbackTtl;
+	const now = Date.now();
+	if (!canAddNonNegativeSafeIntegers(now, fallbackTtl)) {
+		return null;
+	}
+	const deadline = now + fallbackTtl;
 	while (Date.now() < deadline) {
 		await delay(FALLBACK_RETRY_DELAY_MS);
 		const result = await tryAcquireIdb();
@@ -427,7 +444,7 @@ async function withCrossTabFallbackLock<T>(
 	callback: () => Promise<T> | T,
 	options: IResolvedCrossTabLockOptions
 ) {
-	if (!Number.isFinite(options.fallbackTtl) || options.fallbackTtl <= 0) {
+	if (!isPositiveSafeInteger(options.fallbackTtl)) {
 		return null;
 	}
 

@@ -13,6 +13,8 @@ import type { TAccountSyncOperationKind } from '@/features/account/sync/types';
 
 import { withCrossTabLock } from '@/infrastructure/browser/crossTab/withCrossTabLock';
 
+import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+
 import { postAccountSyncBroadcastMessage } from './broadcast';
 import { withAccountSyncPaused } from './stateGuards';
 
@@ -77,15 +79,15 @@ function checkOperationLease(
 			MAX_OPERATION_ID_LENGTH &&
 		typeof (value as IAccountSyncOperationLease).ownerTabId === 'string' &&
 		(value as IAccountSyncOperationLease).ownerTabId !== '' &&
-		typeof (value as IAccountSyncOperationLease).expiresAt === 'number' &&
-		Number.isFinite((value as IAccountSyncOperationLease).expiresAt) &&
-		(value as IAccountSyncOperationLease).expiresAt >= 0 &&
-		typeof (value as IAccountSyncOperationLease).renewedAt === 'number' &&
-		Number.isFinite((value as IAccountSyncOperationLease).renewedAt) &&
-		(value as IAccountSyncOperationLease).renewedAt >= 0 &&
-		typeof (value as IAccountSyncOperationLease).startedAt === 'number' &&
-		Number.isFinite((value as IAccountSyncOperationLease).startedAt) &&
-		(value as IAccountSyncOperationLease).startedAt >= 0
+		isNonNegativeSafeInteger(
+			(value as IAccountSyncOperationLease).expiresAt
+		) &&
+		isNonNegativeSafeInteger(
+			(value as IAccountSyncOperationLease).renewedAt
+		) &&
+		isNonNegativeSafeInteger(
+			(value as IAccountSyncOperationLease).startedAt
+		)
 	);
 }
 
@@ -131,8 +133,7 @@ export function applyAccountSyncOperationLeaseSignal({
 		userId === '' ||
 		operationId === '' ||
 		operationId.length > MAX_OPERATION_ID_LENGTH ||
-		!Number.isSafeInteger(expiresAt) ||
-		expiresAt < 0
+		!isNonNegativeSafeInteger(expiresAt)
 	) {
 		return false;
 	}
