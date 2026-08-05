@@ -1,7 +1,7 @@
 import { faArrowsRotate, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { Divider } from '@heroui/divider';
 import { cn } from '@heroui/theme';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import { ratingStyles } from '@/design/theme/styles/rating/ratingStyles';
@@ -23,6 +23,7 @@ import { CUSTOMER_RATING_MAP } from '@/domain/evaluation/labels';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { customerRareStore } from '@/features/catalog/customers/rare/client/state/store';
+import { CustomerCardSiteInfo } from '@/features/catalog/customers/shared/client/components/infoButtonBase';
 import RatingAvatarShell from '@/features/catalog/customers/shared/client/components/ratingAvatarShell';
 import SlidingSprite from '@/features/catalog/customers/shared/client/components/slidingSprite';
 import TagGroup from '@/features/catalog/customers/shared/client/components/tagGroup';
@@ -43,6 +44,9 @@ import InfoButton from './infoButton';
 export default function CustomerCard() {
 	const { pushState } = usePathname();
 	const vibrate = useVibrate();
+
+	const [infoButtonAnchorElement, setInfoButtonAnchorElement] =
+		useState<HTMLDivElement | null>(null);
 
 	const currentCustomerName = customerRareStore.shared.customer.name.use();
 	const selectedCustomerBeverageTag =
@@ -249,49 +253,56 @@ export default function CustomerCard() {
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
 				<div className="flex flex-col justify-evenly gap-2">
-					<RatingAvatarShell
-						color={tooltipRatingColor}
-						content={avatarRatingContent}
-						popoverOffset={hasRating ? 13 : 9}
-						tooltipOffset={hasRating ? 9 : 5}
-						trigger={
-							<div className="flex cursor-pointer self-center">
-								<PopoverTrigger>
-									<div
-										role="button"
-										tabIndex={0}
-										className={cn(
-											'flex flex-col items-center gap-2',
-											CLASSNAME_FOCUS_VISIBLE_OUTLINE
-										)}
-									>
-										<Avatar
-											isBordered={hasRating}
-											color={avatarRatingColor}
-											radius="full"
-											icon={
-												<SlidingSprite
-													target="customer_rare"
-													name={currentCustomerName}
-													size={4}
-												/>
-											}
-											classNames={{
-												base: cn(
-													'h-12 w-12 transition motion-reduce:transition-none lg:h-16 lg:w-16',
-													{ 'ring-4': hasRating }
-												),
-												icon: 'inline-table lg:inline-block',
-											}}
-										/>
-										<span className="whitespace-nowrap text-center font-bold">
-											{currentCustomerName}
-										</span>
-									</div>
-								</PopoverTrigger>
-							</div>
-						}
-					/>
+					<div
+						ref={setInfoButtonAnchorElement}
+						className="relative self-center"
+					>
+						<RatingAvatarShell
+							color={tooltipRatingColor}
+							content={avatarRatingContent}
+							popoverOffset={hasRating ? 13 : 9}
+							tooltipOffset={hasRating ? 9 : 5}
+							trigger={
+								<div className="flex cursor-pointer self-center">
+									<PopoverTrigger>
+										<div
+											role="button"
+											tabIndex={0}
+											className={cn(
+												'flex flex-col items-center gap-2',
+												CLASSNAME_FOCUS_VISIBLE_OUTLINE
+											)}
+										>
+											<Avatar
+												isBordered={hasRating}
+												color={avatarRatingColor}
+												radius="full"
+												icon={
+													<SlidingSprite
+														target="customer_rare"
+														name={
+															currentCustomerName
+														}
+														size={4}
+													/>
+												}
+												classNames={{
+													base: cn(
+														'h-12 w-12 transition motion-reduce:transition-none lg:h-16 lg:w-16',
+														{ 'ring-4': hasRating }
+													),
+													icon: 'inline-table lg:inline-block',
+												}}
+											/>
+											<span className="whitespace-nowrap text-center font-bold">
+												{currentCustomerName}
+											</span>
+										</div>
+									</PopoverTrigger>
+								</div>
+							}
+						/>
+					</div>
 					<div className="whitespace-nowrap text-tiny font-medium text-default-800">
 						<p className="flex justify-between gap-10">
 							<Popover
@@ -364,36 +375,43 @@ export default function CustomerCard() {
 								<PopoverContent>{placeContent}</PopoverContent>
 							</Popover>
 						</p>
-						<p>
-							可能持有：
-							<Popover showArrow offset={4}>
-								<Tooltip
-									showArrow
-									content={enduranceLimitContent}
-									offset={0}
-								>
-									<span className="cursor-pointer">
-										<PopoverTrigger>
-											<span
-												role="button"
-												tabIndex={0}
-												className={cn(
-													CLASSNAME_FOCUS_VISIBLE_OUTLINE,
-													'underline-dotted-linear'
-												)}
-											>
-												<Price>
-													{currentCustomerPrice}
-												</Price>
-											</span>
-										</PopoverTrigger>
-									</span>
-								</Tooltip>
-								<PopoverContent>
-									{enduranceLimitContent}
-								</PopoverContent>
-							</Popover>
-						</p>
+						<div className="flex items-center justify-between gap-4">
+							<p>
+								可能持有：
+								<Popover showArrow offset={4}>
+									<Tooltip
+										showArrow
+										content={enduranceLimitContent}
+										offset={0}
+									>
+										<span className="cursor-pointer">
+											<PopoverTrigger>
+												<span
+													role="button"
+													tabIndex={0}
+													className={cn(
+														CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+														'underline-dotted-linear'
+													)}
+												>
+													<Price>
+														{currentCustomerPrice}
+													</Price>
+												</span>
+											</PopoverTrigger>
+										</span>
+									</Tooltip>
+									<PopoverContent>
+										{enduranceLimitContent}
+									</PopoverContent>
+								</Popover>
+							</p>
+							<InfoButton
+								desktopTriggerContainer={
+									infoButtonAnchorElement
+								}
+							/>
+						</div>
 					</div>
 				</div>
 				<Divider className="md:hidden" />
@@ -573,7 +591,7 @@ export default function CustomerCard() {
 						/>
 					</Tooltip>
 				)}
-				<InfoButton />
+				<CustomerCardSiteInfo />
 			</div>
 		</Card>
 	);

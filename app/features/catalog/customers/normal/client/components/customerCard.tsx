@@ -23,6 +23,7 @@ import { CUSTOMER_RATING_MAP } from '@/domain/evaluation/labels';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { customerNormalStore } from '@/features/catalog/customers/normal/client/state/store';
+import { CustomerCardSiteInfo } from '@/features/catalog/customers/shared/client/components/infoButtonBase';
 import RatingAvatarShell from '@/features/catalog/customers/shared/client/components/ratingAvatarShell';
 import SlidingSprite from '@/features/catalog/customers/shared/client/components/slidingSprite';
 import TagGroup from '@/features/catalog/customers/shared/client/components/tagGroup';
@@ -165,54 +166,57 @@ export default function CustomerCard() {
 		>
 			<div className="flex flex-col gap-3 p-4 md:flex-row">
 				<div className="flex flex-col justify-evenly gap-2">
-					<RatingAvatarShell
-						color={tooltipRatingColor}
-						content={avatarRatingContent}
-						popoverOffset={hasRating ? 13 : 9}
-						tooltipOffset={hasRating ? 9 : 5}
-						trigger={
-							<div className="flex cursor-pointer self-center">
-								<PopoverTrigger>
-									<div
-										role="button"
-										tabIndex={0}
-										className={cn(
-											'flex flex-col items-center gap-2',
-											CLASSNAME_FOCUS_VISIBLE_OUTLINE
-										)}
-									>
-										<Avatar
-											isBordered={hasRating}
-											color={avatarRatingColor}
-											radius="full"
-											icon={
-												<div className="h-16 w-16 overflow-hidden rounded-full">
-													<SlidingSprite
-														target="customer_normal"
-														name={
-															currentCustomerName
-														}
-														size={5.6}
-														className="-translate-x-[0.77rem] -translate-y-0.5"
-													/>
-												</div>
-											}
-											classNames={{
-												base: cn(
-													'h-12 w-12 transition motion-reduce:transition-none lg:h-16 lg:w-16',
-													{ 'ring-4': hasRating }
-												),
-												icon: 'inline-table lg:inline-block',
-											}}
-										/>
-										<span className="whitespace-nowrap text-center font-bold">
-											{currentCustomerName}
-										</span>
-									</div>
-								</PopoverTrigger>
-							</div>
-						}
-					/>
+					<div className="relative self-center">
+						<RatingAvatarShell
+							color={tooltipRatingColor}
+							content={avatarRatingContent}
+							popoverOffset={hasRating ? 13 : 9}
+							tooltipOffset={hasRating ? 9 : 5}
+							trigger={
+								<div className="flex cursor-pointer self-center">
+									<PopoverTrigger>
+										<div
+											role="button"
+											tabIndex={0}
+											className={cn(
+												'flex flex-col items-center gap-2',
+												CLASSNAME_FOCUS_VISIBLE_OUTLINE
+											)}
+										>
+											<Avatar
+												isBordered={hasRating}
+												color={avatarRatingColor}
+												radius="full"
+												icon={
+													<div className="h-16 w-16 overflow-hidden rounded-full">
+														<SlidingSprite
+															target="customer_normal"
+															name={
+																currentCustomerName
+															}
+															size={5.6}
+															className="-translate-x-[0.77rem] -translate-y-0.5"
+														/>
+													</div>
+												}
+												classNames={{
+													base: cn(
+														'h-12 w-12 transition motion-reduce:transition-none lg:h-16 lg:w-16',
+														{ 'ring-4': hasRating }
+													),
+													icon: 'inline-table lg:inline-block',
+												}}
+											/>
+											<span className="whitespace-nowrap text-center font-bold">
+												{currentCustomerName}
+											</span>
+										</div>
+									</PopoverTrigger>
+								</div>
+							}
+						/>
+						<InfoButton />
+					</div>
 					<div className="whitespace-nowrap text-tiny font-medium text-default-800">
 						<p className="flex justify-between gap-10">
 							<Popover
@@ -426,7 +430,7 @@ export default function CustomerCard() {
 						/>
 					</Tooltip>
 				)}
-				<InfoButton />
+				<CustomerCardSiteInfo />
 			</div>
 		</Card>
 	);

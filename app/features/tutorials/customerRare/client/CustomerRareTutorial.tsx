@@ -241,7 +241,19 @@ export default function CustomerRareTutorial() {
 					},
 				},
 				{
-					element: '[aria-label="更多信息"]',
+					element: () => {
+						const target = document.querySelector(
+							globalThis.matchMedia('(min-width: 768px)').matches
+								? '[data-customer-info-trigger="desktop"]'
+								: '[data-customer-info-trigger="mobile"]'
+						);
+						if (target === null) {
+							throw new Error(
+								'Customer info tutorial target is missing.'
+							);
+						}
+						return target;
+					},
 					popover: {
 						title: '更多信息', // eslint-disable-next-line sort-keys
 						description: `在此处可以查看更多信息，如：稀客的羁绊奖励和符卡效果。点击导航栏中的“设置”按钮可以调整更多偏好项，如：设置游戏中现时的${DYNAMIC_TAG_MAP.popularPositive}或${DYNAMIC_TAG_MAP.popularNegative}趋势。`,

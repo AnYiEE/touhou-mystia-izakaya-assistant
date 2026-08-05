@@ -38,16 +38,20 @@ interface ILevelLabelProps {
 	level: number | string;
 }
 
+interface IProps {
+	desktopTriggerContainer: HTMLElement | null;
+}
+
 const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({ level }) {
 	return (
-		<span className="font-medium">
+		<span className="whitespace-nowrap font-medium">
 			{typeof level === 'number' ? 'Lv.' : ''}
 			{level}：
 		</span>
 	);
 });
 
-export default function InfoButton() {
+export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 	const openWindow = useViewInNewWindow();
 	const { breakpoint: placement } = useBreakpoint(
 		{ bottom: -1, 'right-start': 426 },
@@ -112,7 +116,9 @@ export default function InfoButton() {
 
 	return (
 		<InfoButtonBase
+			showMobileTextTrigger
 			defaultExpandedKeys={getDefaultExpandedKeys()}
+			desktopTriggerContainer={desktopTriggerContainer}
 			overlayId="customer-rare.info"
 			onButtonPress={() => {
 				trackEvent(
@@ -573,4 +579,4 @@ export default function InfoButton() {
 			</AccordionItem>
 		</InfoButtonBase>
 	);
-}
+});
