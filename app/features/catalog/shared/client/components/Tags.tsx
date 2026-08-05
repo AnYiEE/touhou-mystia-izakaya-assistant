@@ -106,7 +106,7 @@ const Tag = memo<ITagProps>(function Tag({
 			as="span"
 			disableAnimation
 			variant="light"
-			onClick={handleClick}
+			onClickEvent={handleClick}
 			onKeyDown={handleKeyDown}
 			className={cn(
 				'inline-block min-w-max select-auto rounded-none px-0 text-base !transition data-[pressed=true]:scale-100 data-[hover=true]:bg-transparent data-[pressed=true]:ring-1 data-[pressed=true]:ring-inset data-[pressed=true]:ring-current data-[pressed=true]:ring-offset-1 motion-reduce:!transition-none',

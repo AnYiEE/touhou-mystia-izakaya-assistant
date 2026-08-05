@@ -9,7 +9,7 @@ import Button, { type IButtonProps } from '@/design/ui/components/button';
 
 interface IProps extends Pick<
 	IButtonProps,
-	'className' | 'isDisabled' | 'onPress' | 'onPressStart'
+	'className' | 'isDisabled' | 'onClick' | 'onPress' | 'onPressStart'
 > {
 	label: ReactNodeWithoutBoolean;
 	syncStatusLabel: string | null;
@@ -19,11 +19,13 @@ export default memo<IProps>(function MobileAccountActionButton({
 	className,
 	isDisabled,
 	label,
+	onClick,
 	onPress,
 	onPressStart,
 	syncStatusLabel,
 }) {
-	const pressProps = {
+	const interactionProps = {
+		...(onClick === undefined ? {} : { onClick }),
 		...(onPress === undefined ? {} : { onPress }),
 		...(onPressStart === undefined ? {} : { onPressStart }),
 	};
@@ -32,7 +34,7 @@ export default memo<IProps>(function MobileAccountActionButton({
 		<Button
 			isDisabled={isDisabled}
 			variant="light"
-			{...pressProps}
+			{...interactionProps}
 			className={cn(
 				'group flex h-auto min-h-14 w-full min-w-0 items-center justify-start gap-3 rounded-small border border-default-200/75 bg-content1/45 px-3 py-2.5 shadow-[0_1px_0_rgba(0,0,0,0.025)]',
 				'transition-[background-color,border-color] hover:border-default-300 hover:bg-content1/65 data-[pressed=true]:border-default-300 data-[pressed=true]:bg-content1/65 motion-reduce:transition-none',

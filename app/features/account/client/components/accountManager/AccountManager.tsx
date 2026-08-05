@@ -348,7 +348,7 @@ export default memo<IProps>(function AccountManager() {
 											/>
 										}
 										variant="flat"
-										onPress={handleOpenDataManagerModal}
+										onClick={handleOpenDataManagerModal}
 									>
 										数据管理
 									</Button>

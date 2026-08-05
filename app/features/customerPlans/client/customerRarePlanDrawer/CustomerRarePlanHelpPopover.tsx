@@ -88,7 +88,7 @@ export default function CustomerRarePlanHelpPopover({
 								size="sm"
 								variant="flat"
 								startContent={<FontAwesomeIcon icon={faGear} />}
-								onPress={onOpenHiddenItemsSettings}
+								onClick={onOpenHiddenItemsSettings}
 							>
 								隐藏项目
 							</Button>
@@ -97,7 +97,7 @@ export default function CustomerRarePlanHelpPopover({
 								size="sm"
 								variant="flat"
 								startContent={<FontAwesomeIcon icon={faGear} />}
-								onPress={onOpenRatingSettings}
+								onClick={onOpenRatingSettings}
 							>
 								流行趋势/明星店
 							</Button>

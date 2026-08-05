@@ -139,7 +139,7 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 					size="sm"
 					variant="light"
 					className="h-auto min-h-0 min-w-0 overflow-visible p-0 align-baseline text-tiny leading-5 text-primary-600 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent"
-					onPress={handleOpenLegalModal}
+					onClick={handleOpenLegalModal}
 				>
 					<span className="group relative inline-block leading-5">
 						法律声明

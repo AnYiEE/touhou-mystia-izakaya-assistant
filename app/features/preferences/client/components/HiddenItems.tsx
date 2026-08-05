@@ -46,26 +46,26 @@ import SwitchItem from './PreferenceSwitchItem';
 
 interface ISettingsButtonProps {
 	isActive: boolean;
-	onPress: () => void;
+	onClick: () => void;
 }
 
 const SettingsButton = memo<ISettingsButtonProps>(function SettingsButton({
 	isActive,
-	onPress,
+	onClick,
 }) {
 	const vibrate = useVibrate();
 
-	const handlePress = useCallback(() => {
+	const handleClick = useCallback(() => {
 		vibrate();
-		onPress();
-	}, [onPress, vibrate]);
+		onClick();
+	}, [onClick, vibrate]);
 
 	return (
 		<Button
 			color="primary"
 			size="sm"
 			variant="flat"
-			onPress={handlePress}
+			onClick={handleClick}
 			className={cn(isActive && 'ring-2 ring-primary')}
 		>
 			打开设置
@@ -480,19 +480,19 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 		[isInModal]
 	);
 
-	const handleBeveragesSettingsButtonPress = useCallback(() => {
+	const handleBeveragesSettingsButtonClick = useCallback(() => {
 		openSettingsPanel('preferences.hidden-beverages', () => {
 			setBeveragesSettingsPanelOpen(true);
 		});
 	}, [openSettingsPanel]);
 
-	const handleIngredientsSettingsButtonPress = useCallback(() => {
+	const handleIngredientsSettingsButtonClick = useCallback(() => {
 		openSettingsPanel('preferences.hidden-ingredients', () => {
 			setIngredientsSettingsPanelOpen(true);
 		});
 	}, [openSettingsPanel]);
 
-	const handleRecipesSettingsButtonPress = useCallback(() => {
+	const handleRecipesSettingsButtonClick = useCallback(() => {
 		openSettingsPanel('preferences.hidden-recipes', () => {
 			setRecipesSettingsPanelOpen(true);
 		});
@@ -519,7 +519,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 				<span className="font-medium">启用或禁用特定酒水</span>
 				<SettingsButton
 					isActive={!checkLengthEmpty(hiddenBeverages)}
-					onPress={handleBeveragesSettingsButtonPress}
+					onClick={handleBeveragesSettingsButtonClick}
 				/>
 				<SettingsModal
 					isInModal={isInModal}
@@ -540,7 +540,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 				<span className="font-medium">启用或禁用特定料理</span>
 				<SettingsButton
 					isActive={!checkLengthEmpty(hiddenRecipes)}
-					onPress={handleRecipesSettingsButtonPress}
+					onClick={handleRecipesSettingsButtonClick}
 				/>
 				<SettingsModal
 					isInModal={isInModal}
@@ -561,7 +561,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 				<span className="font-medium">启用或禁用特定食材</span>
 				<SettingsButton
 					isActive={!checkLengthEmpty(hiddenIngredients)}
-					onPress={handleIngredientsSettingsButtonPress}
+					onClick={handleIngredientsSettingsButtonClick}
 				/>
 				<SettingsModal
 					isInModal={isInModal}

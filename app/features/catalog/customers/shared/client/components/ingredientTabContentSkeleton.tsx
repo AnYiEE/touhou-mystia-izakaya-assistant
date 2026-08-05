@@ -1,13 +1,10 @@
 import { cn } from '@heroui/theme';
-import { debounce } from 'lodash';
 import { type PropsWithChildren, type ReactNode, memo } from 'react';
 
 import Button from '@/design/ui/components/button';
 import ScrollShadow from '@/design/ui/components/scrollShadow';
 
 import type { IIngredientsTabStyle } from '@/features/catalog/customers/shared/contracts';
-
-import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
 interface IProps {
 	afterMainGrid?: ReactNode;
@@ -41,7 +38,6 @@ export default memo<PropsWithChildren<IProps>>(
 						size="sm"
 						variant="flat"
 						onClick={onToggle}
-						onKeyDown={debounce(checkA11yConfirmKey(onToggle))}
 						aria-label={ingredientTabStyle.ariaLabel}
 						className="h-4 w-4/5 text-default-400"
 					>

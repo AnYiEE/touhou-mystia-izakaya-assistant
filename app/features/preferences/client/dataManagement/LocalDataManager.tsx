@@ -1,6 +1,5 @@
 import { Textarea } from '@heroui/input';
 import { cn } from '@heroui/theme';
-import { debounce } from 'lodash';
 import {
 	type ChangeEvent,
 	memo,
@@ -30,7 +29,6 @@ import { customerPlansStore } from '@/features/customerPlans/client/state/store'
 import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
 
 import { useThrottle } from '@/shared/react/useThrottle';
-import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
 import { getClosestModalScrollContainer } from './dataManagerScroll';
 import {
@@ -297,9 +295,6 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 							isLoading={isSaveButtonLoading}
 							variant="flat"
 							onClick={toggleSavePopoverOpened}
-							onKeyDown={debounce(
-								checkA11yConfirmKey(toggleSavePopoverOpened)
-							)}
 						>
 							应用到本设备
 						</Button>

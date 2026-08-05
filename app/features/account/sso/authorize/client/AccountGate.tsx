@@ -52,7 +52,7 @@ export const SsoAuthorizeAccountGateButton = memo(
 			<Button
 				color="primary"
 				variant="flat"
-				onPress={handleOpenAccountModal}
+				onClick={handleOpenAccountModal}
 			>
 				打开账号流程
 			</Button>

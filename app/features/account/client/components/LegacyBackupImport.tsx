@@ -237,7 +237,7 @@ export default function LegacyBackupImport() {
 				<Button
 					color="primary"
 					variant="flat"
-					onPress={handleOpenAccountModal}
+					onClick={handleOpenAccountModal}
 				>
 					登录或注册
 				</Button>

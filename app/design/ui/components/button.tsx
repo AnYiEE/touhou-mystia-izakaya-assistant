@@ -3,22 +3,32 @@
 import { type ButtonProps, Button as HeroUIButton } from '@heroui/button';
 import { type InternalForwardRefRenderFunction } from '@heroui/system';
 import { cn } from '@heroui/theme';
+import { debounce } from 'lodash';
 import { memo, useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
-interface IProps extends ButtonProps {}
+import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
-export default memo<IProps>(function Button({
-	children,
-	className,
-	color,
-	disableAnimation,
-	endContent,
-	variant,
-	...props
-}) {
+interface IProps extends Omit<ButtonProps, 'onClick'> {
+	onClick?: () => void;
+	onClickEvent?: ButtonProps['onClick'];
+}
+
+export default memo<IProps>(function Button(buttonProps) {
+	const {
+		children,
+		className,
+		color,
+		disableAnimation,
+		endContent,
+		onClick,
+		onClickEvent,
+		onKeyDown,
+		variant,
+		...props
+	} = buttonProps;
 	const isReducedMotion = useReducedMotion();
 	const { isHighAppearance } = useDesignPreferences();
 
@@ -198,6 +208,20 @@ export default memo<IProps>(function Button({
 		}
 	}, [color, variant]);
 
+	const fallbackOnKeyDown =
+		onClick === undefined || onKeyDown !== undefined
+			? undefined
+			: debounce(checkA11yConfirmKey(onClick));
+
+	const resolvedOnClick = onClickEvent ?? onClick;
+	const resolvedOnKeyDown = onKeyDown ?? fallbackOnKeyDown;
+	const interactionProps = {
+		...(resolvedOnClick === undefined ? {} : { onClick: resolvedOnClick }),
+		...(resolvedOnKeyDown === undefined
+			? {}
+			: { onKeyDown: resolvedOnKeyDown }),
+	};
+
 	return (
 		<HeroUIButton
 			color={color}
@@ -211,6 +235,7 @@ export default memo<IProps>(function Button({
 				styleColor,
 				className
 			)}
+			{...interactionProps}
 			{...props}
 		>
 			{typeof children === 'string' && endContent !== undefined ? (

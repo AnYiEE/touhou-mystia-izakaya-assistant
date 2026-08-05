@@ -1,4 +1,3 @@
-import { debounce } from 'lodash';
 import { type Dispatch, type SetStateAction, memo, useCallback } from 'react';
 import { useProgress } from 'react-transition-progress';
 
@@ -19,8 +18,6 @@ import {
 	CUSTOMER_RARE_TUTORIAL_PATHNAME,
 	CUSTOMER_RARE_TUTORIAL_RESET_LABEL,
 } from '@/features/tutorials/customerRare/constants';
-
-import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
 type TResetTarget = 'meals' | 'plans';
 
@@ -74,13 +71,6 @@ export default memo<IProps>(function ResetSavedDataPanel({
 								current === 'meals' ? null : 'meals'
 							);
 						}}
-						onKeyDown={debounce(
-							checkA11yConfirmKey(() => {
-								setResetTarget((current) =>
-									current === 'meals' ? null : 'meals'
-								);
-							})
-						)}
 					>
 						重置已保存的顾客套餐数据
 					</Button>
@@ -123,13 +113,6 @@ export default memo<IProps>(function ResetSavedDataPanel({
 								current === 'plans' ? null : 'plans'
 							);
 						}}
-						onKeyDown={debounce(
-							checkA11yConfirmKey(() => {
-								setResetTarget((current) =>
-									current === 'plans' ? null : 'plans'
-								);
-							})
-						)}
 					>
 						重置已保存的营业预设数据
 					</Button>

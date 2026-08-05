@@ -286,7 +286,7 @@ export default function MobileNavigationMenu({
 							size="sm"
 							variant="light"
 							aria-label="搜索"
-							onPress={onSearchPress}
+							onClick={onSearchPress}
 							className="h-9 w-9 min-w-9 rounded-small text-base text-foreground-600 transition-background data-[hover=true]:bg-default/40 data-[pressed=true]:bg-default/50 motion-reduce:transition-none"
 						>
 							<FontAwesomeIcon

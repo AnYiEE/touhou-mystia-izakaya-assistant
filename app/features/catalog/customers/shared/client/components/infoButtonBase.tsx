@@ -112,7 +112,7 @@ export default memo<IProps>(function InfoButtonBase({
 				isIconOnly
 				size="sm"
 				variant="light"
-				onPress={handlePress}
+				onClick={handlePress}
 				aria-label={buttonLabel}
 				data-customer-info-trigger="desktop"
 				className="absolute left-[calc(50%+1.15rem)] top-[2.375rem] z-10 h-5 w-5 min-w-0 -translate-x-1/2 -translate-y-1/2 rounded-full border border-default/40 bg-content1/95 p-0 text-default-700 shadow-small data-[hover=true]:border-primary data-[pressed=true]:border-primary data-[hover=true]:bg-content1 data-[pressed=true]:bg-content1 data-[focus-visible=true]:outline-offset-1 lg:left-[calc(50%+1.414rem)] lg:top-[3.414rem]"
@@ -138,7 +138,7 @@ export default memo<IProps>(function InfoButtonBase({
 					<Button
 						size="sm"
 						variant="light"
-						onPress={handlePress}
+						onClick={handlePress}
 						aria-label={buttonLabel}
 						data-customer-info-trigger="mobile"
 						className="ml-auto h-5 w-auto min-w-0 gap-0 rounded-small bg-transparent px-0 text-tiny font-medium text-default-800 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent md:hidden"

@@ -123,7 +123,7 @@ export default memo<IProps>(function Content({ onModalClose }) {
 				<MobileAccountActionButton
 					isDisabled={accountBootstrapStatus === 'unknown'}
 					label={accountActionLabel}
-					onPress={handleAccountButtonPress}
+					onClick={handleAccountButtonPress}
 					syncStatusLabel={accountSyncPauseLabel}
 					className="mb-5"
 				/>

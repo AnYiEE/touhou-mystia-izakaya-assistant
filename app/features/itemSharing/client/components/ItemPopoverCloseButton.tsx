@@ -1,7 +1,6 @@
 'use client';
 
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
-import { debounce } from 'lodash';
 import { memo, useCallback } from 'react';
 
 import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
@@ -13,8 +12,6 @@ import {
 	ITEM_PREVIEW_PARAM_NAME,
 	ITEM_SHARE_PARAM_NAME,
 } from '@/features/itemSharing/contracts';
-
-import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
 export const ItemPopoverCloseButton = memo(function ItemPopoverCloseButton() {
 	const { params, replaceState } = useParams();
@@ -51,7 +48,6 @@ export const ItemPopoverCloseButton = memo(function ItemPopoverCloseButton() {
 				icon={faXmark}
 				variant="light"
 				onClick={handleClose}
-				onKeyDown={debounce(checkA11yConfirmKey(handleClose))}
 				aria-label={label}
 				className="absolute right-1 top-1 z-20 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 			/>

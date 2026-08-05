@@ -2,7 +2,13 @@ import { faChevronDown, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { NavbarItem } from '@heroui/navbar';
 import { cn } from '@heroui/theme';
-import { type Key } from 'react';
+import { debounce } from 'lodash';
+import {
+	type Key,
+	type MouseEvent as ReactMouseEvent,
+	useCallback,
+	useState,
+} from 'react';
 
 import Button from '@/design/ui/components/button';
 import Dropdown, {
@@ -11,6 +17,8 @@ import Dropdown, {
 	DropdownSection,
 	DropdownTrigger,
 } from '@/design/ui/components/dropdown';
+
+import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
 import { NAVBAR_THEME_ITEMS } from './themeItems';
 
@@ -46,11 +54,49 @@ export default function AccountThemeMenu({
 	onOpenChange,
 	selectedThemeKeys,
 }: IProps) {
+	const [isOpen, setIsOpen] = useState(false);
+	const isAccountActionDisabled = accountMenuDisabledKeys.includes('account');
+	const handleOpenChange = useCallback(
+		(nextIsOpen: boolean) => {
+			setIsOpen(nextIsOpen);
+			onOpenChange(nextIsOpen);
+		},
+		[onOpenChange]
+	);
+	const handleAccountAction = useCallback(() => {
+		if (isAccountActionDisabled) {
+			return;
+		}
+		handleOpenChange(false);
+		onAction('account');
+	}, [handleOpenChange, isAccountActionDisabled, onAction]);
+	const handleMenuAction = useCallback(
+		(key: Key) => {
+			if (String(key) !== 'account') {
+				onAction(key);
+			}
+		},
+		[onAction]
+	);
+	const handleMenuClickCapture = useCallback(
+		(event: ReactMouseEvent<HTMLElement>) => {
+			const { target } = event;
+			if (
+				target instanceof Element &&
+				target.closest('[data-account-action="true"]') !== null
+			) {
+				handleAccountAction();
+			}
+		},
+		[handleAccountAction]
+	);
+
 	const menu = (
 		<DropdownMenu
 			disabledKeys={accountMenuDisabledKeys}
 			disallowEmptySelection
-			onAction={onAction}
+			onAction={handleMenuAction}
+			onClickCapture={handleMenuClickCapture}
 			selectedKeys={selectedThemeKeys}
 			selectionMode="single"
 			aria-label="账号和主题"
@@ -76,7 +122,15 @@ export default function AccountThemeMenu({
 				showDivider
 				classNames={ACCOUNT_ACTION_MENU_SECTION_CLASS_NAMES}
 			>
-				<DropdownItem key="account" textValue={accountActionLabel}>
+				<DropdownItem
+					key="account"
+					closeOnSelect={false}
+					data-account-action="true"
+					onKeyDown={debounce(
+						checkA11yConfirmKey(handleAccountAction)
+					)}
+					textValue={accountActionLabel}
+				>
 					<div className={ACCOUNT_ACTION_MENU_ITEM_CLASS_NAME}>
 						<FontAwesomeIcon
 							icon={faUser}
@@ -107,8 +161,9 @@ export default function AccountThemeMenu({
 	return (
 		<NavbarItem>
 			<Dropdown
+				isOpen={isOpen}
 				shouldCloseOnScroll
-				onOpenChange={onOpenChange}
+				onOpenChange={handleOpenChange}
 				classNames={{
 					content: cn('m-1 min-w-36 max-w-36 p-1', {
 						'bg-background/70 backdrop-saturate-150':

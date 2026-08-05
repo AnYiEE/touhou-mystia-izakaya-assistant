@@ -18,7 +18,7 @@ export default memo<PropsWithChildren<IProps>>(function SideButtonGroup({
 }) {
 	const vibrate = useVibrate();
 
-	const handlePress = useCallback(() => {
+	const handleClick = useCallback(() => {
 		vibrate();
 		openPreferencesModal({ openSource: 'sideButton' });
 	}, [vibrate]);
@@ -45,7 +45,7 @@ export default memo<PropsWithChildren<IProps>>(function SideButtonGroup({
 								color="primary"
 								icon={faGear}
 								variant="shadow"
-								onPress={handlePress}
+								onClick={handleClick}
 								aria-label={preferencesLabel}
 								className="bg-primary-600"
 							/>

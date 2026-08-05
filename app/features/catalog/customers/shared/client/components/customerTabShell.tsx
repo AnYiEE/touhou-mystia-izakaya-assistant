@@ -1,5 +1,4 @@
 import { cn } from '@heroui/theme';
-import { debounce } from 'lodash';
 import {
 	type ReactNode,
 	memo,
@@ -14,8 +13,6 @@ import PressElement from '@/design/ui/components/pressElement';
 import ScrollShadow from '@/design/ui/components/scrollShadow';
 
 import type { ICustomerTabStyle } from '@/features/catalog/customers/shared/contracts';
-
-import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
 interface IProps<TItemName extends string> {
 	currentCustomerName: TItemName | null;
@@ -196,9 +193,6 @@ export default memo(function CustomerTabShell<TItemName extends string>({
 					size="sm"
 					variant="flat"
 					onClick={onToggleVisibility}
-					onKeyDown={debounce(
-						checkA11yConfirmKey(onToggleVisibility)
-					)}
 					aria-label={customerTabStyle.ariaLabel}
 					className="h-4 w-4/5 text-default-400"
 				>

@@ -319,7 +319,7 @@ export default function CustomerRarePlanDrawer() {
 					radius="none"
 					size="sm"
 					variant="flat"
-					onPress={handleOpen}
+					onClick={handleOpen}
 					className="bg-content1/58 data-[hover=true]:bg-content1/78 data-[pressed=true]:bg-content1/88 min-h-24 w-6 !min-w-6 rounded-l-none rounded-r-medium border border-l-0 border-default-300/70 px-0 py-3 font-medium text-foreground-600 shadow-[inset_-1px_0_0_rgb(255_255_255_/_0.42),0_2px_7px_rgb(0_0_0_/_0.08),0_8px_18px_-14px_rgb(0_0_0_/_0.18)] ring-1 ring-inset ring-white/25 transition-all data-[hover=true]:translate-x-0.5 data-[hover=true]:border-default-400/70 data-[hover=true]:text-foreground-700 data-[hover=true]:shadow-[inset_-1px_0_0_rgb(255_255_255_/_0.48),0_3px_9px_rgb(0_0_0_/_0.09),0_10px_20px_-14px_rgb(0_0_0_/_0.2)] motion-reduce:data-[hover=true]:translate-x-0 xl:min-h-28 xl:w-8 xl:!min-w-8 dark:border-default-100/30 dark:bg-default/40 dark:text-default-600 dark:shadow-none dark:ring-0 dark:data-[hover=true]:border-default-100/45 dark:data-[hover=true]:bg-default/40 dark:data-[pressed=true]:bg-default/40 dark:data-[hover=true]:text-default-600 dark:data-[hover=true]:shadow-none"
 				>
 					<span className="flex h-full w-full flex-col items-center justify-center gap-1.5 xl:gap-2">
