@@ -3,12 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { NavbarItem } from '@heroui/navbar';
 import { cn } from '@heroui/theme';
 import { debounce } from 'lodash';
-import {
-	type Key,
-	type MouseEvent as ReactMouseEvent,
-	useCallback,
-	useState,
-} from 'react';
+import { type Key, useCallback, useRef, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
 import Dropdown, {
@@ -55,6 +50,7 @@ export default function AccountThemeMenu({
 	selectedThemeKeys,
 }: IProps) {
 	const [isOpen, setIsOpen] = useState(false);
+	const menuElementRef = useRef<HTMLElement | null>(null);
 	const isAccountActionDisabled = accountMenuDisabledKeys.includes('account');
 	const handleOpenChange = useCallback(
 		(nextIsOpen: boolean) => {
@@ -79,7 +75,7 @@ export default function AccountThemeMenu({
 		[onAction]
 	);
 	const handleMenuClickCapture = useCallback(
-		(event: ReactMouseEvent<HTMLElement>) => {
+		(event: MouseEvent) => {
 			const { target } = event;
 			if (
 				target instanceof Element &&
@@ -90,13 +86,29 @@ export default function AccountThemeMenu({
 		},
 		[handleAccountAction]
 	);
+	const setMenuElementRef = useCallback(
+		(menuElement: HTMLElement | null) => {
+			menuElementRef.current?.removeEventListener(
+				'click',
+				handleMenuClickCapture,
+				true
+			);
+			menuElement?.addEventListener(
+				'click',
+				handleMenuClickCapture,
+				true
+			);
+			menuElementRef.current = menuElement;
+		},
+		[handleMenuClickCapture]
+	);
 
 	const menu = (
 		<DropdownMenu
+			ref={setMenuElementRef}
 			disabledKeys={accountMenuDisabledKeys}
 			disallowEmptySelection
 			onAction={handleMenuAction}
-			onClickCapture={handleMenuClickCapture}
 			selectedKeys={selectedThemeKeys}
 			selectionMode="single"
 			aria-label="账号和主题"
