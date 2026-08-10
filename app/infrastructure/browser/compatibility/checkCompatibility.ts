@@ -1,9 +1,29 @@
+import { compareVersions, validate } from 'compare-versions';
 import { UAParser } from 'ua-parser-js';
 
 import { memoize } from '@/shared/utilities/cache/memoize';
 
 type TFeature = 'flexGap' | 'largeSlidingPanelAnimation';
 type TCompatibility = Record<TFeature, boolean>;
+
+function isVersionAtLeast(version: string | undefined, minimumVersion: string) {
+	return (
+		version !== undefined &&
+		validate(version) &&
+		compareVersions(version, minimumVersion) >= 0
+	);
+}
+
+function isVersionLessThan(
+	version: string | undefined,
+	maximumVersion: string
+) {
+	return (
+		version !== undefined &&
+		validate(version) &&
+		compareVersions(version, maximumVersion) < 0
+	);
+}
 
 export const checkCompatibility = memoize(function checkCompatibility() {
 	const compatibility: TCompatibility = {
@@ -12,14 +32,11 @@ export const checkCompatibility = memoize(function checkCompatibility() {
 	};
 
 	const {
-		browser: { name: _browserName, version: _browserVersion },
-		os: { name: _osName, version: _osVersion },
+		browser: { name: _browserName, version: browserVersion },
+		os: { name: _osName, version: osVersion },
 	} = UAParser();
 	const browserName = (_browserName ?? '').toLowerCase();
-	const browserVersion =
-		_browserVersion !== undefined && Number.parseInt(_browserVersion);
 	const osName = (_osName ?? '').toLowerCase();
-	const osVersion = _osVersion !== undefined && Number.parseInt(_osVersion);
 
 	const isChromium =
 		browserName.includes('chromium') ||
@@ -35,20 +52,16 @@ export const checkCompatibility = memoize(function checkCompatibility() {
 		// eslint-disable-next-line compat/compat -- Progressive enhancement for iPadOS desktop-mode detection.
 		navigator.maxTouchPoints > 1;
 	const isIOS16OrEarlier =
-		osName.includes('ios') &&
-		typeof osVersion === 'number' &&
-		osVersion <= 16;
+		osName.includes('ios') && isVersionLessThan(osVersion, '17');
 
 	compatibility.largeSlidingPanelAnimation =
 		!isIOS16OrEarlier && !isIPadOSDesktopMode;
 
-	const isSupportedFlexGapChromium =
-		typeof browserVersion === 'number' && browserVersion > 83;
-	const isSupportedFlexGapFirefox =
-		typeof browserVersion === 'number' && browserVersion > 62;
+	const isSupportedFlexGapChromium = isVersionAtLeast(browserVersion, '84');
+	const isSupportedFlexGapFirefox = isVersionAtLeast(browserVersion, '63');
 	const isSupportedFlexGapSafari =
-		(typeof browserVersion === 'number' && browserVersion > 14) ||
-		(typeof osVersion === 'number' && osVersion > 14);
+		isVersionAtLeast(browserVersion, '14.1') ||
+		(osName.includes('ios') && isVersionAtLeast(osVersion, '14.5'));
 
 	if (isChromium) {
 		compatibility.flexGap = isSupportedFlexGapChromium;

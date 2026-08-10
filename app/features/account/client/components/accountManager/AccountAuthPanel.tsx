@@ -261,9 +261,6 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 						</div>
 					) : (
 						<div className="space-y-3">
-							{isPasskeyPreferredAuthAvailable
-								? null
-								: authTermsConfirmation}
 							<div>
 								<div className="flex gap-1 rounded-small bg-default-100 p-1 dark:bg-default-50/20">
 									<Button
@@ -414,6 +411,9 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 								</form>
 							</div>
 							<div className="space-y-3">
+								{isPasskeyPreferredAuthAvailable
+									? null
+									: authTermsConfirmation}
 								<Button
 									fullWidth
 									color="primary"

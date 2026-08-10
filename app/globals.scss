@@ -3,6 +3,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+	button {
+		@apply appearance-none;
+	}
+}
+
 @layer utilities {
 	.bg-blend-mystia {
 		@apply bg-background bg-mystia bg-cover bg-center bg-no-repeat bg-blend-overlay dark:bg-background/90;
