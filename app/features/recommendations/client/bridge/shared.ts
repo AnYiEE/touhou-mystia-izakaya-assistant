@@ -12,10 +12,6 @@ export type TRecommendationBridgeValidationResult<T> =
 			readonly ok: false;
 	  };
 
-export function checkOwnProperty(value: object, key: PropertyKey) {
-	return Object.hasOwn(value, key);
-}
-
 function checkJsonMemberNamesUnique(text: string) {
 	const stack: Array<{
 		expectingKey: boolean;

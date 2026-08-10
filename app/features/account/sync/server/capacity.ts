@@ -72,15 +72,9 @@ export function calculateAccountSyncCapacity({
 	});
 
 	return {
-		candidateBytes: Object.values(candidateNamespaceBytes).reduce(
-			(total, bytes) => total + bytes,
-			0
-		),
+		candidateBytes: Math.sumPrecise(Object.values(candidateNamespaceBytes)),
 		candidateNamespaceBytes,
-		currentBytes: Object.values(currentNamespaceBytes).reduce(
-			(total, bytes) => total + bytes,
-			0
-		),
+		currentBytes: Math.sumPrecise(Object.values(currentNamespaceBytes)),
 		currentNamespaceBytes,
 	};
 }

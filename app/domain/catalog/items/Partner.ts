@@ -28,24 +28,25 @@ export class Partner extends Item<TPartners> {
 	public getBondPartner(
 		customerName: TCustomerRareName
 	): TPartnerName | null {
-		if (Partner._bondPartnerCache.has(customerName)) {
-			return Partner._bondPartnerCache.get(customerName);
-		}
+		return Partner._bondPartnerCache.getOrInsertComputed(
+			customerName,
+			() => {
+				let bondPartner: TPartnerName | null = null;
 
-		let bondPartner: TPartnerName | null = null;
+				this._data.some(({ belong, name }) => {
+					if (
+						(belong as TCustomerRareName[] | null)?.includes(
+							customerName
+						)
+					) {
+						bondPartner = name;
+						return true;
+					}
+					return false;
+				});
 
-		this._data.some(({ belong, name }) => {
-			if (
-				(belong as TCustomerRareName[] | null)?.includes(customerName)
-			) {
-				bondPartner = name;
-				return true;
+				return bondPartner;
 			}
-			return false;
-		});
-
-		Partner._bondPartnerCache.set(customerName, bondPartner);
-
-		return bondPartner;
+		);
 	}
 }

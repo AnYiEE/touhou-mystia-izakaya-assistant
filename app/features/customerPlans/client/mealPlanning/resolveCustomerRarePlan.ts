@@ -60,22 +60,6 @@ function getRatingSortScore(rating: TRatingKey | null) {
 	return rating === null ? -1 : RATING_SORT_SCORE_MAP[rating];
 }
 
-function getCachedValue<Key, Value>(
-	cache: Map<Key, Value>,
-	key: Key,
-	getValue: () => Value
-) {
-	const cachedValue = cache.get(key);
-	if (cachedValue !== undefined) {
-		return cachedValue;
-	}
-
-	const value = getValue();
-	cache.set(key, value);
-
-	return value;
-}
-
 function appendCustomerName(
 	customerNames: TCustomerRareName[],
 	customerName: TCustomerRareName
@@ -154,21 +138,16 @@ function getManualPlanCustomerNames({
 function getCustomerRarePlanCustomerSortMetaMap(
 	customerInstance: CustomerRare
 ) {
-	const cachedMetaMap =
-		customerRarePlanCustomerSortMetaCache.get(customerInstance);
-	if (cachedMetaMap !== undefined) {
-		return cachedMetaMap;
-	}
-
-	const metaMap = new Map(
-		customerInstance.data.map(({ dlc, name }, index) => [
-			name,
-			{ dlc, index },
-		])
+	return customerRarePlanCustomerSortMetaCache.getOrInsertComputed(
+		customerInstance,
+		() =>
+			new Map(
+				customerInstance.data.map(({ dlc, name }, index) => [
+					name,
+					{ dlc, index },
+				])
+			)
 	);
-	customerRarePlanCustomerSortMetaCache.set(customerInstance, metaMap);
-
-	return metaMap;
 }
 
 function sortCustomerRarePlanCustomerNames({
@@ -181,17 +160,17 @@ function sortCustomerRarePlanCustomerNames({
 	customerSort: TCustomerRarePlanCustomerSort;
 }) {
 	if (customerSort === 'pinyin-asc-flat') {
-		return [...customerNames].sort(pinyinSort);
+		return customerNames.toSorted(pinyinSort);
 	}
 	if (customerSort === 'pinyin-desc-flat') {
-		return [...customerNames].sort((a, b) => pinyinSort(b, a));
+		return customerNames.toSorted((a, b) => pinyinSort(b, a));
 	}
 
 	const customerSortMetaMap =
 		getCustomerRarePlanCustomerSortMetaMap(customerInstance);
 
 	if (customerSort === 'pinyin-asc' || customerSort === 'pinyin-desc') {
-		return [...customerNames].sort((a, b) => {
+		return customerNames.toSorted((a, b) => {
 			const dlcSort =
 				(customerSortMetaMap.get(a)?.dlc ?? Number.MAX_SAFE_INTEGER) -
 				(customerSortMetaMap.get(b)?.dlc ?? Number.MAX_SAFE_INTEGER);
@@ -205,7 +184,7 @@ function sortCustomerRarePlanCustomerNames({
 		});
 	}
 
-	return [...customerNames].sort(
+	return customerNames.toSorted(
 		(a, b) =>
 			(customerSortMetaMap.get(a)?.index ?? Number.MAX_SAFE_INTEGER) -
 				(customerSortMetaMap.get(b)?.index ??
@@ -255,7 +234,7 @@ function sortResolvedCustomerRarePlanMeals({
 		])
 	);
 
-	return [...meals].sort((a, b) => {
+	return meals.toSorted((a, b) => {
 		const recipeTagSort = compareOptionalText(
 			a.meal.order.recipeTag,
 			b.meal.order.recipeTag
@@ -299,9 +278,8 @@ function sortResolvedCustomerRarePlanMeals({
 function createResolvedCustomerRarePlanMealDedupeKey({
 	meal,
 }: IResolvedCustomerRarePlanGroup['meals'][number]) {
-	const sortedExtraIngredients = [...meal.recipe.extraIngredients].sort(
-		pinyinSort
-	);
+	const sortedExtraIngredients =
+		meal.recipe.extraIngredients.toSorted(pinyinSort);
 
 	return JSON.stringify([
 		meal.recipe.name,
@@ -342,8 +320,7 @@ export function prepareResolvedCustomerRarePlanMeals({
 }) {
 	const recipeCookerCache = new Map<number, TCookerType>();
 	const resolveRecipeCooker = (recipeData: IMealRecipe) =>
-		getCachedValue(
-			recipeCookerCache,
+		recipeCookerCache.getOrInsertComputed(
 			recipeData.recipeId,
 			() => recipeInstance.resolveMealRecipe(recipeData).cooker
 		);
@@ -397,23 +374,22 @@ function resolveSavedCustomerRarePlanMeals({
 		ReadonlyArray<TIngredientName>
 	>();
 	const resolveBeverageAvailability = (beverageName: TBeverageName) =>
-		getCachedValue(beverageAvailabilityCache, beverageName, () =>
+		beverageAvailabilityCache.getOrInsertComputed(beverageName, () =>
 			beverageInstance.getPropsByName(beverageName, 'availabilityPaths')
 		);
 	const resolveIngredientAvailability = (ingredientName: TIngredientName) =>
-		getCachedValue(ingredientAvailabilityCache, ingredientName, () =>
+		ingredientAvailabilityCache.getOrInsertComputed(ingredientName, () =>
 			ingredientInstance.getPropsByName(
 				ingredientName,
 				'availabilityPaths'
 			)
 		);
 	const resolveRecipeAvailability = (recipeName: TRecipeName) =>
-		getCachedValue(recipeAvailabilityCache, recipeName, () =>
+		recipeAvailabilityCache.getOrInsertComputed(recipeName, () =>
 			recipeInstance.getPropsByName(recipeName, 'availabilityPaths')
 		);
 	const resolveRecipeIngredients = (recipeData: IMealRecipe) =>
-		getCachedValue(
-			recipeIngredientsCache,
+		recipeIngredientsCache.getOrInsertComputed(
 			recipeData.recipeId,
 			() => recipeInstance.resolveMealRecipe(recipeData).baseIngredients
 		);

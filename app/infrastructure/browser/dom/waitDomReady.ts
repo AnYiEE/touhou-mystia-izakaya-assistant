@@ -1,8 +1,6 @@
-import { toSet } from '@/shared/utilities/collections/convert';
-
 const READY_STATE: DocumentReadyState[] = ['complete', 'interactive'];
 
-const readyStateSet = toSet(READY_STATE);
+const readyStateSet = new Set(READY_STATE);
 
 function checkReadyState() {
 	return readyStateSet.has(document.readyState);

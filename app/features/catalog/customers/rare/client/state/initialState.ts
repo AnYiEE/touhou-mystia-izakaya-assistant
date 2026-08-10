@@ -35,8 +35,6 @@ import {
 import { customerPlansStateDefinition } from '@/features/customerPlans/client/state/planStoreDefinition';
 import type { ICustomerRareMeal } from '@/features/customerPlans/contracts';
 
-import { toSet } from '@/shared/utilities/collections/convert';
-
 export type TBeverageTableSortDescriptor =
 	ITableSortDescriptor<TBeverageTableSortKey>;
 export type TRecipeTableSortDescriptor =
@@ -113,11 +111,11 @@ export const customerRareInitialState = {
 
 			searchValue: '',
 			table: {
-				columns: toSet<SelectionSet>(),
-				hiddenBeverages: toSet<TBeverageName>() as Set<TBeverageName>,
+				columns: new Set<string | number>(),
+				hiddenBeverages: new Set<TBeverageName>(),
 				page: 1,
 				row: 1,
-				rows: toSet<SelectionSet>(),
+				rows: new Set<string | number>(),
 				selectableRows: [] as Array<ValueCollection<number>>,
 			},
 		},
@@ -126,8 +124,8 @@ export const customerRareInitialState = {
 
 			order: { beverageTag: null, recipeTag: null } as ICustomerOrder,
 			select: {
-				beverageTag: toSet<SelectionSet>(),
-				recipeTag: toSet<SelectionSet>(),
+				beverageTag: new Set<string | number>(),
+				recipeTag: new Set<string | number>(),
 			},
 
 			filterVisibility: true,
@@ -140,7 +138,7 @@ export const customerRareInitialState = {
 			rating: null as TRatingKey | null,
 		},
 		drawer: customerPlansStateDefinition.shared.drawer,
-		hiddenItems: { dlcs: toSet<TDlc>() },
+		hiddenItems: { dlcs: new Set<TDlc>() },
 		ingredient: { filterVisibility: false },
 		recipe: {
 			data: null as IMealRecipe | null,
@@ -149,13 +147,12 @@ export const customerRareInitialState = {
 
 			searchValue: '',
 			table: {
-				columns: toSet<SelectionSet>(),
-				hiddenIngredients:
-					toSet<TIngredientName>() as Set<TIngredientName>,
-				hiddenRecipes: toSet<TRecipeName>() as Set<TRecipeName>,
+				columns: new Set<string | number>(),
+				hiddenIngredients: new Set<TIngredientName>(),
+				hiddenRecipes: new Set<TRecipeName>(),
 				page: 1,
 				row: 1,
-				rows: toSet<SelectionSet>(),
+				rows: new Set<string | number>(),
 				selectableRows: [] as Array<ValueCollection<number>>,
 			},
 		},

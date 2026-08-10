@@ -300,7 +300,7 @@ export async function importPendingLegacyBackupCode(
 		}
 
 		accountStore.shared.sync.lastError.set(
-			error instanceof Error ? error.message : 'legacy-import-failed'
+			Error.isError(error) ? error.message : 'legacy-import-failed'
 		);
 		return false;
 	}
@@ -347,7 +347,7 @@ export async function completeAccountPostLoginBootstrap({
 		} catch (error) {
 			if (checkCurrentRequest()) {
 				accountStore.shared.sync.lastError.set(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: 'legacy-import-failed'
 				);
@@ -369,7 +369,7 @@ export async function completeAccountPostLoginBootstrap({
 		} catch (error) {
 			if (checkCurrentRequest()) {
 				accountStore.shared.sync.lastError.set(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: 'local-takeover-failed'
 				);

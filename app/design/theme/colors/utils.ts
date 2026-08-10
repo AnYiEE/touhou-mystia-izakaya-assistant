@@ -6,22 +6,11 @@ export const swapColorScale = memoize(function swapColorScale(
 ): TColorScale {
 	const keys = Object.keys(colors).map(Number) as Array<keyof TColorScale>;
 	const { length } = keys;
-	const halfLength = Math.floor(length / 2);
 
-	const swappedColorScale = keys.reduce((result, key, index) => {
-		const mirrorIndex = length - 1 - index;
-
-		if (index < halfLength) {
-			const mirrorKey = keys[mirrorIndex] as keyof TColorScale;
-			result[key] = colors[mirrorKey];
-			result[mirrorKey] = colors[key];
-		}
-		if (index === halfLength && length % 2 !== 0) {
-			result[key] = colors[key];
-		}
-
-		return result;
-	}, {} as TColorScale);
-
-	return swappedColorScale;
+	return Object.fromEntries(
+		keys.map((key, index) => {
+			const mirrorKey = keys[length - 1 - index] as keyof TColorScale;
+			return [key, colors[mirrorKey]];
+		})
+	) as TColorScale;
 }, 'WeakMap');

@@ -4,7 +4,6 @@ import { filterAvailableItemsByHiddenDlcs } from '@/domain/availability';
 import { Recipe } from '@/domain/catalog/food/Recipe';
 import type { TDlc } from '@/domain/data/shared/types';
 import { DYNAMIC_TAG_MAP } from '@/domain/data/tags/tagFacts';
-import type { TRecipeTag } from '@/domain/data/tags/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
@@ -15,7 +14,6 @@ import {
 
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
 
-import { toArray, toSet } from '@/shared/utilities/collections/convert';
 import { sortBy } from '@/shared/utilities/collections/sortBy';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
@@ -55,7 +53,7 @@ const state = {
 		pinyinSortState: PINYIN_SORT_STATE_MAP.none as TPinyinSortState,
 	},
 	shared: {
-		hiddenItems: { dlcs: toSet<TDlc>() },
+		hiddenItems: { dlcs: new Set<TDlc>() },
 
 		famousShop: false,
 		popularTrend: { isNegative: false, tag: null } as IPopularTrend,
@@ -65,9 +63,9 @@ const state = {
 const getNames = createNamesCache(instance);
 
 function getVisibleRecipeVariants(hiddenDlcs: ReadonlySet<TDlc>) {
-	return filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs).flatMap(
-		({ recipes }) => recipes
-	);
+	return filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
+		.values()
+		.flatMap(({ recipes }) => recipes.values());
 }
 
 export const recipesStore = store(state, {
@@ -140,25 +138,23 @@ export const recipesStore = store(state, {
 	},
 	availableCookers: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-		return [
-			...new Set(
+		return Array.from(
+			new Set(
 				getVisibleRecipeVariants(hiddenDlcs).map(({ cooker }) => cooker)
 			),
-		]
-			.map(toGetValueCollection)
-			.sort(pinyinSort);
+			toGetValueCollection
+		).sort(pinyinSort);
 	},
 	availableIngredients: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-		return [
-			...new Set(
+		return Array.from(
+			new Set(
 				getVisibleRecipeVariants(hiddenDlcs).flatMap(
-					({ ingredients }) => ingredients
+					({ ingredients }) => ingredients.values()
 				)
 			),
-		]
-			.map(toGetValueCollection)
-			.sort(pinyinSort);
+			toGetValueCollection
+		).sort(pinyinSort);
 	},
 	availableLevels: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
@@ -203,15 +199,15 @@ export const recipesStore = store(state, {
 	},
 	availablePositiveTags: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-		return toArray<TRecipeTag[]>(
-			instance.getValuesByProp(
+		return [
+			...instance.getValuesByProp(
 				'positiveTags',
 				false,
 				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			),
 			DYNAMIC_TAG_MAP.popularNegative,
-			DYNAMIC_TAG_MAP.popularPositive
-		)
+			DYNAMIC_TAG_MAP.popularPositive,
+		]
 			.map(toGetValueCollection)
 			.sort(pinyinSort);
 	},

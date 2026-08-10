@@ -60,10 +60,9 @@ export async function readAdminSsoTicketsInitialData(
 	} catch (error) {
 		return {
 			...initialData,
-			message:
-				error instanceof Error
-					? error.message
-					: ADMIN_SSO_MESSAGE_MAP.ticketReadFailed,
+			message: Error.isError(error)
+				? error.message
+				: ADMIN_SSO_MESSAGE_MAP.ticketReadFailed,
 		};
 	}
 }

@@ -56,7 +56,7 @@ const commandPathMap = {
 } as const;
 
 function normalizeRelativePath(projectDirectory: string, path: string) {
-	return relative(projectDirectory, path).split('\\').join('/');
+	return relative(projectDirectory, path).replaceAll('\\', '/');
 }
 
 async function checkSelfHostedBuildPaths(projectDirectory: string) {

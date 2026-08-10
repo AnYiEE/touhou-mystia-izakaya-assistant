@@ -6,19 +6,18 @@ export function createRatingVariants<T extends 'base' | 'content'>(key: T) {
 
 	return {
 		variants: {
-			color: Object.keys(ratingStyles).reduce<Partial<TColor>>(
-				(acc, cur) => {
-					acc[cur as TRatingStyleKey] = {
+			color: Object.fromEntries(
+				Object.keys(ratingStyles).map((cur) => [
+					cur,
+					{
 						...(key === 'content' ? { base: 'leading-none' } : {}),
 						[key]: [
 							'leading-none text-background ring-2 dark:text-foreground',
 							ratingStyles[cur as TRatingStyleKey],
 						],
-					} as TColor[TRatingStyleKey];
-					return acc;
-				},
-				{}
-			),
+					} as TColor[TRatingStyleKey],
+				])
+			) as TColor,
 		},
 	};
 }

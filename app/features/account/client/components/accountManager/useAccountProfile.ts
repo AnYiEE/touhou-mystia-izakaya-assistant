@@ -217,7 +217,7 @@ export function useAccountProfile({
 								}
 								setMessage(
 									getAccountClientErrorMessage(
-										error instanceof Error
+										Error.isError(error)
 											? error.message
 											: '',
 										ACCOUNT_CLIENT_MESSAGE_MAP.accountStateRefreshFailed
@@ -291,7 +291,7 @@ export function useAccountProfile({
 			})
 			.catch((error: unknown) => {
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ACCOUNT_CLIENT_MESSAGE_MAP.passwordChangeFailed
 				);
@@ -431,7 +431,7 @@ export function useAccountProfile({
 								setProfileError(null);
 								setMessage(
 									getAccountClientErrorMessage(
-										error instanceof Error
+										Error.isError(error)
 											? error.message
 											: '',
 										ACCOUNT_CLIENT_MESSAGE_MAP.accountStateRefreshFailed
@@ -509,7 +509,7 @@ export function useAccountProfile({
 				}
 
 				setProfileError(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ACCOUNT_MANAGER_MESSAGE_MAP.profileUpdateFailed
 				);

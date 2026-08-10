@@ -48,7 +48,6 @@ import { globalStore } from '@/features/preferences/client/state/globalPersisten
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { copyArray } from '@/shared/utilities/collections/convert';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 export default function RecipeTabContent() {
@@ -129,29 +128,27 @@ export default function RecipeTabContent() {
 
 			const tags = (
 				<TagGroup>
-					{copyArray(positiveTags)
-						.sort(pinyinSort)
-						.map((tag, index) => {
-							const isPositiveTagMatched =
-								matchedPositiveTags.includes(tag);
-							const tagStyle = isPositiveTagMatched
-								? positiveTagStyle
-								: {};
-							const tagType = isPositiveTagMatched
-								? 'positive'
-								: null;
-							return (
-								<Tags.Tag
-									key={index}
-									tag={tag}
-									tagStyle={tagStyle}
-									tagType={tagType}
-									className={cn({
-										'opacity-50': !isPositiveTagMatched,
-									})}
-								/>
-							);
-						})}
+					{positiveTags.toSorted(pinyinSort).map((tag, index) => {
+						const isPositiveTagMatched =
+							matchedPositiveTags.includes(tag);
+						const tagStyle = isPositiveTagMatched
+							? positiveTagStyle
+							: {};
+						const tagType = isPositiveTagMatched
+							? 'positive'
+							: null;
+						return (
+							<Tags.Tag
+								key={index}
+								tag={tag}
+								tagStyle={tagStyle}
+								tagType={tagType}
+								className={cn({
+									'opacity-50': !isPositiveTagMatched,
+								})}
+							/>
+						);
+					})}
 				</TagGroup>
 			);
 

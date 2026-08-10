@@ -1,7 +1,5 @@
 import { type TSyncNamespace } from '@/domain/account/contracts';
 
-import { cloneJsonObject } from '@/shared/utilities/objects/cloneJsonObject';
-
 import type {
 	IGlobalPreferencesSetValueOrders,
 	TGlobalPreferencesSnapshot,
@@ -48,7 +46,7 @@ function writePreferenceGroup(
 	if (key !== undefined) {
 		target[key] =
 			value !== null && typeof value === 'object'
-				? cloneJsonObject(value)
+				? structuredClone(value)
 				: value;
 	}
 }
@@ -162,7 +160,7 @@ function mergeReliableBaseSnapshots({
 	local: TGlobalPreferencesSnapshot;
 	setValueOrders: IGlobalPreferencesSetValueOrders;
 }) {
-	const data = cloneJsonObject(cloud);
+	const data = structuredClone(cloud);
 	let requiresConfirmation = false;
 
 	data.donationModal = mergeDonationModal(

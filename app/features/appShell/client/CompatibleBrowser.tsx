@@ -6,7 +6,6 @@ import { checkCompatibility } from '@/infrastructure/browser/compatibility/check
 import { waitDomReady } from '@/infrastructure/browser/dom/waitDomReady';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { toArray } from '@/shared/utilities/collections/convert';
 
 function getReplacementClass(element: Element, gapClass: string) {
 	if (gapClass.includes('gap-x-')) {
@@ -91,15 +90,15 @@ function replaceGapClasses(element: Element) {
 		return;
 	}
 
-	toArray(element.classList)
-		.filter((gapClass) => gapClass.includes('gap-'))
-		.forEach((gapClass) => {
-			const newClass = getReplacementClass(element, gapClass);
-			if (newClass) {
-				element.classList.add(...newClass.split(' '));
-				element.classList.remove(gapClass);
-			}
-		});
+	for (const gapClass of [...element.classList]
+		.values()
+		.filter((className) => className.includes('gap-'))) {
+		const newClass = getReplacementClass(element, gapClass);
+		if (newClass) {
+			element.classList.add(...newClass.split(' '));
+			element.classList.remove(gapClass);
+		}
+	}
 }
 
 function nodeIsElement(node: Node) {
@@ -107,7 +106,7 @@ function nodeIsElement(node: Node) {
 }
 
 function getChildElements(element: Element) {
-	return toArray(element.querySelectorAll('*')).filter(nodeIsElement);
+	return [...element.querySelectorAll('*')];
 }
 
 function processAllElements(element: Element) {
@@ -117,9 +116,11 @@ function processAllElements(element: Element) {
 
 function processMutations(mutations: MutationRecord[]) {
 	mutations.forEach((mutation) => {
-		toArray(mutation.addedNodes)
-			.filter(nodeIsElement)
-			.forEach(processAllElements);
+		for (const node of [...mutation.addedNodes]
+			.values()
+			.filter(nodeIsElement)) {
+			processAllElements(node);
+		}
 	});
 }
 

@@ -288,7 +288,7 @@ export default function AdminSsoClientsClient({
 						return;
 					}
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_SSO_MESSAGE_MAP.clientReadFailed
 					);
@@ -331,7 +331,7 @@ export default function AdminSsoClientsClient({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);

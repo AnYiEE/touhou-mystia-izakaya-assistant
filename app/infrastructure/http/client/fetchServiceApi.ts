@@ -74,7 +74,7 @@ export async function fetchServiceApi<TData>(
 		});
 	} catch (error) {
 		throw new ServiceApiError({
-			message: error instanceof Error ? error.message : 'network-error',
+			message: Error.isError(error) ? error.message : 'network-error',
 			status: 0,
 		});
 	}

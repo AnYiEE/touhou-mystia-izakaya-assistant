@@ -137,10 +137,10 @@ function isSsoClientEvent(event: TSsoCallbackEvent) {
 }
 
 function createSsoCallbackErrorMessage(error: unknown) {
-	if (error instanceof Error && error.name === 'AbortError') {
+	if (Error.isError(error) && error.name === 'AbortError') {
 		return 'request-timeout';
 	}
-	if (error instanceof Error && error.message.length > 0) {
+	if (Error.isError(error) && error.message.length > 0) {
 		return error.message.slice(0, 160);
 	}
 
@@ -148,17 +148,14 @@ function createSsoCallbackErrorMessage(error: unknown) {
 }
 
 function checkSsoCallbackDispatchUrl(value: string) {
-	try {
-		const url = new URL(value);
-		return (
-			url.protocol === 'https:' &&
-			url.username === '' &&
-			url.password === '' &&
-			url.hash === ''
-		);
-	} catch {
-		return false;
-	}
+	const url = URL.parse(value);
+	return (
+		url !== null &&
+		url.protocol === 'https:' &&
+		url.username === '' &&
+		url.password === '' &&
+		url.hash === ''
+	);
 }
 
 async function dispatchSsoCallback(

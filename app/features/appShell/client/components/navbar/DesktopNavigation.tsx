@@ -5,7 +5,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { NavbarBrand, NavbarContent, NavbarItem } from '@heroui/navbar';
 import { cn } from '@heroui/theme';
-import { type JSX, type Key, type PropsWithChildren, memo } from 'react';
+import { type Key, type PropsWithChildren, memo } from 'react';
 
 import Button, { type IButtonProps } from '@/design/ui/components/button';
 import Dropdown, {
@@ -154,12 +154,8 @@ export default function DesktopNavigation({
 								</NavbarItem>
 							);
 						}
-						return Object.entries(navItem).reduce<JSX.Element[]>(
-							(
-								acc,
-								[dropdownLabel, dropdownItems],
-								dropdownIndex
-							) => {
+						return Object.entries(navItem).map(
+							([dropdownLabel, dropdownItems], dropdownIndex) => {
 								const isDropdownActivated = dropdownItems.some(
 									({ href }) => href === basePathname
 								);
@@ -245,9 +241,8 @@ export default function DesktopNavigation({
 										</DropdownMenu>
 									</Dropdown>
 								);
-								return [...acc, dropdownElement];
-							},
-							[]
+								return dropdownElement;
+							}
 						);
 					})}
 				</ul>

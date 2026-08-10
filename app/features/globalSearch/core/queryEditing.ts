@@ -41,9 +41,8 @@ export function getPrefixTokenDeletionRange(
 	cursorIndex: number
 ) {
 	const pattern = /(^|\s)(@[^\s@]+)/gu;
-	let match: RegExpExecArray | null;
 
-	while ((match = pattern.exec(value)) !== null) {
+	for (const match of value.matchAll(pattern)) {
 		const [, leadingSpace, token] = match;
 		const tokenStart = match.index + (leadingSpace ?? '').length;
 		const tokenEnd = tokenStart + (token ?? '').length;

@@ -94,10 +94,9 @@ async function runWithConcurrencyLimit<T>(
 				try {
 					await worker(next.value);
 				} catch (error) {
-					fatalErrorRef.value ??=
-						error instanceof Error
-							? error
-							: new Error('backup-cleanup-failed');
+					fatalErrorRef.value ??= Error.isError(error)
+						? error
+						: new Error('backup-cleanup-failed');
 					return;
 				}
 			}

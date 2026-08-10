@@ -9,6 +9,8 @@ import {
 } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 
+import 'core-js/es/math/sum-precise';
+
 const DOWNLOAD_CONCURRENCY = 8;
 const FONT_LICENSE_COMMIT = '684b69db51d59a3137ec0152fa3a3afc6f1b3814';
 const GOOGLE_FONTS_CSS_HOST = 'fonts.googleapis.com';
@@ -141,10 +143,7 @@ async function downloadFontFiles(urls: string[], outputPath: string) {
 			})
 		);
 
-		bytes += batchBytes.reduce(
-			(sum, currentBytes) => sum + currentBytes,
-			0
-		);
+		bytes += Math.sumPrecise(batchBytes);
 	}
 
 	return bytes;
@@ -250,10 +249,9 @@ async function updateFonts() {
 	try {
 		await copyStaticFiles(stagingPath);
 
-		const results: IFontDownloadResult[] = [];
-		for (const config of FONT_CONFIGS) {
-			results.push(await downloadFont(config, stagingPath));
-		}
+		const results = await Array.fromAsync(FONT_CONFIGS, (config) =>
+			downloadFont(config, stagingPath)
+		);
 
 		const files = results.reduce((sum, result) => sum + result.files, 0);
 		const bytes = results.reduce((sum, result) => sum + result.bytes, 0);
@@ -288,7 +286,7 @@ try {
 } catch (error) {
 	console.error(
 		'字体更新失败：',
-		error instanceof Error ? error.message : error
+		Error.isError(error) ? error.message : error
 	);
 	process.exitCode = 1;
 }

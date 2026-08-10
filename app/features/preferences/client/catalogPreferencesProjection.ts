@@ -18,8 +18,6 @@ import { partnersStore } from '@/features/catalog/items/partners/client/state/st
 import { recipesStore } from '@/features/catalog/items/recipes/client/state/store';
 import type { ICatalogPreferencesProjection } from '@/features/preferences/contracts';
 
-import { toSet } from '@/shared/utilities/collections/convert';
-
 import { globalStore } from './state/globalPersistenceStore';
 
 const recipeInstance = Recipe.getInstance();
@@ -66,7 +64,7 @@ function getNewlyHiddenItems<T>(
 	nextItems: ReadonlySet<T>,
 	previousItems: ReadonlySet<T>
 ) {
-	return new Set([...nextItems].filter((item) => !previousItems.has(item)));
+	return nextItems.difference(previousItems);
 }
 
 function clearHiddenBeverageSelections(
@@ -121,30 +119,30 @@ function getHiddenDlcs(hiddenDlcValues: ReadonlyArray<string>) {
 
 function applyInitialHiddenDlcs(hiddenDlcValues: ReadonlyArray<string>) {
 	const hiddenDlcs = getHiddenDlcs(hiddenDlcValues);
-	beveragesStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	clothesStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	cookersStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	currenciesStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	customerNormalStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	customerRareStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	ingredientsStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	ornamentsStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	partnersStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	recipesStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
+	beveragesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	clothesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	cookersStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	currenciesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	customerNormalStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	customerRareStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	ingredientsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	ornamentsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	partnersStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	recipesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 }
 
 function applyChangedHiddenDlcs(hiddenDlcValues: ReadonlyArray<string>) {
 	const hiddenDlcs = getHiddenDlcs(hiddenDlcValues);
-	beveragesStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	clothesStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	cookersStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	currenciesStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	ingredientsStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	customerNormalStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	customerRareStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	ornamentsStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	partnersStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
-	recipesStore.shared.hiddenItems.dlcs.set(toSet(hiddenDlcs));
+	beveragesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	clothesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	cookersStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	currenciesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	ingredientsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	customerNormalStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	customerRareStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	ornamentsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	partnersStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	recipesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 }
 
 function applyFamousShop(famousShop: boolean) {
@@ -175,25 +173,27 @@ function applyInitialTableState() {
 	const recipeColumns = globalStore.persistence.table.columns.recipe.get();
 	const row = globalStore.persistence.table.row.get();
 	const selectableRows = globalStore.shared.table.selectableRows.get();
-	const rowSet = toSet(row.toString());
+	const rowSet = new Set([row.toString()]);
 
 	customerNormalStore.shared.beverage.table.columns.set(
-		toSet(beverageColumns)
+		new Set(beverageColumns)
 	);
 	customerNormalStore.shared.beverage.table.row.set(row);
 	customerNormalStore.shared.beverage.table.rows.set(rowSet);
 	customerNormalStore.shared.beverage.table.selectableRows.set(
 		selectableRows
 	);
-	customerNormalStore.shared.recipe.table.columns.set(toSet(recipeColumns));
+	customerNormalStore.shared.recipe.table.columns.set(new Set(recipeColumns));
 	customerNormalStore.shared.recipe.table.row.set(row);
 	customerNormalStore.shared.recipe.table.rows.set(rowSet);
 	customerNormalStore.shared.recipe.table.selectableRows.set(selectableRows);
-	customerRareStore.shared.beverage.table.columns.set(toSet(beverageColumns));
+	customerRareStore.shared.beverage.table.columns.set(
+		new Set(beverageColumns)
+	);
 	customerRareStore.shared.beverage.table.row.set(row);
 	customerRareStore.shared.beverage.table.rows.set(rowSet);
 	customerRareStore.shared.beverage.table.selectableRows.set(selectableRows);
-	customerRareStore.shared.recipe.table.columns.set(toSet(recipeColumns));
+	customerRareStore.shared.recipe.table.columns.set(new Set(recipeColumns));
 	customerRareStore.shared.recipe.table.row.set(row);
 	customerRareStore.shared.recipe.table.rows.set(rowSet);
 	customerRareStore.shared.recipe.table.selectableRows.set(selectableRows);
@@ -205,22 +205,22 @@ function applyInitialTableState() {
 	const hiddenRecipes =
 		globalStore.persistence.table.hiddenItems.recipes.get();
 	customerNormalStore.shared.beverage.table.hiddenBeverages.set(
-		toSet(hiddenBeverages)
+		new Set(hiddenBeverages)
 	);
 	customerNormalStore.shared.recipe.table.hiddenIngredients.set(
-		toSet(hiddenIngredients)
+		new Set(hiddenIngredients)
 	);
 	customerNormalStore.shared.recipe.table.hiddenRecipes.set(
-		toSet(hiddenRecipes)
+		new Set(hiddenRecipes)
 	);
 	customerRareStore.shared.beverage.table.hiddenBeverages.set(
-		toSet(hiddenBeverages)
+		new Set(hiddenBeverages)
 	);
 	customerRareStore.shared.recipe.table.hiddenIngredients.set(
-		toSet(hiddenIngredients)
+		new Set(hiddenIngredients)
 	);
 	customerRareStore.shared.recipe.table.hiddenRecipes.set(
-		toSet(hiddenRecipes)
+		new Set(hiddenRecipes)
 	);
 }
 
@@ -251,20 +251,20 @@ export function createCatalogPreferencesProjection(): ICatalogPreferencesProject
 				globalStore.persistence.table.columns.beverage.onChange(
 					(columns) => {
 						customerNormalStore.shared.beverage.table.columns.set(
-							toSet(columns)
+							new Set(columns)
 						);
 						customerRareStore.shared.beverage.table.columns.set(
-							toSet(columns)
+							new Set(columns)
 						);
 					}
 				),
 				globalStore.persistence.table.columns.recipe.onChange(
 					(columns) => {
 						customerNormalStore.shared.recipe.table.columns.set(
-							toSet(columns)
+							new Set(columns)
 						);
 						customerRareStore.shared.recipe.table.columns.set(
-							toSet(columns)
+							new Set(columns)
 						);
 					}
 				),
@@ -273,29 +273,29 @@ export function createCatalogPreferencesProjection(): ICatalogPreferencesProject
 					customerNormalStore.shared.beverage.table.page.set(1);
 					customerNormalStore.shared.beverage.table.row.set(row);
 					customerNormalStore.shared.beverage.table.rows.set(
-						toSet(rowString)
+						new Set([rowString])
 					);
 					customerNormalStore.shared.recipe.table.page.set(1);
 					customerNormalStore.shared.recipe.table.row.set(row);
 					customerNormalStore.shared.recipe.table.rows.set(
-						toSet(rowString)
+						new Set([rowString])
 					);
 					customerRareStore.shared.beverage.table.page.set(1);
 					customerRareStore.shared.beverage.table.row.set(row);
 					customerRareStore.shared.beverage.table.rows.set(
-						toSet(rowString)
+						new Set([rowString])
 					);
 					customerRareStore.shared.recipe.table.page.set(1);
 					customerRareStore.shared.recipe.table.row.set(row);
 					customerRareStore.shared.recipe.table.rows.set(
-						toSet(rowString)
+						new Set([rowString])
 					);
 				}),
 				globalStore.persistence.table.hiddenItems.beverages.onChange(
 					(beverages) => {
 						const previousHiddenBeverages =
 							customerNormalStore.shared.beverage.table.hiddenBeverages.get();
-						const hiddenBeverages = toSet(beverages);
+						const hiddenBeverages = new Set(beverages);
 						const newlyHiddenBeverages = getNewlyHiddenItems(
 							hiddenBeverages,
 							previousHiddenBeverages
@@ -304,7 +304,7 @@ export function createCatalogPreferencesProjection(): ICatalogPreferencesProject
 							hiddenBeverages
 						);
 						customerRareStore.shared.beverage.table.hiddenBeverages.set(
-							toSet(beverages)
+							new Set(beverages)
 						);
 						clearHiddenBeverageSelections(newlyHiddenBeverages);
 					}
@@ -313,7 +313,7 @@ export function createCatalogPreferencesProjection(): ICatalogPreferencesProject
 					(ingredients) => {
 						const previousHiddenIngredients =
 							customerNormalStore.shared.recipe.table.hiddenIngredients.get();
-						const hiddenIngredients = toSet(ingredients);
+						const hiddenIngredients = new Set(ingredients);
 						const newlyHiddenIngredients = getNewlyHiddenItems(
 							hiddenIngredients,
 							previousHiddenIngredients
@@ -322,7 +322,7 @@ export function createCatalogPreferencesProjection(): ICatalogPreferencesProject
 							hiddenIngredients
 						);
 						customerRareStore.shared.recipe.table.hiddenIngredients.set(
-							toSet(ingredients)
+							new Set(ingredients)
 						);
 						clearHiddenRecipeSelections(
 							newlyHiddenIngredients,
@@ -334,7 +334,7 @@ export function createCatalogPreferencesProjection(): ICatalogPreferencesProject
 					(recipes) => {
 						const previousHiddenRecipes =
 							customerNormalStore.shared.recipe.table.hiddenRecipes.get();
-						const hiddenRecipes = toSet(recipes);
+						const hiddenRecipes = new Set(recipes);
 						const newlyHiddenRecipes = getNewlyHiddenItems(
 							hiddenRecipes,
 							previousHiddenRecipes
@@ -343,7 +343,7 @@ export function createCatalogPreferencesProjection(): ICatalogPreferencesProject
 							hiddenRecipes
 						);
 						customerRareStore.shared.recipe.table.hiddenRecipes.set(
-							toSet(recipes)
+							new Set(recipes)
 						);
 						clearHiddenRecipeSelections(
 							new Set<TIngredientName>(),

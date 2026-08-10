@@ -2,8 +2,6 @@ import { attachAvailabilityData } from '@/domain/availability/catalog';
 import type { TAvailabilityCategory } from '@/domain/availability/types';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { copyArray } from '@/shared/utilities/collections/convert';
-import { cloneJsonObject } from '@/shared/utilities/objects/cloneJsonObject';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
 import { getPinyin } from '@/shared/utilities/pinyin/getPinyin';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
@@ -58,7 +56,7 @@ export class Item<
 			category === undefined
 				? data
 				: attachAvailabilityData(category, data);
-		this._data = cloneJsonObject(dataWithAvailability).map((item) => ({
+		this._data = structuredClone(dataWithAvailability).map((item) => ({
 			...item,
 			pinyin: getPinyin(item.name),
 		})) as TItem[];
@@ -192,14 +190,10 @@ export class Item<
 				continue;
 			}
 
-			// The preceding sparse-slot guard proves this indexed value exists.
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const item = target[itemIndex]!;
+			const item = target[itemIndex] as TItem;
 			for (let index = 0; index < props.length; index += 1) {
 				if (index in props) {
-					// The sparse-slot guard proves this property key exists.
-					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-					const key = props[index]!;
+					const key = props[index] as T;
 					appendDeepArrayValues(values, item[key]);
 				}
 			}
@@ -225,24 +219,14 @@ export class Item<
 
 	public getPinyinSortedData(data?: ReadonlyArray<TItem>) {
 		const target = data ?? this._data;
-
-		const generateReturn = (returnData: typeof target) => ({
-			fork: () => copyArray(returnData),
-			get: () => returnData,
-		});
-
-		if (this._pinyinSortedDataCacheMap.has(target)) {
-			return generateReturn(this._pinyinSortedDataCacheMap.get(target));
-		}
-
-		const sortedData = this.sortByPinyin(target);
-		this._pinyinSortedDataCacheMap.set(target, sortedData);
-
-		return generateReturn(sortedData);
+		return this._pinyinSortedDataCacheMap.getOrInsertComputed(
+			target,
+			this.sortByPinyin
+		);
 	}
 
 	private sortByPinyin(data: ReadonlyArray<TItem>) {
-		return copyArray(data).sort(({ pinyin: a }, { pinyin: b }) =>
+		return data.toSorted(({ pinyin: a }, { pinyin: b }) =>
 			pinyinSort(a, b)
 		);
 	}

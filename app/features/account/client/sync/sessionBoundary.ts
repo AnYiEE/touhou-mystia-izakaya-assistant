@@ -151,7 +151,7 @@ export function handlePassiveSyncRefreshError(
 		return;
 	}
 	if (
-		error instanceof Error &&
+		Error.isError(error) &&
 		error.message === 'sync-client-update-required'
 	) {
 		setAccountSyncFutureStateIsolated(expectedUserId, true);
@@ -183,7 +183,7 @@ export function handlePassiveSyncRefreshError(
 
 	accountStore.shared.sync.canRetry.set(true);
 	accountStore.shared.sync.lastError.set(
-		error instanceof Error ? error.message : 'sync-refresh-failed'
+		Error.isError(error) ? error.message : 'sync-refresh-failed'
 	);
 }
 

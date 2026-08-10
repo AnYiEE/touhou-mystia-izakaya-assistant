@@ -131,7 +131,7 @@ function openCrossTabLockDatabase() {
 
 					isSettled = true;
 					reject(
-						error instanceof Error
+						Error.isError(error)
 							? error
 							: new Error('cross-tab-lock-database-open-failed')
 					);

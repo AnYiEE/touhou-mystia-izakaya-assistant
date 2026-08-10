@@ -141,7 +141,7 @@ export default memo<IProps>(function AccountSyncStatus() {
 			.catch((error: unknown) => {
 				setRebuildError(
 					getAccountClientErrorMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: 'sync-rebuild-failed',
 						ACCOUNT_SYNC_STATUS_FALLBACK_MESSAGE_MAP.rebuildFailed

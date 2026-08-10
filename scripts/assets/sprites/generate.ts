@@ -166,7 +166,7 @@ async function generateSingleCategory(
 }
 
 function normalizePath(path: string) {
-	return path.split('\\').join('/');
+	return path.replaceAll('\\', '/');
 }
 
 export async function generateSprites(

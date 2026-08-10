@@ -1,6 +1,3 @@
-import { checkLengthEmpty } from './check';
-import { copyArray } from './convert';
-
 /**
  * @example removeLastElement([1, 2, 3, 4, 2], 2) -> [1, 2, 3, 4]
  */
@@ -9,21 +6,16 @@ export function removeLastElement<T>(
 	elementToRemove: T,
 	elementToInsert?: T
 ) {
-	const copiedArray = copyArray(array);
-	if (checkLengthEmpty(copiedArray)) {
-		return copiedArray;
-	}
-
 	const index = array.lastIndexOf(elementToRemove);
 	if (index === -1) {
-		return copiedArray;
+		return array.toSpliced(0, 0);
 	}
 
-	copiedArray.splice(index, 1);
-
-	if (elementToInsert !== undefined) {
-		copiedArray.splice(index, 0, elementToInsert);
+	if (elementToInsert === undefined) {
+		return array.toSpliced(index, 1);
 	}
 
-	return copiedArray;
+	// Preserve the copying operation for the readonly input.
+	// eslint-disable-next-line unicorn/no-confusing-array-splice -- Direct assignment would mutate the input.
+	return array.toSpliced(index, 1, elementToInsert);
 }

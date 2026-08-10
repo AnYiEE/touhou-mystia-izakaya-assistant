@@ -50,7 +50,7 @@ function generateResponse<
 
 function checkMissingBackupImportTableError(error: unknown) {
 	return (
-		error instanceof Error &&
+		Error.isError(error) &&
 		/no such table:\s*backup_imports/iu.test(error.message)
 	);
 }

@@ -12,7 +12,6 @@ import type { IIngredientTabContentProps } from '@/features/catalog/customers/sh
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { toSet } from '@/shared/utilities/collections/convert';
 
 interface IProps extends IIngredientTabContentProps {}
 
@@ -38,7 +37,7 @@ export default memo<IProps>(function IngredientTabContent({
 	);
 
 	const darkIngredients = useMemo(
-		() => toSet(darkIngredientNames),
+		() => new Set(darkIngredientNames),
 		[darkIngredientNames]
 	);
 

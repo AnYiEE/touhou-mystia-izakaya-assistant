@@ -25,7 +25,7 @@ function createAbortError() {
 }
 
 export function checkSuggestMealsAbortError(error: unknown) {
-	return error instanceof Error && error.name === 'AbortError';
+	return Error.isError(error) && error.name === 'AbortError';
 }
 
 function throwIfAborted(signal?: AbortSignal) {
@@ -89,7 +89,7 @@ const defaultYieldScheduler: ISuggestMealsYieldScheduler = {
 					resolve();
 				} catch (error) {
 					reject(
-						error instanceof Error
+						Error.isError(error)
 							? error
 							: new Error('Recommendation scheduling failed.')
 					);

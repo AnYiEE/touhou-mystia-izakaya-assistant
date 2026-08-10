@@ -10,7 +10,6 @@ import { extractPlacesFromFoodFrom } from '@/domain/places/foodSources';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import { checkArrayEqualOf } from '@/shared/utilities/collections/check';
-import { toSet } from '@/shared/utilities/collections/convert';
 
 import { Food } from './Food';
 import type { TProcessedIngredient } from './types';
@@ -48,13 +47,13 @@ export class Ingredient extends Food<TProcessedIngredient[]> {
 		return instance;
 	}
 
-	public blockedLevels = toSet(10) as Set<TLevel>;
-	public blockedIngredients = toSet(
+	public blockedLevels = new Set<TLevel>([10]);
+	public blockedIngredients = new Set<TIngredientName>([
 		'铃仙',
 		'噗噗哟果',
-		'强效辣椒素'
-	) as Set<TIngredientName>;
-	public blockedTags = toSet('特产', '天罚') as Set<TIngredientTag>;
+		'强效辣椒素',
+	]);
+	public blockedTags = new Set<TIngredientTag>(['特产', '天罚']);
 
 	/**
 	 * @description Types sorted in the suggested order. Used for selecting ingredient types.

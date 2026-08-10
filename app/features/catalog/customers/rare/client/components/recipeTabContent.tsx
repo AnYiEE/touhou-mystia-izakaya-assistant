@@ -48,7 +48,6 @@ import { globalStore } from '@/features/preferences/client/state/globalPersisten
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { copyArray } from '@/shared/utilities/collections/convert';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 export default function RecipeTabContent() {
@@ -131,37 +130,33 @@ export default function RecipeTabContent() {
 
 			const tags = (
 				<TagGroup>
-					{copyArray(positiveTags)
-						.sort(pinyinSort)
-						.map((tag, index) => {
-							const isNegativeTagMatched =
-								matchedNegativeTags.includes(tag);
-							const isPositiveTagMatched =
-								matchedPositiveTags.includes(tag);
-							const isTagMatched =
-								isNegativeTagMatched || isPositiveTagMatched;
-							const tagStyle = isNegativeTagMatched
-								? negativeTagStyle
-								: isPositiveTagMatched
-									? positiveTagStyle
-									: {};
-							const tagType = isNegativeTagMatched
-								? 'negative'
-								: isPositiveTagMatched
-									? 'positive'
-									: null;
-							return (
-								<Tags.Tag
-									key={index}
-									tag={tag}
-									tagStyle={tagStyle}
-									tagType={tagType}
-									className={cn({
-										'opacity-50': !isTagMatched,
-									})}
-								/>
-							);
-						})}
+					{positiveTags.toSorted(pinyinSort).map((tag, index) => {
+						const isNegativeTagMatched =
+							matchedNegativeTags.includes(tag);
+						const isPositiveTagMatched =
+							matchedPositiveTags.includes(tag);
+						const isTagMatched =
+							isNegativeTagMatched || isPositiveTagMatched;
+						const tagStyle = isNegativeTagMatched
+							? negativeTagStyle
+							: isPositiveTagMatched
+								? positiveTagStyle
+								: {};
+						const tagType = isNegativeTagMatched
+							? 'negative'
+							: isPositiveTagMatched
+								? 'positive'
+								: null;
+						return (
+							<Tags.Tag
+								key={index}
+								tag={tag}
+								tagStyle={tagStyle}
+								tagType={tagType}
+								className={cn({ 'opacity-50': !isTagMatched })}
+							/>
+						);
+					})}
 				</TagGroup>
 			);
 

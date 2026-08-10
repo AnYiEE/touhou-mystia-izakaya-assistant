@@ -39,7 +39,6 @@ import { globalStore } from '@/features/preferences/client/state/globalPersisten
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { copySet, toArray } from '@/shared/utilities/collections/convert';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 
 import SwitchItem from './PreferenceSwitchItem';
@@ -291,27 +290,18 @@ const SettingsPanel = memo(function SettingsPanel<
 	title,
 }: ISettingsPanelProps<T, U['name']>) {
 	const dataGroupByDlcMap = useMemo(
-		() =>
-			data.reduce((map, item) => {
-				if (!map.has(item.dlc)) {
-					map.set(item.dlc, []);
-				}
-
-				(map.get(item.dlc) as U[]).push(item as U);
-
-				return map;
-			}, new Map<U['dlc'], U[]>()),
+		() => Map.groupBy(data, (item) => item.dlc) as Map<U['dlc'], U[]>,
 		[data]
 	);
 
 	const dataGroupByDlcSorted = useMemo(
-		() => toArray(dataGroupByDlcMap).sort(([a], [b]) => numberSort(a, b)),
+		() => [...dataGroupByDlcMap].sort(([a], [b]) => numberSort(a, b)),
 		[dataGroupByDlcMap]
 	);
 
 	const handleValueChange = useCallback(
 		(name: U['name']) => {
-			const newHiddenItems = copySet(hiddenItems);
+			const newHiddenItems = new Set(hiddenItems);
 
 			if (newHiddenItems.has(name)) {
 				newHiddenItems.delete(name);
@@ -327,7 +317,7 @@ const SettingsPanel = memo(function SettingsPanel<
 	const handleDlcToggle = useCallback(
 		(dlc: U['dlc']) => {
 			const dlcItems = dataGroupByDlcMap.get(dlc) ?? [];
-			const newHiddenItems = copySet(hiddenItems);
+			const newHiddenItems = new Set(hiddenItems);
 
 			const isAllHidden = dlcItems.every((item) =>
 				hiddenItems.has(item.name)
@@ -424,7 +414,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 	const beverageData = useMemo(
 		() =>
 			filterAvailableItemsByHiddenDlcs(
-				instance_beverage.getPinyinSortedData().get(),
+				instance_beverage.getPinyinSortedData(),
 				hiddenDlcs
 			),
 		[hiddenDlcs, instance_beverage]
@@ -433,7 +423,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 	const ingredientData = useMemo(
 		() =>
 			filterAvailableItemsByHiddenDlcs(
-				instance_ingredient.getPinyinSortedData().get(),
+				instance_ingredient.getPinyinSortedData(),
 				hiddenDlcs
 			).filter(
 				({ name }) => !instance_ingredient.blockedIngredients.has(name)
@@ -444,7 +434,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 	const recipeData = useMemo(
 		() =>
 			filterAvailableItemsByHiddenDlcs(
-				instance_recipe.getPinyinSortedData().get(),
+				instance_recipe.getPinyinSortedData(),
 				hiddenDlcs
 			)
 				.filter(({ name }) => !instance_recipe.blockedRecipes.has(name))

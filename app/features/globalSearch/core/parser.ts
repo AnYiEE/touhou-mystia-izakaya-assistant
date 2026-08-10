@@ -97,9 +97,8 @@ function getFieldTypeByAlias(
 function splitQuery(raw: string) {
 	const tokens: Array<{ type: 'prefix' | 'text'; value: string }> = [];
 	const pattern = /(@[^\s@]+)|([^@\s][^@]*)/gu;
-	let match: RegExpExecArray | null;
 
-	while ((match = pattern.exec(raw)) !== null) {
+	for (const match of raw.matchAll(pattern)) {
 		const [value] = match;
 		const trimmedValue = value.trim();
 		if (trimmedValue.length === 0) {
@@ -269,6 +268,7 @@ export function getGlobalSearchPrefixSuggestions(
 		: normalize(activePrefix ?? '');
 	const usedSingleValueFields = new Set(
 		ast.fieldConditions
+			.values()
 			.filter(
 				({ fieldType, keyword }) =>
 					keyword.length > 0 &&

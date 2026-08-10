@@ -356,7 +356,7 @@ async function hasCallbackEventCheck(database: Kysely<TDatabase>) {
 		database,
 		TABLE_NAME_MAP.ssoCallbackQueue
 	);
-	const normalizedSql = createTableSql.replace(/\s+/gu, ' ').toLowerCase();
+	const normalizedSql = createTableSql.replaceAll(/\s+/gu, ' ').toLowerCase();
 
 	const callbackEventCheck = /event in \(([^)]*)\)/u.exec(normalizedSql)?.[1];
 	if (callbackEventCheck === undefined) {
@@ -476,7 +476,7 @@ async function hasExpectedCallbackQueuePartialUniqueIndex(
 
 	const createIndexSql = await getCreateIndexSql(database, indexName);
 	const normalizedSql = createIndexSql
-		.replace(/\s+/gu, ' ')
+		.replaceAll(/\s+/gu, ' ')
 		.trim()
 		.toLowerCase();
 

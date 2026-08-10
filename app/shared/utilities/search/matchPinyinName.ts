@@ -20,7 +20,9 @@ export const matchPinyinName: TSearchMatcher = (
 
 	return (
 		nameToLowerCase.includes(searchValueLowerCase) ||
-		nameToLowerCase.replace(/\s+/gu, '').includes(searchValueLowerCase) ||
+		nameToLowerCase
+			.replaceAll(/\s+/gu, '')
+			.includes(searchValueLowerCase) ||
 		pinyinWithoutTone.join('').includes(searchValueLowerCase) ||
 		pinyinFirstLetters.includes(searchValueLowerCase)
 	);

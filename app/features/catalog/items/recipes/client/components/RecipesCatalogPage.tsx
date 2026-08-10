@@ -81,12 +81,9 @@ export default function RecipesCatalogPage() {
 						isFamousShop
 					),
 				});
-				const recipes: [
+				const recipes = data.recipes.map(calculateVariant) as [
 					ReturnType<typeof calculateVariant>,
 					...Array<ReturnType<typeof calculateVariant>>,
-				] = [
-					calculateVariant(data.recipes[0]),
-					...data.recipes.slice(1).map(calculateVariant),
 				];
 
 				return {

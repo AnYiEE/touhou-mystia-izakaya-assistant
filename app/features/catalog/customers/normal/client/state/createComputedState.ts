@@ -19,7 +19,6 @@ import { buildBeverageSuitabilityRows } from '@/features/catalog/customers/share
 import { buildRecipeSuitabilityRows } from '@/features/catalog/customers/shared/queries/buildRecipeSuitabilityRows';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { toArray, toSet } from '@/shared/utilities/collections/convert';
 import { sortBy } from '@/shared/utilities/collections/sortBy';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
 import { matchPinyinName } from '@/shared/utilities/search/matchPinyinName';
@@ -463,8 +462,8 @@ export const createCustomerNormalComputedState = (
 		},
 		availableIngredientTags: () => {
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return toArray<TIngredientTag[]>(
-				instance_ingredient.getValuesByProp(
+			return [
+				...instance_ingredient.getValuesByProp(
 					'tags',
 					false,
 					filterAvailableItemsByHiddenDlcs(
@@ -478,8 +477,8 @@ export const createCustomerNormalComputedState = (
 					)
 				),
 				DYNAMIC_TAG_MAP.popularNegative,
-				DYNAMIC_TAG_MAP.popularPositive
-			)
+				DYNAMIC_TAG_MAP.popularPositive,
+			]
 				.map(toGetValueCollection)
 				.sort(pinyinSort);
 		},
@@ -499,7 +498,7 @@ export const createCustomerNormalComputedState = (
 		availableRecipeCookers: () => {
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 			return [
-				...toSet(
+				...new Set(
 					filterAvailableItemsByHiddenDlcs(
 						instance_recipe.data,
 						hiddenDlcs
@@ -528,8 +527,8 @@ export const createCustomerNormalComputedState = (
 		},
 		availableRecipeTags: () => {
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-			return toArray<TRecipeTag[]>(
-				instance_recipe.getValuesByProp(
+			return [
+				...instance_recipe.getValuesByProp(
 					'positiveTags',
 					false,
 					filterAvailableItemsByHiddenDlcs(
@@ -543,43 +542,43 @@ export const createCustomerNormalComputedState = (
 					)
 				),
 				DYNAMIC_TAG_MAP.popularNegative,
-				DYNAMIC_TAG_MAP.popularPositive
-			)
+				DYNAMIC_TAG_MAP.popularPositive,
+			]
 				.map(toGetValueCollection)
 				.sort(pinyinSort);
 		},
 
 		beverageTableAvailabilityDlcs: {
 			read: () =>
-				toSet(
+				new Set(
 					currentStore.persistence.beverage.table.availabilityDlcs.use()
 				),
 			write: (dlcs: Selection) => {
-				currentStore.persistence.beverage.table.availabilityDlcs.set(
-					toArray<SelectionSet>(dlcs) as never
-				);
+				currentStore.persistence.beverage.table.availabilityDlcs.set([
+					...(dlcs === 'all' ? [dlcs] : dlcs),
+				] as never);
 			},
 		},
 		beverageTableRows: () => beverageTableRows.use(),
 
 		recipeTableAvailabilityDlcs: {
 			read: () =>
-				toSet(
+				new Set(
 					currentStore.persistence.recipe.table.availabilityDlcs.use()
 				),
 			write: (dlcs: Selection) => {
-				currentStore.persistence.recipe.table.availabilityDlcs.set(
-					toArray<SelectionSet>(dlcs) as never
-				);
+				currentStore.persistence.recipe.table.availabilityDlcs.set([
+					...(dlcs === 'all' ? [dlcs] : dlcs),
+				] as never);
 			},
 		},
 		recipeTableCookers: {
 			read: () =>
-				toSet(currentStore.persistence.recipe.table.cookers.use()),
+				new Set(currentStore.persistence.recipe.table.cookers.use()),
 			write: (cookers: Selection) => {
-				currentStore.persistence.recipe.table.cookers.set(
-					toArray<SelectionSet>(cookers) as never
-				);
+				currentStore.persistence.recipe.table.cookers.set([
+					...(cookers === 'all' ? [cookers] : cookers),
+				] as never);
 			},
 		},
 		recipeTableRows: () => recipeTableRows.use(),

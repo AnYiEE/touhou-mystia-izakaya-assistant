@@ -35,9 +35,7 @@ import { type TPreferenceTargetKey } from '@/features/preferences/client/globalS
 import { createStoreSyncMiddleware } from '@/infrastructure/browser/crossTab/createStoreSyncMiddleware';
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
 
-import { toArray, toSet } from '@/shared/utilities/collections/convert';
 import { generateRange } from '@/shared/utilities/collections/generateRange';
-import { union } from '@/shared/utilities/collections/union';
 import {
 	toGetItemWithKey,
 	toGetValueCollection,
@@ -50,20 +48,22 @@ import { normalizeDonationModalPersistence } from './normalizeDonationModalPersi
 
 import '@/infrastructure/state/enableImmerMapSet';
 
-const allDlcs = union(
-	[
-		Beverage.getInstance().getValuesByProp('dlc'),
-		Clothes.getInstance().getValuesByProp('dlc'),
-		Cooker.getInstance().getValuesByProp('dlc'),
-		Currency.getInstance().getValuesByProp('dlc'),
-		Ingredient.getInstance().getValuesByProp('dlc'),
-		CustomerNormal.getInstance().getValuesByProp('dlc'),
-		CustomerRare.getInstance().getValuesByProp('dlc'),
-		Ornament.getInstance().getValuesByProp('dlc'),
-		Partner.getInstance().getValuesByProp('dlc'),
-		Recipe.getInstance().getValuesByProp('dlc'),
-	].flat()
-).sort(numberSort) as TDlc[];
+const allDlcs = [
+	...new Set(
+		[
+			Beverage.getInstance().getValuesByProp('dlc'),
+			Clothes.getInstance().getValuesByProp('dlc'),
+			Cooker.getInstance().getValuesByProp('dlc'),
+			Currency.getInstance().getValuesByProp('dlc'),
+			Ingredient.getInstance().getValuesByProp('dlc'),
+			CustomerNormal.getInstance().getValuesByProp('dlc'),
+			CustomerRare.getInstance().getValuesByProp('dlc'),
+			Ornament.getInstance().getValuesByProp('dlc'),
+			Partner.getInstance().getValuesByProp('dlc'),
+			Recipe.getInstance().getValuesByProp('dlc'),
+		].flat()
+	),
+].sort(numberSort) as TDlc[];
 
 const instance_ingredient = Ingredient.getInstance();
 const instance_recipe = Recipe.getInstance();
@@ -78,7 +78,9 @@ const recipePositiveTags = instance_recipe
 	.getValuesByProp('positiveTags')
 	.filter((tag) => !instance_recipe.blockedTags.has(tag)) as TPopularTag[];
 
-const validPopularTags = union(ingredientTags, recipePositiveTags)
+const validPopularTags = [
+	...new Set(ingredientTags).union(new Set(recipePositiveTags)),
+]
 	.map(toGetValueCollection)
 	.sort(pinyinSort);
 
@@ -197,6 +199,16 @@ const hiddenRecipeSetCache = new WeakMap<
 	ReadonlyArray<TRecipeName>,
 	Set<TRecipeName>
 >();
+
+function createHiddenDlcSet(values: ReadonlyArray<string>) {
+	const hiddenDlcs = new Set(values.map(Number) as TDlc[]);
+	hiddenDlcs.delete(0);
+	return hiddenDlcs;
+}
+
+function createSet<T>(values: ReadonlyArray<T>) {
+	return new Set(values);
+}
 
 function normalizeGlobalStoreRemoteState(value: unknown) {
 	if (value === null || typeof value !== 'object' || Array.isArray(value)) {
@@ -371,31 +383,31 @@ export const globalStore = store(state, {
 	.computed((currentStore) => ({
 		beverageTableColumns: {
 			read: () =>
-				toSet(currentStore.persistence.table.columns.beverage.use()),
+				new Set(currentStore.persistence.table.columns.beverage.use()),
 			write: (columns: Selection) => {
-				currentStore.persistence.table.columns.beverage.set(
-					toArray(columns) as TBeverageTableColumnKey[]
-				);
+				currentStore.persistence.table.columns.beverage.set([
+					...(columns === 'all' ? [columns] : columns),
+				] as TBeverageTableColumnKey[]);
 			},
 		},
 		recipeTableColumns: {
 			read: () =>
-				toSet(currentStore.persistence.table.columns.recipe.use()),
+				new Set(currentStore.persistence.table.columns.recipe.use()),
 			write: (columns: Selection) => {
-				currentStore.persistence.table.columns.recipe.set(
-					toArray(columns) as TRecipeTableColumnKey[]
-				);
+				currentStore.persistence.table.columns.recipe.set([
+					...(columns === 'all' ? [columns] : columns),
+				] as TRecipeTableColumnKey[]);
 			},
 		},
 
 		tableRows: {
 			read: () =>
-				toSet<SelectionSet>(
-					currentStore.persistence.table.row.use().toString()
-				),
+				new Set([currentStore.persistence.table.row.use().toString()]),
 			write: (rows: Selection) => {
 				currentStore.persistence.table.row.set(
-					Number.parseInt(toArray<SelectionSet>(rows)[0] as string)
+					Number.parseInt(
+						[...(rows === 'all' ? [rows] : rows)][0] as string
+					)
 				);
 			},
 		},
@@ -404,34 +416,32 @@ export const globalStore = store(state, {
 			read: () => {
 				const hiddenDlcValues =
 					currentStore.persistence.hiddenItems.dlcs.use();
-				const cachedHiddenDlcs = hiddenDlcSetCache.get(hiddenDlcValues);
-				if (cachedHiddenDlcs !== undefined) {
-					return cachedHiddenDlcs;
-				}
-				const hiddenDlcs = toSet(hiddenDlcValues.map(Number) as TDlc[]);
-				hiddenDlcs.delete(0);
-				hiddenDlcSetCache.set(hiddenDlcValues, hiddenDlcs);
-				return hiddenDlcs;
+				return hiddenDlcSetCache.getOrInsertComputed(
+					hiddenDlcValues,
+					createHiddenDlcSet
+				);
 			},
 			write: (dlcs: Set<TDlc>) => {
 				const set = new Set(dlcs);
 				set.delete(0);
 				currentStore.persistence.hiddenItems.dlcs.set(
-					toArray(set).map(String)
+					[...set].map(String)
 				);
 			},
 		},
 
 		maxSuggestMealExtraIngredients: {
 			read: () =>
-				toSet<SelectionSet>(
+				new Set([
 					(
 						currentStore.persistence.suggestMeals.maxExtraIngredients.use() ??
 						''
-					).toString()
-				),
+					).toString(),
+				]),
 			write: (maxExtra: Selection) => {
-				const value = toArray<SelectionSet>(maxExtra)[0] as string;
+				const value = [
+					...(maxExtra === 'all' ? [maxExtra] : maxExtra),
+				][0] as string;
 				currentStore.persistence.suggestMeals.maxExtraIngredients.set(
 					value === '' ? null : Number.parseInt(value)
 				);
@@ -439,30 +449,36 @@ export const globalStore = store(state, {
 		},
 		maxSuggestMealRating: {
 			read: () =>
-				toSet<SelectionSet>(
+				new Set([
 					currentStore.persistence.suggestMeals.maxRating
 						.use()
-						.toString()
-				),
+						.toString(),
+				]),
 			write: (maxRating: Selection) => {
 				currentStore.persistence.suggestMeals.maxRating.set(
 					Number.parseInt(
-						toArray<SelectionSet>(maxRating)[0] as string
+						[
+							...(maxRating === 'all' ? [maxRating] : maxRating),
+						][0] as string
 					)
 				);
 			},
 		},
 		maxSuggestMealResults: {
 			read: () =>
-				toSet<SelectionSet>(
+				new Set([
 					currentStore.persistence.suggestMeals.maxResults
 						.use()
-						.toString()
-				),
+						.toString(),
+				]),
 			write: (maxResults: Selection) => {
 				currentStore.persistence.suggestMeals.maxResults.set(
 					Number.parseInt(
-						toArray<SelectionSet>(maxResults)[0] as string
+						[
+							...(maxResults === 'all'
+								? [maxResults]
+								: maxResults),
+						][0] as string
 					)
 				);
 			},
@@ -472,77 +488,57 @@ export const globalStore = store(state, {
 			read: () => {
 				const hiddenBeverageValues =
 					currentStore.persistence.table.hiddenItems.beverages.use();
-				const cachedHiddenBeverages =
-					hiddenBeverageSetCache.get(hiddenBeverageValues);
-				if (cachedHiddenBeverages !== undefined) {
-					return cachedHiddenBeverages;
-				}
-
-				const hiddenBeverages = toSet(hiddenBeverageValues);
-				hiddenBeverageSetCache.set(
+				return hiddenBeverageSetCache.getOrInsertComputed(
 					hiddenBeverageValues,
-					hiddenBeverages
+					createSet
 				);
-				return hiddenBeverages;
 			},
 			write: (beverages: Set<TBeverageName>) => {
-				currentStore.persistence.table.hiddenItems.beverages.set(
-					toArray(beverages)
-				);
+				currentStore.persistence.table.hiddenItems.beverages.set([
+					...beverages,
+				]);
 			},
 		},
 		hiddenIngredients: {
 			read: () => {
 				const hiddenIngredientValues =
 					currentStore.persistence.table.hiddenItems.ingredients.use();
-				const cachedHiddenIngredients = hiddenIngredientSetCache.get(
-					hiddenIngredientValues
-				);
-				if (cachedHiddenIngredients !== undefined) {
-					return cachedHiddenIngredients;
-				}
-				const hiddenIngredients = toSet(hiddenIngredientValues);
-				hiddenIngredientSetCache.set(
+				return hiddenIngredientSetCache.getOrInsertComputed(
 					hiddenIngredientValues,
-					hiddenIngredients
+					createSet
 				);
-				return hiddenIngredients;
 			},
 			write: (ingredients: Set<TIngredientName>) => {
-				currentStore.persistence.table.hiddenItems.ingredients.set(
-					toArray(ingredients)
-				);
+				currentStore.persistence.table.hiddenItems.ingredients.set([
+					...ingredients,
+				]);
 			},
 		},
 		hiddenRecipes: {
 			read: () => {
 				const hiddenRecipeValues =
 					currentStore.persistence.table.hiddenItems.recipes.use();
-				const cachedHiddenRecipes =
-					hiddenRecipeSetCache.get(hiddenRecipeValues);
-				if (cachedHiddenRecipes !== undefined) {
-					return cachedHiddenRecipes;
-				}
-				const hiddenRecipes = toSet(hiddenRecipeValues);
-				hiddenRecipeSetCache.set(hiddenRecipeValues, hiddenRecipes);
-				return hiddenRecipes;
+				return hiddenRecipeSetCache.getOrInsertComputed(
+					hiddenRecipeValues,
+					createSet
+				);
 			},
 			write: (recipes: Set<TRecipeName>) => {
-				currentStore.persistence.table.hiddenItems.recipes.set(
-					toArray(recipes)
-				);
+				currentStore.persistence.table.hiddenItems.recipes.set([
+					...recipes,
+				]);
 			},
 		},
 
 		selectedPopularTag: {
 			read: () =>
-				toSet(
-					currentStore.persistence.popularTrend.tag.use()
-				) as SelectionSet,
+				new Set([
+					currentStore.persistence.popularTrend.tag.use(),
+				]) as SelectionSet,
 			write: (tags: Selection) => {
-				const tag = toArray<SelectionSet>(
-					tags
-				)[0] as typeof state.persistence.popularTrend.tag;
+				const tag = [
+					...(tags === 'all' ? [tags] : tags),
+				][0] as typeof state.persistence.popularTrend.tag;
 				// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 				currentStore.persistence.popularTrend.tag.set(tag || null);
 			},

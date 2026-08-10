@@ -342,7 +342,7 @@ export function mergeMealSnapshot<TMeal>({
 	]);
 	const data: TMealSnapshot<TMeal> = {};
 
-	const hasConflict = [...customerNames].some((customerName) => {
+	const hasConflict = customerNames.values().some((customerName) => {
 		const mergedMeals = mergeMealList({
 			baseMeals: baseSnapshot[customerName] ?? [],
 			cloudMeals: cloudSnapshot[customerName] ?? [],

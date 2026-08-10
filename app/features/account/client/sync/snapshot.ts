@@ -77,13 +77,12 @@ export {
 } from './stateGuards';
 
 export function createLocalAccountSnapshot() {
-	return Object.entries(serializers).reduce<TAccountSnapshot>(
-		(result, [namespace, serializer]) => {
-			result[namespace as TSyncNamespace] = serializer.getLocalSnapshot();
-			return result;
-		},
-		{}
-	);
+	return Object.fromEntries(
+		Object.entries(serializers).map(([namespace, serializer]) => [
+			namespace,
+			serializer.getLocalSnapshot(),
+		])
+	) as TAccountSnapshot;
 }
 
 export function createAccountSyncMetaStorageKey(userId: string) {

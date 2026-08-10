@@ -309,7 +309,7 @@ export default function AdminSsoCallbackHistoryClient({
 						return;
 					}
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_SSO_MESSAGE_MAP.callbackHistoryReadFailed
 					);
@@ -352,7 +352,7 @@ export default function AdminSsoCallbackHistoryClient({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
@@ -490,7 +490,7 @@ export default function AdminSsoCallbackHistoryClient({
 			})
 			.catch((error: unknown) => {
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_SSO_MESSAGE_MAP.callbackCleanupFailed
 				);

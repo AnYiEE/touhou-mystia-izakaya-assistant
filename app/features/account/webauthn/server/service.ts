@@ -42,13 +42,7 @@ interface IWebAuthnRelyingParty {
 function parseExpectedOrigins() {
 	const origins = (process.env.SERVICE_ALLOWED_ORIGINS ?? '')
 		.split(',')
-		.map((item) => {
-			try {
-				return new URL(item.trim()).origin;
-			} catch {
-				return null;
-			}
-		})
+		.map((item) => URL.parse(item.trim())?.origin ?? null)
 		.filter((origin): origin is string => origin !== null);
 
 	return origins.length > 0 ? origins : [PUBLIC_RUNTIME_CONFIG.baseOrigin];
@@ -174,7 +168,7 @@ export function buildRegistrationOptions({
 		rpID,
 		rpName,
 		userDisplayName: user.nickname ?? user.username,
-		userID: Uint8Array.from(new TextEncoder().encode(user.id)),
+		userID: new TextEncoder().encode(user.id),
 		userName: user.username,
 	});
 }

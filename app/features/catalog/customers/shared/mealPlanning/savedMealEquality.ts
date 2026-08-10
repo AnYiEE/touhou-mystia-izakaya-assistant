@@ -29,5 +29,5 @@ export function removeFirstMatchingMeal<TMeal>(
 		return [...meals];
 	}
 
-	return meals.filter((_, index) => index !== targetIndex);
+	return meals.toSpliced(targetIndex, 1);
 }

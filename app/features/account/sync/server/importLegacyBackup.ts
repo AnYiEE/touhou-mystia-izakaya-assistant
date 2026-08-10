@@ -531,7 +531,7 @@ async function readImportBackupFile(
 		lockModule.throwIfBackupCodeLockLost(signal);
 	} catch (error) {
 		if (
-			error instanceof Error &&
+			Error.isError(error) &&
 			(error.message === 'invalid-backup-file' ||
 				error.message === 'backup-code-lock-lost')
 		) {

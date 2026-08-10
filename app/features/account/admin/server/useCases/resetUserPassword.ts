@@ -71,7 +71,7 @@ export async function resetUserPassword({
 				)
 		);
 	} catch (error) {
-		if (error instanceof Error) {
+		if (Error.isError(error)) {
 			if (error.message === 'user-not-found') {
 				return { message: 'target-user-not-found', status: 'error' };
 			}

@@ -71,28 +71,24 @@ export class Cooker extends Item<TCookers> {
 	 * @description Get the cooker for a customer based on their bond level.
 	 */
 	public getBondCooker(customerName: TCustomerRareName): TCookerName | null {
-		if (Cooker._bondCookerCache.has(customerName)) {
-			return Cooker._bondCookerCache.get(customerName);
-		}
+		return Cooker._bondCookerCache.getOrInsertComputed(customerName, () => {
+			let bondCooker: TCookerName | null = null;
 
-		let bondCooker: TCookerName | null = null;
+			this._data.some(({ from, name }) =>
+				from.some((item) => {
+					if (
+						isObject(item) &&
+						'bond' in item &&
+						item.bond === customerName
+					) {
+						bondCooker = name;
+						return true;
+					}
+					return false;
+				})
+			);
 
-		this._data.some(({ from, name }) =>
-			from.some((item) => {
-				if (
-					isObject(item) &&
-					'bond' in item &&
-					item.bond === customerName
-				) {
-					bondCooker = name;
-					return true;
-				}
-				return false;
-			})
-		);
-
-		Cooker._bondCookerCache.set(customerName, bondCooker);
-
-		return bondCooker;
+			return bondCooker;
+		});
 	}
 }

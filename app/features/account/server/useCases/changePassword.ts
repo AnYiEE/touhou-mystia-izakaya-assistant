@@ -126,7 +126,7 @@ export async function changePassword({
 				),
 		});
 	} catch (error) {
-		if (error instanceof Error) {
+		if (Error.isError(error)) {
 			if (error.message === 'credential-changed') {
 				await writeAccountAuditLogBestEffort(
 					createAccountUserAuditLogInput({

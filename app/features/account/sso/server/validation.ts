@@ -121,25 +121,24 @@ export function checkSsoCustomSchemeRedirectUri(value: string) {
 		return false;
 	}
 
-	try {
-		const url = new URL(value);
-		const scheme = url.protocol.slice(0, -1).toLowerCase();
-		const protocolPrefix = `${url.protocol}//`;
-
-		return (
-			/^[a-z][a-z0-9+.-]{1,63}$/u.test(scheme) &&
-			!DANGEROUS_CUSTOM_REDIRECT_SCHEME_SET.has(scheme) &&
-			url.protocol !== 'http:' &&
-			url.protocol !== 'https:' &&
-			value.toLowerCase().startsWith(protocolPrefix) &&
-			url.hostname !== '' &&
-			url.username === '' &&
-			url.password === '' &&
-			url.hash === ''
-		);
-	} catch {
+	const url = URL.parse(value);
+	if (url === null) {
 		return false;
 	}
+	const scheme = url.protocol.slice(0, -1).toLowerCase();
+	const protocolPrefix = `${url.protocol}//`;
+
+	return (
+		/^[a-z][a-z0-9+.-]{1,63}$/u.test(scheme) &&
+		!DANGEROUS_CUSTOM_REDIRECT_SCHEME_SET.has(scheme) &&
+		url.protocol !== 'http:' &&
+		url.protocol !== 'https:' &&
+		value.toLowerCase().startsWith(protocolPrefix) &&
+		url.hostname !== '' &&
+		url.username === '' &&
+		url.password === '' &&
+		url.hash === ''
+	);
 }
 
 export function checkSsoStatusCallbackUrl(value: string | null) {
@@ -147,18 +146,15 @@ export function checkSsoStatusCallbackUrl(value: string | null) {
 		return true;
 	}
 
-	try {
-		const url = new URL(value);
-		return (
-			value.length <= SSO_FIELD_MAX_LENGTH &&
-			url.protocol === 'https:' &&
-			url.username === '' &&
-			url.password === '' &&
-			url.hash === ''
-		);
-	} catch {
-		return false;
-	}
+	const url = URL.parse(value);
+	return (
+		url !== null &&
+		value.length <= SSO_FIELD_MAX_LENGTH &&
+		url.protocol === 'https:' &&
+		url.username === '' &&
+		url.password === '' &&
+		url.hash === ''
+	);
 }
 
 export function checkSsoHttpsRedirectUri(value: string) {
@@ -166,18 +162,15 @@ export function checkSsoHttpsRedirectUri(value: string) {
 		return false;
 	}
 
-	try {
-		const url = new URL(value);
-		return (
-			url.protocol === 'https:' &&
-			url.hostname !== '' &&
-			url.username === '' &&
-			url.password === '' &&
-			url.hash === ''
-		);
-	} catch {
-		return false;
-	}
+	const url = URL.parse(value);
+	return (
+		url !== null &&
+		url.protocol === 'https:' &&
+		url.hostname !== '' &&
+		url.username === '' &&
+		url.password === '' &&
+		url.hash === ''
+	);
 }
 
 export function checkSsoRedirectUriFormat(value: string) {
@@ -185,25 +178,24 @@ export function checkSsoRedirectUriFormat(value: string) {
 		return false;
 	}
 
-	try {
-		const url = new URL(value);
-		if (url.protocol === 'http:') {
-			return (
-				['127.0.0.1', '[::1]', '::1'].includes(url.hostname) &&
-				url.username === '' &&
-				url.password === '' &&
-				url.hash === '' &&
-				checkSsoLoopbackRedirectPath(url.pathname)
-			);
-		}
-		if (url.protocol === 'https:') {
-			return checkSsoHttpsRedirectUri(value);
-		}
-
-		return checkSsoCustomSchemeRedirectUri(value);
-	} catch {
+	const url = URL.parse(value);
+	if (url === null) {
 		return false;
 	}
+	if (url.protocol === 'http:') {
+		return (
+			['127.0.0.1', '[::1]', '::1'].includes(url.hostname) &&
+			url.username === '' &&
+			url.password === '' &&
+			url.hash === '' &&
+			checkSsoLoopbackRedirectPath(url.pathname)
+		);
+	}
+	if (url.protocol === 'https:') {
+		return checkSsoHttpsRedirectUri(value);
+	}
+
+	return checkSsoCustomSchemeRedirectUri(value);
 }
 
 export function normalizeSsoOptionalUri(value: string | null | undefined) {

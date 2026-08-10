@@ -48,7 +48,6 @@ import { globalStore } from '@/features/preferences/client/state/globalPersisten
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { toSet } from '@/shared/utilities/collections/convert';
 
 export default function BeverageTabContent() {
 	const isReducedMotion = useReducedMotion();
@@ -100,7 +99,7 @@ export default function BeverageTabContent() {
 		[tableVisibleColumns]
 	);
 
-	const tableSelectedKeys = toSet(currentBeverageName ?? '');
+	const tableSelectedKeys = new Set([currentBeverageName ?? '']);
 
 	const renderTableCell = useCallback(
 		(

@@ -56,7 +56,7 @@ function setErrorState({
 	type: 'Delete' | 'Download' | 'Upload';
 }) {
 	setState('danger');
-	if (error instanceof Error) {
+	if (Error.isError(error)) {
 		console.error({ errorCode: getLogSafeErrorCode(error) });
 		setLabel(`${label}（网络错误）`);
 		trackEvent(trackEvent.category.error, 'Cloud', type, error.message);

@@ -260,7 +260,7 @@ export async function createAdminAnnouncement(
 			return { error: 'announcement-conflict', status: 'error' };
 		}
 		if (
-			error instanceof Error &&
+			Error.isError(error) &&
 			error.message === 'invalid-announcement-profile'
 		) {
 			return { error: 'announcement-invalid-state', status: 'error' };

@@ -188,7 +188,7 @@ export function useAccountDestructiveActions(
 					}
 
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ACCOUNT_MANAGER_MESSAGE_MAP.logoutSyncFailed
 					);
@@ -365,10 +365,9 @@ export function useAccountDestructiveActions(
 					return;
 				}
 
-				const errorCode =
-					error instanceof Error
-						? error.message
-						: 'account-sync-pause-incomplete';
+				const errorCode = Error.isError(error)
+					? error.message
+					: 'account-sync-pause-incomplete';
 				if (errorCode === 'account-sync-pause-incomplete') {
 					accountStore.shared.sync.lastError.set(errorCode);
 				}
@@ -481,7 +480,7 @@ export function useAccountDestructiveActions(
 				}
 
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ACCOUNT_MANAGER_MESSAGE_MAP.accountDeleteFailed
 				);

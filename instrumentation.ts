@@ -3,6 +3,8 @@ export async function register() {
 		return;
 	}
 
+	await import('@/infrastructure/runtime/serverPolyfills');
+
 	const { warmVisitorCountCache } =
 		await import('@/features/siteStatus/server/visitors');
 

@@ -12,10 +12,7 @@ import { DYNAMIC_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTag, TRecipeTag } from '@/domain/data/tags/types';
 import type { TPopularTag } from '@/domain/trends/types';
 
-import {
-	type TRecommendationBridgeValidationResult,
-	checkOwnProperty,
-} from '@/features/recommendations/client/bridge/shared';
+import { type TRecommendationBridgeValidationResult } from '@/features/recommendations/client/bridge/shared';
 
 export const V1_REQUEST_ID_PATTERN = /^[A-Za-z0-9._:-]{1,128}$/u;
 
@@ -158,7 +155,7 @@ function checkExactKeys(
 ) {
 	const allowedKeys = new Set([...requiredKeys, ...optionalKeys]);
 	return (
-		requiredKeys.every((key) => checkOwnProperty(value, key)) &&
+		requiredKeys.every((key) => Object.hasOwn(value, key)) &&
 		Object.keys(value).every((key) => allowedKeys.has(key))
 	);
 }
@@ -346,7 +343,7 @@ function validateRequest(
 	}
 	if (
 		selectedRecipeValue !== undefined &&
-		(!checkOwnProperty(selectedRecipeValue, 'recipe_id') ||
+		(!Object.hasOwn(selectedRecipeValue, 'recipe_id') ||
 			!Number.isSafeInteger(selectedRecipeValue['recipe_id']))
 	) {
 		return invalid('invalid-value', 'payload.selection.recipe.recipe_id');

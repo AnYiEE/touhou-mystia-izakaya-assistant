@@ -16,8 +16,6 @@ import { type TPreferenceTargetKey } from '@/features/preferences/client/globalS
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
-import { toSet } from '@/shared/utilities/collections/convert';
-
 import SwitchItem from './PreferenceSwitchItem';
 import {
 	getPreferenceTargetClassName,
@@ -54,7 +52,7 @@ export default memo<IProps>(function GlobalPreferencesSection({
 	const onClearPopularTrendButtonPress = useCallback(() => {
 		vibrate();
 		globalStore.persistence.popularTrend.isNegative.set(false);
-		globalStore.selectedPopularTag.set(toSet());
+		globalStore.selectedPopularTag.set(new Set());
 	}, [vibrate]);
 
 	return (
@@ -87,7 +85,7 @@ export default memo<IProps>(function GlobalPreferencesSection({
 							isDisabled={dlc === 0}
 							isSelected={!isHidden}
 							onValueChange={(value) => {
-								const newHiddenDlcs = toSet(hiddenDlcs);
+								const newHiddenDlcs = new Set(hiddenDlcs);
 								if (value) {
 									newHiddenDlcs.delete(dlc);
 								} else {

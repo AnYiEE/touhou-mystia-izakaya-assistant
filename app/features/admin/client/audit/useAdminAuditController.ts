@@ -164,7 +164,7 @@ export function useAdminAuditController(initialData: IAdminAuditInitialData) {
 						return;
 					}
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_MESSAGE_MAP.auditLogReadFailed
 					);
@@ -201,7 +201,7 @@ export function useAdminAuditController(initialData: IAdminAuditInitialData) {
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);

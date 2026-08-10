@@ -132,10 +132,9 @@ function sanitizeAdminSsoCallbackMetadata(value: string) {
 	const parsedMetadata = parseJsonObjectOrEmpty(value);
 	const sanitizedMetadata: Record<string, boolean | null | number | string> =
 		{};
-	for (const [key, metadataValue] of Object.entries(parsedMetadata).slice(
-		0,
-		ADMIN_SSO_CALLBACK_METADATA_MAX_KEYS
-	)) {
+	for (const [key, metadataValue] of Object.entries(parsedMetadata)
+		.values()
+		.take(ADMIN_SSO_CALLBACK_METADATA_MAX_KEYS)) {
 		if (SENSITIVE_ADMIN_SSO_CALLBACK_KEY_PATTERN.test(key)) {
 			continue;
 		}
@@ -155,7 +154,7 @@ function sanitizeAdminSsoCallbackError(value: string | null) {
 		return null;
 	}
 
-	const strippedValue = value.replace(
+	const strippedValue = value.replaceAll(
 		/([?&](?:[^=&#]*?(?:secret|token|ticket|hash|password|credential|authorization|cookie|session)[^=&#]*?)=)[^&#\s]*/giu,
 		'$1[redacted]'
 	);

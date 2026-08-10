@@ -14,9 +14,6 @@ import type { TIngredientTag, TRecipeTag } from '@/domain/data/tags/types';
 import type { IMealRecipe, IResolvedMealRecipe } from '@/domain/meals/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
-import { toSet } from '@/shared/utilities/collections/convert';
-import { cloneJsonObject } from '@/shared/utilities/objects/cloneJsonObject';
-
 import { Food } from './Food';
 import { Ingredient } from './Ingredient';
 import type {
@@ -142,7 +139,7 @@ export class Recipe extends Food<TProcessedRecipe[]> {
 	}
 
 	private constructor(data: TRecipes) {
-		const clonedData = cloneJsonObject(data);
+		const clonedData = structuredClone(data);
 
 		clonedData.forEach((item) => {
 			const recipe = item as unknown as IRecipe;
@@ -190,10 +187,10 @@ export class Recipe extends Food<TProcessedRecipe[]> {
 		return instance;
 	}
 
-	public blockedRecipes: Set<TRecipeName> = toSet(DARK_MATTER_META_MAP.name);
-	public blockedTags: Set<TRecipeTag> = toSet(
-		DARK_MATTER_META_MAP.positiveTag
-	);
+	public blockedRecipes = new Set<TRecipeName>([DARK_MATTER_META_MAP.name]);
+	public blockedTags = new Set<TRecipeTag>([
+		DARK_MATTER_META_MAP.positiveTag,
+	]);
 
 	public getDefaultRecipeVariant(recipeName: TRecipeName) {
 		return this.getPropsByName(recipeName, 'recipes')[0];

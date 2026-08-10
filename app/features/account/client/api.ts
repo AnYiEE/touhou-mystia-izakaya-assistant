@@ -219,7 +219,7 @@ export async function revokeAccountSession(
 function createWebAuthnCanceledResult(
 	error: unknown
 ): Extract<TAccountApiResult, { status: 'error' }> {
-	const errorName = error instanceof Error ? error.name : null;
+	const errorName = Error.isError(error) ? error.name : null;
 	const message =
 		errorName === 'AbortError' || errorName === 'NotAllowedError'
 			? 'webauthn-canceled'

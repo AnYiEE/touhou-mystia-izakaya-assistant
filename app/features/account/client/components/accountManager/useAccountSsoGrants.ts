@@ -46,19 +46,16 @@ function createAccountSsoGrantsRequestKey(userId: string, csrfToken: string) {
 
 function refreshAccountSsoGrantsOnce(userId: string, csrfToken: string) {
 	const requestKey = createAccountSsoGrantsRequestKey(userId, csrfToken);
-	const currentRequest = accountSsoGrantsRequestMap.get(requestKey);
-	if (currentRequest !== undefined) {
-		return currentRequest;
-	}
 
-	const nextRequest = refreshAccountSsoGrants().finally(() => {
-		if (accountSsoGrantsRequestMap.get(requestKey) === nextRequest) {
-			accountSsoGrantsRequestMap.delete(requestKey);
-		}
+	return accountSsoGrantsRequestMap.getOrInsertComputed(requestKey, () => {
+		const request = refreshAccountSsoGrants().finally(() => {
+			if (accountSsoGrantsRequestMap.get(requestKey) === request) {
+				accountSsoGrantsRequestMap.delete(requestKey);
+			}
+		});
+
+		return request;
 	});
-	accountSsoGrantsRequestMap.set(requestKey, nextRequest);
-
-	return nextRequest;
 }
 
 interface IUseAccountSsoGrantsOptions {
@@ -187,7 +184,7 @@ export function useAccountSsoGrants(
 					});
 					if (!silent) {
 						setMessage(
-							error instanceof Error
+							Error.isError(error)
 								? error.message
 								: ACCOUNT_MANAGER_MESSAGE_MAP.ssoGrantRefreshFailed
 						);
@@ -355,7 +352,7 @@ export function useAccountSsoGrants(
 				}
 
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ACCOUNT_MANAGER_MESSAGE_MAP.ssoGrantRevokeFailed
 				);

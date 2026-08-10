@@ -101,7 +101,7 @@ function createImportErrorResult(
 			status: 'error',
 		};
 	}
-	if (!(error instanceof Error)) {
+	if (!Error.isError(error)) {
 		return null;
 	}
 

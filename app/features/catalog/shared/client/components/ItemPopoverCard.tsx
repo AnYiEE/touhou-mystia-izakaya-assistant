@@ -20,7 +20,6 @@ import type { TItemName } from '@/domain/data/types';
 import { type ITagStyle } from '@/features/catalog/presentation/tagStyles';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { union } from '@/shared/utilities/collections/union';
 
 import Price from './Price';
 import Sprite, { type ISpriteProps } from './Sprite';
@@ -67,10 +66,9 @@ const ItemPopoverCard = memo<PropsWithChildren<IItemPopoverCardProps>>(
 				return null;
 			}
 
-			const mergedTagValues = union(
-				tags.beverage ?? [],
-				tags.positive ?? []
-			);
+			const mergedTagValues = [
+				...new Set(tags.beverage).union(new Set(tags.positive)),
+			];
 			const { beverage: _beverage, ...rest } = tags;
 
 			return { ...rest, positive: mergedTagValues };

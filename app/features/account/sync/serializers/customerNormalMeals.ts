@@ -8,7 +8,6 @@ import {
 	replaceCustomerNormalMealsPersistenceSnapshot,
 } from '@/features/catalog/customers/normal/client/state/accountSync';
 
-import { cloneJsonObject } from '@/shared/utilities/objects/cloneJsonObject';
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
 
 import {
@@ -108,7 +107,7 @@ export const customerNormalMealsSerializer = {
 	},
 	getLocalSnapshot() {
 		return getLocalCustomerNormalMealsSnapshot(
-			cloneJsonObject(readCustomerNormalMealsPersistenceSnapshot())
+			structuredClone(readCustomerNormalMealsPersistenceSnapshot())
 		);
 	},
 	merge(params) {

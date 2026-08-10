@@ -81,7 +81,7 @@ const VISIBLE_TEXT_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
 };
 
 function escapeHtmlText(value: string) {
-	return value.replace(/[&<>"]/gu, (character) => {
+	return value.replaceAll(/[&<>"]/gu, (character) => {
 		switch (character) {
 			case '&':
 				return '&amp;';
@@ -112,19 +112,19 @@ export function renderAnnouncementHtmlTemplate(
 	const displayName = context.nickname ?? context.username ?? '游客';
 
 	return html
-		.replace(
+		.replaceAll(
 			ANNOUNCEMENT_USER_DISPLAY_NAME_TEMPLATE_REGEXP,
 			escapeHtmlText(displayName)
 		)
-		.replace(
+		.replaceAll(
 			ANNOUNCEMENT_USER_NICKNAME_TEMPLATE_REGEXP,
 			escapeHtmlText(context.nickname ?? '')
 		)
-		.replace(
+		.replaceAll(
 			ANNOUNCEMENT_USERNAME_TEMPLATE_REGEXP,
 			escapeHtmlText(context.username ?? '游客')
 		)
-		.replace(
+		.replaceAll(
 			ANNOUNCEMENT_USER_ID_TEMPLATE_REGEXP,
 			escapeHtmlText(context.userId ?? '')
 		);
@@ -132,6 +132,6 @@ export function renderAnnouncementHtmlTemplate(
 
 export function getAnnouncementVisibleText(html: string) {
 	return sanitizeHtml(html, VISIBLE_TEXT_SANITIZE_OPTIONS)
-		.replace(/\s+/gu, ' ')
+		.replaceAll(/\s+/gu, ' ')
 		.trim();
 }

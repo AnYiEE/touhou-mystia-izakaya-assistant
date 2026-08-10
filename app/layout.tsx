@@ -1,3 +1,5 @@
+import './infrastructure/runtime/serverPolyfills';
+
 import { config as fontawesomeConfig } from '@fortawesome/fontawesome-svg-core';
 import { type Metadata, type Viewport } from 'next';
 import Script from 'next/script';

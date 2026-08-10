@@ -6,7 +6,6 @@ import Tooltip from '@/design/ui/components/tooltip';
 
 import type { TIngredientName } from '@/domain/data/ingredients/types';
 
-import { toArray } from '@/shared/utilities/collections/convert';
 import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
 import { UnknownItemIcon } from './resultCardAtoms';
@@ -23,11 +22,11 @@ export default memo<IProps>(function CurrentMealIngredientsList({
 	onRemoveExtraIngredient,
 	originalIngredients,
 }) {
-	const filledIngredients = toArray<ReadonlyArray<TIngredientName | null>>(
-		originalIngredients,
-		extraIngredients,
-		new Array<null>(5).fill(null)
-	).slice(0, 5);
+	const filledIngredients = [
+		...originalIngredients,
+		...extraIngredients,
+		...Array.from({ length: 5 }, () => null),
+	].slice(0, 5);
 
 	return (
 		<div className="flex items-center gap-x-3">

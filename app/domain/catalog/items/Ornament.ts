@@ -33,22 +33,23 @@ export class Ornament extends Item<TOrnaments> {
 	 * @description Get the ornaments for a customer based on their bond level.
 	 */
 	public getBondOrnaments(customerName: TCustomerRareName) {
-		if (Ornament._bondOrnamentsCache.has(customerName)) {
-			return Ornament._bondOrnamentsCache.get(customerName);
-		}
+		return Ornament._bondOrnamentsCache.getOrInsertComputed(
+			customerName,
+			() => {
+				const bondOrnaments: TBondOrnaments = [];
 
-		const bondOrnaments: TBondOrnaments = [];
+				this._data.forEach(({ from, name }) => {
+					if (isObject(from) && from.bond === customerName) {
+						bondOrnaments.push({ level: from.level, name });
+					}
+				});
 
-		this._data.forEach(({ from, name }) => {
-			if (isObject(from) && from.bond === customerName) {
-				bondOrnaments.push({ level: from.level, name });
+				bondOrnaments.sort(({ level: a }, { level: b }) =>
+					numberSort(a, b)
+				);
+
+				return bondOrnaments;
 			}
-		});
-
-		bondOrnaments.sort(({ level: a }, { level: b }) => numberSort(a, b));
-
-		Ornament._bondOrnamentsCache.set(customerName, bondOrnaments);
-
-		return bondOrnaments;
+		);
 	}
 }

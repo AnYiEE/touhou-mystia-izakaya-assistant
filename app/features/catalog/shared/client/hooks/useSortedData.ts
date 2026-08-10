@@ -21,14 +21,11 @@ export function useSortedData<T extends TItemInstance>(
 	const sortData = useCallback(() => {
 		switch (pinyinSortState) {
 			case PINYIN_SORT_STATE_MAP.ascending:
-				return instance
-					.getPinyinSortedData(filteredData as never)
-					.get();
+				return instance.getPinyinSortedData(filteredData as never);
 			case PINYIN_SORT_STATE_MAP.descending:
 				return instance
 					.getPinyinSortedData(filteredData as never)
-					.fork()
-					.reverse();
+					.toReversed();
 			default:
 				return filteredData;
 		}

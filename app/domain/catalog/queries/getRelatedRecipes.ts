@@ -10,29 +10,24 @@ export function getRelatedRecipes(
 	ingredientName: TIngredientName,
 	recipes: ReadonlyArray<TRecipe>
 ) {
-	let recipeCache = relatedRecipesCache.get(recipes);
-	if (recipeCache === undefined) {
-		recipeCache = new Map();
-		relatedRecipesCache.set(recipes, recipeCache);
-	}
+	const recipeCache = relatedRecipesCache.getOrInsertComputed(
+		recipes,
+		() => new Map()
+	);
 
-	if (recipeCache.has(ingredientName)) {
-		return recipeCache.get(ingredientName);
-	}
+	return recipeCache.getOrInsertComputed(ingredientName, () => {
+		const relatedRecipes: TRecipe[] = [];
 
-	const relatedRecipes: TRecipe[] = [];
+		recipes.forEach((recipe) => {
+			if (
+				recipe.recipes.some(({ ingredients }) =>
+					ingredients.includes(ingredientName)
+				)
+			) {
+				relatedRecipes.push(recipe);
+			}
+		});
 
-	recipes.forEach((recipe) => {
-		if (
-			recipe.recipes.some(({ ingredients }) =>
-				ingredients.includes(ingredientName)
-			)
-		) {
-			relatedRecipes.push(recipe);
-		}
+		return relatedRecipes;
 	});
-
-	recipeCache.set(ingredientName, relatedRecipes);
-
-	return relatedRecipes;
 }

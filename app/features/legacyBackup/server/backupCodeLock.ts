@@ -148,14 +148,13 @@ function createBackupCodeLockLostError() {
 
 export function checkBackupCodeLockLostError(error: unknown) {
 	return (
-		error instanceof Error &&
-		error.message === BACKUP_CODE_LOCK_LOST_MESSAGE
+		Error.isError(error) && error.message === BACKUP_CODE_LOCK_LOST_MESSAGE
 	);
 }
 
 export function checkBackupCodeLockTimeoutError(error: unknown) {
 	return (
-		error instanceof Error &&
+		Error.isError(error) &&
 		error.message === BACKUP_CODE_LOCK_TIMEOUT_MESSAGE
 	);
 }

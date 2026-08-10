@@ -140,10 +140,9 @@ export async function readAdminAuditInitialData(
 	} catch (error) {
 		return {
 			...initialData,
-			message:
-				error instanceof Error
-					? error.message
-					: ADMIN_MESSAGE_MAP.auditLogReadFailed,
+			message: Error.isError(error)
+				? error.message
+				: ADMIN_MESSAGE_MAP.auditLogReadFailed,
 		};
 	}
 }

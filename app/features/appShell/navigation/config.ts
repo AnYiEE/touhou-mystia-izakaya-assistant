@@ -63,23 +63,9 @@ export const NAV_ITEMS = [
 	{ label: '关于', href: '/about' },
 ] as const satisfies TNavItem[];
 
-export const NAV_MENU_ITEMS = NAV_ITEMS.reduce<ILink[]>((acc, _navItem) => {
-	const navItem = _navItem as ILink;
-	let hasNestedArray = false as boolean;
-	Object.keys(navItem).forEach((key) => {
-		const value = navItem[key as keyof typeof navItem] as unknown as
-			| ILink
-			| ILink[];
-		if (Array.isArray(value)) {
-			hasNestedArray = true;
-			acc.push(...value);
-		}
-	});
-	if (!hasNestedArray) {
-		acc.push(navItem);
-	}
-	return acc;
-}, []);
+export const NAV_MENU_ITEMS = NAV_ITEMS.flatMap<ILink>((navItem) =>
+	'href' in navItem ? [navItem] : Object.values(navItem).flat()
+);
 
 type ExtractNestedHref<T> = T extends { href: infer U }
 	? U

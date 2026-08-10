@@ -66,18 +66,12 @@ export function projectAvailabilityDlcs(
 }
 
 export function hasEquivalentDlcFilters(data: ReadonlyArray<IDlcFilterItem>) {
-	const cachedResult = DLC_FILTER_EQUIVALENCE_CACHE.get(data);
-	if (cachedResult !== undefined) {
-		return cachedResult;
-	}
-
-	const result = data.every(
-		({ availabilityDlcs, dlc }) =>
-			availabilityDlcs.length === 1 && availabilityDlcs[0] === dlc
+	return DLC_FILTER_EQUIVALENCE_CACHE.getOrInsertComputed(data, () =>
+		data.every(
+			({ availabilityDlcs, dlc }) =>
+				availabilityDlcs.length === 1 && availabilityDlcs[0] === dlc
+		)
 	);
-	DLC_FILTER_EQUIVALENCE_CACHE.set(data, result);
-
-	return result;
 }
 
 export function attachAvailabilityData<T extends { id: number; name: string }>(

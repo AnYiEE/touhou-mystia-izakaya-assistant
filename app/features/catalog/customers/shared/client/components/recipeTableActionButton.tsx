@@ -77,47 +77,39 @@ function getRecipeAvailabilityWarning(
 	const hiddenDlcsKey = [...hiddenDlcs]
 		.sort((left, right) => left - right)
 		.join(',');
-	const warningCache = recipeAvailabilityWarningCache.get(ingredients);
-	const cachedWarning = warningCache?.get(hiddenDlcsKey);
 
-	if (cachedWarning !== undefined) {
-		return cachedWarning;
-	}
-
-	const unavailableIngredients = [...new Set(ingredients)]
-		.map((name) => ({
-			availabilityPaths: ingredientInstance.getPropsByName(
-				name,
-				'availabilityPaths'
-			),
-			name,
-		}))
-		.filter(
-			({ availabilityPaths }) =>
-				!isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs)
-		);
-	const warning = {
-		requirementLabel: formatDlcRequirementPaths(
-			getMissingDlcRequirementPaths(
-				unavailableIngredients.map(
-					({ availabilityPaths }) => availabilityPaths
+	const createWarning = () => {
+		const unavailableIngredients = [...new Set(ingredients)]
+			.map((name) => ({
+				availabilityPaths: ingredientInstance.getPropsByName(
+					name,
+					'availabilityPaths'
 				),
-				hiddenDlcs
-			)
-		),
-		unavailableIngredients,
+				name,
+			}))
+			.filter(
+				({ availabilityPaths }) =>
+					!isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs)
+			);
+		return {
+			requirementLabel: formatDlcRequirementPaths(
+				getMissingDlcRequirementPaths(
+					unavailableIngredients.map(
+						({ availabilityPaths }) => availabilityPaths
+					),
+					hiddenDlcs
+				)
+			),
+			unavailableIngredients,
+		};
 	};
 
-	if (warningCache === undefined) {
-		recipeAvailabilityWarningCache.set(
-			ingredients,
-			new Map([[hiddenDlcsKey, warning]])
-		);
-	} else {
-		warningCache.set(hiddenDlcsKey, warning);
-	}
+	const warningCache = recipeAvailabilityWarningCache.getOrInsertComputed(
+		ingredients,
+		() => new Map([[hiddenDlcsKey, createWarning()]])
+	);
 
-	return warning;
+	return warningCache.getOrInsertComputed(hiddenDlcsKey, createWarning);
 }
 
 function renderBreakableText(text: string) {

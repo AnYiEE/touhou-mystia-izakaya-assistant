@@ -17,7 +17,6 @@ import { useVibrate } from '@/features/preferences/client/useVibrate';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { toArray } from '@/shared/utilities/collections/convert';
 
 interface IUsePictureInPictureOptions {
 	height?: number;
@@ -87,11 +86,11 @@ export function usePictureInPicture(
 				setPipWindow(null);
 			});
 
-			toArray(document.styleSheets).forEach((styleSheet) => {
+			[...document.styleSheets].forEach((styleSheet) => {
 				try {
-					const cssRules = toArray(styleSheet.cssRules)
+					const cssRules = [...styleSheet.cssRules]
 						.map((rule) =>
-							rule.cssText.replace(
+							rule.cssText.replaceAll(
 								/url\((['"]?)(?!data:|https?:\/\/|\/\/)(.*?)\1\)/gu,
 								(_match, quote, url: string) => {
 									const absoluteUrl = new URL(
@@ -139,7 +138,7 @@ export function usePictureInPicture(
 				contentContainer.innerHTML = containerRef.current.innerHTML;
 
 				const applyResponsiveClasses = (el: Element) => {
-					const classList = toArray(el.classList);
+					const classList = [...el.classList];
 					const mdClasses: string[] = [];
 					const nonMdClasses: string[] = [];
 
@@ -155,7 +154,7 @@ export function usePictureInPicture(
 						el.className = cn(nonMdClasses, mdClasses);
 					}
 
-					toArray(el.children).forEach(applyResponsiveClasses);
+					[...el.children].forEach(applyResponsiveClasses);
 				};
 
 				applyResponsiveClasses(contentContainer);

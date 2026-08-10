@@ -369,7 +369,7 @@ export default function AdminSsoCallbacksClient({
 						return;
 					}
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_SSO_MESSAGE_MAP.callbackQueueReadFailed
 					);
@@ -412,7 +412,7 @@ export default function AdminSsoCallbacksClient({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
@@ -558,7 +558,7 @@ export default function AdminSsoCallbacksClient({
 				})
 				.catch((error: unknown) => {
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_SSO_MESSAGE_MAP.callbackUpdateFailed
 					);
@@ -631,7 +631,7 @@ export default function AdminSsoCallbacksClient({
 			})
 			.catch((error: unknown) => {
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_SSO_MESSAGE_MAP.callbackDispatchFailed
 				);

@@ -30,28 +30,27 @@ export class Clothes extends Item<TClothes> {
 	public getBondClothes(
 		customerName: TCustomerRareName
 	): TClothesName | null {
-		if (Clothes._bondClothesCache.has(customerName)) {
-			return Clothes._bondClothesCache.get(customerName);
-		}
+		return Clothes._bondClothesCache.getOrInsertComputed(
+			customerName,
+			() => {
+				let bondClothes: TClothesName | null = null;
 
-		let bondClothes: TClothesName | null = null;
+				this._data.some(({ from, name }) =>
+					from.some((item) => {
+						if (
+							isObject(item) &&
+							'bond' in item &&
+							item.bond === customerName
+						) {
+							bondClothes = name;
+							return true;
+						}
+						return false;
+					})
+				);
 
-		this._data.some(({ from, name }) =>
-			from.some((item) => {
-				if (
-					isObject(item) &&
-					'bond' in item &&
-					item.bond === customerName
-				) {
-					bondClothes = name;
-					return true;
-				}
-				return false;
-			})
+				return bondClothes;
+			}
 		);
-
-		Clothes._bondClothesCache.set(customerName, bondClothes);
-
-		return bondClothes;
 	}
 }

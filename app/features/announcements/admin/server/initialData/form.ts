@@ -72,10 +72,9 @@ export async function readAdminAnnouncementEditInitialData(
 	} catch (error) {
 		return {
 			...initialData,
-			loadError:
-				error instanceof Error
-					? error.message
-					: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.listReadFailed,
+			loadError: Error.isError(error)
+				? error.message
+				: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.listReadFailed,
 		};
 	}
 }

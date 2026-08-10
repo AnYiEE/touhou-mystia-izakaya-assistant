@@ -80,10 +80,9 @@ export async function readAdminSsoClientEditInitialData(
 				}
 				clientUsers = usersResult.data;
 			} catch (error) {
-				message =
-					error instanceof Error
-						? error.message
-						: ADMIN_SSO_MESSAGE_MAP.grantUsersReadFailed;
+				message = Error.isError(error)
+					? error.message
+					: ADMIN_SSO_MESSAGE_MAP.grantUsersReadFailed;
 			}
 		}
 
@@ -102,10 +101,9 @@ export async function readAdminSsoClientEditInitialData(
 		return {
 			initialData: {
 				...initialData,
-				loadError:
-					error instanceof Error
-						? error.message
-						: ADMIN_SSO_MESSAGE_MAP.clientReadFailed,
+				loadError: Error.isError(error)
+					? error.message
+					: ADMIN_SSO_MESSAGE_MAP.clientReadFailed,
 			},
 			listHref,
 		};

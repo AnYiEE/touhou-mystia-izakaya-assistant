@@ -44,10 +44,7 @@ export function getOfflinePackagePaths(): IOfflinePackagePaths {
 }
 
 function normalizeRelativePath(path: string, rootPath: string) {
-	return path
-		.slice(rootPath.length + 1)
-		.split('\\')
-		.join('/');
+	return path.slice(rootPath.length + 1).replaceAll('\\', '/');
 }
 
 export async function checkOfflinePackagePaths() {

@@ -35,6 +35,10 @@ interface ISsoClientSecretHashList {
 	secretHashes: string[];
 }
 
+function createEmptySsoClientSecretHashList(): ISsoClientSecretHashList {
+	return { hasSecretRecords: false, secretHashes: [] };
+}
+
 function parseJsonStringArray(value: string, fieldName: string): string[] {
 	let parsed: unknown;
 	try {
@@ -164,15 +168,14 @@ async function readSsoClientActiveSecretHashMap(
 
 	const secretHashMap = new Map<TSsoClient['id'], ISsoClientSecretHashList>();
 	for (const record of records) {
-		const secretHashList = secretHashMap.get(record.client_id) ?? {
-			hasSecretRecords: false,
-			secretHashes: [],
-		};
+		const secretHashList = secretHashMap.getOrInsertComputed(
+			record.client_id,
+			createEmptySsoClientSecretHashList
+		);
 		secretHashList.hasSecretRecords = true;
 		if (record.disabled_at === null && record.revoked_at === null) {
 			secretHashList.secretHashes.push(record.secret_hash);
 		}
-		secretHashMap.set(record.client_id, secretHashList);
 	}
 
 	return secretHashMap;

@@ -110,13 +110,9 @@ function projectAvailabilityPaths(
 				}))
 				.sort(compareSerialized),
 			isFishingPath,
-			requiredDlcs: [...requiredDlcs].sort((left, right) => left - right),
+			requiredDlcs: requiredDlcs.toSorted((left, right) => left - right),
 		}))
 		.sort(compareSerialized);
-}
-
-function sortStrings(values: ReadonlyArray<string>) {
-	return [...values].sort();
 }
 
 export function createRecommendationDataFingerprint() {
@@ -133,13 +129,13 @@ export function createRecommendationDataFingerprint() {
 			price,
 		}) => ({
 			availabilityPaths: projectAvailabilityPaths(availabilityPaths),
-			beverageTags: sortStrings(beverageTags),
+			beverageTags: beverageTags.toSorted(),
 			dlc,
 			enduranceLimit,
 			name,
-			negativeTags: sortStrings(negativeTags),
+			negativeTags: negativeTags.toSorted(),
 			places,
-			positiveTags: sortStrings(positiveTags),
+			positiveTags: positiveTags.toSorted(),
 			price,
 		})
 	);
@@ -150,7 +146,7 @@ export function createRecommendationDataFingerprint() {
 			level,
 			name,
 			price,
-			tags: sortStrings(tags),
+			tags: tags.toSorted(),
 		})
 	);
 	const cookers = Cooker.getInstance().data.map(
@@ -167,7 +163,7 @@ export function createRecommendationDataFingerprint() {
 			level,
 			name,
 			price,
-			tags: sortStrings(tags),
+			tags: tags.toSorted(),
 		})
 	);
 	const recipes = Recipe.getInstance().data.map(
@@ -185,13 +181,13 @@ export function createRecommendationDataFingerprint() {
 			dlc,
 			level,
 			name,
-			negativeTags: sortStrings(negativeTags),
-			positiveTags: sortStrings(positiveTags),
+			negativeTags: negativeTags.toSorted(),
+			positiveTags: positiveTags.toSorted(),
 			price,
 			recipes: recipeVariants
 				.map(({ cooker, id, ingredients: fixedIngredients }) => ({
 					cooker,
-					fixedIngredients: sortStrings(fixedIngredients),
+					fixedIngredients: fixedIngredients.toSorted(),
 					id,
 				}))
 				.sort((left, right) => left.id - right.id),

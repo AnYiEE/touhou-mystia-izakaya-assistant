@@ -155,7 +155,7 @@ export async function fetchSyncStateForCurrentUser(
 			return null;
 		}
 		if (
-			error instanceof Error &&
+			Error.isError(error) &&
 			error.message === 'sync-client-update-required' &&
 			checkCurrentSyncRun(generation, userId)
 		) {
@@ -638,7 +638,7 @@ export function restoreAccountSyncRuntimeState(
 				});
 				setAccountSyncFutureStateIsolated(userId, true);
 				accountStore.shared.sync.lastError.set(
-					error instanceof Error &&
+					Error.isError(error) &&
 						error.message === 'quarantine-storage-failed'
 						? 'quarantine-storage-failed'
 						: 'conflict-reconcile-failed'

@@ -475,7 +475,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					return;
 				}
 				setLoadError(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_SSO_MESSAGE_MAP.clientReadFailed
 				);
@@ -529,7 +529,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_SSO_MESSAGE_MAP.clientSecretReadFailed
 				);
@@ -570,7 +570,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
@@ -691,7 +691,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_SSO_MESSAGE_MAP.clientSaveFailed
 				);
@@ -778,7 +778,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_SSO_MESSAGE_MAP.clientSecretGenerateFailed
 				);
@@ -873,7 +873,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 						return;
 					}
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_SSO_MESSAGE_MAP.clientSecretStatusUpdateFailed
 					);
@@ -936,7 +936,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 						return;
 					}
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_SSO_MESSAGE_MAP.clientSecretRevokeFailed
 					);
@@ -1004,7 +1004,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_SSO_MESSAGE_MAP.clientStatusUpdateFailed
 				);
@@ -1056,7 +1056,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_SSO_MESSAGE_MAP.clientDeleteFailed
 				);

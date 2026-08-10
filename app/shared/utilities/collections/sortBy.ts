@@ -1,9 +1,8 @@
 import { checkLengthEmpty } from './check';
-import { copyArray } from './convert';
 
 export function sortBy<T>(arrayA: ReadonlyArray<T>, arrayB: ReadonlyArray<T>) {
 	if (checkLengthEmpty(arrayA)) {
-		return copyArray(arrayB);
+		return [...arrayB];
 	}
 	if (checkLengthEmpty(arrayB)) {
 		return [];

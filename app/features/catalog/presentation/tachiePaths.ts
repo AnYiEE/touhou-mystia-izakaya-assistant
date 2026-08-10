@@ -14,42 +14,27 @@ const customerRareTachiePathCache = new Map<TCustomerRareName, string>();
 const partnerTachiePathCache = new Map<TPartnerName, string>();
 
 export function getClothesTachiePath(name: TClothesName) {
-	if (clothesTachiePathCache.has(name)) {
-		return clothesTachiePathCache.get(name);
-	}
-
-	const clothes = Clothes.getInstance();
-	const { gif, id } = clothes.getPropsByName(name);
-	const path = `${cdnUrl}/assets/tachies/clothes/${clothes.formatId(id)}.${gif ? 'gif' : 'png'}`;
-	clothesTachiePathCache.set(name, path);
-
-	return path;
+	return clothesTachiePathCache.getOrInsertComputed(name, () => {
+		const clothes = Clothes.getInstance();
+		const { gif, id } = clothes.getPropsByName(name);
+		return `${cdnUrl}/assets/tachies/clothes/${clothes.formatId(id)}.${gif ? 'gif' : 'png'}`;
+	});
 }
 
 export function getCustomerRareTachiePath(name: TCustomerRareName | null) {
 	if (name === null) {
 		return getClothesTachiePath('夜雀服');
 	}
-	if (customerRareTachiePathCache.has(name)) {
-		return customerRareTachiePathCache.get(name);
-	}
-
-	const customer = CustomerRare.getInstance();
-	const basePath = `${cdnUrl}/assets/tachies/customer_rare`;
-	const path = `${basePath}/${customer.formatId(customer.getPropsByName(name, 'id'))}.png`;
-	customerRareTachiePathCache.set(name, path);
-
-	return path;
+	return customerRareTachiePathCache.getOrInsertComputed(name, () => {
+		const customer = CustomerRare.getInstance();
+		const basePath = `${cdnUrl}/assets/tachies/customer_rare`;
+		return `${basePath}/${customer.formatId(customer.getPropsByName(name, 'id'))}.png`;
+	});
 }
 
 export function getPartnerTachiePath(name: TPartnerName) {
-	if (partnerTachiePathCache.has(name)) {
-		return partnerTachiePathCache.get(name);
-	}
-
-	const partner = Partner.getInstance();
-	const path = `${cdnUrl}/assets/tachies/partners/${partner.formatId(partner.getPropsByName(name, 'id'))}.png`;
-	partnerTachiePathCache.set(name, path);
-
-	return path;
+	return partnerTachiePathCache.getOrInsertComputed(name, () => {
+		const partner = Partner.getInstance();
+		return `${cdnUrl}/assets/tachies/partners/${partner.formatId(partner.getPropsByName(name, 'id'))}.png`;
+	});
 }

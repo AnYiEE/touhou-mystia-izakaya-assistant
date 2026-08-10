@@ -133,7 +133,7 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 					}
 
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_MESSAGE_MAP.userListReadFailed
 					);
@@ -187,7 +187,7 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 				setAdmin(null);
 				setAdminAuthStatus('error');
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.adminAuthCheckFailed
 				);
@@ -231,7 +231,7 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 				}
 
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.adminLoginFailed
 				);
@@ -292,7 +292,7 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 				}
 
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.adminLogoutFailed
 				);

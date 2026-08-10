@@ -22,7 +22,7 @@ export function createAutoAccountUsername(seed: string, attempt = 0) {
 	const prefix = 'user_';
 	const attemptSuffix = attempt === 0 ? '' : `_${attempt.toString(36)}`;
 	const suffix = seed
-		.replace(/[^a-z0-9]/giu, '')
+		.replaceAll(/[^a-z0-9]/giu, '')
 		.toLowerCase()
 		.slice(0, USERNAME_MAX_LENGTH - prefix.length - attemptSuffix.length);
 	const username = `${prefix}${suffix}${attemptSuffix}`;

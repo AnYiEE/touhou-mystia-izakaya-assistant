@@ -19,7 +19,6 @@ import {
 } from '@/features/catalog/customers/shared/state/tableDescriptors';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { copyArray } from '@/shared/utilities/collections/convert';
 import { type TSearchMatcher } from '@/shared/utilities/search/matchPinyinName';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
@@ -56,7 +55,7 @@ function sortRecipeRows(
 
 	switch (column) {
 		case 'recipe':
-			return copyArray(rows).sort((left, right) =>
+			return rows.toSorted((left, right) =>
 				compareWithStableFallback(
 					left,
 					right,
@@ -66,7 +65,7 @@ function sortRecipeRows(
 				)
 			);
 		case 'price':
-			return copyArray(rows).sort((left, right) =>
+			return rows.toSorted((left, right) =>
 				compareWithStableFallback(
 					left,
 					right,
@@ -76,7 +75,7 @@ function sortRecipeRows(
 				)
 			);
 		case 'suitability':
-			return copyArray(rows).sort((left, right) =>
+			return rows.toSorted((left, right) =>
 				compareWithStableFallback(
 					left,
 					right,
@@ -86,7 +85,7 @@ function sortRecipeRows(
 				)
 			);
 		case 'time':
-			return copyArray(rows).sort((left, right) =>
+			return rows.toSorted((left, right) =>
 				compareWithStableFallback(
 					left,
 					right,

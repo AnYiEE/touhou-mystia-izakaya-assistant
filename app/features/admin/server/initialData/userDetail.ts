@@ -131,10 +131,9 @@ export async function readAdminUserDetailInitialData(
 			try {
 				ssoGrants = await readInitialSsoGrants(id);
 			} catch (error) {
-				message =
-					error instanceof Error
-						? error.message
-						: ADMIN_MESSAGE_MAP.ssoGrantReadFailed;
+				message = Error.isError(error)
+					? error.message
+					: ADMIN_MESSAGE_MAP.ssoGrantReadFailed;
 			}
 		}
 
@@ -150,10 +149,9 @@ export async function readAdminUserDetailInitialData(
 		return {
 			...initialData,
 			admin: authResult.admin,
-			message:
-				error instanceof Error
-					? error.message
-					: ADMIN_MESSAGE_MAP.userDetailReadFailed,
+			message: Error.isError(error)
+				? error.message
+				: ADMIN_MESSAGE_MAP.userDetailReadFailed,
 		};
 	}
 }

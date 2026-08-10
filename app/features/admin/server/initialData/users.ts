@@ -95,10 +95,9 @@ export async function readAdminUsersInitialData(
 	try {
 		users = await readInitialUsers({ page, query, status });
 	} catch (error) {
-		message =
-			error instanceof Error
-				? error.message
-				: ADMIN_MESSAGE_MAP.userListReadFailed;
+		message = Error.isError(error)
+			? error.message
+			: ADMIN_MESSAGE_MAP.userListReadFailed;
 	}
 
 	return {

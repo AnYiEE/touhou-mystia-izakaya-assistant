@@ -796,7 +796,7 @@ export async function flushAccountSyncQueue() {
 			return unresolvedReason === null;
 		} catch (error) {
 			if (
-				error instanceof Error &&
+				Error.isError(error) &&
 				error.message === 'sync-client-update-required' &&
 				checkCurrentSyncRun(generation, context.user.id)
 			) {
@@ -834,7 +834,7 @@ export async function flushAccountSyncQueue() {
 				return false;
 			}
 			if (
-				error instanceof Error &&
+				Error.isError(error) &&
 				SYNC_AUTHORITY_ERROR_MESSAGES.includes(error.message)
 			) {
 				try {
@@ -888,7 +888,7 @@ export async function flushAccountSyncQueue() {
 					}
 
 					accountStore.shared.sync.lastError.set(
-						refreshError instanceof Error
+						Error.isError(refreshError)
 							? refreshError.message
 							: 'sync-refresh-failed'
 					);
@@ -905,7 +905,7 @@ export async function flushAccountSyncQueue() {
 				(attempts) => attempts + 1
 			);
 			accountStore.shared.sync.lastError.set(
-				error instanceof Error ? error.message : 'sync-failed'
+				Error.isError(error) ? error.message : 'sync-failed'
 			);
 			accountStore.shared.sync.lastResult.set('failed');
 			return false;

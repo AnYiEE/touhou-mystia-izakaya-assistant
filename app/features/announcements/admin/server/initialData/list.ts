@@ -36,10 +36,9 @@ export async function readAdminAnnouncementsInitialData(): Promise<IAdminAnnounc
 	} catch (error) {
 		return {
 			...initialData,
-			message:
-				error instanceof Error
-					? error.message
-					: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.listReadFailed,
+			message: Error.isError(error)
+				? error.message
+				: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.listReadFailed,
 		};
 	}
 }

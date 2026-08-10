@@ -12,7 +12,6 @@ import {
 
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
 
-import { toSet } from '@/shared/utilities/collections/convert';
 import { sortBy } from '@/shared/utilities/collections/sortBy';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
@@ -42,7 +41,7 @@ const state = {
 		},
 		pinyinSortState: PINYIN_SORT_STATE_MAP.none as TPinyinSortState,
 	},
-	shared: { hiddenItems: { dlcs: toSet<TDlc>() } },
+	shared: { hiddenItems: { dlcs: new Set<TDlc>() } },
 };
 
 const getNames = createNamesCache(instance);

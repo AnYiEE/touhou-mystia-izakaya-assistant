@@ -19,7 +19,6 @@ import type {
 	TCustomerRarePlanMode,
 } from '@/features/customerPlans/contracts';
 
-import { cloneJsonObject } from '@/shared/utilities/objects/cloneJsonObject';
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
 
 import {
@@ -201,7 +200,7 @@ export const customerRarePlansSerializer = {
 	},
 	getLocalSnapshot() {
 		return sanitizeCustomerRarePlansSnapshot(
-			cloneJsonObject(readCustomerRarePlansPersistenceSnapshot())
+			structuredClone(readCustomerRarePlansPersistenceSnapshot())
 		);
 	},
 	merge({ base, cloud, local, namespace }) {

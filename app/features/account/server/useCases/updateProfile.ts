@@ -379,7 +379,7 @@ export async function updateProfile({
 			user: result.user,
 		};
 	} catch (error) {
-		if (error instanceof Error) {
+		if (Error.isError(error)) {
 			if (error.message === 'invalid-user-status') {
 				return { message: 'invalid-user-status', status: 'error' };
 			}

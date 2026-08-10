@@ -3,9 +3,5 @@ export function getHeaderOrigin(value: string | null) {
 		return null;
 	}
 
-	try {
-		return new URL(value).origin;
-	} catch {
-		return null;
-	}
+	return URL.parse(value)?.origin ?? null;
 }

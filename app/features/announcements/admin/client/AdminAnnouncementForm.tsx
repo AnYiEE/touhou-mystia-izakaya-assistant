@@ -664,7 +664,7 @@ export default function AdminAnnouncementForm({
 					return;
 				}
 				setLoadError(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.listReadFailed
 				);
@@ -706,7 +706,7 @@ export default function AdminAnnouncementForm({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
@@ -738,7 +738,7 @@ export default function AdminAnnouncementForm({
 			})
 			.catch((error: unknown) => {
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.previewFailed
 				);
@@ -790,7 +790,7 @@ export default function AdminAnnouncementForm({
 			})
 			.catch((error: unknown) => {
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.saveFailed
 				);
@@ -831,7 +831,7 @@ export default function AdminAnnouncementForm({
 			})
 			.catch((error: unknown) => {
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.archiveFailed
 				);
@@ -870,7 +870,7 @@ export default function AdminAnnouncementForm({
 			})
 			.catch((error: unknown) => {
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.restoreFailed
 				);
@@ -950,7 +950,7 @@ export default function AdminAnnouncementForm({
 				}
 
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.targetUserReadFailed
 				);
@@ -1022,7 +1022,7 @@ export default function AdminAnnouncementForm({
 					}
 
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.userSearchFailed
 					);

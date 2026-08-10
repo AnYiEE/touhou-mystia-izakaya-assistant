@@ -11,7 +11,6 @@ import Tooltip from '@/design/ui/components/tooltip';
 import { isAvailableWithHiddenDlcs } from '@/domain/availability';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import { Recipe } from '@/domain/catalog/food/Recipe';
-import type { TRecipe } from '@/domain/catalog/food/types';
 import { getRelatedRecipes } from '@/domain/catalog/queries/getRelatedRecipes';
 import type { TIngredientName } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
@@ -23,7 +22,6 @@ import {
 } from '@/features/itemSharing/contracts';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { toArray } from '@/shared/utilities/collections/convert';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 
 interface IProps {
@@ -39,24 +37,22 @@ export default function IngredientRelatedRecipes({
 }: IProps) {
 	const relatedRecipes = getRelatedRecipes(
 		name,
-		Recipe.getInstance().getPinyinSortedData().get()
+		Recipe.getInstance().getPinyinSortedData()
 	);
 	if (checkLengthEmpty(relatedRecipes)) {
 		return null;
 	}
-	const relatedRecipesGroupByDlcMap = relatedRecipes.reduce((map, item) => {
-		if (!isAvailableWithHiddenDlcs(item.availabilityPaths, hiddenDlcs)) {
-			return map;
-		}
-		if (!map.has(item.dlc)) {
-			map.set(item.dlc, []);
-		}
-		(map.get(item.dlc) as TRecipe[]).push(item);
-		return map;
-	}, new Map<TDlc, TRecipe[]>());
-	const relatedRecipesGroupByDlcSorted = toArray(
-		relatedRecipesGroupByDlcMap
-	).sort(([a], [b]) => numberSort(a, b));
+	const relatedRecipesGroupByDlcMap = Map.groupBy(
+		relatedRecipes
+			.values()
+			.filter(({ availabilityPaths }) =>
+				isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs)
+			),
+		({ dlc }) => dlc
+	);
+	const relatedRecipesGroupByDlcSorted = [
+		...relatedRecipesGroupByDlcMap,
+	].sort(([a], [b]) => numberSort(a, b));
 	const label = '点击：在新窗口中查看此料理的详情';
 	return (
 		<p>

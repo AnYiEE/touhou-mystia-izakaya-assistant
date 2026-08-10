@@ -104,7 +104,7 @@ function getConstraintTokenValue(token: TSqliteDefinitionToken) {
 		return token.value;
 	}
 	if (token.kind === 'string') {
-		return `'${token.value.replace(/'/gu, "''")}'`;
+		return `'${token.value.replaceAll("'", "''")}'`;
 	}
 
 	return null;

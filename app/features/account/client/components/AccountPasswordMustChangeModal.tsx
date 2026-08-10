@@ -218,7 +218,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 								}
 								setMessage(
 									getAccountClientErrorMessage(
-										error instanceof Error
+										Error.isError(error)
 											? error.message
 											: '',
 										ACCOUNT_CLIENT_MESSAGE_MAP.accountStateRefreshFailed
@@ -291,7 +291,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 			})
 			.catch((error: unknown) => {
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ACCOUNT_CLIENT_MESSAGE_MAP.passwordChangeFailed
 				);
@@ -396,7 +396,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 			})
 			.catch((error: unknown) => {
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ACCOUNT_CLIENT_MESSAGE_MAP.logoutFailed
 				);

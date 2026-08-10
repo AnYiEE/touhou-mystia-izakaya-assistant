@@ -36,7 +36,6 @@ import { globalStore } from '@/features/preferences/client/state/globalPersisten
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { copyArray } from '@/shared/utilities/collections/convert';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import InfoButton from './infoButton';
@@ -326,8 +325,8 @@ export default function CustomerCard() {
 				<div className="flex w-full flex-col justify-evenly gap-3 whitespace-nowrap">
 					{!checkLengthEmpty(currentCustomerPositiveTags) && (
 						<TagGroup>
-							{copyArray(currentCustomerPositiveTags)
-								.sort(pinyinSort)
+							{currentCustomerPositiveTags
+								.toSorted(pinyinSort)
 								.map((tag, index) => (
 									<Tooltip
 										key={index}

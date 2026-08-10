@@ -13,8 +13,7 @@ export function getTrustedRequestIp(request: NextRequest) {
 
 	const forwardedFor = request.headers
 		.get('x-forwarded-for')
-		?.split(',', 1)
-		.at(0)
+		?.split(',', 1)[0]
 		?.trim();
 
 	if (forwardedFor) {
@@ -85,11 +84,7 @@ export function getExpectedRequestOrigin(request: NextRequest) {
 		return null;
 	}
 
-	try {
-		return new URL(`${protocol}//${host}`).origin;
-	} catch {
-		return null;
-	}
+	return URL.parse(`${protocol}//${host}`)?.origin ?? null;
 }
 
 export function checkSameOriginRequest(request: NextRequest) {

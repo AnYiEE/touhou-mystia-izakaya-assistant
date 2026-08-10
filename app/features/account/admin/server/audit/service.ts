@@ -193,7 +193,7 @@ export async function writeAdminAuditLog(input: IAuditLogWriteInput) {
 		} as const;
 	} catch (error) {
 		if (
-			error instanceof Error &&
+			Error.isError(error) &&
 			error.message === 'invalid-audit-log-metadata'
 		) {
 			return {

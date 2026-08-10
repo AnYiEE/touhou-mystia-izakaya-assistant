@@ -14,7 +14,6 @@ import {
 } from '@/features/preferences/client/state/accountSync';
 
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
-import { cloneJsonObject } from '@/shared/utilities/objects/cloneJsonObject';
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
 
 import type {
@@ -289,7 +288,7 @@ export const globalPreferencesSerializer = {
 		const tableHiddenItems = getPlainObjectOrEmpty(table['hiddenItems']);
 
 		const snapshot = sanitizeGlobalPreferences(
-			cloneJsonObject({
+			structuredClone({
 				customerCardTagsTooltip: persistence.customerCardTagsTooltip,
 				donationModal: {
 					interactionCount: donationModal['interactionCount'],

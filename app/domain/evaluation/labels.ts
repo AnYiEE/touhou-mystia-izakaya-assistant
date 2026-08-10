@@ -19,29 +19,27 @@ export const CUSTOMER_EVALUATION_MAP: TEvaluationMap = {
 	seenRepell: '评价驱赶行为',
 };
 
-export const CUSTOMER_EVALUATION_KEY_MAP = Object.entries(
-	CUSTOMER_EVALUATION_MAP
-).reduce<Partial<TEvaluationKeyMap>>((acc, [key, value]) => {
-	acc[value] = key as TEvaluationKey;
-	return acc;
-}, {}) as TEvaluationKeyMap;
+export const CUSTOMER_EVALUATION_KEY_MAP = Object.fromEntries(
+	Object.entries(CUSTOMER_EVALUATION_MAP).map(([key, value]) => [
+		value,
+		key as TEvaluationKey,
+	])
+) as TEvaluationKeyMap;
 
-export const CUSTOMER_RATING_MAP = Object.entries(
-	CUSTOMER_EVALUATION_MAP
-).reduce<Partial<TEvaluationMap>>((acc, [key, value]) => {
-	const ratingKey = key as TEvaluationKey;
-	if (['exbad', 'bad', 'norm', 'good', 'exgood'].includes(ratingKey)) {
-		acc[ratingKey] = value;
-	}
-	return acc;
-}, {}) as TRatingMap;
+export const CUSTOMER_RATING_MAP = Object.fromEntries(
+	Object.entries(CUSTOMER_EVALUATION_MAP).filter(([key]) =>
+		['exbad', 'bad', 'norm', 'good', 'exgood'].includes(
+			key as TEvaluationKey
+		)
+	)
+) as TRatingMap;
 
-export const CUSTOMER_RATING_KEY_MAP = Object.entries(
-	CUSTOMER_RATING_MAP
-).reduce<Partial<TRatingKeyMap>>((acc, [key, value]) => {
-	acc[value] = key as TRatingKey;
-	return acc;
-}, {}) as TRatingKeyMap;
+export const CUSTOMER_RATING_KEY_MAP = Object.fromEntries(
+	Object.entries(CUSTOMER_RATING_MAP).map(([key, value]) => [
+		value,
+		key as TRatingKey,
+	])
+) as TRatingKeyMap;
 
 export const CUSTOMER_EVALUATION = Object.values(CUSTOMER_EVALUATION_MAP);
 export const CUSTOMER_EVALUATION_KEY = Object.keys(

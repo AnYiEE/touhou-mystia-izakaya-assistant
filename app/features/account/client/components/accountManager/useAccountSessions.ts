@@ -161,7 +161,7 @@ export function useAccountSessions(
 					});
 					if (!silent) {
 						setMessage(
-							error instanceof Error
+							Error.isError(error)
 								? error.message
 								: ACCOUNT_MANAGER_MESSAGE_MAP.sessionRefreshFailed
 						);
@@ -319,7 +319,7 @@ export function useAccountSessions(
 				}
 
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ACCOUNT_MANAGER_MESSAGE_MAP.sessionRevokeFailed
 				);

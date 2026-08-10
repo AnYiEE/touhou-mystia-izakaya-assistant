@@ -8,7 +8,7 @@ export interface ISqliteMigrationColumnDefinition {
 
 function checkDuplicateColumnError(error: unknown) {
 	return (
-		error instanceof Error && /duplicate column name/iu.test(error.message)
+		Error.isError(error) && /duplicate column name/iu.test(error.message)
 	);
 }
 

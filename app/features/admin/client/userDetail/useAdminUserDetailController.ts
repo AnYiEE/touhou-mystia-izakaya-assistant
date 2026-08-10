@@ -210,7 +210,7 @@ export function useAdminUserDetailController(
 					return false;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.userDetailReadFailed
 				);
@@ -268,7 +268,7 @@ export function useAdminUserDetailController(
 						return;
 					}
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_MESSAGE_MAP.operationFailed
 					);
@@ -427,7 +427,7 @@ export function useAdminUserDetailController(
 						return;
 					}
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_MESSAGE_MAP.ssoGrantReadFailed
 					);
@@ -521,7 +521,7 @@ export function useAdminUserDetailController(
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.ssoGrantRevokeAllFailed
 				);
@@ -629,7 +629,7 @@ export function useAdminUserDetailController(
 						return;
 					}
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_MESSAGE_MAP.ssoGrantRevokeFailed
 					);
@@ -694,7 +694,7 @@ export function useAdminUserDetailController(
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);

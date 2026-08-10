@@ -8,7 +8,6 @@ import {
 } from '@/features/catalog/customers/rare/client/state/accountSync';
 import type { ICustomerRareMeal } from '@/features/customerPlans/contracts';
 
-import { cloneJsonObject } from '@/shared/utilities/objects/cloneJsonObject';
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
 
 import {
@@ -138,7 +137,7 @@ export const customerRareMealsSerializer = {
 	},
 	getLocalSnapshot() {
 		return getLocalCustomerRareMealsSnapshot(
-			cloneJsonObject(readCustomerRareMealsPersistenceSnapshot())
+			structuredClone(readCustomerRareMealsPersistenceSnapshot())
 		);
 	},
 	merge(params) {

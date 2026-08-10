@@ -32,7 +32,6 @@ import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { useHydrated } from '@/shared/react/useHydrated';
-import { toSet } from '@/shared/utilities/collections/convert';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
 
 const THEME_ICON_MAP = {
@@ -66,7 +65,7 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 	const isMounted = useHydrated();
 	const [theme, setTheme] = useTheme();
 	const [selectedTheme, setSelectedTheme] = useState<SelectionSet>(
-		toSet(theme)
+		new Set([theme])
 	);
 	const vibrate = useVibrate();
 
@@ -86,7 +85,7 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 
 	useEffect(() => {
 		if (!selectedTheme.has(theme)) {
-			setSelectedTheme(toSet(theme));
+			setSelectedTheme(new Set([theme]));
 		}
 	}, [selectedTheme, theme]);
 

@@ -29,8 +29,6 @@ import {
 	type TPinyinSortState,
 } from '@/features/catalog/shared/state/pinyinSort';
 
-import { toSet } from '@/shared/utilities/collections/convert';
-
 export type TBeverageTableSortDescriptor =
 	ITableSortDescriptor<TBeverageTableSortKey>;
 export type TRecipeTableSortDescriptor =
@@ -102,11 +100,11 @@ export const customerNormalInitialState = {
 
 			searchValue: '',
 			table: {
-				columns: toSet<SelectionSet>(),
-				hiddenBeverages: toSet<TBeverageName>() as Set<TBeverageName>,
+				columns: new Set<string | number>(),
+				hiddenBeverages: new Set<TBeverageName>(),
 				page: 1,
 				row: 1,
-				rows: toSet<SelectionSet>(),
+				rows: new Set<string | number>(),
 				selectableRows: [] as Array<ValueCollection<number>>,
 			},
 		},
@@ -114,8 +112,8 @@ export const customerNormalInitialState = {
 			name: null as TCustomerNormalName | null,
 
 			select: {
-				beverageTag: toSet<SelectionSet>(),
-				recipeTag: toSet<SelectionSet>(),
+				beverageTag: new Set<string | number>(),
+				recipeTag: new Set<string | number>(),
 			},
 
 			filterVisibility: true,
@@ -125,7 +123,7 @@ export const customerNormalInitialState = {
 
 			rating: null as TRatingKey | null,
 		},
-		hiddenItems: { dlcs: toSet<TDlc>() },
+		hiddenItems: { dlcs: new Set<TDlc>() },
 		ingredient: { filterVisibility: false },
 		recipe: {
 			data: null as IMealRecipe | null,
@@ -134,13 +132,12 @@ export const customerNormalInitialState = {
 
 			searchValue: '',
 			table: {
-				columns: toSet<SelectionSet>(),
-				hiddenIngredients:
-					toSet<TIngredientName>() as Set<TIngredientName>,
-				hiddenRecipes: toSet<TRecipeName>() as Set<TRecipeName>,
+				columns: new Set<string | number>(),
+				hiddenIngredients: new Set<TIngredientName>(),
+				hiddenRecipes: new Set<TRecipeName>(),
 				page: 1,
 				row: 1,
-				rows: toSet<SelectionSet>(),
+				rows: new Set<string | number>(),
 				selectableRows: [] as Array<ValueCollection<number>>,
 			},
 		},

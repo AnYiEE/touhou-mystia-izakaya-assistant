@@ -47,6 +47,28 @@ const fieldValuePinyinCache = createBoundedRuntimeCache<
 	{ firstLetters: string; full: string }
 >(4096);
 
+function createEmptyStringSet() {
+	return new Set<string>();
+}
+
+function createGlobalSearchAllowedSectionSet(
+	fieldType: IGlobalSearchIndexField['fieldType']
+) {
+	const fieldGroup = getFieldPrefixGroup(fieldType);
+	const allowedSections =
+		fieldGroup !== undefined && 'sections' in fieldGroup
+			? fieldGroup.sections
+			: undefined;
+
+	return allowedSections === undefined
+		? null
+		: new Set<IGlobalSearchIndexItem['section']>(
+				allowedSections as ReadonlyArray<
+					IGlobalSearchIndexItem['section']
+				>
+			);
+}
+
 export type TGlobalSearchFieldValueCache = Map<
 	IGlobalSearchIndexField['fieldType'],
 	string[]
@@ -119,6 +141,7 @@ export function getGlobalSearchDlcDisplayLabel(value: string) {
 
 	const tokenLabel = value
 		.split(/\s+/u)
+		.values()
 		.map((token) => getDlcLabelMeta(token)?.label)
 		.find((label) => label !== undefined);
 
@@ -270,29 +293,11 @@ export function createGlobalSearchFieldValueCache({
 	>();
 	const getAllowedSectionSet = (
 		fieldType: IGlobalSearchIndexField['fieldType']
-	) => {
-		const cachedSet = fieldAllowedSectionMap.get(fieldType);
-		if (cachedSet !== undefined) {
-			return cachedSet;
-		}
-
-		const fieldGroup = getFieldPrefixGroup(fieldType);
-		const allowedSections =
-			fieldGroup !== undefined && 'sections' in fieldGroup
-				? fieldGroup.sections
-				: undefined;
-		const allowedSectionSet =
-			allowedSections === undefined
-				? null
-				: new Set<IGlobalSearchIndexItem['section']>(
-						allowedSections as ReadonlyArray<
-							IGlobalSearchIndexItem['section']
-						>
-					);
-
-		fieldAllowedSectionMap.set(fieldType, allowedSectionSet);
-		return allowedSectionSet;
-	};
+	) =>
+		fieldAllowedSectionMap.getOrInsertComputed(
+			fieldType,
+			createGlobalSearchAllowedSectionSet
+		);
 	const getValueCacheFieldTypes = (
 		fieldType: IGlobalSearchIndexField['fieldType']
 	) =>
@@ -323,12 +328,13 @@ export function createGlobalSearchFieldValueCache({
 			}
 
 			getValueCacheFieldTypes(fieldType).forEach((cacheFieldType) => {
-				const valueSet =
-					valueMap.get(cacheFieldType) ?? new Set<string>();
+				const valueSet = valueMap.getOrInsertComputed(
+					cacheFieldType,
+					createEmptyStringSet
+				);
 				getFieldValueTokens(fieldType, text).forEach((value) => {
 					valueSet.add(value);
 				});
-				valueMap.set(cacheFieldType, valueSet);
 			});
 		});
 	});

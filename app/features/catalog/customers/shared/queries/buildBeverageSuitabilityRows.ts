@@ -13,7 +13,6 @@ import {
 } from '@/features/catalog/customers/shared/state/tableDescriptors';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { copyArray } from '@/shared/utilities/collections/convert';
 import { type TSearchMatcher } from '@/shared/utilities/search/matchPinyinName';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
@@ -33,17 +32,16 @@ function sortBeverageRows(
 
 	switch (column) {
 		case 'beverage':
-			return copyArray(rows).sort(({ name: a }, { name: b }) =>
+			return rows.toSorted(({ name: a }, { name: b }) =>
 				isAscending ? pinyinSort(a, b) : pinyinSort(b, a)
 			);
 		case 'price':
-			return copyArray(rows).sort(({ price: a }, { price: b }) =>
+			return rows.toSorted(({ price: a }, { price: b }) =>
 				isAscending ? numberSort(a, b) : numberSort(b, a)
 			);
 		case 'suitability':
-			return copyArray(rows).sort(
-				({ suitability: a }, { suitability: b }) =>
-					isAscending ? numberSort(a, b) : numberSort(b, a)
+			return rows.toSorted(({ suitability: a }, { suitability: b }) =>
+				isAscending ? numberSort(a, b) : numberSort(b, a)
 			);
 		default:
 			return rows;

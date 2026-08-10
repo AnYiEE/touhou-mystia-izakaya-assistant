@@ -1,5 +1,5 @@
 export function checkRetryableSqliteLockError(error: unknown) {
-	if (!(error instanceof Error)) {
+	if (!Error.isError(error)) {
 		return false;
 	}
 

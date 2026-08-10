@@ -27,7 +27,6 @@ import type { TItemName } from '@/domain/data/types';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { toArray } from '@/shared/utilities/collections/convert';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import Sprite from './Sprite';
@@ -82,7 +81,7 @@ export default memo<IProps>(function SideFilterIconButton({
 	const handleSelectionChange = useCallback(
 		(setSelectedKeys: ISelectConfigItem['setSelectedKeys']) =>
 			(key: Selection) => {
-				setSelectedKeys(toArray(key as Set<string>).sort(pinyinSort));
+				setSelectedKeys([...(key as Set<string>)].sort(pinyinSort));
 			},
 		[]
 	);

@@ -46,7 +46,6 @@ import {
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { toArray, toSet } from '@/shared/utilities/collections/convert';
 
 import { customerRareStore } from './state/store';
 
@@ -174,34 +173,34 @@ export function useSuggestedMealsViewModel() {
 	const selectedCookerKeys = useMemo<SelectionSet>(
 		() =>
 			selectedSuggestMealsCooker === null
-				? toSet()
-				: toSet(selectedSuggestMealsCooker),
+				? new Set()
+				: new Set([selectedSuggestMealsCooker]),
 		[selectedSuggestMealsCooker]
 	);
 
 	const selectedMaxExtraKeys = useMemo<SelectionSet>(
 		() =>
-			toSet(
+			new Set([
 				suggestMaxExtraIngredients === null
 					? ''
-					: suggestMaxExtraIngredients.toString()
-			),
+					: suggestMaxExtraIngredients.toString(),
+			]),
 		[suggestMaxExtraIngredients]
 	);
 
 	const selectedMaxRatingKeys = useMemo<SelectionSet>(
-		() => toSet(suggestMaxRating.toString()),
+		() => new Set([suggestMaxRating.toString()]),
 		[suggestMaxRating]
 	);
 
 	const handleCookerChange = useCallback((keys: Selection) => {
-		const selected = toArray(keys as SelectionSet);
+		const selected = [...(keys === 'all' ? [keys] : keys)];
 		const cooker = (selected[0] as TCookerName | undefined) ?? null;
 		suggestedMealsUiStore.cooker.set(cooker);
 	}, []);
 
 	const handleMaxExtraChange = useCallback((keys: Selection) => {
-		const selected = toArray(keys as SelectionSet);
+		const selected = [...(keys === 'all' ? [keys] : keys)];
 		const value = selected[0] as string | undefined;
 		recommendationPreferencesFacade.maxExtraIngredients.set(
 			value === undefined || value === '' ? null : Number.parseInt(value)
@@ -209,7 +208,7 @@ export function useSuggestedMealsViewModel() {
 	}, []);
 
 	const handleMaxRatingChange = useCallback((keys: Selection) => {
-		const selected = toArray(keys as SelectionSet);
+		const selected = [...(keys === 'all' ? [keys] : keys)];
 		const value = selected[0] as string | undefined;
 		if (value !== undefined) {
 			recommendationPreferencesFacade.maxRating.set(

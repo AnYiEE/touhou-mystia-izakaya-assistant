@@ -473,15 +473,14 @@ export function useGlobalSearchController() {
 		) {
 			return;
 		}
-		const resultElement = [
-			...(rootRef.current?.querySelectorAll<HTMLElement>(
-				'[data-global-search-result-index]'
-			) ?? []),
-		].find(
-			({ dataset }) =>
-				dataset['globalSearchResultIndex'] ===
-				model.resolvedSelectedIndex.toString()
-		);
+		const resultElement = rootRef.current
+			?.querySelectorAll<HTMLElement>('[data-global-search-result-index]')
+			.values()
+			.find(
+				({ dataset }) =>
+					dataset['globalSearchResultIndex'] ===
+					model.resolvedSelectedIndex.toString()
+			);
 		try {
 			resultElement?.scrollIntoView({ block: 'nearest' });
 		} catch {

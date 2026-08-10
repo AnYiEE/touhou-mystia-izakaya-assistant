@@ -39,7 +39,7 @@ function getCredentialRetryAfter(lockedUntil: number, now: number) {
 
 function checkUsernameUniqueConstraintError(error: unknown) {
 	return (
-		error instanceof Error &&
+		Error.isError(error) &&
 		'code' in error &&
 		(error as { code?: unknown }).code === 'SQLITE_CONSTRAINT_UNIQUE'
 	);

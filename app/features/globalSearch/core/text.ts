@@ -1,3 +1,3 @@
 export function normalizeSearchMatchText(value: string) {
-	return value.toLowerCase().replace(/\s+/gu, '');
+	return value.toLowerCase().replaceAll(/\s+/gu, '');
 }

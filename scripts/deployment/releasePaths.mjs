@@ -144,7 +144,7 @@ export function parseCurrentRelease(contents) {
 		};
 	} catch (error) {
 		if (
-			error instanceof Error &&
+			Error.isError(error) &&
 			error.message === 'invalid-self-hosted-current'
 		) {
 			throw error;
@@ -183,7 +183,7 @@ export async function getPathStatus(path, expectedType, errorCode) {
 		}
 		return pathStatus;
 	} catch (error) {
-		if (error instanceof Error && error.message === errorCode) {
+		if (Error.isError(error) && error.message === errorCode) {
 			throw error;
 		}
 		throw createError(errorCode, error);
@@ -199,7 +199,7 @@ export async function ensureSafeDirectory(path, errorCode) {
 		}
 	} catch (error) {
 		if (!checkMissingPathError(error)) {
-			if (error instanceof Error && error.message === errorCode) {
+			if (Error.isError(error) && error.message === errorCode) {
 				throw error;
 			}
 			throw createError(errorCode, error);

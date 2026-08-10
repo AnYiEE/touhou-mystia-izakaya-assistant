@@ -6,7 +6,7 @@ import { usePathname } from './usePathname';
 type TUpdateParams = (newParams: URLSearchParams) => void;
 
 function concatParams(pathname: string, params: URLSearchParams) {
-	return `${pathname}?${params.toString().replace(/=(&|$)/gu, '$1')}`;
+	return `${pathname}?${params.toString().replaceAll(/=(&|$)/gu, '$1')}`;
 }
 
 export function useParams() {

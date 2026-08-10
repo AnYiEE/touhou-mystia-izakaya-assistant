@@ -156,10 +156,9 @@ function summarizeGrantRevocationBatch<TData>(
 
 		if (result.status === 'rejected') {
 			failedKeys.push(key);
-			firstFailureMessage ??=
-				result.reason instanceof Error
-					? result.reason.message
-					: ADMIN_SSO_MESSAGE_MAP.grantBatchRevokeFailed;
+			firstFailureMessage ??= Error.isError(result.reason)
+				? result.reason.message
+				: ADMIN_SSO_MESSAGE_MAP.grantBatchRevokeFailed;
 			continue;
 		}
 
@@ -403,7 +402,7 @@ export default function AdminSsoGrantsClient({
 						return;
 					}
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_SSO_MESSAGE_MAP.grantReadFailed
 					);
@@ -446,7 +445,7 @@ export default function AdminSsoGrantsClient({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
@@ -584,7 +583,7 @@ export default function AdminSsoGrantsClient({
 				})
 				.catch((error: unknown) => {
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_MESSAGE_MAP.ssoGrantRevokeFailed
 					);

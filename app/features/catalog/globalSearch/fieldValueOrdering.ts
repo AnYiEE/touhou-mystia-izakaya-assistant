@@ -15,14 +15,10 @@ function getCachedFieldValueOrderMap(
 	key: string,
 	values: () => ReadonlyArray<string>
 ) {
-	const cachedMap = businessOrderMapCache.get(key);
-	if (cachedMap !== undefined) {
-		return cachedMap;
-	}
-
-	const orderMap = new Map(values().map((value, index) => [value, index]));
-	businessOrderMapCache.set(key, orderMap);
-	return orderMap;
+	return businessOrderMapCache.getOrInsertComputed(
+		key,
+		() => new Map(values().map((value, index) => [value, index]))
+	);
 }
 
 export function getCatalogSearchFieldValueOrderMap({

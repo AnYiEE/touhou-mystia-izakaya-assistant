@@ -27,7 +27,7 @@ export interface ISqliteIndexDefinition {
 }
 
 function normalizeSql(value: string) {
-	return value.replace(/\s+/gu, ' ').trim().toLowerCase();
+	return value.replaceAll(/\s+/gu, ' ').trim().toLowerCase();
 }
 
 async function getCreateIndexSql<T>(database: Kysely<T>, indexName: string) {

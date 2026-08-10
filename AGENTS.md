@@ -55,6 +55,7 @@ Do not substitute assumptions for facts that can be established through safe rea
 
 One source tree produces several applications:
 
+- All development, build, self-hosted, and direct script runtimes require Node.js 24 or newer, as declared by `package.json#engines`.
 - `pnpm dev` uses Turbopack.
 - Without `SELF_HOSTED` or `VERCEL`, `next.config.ts` selects static export; the supported packaged static artifact is produced by `pnpm build:offline`.
 - `SELF_HOSTED=true` enables database-backed account, sync, administration, announcement, and site-state features after their feature-status checks pass. `pnpm build` atomically publishes a standalone release under ignored `.deploy/`; `pnpm start` launches that validated release.
@@ -142,7 +143,13 @@ SQLite, uploads, backups, and environment files must use stable paths outside `.
 
 `package.json#browserslist` is deliberate. Treat `eslint.config.mjs`, its declared polyfills, Next.js support, and enabled preference rules together as the code-level compatibility authority; add a workaround only for a demonstrated gap.
 
-Do not use `String.prototype.replaceAll`; Safari 12 does not support it and the application does not polyfill it. Use `String.prototype.replace` with a global regular expression, an allocation-aware loop, or an existing suitable helper. `eslint-plugin-compat` cannot infer every TypeScript receiver type and may miss calls such as `value.replaceAll(...)`, so the dedicated restricted-syntax rule is the enforcement authority for this API.
+Prefer newer standard APIs whenever they correctly express the required behavior; do not write or retain an older compatibility expression merely because a target browser lacks the newer API. When core-js provides the missing capability, import its narrow public entry in `instrumentation-client.ts`, declare the corresponding API in `eslint.config.mjs#settings.polyfills`, and use the standard API in application code. Keep required imports before the synchronous recommendation launch-descriptor capture.
+
+Node.js 24 is the server and build baseline. Browser-only instrumentation does not cover static generation or server execution: `app/infrastructure/runtime/serverPolyfills.ts` is the single server-polyfill setup, loaded synchronously by the root layout for offline/static-export prerendering and from the Node branch of `instrumentation.ts` for the self-hosted Next server graph. Do not add Node-only side effects to feature or domain modules. A direct script or other entry point that executes outside Next instrumentation loads its missing core-js leaf itself.
+
+Retain an existing expression when it has materially different matching, ordering, identity, short-circuit, exception, or allocation semantics, especially in demonstrated hot paths. For Web APIs outside core-js, use an existing suitable dependency or an explicit feature check and fallback when the capability cannot be faithfully polyfilled.
+
+`eslint-plugin-compat` cannot infer every TypeScript receiver type and may miss calls such as `value.replaceAll(...)`. Keep runtime imports, polyfill declarations, enabled preference rules, and targeted source audits aligned rather than treating a clean compat lint as proof of complete coverage.
 
 ## Code conventions
 

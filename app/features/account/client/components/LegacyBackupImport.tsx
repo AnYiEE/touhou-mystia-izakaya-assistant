@@ -161,7 +161,7 @@ export default function LegacyBackupImport() {
 					globalStore.persistence.cloudCode.set(previousCloudCode);
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? getAccountClientErrorMessage(
 								error.message,
 								LEGACY_BACKUP_IMPORT_MESSAGE_MAP.failed

@@ -23,7 +23,7 @@ const registerOutputPath = resolve(publicPath, 'registerServiceWorker.js');
 const serviceWorkerOutputPath = resolve(publicPath, 'serviceWorker.js');
 
 function normalizeRelativePath(path: string) {
-	return relative(rootPath, path).split('\\').join('/');
+	return relative(rootPath, path).replaceAll('\\', '/');
 }
 
 async function checkServiceWorkerPaths() {

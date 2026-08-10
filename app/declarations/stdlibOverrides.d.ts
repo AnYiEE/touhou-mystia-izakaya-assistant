@@ -16,3 +16,7 @@ interface JSON {
 		reviver?: (this: any, key: string, value: any) => any
 	): unknown;
 }
+
+interface Math {
+	sumPrecise(items: Iterable<number>): number;
+}

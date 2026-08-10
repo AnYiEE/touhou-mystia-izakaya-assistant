@@ -1,6 +1,5 @@
 import {
 	RECOMMENDATION_BRIDGE_PROTOCOL_VERSION,
-	checkOwnProperty,
 	parseJsonWithUniqueMembers,
 } from './shared';
 
@@ -30,18 +29,11 @@ function decodeBase64Url(value: string) {
 		return null;
 	}
 	try {
-		const base64 = value.replace(/-/gu, '+').replace(/_/gu, '/');
-		const padding = '='.repeat((4 - (base64.length % 4)) % 4);
-		const binary = globalThis.atob(`${base64}${padding}`);
-		const bytes = Uint8Array.from(
-			binary,
-			(character) => character.codePointAt(0) ?? 0
-		);
-		const canonical = globalThis
-			.btoa(binary)
-			.replace(/\+/gu, '-')
-			.replace(/\//gu, '_')
-			.replace(/=+$/u, '');
+		const bytes = Uint8Array.fromBase64(value, { alphabet: 'base64url' });
+		const canonical = bytes.toBase64({
+			alphabet: 'base64url',
+			omitPadding: true,
+		});
 		if (canonical !== value) {
 			return null;
 		}
@@ -67,19 +59,16 @@ function checkEndpoint(value: string) {
 	if (!Number.isInteger(port) || port < 1 || port > 65_535) {
 		return false;
 	}
-	try {
-		const endpoint = new URL(value);
-		return (
-			endpoint.protocol === 'wss:' &&
-			endpoint.username === '' &&
-			endpoint.password === '' &&
-			endpoint.search === '' &&
-			endpoint.hash === '' &&
-			endpoint.pathname.length <= ENDPOINT_PATH_MAX_LENGTH
-		);
-	} catch {
-		return false;
-	}
+	const endpoint = URL.parse(value);
+	return (
+		endpoint !== null &&
+		endpoint.protocol === 'wss:' &&
+		endpoint.username === '' &&
+		endpoint.password === '' &&
+		endpoint.search === '' &&
+		endpoint.hash === '' &&
+		endpoint.pathname.length <= ENDPOINT_PATH_MAX_LENGTH
+	);
 }
 
 export function parseRecommendationBridgeLaunchDescriptor(
@@ -98,10 +87,10 @@ export function parseRecommendationBridgeLaunchDescriptor(
 	if (
 		!checkPlainObject(value) ||
 		Object.keys(value).length !== 4 ||
-		!checkOwnProperty(value, 'endpoint') ||
-		!checkOwnProperty(value, 'instance_id') ||
-		!checkOwnProperty(value, 'pairing_token') ||
-		!checkOwnProperty(value, 'protocol_version') ||
+		!Object.hasOwn(value, 'endpoint') ||
+		!Object.hasOwn(value, 'instance_id') ||
+		!Object.hasOwn(value, 'pairing_token') ||
+		!Object.hasOwn(value, 'protocol_version') ||
 		typeof value['endpoint'] !== 'string' ||
 		!checkEndpoint(value['endpoint']) ||
 		typeof value['instance_id'] !== 'string' ||
@@ -117,7 +106,7 @@ export function parseRecommendationBridgeLaunchDescriptor(
 }
 
 function captureLaunchDescriptor() {
-	if (!checkOwnProperty(globalThis, 'window')) {
+	if (!Object.hasOwn(globalThis, 'window')) {
 		return;
 	}
 	const fragment = globalThis.location.hash;
@@ -152,22 +141,18 @@ export function createRecommendationBridgeContinuationUrl(targetUrl: string) {
 	if (
 		activeLaunchDescriptor === null ||
 		activeLaunchFragment === null ||
-		!checkOwnProperty(globalThis, 'window')
+		!Object.hasOwn(globalThis, 'window')
 	) {
 		return targetUrl;
 	}
 
-	try {
-		const target = new URL(targetUrl, globalThis.location.href);
-		if (
-			target.origin !== globalThis.location.origin ||
-			targetUrl.includes('#')
-		) {
-			return targetUrl;
-		}
-		target.hash = activeLaunchFragment;
-		return target.toString();
-	} catch {
+	const target = URL.parse(targetUrl, globalThis.location.href);
+	if (
+		target?.origin !== globalThis.location.origin ||
+		targetUrl.includes('#')
+	) {
 		return targetUrl;
 	}
+	target.hash = activeLaunchFragment;
+	return target.toString();
 }

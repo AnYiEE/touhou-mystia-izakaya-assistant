@@ -17,31 +17,26 @@ export function getBondRecipes(
 	customerName: TCustomerRareName,
 	recipes: ReadonlyArray<TRecipe>
 ) {
-	let recipeCache = bondRecipesCache.get(recipes);
-	if (recipeCache === undefined) {
-		recipeCache = new Map();
-		bondRecipesCache.set(recipes, recipeCache);
-	}
+	const recipeCache = bondRecipesCache.getOrInsertComputed(
+		recipes,
+		() => new Map()
+	);
 
-	if (recipeCache.has(customerName)) {
-		return recipeCache.get(customerName);
-	}
+	return recipeCache.getOrInsertComputed(customerName, () => {
+		const bondRecipes: TBondRecipes = [];
 
-	const bondRecipes: TBondRecipes = [];
+		recipes.forEach(({ from, name }) => {
+			if (
+				isObject(from) &&
+				'bond' in from &&
+				from.bond.name === customerName
+			) {
+				bondRecipes.push({ level: from.bond.level, name });
+			}
+		});
 
-	recipes.forEach(({ from, name }) => {
-		if (
-			isObject(from) &&
-			'bond' in from &&
-			from.bond.name === customerName
-		) {
-			bondRecipes.push({ level: from.bond.level, name });
-		}
+		bondRecipes.sort(({ level: a }, { level: b }) => numberSort(a, b));
+
+		return bondRecipes;
 	});
-
-	bondRecipes.sort(({ level: a }, { level: b }) => numberSort(a, b));
-
-	recipeCache.set(customerName, bondRecipes);
-
-	return bondRecipes;
 }

@@ -207,7 +207,7 @@ export default memo<IProps>(function AdminSsoClientGrantPanel({
 					return;
 				}
 				onMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_SSO_MESSAGE_MAP.clientSummaryReadFailed
 				);
@@ -246,7 +246,7 @@ export default memo<IProps>(function AdminSsoClientGrantPanel({
 						return;
 					}
 					onMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_SSO_MESSAGE_MAP.grantUsersReadFailed
 					);
@@ -347,7 +347,7 @@ export default memo<IProps>(function AdminSsoClientGrantPanel({
 				})
 				.catch((error: unknown) => {
 					onMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_MESSAGE_MAP.ssoGrantRevokeFailed
 					);
@@ -397,7 +397,7 @@ export default memo<IProps>(function AdminSsoClientGrantPanel({
 			})
 			.catch((error: unknown) => {
 				onMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_SSO_MESSAGE_MAP.grantBatchRevokeFailed
 				);

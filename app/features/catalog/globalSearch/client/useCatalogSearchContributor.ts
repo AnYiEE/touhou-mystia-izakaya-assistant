@@ -35,16 +35,18 @@ function filterRecipeVariantsByHiddenIngredients(
 	recipes: TRecipe['recipes'],
 	hiddenIngredients: ReadonlySet<TIngredientName>
 ): TRecipe['recipes'] | null {
-	const [firstRecipe, ...remainingRecipes] = recipes.filter(
+	const visibleRecipes = recipes.filter(
 		({ ingredients: variantIngredients }) =>
 			!variantIngredients.some((ingredient) =>
 				hiddenIngredients.has(ingredient)
 			)
 	);
 
-	return firstRecipe === undefined
-		? null
-		: [firstRecipe, ...remainingRecipes];
+	if (visibleRecipes.length === 0) {
+		return null;
+	}
+
+	return visibleRecipes as TRecipe['recipes'];
 }
 
 export function useCatalogSearchContributor() {

@@ -245,7 +245,7 @@ export default function AdminAnnouncementsClient({
 						return;
 					}
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.listReadFailed
 					);
@@ -295,7 +295,7 @@ export default function AdminAnnouncementsClient({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
@@ -384,7 +384,7 @@ export default function AdminAnnouncementsClient({
 			})
 			.catch((error: unknown) => {
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.cleanupFailed
 				);

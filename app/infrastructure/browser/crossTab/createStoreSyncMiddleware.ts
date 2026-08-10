@@ -9,7 +9,6 @@ import {
 	checkLengthEmpty,
 	checkLengthEqualOf,
 } from '@/shared/utilities/collections/check';
-import { copyArray } from '@/shared/utilities/collections/convert';
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
 
 import type { IRemoteStateApplicationGuard } from './contracts';
@@ -88,7 +87,7 @@ function setNestedValue<T, P extends TNestedKeys<T>>(
 	path: P,
 	value: TNestedType<T, TSplitByDot<P>>
 ) {
-	const keys = copyArray(getKeys(path));
+	const keys = [...getKeys(path)];
 	const lastKey = keys.pop() as string;
 
 	const target = keys.reduce((acc, key) => {

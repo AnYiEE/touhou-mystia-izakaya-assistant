@@ -71,8 +71,8 @@ export function createRecommendedCustomerRarePlanMealSession({
 	hiddenDlcs: ReadonlySet<TDlc>;
 }): IRecommendedCustomerRarePlanMealSession {
 	const customer = customerInstance.getPropsByName(customerName);
-	const recipeTags = [...customer.positiveTags].sort(pinyinSort);
-	const beverageTags = [...customer.beverageTags].sort(pinyinSort);
+	const recipeTags = customer.positiveTags.toSorted(pinyinSort);
+	const beverageTags = customer.beverageTags.toSorted(pinyinSort);
 	const cookers = cookerInstance.data
 		.filter(
 			({ availabilityPaths, category }) =>

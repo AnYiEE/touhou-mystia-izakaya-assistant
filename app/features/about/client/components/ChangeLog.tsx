@@ -14,8 +14,6 @@ import {
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { SITE_LINKS } from '@/features/appShell/links';
 
-import { copyArray } from '@/shared/utilities/collections/convert';
-
 const links = SITE_LINKS;
 
 const changelog = [
@@ -231,8 +229,8 @@ export default function ChangeLog() {
 			>
 				更新日志
 			</Heading>
-			{copyArray(changelog)
-				.reverse()
+			{changelog
+				.toReversed()
 				.map(({ changes, version }, versionIndex) => (
 					<Fragment key={versionIndex}>
 						<Heading as="h2" isFirst={versionIndex === 0}>

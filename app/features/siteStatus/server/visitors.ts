@@ -50,7 +50,10 @@ export function createVisitorCountReader({
 		const abortController = new AbortController();
 		let timeoutId: ReturnType<typeof setTimeout> | null = null;
 		try {
-			const url = new URL(configuredEndpoint);
+			const url = URL.parse(configuredEndpoint);
+			if (url === null) {
+				return;
+			}
 			url.searchParams.set('module', 'API');
 			url.searchParams.set('method', 'Live.getCounters');
 			url.searchParams.set('format', 'json');

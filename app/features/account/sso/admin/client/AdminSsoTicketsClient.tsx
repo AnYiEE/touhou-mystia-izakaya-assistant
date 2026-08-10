@@ -296,7 +296,7 @@ export default function AdminSsoTicketsClient({
 						return;
 					}
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_SSO_MESSAGE_MAP.ticketReadFailed
 					);
@@ -339,7 +339,7 @@ export default function AdminSsoTicketsClient({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ADMIN_MESSAGE_MAP.adminStateReadFailed
 				);
@@ -512,7 +512,7 @@ export default function AdminSsoTicketsClient({
 				})
 				.catch((error: unknown) => {
 					setMessage(
-						error instanceof Error
+						Error.isError(error)
 							? error.message
 							: ADMIN_SSO_MESSAGE_MAP.ticketUpdateFailed
 					);

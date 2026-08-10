@@ -344,7 +344,7 @@ export async function startSelfHosted(rootDirectory = projectDirectory) {
 
 /** @param {unknown} error */
 function getSafeErrorCode(error) {
-	if (error instanceof Error && /^[a-z0-9-]+$/u.test(error.message)) {
+	if (Error.isError(error) && /^[a-z0-9-]+$/u.test(error.message)) {
 		return error.message;
 	}
 	return 'self-hosted-startup-failed';

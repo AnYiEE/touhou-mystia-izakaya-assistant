@@ -299,7 +299,7 @@ export function useAccountPasskeys({
 
 					if (!silent) {
 						setMessage(
-							error instanceof Error
+							Error.isError(error)
 								? error.message
 								: ACCOUNT_MANAGER_MESSAGE_MAP.passkeyRefreshFailed
 						);
@@ -466,7 +466,7 @@ export function useAccountPasskeys({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ACCOUNT_MANAGER_MESSAGE_MAP.passkeyAddFailed
 				);
@@ -563,7 +563,7 @@ export function useAccountPasskeys({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ACCOUNT_MANAGER_MESSAGE_MAP.passkeyDeleteFailed
 				);
@@ -662,7 +662,7 @@ export function useAccountPasskeys({
 					return;
 				}
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ACCOUNT_MANAGER_MESSAGE_MAP.passkeyRenameFailed
 				);

@@ -17,7 +17,6 @@ import { reverseVisibilityState } from '@/features/catalog/customers/shared/stat
 import { createCustomerPlansActionsDefinition } from '@/features/customerPlans/client/state/planStoreDefinition';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { toSet } from '@/shared/utilities/collections/convert';
 import { removeLastElement } from '@/shared/utilities/collections/removeLastElement';
 
 import {
@@ -318,8 +317,8 @@ export const createCustomerRareStoreActions = (
 			recipeTag: null,
 		});
 		currentStore.shared.customer.select.set({
-			beverageTag: toSet(),
-			recipeTag: toSet(),
+			beverageTag: new Set(),
+			recipeTag: new Set(),
 		});
 		currentStore.shared.customer.hasMystiaCooker.set(false);
 		currentStore.shared.customer.isDarkMatter.set(null);

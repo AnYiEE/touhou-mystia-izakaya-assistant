@@ -33,5 +33,19 @@ export async function parseJsonFromInput(input: HTMLInputElement) {
 		return null;
 	}
 
-	return file.text();
+	return new Promise<string>((resolve, reject) => {
+		const reader = new FileReader();
+		reader.addEventListener('error', () => {
+			reject(reader.error ?? new Error('file-read-failed'));
+		});
+		reader.addEventListener('load', () => {
+			if (typeof reader.result === 'string') {
+				resolve(reader.result);
+				return;
+			}
+			reject(new Error('file-read-failed'));
+		});
+		// eslint-disable-next-line unicorn/prefer-blob-reading-methods -- Safari 12 lacks Blob.text(), which core-js cannot polyfill.
+		reader.readAsText(file);
+	});
 }

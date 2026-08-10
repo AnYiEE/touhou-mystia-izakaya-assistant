@@ -13,7 +13,7 @@ const forbiddenOutputPatterns = [
 const ignoredOutputFileNames = ['.DS_Store'] as const;
 
 function normalizePath(path: string) {
-	return path.split('\\').join('/');
+	return path.replaceAll('\\', '/');
 }
 
 function findForbiddenPattern(value: Buffer | string) {

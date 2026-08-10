@@ -241,7 +241,7 @@ export function searchGlobalIndex({
 			}
 
 			const score =
-				scoreParts.reduce((sum, matchScore) => sum + matchScore, 0) +
+				Math.sumPrecise(scoreParts) +
 				getContextBoost(item.section, contextSection);
 
 			return [{ item, matches, score }];

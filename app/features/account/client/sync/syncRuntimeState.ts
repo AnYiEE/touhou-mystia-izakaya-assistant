@@ -419,16 +419,13 @@ export function removeAccountSyncConflict(
 					conflict.namespace !== namespace
 			)
 	);
-	const nextReadiness = Object.entries(
-		accountStore.shared.sync.resolutionReadiness.get()
-	).reduce<
-		Partial<Record<TSyncNamespace, TAccountSyncConflictResolutionReadiness>>
-	>((readinesses, [currentNamespace, readiness]) => {
-		if (currentNamespace !== namespace) {
-			readinesses[currentNamespace as TSyncNamespace] = readiness;
-		}
-		return readinesses;
-	}, {});
+	const nextReadiness = Object.fromEntries(
+		Object.entries(accountStore.shared.sync.resolutionReadiness.get())
+			.values()
+			.filter(([currentNamespace]) => currentNamespace !== namespace)
+	) as Partial<
+		Record<TSyncNamespace, TAccountSyncConflictResolutionReadiness>
+	>;
 	accountStore.shared.sync.resolutionReadiness.set(nextReadiness);
 
 	reconcileAccountSyncConflictLastError(userId);

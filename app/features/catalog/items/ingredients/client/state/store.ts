@@ -4,7 +4,6 @@ import { filterAvailableItemsByHiddenDlcs } from '@/domain/availability';
 import { Ingredient } from '@/domain/catalog/food/Ingredient';
 import type { TDlc } from '@/domain/data/shared/types';
 import { DYNAMIC_TAG_MAP } from '@/domain/data/tags/tagFacts';
-import type { TIngredientTag } from '@/domain/data/tags/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
@@ -15,7 +14,6 @@ import {
 
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
 
-import { toArray, toSet } from '@/shared/utilities/collections/convert';
 import { sortBy } from '@/shared/utilities/collections/sortBy';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
@@ -54,7 +52,7 @@ const state = {
 		pinyinSortState: PINYIN_SORT_STATE_MAP.none as TPinyinSortState,
 	},
 	shared: {
-		hiddenItems: { dlcs: toSet<TDlc>() },
+		hiddenItems: { dlcs: new Set<TDlc>() },
 
 		famousShop: false,
 		popularTrend: { isNegative: false, tag: null } as IPopularTrend,
@@ -163,15 +161,15 @@ export const ingredientsStore = store(state, {
 	},
 	availableTags: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-		return toArray<TIngredientTag[]>(
-			instance.getValuesByProp(
+		return [
+			...instance.getValuesByProp(
 				'tags',
 				false,
 				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			),
 			DYNAMIC_TAG_MAP.popularNegative,
-			DYNAMIC_TAG_MAP.popularPositive
-		)
+			DYNAMIC_TAG_MAP.popularPositive,
+		]
 			.map(toGetValueCollection)
 			.sort(pinyinSort);
 	},

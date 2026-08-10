@@ -354,7 +354,7 @@ export function useAccountAuthentication({
 			})
 			.catch((error: unknown) => {
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ACCOUNT_MANAGER_MESSAGE_MAP.authenticationFailed
 				);
@@ -616,7 +616,7 @@ export function useAccountAuthentication({
 				}
 
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ACCOUNT_MANAGER_MESSAGE_MAP.authenticationFailed
 				);
@@ -717,7 +717,7 @@ export function useAccountAuthentication({
 				}
 
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ACCOUNT_MANAGER_MESSAGE_MAP.authenticationFailed
 				);
@@ -834,7 +834,7 @@ export function useAccountAuthentication({
 				}
 
 				setMessage(
-					error instanceof Error
+					Error.isError(error)
 						? error.message
 						: ACCOUNT_MANAGER_MESSAGE_MAP.registrationFailed
 				);

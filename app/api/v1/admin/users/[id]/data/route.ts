@@ -129,7 +129,7 @@ export async function DELETE(
 
 		return createNoStoreJsonResponse(syncState);
 	} catch (error) {
-		if (error instanceof Error) {
+		if (Error.isError(error)) {
 			if (error.message === 'user-not-found') {
 				return createNoStoreErrorResponse(
 					ACCOUNT_API_RESPONSE_CODE_MAP.targetUserNotFound,
