@@ -18,7 +18,11 @@ function normalizePath(filePath: string) {
 }
 
 function isNextStaticScript(filePath: string) {
-	return normalizePath(filePath).startsWith('out/_next/static/');
+	const normalizedPath = normalizePath(filePath);
+	return (
+		normalizedPath.startsWith('.next/static/') ||
+		normalizedPath.startsWith('out/_next/static/')
+	);
 }
 
 function isClassicScriptScopeWrapped(code: string) {
@@ -29,7 +33,11 @@ function wrapClassicScriptScope(code: string) {
 	return `${scopedClassicScriptMarker}(function(){${code}\n}).call(self);`;
 }
 
-const filePaths = await fg.glob(['out/**/*.js', 'public/**/*.js']);
+const filePaths = await fg.glob([
+	'.next/static/**/*.js',
+	'out/**/*.js',
+	'public/**/*.js',
+]);
 let hasTransformErrors = false;
 
 for (const filePath of filePaths) {
