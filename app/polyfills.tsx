@@ -52,6 +52,8 @@ const script = () => {
 	 */
 	globalThis.addEventListener('error', (event) => {
 		const { colno, error, filename, lineno, message } = event;
+		const errorStack =
+			error === null || error === undefined ? undefined : error.stack;
 
 		if (
 			/fetch|load\sfail|loading\schunk|network|net::|ResizeObserver/i.test(
@@ -62,7 +64,7 @@ const script = () => {
 		}
 
 		alert(
-			`错误：${message}\n文件：${filename}\n行号：${lineno}    列号：${colno}${error?.stack ? `\n\n${error.stack}` : ''}`
+			`错误：${message}\n文件：${filename}\n行号：${lineno}    列号：${colno}${errorStack ? `\n\n${errorStack}` : ''}`
 		);
 	});
 

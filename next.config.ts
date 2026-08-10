@@ -6,6 +6,7 @@ import {
 	ACCOUNT_SYNC_REQUEST_MAX_BYTES,
 	getServerActionBodySizeLimit,
 } from './app/features/account/requestLimits';
+import { BabelTransformPlugin } from './scripts/build/webpack/babelTransformPlugin';
 import { readSiteStatusBuildIdentity } from './scripts/deployment/siteStatusBuild';
 import {
 	CDN_URL,
@@ -17,6 +18,15 @@ import {
 } from './scripts/shared/environment';
 import { getSha } from './scripts/shared/git';
 
+interface IWebpackConfiguration {
+	plugins: unknown[];
+}
+
+interface IWebpackContext {
+	dev: boolean;
+	isServer: boolean;
+}
+
 const serverActionBodySizeLimit = getServerActionBodySizeLimit(
 	ACCOUNT_SYNC_REQUEST_MAX_BYTES
 );
@@ -24,6 +34,16 @@ const serverActionBodySizeLimit = getServerActionBodySizeLimit(
 const exportMode = IS_OFFLINE || (!IS_SELF_HOSTED && !IS_VERCEL);
 
 const siteStatusBuildOperationId = readSiteStatusBuildIdentity(process.cwd());
+
+function configureWebpack(
+	config: IWebpackConfiguration,
+	{ dev, isServer }: IWebpackContext
+) {
+	if (!dev && !isServer) {
+		config.plugins.push(new BabelTransformPlugin());
+	}
+	return config;
+}
 
 const nextConfig: NextConfig = {
 	compiler: {
@@ -69,6 +89,8 @@ const nextConfig: NextConfig = {
 		serverActions: { bodySizeLimit: serverActionBodySizeLimit },
 		webpackMemoryOptimizations: IS_SKIP_LINT,
 	},
+
+	webpack: configureWebpack,
 };
 
 if (exportMode) {
