@@ -5,7 +5,8 @@
 
 @layer base {
 	button {
-		@apply appearance-none;
+		// Reset the default background color of buttons to avoid unexpected styles, compatibility with Safari 14 and earlier versions.
+		background-color: initial;
 	}
 }
 
