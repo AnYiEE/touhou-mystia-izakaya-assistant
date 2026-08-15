@@ -45,7 +45,11 @@ function clearPendingLegacyBackupImportError() {
 	}
 }
 
-export default function LegacyBackupImport() {
+interface IProps {
+	onOpenAccountModal: () => void;
+}
+
+export default function LegacyBackupImport({ onOpenAccountModal }: IProps) {
 	const vibrate = useVibrate();
 
 	const cloudCode = globalStore.persistence.cloudCode.use();
@@ -216,8 +220,8 @@ export default function LegacyBackupImport() {
 			'Account Button',
 			'Open Modal From Legacy Backup Import'
 		);
-		accountStore.openAccountModal();
-	}, [vibrate]);
+		onOpenAccountModal();
+	}, [onOpenAccountModal, vibrate]);
 
 	useEffect(() => {
 		const previousCloudCode = previousCloudCodeRef.current;

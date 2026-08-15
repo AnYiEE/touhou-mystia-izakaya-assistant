@@ -1,7 +1,14 @@
+import { commonColors } from '@heroui/theme';
 import { readableColor } from 'color2k';
 
 import { colors } from './palette';
-import type { TSemanticBaseColors, TThemeColors } from './types';
+import type {
+	TSemanticBaseColors,
+	TThemeAccentColors,
+	TThemeColors,
+	TThemeLightPaletteColors,
+	TThemeSurfaceColors,
+} from './types';
 import { swapColorScale } from './utils';
 
 function checkBackgroundColor(
@@ -150,7 +157,93 @@ const themeColorsLight = {
 	},
 } as const satisfies TThemeColors;
 
+const themeColorsWhite = {
+	background: { ...commonColors.zinc, DEFAULT: commonColors.zinc[50] },
+	danger: {
+		...colors.pink,
+		DEFAULT: colors.pink[500],
+		foreground: readableColor(colors.pink[500]),
+	},
+	focus: { ...colors.brown, DEFAULT: colors.brown[500] },
+	primary: {
+		...colors.blue,
+		DEFAULT: colors.blue[500],
+		foreground: readableColor(colors.blue[500]),
+	},
+	secondary: {
+		...colors.purple,
+		DEFAULT: colors.purple[500],
+		foreground: readableColor(colors.purple[500]),
+	},
+	success: {
+		...colors.green,
+		DEFAULT: colors.green[500],
+		foreground: readableColor(colors.green[500]),
+	},
+	warning: {
+		...colors.orange,
+		DEFAULT: colors.orange[500],
+		foreground: readableColor(colors.orange[500]),
+	},
+} as const satisfies TThemeAccentColors &
+	Pick<TThemeSurfaceColors, 'background'>;
+
+const themeColorsGreen = {
+	...themeColorsWhite,
+	background: { ...colors.softGreen, DEFAULT: colors.softGreen[50] },
+	content1: {
+		...colors.softGreen,
+		DEFAULT: colors.softGreen[100],
+		foreground: colors.black[900],
+	},
+	content2: {
+		...colors.softGreen,
+		DEFAULT: colors.softGreen[200],
+		foreground: colors.black[800],
+	},
+	default: {
+		...colors.softGreen,
+		DEFAULT: colors.softGreen[300],
+		foreground: colors.black[700],
+	},
+	divider: { ...colors.softGreen, DEFAULT: 'rgba(45, 77, 56, 0.15)' },
+	primary: {
+		...colors.softGreen,
+		DEFAULT: colors.softGreen[700],
+		foreground: readableColor(colors.softGreen[700]),
+	},
+} as const satisfies TThemeLightPaletteColors;
+
+const themeColorsPink = {
+	...themeColorsWhite,
+	background: { ...colors.softPink, DEFAULT: colors.softPink[50] },
+	content1: {
+		...colors.softPink,
+		DEFAULT: colors.softPink[50],
+		foreground: colors.black[900],
+	},
+	content2: {
+		...colors.softPink,
+		DEFAULT: colors.softPink[100],
+		foreground: colors.black[800],
+	},
+	default: {
+		...colors.softPink,
+		DEFAULT: colors.softPink[200],
+		foreground: colors.black[700],
+	},
+	divider: { ...colors.softPink, DEFAULT: 'rgba(112, 56, 68, 0.15)' },
+	primary: {
+		...colors.softPink,
+		DEFAULT: colors.softPink[700],
+		foreground: readableColor(colors.softPink[700]),
+	},
+} as const satisfies TThemeLightPaletteColors;
+
 export const semanticColors = {
 	dark: themeColorsDark,
+	green: themeColorsGreen,
 	light: themeColorsLight,
+	pink: themeColorsPink,
+	white: themeColorsWhite,
 };

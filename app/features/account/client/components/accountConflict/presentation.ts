@@ -14,7 +14,7 @@ export const SYNC_NAMESPACE_LABEL_MAP = {
 	'customer_rare.plans': '营业预设（稀客）',
 	'customer_rare.settings': '偏好设置（稀客）',
 	'global.preferences': '偏好设置（全局）',
-	theme: '颜色模式',
+	theme: '主题设置',
 	'tutorial.customer_rare': '稀客教程进度',
 } as const satisfies Record<TSyncNamespace, string>;
 
@@ -22,6 +22,7 @@ const CONFLICT_FIELD_LABEL_MAP: Record<string, string> = {
 	activeId: '当前使用的营业预设',
 	columns: '表格显示列',
 	completed: '稀客教程进度',
+	darkPalette: '深色主题配色',
 	dlcs: '已关闭的数据集',
 	enabled: '启用状态',
 	famousShop: '“明星店”效果',
@@ -29,9 +30,11 @@ const CONFLICT_FIELD_LABEL_MAP: Record<string, string> = {
 	hiddenItems: '启用或禁用的酒水、料理和食材',
 	highAppearance: '平滑滚动和磨砂效果',
 	items: '保存的营业预设',
+	lightPalette: '浅色主题配色',
 	maxExtraIngredients: '加料上限',
 	maxRating: '评级上限',
 	maxResults: '推荐结果上限',
+	mode: '颜色模式',
 	orderLinkedFilter: '选择点单需求的同时筛选表格',
 	popularTrend: '流行趋势',
 	'popularTrend.isNegative': '流行趋势方向',
@@ -64,16 +67,21 @@ const CONFLICT_BOOLEAN_VALUE_LABEL_MAP: Record<
 const CONFLICT_VALUE_LABEL_MAP: Record<string, string> = {
 	action: '操作',
 	beverage: '酒水',
+	black: '深邃黑',
 	cooker: '厨具',
 	cookerType: '厨具',
 	dark: '深色',
+	green: '清新绿',
 	ingredient: '食材',
+	izakaya: '雀食堂',
 	light: '浅色',
+	pink: '少女粉',
 	price: '售价',
 	recipe: '料理',
 	suitability: '匹配度',
 	system: '跟随系统',
 	time: '烹饪时间',
+	white: '简约白',
 };
 
 const MAX_VISIBLE_DIFFERENCES = 6;

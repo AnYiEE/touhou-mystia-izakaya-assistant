@@ -21,7 +21,7 @@ import {
 	MOBILE_UTILITY_NAV_ITEMS,
 	type TMobileSpriteNavItem,
 } from './navigationItems';
-import { NAVBAR_THEME_ITEMS } from './themeItems';
+import { type INavbarPaletteItem, NAVBAR_THEME_ITEMS } from './themeItems';
 
 const MOBILE_SECTION_TITLE_CLASS_NAME =
 	'px-1 text-small font-medium text-foreground-500 dark:text-foreground-400';
@@ -58,6 +58,8 @@ interface IProps {
 	onNavigate: (href: string) => void;
 	onSearchPress: () => void;
 	onThemeAction: (key: string) => void;
+	paletteItems: ReadonlyArray<INavbarPaletteItem>;
+	selectedPaletteKey: string;
 	selectedThemeKeys: ReadonlyArray<string>;
 	shouldShowAccountAction: boolean;
 }
@@ -76,6 +78,8 @@ export default function MobileNavigationMenu({
 	onNavigate,
 	onSearchPress,
 	onThemeAction,
+	paletteItems,
+	selectedPaletteKey,
 	selectedThemeKeys,
 	shouldShowAccountAction,
 }: IProps) {
@@ -267,6 +271,36 @@ export default function MobileNavigationMenu({
 		);
 	};
 
+	const renderMobilePaletteActionItem = ({
+		key,
+		label,
+		swatchClassName,
+	}: INavbarPaletteItem) => {
+		const isSelected = selectedPaletteKey === key;
+		return (
+			<Button
+				key={key}
+				variant="light"
+				onPress={() => {
+					onThemeAction(key);
+				}}
+				className={cn(
+					'flex h-auto min-h-12 w-full min-w-0 items-center justify-center gap-2 px-3 py-2 text-center',
+					MOBILE_CARD_BASE_CLASS_NAME,
+					isSelected
+						? MOBILE_CARD_ACTIVE_CLASS_NAME
+						: MOBILE_CARD_INACTIVE_CLASS_NAME
+				)}
+			>
+				<span
+					aria-hidden="true"
+					className={cn('h-4 w-4 rounded-full', swatchClassName)}
+				/>
+				<span className="text-small font-medium">{label}</span>
+			</Button>
+		);
+	};
+
 	return (
 		<>
 			<NavbarContent
@@ -377,6 +411,18 @@ export default function MobileNavigationMenu({
 								renderMobileThemeActionItem
 							)}
 						</div>
+						{paletteItems.length > 0 && (
+							<div className="space-y-2 pt-1">
+								<h3 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
+									主题配色
+								</h3>
+								<div className="grid grid-cols-2 gap-2">
+									{paletteItems.map(
+										renderMobilePaletteActionItem
+									)}
+								</div>
+							</div>
+						)}
 					</section>
 				</NavbarMenuItem>
 			</NavbarMenu>

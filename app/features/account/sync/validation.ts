@@ -1,4 +1,8 @@
-import { THEME_MAP } from '@/design/theme/runtime/constants';
+import {
+	DARK_PALETTE_MAP,
+	LIGHT_PALETTE_MAP,
+	THEME_MAP,
+} from '@/design/theme/runtime/constants';
 
 import {
 	SYNC_NAMESPACE_MAP,
@@ -55,6 +59,7 @@ const foodCatalog = FoodCatalog.getInstance();
 const foodNames = new Set<string>(foodCatalog.getNames());
 const foods = new Set<number>(foodCatalog.getValuesByProp('id'));
 const dlcKeys = new Set<string>(Object.keys(DLC_LABEL_MAP));
+const darkPaletteValues = new Set<string>(Object.values(DARK_PALETTE_MAP));
 const beverageColumnKeys = new Set([
 	'beverage',
 	'price',
@@ -79,7 +84,28 @@ const foodColumnKeys = new Set([
 	'action',
 	'time',
 ]);
+const lightPaletteValues = new Set<string>(Object.values(LIGHT_PALETTE_MAP));
 const themeValues = new Set<string>(Object.values(THEME_MAP));
+
+function validateThemeData(data: unknown, schemaVersion: number) {
+	if (schemaVersion === 1) {
+		return typeof data === 'string' && themeValues.has(data);
+	}
+	if (schemaVersion !== 2 || !isObjectTagRecord(data)) {
+		return false;
+	}
+
+	return (
+		hasExactKeys(data, ['darkPalette', 'lightPalette', 'mode']) &&
+		typeof data['darkPalette'] === 'string' &&
+		darkPaletteValues.has(data['darkPalette']) &&
+		typeof data['lightPalette'] === 'string' &&
+		lightPaletteValues.has(data['lightPalette']) &&
+		typeof data['mode'] === 'string' &&
+		themeValues.has(data['mode'])
+	);
+}
+
 export function validateNormalGuestMealsData(
 	data: unknown,
 	schemaVersion: number = SYNC_SCHEMA_VERSION_MAP[
@@ -294,7 +320,7 @@ export function validateSyncStateData(change: ISyncStateChange) {
 		);
 	}
 	if (change.namespace === SYNC_NAMESPACE_MAP.theme) {
-		return typeof change.data === 'string' && themeValues.has(change.data);
+		return validateThemeData(change.data, change.schema_version);
 	}
 
 	return (

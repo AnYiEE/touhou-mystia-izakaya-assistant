@@ -31,8 +31,12 @@ const config: Config = {
 	plugins: [
 		heroui({
 			themes: {
+				black: { extend: 'dark' },
+				green: { colors: semanticColors.green, extend: 'light' },
 				izakaya: { colors: semanticColors.light, extend: 'light' },
 				'izakaya-dark': { colors: semanticColors.dark, extend: 'dark' },
+				pink: { colors: semanticColors.pink, extend: 'light' },
+				white: { colors: semanticColors.white, extend: 'light' },
 			},
 		}),
 	],

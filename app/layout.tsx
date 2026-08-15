@@ -115,7 +115,7 @@ export default async function RootLayout({
 		<html
 			suppressHydrationWarning
 			lang={locale}
-			className="selection-custom light:izakaya dark:izakaya-dark"
+			className="selection-custom"
 		>
 			<head>
 				<Polyfills />

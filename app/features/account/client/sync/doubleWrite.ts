@@ -1,7 +1,11 @@
 import isObject from 'lodash/isObject.js';
 
-import { STORAGE_KEY } from '@/design/theme/runtime/constants';
-import { addThemeChangeListener } from '@/design/theme/runtime/useTheme';
+import {
+	DARK_PALETTE_STORAGE_KEY,
+	LIGHT_PALETTE_STORAGE_KEY,
+	STORAGE_KEY,
+} from '@/design/theme/runtime/constants';
+import { addThemePersistenceChangeListener } from '@/design/theme/runtime/useTheme';
 
 import {
 	ACCOUNT_SYNC_STATUS_MAP,
@@ -595,13 +599,18 @@ export function startAccountStoreSyncWatchers() {
 	);
 
 	watch(
-		addThemeChangeListener(() => {
+		addThemePersistenceChangeListener(() => {
 			enqueueAccountSyncLocalSnapshotReconcile(SYNC_NAMESPACE_MAP.theme);
 		})
 	);
 
 	const handleThemeStorageChange = (event: StorageEvent) => {
-		if (event.key !== STORAGE_KEY || event.oldValue === event.newValue) {
+		if (
+			(event.key !== DARK_PALETTE_STORAGE_KEY &&
+				event.key !== LIGHT_PALETTE_STORAGE_KEY &&
+				event.key !== STORAGE_KEY) ||
+			event.oldValue === event.newValue
+		) {
 			return;
 		}
 

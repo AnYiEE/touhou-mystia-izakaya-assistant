@@ -13,6 +13,7 @@ import {
 import { useProgress } from 'react-transition-progress';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
+import { THEME_MAP } from '@/design/theme/runtime/constants';
 import { useTheme } from '@/design/theme/runtime/useTheme';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
@@ -39,9 +40,15 @@ import { useVibrate } from '@/features/preferences/client/useVibrate';
 import { checkIsApplePlatform } from '@/infrastructure/browser/capabilities/platform';
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
+import { useHydrated } from '@/shared/react/useHydrated';
+
 import DesktopNavigation from './DesktopNavigation';
 import MobileNavigationMenu from './MobileNavigationMenu';
-import { NAVBAR_THEME_ITEMS } from './themeItems';
+import {
+	NAVBAR_DARK_PALETTE_ITEMS,
+	NAVBAR_LIGHT_PALETTE_ITEMS,
+	NAVBAR_THEME_ITEMS,
+} from './themeItems';
 
 const { isAccountFeatureClientEnabled } = PUBLIC_RUNTIME_CONFIG;
 
@@ -57,8 +64,17 @@ export default function Navbar() {
 	const basePathname = `/${pathname.split('/', 2)[1]}`;
 
 	const { isHighAppearance } = useDesignPreferences();
+	const isHydrated = useHydrated();
 	const isReducedMotion = useReducedMotion();
-	const [theme, setTheme] = useTheme();
+	const [
+		theme,
+		setTheme,
+		lightPalette,
+		setLightPalette,
+		darkPalette,
+		setDarkPalette,
+		resolvedTheme,
+	] = useTheme();
 	const vibrate = useVibrate();
 
 	const [isApplePlatform, setIsApplePlatform] = useState(false);
@@ -81,6 +97,15 @@ export default function Navbar() {
 		[accountBootstrapStatus]
 	);
 	const selectedThemeKeys = useMemo(() => [`theme:${theme}`], [theme]);
+	const paletteItems = isHydrated
+		? resolvedTheme === THEME_MAP.LIGHT
+			? NAVBAR_LIGHT_PALETTE_ITEMS
+			: NAVBAR_DARK_PALETTE_ITEMS
+		: [];
+	const selectedPaletteKey =
+		resolvedTheme === THEME_MAP.LIGHT
+			? `light-palette:${lightPalette}`
+			: `dark-palette:${darkPalette}`;
 	const searchShortcutLabel = isApplePlatform ? '⌘K' : 'Ctrl+K';
 	const getMobileMenuRootElement = useCallback(
 		() =>
@@ -277,17 +302,41 @@ export default function Navbar() {
 			const themeItem = NAVBAR_THEME_ITEMS.find(
 				({ key: themeKey }) => themeKey === actionKey
 			);
-			if (themeItem === undefined) {
+			if (themeItem !== undefined) {
+				setTheme(themeItem.theme);
+				trackEvent(
+					trackEvent.category.click,
+					'Theme Button',
+					themeItem.theme
+				);
 				return;
 			}
-			setTheme(themeItem.theme);
+			const darkPaletteItem = NAVBAR_DARK_PALETTE_ITEMS.find(
+				({ key: darkPaletteKey }) => darkPaletteKey === actionKey
+			);
+			if (darkPaletteItem !== undefined) {
+				setDarkPalette(darkPaletteItem.palette);
+				trackEvent(
+					trackEvent.category.click,
+					'Theme Button',
+					`dark-palette:${darkPaletteItem.palette}`
+				);
+				return;
+			}
+			const lightPaletteItem = NAVBAR_LIGHT_PALETTE_ITEMS.find(
+				({ key: lightPaletteKey }) => lightPaletteKey === actionKey
+			);
+			if (lightPaletteItem === undefined) {
+				return;
+			}
+			setLightPalette(lightPaletteItem.palette);
 			trackEvent(
 				trackEvent.category.click,
 				'Theme Button',
-				themeItem.theme
+				`light-palette:${lightPaletteItem.palette}`
 			);
 		},
-		[handleAccountMenuClick, setTheme]
+		[handleAccountMenuClick, setDarkPalette, setLightPalette, setTheme]
 	);
 
 	// Support parallel routing pages.
@@ -323,7 +372,9 @@ export default function Navbar() {
 					onDropdownOpenChange={vibrate}
 					onNavigate={handlePress}
 					onSearchPress={handleSearchButtonPress}
+					paletteItems={paletteItems}
 					searchShortcutLabel={searchShortcutLabel}
+					selectedPaletteKey={selectedPaletteKey}
 					selectedThemeKeys={selectedThemeKeys}
 					shouldShowAccountAction={shouldShowAccountAction}
 					shouldShowPreferences={shouldShowPreferences}
@@ -344,6 +395,8 @@ export default function Navbar() {
 					onNavigate={handleMobileNavigate}
 					onSearchPress={handleMobileSearchButtonPress}
 					onThemeAction={handleActionMenu}
+					paletteItems={paletteItems}
+					selectedPaletteKey={selectedPaletteKey}
 					selectedThemeKeys={selectedThemeKeys}
 					shouldShowAccountAction={shouldShowAccountAction}
 				/>

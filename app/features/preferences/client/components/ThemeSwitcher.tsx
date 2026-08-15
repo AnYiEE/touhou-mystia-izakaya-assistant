@@ -11,25 +11,34 @@ import {
 	type FontAwesomeIconProps,
 } from '@fortawesome/react-fontawesome';
 import { Spinner } from '@heroui/spinner';
-import { type Selection } from '@heroui/table';
 import { cn } from '@heroui/theme';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { type Key, memo, useCallback, useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
-import { THEME_MAP } from '@/design/theme/runtime/constants';
-import type { TTheme } from '@/design/theme/runtime/types';
+import {
+	DARK_PALETTE_PRESENTATION_MAP,
+	LIGHT_PALETTE_PRESENTATION_MAP,
+} from '@/design/theme/palettePresentation';
+import {
+	DARK_PALETTE_MAP,
+	LIGHT_PALETTE_MAP,
+	THEME_MAP,
+} from '@/design/theme/runtime/constants';
+import type {
+	TDarkPalette,
+	TLightPalette,
+	TTheme,
+} from '@/design/theme/runtime/types';
 import { useTheme } from '@/design/theme/runtime/useTheme';
 import Dropdown, {
 	DropdownItem,
 	DropdownMenu,
+	DropdownSection,
 	DropdownTrigger,
 	type IDropdownProps,
 } from '@/design/ui/components/dropdown';
 import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
-import {
-	selectionToKnownValues,
-	toSelectionKeySet,
-} from '@/design/ui/components/selectionKeys';
+import { toSelectionKeySet } from '@/design/ui/components/selectionKeys';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
@@ -37,6 +46,13 @@ import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { useHydrated } from '@/shared/react/useHydrated';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
+
+interface IPaletteItem {
+	key: string;
+	label: string;
+	palette: TDarkPalette | TLightPalette;
+	swatchClassName: string;
+}
 
 const THEME_ICON_MAP = {
 	dark: faMoon,
@@ -60,13 +76,36 @@ const THEME_LABEL_ICON_MAP = {
 } as const satisfies Record<TTheme, FontAwesomeIconProps['icon']>;
 
 const THEME_ITEMS = Object.values(THEME_MAP).map(toGetValueCollection);
+const DARK_PALETTE_ITEMS = Object.values(DARK_PALETTE_MAP).map((palette) => ({
+	...DARK_PALETTE_PRESENTATION_MAP[palette],
+	key: `dark-palette:${palette}`,
+	palette,
+}));
+const LIGHT_PALETTE_ITEMS = Object.values(LIGHT_PALETTE_MAP).map((palette) => ({
+	...LIGHT_PALETTE_PRESENTATION_MAP[palette],
+	key: `light-palette:${palette}`,
+	palette,
+}));
 const THEME_BY_KEY: ReadonlyMap<string, TTheme> = new Map(
 	THEME_ITEMS.map(({ value }) => [value, value])
+);
+const DARK_PALETTE_BY_KEY: ReadonlyMap<string, TDarkPalette> = new Map(
+	DARK_PALETTE_ITEMS.map(({ key, palette }) => [key, palette])
+);
+const LIGHT_PALETTE_BY_KEY: ReadonlyMap<string, TLightPalette> = new Map(
+	LIGHT_PALETTE_ITEMS.map(({ key, palette }) => [key, palette])
 );
 const THEME_SPINNER_CLASS_NAMES = { base: 'flex', wrapper: 'h-5 w-5' } as const;
 const THEME_MENU_ITEM_CLASSES = {
 	base: 'my-px transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
 } as const;
+const THEME_MENU_SECTION_CLASS_NAMES = {
+	base: 'mb-0',
+	divider: 'mx-1 my-1 bg-default-200/70',
+	group: 'space-y-1',
+	heading:
+		'block px-2 pb-0.5 pt-2.5 text-tiny font-medium uppercase text-default-500',
+};
 
 interface IProps extends Pick<IDropdownProps, 'className'> {
 	isMenu?: boolean;
@@ -77,35 +116,71 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 	const isMounted = useHydrated();
 	const vibrate = useVibrate();
 
-	const [theme, setTheme] = useTheme();
-	const [selectedTheme, setSelectedTheme] = useState<Set<string>>(
-		new Set([theme])
+	const [
+		theme,
+		setTheme,
+		lightPalette,
+		setLightPalette,
+		darkPalette,
+		setDarkPalette,
+		resolvedTheme,
+	] = useTheme();
+
+	const paletteItems: ReadonlyArray<IPaletteItem> =
+		resolvedTheme === THEME_MAP.LIGHT
+			? LIGHT_PALETTE_ITEMS
+			: DARK_PALETTE_ITEMS;
+	const selectedPaletteKey =
+		resolvedTheme === THEME_MAP.LIGHT
+			? `light-palette:${lightPalette}`
+			: `dark-palette:${darkPalette}`;
+	const selectedKeys = useMemo(
+		() => toSelectionKeySet([theme, selectedPaletteKey]),
+		[selectedPaletteKey, theme]
 	);
 
-	const onSelectedThemeChange = useCallback(
-		(value: Selection) => {
-			const [currentSelectedTheme] =
-				selectionToKnownValues(value, THEME_BY_KEY) ?? [];
-			if (currentSelectedTheme === undefined) {
+	const handleMenuAction = useCallback(
+		(key: Key) => {
+			if (typeof key !== 'string') {
 				return;
 			}
 
-			setTheme(currentSelectedTheme);
-			setSelectedTheme(toSelectionKeySet([currentSelectedTheme]));
+			const nextTheme = THEME_BY_KEY.get(key);
+			if (nextTheme !== undefined) {
+				setTheme(nextTheme);
+				trackEvent(
+					trackEvent.category.click,
+					'Theme Button',
+					nextTheme
+				);
+				return;
+			}
+
+			const nextDarkPalette = DARK_PALETTE_BY_KEY.get(key);
+			if (nextDarkPalette !== undefined) {
+				setDarkPalette(nextDarkPalette);
+				trackEvent(
+					trackEvent.category.click,
+					'Theme Button',
+					`dark-palette:${nextDarkPalette}`
+				);
+				return;
+			}
+
+			const nextLightPalette = LIGHT_PALETTE_BY_KEY.get(key);
+			if (nextLightPalette !== undefined) {
+				setLightPalette(nextLightPalette);
+				trackEvent(
+					trackEvent.category.click,
+					'Theme Button',
+					`light-palette:${nextLightPalette}`
+				);
+			}
 		},
-		[setTheme]
+		[setDarkPalette, setLightPalette, setTheme]
 	);
 
-	useEffect(() => {
-		if (!selectedTheme.has(theme)) {
-			setSelectedTheme(new Set([theme]));
-		}
-	}, [selectedTheme, theme]);
-
-	const currentThemeIcon = useMemo(
-		() => THEME_ICON_MAP[selectedTheme.values().next().value as TTheme],
-		[selectedTheme]
-	);
+	const currentThemeIcon = THEME_ICON_MAP[theme];
 	const dropdownClassNames = useMemo(
 		() => ({
 			content: cn('p-0 [&>[data-slot="base"]]:w-max', {
@@ -158,35 +233,57 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 			</Tooltip>
 			<DropdownMenu
 				disallowEmptySelection
-				items={THEME_ITEMS}
-				selectedKeys={selectedTheme}
-				selectionMode="single"
-				onSelectionChange={onSelectedThemeChange}
+				selectedKeys={selectedKeys}
+				selectionMode="multiple"
+				onAction={handleMenuAction}
 				aria-label={THEME_LABEL_MAP.list}
 				className="w-28"
 				itemClasses={THEME_MENU_ITEM_CLASSES}
 			>
-				{({ value }) => (
-					<DropdownItem
-						key={value}
-						textValue={THEME_LABEL_MAP[value]}
-						onPress={() => {
-							trackEvent(
-								trackEvent.category.click,
-								'Theme Button',
-								value
-							);
-						}}
-					>
-						<div className="flex items-center gap-1">
-							<FontAwesomeIcon
-								icon={THEME_LABEL_ICON_MAP[value]}
-								className="w-4 pb-px opacity-80"
-							/>
-							{THEME_LABEL_MAP[value]}
-						</div>
-					</DropdownItem>
-				)}
+				<DropdownSection
+					showDivider
+					title="主题"
+					classNames={THEME_MENU_SECTION_CLASS_NAMES}
+				>
+					{THEME_ITEMS.map(({ value }) => (
+						<DropdownItem
+							key={value}
+							textValue={THEME_LABEL_MAP[value]}
+						>
+							<div className="flex items-center gap-1">
+								<FontAwesomeIcon
+									icon={THEME_LABEL_ICON_MAP[value]}
+									className="w-4 pb-px opacity-80"
+								/>
+								{THEME_LABEL_MAP[value]}
+							</div>
+						</DropdownItem>
+					))}
+				</DropdownSection>
+				<DropdownSection
+					items={paletteItems}
+					title="主题配色"
+					classNames={THEME_MENU_SECTION_CLASS_NAMES}
+				>
+					{({ key, label, swatchClassName }) => (
+						<DropdownItem
+							key={key}
+							closeOnSelect={false}
+							textValue={label}
+						>
+							<div className="flex items-center gap-1.5">
+								<span
+									aria-hidden="true"
+									className={cn(
+										'h-3.5 w-3.5 rounded-full',
+										swatchClassName
+									)}
+								/>
+								{label}
+							</div>
+						</DropdownItem>
+					)}
+				</DropdownSection>
 			</DropdownMenu>
 		</Dropdown>
 	);
