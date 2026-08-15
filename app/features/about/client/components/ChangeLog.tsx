@@ -195,6 +195,14 @@ const changelog = [
 		],
 	},
 	{ version: 'v2.7', changes: ['新增：料理支持多套食谱。'] },
+	{
+		version: 'v2.8',
+		changes: [
+			'新增：顾客、料理等资料使用独立标识，以支持同名内容。',
+			'新增：浅色和深色主题支持多种配色方案。',
+			'修复：顾客套餐评级逻辑。',
+		],
+	},
 ] as const satisfies Array<{
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
 	version: `v${string}`;
