@@ -1,4 +1,3 @@
-/* eslint-disable sort-keys */
 import type { ILink } from '@/shared/site/contracts';
 import { PACKAGE_METADATA } from '@/shared/site/packageMetadata';
 
@@ -7,24 +6,24 @@ function getShortUrl(key: string) {
 }
 
 export const SITE_LINKS = {
-	appQA: { label: 'APP相关常见问题和说明', href: getShortUrl('wb21Sv') },
-	china: { label: '国内线路', href: getShortUrl('tiXDNm') },
-	donate: { label: '支付宝收款链接', href: getShortUrl('HI9lxP') },
-	github: { label: '本项目代码仓库', href: PACKAGE_METADATA.repositoryUrl },
+	appQA: { href: getShortUrl('wb21Sv'), label: 'APP相关常见问题和说明' },
+	china: { href: getShortUrl('tiXDNm'), label: '国内线路' },
+	donate: { href: getShortUrl('HI9lxP'), label: '支付宝收款链接' },
+	github: { href: PACKAGE_METADATA.repositoryUrl, label: '本项目代码仓库' },
 	gnuLicense: {
-		label: 'GNU Affero General Public License v3.0',
 		href: 'https://www.gnu.org/licenses/agpl-3.0-standalone.html',
+		label: 'GNU Affero General Public License v3.0',
 	},
 	icpFiling: {
-		label: process.env.ICP_FILING ?? '',
 		href: 'https://beian.miit.gov.cn/',
+		label: process.env.ICP_FILING ?? '',
 	},
-	index: { label: '首页', href: '/' },
-	qqGroup1: { label: 'QQ一群', href: getShortUrl('l40oUu') },
-	qqGroup2: { label: 'QQ二群', href: getShortUrl('KCo1fT') },
-	rednoteGroup: { label: '小红书群', href: getShortUrl('Y9YVAt') },
+	index: { href: '/', label: '首页' },
+	qqGroup1: { href: getShortUrl('l40oUu'), label: 'QQ一群' },
+	qqGroup2: { href: getShortUrl('KCo1fT'), label: 'QQ二群' },
+	rednoteGroup: { href: getShortUrl('Y9YVAt'), label: '小红书群' },
 	steam: {
-		label: "Steam上的东方夜雀食堂 - Touhou Mystia's Izakaya",
 		href: 'https://store.steampowered.com/app/1584090/__Touhou_Mystias_Izakaya',
+		label: "Steam上的东方夜雀食堂 - Touhou Mystia's Izakaya",
 	},
 } as const satisfies Record<string, ILink>;

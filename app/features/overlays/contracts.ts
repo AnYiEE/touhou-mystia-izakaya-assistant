@@ -4,16 +4,16 @@ export type TOverlayId =
 	| 'account.main'
 	| 'account.password-required'
 	| 'account.sync-conflict'
-	| 'customer-normal.info'
-	| 'customer-rare.info'
-	| 'customer-rare.plan-drawer'
 	| 'donation'
 	| 'global.search'
 	| 'navigation.mobile-menu'
+	| 'normal-guest.info'
 	| 'preferences'
 	| 'preferences.hidden-beverages'
+	| 'preferences.hidden-foods'
 	| 'preferences.hidden-ingredients'
-	| 'preferences.hidden-recipes';
+	| 'special-guest.info'
+	| 'special-guest.plan-drawer';
 
 export type TOverlayPriority = 'blocking' | 'passive' | 'task';
 

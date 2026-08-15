@@ -1,4 +1,4 @@
-import { type Item } from '@/domain/catalog/shared/Item';
+import { type RecordCatalog } from '@/domain/catalog/shared/RecordCatalog';
 
 import type {
 	TItemDataItem,
@@ -16,19 +16,19 @@ function getAllItemNames<T extends TItemInstance>(
 ) {
 	switch (pinyinSortState) {
 		case PINYIN_SORT_STATE_MAP.ascending: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-			return (instance as Item<any>).getValuesByProp(
+			return (instance as RecordCatalog<any>).getValuesByProp(
 				'name',
 				false,
 				instance.getPinyinSortedData()
 			) as TNames<T>;
 		case PINYIN_SORT_STATE_MAP.descending: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-			return (instance as Item<any>).getValuesByProp(
+			return (instance as RecordCatalog<any>).getValuesByProp(
 				'name',
 				false,
 				instance.getPinyinSortedData().toReversed()
 			) as TNames<T>;
 		default: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-			return (instance as Item<any>).getValuesByProp(
+			return (instance as RecordCatalog<any>).getValuesByProp(
 				'name',
 				false
 			) as TNames<T>;

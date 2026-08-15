@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
 
+import { FEATURE_DISABLED_MESSAGE } from '@/features/account/server/featureStatus';
 import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
@@ -8,7 +9,6 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
-import { FEATURE_DISABLED_MESSAGE } from '@/features/account/server/featureStatus';
 import {
 	ACCOUNT_SSO_API_RESPONSE_CODE_MAP,
 	SSO_AUTHORIZE_PAGE_STATUS_MAP,

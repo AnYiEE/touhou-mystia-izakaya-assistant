@@ -11,6 +11,8 @@ import { useHydrated } from '@/shared/react/useHydrated';
 
 import Content from './PreferencesContent';
 
+const PREFERENCES_MODAL_COORDINATION = { id: 'preferences' } as const;
+
 export default function PreferencesModal() {
 	const isMounted = useHydrated();
 	const vibrate = useVibrate();
@@ -28,7 +30,7 @@ export default function PreferencesModal() {
 
 	return (
 		<CoordinatedModal
-			coordination={{ id: 'preferences' }}
+			coordination={PREFERENCES_MODAL_COORDINATION}
 			isOpen={isPreferencesModalOpen}
 			onClose={handleClose}
 		>

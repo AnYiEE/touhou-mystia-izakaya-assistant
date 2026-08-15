@@ -372,8 +372,8 @@ async Task RunExamplesAsync(AuthenticatedConnection connection, CancellationToke
 				request_id = requestId,
 				payload = new
 				{
-					customer = "比那名居天子",
-					order = new { recipe_tag = "昂贵", beverage_tag = "高酒精" },
+					special_guest_id = 9,
+					order = new { beverage_tag_id = 2, food_tag_id = -3 },
 					options = new { max_rating = rating, max_results = 3 },
 				},
 			}));
@@ -382,12 +382,12 @@ async Task RunExamplesAsync(AuthenticatedConnection connection, CancellationToke
 	}
 
 	var cancellationTask = connection.TrackRequest("reference-cancel");
-	await connection.TrySendAsync("{\"type\":\"recommendation.request\",\"request_id\":\"reference-cancel\",\"payload\":{\"customer\":\"比那名居天子\",\"order\":{\"recipe_tag\":\"昂贵\",\"beverage_tag\":\"高酒精\"},\"options\":{\"max_results\":10}}}");
+	await connection.TrySendAsync("{\"type\":\"recommendation.request\",\"request_id\":\"reference-cancel\",\"payload\":{\"special_guest_id\":9,\"order\":{\"beverage_tag_id\":2,\"food_tag_id\":-3},\"options\":{\"max_results\":10}}}");
 	await connection.TrySendAsync("{\"type\":\"recommendation.cancel\",\"request_id\":\"reference-cancel\"}");
 	await cancellationTask.WaitAsync(TimeSpan.FromMinutes(2), cancellationToken);
 
 	var invalidTask = connection.TrackRequest("reference-invalid");
-	await connection.TrySendAsync("{\"type\":\"recommendation.request\",\"request_id\":\"reference-invalid\",\"payload\":{\"customer\":\"未收录顾客\"}}");
+	await connection.TrySendAsync("{\"type\":\"recommendation.request\",\"request_id\":\"reference-invalid\",\"payload\":{\"special_guest_id\":999999}}");
 	await invalidTask.WaitAsync(TimeSpan.FromMinutes(2), cancellationToken);
 }
 
@@ -453,25 +453,26 @@ static bool TryReadResult(JsonElement root, out string requestId)
 	foreach (var meal in meals.EnumerateArray())
 	{
 		if (meal.ValueKind != JsonValueKind.Object
-			|| !TryReadString(meal, "beverage", out _)
+			|| !TryReadSafeInteger(meal, "beverage_id", out _)
 			|| !TryReadSafeNonNegativeInteger(meal, "price", out _)
 			|| !TryReadString(meal, "rating", out var rating)
 			|| rating is not ("exbad" or "bad" or "norm" or "good" or "exgood")
-			|| !meal.TryGetProperty("recipe", out var recipe)
-			|| recipe.ValueKind != JsonValueKind.Object
-			|| !TryReadString(recipe, "name", out _)
-			|| !TryReadSafeInteger(recipe, "recipe_id", out _)
-			|| !recipe.TryGetProperty("extra_ingredients", out var extraIngredients)
-			|| extraIngredients.ValueKind != JsonValueKind.Array)
+			|| !meal.TryGetProperty("food", out var food)
+			|| food.ValueKind != JsonValueKind.Object
+			|| !TryReadSafeInteger(food, "recipe_id", out _)
+			|| !food.TryGetProperty("extra_ingredient_ids", out var extraIngredientIds)
+			|| extraIngredientIds.ValueKind != JsonValueKind.Array)
 		{
 			return false;
 		}
 
-		var ingredientNames = new HashSet<string>(StringComparer.Ordinal);
-		foreach (var ingredient in extraIngredients.EnumerateArray())
+		var ingredientIds = new HashSet<long>();
+		foreach (var ingredient in extraIngredientIds.EnumerateArray())
 		{
-			if (ingredient.ValueKind != JsonValueKind.String
-				|| !ingredientNames.Add(ingredient.GetString() ?? string.Empty))
+			if (!ingredient.TryGetInt64(out var ingredientId)
+				|| ingredientId < -MaxSafeInteger
+				|| ingredientId > MaxSafeInteger
+				|| !ingredientIds.Add(ingredientId))
 			{
 				return false;
 			}
@@ -513,8 +514,8 @@ void ReadResult(JsonElement root, string requestId)
 		return;
 	}
 	var preferred = meals[0];
-	var preferredRecipe = preferred.GetProperty("recipe");
-	Console.WriteLine($"Request {requestId}: preferred {preferredRecipe.GetProperty("name").GetString()} (recipe {preferredRecipe.GetProperty("recipe_id").GetInt64()}) + {preferred.GetProperty("beverage").GetString()}, {meals.GetArrayLength() - 1} candidates.");
+	var preferredFood = preferred.GetProperty("food");
+	Console.WriteLine($"Request {requestId}: preferred recipe {preferredFood.GetProperty("recipe_id").GetInt64()} + beverage {preferred.GetProperty("beverage_id").GetInt64()}, {meals.GetArrayLength() - 1} candidates.");
 }
 
 static string ReadRequestId(JsonElement root) => root.GetProperty("request_id").GetString() ?? "<missing>";

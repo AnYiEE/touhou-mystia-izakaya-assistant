@@ -1,13 +1,24 @@
+import { SYNC_NAMESPACE_MAP } from '@/domain/account/contracts';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
+import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
+import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import { resolveLegacyRecordName } from '@/domain/catalog/legacy/resolveLegacyRecordName';
 import { BEVERAGE_LIST } from '@/domain/data/beverages/records';
+import type { TBeverageName } from '@/domain/data/beverages/types';
+import { FOOD_LIST } from '@/domain/data/foods/records';
+import type { TFoodName } from '@/domain/data/foods/types';
 import { INGREDIENT_LIST } from '@/domain/data/ingredients/records';
-import { RECIPE_LIST } from '@/domain/data/recipes/records';
+import type { TIngredientName } from '@/domain/data/ingredients/types';
+import type { TFoodTagLabel } from '@/domain/data/tags/types';
 
+import { SYNC_SCHEMA_VERSION_MAP } from '@/features/account/sync/constants';
 import type { ISyncNamespaceSerializer } from '@/features/account/sync/types';
+import { migrateLegacyFoodTableColumnKeys } from '@/features/catalog/guests/shared/state/migrateLegacyFoodTableKeys';
 import {
 	type TBeverageTableColumnKey,
-	type TRecipeTableColumnKey,
-} from '@/features/catalog/customers/shared/state/tableDescriptors';
+	type TFoodTableColumnKey,
+} from '@/features/catalog/guests/shared/state/tableDescriptors';
 import {
 	readGlobalPreferencesPersistenceSource,
 	replaceGlobalPreferencesPersistenceSnapshot,
@@ -21,7 +32,11 @@ import type {
 	TGlobalPreferencesSnapshot,
 } from './globalPreferencesContracts';
 import { mergeGlobalPreferencesSnapshots } from './globalPreferencesMerge';
-import { checkPopularTag } from './tags';
+import {
+	checkLegacyPopularTag,
+	checkPopularTag,
+	resolveLegacyPopularTag,
+} from './tags';
 import { isAllowedStringArray, isIntegerInRange, isStringArray } from './utils';
 
 const beverageColumnKeyOrder = [
@@ -30,7 +45,7 @@ const beverageColumnKeyOrder = [
 	'suitability',
 	'action',
 ] as const;
-const recipeColumnKeyOrder = [
+const legacyFoodColumnKeyOrder = [
 	'recipe',
 	'cooker',
 	'ingredient',
@@ -39,9 +54,31 @@ const recipeColumnKeyOrder = [
 	'time',
 	'action',
 ] as const;
+const foodColumnKeyOrder = [
+	'food',
+	'cookerType',
+	'ingredient',
+	'price',
+	'suitability',
+	'time',
+	'action',
+] as const;
 const beverageColumnKeys = new Set<string>(beverageColumnKeyOrder);
-const recipeColumnKeys = new Set<string>(recipeColumnKeyOrder);
-const rootKeys = new Set([
+const foodColumnKeys = new Set<string>(foodColumnKeyOrder);
+const legacyFoodColumnKeys = new Set<string>(legacyFoodColumnKeyOrder);
+const currentRootKeys = new Set([
+	'donationModal',
+	'famousShop',
+	'guestCardTagsTooltip',
+	'hiddenItems',
+	'highAppearance',
+	'popularTrend',
+	'suggestMeals',
+	'table',
+	'tachie',
+	'vibrate',
+]);
+const legacyRootKeys = new Set([
 	'customerCardTagsTooltip',
 	'donationModal',
 	'famousShop',
@@ -68,25 +105,90 @@ const suggestMealsKeys = new Set([
 ]);
 const tableKeys = new Set(['columns', 'hiddenItems', 'row']);
 const tableColumnKeys = new Set(['beverage', 'recipe']);
-const tableHiddenItemKeys = new Set(['beverages', 'ingredients', 'recipes']);
+const tableHiddenItemKeys = new Set(['beverages', 'foods', 'ingredients']);
+const legacyTableHiddenItemKeys = new Set([
+	'beverages',
+	'ingredients',
+	'recipes',
+]);
 const dlcKeyOrder = Object.keys(DLC_LABEL_MAP).sort(
 	(left, right) => Number(left) - Number(right)
 );
 const beverageNameOrder = BEVERAGE_LIST.map((item) => item.name);
+const beverageOrder = BEVERAGE_LIST.map((item) => item.id);
 const ingredientNameOrder = INGREDIENT_LIST.map((item) => item.name);
-const recipeNameOrder = RECIPE_LIST.map((item) => item.name);
+const ingredientOrder = INGREDIENT_LIST.map((item) => item.id);
+const foodNameOrder = FOOD_LIST.map((item) => item.name);
+const foodOrder = FOOD_LIST.map((item) => item.id);
 const dlcKeys = new Set(dlcKeyOrder);
-const beverageNames = new Set<string>(beverageNameOrder);
-const ingredientNames = new Set<string>(ingredientNameOrder);
-const recipeNames = new Set<string>(recipeNameOrder);
+const beverageNames = new Set(beverageNameOrder);
+const beverages: ReadonlySet<number> = new Set(beverageOrder);
+const ingredientNames = new Set(ingredientNameOrder);
+const ingredients: ReadonlySet<number> = new Set(ingredientOrder);
+const foodNames = new Set(foodNameOrder);
+const foods: ReadonlySet<number> = new Set(foodOrder);
 const globalPreferencesSetValueOrders = {
 	beverageColumns: beverageColumnKeyOrder,
-	hiddenBeverages: beverageNameOrder,
+	foodColumns: foodColumnKeyOrder,
+	hiddenBeverages: beverageOrder,
 	hiddenDlcs: dlcKeyOrder,
-	hiddenIngredients: ingredientNameOrder,
-	hiddenRecipes: recipeNameOrder,
-	recipeColumns: recipeColumnKeyOrder,
+	hiddenFoods: foodOrder,
+	hiddenIngredients: ingredientOrder,
 } satisfies IGlobalPreferencesSetValueOrders;
+
+interface ILegacyGlobalPreferencesMigrationInput extends Record<
+	string,
+	unknown
+> {
+	customerCardTagsTooltip: boolean;
+	popularTrend: Record<string, unknown> & { tag: TFoodTagLabel | null };
+	table: Record<string, unknown> & {
+		columns: Record<string, unknown> & { recipe: string[] };
+		hiddenItems: {
+			beverages: TBeverageName[];
+			ingredients: TIngredientName[];
+			recipes: TFoodName[];
+		};
+	};
+}
+
+function createDefaultGlobalPreferencesSnapshot(): TGlobalPreferencesSnapshot {
+	return {
+		donationModal: {
+			interactionCount: 0,
+			lastMilestoneShown: 0,
+			lastShown: null,
+		},
+		famousShop: false,
+		guestCardTagsTooltip: true,
+		hiddenItems: { dlcs: [] },
+		highAppearance: true,
+		popularTrend: { isNegative: false, tag: null },
+		suggestMeals: {
+			enabled: true,
+			maxExtraIngredients: null,
+			maxRating: 4,
+			maxResults: 5,
+		},
+		table: {
+			columns: {
+				beverage: ['beverage', 'price', 'suitability', 'action'],
+				recipe: [
+					'food',
+					'cookerType',
+					'ingredient',
+					'price',
+					'suitability',
+					'action',
+				],
+			},
+			hiddenItems: { beverages: [], foods: [], ingredients: [] },
+			row: 8,
+		},
+		tachie: true,
+		vibrate: true,
+	};
+}
 
 function checkExactKeys(data: Record<string, unknown>, keys: Set<string>) {
 	const dataKeys = Object.keys(data);
@@ -96,7 +198,7 @@ function checkExactKeys(data: Record<string, unknown>, keys: Set<string>) {
 	);
 }
 
-function checkGlobalPreferencesExactKeyShape(data: unknown) {
+function checkGlobalPreferencesExactKeyShape(data: unknown, version: 1 | 2) {
 	if (!isObjectTagRecord(data)) {
 		return false;
 	}
@@ -117,7 +219,10 @@ function checkGlobalPreferencesExactKeyShape(data: unknown) {
 	const tableHiddenItems = table['hiddenItems'];
 
 	return (
-		checkExactKeys(data, rootKeys) &&
+		checkExactKeys(
+			data,
+			version === 2 ? currentRootKeys : legacyRootKeys
+		) &&
 		checkExactKeys(donationModal, donationModalKeys) &&
 		checkExactKeys(hiddenItems, hiddenItemKeys) &&
 		checkExactKeys(popularTrend, popularTrendKeys) &&
@@ -126,12 +231,35 @@ function checkGlobalPreferencesExactKeyShape(data: unknown) {
 		isObjectTagRecord(tableColumns) &&
 		checkExactKeys(tableColumns, tableColumnKeys) &&
 		isObjectTagRecord(tableHiddenItems) &&
-		checkExactKeys(tableHiddenItems, tableHiddenItemKeys)
+		checkExactKeys(
+			tableHiddenItems,
+			version === 1 ? legacyTableHiddenItemKeys : tableHiddenItemKeys
+		)
 	);
 }
 
-function filterAllowedStringArray(data: unknown, values: Set<string>) {
+function filterAllowedStringArray(data: unknown, values: ReadonlySet<string>) {
 	return isStringArray(data) ? data.filter((item) => values.has(item)) : data;
+}
+
+function filterAllowedNumberArray(data: unknown, values: ReadonlySet<number>) {
+	return Array.isArray(data)
+		? data.filter(
+				(value): value is number =>
+					typeof value === 'number' &&
+					Number.isSafeInteger(value) &&
+					values.has(value)
+			)
+		: data;
+}
+
+function isAllowedNameArray<TName extends string>(
+	data: unknown,
+	values: ReadonlySet<TName>
+): data is TName[] {
+	return (
+		isStringArray(data) && data.every((value) => values.has(value as TName))
+	);
 }
 
 function sanitizeGlobalPreferences(data: unknown) {
@@ -169,7 +297,67 @@ function sanitizeGlobalPreferences(data: unknown) {
 								),
 								recipe: filterAllowedStringArray(
 									tableColumns['recipe'],
-									recipeColumnKeys
+									foodColumnKeys
+								),
+							}
+						: tableColumns,
+					hiddenItems: isObjectTagRecord(tableHiddenItems)
+						? {
+								beverages: filterAllowedNumberArray(
+									tableHiddenItems['beverages'],
+									beverages
+								),
+								foods: filterAllowedNumberArray(
+									tableHiddenItems['foods'],
+									foods
+								),
+								ingredients: filterAllowedNumberArray(
+									tableHiddenItems['ingredients'],
+									ingredients
+								),
+							}
+						: tableHiddenItems,
+				}
+			: table,
+	};
+}
+
+function sanitizeLegacyGlobalPreferences(data: unknown) {
+	if (!isObjectTagRecord(data)) {
+		return data;
+	}
+
+	const { hiddenItems, popularTrend, table } = data;
+	const tableColumns = isObjectTagRecord(table) ? table['columns'] : null;
+	const tableHiddenItems = isObjectTagRecord(table)
+		? table['hiddenItems']
+		: null;
+
+	return {
+		...data,
+		hiddenItems: isObjectTagRecord(hiddenItems)
+			? { dlcs: filterAllowedStringArray(hiddenItems['dlcs'], dlcKeys) }
+			: hiddenItems,
+		popularTrend: isObjectTagRecord(popularTrend)
+			? {
+					...popularTrend,
+					tag: checkLegacyPopularTag(popularTrend['tag'])
+						? popularTrend['tag']
+						: null,
+				}
+			: popularTrend,
+		table: isObjectTagRecord(table)
+			? {
+					...table,
+					columns: isObjectTagRecord(tableColumns)
+						? {
+								beverage: filterAllowedStringArray(
+									tableColumns['beverage'],
+									beverageColumnKeys
+								),
+								recipe: filterAllowedStringArray(
+									tableColumns['recipe'],
+									legacyFoodColumnKeys
 								),
 							}
 						: tableColumns,
@@ -185,12 +373,133 @@ function sanitizeGlobalPreferences(data: unknown) {
 								),
 								recipes: filterAllowedStringArray(
 									tableHiddenItems['recipes'],
-									recipeNames
+									foodNames
 								),
 							}
 						: tableHiddenItems,
 				}
 			: table,
+	};
+}
+
+function isAllowedNumberArray(data: unknown, values: ReadonlySet<number>) {
+	return (
+		Array.isArray(data) &&
+		data.every(
+			(value) =>
+				typeof value === 'number' &&
+				Number.isSafeInteger(value) &&
+				values.has(value)
+		)
+	);
+}
+
+function getLegacyDefaults() {
+	const defaults = createDefaultGlobalPreferencesSnapshot();
+	const { guestCardTagsTooltip, ...legacyDefaults } = defaults;
+	const legacyTable = {
+		...defaults.table,
+		columns: {
+			...defaults.table.columns,
+			recipe: legacyFoodColumnKeyOrder.filter((key) => key !== 'time'),
+		},
+	};
+
+	return {
+		...legacyDefaults,
+		customerCardTagsTooltip: guestCardTagsTooltip,
+		table: {
+			...legacyTable,
+			hiddenItems: { beverages: [], ingredients: [], recipes: [] },
+		},
+	};
+}
+
+function checkLegacyGlobalPreferencesMigrationInput(
+	data: unknown
+): data is ILegacyGlobalPreferencesMigrationInput {
+	if (!isObjectTagRecord(data)) {
+		return false;
+	}
+
+	const { popularTrend, table } = data;
+	if (!isObjectTagRecord(popularTrend) || !isObjectTagRecord(table)) {
+		return false;
+	}
+
+	const { columns, hiddenItems } = table;
+	if (!isObjectTagRecord(columns) || !isObjectTagRecord(hiddenItems)) {
+		return false;
+	}
+
+	return (
+		typeof data['customerCardTagsTooltip'] === 'boolean' &&
+		(popularTrend['tag'] === null ||
+			checkLegacyPopularTag(popularTrend['tag'])) &&
+		isStringArray(columns['recipe']) &&
+		columns['recipe'].every((key) => legacyFoodColumnKeys.has(key)) &&
+		isAllowedNameArray<TBeverageName>(
+			hiddenItems['beverages'],
+			beverageNames
+		) &&
+		isAllowedNameArray<TIngredientName>(
+			hiddenItems['ingredients'],
+			ingredientNames
+		) &&
+		isAllowedNameArray<TFoodName>(hiddenItems['recipes'], foodNames)
+	);
+}
+
+function migrateLegacyGlobalPreferences(
+	data: ILegacyGlobalPreferencesMigrationInput
+) {
+	const { customerCardTagsTooltip, popularTrend, table, ...currentData } =
+		data;
+	const { columns, hiddenItems } = table;
+	const beverageCatalog = BeverageCatalog.getInstance();
+	const foodCatalog = FoodCatalog.getInstance();
+	const ingredientCatalog = IngredientCatalog.getInstance();
+
+	return {
+		...currentData,
+		guestCardTagsTooltip: customerCardTagsTooltip,
+		popularTrend: {
+			...popularTrend,
+			tag:
+				popularTrend.tag === null
+					? null
+					: resolveLegacyPopularTag(popularTrend.tag),
+		},
+		table: {
+			...table,
+			columns: {
+				...columns,
+				recipe: migrateLegacyFoodTableColumnKeys(columns.recipe),
+			},
+			hiddenItems: {
+				beverages: hiddenItems.beverages.map((name) =>
+					resolveLegacyRecordName({
+						catalog: beverageCatalog,
+						category: 'beverage',
+						name,
+					})
+				),
+				foods: hiddenItems.recipes.map((name) =>
+					resolveLegacyRecordName({
+						catalog: foodCatalog,
+						category: 'food',
+						name,
+					})
+				),
+				ingredients: hiddenItems.ingredients.map((name) =>
+					resolveLegacyRecordName({
+						catalog: ingredientCatalog,
+						category: 'ingredient',
+						name,
+					})
+				),
+			},
+		},
 	};
 }
 
@@ -231,52 +540,21 @@ function isBeverageColumnArray(
 	);
 }
 
-function isRecipeColumnArray(data: unknown): data is TRecipeTableColumnKey[] {
+function isFoodColumnArray(data: unknown): data is TFoodTableColumnKey[] {
 	return (
-		isStringArray(data) && data.every((item) => recipeColumnKeys.has(item))
+		isStringArray(data) && data.every((item) => foodColumnKeys.has(item))
 	);
 }
 
 export const globalPreferencesSerializer = {
 	deserialize(data) {
-		return this.migrate(data, 1);
+		return this.migrate(
+			data,
+			SYNC_SCHEMA_VERSION_MAP[SYNC_NAMESPACE_MAP.globalPreferences]
+		);
 	},
 	getDefaultSnapshot() {
-		return {
-			customerCardTagsTooltip: true,
-			donationModal: {
-				interactionCount: 0,
-				lastMilestoneShown: 0,
-				lastShown: null,
-			},
-			famousShop: false,
-			hiddenItems: { dlcs: [] },
-			highAppearance: true,
-			popularTrend: { isNegative: false, tag: null },
-			suggestMeals: {
-				enabled: true,
-				maxExtraIngredients: null,
-				maxRating: 4,
-				maxResults: 5,
-			},
-			table: {
-				columns: {
-					beverage: ['beverage', 'price', 'suitability', 'action'],
-					recipe: [
-						'recipe',
-						'cooker',
-						'ingredient',
-						'price',
-						'suitability',
-						'action',
-					],
-				},
-				hiddenItems: { beverages: [], ingredients: [], recipes: [] },
-				row: 8,
-			},
-			tachie: true,
-			vibrate: true,
-		};
+		return createDefaultGlobalPreferencesSnapshot();
 	},
 	getLocalSnapshot() {
 		const persistence = readGlobalPreferencesPersistenceSource();
@@ -289,13 +567,13 @@ export const globalPreferencesSerializer = {
 
 		const snapshot = sanitizeGlobalPreferences(
 			structuredClone({
-				customerCardTagsTooltip: persistence.customerCardTagsTooltip,
 				donationModal: {
 					interactionCount: donationModal['interactionCount'],
 					lastMilestoneShown: donationModal['lastMilestoneShown'],
 					lastShown: donationModal['lastShown'],
 				},
 				famousShop: persistence.famousShop,
+				guestCardTagsTooltip: persistence.guestCardTagsTooltip,
 				hiddenItems: { dlcs: hiddenItems['dlcs'] },
 				highAppearance: persistence.highAppearance,
 				popularTrend: persistence.popularTrend,
@@ -312,8 +590,8 @@ export const globalPreferencesSerializer = {
 					},
 					hiddenItems: {
 						beverages: tableHiddenItems['beverages'],
+						foods: tableHiddenItems['foods'],
 						ingredients: tableHiddenItems['ingredients'],
-						recipes: tableHiddenItems['recipes'],
 					},
 					row: table['row'],
 				},
@@ -335,24 +613,34 @@ export const globalPreferencesSerializer = {
 		});
 	},
 	migrate(data, version) {
-		if (version !== 1) {
+		if (version !== 1 && version !== 2) {
 			throw new Error('unsupported-global-preferences-schema-version');
 		}
 
 		const dataWithDefaults = applyGlobalPreferencesDefaults(
 			data,
-			this.getDefaultSnapshot()
+			version === 2 ? this.getDefaultSnapshot() : getLegacyDefaults()
 		);
-		if (!checkGlobalPreferencesExactKeyShape(dataWithDefaults)) {
+		if (!checkGlobalPreferencesExactKeyShape(dataWithDefaults, version)) {
 			throw new Error('invalid-global-preferences');
 		}
 
-		const sanitizedData = sanitizeGlobalPreferences(dataWithDefaults);
-		if (!this.validate(sanitizedData)) {
+		let migratedData: unknown;
+		if (version === 1) {
+			const legacyData =
+				sanitizeLegacyGlobalPreferences(dataWithDefaults);
+			if (!checkLegacyGlobalPreferencesMigrationInput(legacyData)) {
+				throw new Error('invalid-global-preferences');
+			}
+			migratedData = migrateLegacyGlobalPreferences(legacyData);
+		} else {
+			migratedData = sanitizeGlobalPreferences(dataWithDefaults);
+		}
+		if (!this.validate(migratedData)) {
 			throw new Error('invalid-global-preferences');
 		}
 
-		return sanitizedData;
+		return migratedData;
 	},
 	serialize(data) {
 		return data;
@@ -392,13 +680,13 @@ export const globalPreferencesSerializer = {
 		}
 
 		return (
-			checkGlobalPreferencesExactKeyShape(data) &&
-			typeof data['customerCardTagsTooltip'] === 'boolean' &&
+			checkGlobalPreferencesExactKeyShape(data, 2) &&
 			isNonNegativeSafeInteger(donationModal['interactionCount']) &&
 			isNonNegativeSafeInteger(donationModal['lastMilestoneShown']) &&
 			(donationModal['lastShown'] === null ||
 				isNonNegativeSafeInteger(donationModal['lastShown'])) &&
 			typeof data['famousShop'] === 'boolean' &&
+			typeof data['guestCardTagsTooltip'] === 'boolean' &&
 			isAllowedStringArray(hiddenItems['dlcs'], dlcKeys) &&
 			typeof data['highAppearance'] === 'boolean' &&
 			typeof popularTrend['isNegative'] === 'boolean' &&
@@ -410,16 +698,13 @@ export const globalPreferencesSerializer = {
 			isIntegerInRange(suggestMeals['maxRating'], 0, 4) &&
 			isIntegerInRange(suggestMeals['maxResults'], 1, 10) &&
 			isBeverageColumnArray(tableColumns['beverage']) &&
-			isRecipeColumnArray(tableColumns['recipe']) &&
-			isAllowedStringArray(
-				tableHiddenItems['beverages'],
-				beverageNames
-			) &&
-			isAllowedStringArray(
+			isFoodColumnArray(tableColumns['recipe']) &&
+			isAllowedNumberArray(tableHiddenItems['beverages'], beverages) &&
+			isAllowedNumberArray(tableHiddenItems['foods'], foods) &&
+			isAllowedNumberArray(
 				tableHiddenItems['ingredients'],
-				ingredientNames
+				ingredients
 			) &&
-			isAllowedStringArray(tableHiddenItems['recipes'], recipeNames) &&
 			isIntegerInRange(table['row'], 5, 20) &&
 			typeof data['tachie'] === 'boolean' &&
 			typeof data['vibrate'] === 'boolean'

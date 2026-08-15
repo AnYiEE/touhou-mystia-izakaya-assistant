@@ -1,12 +1,14 @@
+import { getAvailabilityCollectionPointReference } from '@/domain/availability/acquisitionSourceMetadata';
 import type { IAvailabilityPath } from '@/domain/availability/types';
-import { CustomerRare } from '@/domain/catalog/customers/CustomerRare';
-import { Beverage } from '@/domain/catalog/food/Beverage';
-import { Ingredient } from '@/domain/catalog/food/Ingredient';
-import { Recipe } from '@/domain/catalog/food/Recipe';
-import { Cooker } from '@/domain/catalog/items/Cooker';
-import { COLLECTION_LOCATION_REFRESH_TIME_MAP } from '@/domain/data/places/collectionFacts';
-import { PLACE_UNLOCK_TIER_MAP } from '@/domain/data/places/placeFacts';
-import { DYNAMIC_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
+import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
+import type { TCookerTypeId } from '@/domain/data/cookers/types';
+import { COLLECTION_POINT_REFRESH_FACTS } from '@/domain/data/places/collectionFacts';
+import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+import { DYNAMIC_FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 
 interface IRecommendationCacheNamespaceParams {
 	readonly algorithmVersion: number;
@@ -28,14 +30,14 @@ export function stableSerialize(value: unknown): string {
 	if (value === null) {
 		return 'null';
 	}
-	if (typeof value === 'string') {
-		return JSON.stringify(value);
+	if (typeof value === 'boolean') {
+		return value ? 'true' : 'false';
 	}
 	if (typeof value === 'number') {
 		return serializeNumber(value);
 	}
-	if (typeof value === 'boolean') {
-		return value ? 'true' : 'false';
+	if (typeof value === 'string') {
+		return JSON.stringify(value);
 	}
 	if (Array.isArray(value)) {
 		return `[${value.map(stableSerialize).join(',')}]`;
@@ -101,13 +103,20 @@ function projectAvailabilityPaths(
 	return availabilityPaths
 		.map(({ acquisitionSources, isFishingPath, requiredDlcs }) => ({
 			acquisitionSources: acquisitionSources
-				.map(({ kind, name, place, probability, timeWindow }) => ({
-					kind,
-					name,
-					place,
-					probability,
-					timeWindow,
-				}))
+				.map((source) => {
+					const projectedSource = {
+						kind: source.kind,
+						place: source.place,
+						probability: source.probability,
+						timeWindow: source.timeWindow,
+					};
+					const collectionPoint =
+						getAvailabilityCollectionPointReference(source);
+
+					return collectionPoint === undefined
+						? projectedSource
+						: { ...projectedSource, collectionPoint };
+				})
 				.sort(compareSerialized),
 			isFishingPath,
 			requiredDlcs: requiredDlcs.toSorted((left, right) => left - right),
@@ -115,94 +124,110 @@ function projectAvailabilityPaths(
 		.sort(compareSerialized);
 }
 
-export function createRecommendationDataFingerprint() {
-	const customers = CustomerRare.getInstance().data.map(
+function sortCookerTypes(availableTypes: ReadonlyArray<TCookerTypeId>) {
+	return availableTypes.toSorted((left, right) => left - right);
+}
+
+export function createRecommendationDataFingerprintFacts() {
+	const specialGuests = SpecialGuestCatalog.getInstance().data.map(
 		({
 			availabilityPaths,
 			beverageTags,
 			dlc,
 			enduranceLimit,
-			name,
+			id,
+			maps,
 			negativeTags,
-			places,
 			positiveTags,
 			price,
 		}) => ({
 			availabilityPaths: projectAvailabilityPaths(availabilityPaths),
-			beverageTags: beverageTags.toSorted(),
+			beverageTags: beverageTags.toSorted((a, b) => a - b),
 			dlc,
 			enduranceLimit,
-			name,
-			negativeTags: negativeTags.toSorted(),
-			places,
-			positiveTags: positiveTags.toSorted(),
+			id,
+			maps: maps.toSorted(),
+			negativeTags: negativeTags.toSorted((a, b) => a - b),
+			positiveTags: positiveTags.toSorted((a, b) => a - b),
 			price,
 		})
 	);
-	const beverages = Beverage.getInstance().data.map(
-		({ availabilityPaths, dlc, level, name, price, tags }) => ({
+	const beverages = BeverageCatalog.getInstance().data.map(
+		({ availabilityPaths, dlc, id, level, price, tags }) => ({
 			availabilityPaths: projectAvailabilityPaths(availabilityPaths),
 			dlc,
+			id,
 			level,
-			name,
 			price,
-			tags: tags.toSorted(),
+			tags: tags.toSorted((a, b) => a - b),
 		})
 	);
-	const cookers = Cooker.getInstance().data.map(
-		({ availabilityPaths, category, name }) => ({
-			availabilityPaths: projectAvailabilityPaths(availabilityPaths),
-			category,
-			name,
-		})
-	);
-	const ingredients = Ingredient.getInstance().data.map(
-		({ availabilityPaths, dlc, level, name, price, tags }) => ({
-			availabilityPaths: projectAvailabilityPaths(availabilityPaths),
-			dlc,
-			level,
-			name,
-			price,
-			tags: tags.toSorted(),
-		})
-	);
-	const recipes = Recipe.getInstance().data.map(
+	const foods = FoodCatalog.getInstance().data.map(
 		({
 			availabilityPaths,
 			dlc,
+			id,
 			level,
-			name,
 			negativeTags,
 			positiveTags,
 			price,
-			recipes: recipeVariants,
+			recipes,
 		}) => ({
 			availabilityPaths: projectAvailabilityPaths(availabilityPaths),
 			dlc,
+			id,
 			level,
-			name,
-			negativeTags: negativeTags.toSorted(),
-			positiveTags: positiveTags.toSorted(),
+			negativeTags: negativeTags.toSorted((a, b) => a - b),
+			positiveTags: positiveTags.toSorted((a, b) => a - b),
 			price,
-			recipes: recipeVariants
-				.map(({ cooker, id, ingredients: fixedIngredients }) => ({
-					cooker,
-					fixedIngredients: fixedIngredients.toSorted(),
+			recipes: recipes
+				.map(({ cookerType, id, ingredients }) => ({
+					cookerType,
 					id,
+					ingredients: ingredients.toSorted((a, b) => a - b),
 				}))
 				.sort((left, right) => left.id - right.id),
 		})
 	);
+	const ingredients = IngredientCatalog.getInstance().data.map(
+		({ availabilityPaths, dlc, id, level, price, tags, type }) => ({
+			availabilityPaths: projectAvailabilityPaths(availabilityPaths),
+			dlc,
+			id,
+			level,
+			price,
+			tags: tags.toSorted((a, b) => a - b),
+			type,
+		})
+	);
+	const cookers = CookerCatalog.getInstance().data.map(
+		({ availabilityPaths, availableTypes, dlc, id, series }) => ({
+			availabilityPaths: projectAvailabilityPaths(availabilityPaths),
+			availableTypes: sortCookerTypes(availableTypes),
+			dlc,
+			id,
+			series,
+		})
+	);
 
-	return createStableFingerprint({
+	return {
 		beverages,
-		collectionLocationRefreshTimeMap: COLLECTION_LOCATION_REFRESH_TIME_MAP,
+		collectionPointRefreshFacts: COLLECTION_POINT_REFRESH_FACTS,
 		cookers,
-		customers,
-		dynamicTagMap: DYNAMIC_TAG_MAP,
+		dynamicFoodTagMap: DYNAMIC_FOOD_TAG_MAP,
+		foods,
 		ingredients,
-		placeUnlockTierMap: PLACE_UNLOCK_TIER_MAP,
-		recipes,
-		tagCoverMap: Recipe.tagCoverMap,
-	});
+		mapUnlockTierMap: Object.fromEntries(
+			Object.entries(MAP_FACTS).map(([map, { unlockTier }]) => [
+				map,
+				unlockTier,
+			])
+		),
+		specialGuests,
+		tagCoverMap: FoodCatalog.tagCoverMap,
+	};
+}
+
+export function createRecommendationDataFingerprint() {
+	return createStableFingerprint(createRecommendationDataFingerprintFacts());
 }

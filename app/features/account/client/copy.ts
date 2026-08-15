@@ -1,4 +1,4 @@
-import { type IAccountUserProfile } from '@/features/account/contracts';
+import type { IAccountUserProfile } from '@/features/account/contracts';
 
 import { type TAccountBootstrapStatus } from './state/accountStore';
 

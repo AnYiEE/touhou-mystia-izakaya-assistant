@@ -1,18 +1,23 @@
-import { CustomerRare } from '@/domain/catalog/customers/CustomerRare';
-import { Beverage } from '@/domain/catalog/food/Beverage';
-import { Ingredient } from '@/domain/catalog/food/Ingredient';
-import { Recipe } from '@/domain/catalog/food/Recipe';
-import { Cooker } from '@/domain/catalog/items/Cooker';
-import type { TBeverageName } from '@/domain/data/beverages/types';
-import type { TCookerName } from '@/domain/data/cookers/types';
-import type { TCustomerRareName } from '@/domain/data/customers/rare/types';
-import type { TIngredientName } from '@/domain/data/ingredients/types';
-import type { TRecipeName } from '@/domain/data/recipes/types';
-import { DYNAMIC_TAG_MAP } from '@/domain/data/tags/tagFacts';
-import type { TBeverageTag, TRecipeTag } from '@/domain/data/tags/types';
-import type { TPopularTag } from '@/domain/trends/types';
+import isNil from 'lodash/isNil.js';
+
+import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
+import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
+import type { TBeverageId } from '@/domain/data/beverages/types';
+import type { TCookerId } from '@/domain/data/cookers/types';
+import type { TFoodId, TRecipeId } from '@/domain/data/foods/types';
+import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import type { TIngredientId } from '@/domain/data/ingredients/types';
+import { DYNAMIC_FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
+import { checkPopularFoodTagId } from '@/domain/trends/checkPopularFoodTagId';
+import type { TPopularFoodTagId } from '@/domain/trends/types';
 
 import { type TRecommendationBridgeValidationResult } from '@/features/recommendations/client/bridge/shared';
+
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 export const V1_REQUEST_ID_PATTERN = /^[A-Za-z0-9._:-]{1,128}$/u;
 
@@ -35,51 +40,52 @@ export interface IV1BridgeReplacedMessage {
 }
 
 export interface IV1RecommendationOrder {
-	readonly beverage_tag: TBeverageTag | null;
-	readonly recipe_tag: TRecipeTag | null;
+	readonly beverage_tag_id: TBeverageTagId | null;
+	readonly food_tag_id: TFoodTagId | null;
 }
 
 export interface IV1RecommendationSelection {
-	readonly beverage?: TBeverageName;
-	readonly recipe?: {
-		readonly extra_ingredients?: ReadonlyArray<TIngredientName>;
-		readonly name: TRecipeName;
-		readonly recipe_id: number;
+	readonly beverage_id?: TBeverageId;
+	readonly food?: {
+		readonly extra_ingredient_ids?: ReadonlyArray<TIngredientId>;
+		readonly recipe_id: TRecipeId;
 	};
 }
 
-export interface IV1RecommendationAvailabilityCategory<TName extends string> {
-	readonly exclude?: ReadonlyArray<TName>;
-	readonly include?: ReadonlyArray<TName>;
+export interface IV1RecommendationAvailabilityCategory<TId extends number> {
+	readonly exclude?: ReadonlyArray<TId>;
+	readonly include?: ReadonlyArray<TId>;
 }
 
 export interface IV1RecommendationAvailability {
-	readonly beverages?: IV1RecommendationAvailabilityCategory<TBeverageName>;
-	readonly ingredients?: IV1RecommendationAvailabilityCategory<TIngredientName>;
-	readonly recipes?: IV1RecommendationAvailabilityCategory<TRecipeName>;
+	readonly beverages?: IV1RecommendationAvailabilityCategory<TBeverageId>;
+	readonly foods?: IV1RecommendationAvailabilityCategory<TFoodId>;
+	readonly ingredients?: IV1RecommendationAvailabilityCategory<TIngredientId>;
 }
 
 export interface IV1RecommendationOptions {
 	readonly availability?: IV1RecommendationAvailability;
-	readonly cooker?: TCookerName | null;
+	readonly cooker_id?: TCookerId | null;
 	readonly famous_shop?: boolean;
 	readonly max_extra_ingredients?: number | null;
 	readonly max_rating?: number;
 	readonly max_results?: number;
 	readonly mystia_cooker?: boolean;
 	readonly popular_trend?: {
+		readonly food_tag_id: TPopularFoodTagId;
 		readonly negative: boolean;
-		readonly tag: TPopularTag;
 	} | null;
 }
 
+export interface IV1RecommendationRequestPayload {
+	readonly options?: IV1RecommendationOptions;
+	readonly order?: IV1RecommendationOrder;
+	readonly selection?: IV1RecommendationSelection;
+	readonly special_guest_id: TSpecialGuestId;
+}
+
 export interface IV1RecommendationRequestMessage {
-	readonly payload: {
-		readonly customer: TCustomerRareName;
-		readonly options?: IV1RecommendationOptions;
-		readonly order?: IV1RecommendationOrder;
-		readonly selection?: IV1RecommendationSelection;
-	};
+	readonly payload: IV1RecommendationRequestPayload;
 	readonly request_id: string;
 	readonly type: 'recommendation.request';
 }
@@ -96,57 +102,52 @@ export type TV1RecommendationBridgeInboundMessage =
 	| IV1RecommendationCancelMessage
 	| IV1RecommendationRequestMessage;
 
-const beverageInstance = Beverage.getInstance();
-const cookerInstance = Cooker.getInstance();
-const customerInstance = CustomerRare.getInstance();
-const ingredientInstance = Ingredient.getInstance();
-const recipeInstance = Recipe.getInstance();
-const customerMap = new Map(
-	customerInstance.data.map((item) => [item.name, item])
-);
+const beverageCatalog = BeverageCatalog.getInstance();
+const cookerCatalog = CookerCatalog.getInstance();
+const foodCatalog = FoodCatalog.getInstance();
+const ingredientCatalog = IngredientCatalog.getInstance();
+const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 const beverageMap = new Map(
-	beverageInstance.data.map((item) => [item.name, item])
+	beverageCatalog.data.map((item) => [item.id, item] as const)
 );
-const recipeMap = new Map(recipeInstance.data.map((item) => [item.name, item]));
-const recipeVariantOwnerMap = new Map(
-	recipeInstance.data.flatMap(({ name, recipes }) =>
-		recipes.map(({ id }) => [id, name] as const)
-	)
+const cookerMap = new Map(
+	cookerCatalog.data.map((item) => [item.id, item] as const)
+);
+const foodMap = new Map(
+	foodCatalog.data.map((item) => [item.id, item] as const)
 );
 const ingredientMap = new Map(
-	ingredientInstance.data.map((item) => [item.name, item])
+	ingredientCatalog.data.map((item) => [item.id, item] as const)
 );
-const cookerMap = new Map(cookerInstance.data.map((item) => [item.name, item]));
-const beverageTags = new Set(beverageInstance.getValuesByProp('tags'));
-const blockedIngredientNames = ingredientInstance.blockedIngredients;
-const blockedIngredientLevels = ingredientInstance.blockedLevels;
-const blockedIngredientTags = ingredientInstance.blockedTags;
-const blockedRecipeNames = recipeInstance.blockedRecipes;
-const blockedRecipeTags = recipeInstance.blockedTags;
-const recipeTags = new Set<string>(
+const specialGuestMap = new Map(
+	specialGuestCatalog.data.map((item) => [item.id, item] as const)
+);
+const beverageTags = new Set<TBeverageTagId>(
+	beverageCatalog.getValuesByProp('tags')
+);
+const {
+	blockedIngredients,
+	blockedLevels: blockedIngredientLevels,
+	blockedTags: blockedIngredientTags,
+} = ingredientCatalog;
+const { blockedFoods, blockedTags: blockedFoodTags } = foodCatalog;
+const foodTags = new Set<TFoodTagId>(
 	[
-		...recipeInstance.getValuesByProp(['negativeTags', 'positiveTags']),
-		...ingredientInstance.getValuesByProp('tags'),
-		DYNAMIC_TAG_MAP.economical,
-		DYNAMIC_TAG_MAP.expensive,
-		DYNAMIC_TAG_MAP.largePartition,
-		DYNAMIC_TAG_MAP.popularNegative,
-		DYNAMIC_TAG_MAP.popularPositive,
-		DYNAMIC_TAG_MAP.signature,
-	].filter((tag) => !blockedRecipeTags.has(tag as TRecipeTag))
+		...foodCatalog.getValuesByProp(['negativeTags', 'positiveTags']),
+		...ingredientCatalog.getValuesByProp('tags'),
+		...Object.values(DYNAMIC_FOOD_TAG_MAP),
+	].filter((tag) => !blockedFoodTags.has(tag))
 );
-const popularTags = new Set<string>([
-	...ingredientInstance
-		.getValuesByProp('tags')
-		.filter((tag) => !blockedIngredientTags.has(tag)),
-	...recipeInstance
-		.getValuesByProp('positiveTags')
-		.filter((tag) => !blockedRecipeTags.has(tag)),
-]);
-
-function checkPlainObject(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+const popularTags: ReadonlySet<number> = new Set(
+	[
+		...ingredientCatalog
+			.getValuesByProp('tags')
+			.filter((tag) => !blockedIngredientTags.has(tag)),
+		...foodCatalog
+			.getValuesByProp('positiveTags')
+			.filter((tag) => !blockedFoodTags.has(tag)),
+	].filter(checkPopularFoodTagId)
+);
 
 function checkExactKeys(
 	value: Record<string, unknown>,
@@ -160,8 +161,14 @@ function checkExactKeys(
 	);
 }
 
+function checkSafeInteger(value: unknown): value is number {
+	return typeof value === 'number' && Number.isSafeInteger(value);
+}
+
 function checkSafeNonNegativeInteger(value: unknown) {
-	return Number.isSafeInteger(value) && (value as number) >= 0;
+	return (
+		typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+	);
 }
 
 function checkIntegerInRange(value: unknown, minimum: number, maximum: number) {
@@ -172,10 +179,10 @@ function checkIntegerInRange(value: unknown, minimum: number, maximum: number) {
 	);
 }
 
-function checkUniqueStrings(value: unknown) {
+function checkUniqueValues(value: unknown) {
 	return (
 		Array.isArray(value) &&
-		value.every((item) => typeof item === 'string') &&
+		value.every(checkSafeInteger) &&
 		new Set(value).size === value.length
 	);
 }
@@ -187,77 +194,74 @@ function invalid(reason: string, path?: string) {
 	} as const;
 }
 
-function checkDlcAllowed(itemDlc: number, customerDlc: number) {
-	return itemDlc === 0 || itemDlc === customerDlc;
+function checkDlcAllowed(itemDlc: number, guestDlc: number) {
+	return itemDlc === 0 || itemDlc === guestDlc;
 }
 
-function checkIngredientAllowed(name: string, customerDlc: number) {
-	const ingredient = ingredientMap.get(name as TIngredientName);
+function checkIngredientAllowed(id: number, guestDlc: number) {
+	const ingredient = ingredientMap.get(id as TIngredientId);
 	return (
 		ingredient !== undefined &&
-		checkDlcAllowed(ingredient.dlc, customerDlc) &&
-		!blockedIngredientNames.has(ingredient.name) &&
+		checkDlcAllowed(ingredient.dlc, guestDlc) &&
+		!blockedIngredients.has(ingredient.id) &&
 		!blockedIngredientLevels.has(ingredient.level) &&
 		!ingredient.tags.some((tag) => blockedIngredientTags.has(tag))
 	);
 }
 
-function checkRecipeBaseAllowed(
-	recipe: (typeof recipeInstance.data)[number],
-	customerDlc: number
+function checkFoodBaseAllowed(
+	food: (typeof foodCatalog.data)[number],
+	guestDlc: number
+) {
+	return checkDlcAllowed(food.dlc, guestDlc) && !blockedFoods.has(food.id);
+}
+
+function checkRecipeAllowed(
+	food: (typeof foodCatalog.data)[number],
+	ingredients: ReadonlyArray<TIngredientId>,
+	guestDlc: number
 ) {
 	return (
-		checkDlcAllowed(recipe.dlc, customerDlc) &&
-		!blockedRecipeNames.has(recipe.name)
+		checkFoodBaseAllowed(food, guestDlc) &&
+		ingredients.every((id) => checkIngredientAllowed(id, guestDlc))
 	);
 }
 
-function checkRecipeVariantAllowed(
-	recipe: (typeof recipeInstance.data)[number],
-	ingredients: ReadonlyArray<TIngredientName>,
-	customerDlc: number
-) {
+function checkFoodAllowed(id: number, guestDlc: number) {
+	const food = foodMap.get(id as TFoodId);
 	return (
-		checkRecipeBaseAllowed(recipe, customerDlc) &&
-		ingredients.every((name) => checkIngredientAllowed(name, customerDlc))
-	);
-}
-
-function checkRecipeAllowed(name: string, customerDlc: number) {
-	const recipe = recipeMap.get(name as TRecipeName);
-	return (
-		recipe?.recipes.some(({ ingredients }) =>
-			checkRecipeVariantAllowed(recipe, ingredients, customerDlc)
+		food?.recipes.some(({ ingredients }) =>
+			checkRecipeAllowed(food, ingredients, guestDlc)
 		) ?? false
 	);
 }
 
-function validateStringArray(
+function validateIdArray<TId extends number>(
 	value: unknown,
 	path: string,
-	checkValue: (name: string) => boolean
-): TRecommendationBridgeValidationResult<ReadonlyArray<string>> {
-	if (!checkUniqueStrings(value)) {
+	checkValue: (id: number) => boolean
+): TRecommendationBridgeValidationResult<ReadonlyArray<TId>> {
+	if (!checkUniqueValues(value)) {
 		return invalid('invalid-value', path);
 	}
-	if (!(value as string[]).every(checkValue)) {
-		return invalid('unknown-or-unavailable-name', path);
+	if (!(value as number[]).every(checkValue)) {
+		return invalid('unknown-or-unavailable-id', path);
 	}
-	return { ok: true, value: value as string[] };
+	return { ok: true, value: value as TId[] };
 }
 
-function checkAvailabilityIncludesName(availability: unknown, name: string) {
+function checkAvailabilityIncludesRecord(availability: unknown, id: number) {
 	if (availability === undefined) {
 		return true;
 	}
-	if (!checkPlainObject(availability)) {
+	if (!checkIsRecord(availability)) {
 		return false;
 	}
 	const { exclude, include } = availability;
 	return (
 		(include === undefined ||
-			(Array.isArray(include) && include.includes(name))) &&
-		!(Array.isArray(exclude) && exclude.includes(name))
+			(Array.isArray(include) && include.includes(id))) &&
+		!(Array.isArray(exclude) && exclude.includes(id))
 	);
 }
 
@@ -268,7 +272,7 @@ function validateRequest(
 		!checkExactKeys(value, ['type', 'request_id', 'payload']) ||
 		typeof value['request_id'] !== 'string' ||
 		!V1_REQUEST_ID_PATTERN.test(value['request_id']) ||
-		!checkPlainObject(value['payload'])
+		!checkIsRecord(value['payload'])
 	) {
 		return invalid('invalid-envelope');
 	}
@@ -276,205 +280,165 @@ function validateRequest(
 	if (
 		!checkExactKeys(
 			payload,
-			['customer'],
+			['special_guest_id'],
 			['order', 'selection', 'options']
-		)
+		) ||
+		!checkSafeInteger(payload['special_guest_id'])
 	) {
 		return invalid('invalid-value', 'payload');
 	}
-	if (typeof payload['customer'] !== 'string') {
-		return invalid('invalid-value', 'payload.customer');
-	}
-	const { customer: customerName, options, order, selection } = payload;
-	const customer = customerMap.get(customerName as TCustomerRareName);
-	if (customer === undefined) {
-		return invalid('unknown-or-unavailable-name', 'payload.customer');
+	const { options, order, selection } = payload;
+	const specialGuest = specialGuestMap.get(
+		payload['special_guest_id'] as TSpecialGuestId
+	);
+	if (specialGuest === undefined) {
+		return invalid('unknown-or-unavailable-id', 'payload.special_guest_id');
 	}
 
 	if (
 		order !== undefined &&
-		(!checkPlainObject(order) ||
-			!checkExactKeys(order, ['recipe_tag', 'beverage_tag']) ||
-			(order['recipe_tag'] !== null &&
-				(typeof order['recipe_tag'] !== 'string' ||
-					!recipeTags.has(order['recipe_tag']))) ||
-			(order['beverage_tag'] !== null &&
-				(typeof order['beverage_tag'] !== 'string' ||
-					!beverageTags.has(order['beverage_tag'] as TBeverageTag))))
+		(!checkIsRecord(order) ||
+			!checkExactKeys(order, ['beverage_tag_id', 'food_tag_id']) ||
+			(order['food_tag_id'] !== null &&
+				(!checkSafeInteger(order['food_tag_id']) ||
+					!foodTags.has(order['food_tag_id'] as TFoodTagId))) ||
+			(order['beverage_tag_id'] !== null &&
+				(!checkSafeInteger(order['beverage_tag_id']) ||
+					!beverageTags.has(
+						order['beverage_tag_id'] as TBeverageTagId
+					))))
 	) {
 		return invalid('invalid-value', 'payload.order');
 	}
 
 	if (
 		selection !== undefined &&
-		(!checkPlainObject(selection) ||
-			!checkExactKeys(selection, [], ['recipe', 'beverage']))
+		(!checkIsRecord(selection) ||
+			!checkExactKeys(selection, [], ['beverage_id', 'food']))
 	) {
 		return invalid('invalid-value', 'payload.selection');
 	}
 	const selectionObject = selection;
-	const selectedBeverageName = selectionObject?.['beverage'];
-	const selectedBeverage =
-		typeof selectedBeverageName === 'string'
-			? beverageMap.get(selectedBeverageName as TBeverageName)
-			: undefined;
+	const selectedBeverageValue = selectionObject?.['beverage_id'];
+	const selectedBeverage = checkSafeInteger(selectedBeverageValue)
+		? beverageMap.get(selectedBeverageValue as TBeverageId)
+		: undefined;
 	if (
-		selectedBeverageName !== undefined &&
+		selectedBeverageValue !== undefined &&
 		(selectedBeverage === undefined ||
-			!checkDlcAllowed(selectedBeverage.dlc, customer.dlc))
+			!checkDlcAllowed(selectedBeverage.dlc, specialGuest.dlc))
 	) {
 		return invalid(
-			'unknown-or-unavailable-name',
-			'payload.selection.beverage'
+			'unknown-or-unavailable-id',
+			'payload.selection.beverage_id'
 		);
 	}
-	const selectedRecipeValue = selectionObject?.['recipe'];
+	const selectedFoodValue = selectionObject?.['food'];
 	if (
-		selectedRecipeValue !== undefined &&
-		(!checkPlainObject(selectedRecipeValue) ||
+		selectedFoodValue !== undefined &&
+		(!checkIsRecord(selectedFoodValue) ||
 			!checkExactKeys(
-				selectedRecipeValue,
-				['name'],
-				['extra_ingredients', 'recipe_id']
+				selectedFoodValue,
+				['recipe_id'],
+				['extra_ingredient_ids']
 			) ||
-			typeof selectedRecipeValue['name'] !== 'string')
+			!checkSafeInteger(selectedFoodValue['recipe_id']))
 	) {
-		return invalid('invalid-value', 'payload.selection.recipe');
+		return invalid('invalid-value', 'payload.selection.food');
 	}
-	if (
-		selectedRecipeValue !== undefined &&
-		(!Object.hasOwn(selectedRecipeValue, 'recipe_id') ||
-			!Number.isSafeInteger(selectedRecipeValue['recipe_id']))
-	) {
-		return invalid('invalid-value', 'payload.selection.recipe.recipe_id');
-	}
-	const selectedRecipe =
-		selectedRecipeValue === undefined
+	const selectedOwner =
+		selectedFoodValue === undefined
 			? undefined
-			: recipeMap.get(selectedRecipeValue['name'] as TRecipeName);
+			: foodCatalog.findRecipeOwnerById(
+					selectedFoodValue['recipe_id'] as TRecipeId
+				);
 	if (
-		selectedRecipeValue !== undefined &&
-		(selectedRecipe === undefined ||
-			!checkRecipeBaseAllowed(selectedRecipe, customer.dlc))
+		selectedFoodValue !== undefined &&
+		(selectedOwner === undefined ||
+			!checkRecipeAllowed(
+				selectedOwner.food,
+				selectedOwner.recipe.ingredients,
+				specialGuest.dlc
+			))
 	) {
 		return invalid(
-			'unknown-or-unavailable-name',
-			'payload.selection.recipe.name'
+			'unknown-or-unavailable-id',
+			'payload.selection.food.recipe_id'
 		);
 	}
-	const selectedRecipeId = selectedRecipeValue?.['recipe_id'] as
-		| number
-		| undefined;
-	const selectedRecipeOwner =
-		selectedRecipeId === undefined
-			? undefined
-			: recipeVariantOwnerMap.get(selectedRecipeId);
-	if (selectedRecipeId !== undefined && selectedRecipeOwner === undefined) {
-		return invalid(
-			'unknown-recipe-id',
-			'payload.selection.recipe.recipe_id'
-		);
-	}
-	if (
-		selectedRecipeValue !== undefined &&
-		selectedRecipeOwner !== selectedRecipeValue['name']
-	) {
-		return invalid(
-			'recipe-id-mismatch',
-			'payload.selection.recipe.recipe_id'
-		);
-	}
-	const selectedRecipeVariant =
-		selectedRecipe === undefined || selectedRecipeId === undefined
-			? undefined
-			: selectedRecipe.recipes.find(({ id }) => id === selectedRecipeId);
-	if (
-		selectedRecipe !== undefined &&
-		selectedRecipeVariant !== undefined &&
-		!checkRecipeVariantAllowed(
-			selectedRecipe,
-			selectedRecipeVariant.ingredients,
-			customer.dlc
-		)
-	) {
-		return invalid(
-			'unavailable-recipe-id',
-			'payload.selection.recipe.recipe_id'
-		);
-	}
-	const extraIngredients = selectedRecipeValue?.['extra_ingredients'] ?? [];
-	const extraResult = validateStringArray(
+	const extraIngredients = selectedFoodValue?.['extra_ingredient_ids'] ?? [];
+	const extraResult = validateIdArray<TIngredientId>(
 		extraIngredients,
-		'payload.selection.recipe.extra_ingredients',
-		(name) => checkIngredientAllowed(name, customer.dlc)
+		'payload.selection.food.extra_ingredient_ids',
+		(id) => checkIngredientAllowed(id, specialGuest.dlc)
 	);
 	if (!extraResult.ok) {
 		return extraResult;
 	}
 	if (
-		selectedRecipeVariant !== undefined &&
-		(extraIngredients as string[]).some((name) =>
-			new Set<string>(selectedRecipeVariant.ingredients).has(name)
+		selectedOwner !== undefined &&
+		extraResult.value.some((id) =>
+			selectedOwner.recipe.ingredients.includes(id)
 		)
 	) {
 		return invalid(
 			'contains-base-ingredient',
-			'payload.selection.recipe.extra_ingredients'
+			'payload.selection.food.extra_ingredient_ids'
 		);
 	}
 	if (
-		selectedRecipeVariant !== undefined &&
-		selectedRecipeVariant.ingredients.length +
-			(extraIngredients as string[]).length >
-			5
+		selectedOwner !== undefined &&
+		selectedOwner.recipe.ingredients.length + extraResult.value.length > 5
 	) {
 		return invalid(
 			'too-many-ingredients',
-			'payload.selection.recipe.extra_ingredients'
+			'payload.selection.food.extra_ingredient_ids'
 		);
 	}
 
 	if (
 		options !== undefined &&
-		(!checkPlainObject(options) ||
+		(!checkIsRecord(options) ||
 			!checkExactKeys(
 				options,
 				[],
 				[
-					'cooker',
-					'mystia_cooker',
+					'availability',
+					'cooker_id',
 					'famous_shop',
-					'popular_trend',
 					'max_extra_ingredients',
 					'max_rating',
 					'max_results',
-					'availability',
+					'mystia_cooker',
+					'popular_trend',
 				]
 			))
 	) {
 		return invalid('invalid-value', 'payload.options');
 	}
 	const optionsObject = options;
-	const cooker = optionsObject?.['cooker'];
+	const cookerValue = optionsObject?.['cooker_id'];
+	const cooker = checkSafeInteger(cookerValue)
+		? cookerMap.get(cookerValue as TCookerId)
+		: undefined;
 	if (
-		cooker !== undefined &&
-		cooker !== null &&
-		(typeof cooker !== 'string' ||
-			!checkDlcAllowed(
-				cookerMap.get(cooker as TCookerName)?.dlc ?? Number.NaN,
-				customer.dlc
-			))
+		cookerValue !== undefined &&
+		cookerValue !== null &&
+		(cooker === undefined || !checkDlcAllowed(cooker.dlc, specialGuest.dlc))
 	) {
-		return invalid('unknown-or-unavailable-name', 'payload.options.cooker');
+		return invalid(
+			'unknown-or-unavailable-id',
+			'payload.options.cooker_id'
+		);
 	}
 	if (
-		selectedRecipe !== undefined &&
-		cooker !== undefined &&
-		cooker !== null
+		selectedOwner !== undefined &&
+		cookerValue !== undefined &&
+		cookerValue !== null
 	) {
-		return invalid('incompatible-selection', 'payload.options.cooker');
+		return invalid('incompatible-selection', 'payload.options.cooker_id');
 	}
-	for (const key of ['mystia_cooker', 'famous_shop'] as const) {
+	for (const key of ['famous_shop', 'mystia_cooker'] as const) {
 		const item = optionsObject?.[key];
 		if (item !== undefined && typeof item !== 'boolean') {
 			return invalid('invalid-value', `payload.options.${key}`);
@@ -490,7 +454,7 @@ function validateRequest(
 	}
 	if (
 		typeof maxExtraIngredients === 'number' &&
-		(extraIngredients as string[]).length > maxExtraIngredients
+		extraResult.value.length > maxExtraIngredients
 	) {
 		return invalid('out-of-range', 'payload.options.max_extra_ingredients');
 	}
@@ -510,10 +474,10 @@ function validateRequest(
 	if (
 		popularTrend !== undefined &&
 		popularTrend !== null &&
-		(!checkPlainObject(popularTrend) ||
-			!checkExactKeys(popularTrend, ['tag', 'negative']) ||
-			typeof popularTrend['tag'] !== 'string' ||
-			!popularTags.has(popularTrend['tag']) ||
+		(!checkIsRecord(popularTrend) ||
+			!checkExactKeys(popularTrend, ['food_tag_id', 'negative']) ||
+			!checkSafeInteger(popularTrend['food_tag_id']) ||
+			!popularTags.has(popularTrend['food_tag_id']) ||
 			typeof popularTrend['negative'] !== 'boolean')
 	) {
 		return invalid('invalid-value', 'payload.options.popular_trend');
@@ -521,47 +485,47 @@ function validateRequest(
 	const availability = optionsObject?.['availability'];
 	if (
 		availability !== undefined &&
-		(!checkPlainObject(availability) ||
+		(!checkIsRecord(availability) ||
 			!checkExactKeys(
 				availability,
 				[],
-				['recipes', 'beverages', 'ingredients']
+				['beverages', 'foods', 'ingredients']
 			))
 	) {
 		return invalid('invalid-value', 'payload.options.availability');
 	}
 	const availabilityObject = availability;
 	const availabilityChecks = [
-		['recipes', (name: string) => checkRecipeAllowed(name, customer.dlc)],
 		[
 			'beverages',
-			(name: string) => {
-				const item = beverageMap.get(name as TBeverageName);
+			(id: number) => {
+				const item = beverageMap.get(id as TBeverageId);
 				return (
 					item !== undefined &&
-					checkDlcAllowed(item.dlc, customer.dlc)
+					checkDlcAllowed(item.dlc, specialGuest.dlc)
 				);
 			},
 		],
+		['foods', (id: number) => checkFoodAllowed(id, specialGuest.dlc)],
 		[
 			'ingredients',
-			(name: string) => checkIngredientAllowed(name, customer.dlc),
+			(id: number) => checkIngredientAllowed(id, specialGuest.dlc),
 		],
 	] as const;
 	for (const [categoryKey, checker] of availabilityChecks) {
 		const category = availabilityObject?.[categoryKey];
 		if (
 			category !== undefined &&
-			(!checkPlainObject(category) ||
-				!checkExactKeys(category, [], ['include', 'exclude']))
+			(!checkIsRecord(category) ||
+				!checkExactKeys(category, [], ['exclude', 'include']))
 		) {
 			return invalid(
 				'invalid-value',
 				`payload.options.availability.${categoryKey}`
 			);
 		}
-		for (const listKey of ['include', 'exclude'] as const) {
-			const result = validateStringArray(
+		for (const listKey of ['exclude', 'include'] as const) {
+			const result = validateIdArray(
 				category?.[listKey] ?? [],
 				`payload.options.availability.${categoryKey}.${listKey}`,
 				checker
@@ -572,21 +536,21 @@ function validateRequest(
 		}
 	}
 	if (
-		(selectedRecipe !== undefined &&
-			!checkAvailabilityIncludesName(
-				availabilityObject?.['recipes'],
-				selectedRecipe.name
+		(selectedOwner !== undefined &&
+			!checkAvailabilityIncludesRecord(
+				availabilityObject?.['foods'],
+				selectedOwner.food.id
 			)) ||
 		(selectedBeverage !== undefined &&
-			!checkAvailabilityIncludesName(
+			!checkAvailabilityIncludesRecord(
 				availabilityObject?.['beverages'],
-				selectedBeverage.name
+				selectedBeverage.id
 			)) ||
-		(extraIngredients as string[]).some(
-			(name) =>
-				!checkAvailabilityIncludesName(
+		extraResult.value.some(
+			(id) =>
+				!checkAvailabilityIncludesRecord(
 					availabilityObject?.['ingredients'],
-					name
+					id
 				)
 		)
 	) {
@@ -597,22 +561,22 @@ function validateRequest(
 	}
 
 	const hasMystiaCooker = optionsObject?.['mystia_cooker'] ?? false;
-	const recipeTag = order?.['recipe_tag'] ?? null;
-	const beverageTag = order?.['beverage_tag'] ?? null;
+	const beverageTag = order?.['beverage_tag_id'] ?? null;
+	const foodTag = order?.['food_tag_id'] ?? null;
 	const hasSelection =
-		selectedRecipe !== undefined || selectedBeverage !== undefined;
+		selectedOwner !== undefined || selectedBeverage !== undefined;
 	if (
 		(!hasSelection &&
-			(recipeTag === null ||
+			(foodTag === null ||
 				beverageTag === null ||
 				hasMystiaCooker === true)) ||
 		(hasSelection &&
 			hasMystiaCooker === false &&
-			(recipeTag === null || beverageTag === null)) ||
-		(recipeTag !== null &&
-			(recipeTag === DYNAMIC_TAG_MAP.popularPositive ||
-				recipeTag === DYNAMIC_TAG_MAP.popularNegative) &&
-			(popularTrend === undefined || popularTrend === null))
+			(foodTag === null || beverageTag === null)) ||
+		(foodTag !== null &&
+			(foodTag === DYNAMIC_FOOD_TAG_MAP.popularPositive ||
+				foodTag === DYNAMIC_FOOD_TAG_MAP.popularNegative) &&
+			isNil(popularTrend))
 	) {
 		return invalid('invalid-mode', 'payload.order');
 	}
@@ -626,7 +590,7 @@ function validateRequest(
 export function parseV1RecommendationBridgeMessage(
 	value: unknown
 ): TRecommendationBridgeValidationResult<TV1RecommendationBridgeInboundMessage> {
-	if (!checkPlainObject(value) || typeof value['type'] !== 'string') {
+	if (!checkIsRecord(value) || typeof value['type'] !== 'string') {
 		return invalid('invalid-envelope');
 	}
 

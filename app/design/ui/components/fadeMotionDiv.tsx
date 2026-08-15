@@ -1,6 +1,7 @@
 'use client';
 
 import { AnimatePresence, type Variants, motion } from 'framer-motion';
+import isNil from 'lodash/isNil.js';
 import { type HTMLAttributes, type PropsWithChildren, memo } from 'react';
 
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
@@ -20,6 +21,12 @@ const variants = {
 	},
 } as const satisfies Record<TVariant, Variants>;
 
+const transition = {
+	duration: 0.15,
+	ease: 'easeInOut',
+	layout: { ease: 'linear' },
+} as const;
+
 interface IProps extends HTMLAttributes<HTMLDivElement> {
 	target: number | string;
 	variant?: TVariant;
@@ -35,8 +42,7 @@ export default memo<PropsWithChildren<IProps>>(function FadeMotionDiv({
 
 	return (
 		<AnimatePresence mode="popLayout">
-			{children === null ||
-			children === undefined ? null : isReducedMotion ? (
+			{isNil(children) ? null : isReducedMotion ? (
 				<div className={className}>{children}</div>
 			) : (
 				<motion.div
@@ -45,11 +51,7 @@ export default memo<PropsWithChildren<IProps>>(function FadeMotionDiv({
 					animate="animate"
 					exit="exit"
 					initial="initial"
-					transition={{
-						duration: 0.15,
-						ease: 'easeInOut',
-						layout: { ease: 'linear' },
-					}}
+					transition={transition}
 					variants={variants[variant]}
 					className={className}
 				>

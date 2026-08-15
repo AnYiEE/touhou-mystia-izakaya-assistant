@@ -1,4 +1,4 @@
-import { isNil } from 'lodash';
+import isNil from 'lodash/isNil.js';
 
 export function checkLengthEmpty<T>(
 	target: string | ArrayLike<T> | ReadonlySetLike<T> | null | undefined

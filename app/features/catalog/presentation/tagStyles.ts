@@ -18,15 +18,7 @@ export const BEVERAGE_TAG_STYLE = {
 	},
 } as const satisfies ITagStyle;
 
-export const INGREDIENT_TAG_STYLE = {
-	positive: {
-		backgroundColor: '#efe0a6',
-		borderColor: '#a1904e',
-		color: '#90611b',
-	},
-} as const satisfies ITagStyle;
-
-export const RECIPE_TAG_STYLE = {
+export const FOOD_TAG_STYLE = {
 	negative: {
 		backgroundColor: '#5d453a',
 		borderColor: '#000000',
@@ -39,12 +31,20 @@ export const RECIPE_TAG_STYLE = {
 	},
 } as const satisfies ITagStyle;
 
-export const CUSTOMER_NORMAL_TAG_STYLE = {
+export const INGREDIENT_TAG_STYLE = {
+	positive: {
+		backgroundColor: '#efe0a6',
+		borderColor: '#a1904e',
+		color: '#90611b',
+	},
+} as const satisfies ITagStyle;
+
+export const NORMAL_GUEST_TAG_STYLE = {
 	beverage: BEVERAGE_TAG_STYLE.positive,
-	positive: RECIPE_TAG_STYLE.positive,
+	positive: FOOD_TAG_STYLE.positive,
 } as const satisfies Omit<ITagStyle, 'negative'>;
 
-export const CUSTOMER_RARE_TAG_STYLE = {
-	...RECIPE_TAG_STYLE,
+export const SPECIAL_GUEST_TAG_STYLE = {
+	...FOOD_TAG_STYLE,
 	beverage: BEVERAGE_TAG_STYLE.positive,
 } as const satisfies ITagStyle;

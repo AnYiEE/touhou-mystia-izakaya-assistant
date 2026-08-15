@@ -68,8 +68,8 @@ export interface IAdminSsoGrantRevokeInput {
 }
 
 interface IWriteGrantRevokeAuditInput {
-	adminId: string | null;
 	action: string;
+	adminId: string | null;
 	clientId?: string | undefined;
 	ipAddress?: string | null | undefined;
 	reason: string;

@@ -6,6 +6,7 @@ import {
 	memo,
 	useCallback,
 	useEffect,
+	useMemo,
 	useRef,
 	useState,
 } from 'react';
@@ -36,9 +37,9 @@ interface IAnnouncementMarqueeStyle extends CSSProperties {
 interface IAnnouncementHtmlProps {
 	className?: string;
 	html: string;
+	isLooping?: boolean;
 	isMarqueeDisabled?: boolean;
 	isPaused?: boolean;
-	isLooping?: boolean;
 	onMarqueeComplete?: () => void;
 	onMetricsChange?: (metrics: IAnnouncementMarqueeMetrics) => void;
 }
@@ -103,10 +104,10 @@ export const AnnouncementHtml = memo<IAnnouncementHtmlProps>(
 
 			const measureOverflow = () => {
 				if (animationFrameId !== null) {
-					globalThis.cancelAnimationFrame(animationFrameId);
+					cancelAnimationFrame(animationFrameId);
 				}
 
-				animationFrameId = globalThis.requestAnimationFrame(() => {
+				animationFrameId = requestAnimationFrame(() => {
 					const contentRect = contentElement.getBoundingClientRect();
 					const viewportRect =
 						viewportElement.getBoundingClientRect();
@@ -173,7 +174,7 @@ export const AnnouncementHtml = memo<IAnnouncementHtmlProps>(
 			measureOverflow();
 
 			globalThis.addEventListener('resize', measureOverflow);
-			void globalThis.document.fonts.ready.then(measureOverflow);
+			void document.fonts.ready.then(measureOverflow);
 			const resizeObserver =
 				typeof ResizeObserver === 'undefined'
 					? null
@@ -184,26 +185,35 @@ export const AnnouncementHtml = memo<IAnnouncementHtmlProps>(
 
 			return () => {
 				if (animationFrameId !== null) {
-					globalThis.cancelAnimationFrame(animationFrameId);
+					cancelAnimationFrame(animationFrameId);
 				}
 				globalThis.removeEventListener('resize', measureOverflow);
 				resizeObserver?.disconnect();
 			};
 		}, [html, isLooping, isMarqueeDisabled]);
 
-		const marqueeStyle: IAnnouncementMarqueeStyle | undefined =
-			metrics.isOverflowing
-				? {
-						'--announcement-marquee-delay': `${ANNOUNCEMENT_MARQUEE_DELAY_MS}ms`,
-						'--announcement-marquee-distance': `${metrics.distance}px`,
-						'--announcement-marquee-duration': metrics.duration,
-						...(isLooping === true
-							? {
-									'--announcement-marquee-loop-gap': `${ANNOUNCEMENT_MARQUEE_LOOP_GAP_PX}px`,
-								}
-							: null),
-					}
-				: undefined;
+		const marqueeStyle = useMemo<IAnnouncementMarqueeStyle | undefined>(
+			() =>
+				metrics.isOverflowing
+					? {
+							'--announcement-marquee-delay': `${ANNOUNCEMENT_MARQUEE_DELAY_MS}ms`,
+							'--announcement-marquee-distance': `${metrics.distance}px`,
+							'--announcement-marquee-duration': metrics.duration,
+							...(isLooping === true
+								? {
+										'--announcement-marquee-loop-gap': `${ANNOUNCEMENT_MARQUEE_LOOP_GAP_PX}px`,
+									}
+								: null),
+						}
+					: undefined,
+			[
+				isLooping,
+				metrics.distance,
+				metrics.duration,
+				metrics.isOverflowing,
+			]
+		);
+		const sanitizedHtml = useMemo(() => ({ __html: html }), [html]);
 
 		return (
 			<div
@@ -233,7 +243,7 @@ export const AnnouncementHtml = memo<IAnnouncementHtmlProps>(
 					<div
 						ref={contentRef}
 						className={cn(ANNOUNCEMENT_HTML_CLASS_NAME, 'shrink-0')}
-						dangerouslySetInnerHTML={{ __html: html }}
+						dangerouslySetInnerHTML={sanitizedHtml}
 					/>
 					{metrics.isOverflowing && isLooping ? (
 						<div
@@ -243,7 +253,7 @@ export const AnnouncementHtml = memo<IAnnouncementHtmlProps>(
 								ANNOUNCEMENT_HTML_CLASS_NAME,
 								'pointer-events-none shrink-0 select-none'
 							)}
-							dangerouslySetInnerHTML={{ __html: html }}
+							dangerouslySetInnerHTML={sanitizedHtml}
 						/>
 					) : null}
 				</div>

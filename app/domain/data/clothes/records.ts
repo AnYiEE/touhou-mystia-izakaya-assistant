@@ -1,5 +1,16 @@
 /* eslint-disable sort-keys */
-import type { IClothes } from './schema';
+import type { IClothes, TClothesSource } from './schema';
+
+type TClothesBuySource = Extract<TClothesSource, { buy: unknown }>;
+
+function createKourindouPurchase(amount: number): TClothesBuySource {
+	return {
+		buy: {
+			merchant: { label: '香霖堂', map: 'HumanVillage' },
+			price: { currencyItem: { amount, currencyItem: 29 } },
+		},
+	};
+}
 
 export const CLOTHES_LIST = [
 	{
@@ -28,7 +39,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: true,
 		izakaya: false,
-		from: [{ bond: '露米娅' }],
+		from: [{ bond: { level: 5, specialGuest: 1 } }],
 	},
 	{
 		id: 24,
@@ -38,7 +49,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: '上白泽慧音' }],
+		from: [{ bond: { level: 5, specialGuest: 4 } }],
 	},
 	{
 		id: 25,
@@ -48,7 +59,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: '博丽灵梦' }],
+		from: [{ bond: { level: 5, specialGuest: 7 } }],
 	},
 	{
 		id: 26,
@@ -58,7 +69,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: '帕秋莉' }],
+		from: [{ bond: { level: 5, specialGuest: 27 } }],
 	},
 	{
 		id: 27,
@@ -67,7 +78,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: '蓬莱山辉夜' }],
+		from: [{ bond: { level: 5, specialGuest: 25 } }],
 	},
 	{
 		id: 31,
@@ -77,7 +88,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: ['持有100枚“银色的青蛙硬币”时自动获得'],
+		from: [{ holdingRequirement: { amount: 100, currencyItem: 29 } }],
 	},
 	{
 		id: 54,
@@ -87,14 +98,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: true,
-		from: [
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: { currency: '银色的青蛙硬币', amount: 25 },
-				},
-			},
-		],
+		from: [createKourindouPurchase(25)],
 	},
 	{
 		id: 56,
@@ -103,7 +107,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: ['首次举办演唱会时自动获得'],
+		from: [{ eventReward: { eventLabel: '首次举办演唱会' } }],
 	},
 	{
 		id: 57,
@@ -113,14 +117,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: true,
-		from: [
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: { currency: '银色的青蛙硬币', amount: 25 },
-				},
-			},
-		],
+		from: [createKourindouPurchase(25)],
 	},
 	{
 		id: 58,
@@ -130,14 +127,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: { currency: '银色的青蛙硬币', amount: 15 },
-				},
-			},
-		],
+		from: [createKourindouPurchase(15)],
 	},
 	{
 		id: 59,
@@ -147,14 +137,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: true,
-		from: [
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: { currency: '银色的青蛙硬币', amount: 25 },
-				},
-			},
-		],
+		from: [createKourindouPurchase(25)],
 	},
 	{
 		id: 60,
@@ -164,14 +147,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: { currency: '银色的青蛙硬币', amount: 15 },
-				},
-			},
-		],
+		from: [createKourindouPurchase(15)],
 	},
 	{
 		id: 61,
@@ -181,7 +157,9 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: true,
-		from: ['开启联动【东方妖精武踏会】后自动获得'],
+		from: [
+			{ collaborationUnlock: { collaborationLabel: '东方妖精武踏会' } },
+		],
 	},
 	{
 		id: 1001,
@@ -191,7 +169,7 @@ export const CLOTHES_LIST = [
 		dlc: 1,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: '东风谷早苗' }],
+		from: [{ bond: { level: 5, specialGuest: 1005 } }],
 	},
 	{
 		id: 1002,
@@ -201,7 +179,7 @@ export const CLOTHES_LIST = [
 		dlc: 1,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: '雾雨魔理沙' }],
+		from: [{ bond: { level: 5, specialGuest: 10 } }],
 	},
 	{
 		id: 2001,
@@ -211,7 +189,7 @@ export const CLOTHES_LIST = [
 		dlc: 2,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: '星熊勇仪' }],
+		from: [{ bond: { level: 5, specialGuest: 2002 } }],
 	},
 	{
 		id: 2002,
@@ -221,7 +199,7 @@ export const CLOTHES_LIST = [
 		dlc: 2,
 		gif: true,
 		izakaya: false,
-		from: [{ bond: '灵乌路空' }],
+		from: [{ bond: { level: 5, specialGuest: 2005 } }],
 	},
 	{
 		id: 2500,
@@ -232,13 +210,8 @@ export const CLOTHES_LIST = [
 		gif: false,
 		izakaya: false,
 		from: [
-			{
-				buy: {
-					name: '【人间之里】香霖堂',
-					price: { currency: '银色的青蛙硬币', amount: 10 },
-				},
-			},
-			'完成“爱乐者的挑战赛”任务后自动获得',
+			createKourindouPurchase(10),
+			{ taskReward: { task: '爱乐者的挑战赛' } },
 		],
 	},
 	{
@@ -249,7 +222,7 @@ export const CLOTHES_LIST = [
 		dlc: 3,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: '村纱水蜜' }],
+		from: [{ bond: { level: 5, specialGuest: 3001 } }],
 	},
 	{
 		id: 3002,
@@ -259,7 +232,7 @@ export const CLOTHES_LIST = [
 		dlc: 3,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: '霍青娥' }],
+		from: [{ bond: { level: 5, specialGuest: 3004 } }],
 	},
 	{
 		id: 4003,
@@ -269,7 +242,7 @@ export const CLOTHES_LIST = [
 		dlc: 4,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: '风见幽香' }],
+		from: [{ bond: { level: 5, specialGuest: 4002 } }],
 	},
 	{
 		id: 4004,
@@ -279,7 +252,7 @@ export const CLOTHES_LIST = [
 		dlc: 4,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: '鬼人正邪' }],
+		from: [{ bond: { level: 5, specialGuest: 4003 } }],
 	},
 	{
 		id: 5009,
@@ -289,7 +262,7 @@ export const CLOTHES_LIST = [
 		dlc: 5,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: '绵月依姬' }],
+		from: [{ bond: { level: 5, specialGuest: 5002 } }],
 	},
 	{
 		id: 5010,
@@ -299,7 +272,7 @@ export const CLOTHES_LIST = [
 		dlc: 5,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: '露易兹' }],
+		from: [{ bond: { level: 5, specialGuest: 5005 } }],
 	},
 	{
 		id: 9000,
@@ -309,6 +282,6 @@ export const CLOTHES_LIST = [
 		dlc: 9,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: '小恶魔' }],
+		from: [{ bond: { level: 5, specialGuest: 9001 } }],
 	},
 ] as const satisfies IClothes[];

@@ -8,6 +8,8 @@ import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import AccountManager from './accountManager/AccountManager';
 
+const ACCOUNT_MODAL_CLASS_NAMES = { body: 'px-[18px] py-0.5' } as const;
+const ACCOUNT_MODAL_COORDINATION = { id: 'account.main' } as const;
 const ACCOUNT_MODAL_MOTION_PROPS = {
 	variants: {
 		enter: {
@@ -35,11 +37,11 @@ export default function AccountModal() {
 
 	return (
 		<CoordinatedModal
-			coordination={{ id: 'account.main' }}
+			coordination={ACCOUNT_MODAL_COORDINATION}
 			isOpen={isOpen}
 			motionProps={ACCOUNT_MODAL_MOTION_PROPS}
 			onClose={handleClose}
-			classNames={{ body: 'px-[18px] py-0.5' }}
+			classNames={ACCOUNT_MODAL_CLASS_NAMES}
 		>
 			<AccountManager />
 		</CoordinatedModal>

@@ -10,8 +10,11 @@ import Tooltip from '@/design/ui/components/tooltip';
 import AccountConfirmButton from '@/features/account/client/components/AccountConfirmButton';
 import type { IAccountSsoGrant } from '@/features/account/contracts';
 
+import {
+	AccountAnimatedList,
+	AccountAnimatedListItem,
+} from './accountPanelLayout';
 import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
-import { AccountAnimatedList, AccountAnimatedListItem } from './layout';
 
 interface IAccountSsoGrantsPanelProps {
 	csrfToken: string | null;

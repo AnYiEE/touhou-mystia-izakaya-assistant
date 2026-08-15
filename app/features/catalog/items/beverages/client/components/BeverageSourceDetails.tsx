@@ -11,8 +11,11 @@ import ScrollShadow from '@/design/ui/components/scrollShadow';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import type { IBeverage } from '@/domain/data/beverages/schema';
-import { COLLECTION_LOCATION_REFRESH_TIME_MAP } from '@/domain/data/places/collectionFacts';
-import type { TCollectionLocation } from '@/domain/data/places/types';
+
+import {
+	formatSourceReference,
+	getCollectionPointRefreshTimeHours,
+} from '@/features/catalog/items/shared/sourceReferenceFormatting';
 
 import { checkObjectOrStringEmpty } from '@/shared/utilities/collections/check';
 
@@ -133,11 +136,11 @@ export default function BeverageSourceDetails({ from }: IProps) {
 														);
 													const refreshTime =
 														isCollect
-															? COLLECTION_LOCATION_REFRESH_TIME_MAP[
-																	(isArray
+															? getCollectionPointRefreshTimeHours(
+																	isArray
 																		? item[0]
-																		: item) as TCollectionLocation
-																]
+																		: item
+																)
 															: null;
 													const refreshTimeContent =
 														refreshTime ===
@@ -155,9 +158,12 @@ export default function BeverageSourceDetails({ from }: IProps) {
 																小时
 															</>
 														);
-													const itemContent = isArray
-														? item[0]
-														: item;
+													const itemContent =
+														formatSourceReference(
+															isArray
+																? item[0]
+																: item
+														);
 													const tooltipContent =
 														itemProbability !==
 															null ||
@@ -216,7 +222,7 @@ export default function BeverageSourceDetails({ from }: IProps) {
 														</Popover>
 													);
 												})()
-											: item}
+											: formatSourceReference(item)}
 									</Ol.Li>
 								))
 							) : (

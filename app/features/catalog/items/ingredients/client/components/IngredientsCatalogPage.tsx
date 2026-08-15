@@ -3,6 +3,12 @@
 import { useCallback, useMemo } from 'react';
 
 import { hasEquivalentDlcFilters } from '@/domain/availability';
+import {
+	INGREDIENT_TYPE_MAP,
+	compareIngredientTypes,
+} from '@/domain/data/ingredients/ingredientFacts';
+import type { TIngredientTypeId } from '@/domain/data/ingredients/types';
+import { FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 
 import { filterIngredientData } from '@/features/catalog/items/ingredients/client/queries/filterIngredientData';
 import { ingredientsStore } from '@/features/catalog/items/ingredients/client/state/store';
@@ -17,8 +23,17 @@ import { useSortedData } from '@/features/catalog/shared/client/hooks/useSortedD
 import { type IPinyinSortConfig } from '@/features/catalog/shared/state/pinyinSort';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
+import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import IngredientCatalog from './IngredientCatalog';
+
+function parseIngredientTypeKeys(keys: string[]) {
+	const types = keys
+		.map((key) => Number(key) as TIngredientTypeId)
+		.filter((type) => Object.hasOwn(INGREDIENT_TYPE_MAP, type));
+
+	return types.sort(compareIngredientTypes);
+}
 
 export default function IngredientsCatalogPage() {
 	const currentPopularTrend = ingredientsStore.shared.popularTrend.use();
@@ -33,9 +48,13 @@ export default function IngredientsCatalogPage() {
 		ingredientsStore.availableAvailabilityDlcs.use();
 	const availableContentDlcs = ingredientsStore.availableContentDlcs.use();
 	const availableLevels = ingredientsStore.availableLevels.use();
-	const availablePlaces = ingredientsStore.availablePlaces.use();
+	const availableMaps = ingredientsStore.availableMaps.use();
 	const availableTags = ingredientsStore.availableTags.use();
 	const availableTypes = ingredientsStore.availableTypes.use();
+	const availableTypeOptions = useMemo(
+		() => availableTypes.map(({ value }) => ({ value: value.toString() })),
+		[availableTypes]
+	);
 
 	const pinyinSortState = ingredientsStore.persistence.pinyinSortState.use();
 
@@ -48,6 +67,24 @@ export default function IngredientsCatalogPage() {
 	const filterNoTags = ingredientsStore.persistence.filters.noTags.use();
 	const filterTypes = ingredientsStore.persistence.filters.types.use();
 	const filterNoTypes = ingredientsStore.persistence.filters.noTypes.use();
+	const filterTypeKeys = useMemo(
+		() => filterTypes.map((type) => type.toString()),
+		[filterTypes]
+	);
+	const filterNoTypeKeys = useMemo(
+		() => filterNoTypes.map((type) => type.toString()),
+		[filterNoTypes]
+	);
+	const setFilterTypeKeys = useCallback((keys: string[]) => {
+		ingredientsStore.persistence.filters.types.set(
+			parseIngredientTypeKeys(keys)
+		);
+	}, []);
+	const setFilterNoTypeKeys = useCallback((keys: string[]) => {
+		ingredientsStore.persistence.filters.noTypes.set(
+			parseIngredientTypeKeys(keys)
+		);
+	}, []);
 	const filterPlaces = ingredientsStore.persistence.filters.places.use();
 	const filterNoPlaces = ingredientsStore.persistence.filters.noPlaces.use();
 
@@ -55,11 +92,15 @@ export default function IngredientsCatalogPage() {
 		() =>
 			instance.data.map((data) => ({
 				...data,
-				tags: instance.calculateTagsWithTrend(
-					data.tags,
-					currentPopularTrend,
-					isFamousShop
-				),
+				tags: instance
+					.calculateIngredientTagsWithTrend(
+						data.tags,
+						currentPopularTrend,
+						isFamousShop
+					)
+					.sort((a, b) =>
+						pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b])
+					),
 			})) as unknown as typeof instance.data,
 		[currentPopularTrend, instance, isFamousShop]
 	);
@@ -73,10 +114,10 @@ export default function IngredientsCatalogPage() {
 					: filterAvailabilityDlcs,
 				filterContentDlcs,
 				filterLevels,
-				filterNoPlaces,
+				filterMaps: filterPlaces,
+				filterNoMaps: filterNoPlaces,
 				filterNoTags,
 				filterNoTypes,
-				filterPlaces,
 				filterTags,
 				filterTypes,
 			}),
@@ -136,6 +177,7 @@ export default function IngredientsCatalogPage() {
 				label: '食材标签（包含）',
 				selectedKeys: filterTags,
 				setSelectedKeys: ingredientsStore.persistence.filters.tags.set,
+				valueType: 'foodTag',
 			},
 			{
 				items: availableTags,
@@ -143,19 +185,21 @@ export default function IngredientsCatalogPage() {
 				selectedKeys: filterNoTags,
 				setSelectedKeys:
 					ingredientsStore.persistence.filters.noTags.set,
+				valueType: 'foodTag',
 			},
 			{
-				items: availableTypes,
+				items: availableTypeOptions,
 				label: '食材类别（包含）',
-				selectedKeys: filterTypes,
-				setSelectedKeys: ingredientsStore.persistence.filters.types.set,
+				selectedKeys: filterTypeKeys,
+				setSelectedKeys: setFilterTypeKeys,
+				valueType: 'ingredientType',
 			},
 			{
-				items: availableTypes,
+				items: availableTypeOptions,
 				label: '食材类别（排除）',
-				selectedKeys: filterNoTypes,
-				setSelectedKeys:
-					ingredientsStore.persistence.filters.noTypes.set,
+				selectedKeys: filterNoTypeKeys,
+				setSelectedKeys: setFilterNoTypeKeys,
+				valueType: 'ingredientType',
 			},
 			{
 				items: availableLevels,
@@ -165,37 +209,41 @@ export default function IngredientsCatalogPage() {
 					ingredientsStore.persistence.filters.levels.set,
 			},
 			{
-				items: availablePlaces,
+				items: availableMaps,
 				label: '地区（包含）',
 				selectedKeys: filterPlaces,
 				setSelectedKeys:
 					ingredientsStore.persistence.filters.places.set,
+				valueType: 'map',
 			},
 			{
-				items: availablePlaces,
+				items: availableMaps,
 				label: '地区（排除）',
 				selectedKeys: filterNoPlaces,
 				setSelectedKeys:
 					ingredientsStore.persistence.filters.noPlaces.set,
+				valueType: 'map',
 			},
 		],
 		[
 			availableAvailabilityDlcs,
 			availableContentDlcs,
 			availableLevels,
-			availablePlaces,
+			availableMaps,
 			availableTags,
-			availableTypes,
+			availableTypeOptions,
 			filterAvailabilityDlcs,
 			filterContentDlcs,
 			filterLevels,
 			filterNoPlaces,
 			filterNoTags,
-			filterNoTypes,
+			filterNoTypeKeys,
 			filterPlaces,
 			filterTags,
-			filterTypes,
+			filterTypeKeys,
 			isAvailabilityDlcFilterRedundant,
+			setFilterNoTypeKeys,
+			setFilterTypeKeys,
 		]
 	);
 

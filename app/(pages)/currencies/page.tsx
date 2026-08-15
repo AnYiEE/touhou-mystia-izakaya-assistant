@@ -1,5 +1,5 @@
-import CurrenciesCatalogPage from '@/features/catalog/items/currencies/client/components/CurrenciesCatalogPage';
+import CurrencyItemsCatalogPage from '@/features/catalog/items/currencyItems/client/components/CurrencyItemsCatalogPage';
 
-export default function CurrenciesPage() {
-	return <CurrenciesCatalogPage />;
+export default function CurrencyItemsPage() {
+	return <CurrencyItemsCatalogPage />;
 }

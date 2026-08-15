@@ -10,6 +10,8 @@ import { fetchServiceApi } from '@/infrastructure/http/client/fetchServiceApi';
 import { ServiceApiError } from '@/infrastructure/http/client/serviceApiError';
 import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
 
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+
 function readLegacyBackupError(error: unknown): never {
 	if (error instanceof ServiceApiError) {
 		// eslint-disable-next-line @typescript-eslint/only-throw-error
@@ -17,11 +19,7 @@ function readLegacyBackupError(error: unknown): never {
 			data: {
 				message: error.message,
 				status: 'error',
-				...(error.data !== null &&
-				!Array.isArray(error.data) &&
-				typeof error.data === 'object'
-					? (error.data as Record<string, unknown>)
-					: {}),
+				...(checkIsRecord(error.data) ? error.data : {}),
 			},
 			message: error.message,
 			status: error.status,

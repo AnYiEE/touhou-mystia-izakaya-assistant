@@ -13,6 +13,7 @@ import {
 	canAddNonNegativeSafeIntegers,
 	isNonNegativeSafeInteger,
 } from '@/shared/utilities/numbers/check';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 export const ACCOUNT_SYNC_LEASE_TTL = 15 * 1000;
 export const ACCOUNT_SYNC_LEASE_RENEW_INTERVAL = 5 * 1000;
@@ -44,19 +45,17 @@ export function removeAccountSyncLeaseForAccountDeletion(userId: string) {
 
 function checkAccountSyncLease(value: unknown): value is IAccountSyncLease {
 	return (
-		value !== null &&
-		!Array.isArray(value) &&
-		typeof value === 'object' &&
+		checkIsRecord(value) &&
 		'expiresAt' in value &&
-		isNonNegativeSafeInteger(value.expiresAt) &&
+		isNonNegativeSafeInteger(value['expiresAt']) &&
 		'renewedAt' in value &&
-		isNonNegativeSafeInteger(value.renewedAt) &&
+		isNonNegativeSafeInteger(value['renewedAt']) &&
 		'ownerRunId' in value &&
-		typeof value.ownerRunId === 'string' &&
-		value.ownerRunId !== '' &&
+		typeof value['ownerRunId'] === 'string' &&
+		value['ownerRunId'] !== '' &&
 		'ownerTabId' in value &&
-		typeof value.ownerTabId === 'string' &&
-		value.ownerTabId !== ''
+		typeof value['ownerTabId'] === 'string' &&
+		value['ownerTabId'] !== ''
 	);
 }
 

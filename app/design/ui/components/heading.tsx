@@ -11,8 +11,8 @@ interface IProps {
 	as?: 'h1' | 'h2' | 'h3' | 'h4';
 	className?: THeadingClassName;
 	classNames?: Partial<{
-		title: THeadingClassName;
 		subTitle: TSpanClassName;
+		title: THeadingClassName;
 	}>;
 	isFirst?: boolean;
 	subTitle?: ReactNodeWithoutBoolean;

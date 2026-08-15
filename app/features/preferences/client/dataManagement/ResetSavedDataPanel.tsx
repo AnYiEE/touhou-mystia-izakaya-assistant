@@ -10,14 +10,14 @@ import Popover, {
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { showProgress } from '@/features/appShell/client/progress';
-import { customerNormalStore } from '@/features/catalog/customers/normal/client/state/store';
-import { customerRareStore } from '@/features/catalog/customers/rare/client/state/store';
-import { customerPlansStore } from '@/features/customerPlans/client/state/store';
-import { resetCustomerRareTutorial } from '@/features/tutorials/customerRare/client/tutorialProgress';
+import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
+import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
+import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/state/store';
+import { resetSpecialGuestTutorial } from '@/features/tutorials/specialGuest/client/tutorialProgress';
 import {
-	CUSTOMER_RARE_TUTORIAL_PATHNAME,
-	CUSTOMER_RARE_TUTORIAL_RESET_LABEL,
-} from '@/features/tutorials/customerRare/constants';
+	SPECIAL_GUEST_TUTORIAL_PATHNAME,
+	SPECIAL_GUEST_TUTORIAL_RESET_LABEL,
+} from '@/features/tutorials/specialGuest/constants';
 
 type TResetTarget = 'meals' | 'plans';
 
@@ -39,18 +39,21 @@ export default memo<IProps>(function ResetSavedDataPanel({
 
 	const handleResetMealData = useCallback(() => {
 		setResetTarget(null);
-		customerNormalStore.persistence.meals.set({});
-		customerRareStore.persistence.meals.set({});
-		trackEvent(trackEvent.category.click, 'Reset Button', 'Customer Data');
+		normalGuestStore.persistence.meals.set({});
+		specialGuestStore.persistence.meals.set({});
+		trackEvent(trackEvent.category.click, 'Reset Button', 'Guest Data');
 	}, [setResetTarget]);
 
 	const handleResetPlanData = useCallback(() => {
 		setResetTarget(null);
-		customerPlansStore.persistence.plans.set({ activeId: null, items: [] });
+		specialGuestPlansStore.persistence.plans.set({
+			activeId: null,
+			items: [],
+		});
 		trackEvent(
 			trackEvent.category.click,
 			'Reset Button',
-			'Customer Rare Plans'
+			'Special Guest Plans'
 		);
 	}, [setResetTarget]);
 
@@ -146,37 +149,37 @@ export default memo<IProps>(function ResetSavedDataPanel({
 				variant="flat"
 				onPress={() => {
 					showProgress(startProgress);
-					customerRareStore.persistence.customer.filters.set(
-						(prev) => {
-							Object.keys(prev).forEach((key) => {
-								prev[key as keyof typeof prev] = [];
-							});
-						}
-					);
-					customerRareStore.persistence.customer.orderLinkedFilter.set(
+					specialGuestStore.persistence.guest.filters.set((prev) => {
+						Object.keys(prev).forEach((key) => {
+							prev[key as keyof typeof prev] = [];
+						});
+					});
+					specialGuestStore.persistence.guest.orderLinkedFilter.set(
 						true
 					);
-					customerRareStore.persistence.recipe.table.cookers.set([]);
-					customerRareStore.persistence.recipe.table.availabilityDlcs.set(
+					specialGuestStore.persistence.recipe.table.cookerTypes.set(
 						[]
 					);
-					customerRareStore.persistence.recipe.table.sortDescriptor.set(
-						{}
-					);
-					customerRareStore.persistence.beverage.table.availabilityDlcs.set(
+					specialGuestStore.persistence.recipe.table.availabilityDlcs.set(
 						[]
 					);
-					customerRareStore.persistence.beverage.table.sortDescriptor.set(
+					specialGuestStore.persistence.recipe.table.sortDescriptor.set(
 						{}
 					);
-					customerRareStore.persistence.ingredient.filters.set(
+					specialGuestStore.persistence.beverage.table.availabilityDlcs.set(
+						[]
+					);
+					specialGuestStore.persistence.beverage.table.sortDescriptor.set(
+						{}
+					);
+					specialGuestStore.persistence.ingredient.filters.set(
 						(prev) => {
 							Object.keys(prev).forEach((key) => {
 								prev[key as keyof typeof prev] = [];
 							});
 						}
 					);
-					resetCustomerRareTutorial();
+					resetSpecialGuestTutorial();
 					// Wait for the button animation to complete (the animate will take 800ms).
 					setTimeout(
 						() => {
@@ -186,12 +189,12 @@ export default memo<IProps>(function ResetSavedDataPanel({
 								() => {
 									if (
 										pathname ===
-										CUSTOMER_RARE_TUTORIAL_PATHNAME
+										SPECIAL_GUEST_TUTORIAL_PATHNAME
 									) {
 										location.reload();
 									} else {
 										location.href =
-											CUSTOMER_RARE_TUTORIAL_PATHNAME;
+											SPECIAL_GUEST_TUTORIAL_PATHNAME;
 									}
 								},
 								isReducedMotion ? 0 : 300
@@ -202,11 +205,11 @@ export default memo<IProps>(function ResetSavedDataPanel({
 					trackEvent(
 						trackEvent.category.click,
 						'Reset Button',
-						'Customer Rare Tutorial'
+						'Special Guest Tutorial'
 					);
 				}}
 			>
-				{CUSTOMER_RARE_TUTORIAL_RESET_LABEL}
+				{SPECIAL_GUEST_TUTORIAL_RESET_LABEL}
 			</Button>
 		</div>
 	);

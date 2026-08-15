@@ -18,7 +18,7 @@ export type TDirtyQueueStorageKeyMatch =
 
 export function createDirtyQueueKey(userId: string, namespace: TSyncNamespace) {
 	return createAccountStorageKey(
-		namespace === SYNC_NAMESPACE_MAP.customerRarePlans
+		namespace === SYNC_NAMESPACE_MAP.specialGuestPlans
 			? ACCOUNT_STORAGE_KEY_MAP.dirtyQueueV2
 			: ACCOUNT_STORAGE_KEY_MAP.dirtyQueue,
 		userId,
@@ -85,7 +85,7 @@ export function matchDirtyQueueStorageKey(
 	const namespace = Object.values(SYNC_NAMESPACE_MAP).find(
 		(item) =>
 			createDirtyQueueKey(userId, item) === key ||
-			(item === SYNC_NAMESPACE_MAP.customerRarePlans &&
+			(item === SYNC_NAMESPACE_MAP.specialGuestPlans &&
 				createLegacyDirtyQueueKey(userId, item) === key) ||
 			key.startsWith(createDirtyQueueIntentPrefix(userId, item))
 	);
@@ -95,7 +95,7 @@ export function matchDirtyQueueStorageKey(
 
 	return {
 		isLegacyKey:
-			namespace === SYNC_NAMESPACE_MAP.customerRarePlans &&
+			namespace === SYNC_NAMESPACE_MAP.specialGuestPlans &&
 			createLegacyDirtyQueueKey(userId, namespace) === key,
 		kind: 'known',
 		namespace,

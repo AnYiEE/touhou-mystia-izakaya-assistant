@@ -1,17 +1,17 @@
-import type { TPlace } from '@/domain/data/places/types';
+import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
 
 export type TAvailabilityCategory =
 	| 'beverage'
 	| 'clothes'
 	| 'cooker'
-	| 'currency'
-	| 'customerNormal'
-	| 'customerRare'
+	| 'currencyItem'
+	| 'decoration'
+	| 'food'
 	| 'ingredient'
-	| 'ornament'
+	| 'normalGuest'
 	| 'partner'
-	| 'recipe';
+	| 'specialGuest';
 
 export type TAvailabilityAcquisitionSourceKind =
 	| 'bond'
@@ -27,7 +27,7 @@ export type TAvailabilityAcquisitionSourceKind =
 export interface IAvailabilityAcquisitionSource {
 	kind: TAvailabilityAcquisitionSourceKind;
 	name: string;
-	place: TPlace | null;
+	place: TMapLabel | null;
 	probability: number | null;
 	timeWindow: readonly [number, number] | null;
 }

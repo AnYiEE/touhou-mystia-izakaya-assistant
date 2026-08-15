@@ -1,3 +1,5 @@
+import isObject from 'lodash/isObject.js';
+
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 
 const VISITOR_REFRESH_TTL_MS = 30 * 1000;
@@ -90,11 +92,7 @@ export function createVisitorCountReader({
 				return;
 			}
 			const [first] = body;
-			if (
-				first === null ||
-				typeof first !== 'object' ||
-				!('visitors' in first)
-			) {
+			if (!isObject(first) || !('visitors' in first)) {
 				return;
 			}
 			const visitors =

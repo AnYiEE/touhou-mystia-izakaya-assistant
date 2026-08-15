@@ -25,6 +25,12 @@ import {
 	clearSiteStatusBuildIdentity,
 	writeSiteStatusBuildIdentity,
 } from '../deployment/siteStatusBuild';
+import { validateReleaseRecords } from '../validation/validateReleaseRecords';
+import { getOfflinePackagePaths } from './offlinePackage/paths';
+import {
+	prepareStaticRouterReplacement,
+	restoreStaticRouterReplacement,
+} from './offlinePackage/routerReplacement';
 
 export type TBuildStage = 'babel-transform' | 'next-build' | 'service-worker';
 
@@ -221,12 +227,18 @@ export async function runBuildCoordinator({
 }
 
 async function main() {
+	validateReleaseRecords();
+
 	const projectDirectory = cwd();
 	nextEnv.loadEnvConfig(projectDirectory);
-	const runtimeEnabled =
-		checkEnvironmentFlag(process.env.SELF_HOSTED) &&
-		!checkEnvironmentFlag(process.env.VERCEL) &&
-		!checkEnvironmentFlag(process.env.OFFLINE);
+	const isOffline = checkEnvironmentFlag(process.env.OFFLINE);
+	const isSelfHosted = checkEnvironmentFlag(process.env.SELF_HOSTED);
+	const isVercel = checkEnvironmentFlag(process.env.VERCEL);
+	const runtimeEnabled = isSelfHosted && !isVercel && !isOffline;
+	const staticExportPaths =
+		!isSelfHosted && !isVercel && !isOffline
+			? getOfflinePackagePaths()
+			: null;
 	const operationId = randomUUID();
 	let activeChild: ChildProcess | null = null;
 	const stageCommands = {
@@ -279,28 +291,43 @@ async function main() {
 		if (signalState.received !== null) {
 			throw new BuildStageError(stage, 1, signalState.received);
 		}
-		const [command, args] = stageCommands[stage];
-		const commandArgs = [commandPathMap[command], ...args];
-		await new Promise<void>((resolvePromise, reject) => {
-			const child = spawn(execPath, commandArgs, {
-				cwd: projectDirectory,
-				detached: process.platform !== 'win32',
-				stdio: 'inherit',
+		const shouldPrepareStaticRouter =
+			stage === 'next-build' && staticExportPaths !== null;
+		if (shouldPrepareStaticRouter) {
+			await restoreStaticRouterReplacement(staticExportPaths);
+		}
+
+		try {
+			if (shouldPrepareStaticRouter) {
+				await prepareStaticRouterReplacement(staticExportPaths);
+			}
+			const [command, args] = stageCommands[stage];
+			const commandArgs = [commandPathMap[command], ...args];
+			await new Promise<void>((resolvePromise, reject) => {
+				const child = spawn(execPath, commandArgs, {
+					cwd: projectDirectory,
+					detached: process.platform !== 'win32',
+					stdio: 'inherit',
+				});
+				activeChild = child;
+				child.once('error', (error) => {
+					activeChild = null;
+					reject(error);
+				});
+				child.once('close', (code, signal) => {
+					activeChild = null;
+					if (code === 0 && signal === null) {
+						resolvePromise();
+						return;
+					}
+					reject(new BuildStageError(stage, code ?? 1, signal));
+				});
 			});
-			activeChild = child;
-			child.once('error', (error) => {
-				activeChild = null;
-				reject(error);
-			});
-			child.once('close', (code, signal) => {
-				activeChild = null;
-				if (code === 0 && signal === null) {
-					resolvePromise();
-					return;
-				}
-				reject(new BuildStageError(stage, code ?? 1, signal));
-			});
-		});
+		} finally {
+			if (shouldPrepareStaticRouter) {
+				await restoreStaticRouterReplacement(staticExportPaths);
+			}
+		}
 	};
 
 	try {

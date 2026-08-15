@@ -1,6 +1,8 @@
 import Button from '@/design/ui/components/button';
 
-import { getCatalogMatchedFieldSpriteTarget } from '@/features/catalog/globalSearch/client/renderCatalogMatchedField';
+import type { TSpriteRecordIdentity } from '@/domain/data/sprites/types';
+
+import { getCatalogSearchSuggestionRecordKey } from '@/features/catalog/globalSearch/suggestionRecords';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import type {
 	IGlobalSearchFieldCondition,
@@ -12,6 +14,32 @@ import { getGlobalSearchFieldValueDisplayText } from '@/features/globalSearch/co
 import { getFieldPrefixLabel } from '@/features/globalSearch/core/parser';
 
 import { renderSearchSyntax } from './SearchSyntax';
+
+interface ISuggestionVisualBase {
+	key: string;
+	sectionLabel: string;
+}
+
+type TSuggestionVisual = ISuggestionVisualBase &
+	(TSpriteRecordIdentity | { recordId?: never; spriteTarget?: never });
+
+function createNameSuggestionVisual(
+	item: IGlobalSearchIndexItem
+): TSuggestionVisual {
+	const base = { key: item.id, sectionLabel: item.sectionLabel };
+	return item.spriteTarget === undefined ? base : { ...base, ...item };
+}
+
+function createCatalogSuggestionVisual(
+	record: TSpriteRecordIdentity,
+	sectionLabel: string
+): TSuggestionVisual {
+	return {
+		...record,
+		key: `${record.spriteTarget}:${record.recordId}`,
+		sectionLabel,
+	};
+}
 
 export function PrefixSuggestions({
 	onPress,
@@ -58,13 +86,21 @@ export function PrefixSuggestions({
 
 export function FieldValueSuggestions({
 	activeFieldCondition,
+	catalogSuggestionRecordMap,
 	nameSuggestionItemMap,
 	onPress,
 	resultSection,
 	suggestions,
 }: {
 	activeFieldCondition: IGlobalSearchFieldCondition | null;
-	nameSuggestionItemMap: ReadonlyMap<string, IGlobalSearchIndexItem>;
+	catalogSuggestionRecordMap: ReadonlyMap<
+		string,
+		ReadonlyArray<TSpriteRecordIdentity>
+	>;
+	nameSuggestionItemMap: ReadonlyMap<
+		string,
+		ReadonlyArray<IGlobalSearchIndexItem>
+	>;
 	onPress: (suggestion: string) => void;
 	resultSection: null | TGlobalSearchSection;
 	suggestions: ReadonlyArray<string>;
@@ -76,13 +112,6 @@ export function FieldValueSuggestions({
 					activeFieldCondition.fieldType,
 					resultSection
 				);
-	const spriteTarget =
-		activeFieldCondition === null
-			? undefined
-			: getCatalogMatchedFieldSpriteTarget(
-					activeFieldCondition.fieldType
-				);
-
 	return (
 		<>
 			<div className="mb-2 flex items-center gap-2 px-0.5">
@@ -94,7 +123,7 @@ export function FieldValueSuggestions({
 				</span>
 			</div>
 			<div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
-				{suggestions.map((suggestion, suggestionIndex) => {
+				{suggestions.flatMap((suggestion) => {
 					const suggestionDisplayText =
 						activeFieldCondition === null
 							? suggestion
@@ -102,18 +131,41 @@ export function FieldValueSuggestions({
 									activeFieldCondition.fieldType,
 									suggestion
 								);
-					const nameSuggestionItem =
+					const nameSuggestionItems =
 						activeFieldCondition?.fieldType === 'name'
-							? nameSuggestionItemMap.get(suggestion)
-							: undefined;
-					const suggestionSpriteTarget =
-						nameSuggestionItem?.spriteTarget ?? spriteTarget;
-					const suggestionSpriteName =
-						nameSuggestionItem?.targetName ?? suggestion;
+							? (nameSuggestionItemMap.get(suggestion) ?? [])
+							: [];
+					const catalogSuggestionRecords =
+						activeFieldCondition === null
+							? []
+							: (catalogSuggestionRecordMap.get(
+									getCatalogSearchSuggestionRecordKey(
+										activeFieldCondition.fieldType,
+										suggestion
+									)
+								) ?? []);
+					const visualOptions =
+						nameSuggestionItems.length > 0
+							? nameSuggestionItems.map(
+									createNameSuggestionVisual
+								)
+							: catalogSuggestionRecords.length > 0
+								? catalogSuggestionRecords.map((record) =>
+										createCatalogSuggestionVisual(
+											record,
+											fieldLabel
+										)
+									)
+								: [
+										{
+											key: `field:${suggestion}`,
+											sectionLabel: fieldLabel,
+										},
+									];
 
-					return (
+					return visualOptions.map((visual) => (
 						<Button
-							key={`${suggestion}:${nameSuggestionItem?.section ?? 'field'}:${suggestionIndex}`}
+							key={`${suggestion}:${visual.key}`}
 							size="sm"
 							variant="light"
 							onPress={() => {
@@ -122,11 +174,11 @@ export function FieldValueSuggestions({
 							className="flex h-9 min-w-0 justify-between gap-2 rounded-small border border-default-200/55 bg-background/45 px-2 text-left text-small transition data-[hover=true]:border-primary/25 data-[hover=true]:bg-primary/10 motion-reduce:transition-none dark:bg-content1/30"
 						>
 							<span className="flex min-w-0 items-center gap-1.5">
-								{suggestionSpriteTarget !== undefined && (
+								{visual.spriteTarget !== undefined && (
 									<span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-small border border-default-200/55 bg-default/35">
 										<Sprite
-											target={suggestionSpriteTarget}
-											name={suggestionSpriteName as never}
+											target={visual.spriteTarget}
+											recordId={visual.recordId}
 											size={1}
 										/>
 									</span>
@@ -136,10 +188,10 @@ export function FieldValueSuggestions({
 								</span>
 							</span>
 							<span className="shrink-0 text-tiny text-foreground-400">
-								{nameSuggestionItem?.sectionLabel ?? fieldLabel}
+								{visual.sectionLabel}
 							</span>
 						</Button>
-					);
+					));
 				})}
 			</div>
 		</>

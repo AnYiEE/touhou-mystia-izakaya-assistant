@@ -1,4 +1,4 @@
-import { isNil } from 'lodash';
+import isNil from 'lodash/isNil.js';
 
 type TRemString = `${number}rem`;
 type TResult<T> = T extends TRemString ? number : T;

@@ -16,6 +16,7 @@ import {
 	memo,
 	useCallback,
 	useEffect,
+	useMemo,
 	useRef,
 	useState,
 } from 'react';
@@ -219,12 +220,6 @@ export const ModalPresentation = memo<IModalPresentationProps>(
 	}) {
 		const { isHighAppearance } = useDesignPreferences();
 
-		const {
-			body: bodyClassName,
-			content: contentClassName,
-			...modalClassNames
-		} = classNames ?? {};
-
 		const [defaultPortalContainer, setDefaultPortalContainer] =
 			useState<HTMLElement | null>(null);
 		const resolvedPortalContainer =
@@ -243,6 +238,34 @@ export const ModalPresentation = memo<IModalPresentationProps>(
 			onOpenChange === undefined ? {} : { onOpenChange };
 		const resolvedScrollMode = scrollShadow ? scrollMode : 'none';
 
+		const { bodyClassName, contentClassName, heroUiClassNames } =
+			useMemo(() => {
+				const { body, content, ...modalClassNames } = classNames ?? {};
+
+				return {
+					bodyClassName: body,
+					contentClassName: content,
+					heroUiClassNames: {
+						...modalClassNames,
+						backdrop: cn(modalClassNames.backdrop),
+						base: cn(
+							isHighAppearance
+								? 'bg-blend-mystia'
+								: 'bg-background dark:bg-content1',
+							resolvedScrollMode === 'mask' && 'overflow-hidden',
+							modalClassNames.base
+						),
+						closeButton: cn(
+							'z-20 transition-background motion-reduce:transition-none',
+							isHighAppearance
+								? 'hover:bg-content1 active:bg-content2'
+								: 'dark:hover:bg-default-200 dark:active:bg-default',
+							modalClassNames.closeButton
+						),
+					},
+				};
+			}, [classNames, isHighAppearance, resolvedScrollMode]);
+
 		useEffect(() => {
 			setDefaultPortalContainer(
 				document.querySelector<HTMLElement>('#modal-portal-container')
@@ -257,24 +280,7 @@ export const ModalPresentation = memo<IModalPresentationProps>(
 				isOpen={isOpen}
 				scrollBehavior={scrollBehavior}
 				size={size}
-				classNames={{
-					...modalClassNames,
-					backdrop: cn(modalClassNames.backdrop),
-					base: cn(
-						isHighAppearance
-							? 'bg-blend-mystia'
-							: 'bg-background dark:bg-content1',
-						resolvedScrollMode === 'mask' && 'overflow-hidden',
-						modalClassNames.base
-					),
-					closeButton: cn(
-						'z-20 transition-background motion-reduce:transition-none',
-						isHighAppearance
-							? 'hover:bg-content1 active:bg-content2'
-							: 'dark:hover:bg-default-200 dark:active:bg-default',
-						modalClassNames.closeButton
-					),
-				}}
+				classNames={heroUiClassNames}
 				{...keyboardDismissProps}
 				{...closeProps}
 				{...openChangeProps}

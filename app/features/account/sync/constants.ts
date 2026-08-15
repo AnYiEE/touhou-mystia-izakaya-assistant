@@ -10,23 +10,23 @@ export const ACCOUNT_SYNC_OPERATION_KIND_MAP = {
 } as const;
 
 export const SYNC_SCHEMA_VERSION_MAP = {
-	[SYNC_NAMESPACE_MAP.customerNormalMeals]: 2,
-	[SYNC_NAMESPACE_MAP.customerRareMeals]: 2,
-	[SYNC_NAMESPACE_MAP.customerRarePlans]: 3,
-	[SYNC_NAMESPACE_MAP.customerRareSettings]: 1,
-	[SYNC_NAMESPACE_MAP.globalPreferences]: 1,
+	[SYNC_NAMESPACE_MAP.normalGuestMeals]: 3,
+	[SYNC_NAMESPACE_MAP.specialGuestMeals]: 3,
+	[SYNC_NAMESPACE_MAP.specialGuestPlans]: 4,
+	[SYNC_NAMESPACE_MAP.specialGuestSettings]: 1,
+	[SYNC_NAMESPACE_MAP.globalPreferences]: 2,
 	[SYNC_NAMESPACE_MAP.theme]: 1,
-	[SYNC_NAMESPACE_MAP.tutorialCustomerRare]: 1,
+	[SYNC_NAMESPACE_MAP.tutorialSpecialGuest]: 1,
 } as const satisfies Record<TSyncNamespace, number>;
 
 export const SYNC_MIN_SCHEMA_VERSION_MAP = {
-	[SYNC_NAMESPACE_MAP.customerNormalMeals]: 1,
-	[SYNC_NAMESPACE_MAP.customerRareMeals]: 1,
-	[SYNC_NAMESPACE_MAP.customerRarePlans]: 1,
-	[SYNC_NAMESPACE_MAP.customerRareSettings]: 1,
+	[SYNC_NAMESPACE_MAP.normalGuestMeals]: 1,
+	[SYNC_NAMESPACE_MAP.specialGuestMeals]: 1,
+	[SYNC_NAMESPACE_MAP.specialGuestPlans]: 1,
+	[SYNC_NAMESPACE_MAP.specialGuestSettings]: 1,
 	[SYNC_NAMESPACE_MAP.globalPreferences]: 1,
 	[SYNC_NAMESPACE_MAP.theme]: 1,
-	[SYNC_NAMESPACE_MAP.tutorialCustomerRare]: 1,
+	[SYNC_NAMESPACE_MAP.tutorialSpecialGuest]: 1,
 } as const satisfies Record<TSyncNamespace, number>;
 
 export function checkSupportedSyncSchemaVersion(

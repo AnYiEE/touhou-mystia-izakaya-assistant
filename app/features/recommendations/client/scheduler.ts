@@ -10,11 +10,11 @@ const CHECKPOINT_TIME_CHECK_INTERVAL = 32;
 const isServer = typeof window === 'undefined';
 
 interface IYieldTicket {
+	abortHandler?: () => void;
 	readonly reject: (error: Error) => void;
 	readonly resolve: () => void;
 	readonly signal?: AbortSignal;
 	readonly taskKey: string;
-	abortHandler?: () => void;
 }
 
 function createAbortError() {
@@ -35,12 +35,12 @@ function throwIfAborted(signal?: AbortSignal) {
 }
 
 function getNow() {
-	return globalThis.performance.now();
+	return performance.now();
 }
 
 function createHostTaskScheduler() {
 	if (!isServer && typeof globalThis.MessageChannel === 'function') {
-		const channel = new globalThis.MessageChannel();
+		const channel = new MessageChannel();
 		const tasks: Array<() => void> = [];
 		channel.port1.addEventListener('message', () => {
 			tasks.shift()?.();
@@ -63,10 +63,10 @@ function createHostTaskScheduler() {
 	}
 
 	return (callback: () => void) => {
-		const timeout = globalThis.setTimeout(callback, 0);
+		const timeout = setTimeout(callback, 0);
 
 		return () => {
-			globalThis.clearTimeout(timeout);
+			clearTimeout(timeout);
 		};
 	};
 }

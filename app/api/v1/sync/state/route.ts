@@ -14,12 +14,20 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 import { ACCOUNT_SYNC_API_RESPONSE_CODE_MAP } from '@/features/account/sync/apiResponseCodes';
+import {
+	checkSyncProtocolRequestBody,
+	checkSyncProtocolSearchParams,
+} from '@/features/account/sync/protocol';
 import { getAccountSyncCapacityConfiguration } from '@/features/account/sync/server/capacity';
+import { createSyncClientUpdateRequiredResponse } from '@/features/account/sync/server/protocolResponse';
 import {
 	parseUserStateRecord,
 	putSyncStateChanges,
 } from '@/features/account/sync/server/state';
-import type { ISyncStatePutBody } from '@/features/account/sync/types';
+import type {
+	ISyncProtocolRequest,
+	ISyncStatePutBody,
+} from '@/features/account/sync/types';
 import {
 	checkSyncNamespace,
 	parseSyncStatePutBody,
@@ -84,6 +92,9 @@ export async function GET(request: NextRequest) {
 					status: 'rate-limit-error' as const,
 				};
 			}
+			if (!checkSyncProtocolSearchParams(request.nextUrl.searchParams)) {
+				return { status: 'client-update-required' as const };
+			}
 
 			const namespaceParams =
 				request.nextUrl.searchParams.getAll('namespace');
@@ -109,6 +120,9 @@ export async function GET(request: NextRequest) {
 	);
 	if (auth.status === 'error') {
 		return createAccountAuthErrorRouteResponse(auth, request);
+	}
+	if (auth.result.status === 'client-update-required') {
+		return createSyncClientUpdateRequiredResponse();
 	}
 	if (auth.result.status === 'rate-limit-error') {
 		const { data, headers, httpStatus, message } = auth.result.error;
@@ -193,10 +207,9 @@ export async function PUT(request: NextRequest) {
 	}
 
 	const capacityConfiguration = getAccountSyncCapacityConfiguration();
-	const bodyResult = await readJsonBodyResult<ISyncStatePutBody>(
-		request,
-		capacityConfiguration.requestMaxBytes
-	);
+	const bodyResult = await readJsonBodyResult<
+		ISyncProtocolRequest & ISyncStatePutBody
+	>(request, capacityConfiguration.requestMaxBytes);
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse(
 			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.requestTooLarge,
@@ -204,9 +217,16 @@ export async function PUT(request: NextRequest) {
 			{ limit_bytes: capacityConfiguration.requestMaxBytes }
 		);
 	}
+	if (
+		bodyResult.status === 'ok' &&
+		!checkSyncProtocolRequestBody(bodyResult.data)
+	) {
+		return createSyncClientUpdateRequiredResponse();
+	}
 
 	const body = parseSyncStatePutBody(
-		bodyResult.status === 'ok' ? bodyResult.data : null
+		bodyResult.status === 'ok' ? bodyResult.data : null,
+		['protocol_version']
 	);
 	if (body === null) {
 		return createNoStoreErrorResponse(
@@ -254,26 +274,12 @@ export async function PUT(request: NextRequest) {
 		session: auth.data.session,
 		userId: auth.data.user.id,
 	});
-	if (writeResult.status === 'unauthorized') {
-		return createNoStoreErrorResponse(
-			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
-			401
-		);
+	if (writeResult.status === 'corrupt-user-state') {
+		return createCorruptUserStateResponse();
 	}
 	if (writeResult.status === 'state-epoch-mismatch') {
 		return createNoStoreErrorResponse(
 			ACCOUNT_API_RESPONSE_CODE_MAP.stateEpochMismatch,
-			409,
-			{
-				state_epoch: writeResult.state_epoch,
-				sync_generation: writeResult.sync_generation,
-				sync_status: writeResult.sync_status,
-			}
-		);
-	}
-	if (writeResult.status === 'sync-paused') {
-		return createNoStoreErrorResponse(
-			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.paused,
 			409,
 			{
 				state_epoch: writeResult.state_epoch,
@@ -293,8 +299,22 @@ export async function PUT(request: NextRequest) {
 			}
 		);
 	}
-	if (writeResult.status === 'corrupt-user-state') {
-		return createCorruptUserStateResponse();
+	if (writeResult.status === 'sync-paused') {
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.paused,
+			409,
+			{
+				state_epoch: writeResult.state_epoch,
+				sync_generation: writeResult.sync_generation,
+				sync_status: writeResult.sync_status,
+			}
+		);
+	}
+	if (writeResult.status === 'unauthorized') {
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 
 	return createNoStoreJsonResponse({

@@ -60,8 +60,8 @@ export async function changePassword({
 			},
 			userId: account.user.id,
 		});
-		if (failureState.status === 'unauthorized') {
-			return { message: 'unauthorized', status: 'error' };
+		if (failureState.status === 'locked') {
+			return failureState;
 		}
 		if (failureState.status === 'stale') {
 			await writeAccountAuditLogBestEffort(
@@ -74,8 +74,8 @@ export async function changePassword({
 			);
 			return { message: 'credential-changed', status: 'error' };
 		}
-		if (failureState.status === 'locked') {
-			return failureState;
+		if (failureState.status === 'unauthorized') {
+			return { message: 'unauthorized', status: 'error' };
 		}
 
 		await writeAccountAuditLogBestEffort(
@@ -138,17 +138,17 @@ export async function changePassword({
 				);
 				return { message: 'credential-changed', status: 'error' };
 			}
+			if (error.message === 'credential-not-found') {
+				return { message: 'server-misconfigured', status: 'error' };
+			}
 			if (error.message === 'invalid-user-status') {
 				return { message: 'invalid-user-status', status: 'error' };
 			}
 			if (
-				error.message === 'user-not-found' ||
-				error.message === 'session-not-found'
+				error.message === 'session-not-found' ||
+				error.message === 'user-not-found'
 			) {
 				return { message: 'unauthorized', status: 'error' };
-			}
-			if (error.message === 'credential-not-found') {
-				return { message: 'server-misconfigured', status: 'error' };
 			}
 		}
 

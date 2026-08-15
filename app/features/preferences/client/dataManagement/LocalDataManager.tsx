@@ -22,9 +22,9 @@ import Tooltip from '@/design/ui/components/tooltip';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
-import { customerNormalStore } from '@/features/catalog/customers/normal/client/state/store';
-import { customerRareStore } from '@/features/catalog/customers/rare/client/state/store';
-import { customerPlansStore } from '@/features/customerPlans/client/state/store';
+import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
+import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
+import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/state/store';
 
 import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
 
@@ -32,10 +32,10 @@ import { useThrottle } from '@/shared/react/useThrottle';
 
 import { getClosestModalScrollContainer } from './dataManagerScroll';
 import {
-	CUSTOMER_DATA_KEY_MAP,
-	type ICustomerDataImport,
-	parseCustomerDataImport,
-} from './parseCustomerDataImport';
+	GUEST_DATA_KEY_MAP,
+	type IGuestDataImport,
+	parseGuestDataImport,
+} from './parseGuestDataImport';
 import { downloadJson, parseJsonFromInput } from './processJsonFile';
 
 const exportButtonLabelMap = {
@@ -51,34 +51,61 @@ interface IProps {
 }
 
 export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
+	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
 
-	const currentNormalMealData = customerNormalStore.persistence.meals.use();
-	const currentRareMealData = customerRareStore.persistence.meals.use();
-	const currentRarePlanData = customerPlansStore.persistence.plans.use();
-	const { isHighAppearance } = useDesignPreferences();
+	const currentNormalMealData = normalGuestStore.persistence.meals.use();
+	const currentRareMealData = specialGuestStore.persistence.meals.use();
+	const currentRarePlanData = specialGuestPlansStore.persistence.plans.use();
 
-	const currentCustomerData = useMemo(
+	const importTextareaClassNames = useMemo(
 		() => ({
-			[CUSTOMER_DATA_KEY_MAP.normalMeals]: currentNormalMealData,
-			[CUSTOMER_DATA_KEY_MAP.rareMeals]: currentRareMealData,
-			[CUSTOMER_DATA_KEY_MAP.rarePlans]: currentRarePlanData,
+			inputWrapper: cn(
+				'bg-default/40 transition-background data-[hover=true]:bg-default-200 group-data-[focus=true]:bg-default motion-reduce:transition-none',
+				{
+					'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40 group-data-[focus=true]:bg-default/70':
+						isHighAppearance,
+				}
+			),
+		}),
+		[isHighAppearance]
+	);
+	const exportSnippetTooltipProps = useMemo(
+		() => ({
+			content: '点击以复制当前的顾客套餐和营业预设数据',
+			delay: 0,
+			offset: 0,
+			showArrow: !isHighAppearance,
+		}),
+		[isHighAppearance]
+	);
+	const exportSnippetClassNames = useMemo(
+		() => ({
+			base: cn({ 'bg-default/40 backdrop-blur': isHighAppearance }),
+			pre: 'max-h-[13.25rem] w-full overflow-auto whitespace-pre-wrap',
+		}),
+		[isHighAppearance]
+	);
+
+	const currentGuestData = useMemo(
+		() => ({
+			[GUEST_DATA_KEY_MAP.normalMeals]: currentNormalMealData,
+			[GUEST_DATA_KEY_MAP.rareMeals]: currentRareMealData,
+			[GUEST_DATA_KEY_MAP.rarePlans]: currentRarePlanData,
 		}),
 		[currentNormalMealData, currentRareMealData, currentRarePlanData]
 	);
 
-	const currentCustomerDataString = useMemo(
-		() => JSON.stringify(currentCustomerData, null, '\t'),
-		[currentCustomerData]
+	const currentGuestDataString = useMemo(
+		() => JSON.stringify(currentGuestData, null, '\t'),
+		[currentGuestData]
 	);
 
 	const [importValue, setImportValue] = useState('');
 	const importValueRef = useRef(importValue);
 	importValueRef.current = importValue;
 	const throttledImportValue = useThrottle(importValue);
-	const [importData, setImportData] = useState<ICustomerDataImport | null>(
-		null
-	);
+	const [importData, setImportData] = useState<IGuestDataImport | null>(null);
 	const [importReadError, setImportReadError] = useState(false);
 	const importReadRequestIdRef = useRef(0);
 	const importInputRef = useRef<HTMLInputElement | null>(null);
@@ -116,10 +143,10 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 		}, 5000);
 		exportTimers.current.push(timerId);
 		const fileName = `customer_data-${Object.keys(currentNormalMealData).length}_${Object.keys(currentRareMealData).length}_${currentRarePlanData.items.length}-${Date.now()}`;
-		downloadJson(fileName, currentCustomerDataString);
+		downloadJson(fileName, currentGuestDataString);
 		trackEvent(trackEvent.category.click, 'Export Button', fileName);
 	}, [
-		currentCustomerDataString,
+		currentGuestDataString,
 		currentNormalMealData,
 		currentRareMealData,
 		currentRarePlanData,
@@ -128,23 +155,23 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 	const handleImportData = useCallback(() => {
 		toggleSavePopoverOpened();
 		if (importData !== null) {
-			const { data, eventLabel } = importData;
+			const { data, eventName } = importData;
 			if (data.customer_normal_meals !== undefined) {
-				customerNormalStore.persistence.meals.set(
+				normalGuestStore.persistence.meals.set(
 					data.customer_normal_meals
 				);
 			}
 			if (data.customer_rare_meals !== undefined) {
-				customerRareStore.persistence.meals.set(
+				specialGuestStore.persistence.meals.set(
 					data.customer_rare_meals
 				);
 			}
 			if (data.customer_rare_plans !== undefined) {
-				customerPlansStore.persistence.plans.set(
+				specialGuestPlansStore.persistence.plans.set(
 					data.customer_rare_plans
 				);
 			}
-			trackEvent(trackEvent.category.click, 'Import Button', eventLabel);
+			trackEvent(trackEvent.category.click, 'Import Button', eventName);
 		}
 	}, [importData]);
 
@@ -152,7 +179,7 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 		trackEvent(
 			trackEvent.category.click,
 			'Import Button',
-			'Select Customer Data File'
+			'Select Guest Data File'
 		);
 		importInputRef.current?.click();
 	}, []);
@@ -211,7 +238,7 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 			}
 			setIsSaveButtonLoading(true);
 			const json: unknown = JSON.parse(throttledImportValue);
-			setImportData(parseCustomerDataImport(json));
+			setImportData(parseGuestDataImport(json));
 
 			setIsSaveButtonDisabled(false);
 			setIsSaveButtonError(false);
@@ -257,15 +284,7 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 					placeholder="从本地文件导入或输入顾客套餐和营业预设数据"
 					value={importValue}
 					onValueChange={handleImportValueChange}
-					classNames={{
-						inputWrapper: cn(
-							'bg-default/40 transition-background data-[hover=true]:bg-default-200 group-data-[focus=true]:bg-default motion-reduce:transition-none',
-							{
-								'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40 group-data-[focus=true]:bg-default/70':
-									isHighAppearance,
-							}
-						),
-					}}
+					classNames={importTextareaClassNames}
 				/>
 				<input
 					accept={FILE_TYPE_JSON}
@@ -327,21 +346,11 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 				<Snippet
 					hideSymbol
 					fullWidth
-					tooltipProps={{
-						content: '点击以复制当前的顾客套餐和营业预设数据',
-						delay: 0,
-						offset: 0,
-						showArrow: !isHighAppearance,
-					}}
+					tooltipProps={exportSnippetTooltipProps}
 					variant="flat"
-					classNames={{
-						base: cn({
-							'bg-default/40 backdrop-blur': isHighAppearance,
-						}),
-						pre: 'max-h-[13.25rem] w-full overflow-auto whitespace-pre-wrap',
-					}}
+					classNames={exportSnippetClassNames}
 				>
-					{currentCustomerDataString}
+					{currentGuestDataString}
 				</Snippet>
 				<Tooltip
 					isOpen

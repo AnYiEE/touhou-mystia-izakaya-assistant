@@ -1,9 +1,8 @@
-'use client';
-
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, type Transition, motion } from 'framer-motion';
+import { type Ref } from 'react';
 
 import Button from '@/design/ui/components/button';
 import ScrollMask from '@/design/ui/components/scrollMask';
@@ -19,10 +18,27 @@ import {
 	getGlobalSearchMatchedDlcDisplayText,
 } from '@/features/globalSearch/core/fieldValueSuggestions';
 
+import { SPOTLIGHT_LIST_TRANSITION, SPOTLIGHT_RESULT_VARIANTS } from './motion';
 import { SearchItemVisual } from './SearchItemVisual';
 import { SearchPreview } from './SearchPreview';
 import { SpotlightMotionBlock } from './SpotlightMotion';
-import { SPOTLIGHT_LIST_TRANSITION, SPOTLIGHT_RESULT_VARIANTS } from './motion';
+
+const resultTransitionCache = new Map<number, Transition>();
+
+function getResultTransition(index: number) {
+	const delayIndex = Math.min(index, 6);
+	const cachedTransition = resultTransitionCache.get(delayIndex);
+	if (cachedTransition !== undefined) {
+		return cachedTransition;
+	}
+
+	const transition = {
+		...SPOTLIGHT_LIST_TRANSITION,
+		delay: delayIndex * 0.018,
+	} satisfies Transition;
+	resultTransitionCache.set(delayIndex, transition);
+	return transition;
+}
 
 function ResultRow({
 	baseId,
@@ -122,6 +138,7 @@ export function SearchResults({
 	onSelect,
 	onShareItem,
 	query,
+	ref,
 }: {
 	baseId: string;
 	isHighAppearance: boolean;
@@ -139,11 +156,13 @@ export function SearchResults({
 	onSelect: (index: number) => void;
 	onShareItem: (item: IGlobalSearchIndexItem) => void;
 	query: string;
+	ref?: Ref<HTMLDivElement>;
 }) {
 	const shouldShowPreviewPane = model.results.length > 0;
 
 	return (
 		<motion.div
+			ref={ref}
 			key="search-results"
 			{...(isReducedMotion
 				? {}
@@ -243,11 +262,9 @@ export function SearchResults({
 											animate="animate"
 											exit="exit"
 											initial="initial"
-											transition={{
-												...SPOTLIGHT_LIST_TRANSITION,
-												delay:
-													Math.min(index, 6) * 0.018,
-											}}
+											transition={getResultTransition(
+												index
+											)}
 											variants={SPOTLIGHT_RESULT_VARIANTS}
 										>
 											<ResultRow

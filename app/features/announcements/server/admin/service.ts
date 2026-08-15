@@ -347,14 +347,14 @@ export async function updateAdminAnnouncement(
 			return nextProfile;
 		});
 
-		if (profile === 'announcement-not-found') {
-			return { error: 'announcement-not-found', status: 'error' };
-		}
 		if (profile === 'announcement-conflict') {
 			return { error: 'announcement-conflict', status: 'error' };
 		}
 		if (profile === 'announcement-invalid-state') {
 			return { error: 'announcement-invalid-state', status: 'error' };
+		}
+		if (profile === 'announcement-not-found') {
+			return { error: 'announcement-not-found', status: 'error' };
 		}
 		invalidateActiveAnnouncementCandidateCache();
 		void cleanupAnnouncementRecordsBestEffort();
@@ -423,14 +423,14 @@ export async function archiveAdminAnnouncement(
 			return nextProfile;
 		});
 
-		if (profile === 'announcement-not-found') {
-			return { error: 'announcement-not-found', status: 'error' };
-		}
 		if (profile === 'announcement-conflict') {
 			return { error: 'announcement-conflict', status: 'error' };
 		}
 		if (profile === 'announcement-invalid-state') {
 			return { error: 'announcement-invalid-state', status: 'error' };
+		}
+		if (profile === 'announcement-not-found') {
+			return { error: 'announcement-not-found', status: 'error' };
 		}
 		invalidateActiveAnnouncementCandidateCache();
 		void cleanupAnnouncementRecordsBestEffort();
@@ -502,14 +502,14 @@ export async function restoreAdminAnnouncement(
 			return nextProfile;
 		});
 
-		if (profile === 'announcement-not-found') {
-			return { error: 'announcement-not-found', status: 'error' };
-		}
 		if (profile === 'announcement-conflict') {
 			return { error: 'announcement-conflict', status: 'error' };
 		}
 		if (profile === 'announcement-invalid-state') {
 			return { error: 'announcement-invalid-state', status: 'error' };
+		}
+		if (profile === 'announcement-not-found') {
+			return { error: 'announcement-not-found', status: 'error' };
 		}
 		invalidateActiveAnnouncementCandidateCache();
 		void cleanupAnnouncementRecordsBestEffort();

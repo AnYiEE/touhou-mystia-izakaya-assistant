@@ -10,6 +10,13 @@ const forbiddenOutputPatterns = [
 	'_offline_source_files',
 	'_offline_stub_files',
 ] as const;
+const forbiddenOutputPathPatterns = [
+	...forbiddenOutputPatterns,
+	'/customer-normal',
+	'/customer-rare',
+	'/ornaments',
+	'/recipes',
+] as const;
 const ignoredOutputFileNames = ['.DS_Store'] as const;
 
 function normalizePath(path: string) {
@@ -18,6 +25,12 @@ function normalizePath(path: string) {
 
 function findForbiddenPattern(value: Buffer | string) {
 	return forbiddenOutputPatterns.find((pattern) => value.includes(pattern));
+}
+
+function findForbiddenPathPattern(value: string) {
+	return forbiddenOutputPathPatterns.find((pattern) =>
+		value.includes(pattern)
+	);
 }
 
 export function checkIgnoredOfflineOutputPath(path: string) {
@@ -71,7 +84,9 @@ export async function scanForbiddenOfflineOutputFiles(path: string) {
 				matches.push(`${entryPath}: path includes ${ignoredFileName}`);
 			}
 
-			const pathPattern = findForbiddenPattern(normalizePath(entryPath));
+			const pathPattern = findForbiddenPathPattern(
+				normalizePath(entryPath)
+			);
 			if (pathPattern !== undefined) {
 				matches.push(`${entryPath}: path includes ${pathPattern}`);
 			}
@@ -107,7 +122,7 @@ export function scanForbiddenOfflineZipEntries(zip: AdmZip) {
 			matches.push(`${entryName}: path includes ${ignoredFileName}`);
 		}
 
-		const pathPattern = findForbiddenPattern(normalizePath(entryName));
+		const pathPattern = findForbiddenPathPattern(normalizePath(entryName));
 		if (pathPattern !== undefined) {
 			matches.push(`${entryName}: path includes ${pathPattern}`);
 		}

@@ -1,6 +1,6 @@
 import { type Metadata } from 'next';
 
-import { Partner } from '@/domain/catalog/items/Partner';
+import { PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
 
 import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
 
@@ -8,7 +8,7 @@ import { SITE_METADATA } from '@/shared/site/metadata';
 
 const { description, keywords } = SITE_METADATA;
 
-const partners = Partner.getInstance().getNames(10);
+const partners = PartnerCatalog.getInstance().getNames(10);
 const title = getPageTitle('/partners');
 
 export const metadata: Metadata = {

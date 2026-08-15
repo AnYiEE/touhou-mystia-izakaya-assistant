@@ -1,0 +1,102 @@
+import { specialGuestPersistenceStore } from './persistenceStore';
+
+export const specialGuestStore = {
+	instances: specialGuestPersistenceStore.instances,
+	persistence: {
+		beverage: specialGuestPersistenceStore.persistence.beverage,
+		guest: specialGuestPersistenceStore.persistence.guest,
+		ingredient: specialGuestPersistenceStore.persistence.ingredient,
+		meals: specialGuestPersistenceStore.persistence.meals,
+		recipe: specialGuestPersistenceStore.persistence.recipe,
+	},
+	shared: {
+		beverage: specialGuestPersistenceStore.shared.beverage,
+		guest: specialGuestPersistenceStore.shared.guest,
+		hiddenItems: specialGuestPersistenceStore.shared.hiddenItems,
+		ingredient: specialGuestPersistenceStore.shared.ingredient,
+		recipe: specialGuestPersistenceStore.shared.recipe,
+		tab: specialGuestPersistenceStore.shared.tab,
+	},
+
+	availableBeverageAvailabilityDlcs:
+		specialGuestPersistenceStore.availableBeverageAvailabilityDlcs,
+	availableBeverages: specialGuestPersistenceStore.availableBeverages,
+	availableBeverageTags: specialGuestPersistenceStore.availableBeverageTags,
+	availableFoodAvailabilityDlcs:
+		specialGuestPersistenceStore.availableFoodAvailabilityDlcs,
+	availableFoodCookers: specialGuestPersistenceStore.availableFoodCookers,
+	availableFoods: specialGuestPersistenceStore.availableFoods,
+	availableFoodTags: specialGuestPersistenceStore.availableFoodTags,
+	availableGuestAvailabilityDlcs:
+		specialGuestPersistenceStore.availableGuestAvailabilityDlcs,
+	availableGuestMaps: specialGuestPersistenceStore.availableGuestMaps,
+	availableGuestNames: specialGuestPersistenceStore.availableGuestNames,
+	availableIngredientAvailabilityDlcs:
+		specialGuestPersistenceStore.availableIngredientAvailabilityDlcs,
+	availableIngredientLevels:
+		specialGuestPersistenceStore.availableIngredientLevels,
+	availableIngredientTags:
+		specialGuestPersistenceStore.availableIngredientTags,
+	availableSpecialGuests: specialGuestPersistenceStore.availableSpecialGuests,
+	beverageTableAvailabilityDlcs:
+		specialGuestPersistenceStore.beverageTableAvailabilityDlcs,
+	beverageTableRows: specialGuestPersistenceStore.beverageTableRows,
+	bondRewards: specialGuestPersistenceStore.bondRewards,
+	currentGuestName: specialGuestPersistenceStore.currentGuestName,
+	currentMealPrice: specialGuestPersistenceStore.currentMealPrice,
+	foodTableAvailabilityDlcs:
+		specialGuestPersistenceStore.foodTableAvailabilityDlcs,
+	foodTableCookerTypes: specialGuestPersistenceStore.foodTableCookerTypes,
+	foodTableRows: specialGuestPersistenceStore.foodTableRows,
+	ingredientScoreChanges: specialGuestPersistenceStore.ingredientScoreChanges,
+	savedGuestMealsWithEvaluation:
+		specialGuestPersistenceStore.savedGuestMealsWithEvaluation,
+	unsatisfiedSelectionTip:
+		specialGuestPersistenceStore.unsatisfiedSelectionTip,
+
+	evaluateMealResult: specialGuestPersistenceStore.evaluateMealResult,
+	onBeverageTableAction: specialGuestPersistenceStore.onBeverageTableAction,
+	onBeverageTablePageChange:
+		specialGuestPersistenceStore.onBeverageTablePageChange,
+	onBeverageTableSearchValueChange:
+		specialGuestPersistenceStore.onBeverageTableSearchValueChange,
+	onBeverageTableSelectedAvailabilityDlcsChange:
+		specialGuestPersistenceStore.onBeverageTableSelectedAvailabilityDlcsChange,
+	onBeverageTableSelectedTagsChange:
+		specialGuestPersistenceStore.onBeverageTableSelectedTagsChange,
+	onBeverageTableSortChange:
+		specialGuestPersistenceStore.onBeverageTableSortChange,
+	onFoodTableAction: specialGuestPersistenceStore.onFoodTableAction,
+	onFoodTablePageChange: specialGuestPersistenceStore.onFoodTablePageChange,
+	onFoodTableSearchValueChange:
+		specialGuestPersistenceStore.onFoodTableSearchValueChange,
+	onFoodTableSelectedAvailabilityDlcsChange:
+		specialGuestPersistenceStore.onFoodTableSelectedAvailabilityDlcsChange,
+	onFoodTableSelectedCookerTypesChange:
+		specialGuestPersistenceStore.onFoodTableSelectedCookerTypesChange,
+	onFoodTableSelectedPositiveTagsChange:
+		specialGuestPersistenceStore.onFoodTableSelectedPositiveTagsChange,
+	onFoodTableSortChange: specialGuestPersistenceStore.onFoodTableSortChange,
+	onGuestFilterBeverageTag:
+		specialGuestPersistenceStore.onGuestFilterBeverageTag,
+	onGuestFilterFoodTag: specialGuestPersistenceStore.onGuestFilterFoodTag,
+	onGuestOrderBeverageTag:
+		specialGuestPersistenceStore.onGuestOrderBeverageTag,
+	onGuestOrderFoodTag: specialGuestPersistenceStore.onGuestOrderFoodTag,
+	onGuestSelectedChange: specialGuestPersistenceStore.onGuestSelectedChange,
+	onIngredientSelectedChange:
+		specialGuestPersistenceStore.onIngredientSelectedChange,
+	onTabSelectionChange: specialGuestPersistenceStore.onTabSelectionChange,
+	refreshGuest: specialGuestPersistenceStore.refreshGuest,
+	refreshGuestSelectedItems:
+		specialGuestPersistenceStore.refreshGuestSelectedItems,
+	removeMealIngredient: specialGuestPersistenceStore.removeMealIngredient,
+	saveMealResult: specialGuestPersistenceStore.saveMealResult,
+	toggleGuestTabVisibilityState:
+		specialGuestPersistenceStore.toggleGuestTabVisibilityState,
+	toggleIngredientTabVisibilityState:
+		specialGuestPersistenceStore.toggleIngredientTabVisibilityState,
+	toggleMystiaCooker: specialGuestPersistenceStore.toggleMystiaCooker,
+	updateFoodTagsWithTrend:
+		specialGuestPersistenceStore.updateFoodTagsWithTrend,
+};

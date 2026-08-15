@@ -10,7 +10,10 @@ import {
 	type IPressProp,
 } from '@/design/ui/components/pressElement';
 
-import type { TTag } from '@/domain/data/tags/types';
+import type {
+	TBeverageTagLabel,
+	TFoodTagLabel,
+} from '@/domain/data/tags/types';
 
 import { type ITagStyleConfig } from '@/features/catalog/presentation/tagStyles';
 
@@ -22,6 +25,8 @@ interface ITagPropsBase {
 	tagType?: 'negative' | 'positive' | null | undefined;
 }
 
+type TTagLabel = TBeverageTagLabel | TFoodTagLabel;
+
 interface ITagProps
 	extends
 		Omit<
@@ -32,7 +37,7 @@ interface ITagProps
 		Partial<IPressProp<HTMLSpanElement>>,
 		ITagPropsBase {
 	isButton?: boolean;
-	tag: TTag | [TTag, string] | JSX.Element;
+	tag: TTagLabel | [TTagLabel, string] | JSX.Element;
 }
 
 const Tag = memo<ITagProps>(function Tag({
@@ -130,7 +135,7 @@ const Tag = memo<ITagProps>(function Tag({
 });
 
 interface ITagsPropsBase extends ITagPropsBase {
-	tags: TTag[] | undefined;
+	tags: TTagLabel[] | undefined;
 }
 
 interface ITagsProps

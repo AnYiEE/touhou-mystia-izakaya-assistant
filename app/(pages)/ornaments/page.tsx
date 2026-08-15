@@ -1,5 +1,5 @@
-import OrnamentsCatalogPage from '@/features/catalog/items/ornaments/client/components/OrnamentsCatalogPage';
+import LegacyRouteRedirect from '@/features/appShell/client/navigation/LegacyRouteRedirect';
 
-export default function OrnamentsPage() {
-	return <OrnamentsCatalogPage />;
+export default function LegacyDecorationsPage() {
+	return <LegacyRouteRedirect from="/ornaments" to="/decorations" />;
 }

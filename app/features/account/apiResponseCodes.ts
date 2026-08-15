@@ -2,6 +2,7 @@ export const ACCOUNT_API_RESPONSE_CODE_MAP = {
 	cannotRevokeCurrentSession: 'cannot-revoke-current-session',
 	challengeExpired: 'challenge-expired',
 	challengeNotFound: 'challenge-not-found',
+	clientUpdateRequired: 'sync-client-update-required',
 	credentialStateStale: 'credential-state-stale',
 	invalidCredentials: 'invalid-credentials',
 	invalidNickname: 'invalid-nickname',

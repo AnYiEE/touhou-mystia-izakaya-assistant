@@ -1,14 +1,18 @@
-import { isObject } from 'lodash';
 import { Fragment } from 'react';
 
 import Tooltip from '@/design/ui/components/tooltip';
 
-import type { IClothes } from '@/domain/data/clothes/schema';
+import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
+import type { IClothes, TClothesSource } from '@/domain/data/clothes/schema';
+import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+import type { TMerchantReference } from '@/domain/data/places/types';
 
 import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import {
 	type TItemRoutePath,
+	type TShareableItemId,
 	type TShareableItemName,
 } from '@/features/itemSharing/contracts';
 
@@ -16,7 +20,114 @@ import { checkObjectOrStringEmpty } from '@/shared/utilities/collections/check';
 
 interface IProps {
 	from: IClothes['from'];
-	openWindow: (path: TItemRoutePath, name: TShareableItemName) => void;
+	openWindow: (
+		path: TItemRoutePath,
+		recordId: TShareableItemId,
+		name: TShareableItemName
+	) => void;
+}
+
+function getMerchantDisplayName(merchant: TMerchantReference) {
+	if (merchant.map !== undefined) {
+		return `【${MAP_FACTS[merchant.map].label}】${merchant.label}`;
+	}
+
+	const specialGuestName = SpecialGuestCatalog.getInstance().getPropsById(
+		merchant.specialGuest,
+		'name'
+	);
+	return `【${specialGuestName}】${merchant.label}`;
+}
+
+function renderClothesSource(
+	item: TClothesSource,
+	openWindow: IProps['openWindow']
+) {
+	if ('self' in item) {
+		return '初始拥有';
+	}
+
+	if ('bond' in item) {
+		const { level, specialGuest } = item.bond;
+		const specialGuestName = SpecialGuestCatalog.getInstance().getPropsById(
+			specialGuest,
+			'name'
+		);
+		return (
+			<>
+				<span className="mr-1 inline-flex items-center">
+					【
+					<Sprite
+						target="special_guest"
+						recordId={specialGuest}
+						size={1.25}
+						className="mx-0.5 rounded-full"
+					/>
+					{specialGuestName}】羁绊
+				</span>
+				Lv.{level - 1}
+				<span className="mx-0.5">➞</span>
+				Lv.{level}
+			</>
+		);
+	}
+
+	if ('buy' in item) {
+		const { amount, currencyItem } = item.buy.price.currencyItem;
+		const currencyItemName = CurrencyItemCatalog.getInstance().getPropsById(
+			currencyItem,
+			'name'
+		);
+		return (
+			<>
+				{getMerchantDisplayName(item.buy.merchant)}（
+				<span className="inline-flex items-center">
+					<Price showSymbol={false}>{amount}×</Price>
+					<Tooltip
+						showArrow
+						content={`点击：在新窗口中查看货币【${currencyItemName}】的详情`}
+						offset={1}
+						size="sm"
+					>
+						<Sprite
+							target="currency_item"
+							recordId={currencyItem}
+							size={1.25}
+							onPress={() => {
+								openWindow(
+									'currencies',
+									currencyItem,
+									currencyItemName
+								);
+							}}
+							aria-label={`点击：在新窗口中查看货币【${currencyItemName}】的详情`}
+							role="button"
+						/>
+					</Tooltip>
+				</span>
+				）
+			</>
+		);
+	}
+
+	if ('holdingRequirement' in item) {
+		const { amount, currencyItem } = item.holdingRequirement;
+		const currencyItemName = CurrencyItemCatalog.getInstance().getPropsById(
+			currencyItem,
+			'name'
+		);
+		return `持有${amount}枚“${currencyItemName}”时自动获得`;
+	}
+
+	if ('eventReward' in item) {
+		return `${item.eventReward.eventLabel}时自动获得`;
+	}
+
+	if ('collaborationUnlock' in item) {
+		return `开启联动【${item.collaborationUnlock.collaborationLabel}】后自动获得`;
+	}
+
+	return `完成“${item.taskReward.task}”任务后自动获得`;
 }
 
 export default function ClothesSourceDetails({ from, openWindow }: IProps) {
@@ -30,94 +141,7 @@ export default function ClothesSourceDetails({ from, openWindow }: IProps) {
 			{from.map((item, fromIndex) => (
 				<Fragment key={fromIndex}>
 					{fromIndex > 0 && '、'}
-					{typeof item === 'string'
-						? item
-						: Object.entries(item).map((itemObject, itemIndex) => {
-								type TFrom = Exclude<
-									IClothes['from'][number],
-									string
-								>;
-								const [method, target] = itemObject as [
-									keyof TFrom,
-									ExtractCollectionValue<TFrom>,
-								];
-								const isBond =
-									method === 'bond' &&
-									typeof target === 'string';
-								const isBuy =
-									method === 'buy' &&
-									isObject(target) &&
-									'price' in target;
-								const isSelf = method === 'self';
-								return (
-									<Fragment key={`${fromIndex}-${itemIndex}`}>
-										{isSelf ? (
-											'初始拥有'
-										) : isBond ? (
-											<>
-												<span className="mr-1 inline-flex items-center">
-													【
-													<Sprite
-														target="customer_rare"
-														name={target}
-														size={1.25}
-														className="mx-0.5 rounded-full"
-													/>
-													{target}】羁绊
-												</span>
-												Lv.4
-												<span className="mx-0.5">
-													➞
-												</span>
-												Lv.5
-											</>
-										) : (
-											isBuy && (
-												<>
-													{target.name}（
-													<span className="inline-flex items-center">
-														<Price
-															showSymbol={false}
-														>
-															{
-																target.price
-																	.amount
-															}
-															×
-														</Price>
-														<Tooltip
-															showArrow
-															content={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
-															offset={1}
-															size="sm"
-														>
-															<Sprite
-																target="currency"
-																name={
-																	target.price
-																		.currency
-																}
-																size={1.25}
-																onPress={() => {
-																	openWindow(
-																		'currencies',
-																		target
-																			.price
-																			.currency
-																	);
-																}}
-																aria-label={`点击：在新窗口中查看货币【${target.price.currency}】的详情`}
-																role="button"
-															/>
-														</Tooltip>
-													</span>
-													）
-												</>
-											)
-										)}
-									</Fragment>
-								);
-							})}
+					{renderClothesSource(item, openWindow)}
 				</Fragment>
 			))}
 		</p>

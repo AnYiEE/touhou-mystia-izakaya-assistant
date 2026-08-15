@@ -1,8 +1,12 @@
+import isNil from 'lodash/isNil.js';
+
 import { type TSyncNamespace } from '@/domain/account/contracts';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 
 import { type TAccountSyncConflictResolution as TSyncConflictResolution } from '@/features/account/client/sync/conflictResolutionJournal';
 import { createSnapshotHash } from '@/features/account/client/sync/dirtyQueue/snapshotHash';
+
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 export const SYNC_NAMESPACE_LABEL_MAP = {
 	'customer_normal.meals': '已保存套餐（普客）',
@@ -18,10 +22,10 @@ const CONFLICT_FIELD_LABEL_MAP: Record<string, string> = {
 	activeId: '当前使用的营业预设',
 	columns: '表格显示列',
 	completed: '稀客教程进度',
-	customerCardTagsTooltip: '顾客卡片中标签的浮动提示',
 	dlcs: '已关闭的数据集',
 	enabled: '启用状态',
 	famousShop: '“明星店”效果',
+	guestCardTagsTooltip: '顾客卡片中标签的浮动提示',
 	hiddenItems: '启用或禁用的酒水、料理和食材',
 	highAppearance: '平滑滚动和磨砂效果',
 	items: '保存的营业预设',
@@ -61,6 +65,7 @@ const CONFLICT_VALUE_LABEL_MAP: Record<string, string> = {
 	action: '操作',
 	beverage: '酒水',
 	cooker: '厨具',
+	cookerType: '厨具',
 	dark: '深色',
 	ingredient: '食材',
 	light: '浅色',
@@ -84,10 +89,6 @@ export interface IConflictDifference {
 export interface IConflictDifferenceResult {
 	hasMore: boolean;
 	items: IConflictDifference[];
-}
-
-function checkRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function getConflictFieldLabel(path: string[]) {
@@ -125,8 +126,8 @@ export function getConflictDifferences(
 			return;
 		}
 
-		if (checkRecord(cloudValue) && checkRecord(localValue)) {
-			const mergedRecord = checkRecord(mergedValue)
+		if (checkIsRecord(cloudValue) && checkIsRecord(localValue)) {
+			const mergedRecord = checkIsRecord(mergedValue)
 				? mergedValue
 				: undefined;
 			const keys = new Set([
@@ -175,13 +176,13 @@ export function formatFriendlyConflictValue(
 
 		return value ? '开启' : '关闭';
 	}
-	if (typeof value === 'string') {
-		return CONFLICT_VALUE_LABEL_MAP[value] ?? value;
-	}
 	if (typeof value === 'number') {
 		return String(value);
 	}
-	if (value === null || value === undefined) {
+	if (typeof value === 'string') {
+		return CONFLICT_VALUE_LABEL_MAP[value] ?? value;
+	}
+	if (isNil(value)) {
 		return '未设置';
 	}
 	if (Array.isArray(value)) {
@@ -205,7 +206,7 @@ export function formatFriendlyConflictValue(
 
 		return value.length > 3 ? `${preview}等${value.length}项` : preview;
 	}
-	if (checkRecord(value)) {
+	if (checkIsRecord(value)) {
 		return `包含${Object.keys(value).length}项设置`;
 	}
 

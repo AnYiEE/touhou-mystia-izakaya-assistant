@@ -13,10 +13,12 @@ import SiteInfo from '@/design/ui/components/siteInfo';
 import Snippet from '@/design/ui/components/snippet';
 import Tooltip from '@/design/ui/components/tooltip';
 
-import type { TItemName } from '@/domain/data/types';
-
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { useParams } from '@/features/appShell/client/navigation/useParams';
+import {
+	type TShareableItemId,
+	type TShareableItemName,
+} from '@/features/itemSharing/contracts';
 import {
 	createItemShareData,
 	createItemShareUrl,
@@ -24,22 +26,27 @@ import {
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
+const SHARE_SNIPPET_CLASS_NAMES = {
+	pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
+} as const;
+
 interface IItemShareButtonProps {
-	name: TItemName;
+	name: TShareableItemName;
+	recordId: TShareableItemId;
 }
 
 export const ItemShareButton = memo<IItemShareButtonProps>(
-	function ItemShareButton({ name }) {
+	function ItemShareButton({ name, recordId }) {
 		const { params } = useParams();
 
 		const generatedUrl = useMemo(
 			() =>
 				createItemShareUrl({
-					name,
 					params,
 					pathname: location.pathname,
+					recordId,
 				}),
-			[name, params]
+			[params, recordId]
 		);
 
 		const shareObject = useMemo<ShareData>(
@@ -105,9 +112,7 @@ export const ItemShareButton = memo<IItemShareButtonProps>(
 									className="mr-1 !align-middle text-default-700"
 								/>
 							}
-							classNames={{
-								pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
-							}}
+							classNames={SHARE_SNIPPET_CLASS_NAMES}
 						>
 							{generatedUrl}
 						</Snippet>

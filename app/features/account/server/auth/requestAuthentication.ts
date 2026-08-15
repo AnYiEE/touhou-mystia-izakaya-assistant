@@ -73,15 +73,6 @@ function createAccountAuthResult(
 	snapshot: Awaited<ReturnType<typeof authenticateSessionSnapshot>>,
 	sessionTokenHash: string
 ): TAccountAuthResult {
-	if (snapshot.status === 'session-not-found') {
-		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
-	}
-	if (snapshot.status === 'session-expired') {
-		if (snapshot.cleanupFailed) {
-			console.warn('Failed to delete expired account session.');
-		}
-		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
-	}
 	if (snapshot.status === 'orphaned') {
 		if (snapshot.cleanupFailed) {
 			console.warn('Failed to delete orphaned account session.');
@@ -92,11 +83,21 @@ function createAccountAuthResult(
 			status: 'error',
 		};
 	}
-	if (snapshot.status === 'user-disabled') {
+	if (snapshot.status === 'password-must-change') {
+		return {
+			httpStatus: 403,
+			message: 'password-must-change',
+			status: 'error',
+		};
+	}
+	if (snapshot.status === 'session-expired') {
 		if (snapshot.cleanupFailed) {
-			console.warn('Failed to delete disabled account session.');
+			console.warn('Failed to delete expired account session.');
 		}
-		return { httpStatus: 403, message: 'user-disabled', status: 'error' };
+		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
+	}
+	if (snapshot.status === 'session-not-found') {
+		return { httpStatus: 401, message: 'unauthorized', status: 'error' };
 	}
 	if (snapshot.status === 'user-deleted') {
 		if (snapshot.cleanupFailed) {
@@ -104,12 +105,11 @@ function createAccountAuthResult(
 		}
 		return { httpStatus: 403, message: 'user-deleted', status: 'error' };
 	}
-	if (snapshot.status === 'password-must-change') {
-		return {
-			httpStatus: 403,
-			message: 'password-must-change',
-			status: 'error',
-		};
+	if (snapshot.status === 'user-disabled') {
+		if (snapshot.cleanupFailed) {
+			console.warn('Failed to delete disabled account session.');
+		}
+		return { httpStatus: 403, message: 'user-disabled', status: 'error' };
 	}
 	if (snapshot.status !== 'ok') {
 		return {

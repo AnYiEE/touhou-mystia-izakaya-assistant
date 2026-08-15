@@ -33,7 +33,7 @@ import {
 } from './features/preferences/client/state/globalPersistenceStore';
 import { startRecommendationClient } from './features/recommendations/client';
 import SiteStatusProvider from './features/siteStatus/client/SiteStatusProvider';
-import CustomerRareTutorial from './features/tutorials/customerRare/client/CustomerRareTutorial';
+import SpecialGuestTutorial from './features/tutorials/specialGuest/client/SpecialGuestTutorial';
 import { PUBLIC_RUNTIME_CONFIG } from './infrastructure/environment/publicRuntimeConfig';
 import { SITE_METADATA } from './shared/site/metadata';
 
@@ -136,7 +136,7 @@ export default function Providers({
 			{children}
 			<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-primary dark:lg:h-0.5" />
 			<AccountFeatureModals />
-			<CustomerRareTutorial />
+			<SpecialGuestTutorial />
 			<DonationModal />
 		</ProviderStack>
 	);

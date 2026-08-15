@@ -2,11 +2,9 @@
 
 import type { ISuggestedMeal } from '@/domain/recommendations/types';
 
-import type { IResolvedCustomerRarePlanGroup } from '@/features/customerPlans/contracts';
-
 import {
-	CUSTOMER_RARE_PLAN_CACHE_MAX_ENTRIES,
-	CUSTOMER_RARE_PLAN_CACHE_MAX_MEALS,
+	SPECIAL_GUEST_PLAN_CACHE_MAX_ENTRIES,
+	SPECIAL_GUEST_PLAN_CACHE_MAX_MEALS,
 	SUGGESTED_MEAL_CARD_CACHE_MAX_ENTRIES,
 	SUGGESTED_MEAL_CARD_CACHE_MAX_MEALS,
 } from './constants';
@@ -16,19 +14,21 @@ import {
 } from './database';
 import { refreshRecommendationCacheDebugSnapshot } from './debug';
 import {
-	validateCustomerRarePlanResult,
+	type ICachedSpecialGuestPlanRecommendationMeal,
+	validateSpecialGuestPlanResult,
 	validateSuggestedMealResult,
 } from './validation';
 
-type TCustomerRarePlanMeals = IResolvedCustomerRarePlanGroup['meals'];
+type TSpecialGuestPlanRecommendationCacheResult =
+	ICachedSpecialGuestPlanRecommendationMeal[];
 
 const suggestedMealCardLimits = {
 	maxEntries: SUGGESTED_MEAL_CARD_CACHE_MAX_ENTRIES,
 	maxLogicalWeight: SUGGESTED_MEAL_CARD_CACHE_MAX_MEALS,
 } as const;
-const customerRarePlanLimits = {
-	maxEntries: CUSTOMER_RARE_PLAN_CACHE_MAX_ENTRIES,
-	maxLogicalWeight: CUSTOMER_RARE_PLAN_CACHE_MAX_MEALS,
+const specialGuestPlanLimits = {
+	maxEntries: SPECIAL_GUEST_PLAN_CACHE_MAX_ENTRIES,
+	maxLogicalWeight: SPECIAL_GUEST_PLAN_CACHE_MAX_MEALS,
 } as const;
 
 export function readSuggestedMealCardResult(requestKey: string) {
@@ -60,29 +60,29 @@ export function writeSuggestedMealCardResult(
 	});
 }
 
-export function readCustomerRarePlanResult(requestKey: string) {
+export function readSpecialGuestPlanResult(requestKey: string) {
 	return readRecommendationCacheResult(
-		'customerRarePlanResults',
+		'specialGuestPlanResults',
 		requestKey,
-		validateCustomerRarePlanResult,
+		validateSpecialGuestPlanResult,
 		(result) => Math.max(1, result.length)
 	);
 }
 
-export function writeCustomerRarePlanResult(
+export function writeSpecialGuestPlanResult(
 	requestKey: string,
-	result: TCustomerRarePlanMeals
+	result: TSpecialGuestPlanRecommendationCacheResult
 ) {
-	const validated = validateCustomerRarePlanResult(result);
+	const validated = validateSpecialGuestPlanResult(result);
 	if (validated === undefined) {
 		return Promise.resolve(false);
 	}
 	return writeRecommendationCacheResult(
-		'customerRarePlanResults',
+		'specialGuestPlanResults',
 		requestKey,
 		validated,
 		Math.max(1, validated.length),
-		customerRarePlanLimits
+		specialGuestPlanLimits
 	).then((isWritten) => {
 		void refreshRecommendationCacheDebugSnapshot();
 		return isWritten;

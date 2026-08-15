@@ -16,6 +16,10 @@ import {
 	subscribeOverlayCoordinator,
 } from './store';
 
+const PREPARATION_MODAL_CLASS_NAMES = {
+	body: 'py-5 text-center text-small',
+} as const;
+
 function getOutsidePortalInteractionRoots(portalContainer: HTMLElement) {
 	const roots = new Set<HTMLElement>();
 	let currentElement = portalContainer;
@@ -213,7 +217,7 @@ export default function OverlayCoordinatorHost() {
 			scrollShadow={false}
 			size="sm"
 			aria-label="账号阻断状态准备中"
-			classNames={{ body: 'py-5 text-center text-small' }}
+			classNames={PREPARATION_MODAL_CLASS_NAMES}
 		>
 			<p aria-live="polite" role="status">
 				{preparationTimedOut

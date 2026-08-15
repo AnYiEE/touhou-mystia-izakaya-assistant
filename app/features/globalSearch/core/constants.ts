@@ -6,18 +6,18 @@ import type {
 	TGlobalSearchSection,
 } from '@/features/globalSearch/contracts';
 
-export const GLOBAL_SEARCH_CUSTOMER_SECTIONS = [
-	'customer-normal',
-	'customer-rare',
+export const GLOBAL_SEARCH_GUEST_SECTIONS = [
+	'normal-guests',
+	'special-guests',
 ] as const satisfies ReadonlyArray<TGlobalSearchSection>;
 
 export function checkGlobalSearchSectionMatches(
 	querySection: TGlobalSearchSection,
 	itemSection: TGlobalSearchSection
 ) {
-	return querySection === 'customers'
-		? GLOBAL_SEARCH_CUSTOMER_SECTIONS.includes(
-				itemSection as (typeof GLOBAL_SEARCH_CUSTOMER_SECTIONS)[number]
+	return querySection === 'guests'
+		? GLOBAL_SEARCH_GUEST_SECTIONS.includes(
+				itemSection as (typeof GLOBAL_SEARCH_GUEST_SECTIONS)[number]
 			)
 		: querySection === itemSection;
 }
@@ -45,11 +45,11 @@ export function checkGlobalSearchFieldTypeMatches(
 
 export const GLOBAL_SEARCH_SECTION_PREFIX_GROUPS = [
 	{
-		aliases: ['料理', '食谱', 'recipe', 'recipes'],
-		key: 'recipes',
+		aliases: ['料理', '食谱', 'food', 'foods', 'recipe', 'recipes'],
+		key: 'foods',
 		label: '料理',
 		order: 10,
-		spriteTarget: 'recipe',
+		spriteTarget: 'food',
 	},
 	{
 		aliases: ['酒水', '饮品', 'beverage', 'beverages', 'drink', 'drinks'],
@@ -73,11 +73,18 @@ export const GLOBAL_SEARCH_SECTION_PREFIX_GROUPS = [
 		spriteTarget: 'cooker',
 	},
 	{
-		aliases: ['摆件', '道具', 'ornament', 'ornaments'],
-		key: 'ornaments',
+		aliases: [
+			'摆件',
+			'道具',
+			'decoration',
+			'decorations',
+			'ornament',
+			'ornaments',
+		],
+		key: 'decorations',
 		label: '摆件',
 		order: 50,
-		spriteTarget: 'ornament',
+		spriteTarget: 'decoration',
 	},
 	{
 		aliases: ['衣服', '服装', '皮肤', 'clothes', 'clothing'],
@@ -94,15 +101,21 @@ export const GLOBAL_SEARCH_SECTION_PREFIX_GROUPS = [
 		spriteTarget: 'partner',
 	},
 	{
-		aliases: ['货币', 'currency', 'currencies'],
-		key: 'currencies',
+		aliases: [
+			'货币',
+			'currency',
+			'currencies',
+			'currency-item',
+			'currency-items',
+		],
+		key: 'currency-items',
 		label: '货币',
 		order: 80,
-		spriteTarget: 'currency',
+		spriteTarget: 'currency_item',
 	},
 	{
 		aliases: ['顾客', '客人', 'customer', 'customers'],
-		key: 'customers',
+		key: 'guests',
 		label: '顾客',
 		order: 85,
 	},
@@ -112,20 +125,29 @@ export const GLOBAL_SEARCH_SECTION_PREFIX_GROUPS = [
 			'稀有顾客',
 			'特殊顾客',
 			'rare',
+			'special-guest',
+			'special-guests',
 			'customer-rare',
 			'customer-special',
 		],
-		key: 'customer-rare',
+		key: 'special-guests',
 		label: '稀客',
 		order: 90,
-		spriteTarget: 'customer_rare',
+		spriteTarget: 'special_guest',
 	},
 	{
-		aliases: ['普客', '普通顾客', 'normal', 'customer-normal'],
-		key: 'customer-normal',
+		aliases: [
+			'普客',
+			'普通顾客',
+			'normal',
+			'normal-guest',
+			'normal-guests',
+			'customer-normal',
+		],
+		key: 'normal-guests',
 		label: '普客',
 		order: 100,
-		spriteTarget: 'customer_normal',
+		spriteTarget: 'normal_guest',
 	},
 	{
 		aliases: ['设置', '偏好', 'setting', 'settings', 'preferences'],
@@ -155,15 +177,15 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		key: 'tag',
 		label: '标签',
 		order: 30,
-		sections: ['beverages', 'ingredients', 'recipes'],
+		sections: ['beverages', 'foods', 'ingredients'],
 		standalone: true,
 	},
 	{
 		aliases: ['标签', 'tag', 'tags'],
-		key: 'customer-tag',
+		key: 'guest-tag',
 		label: '标签',
 		order: 35,
-		sections: ['customer-normal', 'customer-rare', 'customers'],
+		sections: ['guests', 'normal-guests', 'special-guests'],
 		standalone: false,
 	},
 	{
@@ -181,44 +203,38 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		label: '正特性',
 		order: 40,
 		sectionAliases: {
-			'customer-normal': [
-				'喜好',
-				'喜欢',
-				'like',
-				'positive-tag',
-				'positive-tags',
-				'positive',
-			],
-			'customer-rare': [
-				'喜好',
-				'喜欢',
-				'like',
-				'positive-tag',
-				'positive-tags',
-				'positive',
-			],
-			customers: [
-				'喜好',
-				'喜欢',
-				'like',
-				'positive-tag',
-				'positive-tags',
-			],
-			recipes: [
+			foods: [
 				'正特性',
 				'正面标签',
 				'positive-tag',
 				'positive-tags',
 				'positive',
 			],
+			guests: ['喜好', '喜欢', 'like', 'positive-tag', 'positive-tags'],
+			'normal-guests': [
+				'喜好',
+				'喜欢',
+				'like',
+				'positive-tag',
+				'positive-tags',
+				'positive',
+			],
+			'special-guests': [
+				'喜好',
+				'喜欢',
+				'like',
+				'positive-tag',
+				'positive-tags',
+				'positive',
+			],
 		},
 		sectionLabels: {
-			'customer-normal': '喜好',
-			'customer-rare': '喜好',
-			customers: '喜好',
-			recipes: '正特性',
+			foods: '正特性',
+			guests: '喜好',
+			'normal-guests': '喜好',
+			'special-guests': '喜好',
 		},
-		sections: ['customer-normal', 'customer-rare', 'customers', 'recipes'],
+		sections: ['foods', 'guests', 'normal-guests', 'special-guests'],
 		standalone: true,
 	},
 	{
@@ -237,37 +253,37 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		label: '反特性',
 		order: 50,
 		sectionAliases: {
-			'customer-rare': [
-				'厌恶',
-				'讨厌',
-				'dislike',
-				'hate',
-				'negative-tag',
-				'negative-tags',
-				'negative',
-			],
-			customers: [
-				'厌恶',
-				'讨厌',
-				'dislike',
-				'hate',
-				'negative-tag',
-				'negative-tags',
-			],
-			recipes: [
+			foods: [
 				'反特性',
 				'负面标签',
 				'negative-tag',
 				'negative-tags',
 				'negative',
 			],
+			guests: [
+				'厌恶',
+				'讨厌',
+				'dislike',
+				'hate',
+				'negative-tag',
+				'negative-tags',
+			],
+			'special-guests': [
+				'厌恶',
+				'讨厌',
+				'dislike',
+				'hate',
+				'negative-tag',
+				'negative-tags',
+				'negative',
+			],
 		},
 		sectionLabels: {
-			'customer-rare': '厌恶',
-			customers: '厌恶',
-			recipes: '反特性',
+			foods: '反特性',
+			guests: '厌恶',
+			'special-guests': '厌恶',
 		},
-		sections: ['customer-rare', 'customers', 'recipes'],
+		sections: ['foods', 'guests', 'special-guests'],
 		standalone: true,
 	},
 	{
@@ -289,19 +305,14 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 				'beverage-tag',
 				'beverage-tags',
 			],
-			'customer-normal': [
+			guests: ['酒水偏好', '饮品偏好', 'beverage-tag', 'beverage-tags'],
+			'normal-guests': [
 				'酒水偏好',
 				'饮品偏好',
 				'beverage-tag',
 				'beverage-tags',
 			],
-			'customer-rare': [
-				'酒水偏好',
-				'饮品偏好',
-				'beverage-tag',
-				'beverage-tags',
-			],
-			customers: [
+			'special-guests': [
 				'酒水偏好',
 				'饮品偏好',
 				'beverage-tag',
@@ -310,16 +321,11 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		},
 		sectionLabels: {
 			beverages: '酒水标签',
-			'customer-normal': '酒水偏好',
-			'customer-rare': '酒水偏好',
-			customers: '酒水偏好',
+			guests: '酒水偏好',
+			'normal-guests': '酒水偏好',
+			'special-guests': '酒水偏好',
 		},
-		sections: [
-			'customer-normal',
-			'customer-rare',
-			'customers',
-			'beverages',
-		],
+		sections: ['beverages', 'guests', 'normal-guests', 'special-guests'],
 		standalone: true,
 	},
 	{
@@ -327,15 +333,15 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		key: 'ingredient',
 		label: '食材',
 		order: 70,
-		sections: ['recipes'],
+		sections: ['foods'],
 		standalone: false,
 	},
 	{
 		aliases: ['厨具', 'cooker', 'cookers'],
-		key: 'cooker',
+		key: 'cooker-type',
 		label: '厨具',
 		order: 80,
-		sections: ['recipes'],
+		sections: ['foods'],
 		standalone: false,
 	},
 	{
@@ -347,14 +353,14 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 			'beverages',
 			'clothes',
 			'cookers',
-			'currencies',
-			'customers',
-			'customer-normal',
-			'customer-rare',
+			'currency-items',
+			'decorations',
+			'foods',
+			'guests',
 			'ingredients',
-			'ornaments',
+			'normal-guests',
 			'partners',
-			'recipes',
+			'special-guests',
 		],
 		standalone: true,
 	},
@@ -367,11 +373,11 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 			'beverages',
 			'clothes',
 			'cookers',
-			'currencies',
+			'currency-items',
+			'decorations',
+			'foods',
 			'ingredients',
-			'ornaments',
 			'partners',
-			'recipes',
 		],
 		standalone: true,
 	},
@@ -396,7 +402,7 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		key: 'spell-card',
 		label: '符卡',
 		order: 130,
-		sections: ['customer-rare', 'customers'],
+		sections: ['guests', 'special-guests'],
 		standalone: true,
 	},
 	{
@@ -410,7 +416,7 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		key: 'positive-spell-card',
 		label: '奖励符卡',
 		order: 131,
-		sections: ['customer-rare', 'customers'],
+		sections: ['guests', 'special-guests'],
 		standalone: true,
 	},
 	{
@@ -424,7 +430,7 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		key: 'negative-spell-card',
 		label: '惩罚符卡',
 		order: 132,
-		sections: ['customer-rare', 'customers'],
+		sections: ['guests', 'special-guests'],
 		standalone: true,
 	},
 	{
@@ -432,7 +438,7 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		key: 'reward',
 		label: '羁绊奖励',
 		order: 140,
-		sections: ['customer-rare', 'customers'],
+		sections: ['guests', 'special-guests'],
 		standalone: true,
 	},
 	{
@@ -440,7 +446,7 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		key: 'evaluation',
 		label: '评价对话',
 		order: 145,
-		sections: ['customer-rare', 'customers'],
+		sections: ['guests', 'special-guests'],
 		standalone: true,
 	},
 	{
@@ -448,7 +454,7 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		key: 'effect',
 		label: '效果',
 		order: 150,
-		sections: ['cookers', 'ornaments', 'partners'],
+		sections: ['cookers', 'decorations', 'partners'],
 		standalone: true,
 	},
 	{
@@ -480,7 +486,7 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		key: 'chat',
 		label: '对话',
 		order: 170,
-		sections: ['customer-normal', 'customer-rare', 'customers'],
+		sections: ['guests', 'normal-guests', 'special-guests'],
 		standalone: true,
 	},
 	{
@@ -488,7 +494,7 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		key: 'level',
 		label: '等级',
 		order: 180,
-		sections: ['beverages', 'ingredients', 'recipes'],
+		sections: ['beverages', 'foods', 'ingredients'],
 		standalone: true,
 	},
 	{
@@ -498,10 +504,10 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		order: 190,
 		sections: [
 			'beverages',
-			'customers',
-			'customer-rare',
+			'foods',
+			'guests',
 			'ingredients',
-			'recipes',
+			'special-guests',
 		],
 		standalone: true,
 	},
@@ -514,14 +520,14 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 			'beverages',
 			'clothes',
 			'cookers',
-			'currencies',
-			'customers',
-			'customer-normal',
-			'customer-rare',
+			'currency-items',
+			'decorations',
+			'foods',
+			'guests',
 			'ingredients',
-			'ornaments',
+			'normal-guests',
 			'partners',
-			'recipes',
+			'special-guests',
 		],
 		standalone: true,
 		valueTypeLabel: 'DLC',
@@ -535,14 +541,14 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 			'beverages',
 			'clothes',
 			'cookers',
-			'currencies',
-			'customers',
-			'customer-normal',
-			'customer-rare',
+			'currency-items',
+			'decorations',
+			'foods',
+			'guests',
 			'ingredients',
-			'ornaments',
+			'normal-guests',
 			'partners',
-			'recipes',
+			'special-guests',
 		],
 		standalone: true,
 		valueTypeLabel: 'DLC',
@@ -568,14 +574,14 @@ export const GLOBAL_SEARCH_SECTION_PATH_MAP = {
 	beverages: '/beverages',
 	clothes: '/clothes',
 	cookers: '/cookers',
-	currencies: '/currencies',
-	'customer-normal': '/customer-normal',
-	'customer-rare': '/customer-rare',
+	'currency-items': '/currencies',
+	decorations: '/decorations',
+	foods: '/foods',
 	ingredients: '/ingredients',
-	ornaments: '/ornaments',
+	'normal-guests': '/normal-guests',
 	partners: '/partners',
 	preferences: '/preferences',
-	recipes: '/recipes',
+	'special-guests': '/special-guests',
 } as const satisfies Record<TGlobalSearchIndexSection, string>;
 
 export function getGlobalSearchSectionPath(
@@ -587,7 +593,7 @@ export function getGlobalSearchSectionPath(
 export function getGlobalSearchSectionPath(
 	section: TGlobalSearchSection
 ): null | string {
-	return section === 'customers'
+	return section === 'guests'
 		? null
 		: GLOBAL_SEARCH_SECTION_PATH_MAP[section];
 }

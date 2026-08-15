@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import Button from '@/design/ui/components/button';
 import Heading from '@/design/ui/components/heading';
@@ -47,7 +47,12 @@ export default function DonationModal() {
 		lastMilestoneShown,
 		lastShown,
 	});
+
 	const canActivate = useCallback(() => isRequestValid, [isRequestValid]);
+	const coordination = useMemo(
+		() => ({ canActivate, id: 'donation' as const }),
+		[canActivate]
+	);
 
 	useEffect(() => {
 		if (isOpen && !isRequestValid) {
@@ -81,7 +86,7 @@ export default function DonationModal() {
 
 	return (
 		<CoordinatedModal
-			coordination={{ canActivate, id: 'donation' }}
+			coordination={coordination}
 			isOpen={isOpen}
 			onClose={handleClose}
 		>

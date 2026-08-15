@@ -5,7 +5,12 @@ import {
 	type FontAwesomeIconProps,
 } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
-import { type ComponentProps, type PropsWithChildren, memo } from 'react';
+import {
+	type ComponentProps,
+	type PropsWithChildren,
+	memo,
+	useMemo,
+} from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Button, { type IButtonProps } from '@/design/ui/components/button';
@@ -69,20 +74,20 @@ export const AdminHeader = memo<IAdminHeaderProps>(function AdminHeader({
 	const hasSubtitle = subtitle !== undefined;
 	const { isHighAppearance } = useDesignPreferences();
 
+	const classNames = useMemo(
+		() => ({
+			base: cn(
+				'flex flex-col gap-3 space-y-0 p-4 lg:flex-row lg:items-center lg:justify-between',
+				isHighAppearance
+					? 'bg-content1/40 backdrop-blur'
+					: 'bg-content1/60 dark:bg-content1/50'
+			),
+		}),
+		[isHighAppearance]
+	);
+
 	return (
-		<Card
-			as="header"
-			fullWidth
-			shadow="sm"
-			classNames={{
-				base: cn(
-					'flex flex-col gap-3 space-y-0 p-4 lg:flex-row lg:items-center lg:justify-between',
-					isHighAppearance
-						? 'bg-content1/40 backdrop-blur'
-						: 'bg-content1/60 dark:bg-content1/50'
-				),
-			}}
-		>
+		<Card as="header" fullWidth shadow="sm" classNames={classNames}>
 			<div className="flex min-w-0 flex-1 items-center gap-3">
 				<AdminIcon
 					icon={icon}

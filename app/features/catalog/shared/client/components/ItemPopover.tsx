@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@heroui/theme';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Popover, {
@@ -14,15 +14,12 @@ export const ItemPopover = memo<IPopoverProps>(function ItemPopover({
 	classNames,
 	...props
 }) {
-	return (
-		<Popover
-			classNames={{
-				...classNames,
-				content: cn('relative', classNames?.content),
-			}}
-			{...props}
-		/>
+	const mergedClassNames = useMemo(
+		() => ({ ...classNames, content: cn('relative', classNames?.content) }),
+		[classNames]
 	);
+
+	return <Popover classNames={mergedClassNames} {...props} />;
 });
 
 interface IItemPopoverTriggerProps

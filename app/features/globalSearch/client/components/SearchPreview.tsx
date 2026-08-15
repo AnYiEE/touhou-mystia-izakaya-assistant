@@ -13,15 +13,19 @@ import Popover, {
 import Snippet from '@/design/ui/components/snippet';
 
 import { renderCatalogMatchedField } from '@/features/catalog/globalSearch/client/renderCatalogMatchedField';
-import { getGlobalSearchItemShareUrl } from '@/features/globalSearch/client/navigationActions';
 import type {
 	IGlobalSearchIndexItem,
 	IGlobalSearchMatchedField,
 	IGlobalSearchResult,
 } from '@/features/globalSearch/contracts';
+import { getGlobalSearchItemShareUrl } from '@/features/globalSearch/itemNavigation';
 
 import { SearchItemVisual } from './SearchItemVisual';
 import { SpotlightPreviewMotion } from './SpotlightMotion';
+
+const SHARE_SNIPPET_CLASS_NAMES = {
+	pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
+} as const;
 
 export function SearchPreview({
 	onOpenItem,
@@ -120,7 +124,8 @@ export function SearchPreview({
 					}}
 				>
 					{item.section === 'preferences'
-						? item.navigationAction?.type === 'open-customer-plans'
+						? item.navigationAction?.type ===
+							'open-special-guest-plans'
 							? '打开营业预设'
 							: '打开设置'
 						: '查看详情'}
@@ -156,9 +161,7 @@ export function SearchPreview({
 											className="mr-1 !align-middle text-default-700"
 										/>
 									}
-									classNames={{
-										pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
-									}}
+									classNames={SHARE_SNIPPET_CLASS_NAMES}
 								>
 									{shareUrl}
 								</Snippet>

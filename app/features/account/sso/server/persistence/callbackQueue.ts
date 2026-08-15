@@ -26,12 +26,12 @@ const GRANT_TABLE_NAME = TABLE_NAME_MAP.ssoUserClientGrant;
 export const SSO_CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT = Number.MAX_SAFE_INTEGER;
 
 export interface IAdminSsoCallbackQueueListOptions {
-	limit: number;
-	offset: number;
-	query?: string;
 	clientId?: TSsoClient['id'];
 	endTime?: number;
 	event?: TSsoCallbackEvent;
+	limit: number;
+	offset: number;
+	query?: string;
 	startTime?: number;
 	status?: TAdminSsoCallbackQueueStatus;
 	userId?: TUser['id'];

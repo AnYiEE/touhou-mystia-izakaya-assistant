@@ -1,6 +1,6 @@
 import { Select, SelectItem } from '@heroui/select';
 import { cn } from '@heroui/theme';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Heading from '@/design/ui/components/heading';
@@ -24,6 +24,7 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 	highlightedPreferenceKey,
 	isReducedMotion,
 }) {
+	const { isHighAppearance } = useDesignPreferences();
 	const popoverMotionProps = useMotionProps('popover');
 
 	const isSuggestEnabled = globalStore.persistence.suggestMeals.enabled.use();
@@ -38,17 +39,49 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 	const suggestSelectableMaxResults =
 		globalStore.shared.suggestMeals.selectableMaxResults.get();
 
-	const { isHighAppearance } = useDesignPreferences();
+	const popoverProps = useMemo(
+		() => ({ motionProps: popoverMotionProps }),
+		[popoverMotionProps]
+	);
+	const selectClassNames = useMemo(
+		() => ({
+			listboxWrapper: cn(
+				'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
+				{
+					'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
+						isHighAppearance,
+				}
+			),
+			popoverContent: cn({
+				'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+			}),
+			trigger: cn('transition-background motion-reduce:transition-none', {
+				'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40':
+					isHighAppearance,
+				'bg-default-200 data-[hover=true]:bg-default':
+					!isHighAppearance,
+			}),
+		}),
+		[isHighAppearance]
+	);
+	const narrowSelectClassNames = useMemo(
+		() => ({ base: 'w-20', ...selectClassNames }),
+		[selectClassNames]
+	);
+	const ratingSelectClassNames = useMemo(
+		() => ({ base: 'w-28', ...selectClassNames }),
+		[selectClassNames]
+	);
 
 	return (
 		<>
 			<Heading as="h3">“猜您想要”推荐</Heading>
 			<div
-				{...getPreferenceTargetDataProps('customer-suggest-meals')}
+				{...getPreferenceTargetDataProps('special-guest-suggest-meals')}
 				className={cn(
 					'space-y-2.5',
 					getPreferenceTargetClassName(
-						'customer-suggest-meals',
+						'special-guest-suggest-meals',
 						highlightedPreferenceKey
 					)
 				)}
@@ -82,34 +115,12 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 						}
 						aria-label="选择自动推荐的最多套餐数量"
 						title="选择自动推荐的最多套餐数量"
-						popoverProps={{ motionProps: popoverMotionProps }}
-						classNames={{
-							base: 'w-20',
-							listboxWrapper: cn(
-								'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
-								{
-									'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
-										isHighAppearance,
-								}
-							),
-							popoverContent: cn({
-								'bg-content1/70 backdrop-blur-lg':
-									isHighAppearance,
-							}),
-							trigger: cn(
-								'transition-background motion-reduce:transition-none',
-								{
-									'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40':
-										isHighAppearance,
-									'bg-default-200 data-[hover=true]:bg-default':
-										!isHighAppearance,
-								}
-							),
-						}}
+						popoverProps={popoverProps}
+						classNames={narrowSelectClassNames}
 					>
 						{({ value }) => (
 							<SelectItem
-								key={value}
+								key={value.toString()}
 								textValue={value.toString()}
 							>
 								{value}
@@ -132,30 +143,8 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 						onSelectionChange={globalStore.maxSuggestMealRating.set}
 						aria-label="选择自动推荐套餐的最高评级"
 						title="选择自动推荐套餐的最高评级"
-						popoverProps={{ motionProps: popoverMotionProps }}
-						classNames={{
-							base: 'w-28',
-							listboxWrapper: cn(
-								'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
-								{
-									'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
-										isHighAppearance,
-								}
-							),
-							popoverContent: cn({
-								'bg-content1/70 backdrop-blur-lg':
-									isHighAppearance,
-							}),
-							trigger: cn(
-								'transition-background motion-reduce:transition-none',
-								{
-									'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40':
-										isHighAppearance,
-									'bg-default-200 data-[hover=true]:bg-default':
-										!isHighAppearance,
-								}
-							),
-						}}
+						popoverProps={popoverProps}
+						classNames={ratingSelectClassNames}
 					>
 						{({ label, value }) => (
 							<SelectItem
@@ -183,30 +172,8 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 						}
 						aria-label="选择自动推荐套餐的额外食材上限"
 						title="选择自动推荐套餐的额外食材上限"
-						popoverProps={{ motionProps: popoverMotionProps }}
-						classNames={{
-							base: 'w-20',
-							listboxWrapper: cn(
-								'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
-								{
-									'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
-										isHighAppearance,
-								}
-							),
-							popoverContent: cn({
-								'bg-content1/70 backdrop-blur-lg':
-									isHighAppearance,
-							}),
-							trigger: cn(
-								'transition-background motion-reduce:transition-none',
-								{
-									'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40':
-										isHighAppearance,
-									'bg-default-200 data-[hover=true]:bg-default':
-										!isHighAppearance,
-								}
-							),
-						}}
+						popoverProps={popoverProps}
+						classNames={narrowSelectClassNames}
 					>
 						{({ label, value }) => (
 							<SelectItem

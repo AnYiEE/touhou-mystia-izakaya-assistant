@@ -1,67 +1,67 @@
-import type { TClothesName } from '@/domain/data/clothes/types';
-import type { TCookerName } from '@/domain/data/cookers/types';
-import type { TCustomerRareName } from '@/domain/data/customers/rare/types';
-import type { TOrnamentName } from '@/domain/data/ornaments/types';
-import type { TPartnerName } from '@/domain/data/partners/types';
-import type { TRecipeName } from '@/domain/data/recipes/types';
+import type { TClothesId } from '@/domain/data/clothes/types';
+import type { TCookerId } from '@/domain/data/cookers/types';
+import type { TDecorationId } from '@/domain/data/decorations/types';
+import type { TFoodId } from '@/domain/data/foods/types';
+import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import type { TPartnerId } from '@/domain/data/partners/types';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
-interface ILevelRewardEntry<TName extends string> {
+interface ILevelRewardEntry<TId extends number> {
+	id: TId;
 	level: number;
-	name: TName;
 }
 
 interface IBondRewardsResult {
-	bondClothes: TClothesName | null;
-	bondCooker: TCookerName | null;
-	bondOrnaments: Array<ILevelRewardEntry<TOrnamentName>>;
-	bondPartner: TPartnerName | null;
-	bondRecipes: Array<ILevelRewardEntry<TRecipeName>>;
+	bondClothes: TClothesId | null;
+	bondCooker: TCookerId | null;
+	bondDecorations: Array<ILevelRewardEntry<TDecorationId>>;
+	bondFoods: Array<ILevelRewardEntry<TFoodId>>;
+	bondPartner: TPartnerId | null;
 	collection: boolean;
 	hasBondRewards: boolean;
 }
 
 export function getBondRewards({
 	collection,
-	customerName,
 	getBondClothes,
 	getBondCooker,
-	getBondOrnaments,
+	getBondDecorations,
+	getBondFoods,
 	getBondPartner,
-	getBondRecipes,
+	specialGuest,
 }: {
 	collection: boolean;
-	customerName: TCustomerRareName;
-	getBondClothes: (customerName: TCustomerRareName) => TClothesName | null;
-	getBondCooker: (customerName: TCustomerRareName) => TCookerName | null;
-	getBondOrnaments: (
-		customerName: TCustomerRareName
-	) => Array<ILevelRewardEntry<TOrnamentName>>;
-	getBondPartner: (customerName: TCustomerRareName) => TPartnerName | null;
-	getBondRecipes: (
-		customerName: TCustomerRareName
-	) => Array<ILevelRewardEntry<TRecipeName>>;
+	getBondClothes: (specialGuest: TSpecialGuestId) => TClothesId | null;
+	getBondCooker: (specialGuest: TSpecialGuestId) => TCookerId | null;
+	getBondDecorations: (
+		specialGuest: TSpecialGuestId
+	) => Array<ILevelRewardEntry<TDecorationId>>;
+	getBondFoods: (
+		specialGuest: TSpecialGuestId
+	) => Array<ILevelRewardEntry<TFoodId>>;
+	getBondPartner: (specialGuest: TSpecialGuestId) => TPartnerId | null;
+	specialGuest: TSpecialGuestId;
 }): IBondRewardsResult {
-	const bondClothes = getBondClothes(customerName);
-	const bondCooker = getBondCooker(customerName);
-	const bondOrnaments = getBondOrnaments(customerName);
-	const bondPartner = getBondPartner(customerName);
-	const bondRecipes = getBondRecipes(customerName);
+	const bondClothes = getBondClothes(specialGuest);
+	const bondCooker = getBondCooker(specialGuest);
+	const bondDecorations = getBondDecorations(specialGuest);
+	const bondFoods = getBondFoods(specialGuest);
+	const bondPartner = getBondPartner(specialGuest);
 
 	return {
 		bondClothes,
 		bondCooker,
-		bondOrnaments,
+		bondDecorations,
+		bondFoods,
 		bondPartner,
-		bondRecipes,
 		collection,
 		hasBondRewards:
 			collection ||
 			bondClothes !== null ||
 			bondCooker !== null ||
 			bondPartner !== null ||
-			!checkLengthEmpty(bondOrnaments) ||
-			!checkLengthEmpty(bondRecipes),
+			!checkLengthEmpty(bondDecorations) ||
+			!checkLengthEmpty(bondFoods),
 	};
 }

@@ -10,7 +10,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
-import { type ReactNode, memo } from 'react';
+import { type ReactNode, memo, useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Card, { type ICardProps } from '@/design/ui/components/card';
@@ -72,20 +72,20 @@ export default memo<IAuthorizePanelProps>(function SsoAuthorizePanel({
 }) {
 	const { isHighAppearance } = useDesignPreferences();
 
+	const mergedClassNames = useMemo(
+		() => ({
+			...classNames,
+			base: cn(
+				'!transition motion-reduce:!transition-none',
+				{ 'bg-content1/40 backdrop-blur': isHighAppearance },
+				classNames?.base
+			),
+		}),
+		[classNames, isHighAppearance]
+	);
+
 	return (
-		<Card
-			fullWidth
-			shadow="sm"
-			classNames={{
-				...classNames,
-				base: cn(
-					'!transition motion-reduce:!transition-none',
-					{ 'bg-content1/40 backdrop-blur': isHighAppearance },
-					classNames?.base
-				),
-			}}
-			{...props}
-		>
+		<Card fullWidth shadow="sm" classNames={mergedClassNames} {...props}>
 			<div className="space-y-5 p-4">
 				<div className="flex min-w-0 flex-1 items-center gap-3">
 					<div

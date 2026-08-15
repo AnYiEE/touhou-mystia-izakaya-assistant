@@ -16,6 +16,8 @@ const links = SITE_LINKS;
 const { baseURL } = PUBLIC_RUNTIME_CONFIG;
 const { enName, name, shortName } = SITE_METADATA;
 
+const DONATE_TOOLTIP_CLASS_NAMES = { content: 'px-1' } as const;
+
 export default function Introduction() {
 	return (
 		<>
@@ -86,7 +88,7 @@ export default function Introduction() {
 								);
 							}
 						}}
-						classNames={{ content: 'px-1' }}
+						classNames={DONATE_TOOLTIP_CLASS_NAMES}
 					>
 						<Link
 							isExternal

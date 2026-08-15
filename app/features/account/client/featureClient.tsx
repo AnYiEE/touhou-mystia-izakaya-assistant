@@ -4,9 +4,9 @@ import {
 	bootstrapAccount,
 	startAccountBootstrapRetryClient,
 } from './bootstrap';
+import AccountConflictModal from './components/accountConflict/AccountConflictModal';
 import AccountModal from './components/AccountModal';
 import AccountPasswordMustChangeModal from './components/AccountPasswordMustChangeModal';
-import AccountConflictModal from './components/accountConflict/AccountConflictModal';
 import type { IStartAccountFeatureClientsOptions } from './featureClient.types';
 import { startAccountStoreSyncWatchers } from './sync/doubleWrite';
 import { startAccountSyncClient } from './sync/syncClient';

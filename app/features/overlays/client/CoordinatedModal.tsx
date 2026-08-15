@@ -2,7 +2,7 @@
 
 import { type InternalForwardRefRenderFunction } from '@heroui/system';
 import { cn } from '@heroui/theme';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import {
 	type IModalProps,
@@ -47,7 +47,12 @@ export default memo<IProps>(function CoordinatedModal({
 	...props
 }) {
 	const isReducedMotion = useReducedMotion();
+
 	const coordinationId = coordination.id;
+	const getRootElement = useCallback(
+		() => getActiveCoordinatedModal(coordinationId) ?? null,
+		[coordinationId]
+	);
 
 	const requestBusinessClose = useCallback(() => {
 		onOpenChange?.(false);
@@ -62,7 +67,7 @@ export default memo<IProps>(function CoordinatedModal({
 		canActivate: coordination.canActivate,
 		dismissable: isDismissable && !(isKeyboardDismissDisabled ?? false),
 		exitDelayMs: isReducedMotion ? 0 : undefined,
-		getRootElement: () => getActiveCoordinatedModal(coordinationId) ?? null,
+		getRootElement,
 		id: coordinationId,
 		isOpen,
 		keepOpenWhenCovered: true,
@@ -88,15 +93,20 @@ export default memo<IProps>(function CoordinatedModal({
 		[isCovered, onOpenChange]
 	);
 
+	const mergedClassNames = useMemo(
+		() => ({
+			...classNames,
+			backdrop: cn(
+				classNames?.backdrop,
+				shouldSuppressBackdropBlur && '!backdrop-blur-none'
+			),
+		}),
+		[classNames, shouldSuppressBackdropBlur]
+	);
+
 	return (
 		<ModalPresentation
-			classNames={{
-				...classNames,
-				backdrop: cn(
-					classNames?.backdrop,
-					shouldSuppressBackdropBlur && '!backdrop-blur-none'
-				),
-			}}
+			classNames={mergedClassNames}
 			data-coordinated-overlay-id={coordinationId}
 			inert={isCovered}
 			isDismissable={!isCovered && isDismissable}

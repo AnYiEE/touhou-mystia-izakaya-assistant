@@ -3,35 +3,35 @@
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
 import {
-	CUSTOMER_RARE_PLAN_CACHE_MAX_ENTRIES,
-	CUSTOMER_RARE_PLAN_CACHE_MAX_MEALS,
 	RECOMMENDATION_ALGORITHM_VERSION,
 	RECOMMENDATION_CACHE_DATABASE_VERSION,
 	RECOMMENDATION_CACHE_EPOCH,
 	RECOMMENDATION_CACHE_RECORD_VERSION,
+	SPECIAL_GUEST_PLAN_CACHE_MAX_ENTRIES,
+	SPECIAL_GUEST_PLAN_CACHE_MAX_MEALS,
 	SUGGESTED_MEAL_CARD_CACHE_MAX_ENTRIES,
 	SUGGESTED_MEAL_CARD_CACHE_MAX_MEALS,
 } from './constants';
 import { getRecommendationCacheContext } from './context';
 import { getRecommendationCacheStoreStats } from './database';
 
-type TRecommendationCacheConsumer = 'customerRarePlan' | 'suggestedMealCard';
+type TRecommendationCacheConsumer = 'specialGuestPlan' | 'suggestedMealCard';
 type TRecommendationCacheResolutionSource = 'compute' | 'memory' | 'persistent';
 
 interface IRecommendationCacheDebugConsumerState {
 	compute: number;
+	latestSource: TRecommendationCacheResolutionSource | null;
 	memory: number;
 	persistent: number;
-	latestSource: TRecommendationCacheResolutionSource | null;
 }
 
 interface IRecommendationCacheDebugState {
-	customerRarePlan: IRecommendationCacheDebugConsumerState;
+	specialGuestPlan: IRecommendationCacheDebugConsumerState;
 	suggestedMealCard: IRecommendationCacheDebugConsumerState;
 }
 
 const debugState: IRecommendationCacheDebugState = {
-	customerRarePlan: {
+	specialGuestPlan: {
 		compute: 0,
 		latestSource: null,
 		memory: 0,
@@ -47,16 +47,16 @@ const debugState: IRecommendationCacheDebugState = {
 
 async function getRecommendationCacheDebugSnapshot() {
 	const context = getRecommendationCacheContext();
-	const [suggestedMealCardResults, customerRarePlanResults] =
+	const [suggestedMealCardResults, specialGuestPlanResults] =
 		await Promise.all([
 			getRecommendationCacheStoreStats('suggestedMealCardResults'),
-			getRecommendationCacheStoreStats('customerRarePlanResults'),
+			getRecommendationCacheStoreStats('specialGuestPlanResults'),
 		]);
 	return {
 		capacities: {
-			customerRarePlanResults: {
-				maxEntries: CUSTOMER_RARE_PLAN_CACHE_MAX_ENTRIES,
-				maxLogicalWeight: CUSTOMER_RARE_PLAN_CACHE_MAX_MEALS,
+			specialGuestPlanResults: {
+				maxEntries: SPECIAL_GUEST_PLAN_CACHE_MAX_ENTRIES,
+				maxLogicalWeight: SPECIAL_GUEST_PLAN_CACHE_MAX_MEALS,
 			},
 			suggestedMealCardResults: {
 				maxEntries: SUGGESTED_MEAL_CARD_CACHE_MAX_ENTRIES,
@@ -65,10 +65,10 @@ async function getRecommendationCacheDebugSnapshot() {
 		},
 		context,
 		resolution: {
-			customerRarePlan: { ...debugState.customerRarePlan },
+			specialGuestPlan: { ...debugState.specialGuestPlan },
 			suggestedMealCard: { ...debugState.suggestedMealCard },
 		},
-		stats: { customerRarePlanResults, suggestedMealCardResults },
+		stats: { specialGuestPlanResults, suggestedMealCardResults },
 		versions: {
 			algorithm: RECOMMENDATION_ALGORITHM_VERSION,
 			database: RECOMMENDATION_CACHE_DATABASE_VERSION,
@@ -86,7 +86,7 @@ export async function refreshRecommendationCacheDebugSnapshot() {
 		return;
 	}
 	const snapshot = await getRecommendationCacheDebugSnapshot();
-	globalThis.document.documentElement.dataset['recommendationCache'] =
+	document.documentElement.dataset['recommendationCache'] =
 		JSON.stringify(snapshot);
 }
 

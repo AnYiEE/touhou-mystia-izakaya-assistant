@@ -24,13 +24,14 @@ export function checkAccountSyncStatus(
 }
 
 export const SYNC_NAMESPACE_MAP = {
-	customerNormalMeals: 'customer_normal.meals',
-	customerRareMeals: 'customer_rare.meals',
-	customerRarePlans: 'customer_rare.plans',
-	customerRareSettings: 'customer_rare.settings',
+	normalGuestMeals: 'customer_normal.meals',
+	specialGuestMeals: 'customer_rare.meals',
+	specialGuestPlans: 'customer_rare.plans',
+	specialGuestSettings: 'customer_rare.settings',
+	// eslint-disable-next-line sort-keys -- Preserve sync processing and status display enumeration order.
 	globalPreferences: 'global.preferences',
 	theme: 'theme',
-	tutorialCustomerRare: 'tutorial.customer_rare',
+	tutorialSpecialGuest: 'tutorial.customer_rare',
 } as const;
 
 export type TSyncNamespace =

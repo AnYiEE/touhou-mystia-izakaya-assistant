@@ -1,7 +1,7 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
 import { WebAuthnAbortService } from '@simplewebauthn/browser';
+import { usePathname, useRouter } from 'next/navigation';
 import {
 	type ChangeEvent,
 	type PointerEvent,
@@ -325,7 +325,7 @@ export function useAccountAuthentication({
 				});
 
 				if (redirectTo !== undefined) {
-					globalThis.location.assign(
+					location.assign(
 						createRecommendationBridgeContinuationUrl(redirectTo)
 					);
 					return;
@@ -536,7 +536,7 @@ export function useAccountAuthentication({
 			});
 
 			if (redirectTo !== undefined) {
-				globalThis.location.assign(
+				location.assign(
 					createRecommendationBridgeContinuationUrl(redirectTo)
 				);
 				return;
@@ -801,7 +801,7 @@ export function useAccountAuthentication({
 				});
 
 				if (redirectTo !== undefined) {
-					globalThis.location.assign(
+					location.assign(
 						createRecommendationBridgeContinuationUrl(redirectTo)
 					);
 					return;

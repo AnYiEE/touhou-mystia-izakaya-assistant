@@ -2,16 +2,16 @@ import { memo } from 'react';
 
 import Heading from '@/design/ui/components/heading';
 
-import { customerRareStore } from '@/features/catalog/customers/rare/client/state/store';
+import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { type TPreferenceTargetKey } from '@/features/preferences/client/globalSearch/searchItems';
 
 import HiddenItems from './HiddenItems';
 import SwitchItem from './PreferenceSwitchItem';
-import RecommendationPreferencesSection from './RecommendationPreferencesSection';
 import {
 	getPreferenceTargetClassName,
 	getPreferenceTargetDataProps,
 } from './preferenceTarget';
+import RecommendationPreferencesSection from './RecommendationPreferencesSection';
 
 interface IProps {
 	highlightedPreferenceKey: null | TPreferenceTargetKey;
@@ -25,9 +25,9 @@ export default memo<IProps>(function CatalogPreferencesSection({
 	onModalClose,
 }) {
 	const isOrderLinkedFilter =
-		customerRareStore.persistence.customer.orderLinkedFilter.use();
+		specialGuestStore.persistence.guest.orderLinkedFilter.use();
 	const isShowTagDescription =
-		customerRareStore.persistence.customer.showTagDescription.use();
+		specialGuestStore.persistence.guest.showTagDescription.use();
 
 	return (
 		<>
@@ -35,9 +35,9 @@ export default memo<IProps>(function CatalogPreferencesSection({
 			<Heading as="h3">酒水、料理和食材</Heading>
 			<div className="space-y-2">
 				<div
-					{...getPreferenceTargetDataProps('customer-hidden-items')}
+					{...getPreferenceTargetDataProps('guest-hidden-items')}
 					className={getPreferenceTargetClassName(
-						'customer-hidden-items',
+						'guest-hidden-items',
 						highlightedPreferenceKey
 					)}
 				>
@@ -52,17 +52,17 @@ export default memo<IProps>(function CatalogPreferencesSection({
 			<div className="space-y-2">
 				<div
 					{...getPreferenceTargetDataProps(
-						'customer-order-linked-filter'
+						'special-guest-order-linked-filter'
 					)}
 					className={getPreferenceTargetClassName(
-						'customer-order-linked-filter',
+						'special-guest-order-linked-filter',
 						highlightedPreferenceKey
 					)}
 				>
 					<SwitchItem
 						isSelected={isOrderLinkedFilter}
 						onValueChange={
-							customerRareStore.persistence.customer
+							specialGuestStore.persistence.guest
 								.orderLinkedFilter.set
 						}
 						aria-label={`选择点单需求标签的同时${isOrderLinkedFilter ? '不' : ''}筛选表格`}
@@ -72,17 +72,17 @@ export default memo<IProps>(function CatalogPreferencesSection({
 				</div>
 				<div
 					{...getPreferenceTargetDataProps(
-						'customer-show-tag-description'
+						'special-guest-show-tag-description'
 					)}
 					className={getPreferenceTargetClassName(
-						'customer-show-tag-description',
+						'special-guest-show-tag-description',
 						highlightedPreferenceKey
 					)}
 				>
 					<SwitchItem
 						isSelected={isShowTagDescription}
 						onValueChange={
-							customerRareStore.persistence.customer
+							specialGuestStore.persistence.guest
 								.showTagDescription.set
 						}
 						aria-label={`${isShowTagDescription ? '隐藏' : '显示'}料理标签描述`}

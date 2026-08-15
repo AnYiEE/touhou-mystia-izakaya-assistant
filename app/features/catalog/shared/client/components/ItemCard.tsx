@@ -1,15 +1,15 @@
 'use client';
 
 import { cn } from '@heroui/theme';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Card, { type ICardProps } from '@/design/ui/components/card';
 
 interface IProps extends Omit<ICardProps, 'className' | 'classNames'> {
-	name: ReactNodeWithoutBoolean;
 	description?: ReactNodeWithoutBoolean;
 	image: ReactNodeWithoutBoolean;
+	name: ReactNodeWithoutBoolean;
 }
 
 export default memo<IProps>(function ItemCard({
@@ -20,18 +20,18 @@ export default memo<IProps>(function ItemCard({
 }) {
 	const { isHighAppearance } = useDesignPreferences();
 
+	const classNames = useMemo(
+		() => ({
+			base: cn('justify-center', {
+				'bg-background data-[hover=true]:bg-content1 dark:bg-content1 dark:data-[hover=true]:bg-content2':
+					isHighAppearance,
+			}),
+		}),
+		[isHighAppearance]
+	);
+
 	return (
-		<Card
-			fullWidth
-			shadow="sm"
-			classNames={{
-				base: cn('justify-center', {
-					'bg-background data-[hover=true]:bg-content1 dark:bg-content1 dark:data-[hover=true]:bg-content2':
-						isHighAppearance,
-				}),
-			}}
-			{...props}
-		>
+		<Card fullWidth shadow="sm" classNames={classNames} {...props}>
 			<div className="flex items-center gap-1">
 				<div className="m-1 flex rounded-xl shadow-[inset_0_0_2px] shadow-foreground-400">
 					{image}

@@ -4,6 +4,8 @@ import { resolve } from 'node:path';
 import { execPath } from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+import { validateReleaseRecords } from '../validation/validateReleaseRecords';
+
 const offlineEnv = { ...process.env, OFFLINE: 'true' };
 const moduleRequire = createRequire(import.meta.url);
 const commandPathMap = {
@@ -39,6 +41,8 @@ function runCommand(command: keyof typeof commandPathMap, args: string[]) {
 }
 
 async function main() {
+	validateReleaseRecords();
+
 	let shouldRestoreApiRoutes = false;
 
 	try {

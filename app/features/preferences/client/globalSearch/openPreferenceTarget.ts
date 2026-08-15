@@ -6,16 +6,16 @@ import {
 } from './searchItems';
 
 function checkIsPreferenceTargetKey(
-	targetId: string
-): targetId is TPreferenceTargetKey {
-	return PREFERENCE_SEARCH_ITEMS.some(({ key }) => key === targetId);
+	targetKey: string
+): targetKey is TPreferenceTargetKey {
+	return PREFERENCE_SEARCH_ITEMS.some(({ key }) => key === targetKey);
 }
 
-export function openPreferenceTarget(targetId: string) {
-	if (!checkIsPreferenceTargetKey(targetId)) {
+export function openPreferenceTarget(targetKey: string) {
+	if (!checkIsPreferenceTargetKey(targetKey)) {
 		return false;
 	}
 
-	openPreferencesModal({ openSource: 'spotlight', targetKey: targetId });
+	openPreferencesModal({ openSource: 'spotlight', targetKey });
 	return true;
 }

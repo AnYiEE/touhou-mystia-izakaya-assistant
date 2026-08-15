@@ -1,10 +1,16 @@
+import isNil from 'lodash/isNil.js';
+
+import { getAvailabilityCollectionPointReference } from '@/domain/availability/acquisitionSourceMetadata';
 import type {
 	IAvailabilityAcquisitionSource,
 	IAvailabilityPath,
 } from '@/domain/availability/types';
-import { COLLECTION_LOCATION_REFRESH_TIME_MAP } from '@/domain/data/places/collectionFacts';
-import { PLACE_UNLOCK_TIER_MAP } from '@/domain/data/places/placeFacts';
-import type { TPlace } from '@/domain/data/places/types';
+import { COLLECTION_POINT_REFRESH_FACTS } from '@/domain/data/places/collectionFacts';
+import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+import type {
+	TCollectionPointReference,
+	TMapLabel,
+} from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
 
 const GAME_DAY_START_HOUR = 10;
@@ -12,10 +18,25 @@ const GAME_DAY_END_HOUR = 18;
 const GAME_DAY_HOURS = GAME_DAY_END_HOUR - GAME_DAY_START_HOUR;
 const COLLECT_CHANNEL_BONUS = 1.2;
 
+function getCollectionPointReferenceKey(
+	collectionPoint: TCollectionPointReference
+) {
+	return 'map' in collectionPoint
+		? JSON.stringify([collectionPoint.map, collectionPoint.label])
+		: JSON.stringify([collectionPoint.excludedMaps, collectionPoint.label]);
+}
+
+const COLLECTION_POINT_REFRESH_TIME_MAP = new Map(
+	COLLECTION_POINT_REFRESH_FACTS.map((collectionPoint) => [
+		getCollectionPointReferenceKey(collectionPoint),
+		collectionPoint.refreshTimeHours,
+	])
+);
+
 export interface IRecommendationPriorityMetrics {
 	readonly acquisitionEase: number;
 	readonly contentMismatchCount: number;
-	readonly customerPlacesMismatchCount: number;
+	readonly guestPlacesMismatchCount: number;
 	readonly lateSourceCount: number;
 	readonly maxLateTierDistance: number;
 	readonly pathMismatchCount: number;
@@ -29,8 +50,8 @@ export interface ISelectedRecommendationAvailabilityPath extends IRecommendation
 }
 
 interface IRecommendationAvailabilityContext {
-	readonly customerDlc: TDlc;
-	readonly customerPlaces: ReadonlyArray<TPlace>;
+	readonly guestDlc: TDlc;
+	readonly guestPlaces: ReadonlyArray<TMapLabel>;
 	readonly hiddenDlcs: ReadonlySet<TDlc>;
 }
 
@@ -41,7 +62,7 @@ interface IRecommendationItemAvailability extends IRecommendationAvailabilityCon
 }
 
 interface ISourcePlaceMetrics {
-	readonly customerPlacesMismatchCount: number;
+	readonly guestPlacesMismatchCount: number;
 	readonly lateSourceCount: number;
 	readonly maxLateTierDistance: number;
 	readonly primaryPlaceMismatchCount: number;
@@ -53,7 +74,7 @@ export const EMPTY_RECOMMENDATION_PRIORITY_METRICS: IRecommendationPriorityMetri
 	{
 		acquisitionEase: 0,
 		contentMismatchCount: 0,
-		customerPlacesMismatchCount: 0,
+		guestPlacesMismatchCount: 0,
 		lateSourceCount: 0,
 		maxLateTierDistance: 0,
 		pathMismatchCount: 0,
@@ -70,7 +91,7 @@ export function compareRecommendationStrictMetrics(
 		left.contentMismatchCount - right.contentMismatchCount ||
 		left.pathMismatchCount - right.pathMismatchCount ||
 		left.primaryPlaceMismatchCount - right.primaryPlaceMismatchCount ||
-		left.customerPlacesMismatchCount - right.customerPlacesMismatchCount ||
+		left.guestPlacesMismatchCount - right.guestPlacesMismatchCount ||
 		left.unknownSourceCount - right.unknownSourceCount ||
 		left.lateSourceCount - right.lateSourceCount ||
 		left.maxLateTierDistance - right.maxLateTierDistance ||
@@ -96,9 +117,8 @@ export function addRecommendationPriorityMetrics(
 		acquisitionEase: left.acquisitionEase + right.acquisitionEase,
 		contentMismatchCount:
 			left.contentMismatchCount + right.contentMismatchCount,
-		customerPlacesMismatchCount:
-			left.customerPlacesMismatchCount +
-			right.customerPlacesMismatchCount,
+		guestPlacesMismatchCount:
+			left.guestPlacesMismatchCount + right.guestPlacesMismatchCount,
 		lateSourceCount: left.lateSourceCount + right.lateSourceCount,
 		maxLateTierDistance: Math.max(
 			left.maxLateTierDistance,
@@ -113,19 +133,17 @@ export function addRecommendationPriorityMetrics(
 	};
 }
 
-function getNaturalDlcs(customerDlc: TDlc) {
-	return customerDlc === 0
-		? new Set<TDlc>([0])
-		: new Set<TDlc>([0, customerDlc]);
+function getNaturalDlcs(guestDlc: TDlc) {
+	return guestDlc === 0 ? new Set<TDlc>([0]) : new Set<TDlc>([0, guestDlc]);
 }
 
 function getSourcePlaceMetrics(
 	source: IAvailabilityAcquisitionSource,
-	customerPlaces: ReadonlyArray<TPlace>
+	guestPlaces: ReadonlyArray<TMapLabel>
 ): ISourcePlaceMetrics {
 	if (source.kind === 'self') {
 		return {
-			customerPlacesMismatchCount: 0,
+			guestPlacesMismatchCount: 0,
 			lateSourceCount: 0,
 			maxLateTierDistance: 0,
 			primaryPlaceMismatchCount: 0,
@@ -134,10 +152,10 @@ function getSourcePlaceMetrics(
 		};
 	}
 
-	const [primaryPlace] = customerPlaces;
+	const [primaryPlace] = guestPlaces;
 	if (source.place === null || primaryPlace === undefined) {
 		return {
-			customerPlacesMismatchCount: 1,
+			guestPlacesMismatchCount: 1,
 			lateSourceCount: 0,
 			maxLateTierDistance: 0,
 			primaryPlaceMismatchCount: 1,
@@ -146,17 +164,17 @@ function getSourcePlaceMetrics(
 		};
 	}
 
-	const isCustomerPlace = customerPlaces.includes(source.place);
-	const tierDistance = isCustomerPlace
+	const isGuestPlace = guestPlaces.includes(source.place);
+	const tierDistance = isGuestPlace
 		? 0
 		: Math.max(
 				0,
-				PLACE_UNLOCK_TIER_MAP[source.place] -
-					PLACE_UNLOCK_TIER_MAP[primaryPlace]
+				MAP_FACTS[source.place].unlockTier -
+					MAP_FACTS[primaryPlace].unlockTier
 			);
 
 	return {
-		customerPlacesMismatchCount: isCustomerPlace ? 0 : 1,
+		guestPlacesMismatchCount: isGuestPlace ? 0 : 1,
 		lateSourceCount: tierDistance > 0 ? 1 : 0,
 		maxLateTierDistance: tierDistance,
 		primaryPlaceMismatchCount: source.place === primaryPlace ? 0 : 1,
@@ -171,7 +189,7 @@ function compareSourcePlaceMetrics(
 ) {
 	return (
 		left.primaryPlaceMismatchCount - right.primaryPlaceMismatchCount ||
-		left.customerPlacesMismatchCount - right.customerPlacesMismatchCount ||
+		left.guestPlacesMismatchCount - right.guestPlacesMismatchCount ||
 		left.unknownSourceCount - right.unknownSourceCount ||
 		left.lateSourceCount - right.lateSourceCount ||
 		left.maxLateTierDistance - right.maxLateTierDistance ||
@@ -181,12 +199,12 @@ function compareSourcePlaceMetrics(
 
 function getPathSourcePlaceMetrics(
 	path: IAvailabilityPath,
-	customerPlaces: ReadonlyArray<TPlace>
+	guestPlaces: ReadonlyArray<TMapLabel>
 ) {
 	let bestMetrics: ISourcePlaceMetrics | null = null;
 
 	for (const source of path.acquisitionSources) {
-		const metrics = getSourcePlaceMetrics(source, customerPlaces);
+		const metrics = getSourcePlaceMetrics(source, guestPlaces);
 		if (
 			bestMetrics === null ||
 			compareSourcePlaceMetrics(metrics, bestMetrics) < 0
@@ -197,7 +215,7 @@ function getPathSourcePlaceMetrics(
 
 	return (
 		bestMetrics ?? {
-			customerPlacesMismatchCount: 1,
+			guestPlacesMismatchCount: 1,
 			lateSourceCount: 0,
 			maxLateTierDistance: 0,
 			primaryPlaceMismatchCount: 1,
@@ -208,14 +226,14 @@ function getPathSourcePlaceMetrics(
 }
 
 function getCollectEase(source: IAvailabilityAcquisitionSource) {
-	if (!Object.hasOwn(COLLECTION_LOCATION_REFRESH_TIME_MAP, source.name)) {
+	const collectionPoint = getAvailabilityCollectionPointReference(source);
+	if (collectionPoint === undefined) {
 		return 0;
 	}
-	const refreshHours =
-		COLLECTION_LOCATION_REFRESH_TIME_MAP[
-			source.name as keyof typeof COLLECTION_LOCATION_REFRESH_TIME_MAP
-		];
-	if (refreshHours === null) {
+	const refreshHours = COLLECTION_POINT_REFRESH_TIME_MAP.get(
+		getCollectionPointReferenceKey(collectionPoint)
+	);
+	if (isNil(refreshHours)) {
 		return 0;
 	}
 
@@ -257,15 +275,12 @@ function getPathAcquisitionEase(path: IAvailabilityPath) {
 function createPathMetrics(
 	path: IAvailabilityPath,
 	{
-		customerDlc,
-		customerPlaces,
-	}: Pick<
-		IRecommendationAvailabilityContext,
-		'customerDlc' | 'customerPlaces'
-	>
+		guestDlc,
+		guestPlaces,
+	}: Pick<IRecommendationAvailabilityContext, 'guestDlc' | 'guestPlaces'>
 ): ISelectedRecommendationAvailabilityPath {
-	const naturalDlcs = getNaturalDlcs(customerDlc);
-	const placeMetrics = getPathSourcePlaceMetrics(path, customerPlaces);
+	const naturalDlcs = getNaturalDlcs(guestDlc);
+	const placeMetrics = getPathSourcePlaceMetrics(path, guestPlaces);
 
 	return {
 		...placeMetrics,
@@ -288,8 +303,8 @@ function compareSelectedPaths(
 export function selectRecommendationAvailabilityPath({
 	allowFishingFallback,
 	availabilityPaths,
-	customerDlc,
-	customerPlaces,
+	guestDlc,
+	guestPlaces,
 	hiddenDlcs,
 }: Omit<IRecommendationItemAvailability, 'contentDlc'>) {
 	const legalPaths = availabilityPaths.filter(({ requiredDlcs }) =>
@@ -307,10 +322,7 @@ export function selectRecommendationAvailabilityPath({
 
 	let bestPath: ISelectedRecommendationAvailabilityPath | null = null;
 	for (const path of candidatePaths) {
-		const selected = createPathMetrics(path, {
-			customerDlc,
-			customerPlaces,
-		});
+		const selected = createPathMetrics(path, { guestDlc, guestPlaces });
 		if (bestPath === null || compareSelectedPaths(selected, bestPath) < 0) {
 			bestPath = selected;
 		}
@@ -323,15 +335,15 @@ export function getRecommendationItemPriority({
 	allowFishingFallback,
 	availabilityPaths,
 	contentDlc,
-	customerDlc,
-	customerPlaces,
+	guestDlc,
+	guestPlaces,
 	hiddenDlcs,
 }: IRecommendationItemAvailability): IRecommendationPriorityMetrics | null {
 	const selectedPath = selectRecommendationAvailabilityPath({
 		allowFishingFallback,
 		availabilityPaths,
-		customerDlc,
-		customerPlaces,
+		guestDlc,
+		guestPlaces,
 		hiddenDlcs,
 	});
 	if (selectedPath === null) {
@@ -340,8 +352,8 @@ export function getRecommendationItemPriority({
 
 	return {
 		acquisitionEase: selectedPath.acquisitionEase,
-		contentMismatchCount: Number(contentDlc !== customerDlc),
-		customerPlacesMismatchCount: selectedPath.customerPlacesMismatchCount,
+		contentMismatchCount: Number(contentDlc !== guestDlc),
+		guestPlacesMismatchCount: selectedPath.guestPlacesMismatchCount,
 		lateSourceCount: selectedPath.lateSourceCount,
 		maxLateTierDistance: selectedPath.maxLateTierDistance,
 		pathMismatchCount: selectedPath.pathMismatchCount,

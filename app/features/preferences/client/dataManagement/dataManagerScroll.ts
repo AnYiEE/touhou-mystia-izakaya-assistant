@@ -10,7 +10,7 @@ export function getClosestModalScrollContainer(
 	let currentElement = element.parentElement;
 
 	while (currentElement !== null && currentElement !== dialogElement) {
-		const { overflowY } = globalThis.getComputedStyle(currentElement);
+		const { overflowY } = getComputedStyle(currentElement);
 
 		if (
 			['auto', 'overlay', 'scroll'].includes(overflowY) &&

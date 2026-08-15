@@ -1,3 +1,4 @@
+import lodash from 'lodash';
 import { randomUUID } from 'node:crypto';
 import {
 	link,
@@ -34,29 +35,18 @@ function createError(code, cause) {
 
 /** @param {unknown} error */
 function checkMissingPathError(error) {
-	return (
-		typeof error === 'object' &&
-		error !== null &&
-		'code' in error &&
-		error.code === 'ENOENT'
-	);
+	return lodash.isObject(error) && 'code' in error && error.code === 'ENOENT';
 }
 
 /** @param {unknown} error */
 function checkAlreadyExistsError(error) {
-	return (
-		typeof error === 'object' &&
-		error !== null &&
-		'code' in error &&
-		error.code === 'EEXIST'
-	);
+	return lodash.isObject(error) && 'code' in error && error.code === 'EEXIST';
 }
 
 /** @param {unknown} value @returns {value is DeploymentLockOwner} */
 function checkDeploymentLockOwner(value) {
 	return (
-		typeof value === 'object' &&
-		value !== null &&
+		lodash.isObject(value) &&
 		'pid' in value &&
 		typeof value.pid === 'number' &&
 		Number.isSafeInteger(value.pid) &&
@@ -134,8 +124,7 @@ async function checkDeploymentLockOwnerActive(lockFile) {
 		return (
 			leaseActive &&
 			!(
-				typeof error === 'object' &&
-				error !== null &&
+				lodash.isObject(error) &&
 				'code' in error &&
 				error.code === 'ESRCH'
 			)

@@ -22,6 +22,15 @@ const {
 const links = SITE_LINKS;
 const { shortName, version } = SITE_METADATA;
 
+const FOOTER_CHINA_SERVER_EVENT = { click: 'China server' } as const;
+const FOOTER_CLASS_NAME =
+	"[&>*]:after:mx-1 [&>*]:after:-mb-0.5 [&>*]:after:inline-block [&>*]:after:h-3 [&>*]:after:w-px [&>*]:after:rounded-small [&>*]:after:bg-default-400 [&>*]:after:content-[''] last:[&>*]:after:hidden";
+const FOOTER_DONATE_EVENT = { click: 'footer:Donate', show: true } as const;
+const FOOTER_DONATE_TOOLTIP_CLASS_NAMES = { content: 'px-1' } as const;
+const FOOTER_GITHUB_COMMIT_EVENT = { click: 'GitHub commit' } as const;
+const FOOTER_ICP_FILING_EVENT = { click: 'ICP filing' } as const;
+const FOOTER_STEAM_EVENT = { click: 'footer:Steam' } as const;
+
 const sha = (() => {
 	if (vercelSha) {
 		return vercelSha.slice(0, 7);
@@ -42,18 +51,15 @@ const sha = (() => {
 })();
 
 export default function Footer() {
-	const className =
-		"[&>*]:after:mx-1 [&>*]:after:-mb-0.5 [&>*]:after:inline-block [&>*]:after:h-3 [&>*]:after:w-px [&>*]:after:rounded-small [&>*]:after:bg-default-400 [&>*]:after:content-[''] last:[&>*]:after:hidden";
-
 	return (
 		<footer className="mx-auto max-w-p-95 pb-3 text-center text-tiny text-default-400 md:max-w-full">
-			<p className={className}>
+			<p className={FOOTER_CLASS_NAME}>
 				<span>
 					{shortName}
 					内所涉及的名称、商标、产品等均为其各自权利人的资产，仅供识别。游戏素材的著作权归
 					<FooterLinkWithTooltip
 						content={links.steam.label}
-						event={{ click: 'footer:Steam' }}
+						event={FOOTER_STEAM_EVENT}
 						href={links.steam.href}
 					>
 						原作者
@@ -62,7 +68,7 @@ export default function Footer() {
 				</span>
 				<FooterVisitors />
 			</p>
-			<p className={className}>
+			<p className={FOOTER_CLASS_NAME}>
 				<span>
 					v{version}-
 					{sha === null ? (
@@ -76,7 +82,7 @@ export default function Footer() {
 							{isOffline ? 'offline' : (vercelEnv ?? nodeEnv)}-
 							<FooterLinkWithTooltip
 								content="在GitHub上查看此提交"
-								event={{ click: 'GitHub commit' }}
+								event={FOOTER_GITHUB_COMMIT_EVENT}
 								href={`${links.github.href}/commit/${sha}`}
 							>
 								{sha}
@@ -87,7 +93,7 @@ export default function Footer() {
 				{isIcpFiling && (
 					<FooterLinkWithTooltip
 						content={null}
-						event={{ click: 'ICP filing' }}
+						event={FOOTER_ICP_FILING_EVENT}
 						href={links.icpFiling.href}
 					>
 						{links.icpFiling.label}
@@ -96,7 +102,7 @@ export default function Footer() {
 				{isVercel && (
 					<FooterLinkWithTooltip
 						content="如果访问或加载速度过慢，可尝试访问此国内线路"
-						event={{ click: 'China server' }}
+						event={FOOTER_CHINA_SERVER_EVENT}
 						href={links.china.href}
 					>
 						{links.china.label}
@@ -108,10 +114,10 @@ export default function Footer() {
 							{links.donate.label.replace('链接', '码')}
 						</QRCode>
 					}
-					event={{ click: 'footer:Donate', show: true }}
+					event={FOOTER_DONATE_EVENT}
 					href={links.donate.href}
 					title={links.donate.label}
-					classNames={{ content: 'px-1' }}
+					classNames={FOOTER_DONATE_TOOLTIP_CLASS_NAMES}
 				>
 					支持{shortName}
 				</FooterLinkWithTooltip>

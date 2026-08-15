@@ -1,44 +1,33 @@
-/* eslint-disable sort-keys */
 import type { TDlc } from '@/domain/data/shared/types';
 
-import type { TPlace } from './types';
+import type { TMapDisplayLabel, TMapLabel } from './types';
 
-export const PLACE_DLC_MAP: Record<TPlace, TDlc> = {
-	妖怪兽道: 0,
-	人间之里: 0,
-	博丽神社: 0,
-	红魔馆: 0,
-	迷途竹林: 0,
-	魔法森林: 1,
-	妖怪之山: 1,
-	旧地狱: 2,
-	地灵殿: 2,
-	命莲寺: 3,
-	神灵庙: 3,
-	太阳花田: 4,
-	辉针城: 4,
-	月之都: 5,
-	魔界: 5,
-};
+interface IMapFact {
+	dlc: TDlc;
+	label: TMapDisplayLabel;
+	unlockTier: number;
+}
 
-export const PLACE_UNLOCK_TIER_MAP: Record<TPlace, number> = {
-	妖怪兽道: 0,
-	人间之里: 1,
-	魔法森林: 1,
-	妖怪之山: 1,
-	博丽神社: 2,
-	旧地狱: 2,
-	地灵殿: 2,
-	红魔馆: 3,
-	命莲寺: 3,
-	神灵庙: 3,
-	迷途竹林: 4,
-	太阳花田: 4,
-	辉针城: 4,
-	月之都: 5,
-	魔界: 5,
-};
+/* eslint-disable sort-keys -- MAP_FACTS insertion order defines canonical map and UI ordering. */
+export const MAP_FACTS = {
+	BeastForest: { dlc: 0, label: '妖怪兽道', unlockTier: 0 },
+	HumanVillage: { dlc: 0, label: '人间之里', unlockTier: 1 },
+	HakureiShrine: { dlc: 0, label: '博丽神社', unlockTier: 2 },
+	ScarletMansion: { dlc: 0, label: '红魔馆', unlockTier: 3 },
+	BambooForest: { dlc: 0, label: '迷途竹林', unlockTier: 4 },
+	DLC1_MagicForest: { dlc: 1, label: '魔法森林', unlockTier: 1 },
+	DLC1_YoukaiMountain: { dlc: 1, label: '妖怪之山', unlockTier: 1 },
+	DLC2_FormerHell: { dlc: 2, label: '旧地狱', unlockTier: 2 },
+	DLC2_EarthSpiritsPalace: { dlc: 2, label: '地灵殿', unlockTier: 2 },
+	DLC3_MyourenTemple: { dlc: 3, label: '命莲寺', unlockTier: 3 },
+	DLC3_DivineSpiritMausoleum: { dlc: 3, label: '神灵庙', unlockTier: 3 },
+	DLC4_GardenOfTheSun: { dlc: 4, label: '太阳花田', unlockTier: 4 },
+	DLC4_ShiningNeedleCastle: { dlc: 4, label: '辉针城', unlockTier: 4 },
+	DLC5_LunarCapital: { dlc: 5, label: '月之都', unlockTier: 5 },
+	DLC5_Makai: { dlc: 5, label: '魔界', unlockTier: 5 },
+} as const satisfies Record<TMapLabel, IMapFact>;
+/* eslint-enable sort-keys */
 
-export const ALL_PLACES = Object.keys(PLACE_DLC_MAP) as TPlace[];
+export const ALL_MAP_LABELS = Object.keys(MAP_FACTS) as TMapLabel[];
 
-export const ALL_PLACES_SET = new Set<string>(ALL_PLACES);
+export const ALL_MAP_LABELS_SET = new Set<string>(ALL_MAP_LABELS);

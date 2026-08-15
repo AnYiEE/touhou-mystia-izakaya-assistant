@@ -1,4 +1,4 @@
-/* eslint-disable sort-keys, @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/require-await */
 
 import { type NextConfig } from 'next';
 
@@ -32,6 +32,13 @@ const serverActionBodySizeLimit = getServerActionBodySizeLimit(
 );
 
 const exportMode = IS_OFFLINE || (!IS_SELF_HOSTED && !IS_VERCEL);
+
+const LEGACY_RECORD_ROUTE_REDIRECTS = [
+	{ destination: '/decorations/:path*', source: '/ornaments/:path*' },
+	{ destination: '/foods/:path*', source: '/recipes/:path*' },
+	{ destination: '/normal-guests', source: '/customer-normal' },
+	{ destination: '/special-guests', source: '/customer-rare' },
+] as const;
 
 const siteStatusBuildOperationId = readSiteStatusBuildIdentity(process.cwd());
 
@@ -105,13 +112,19 @@ if (exportMode) {
 
 		if (IS_PRODUCTION) {
 			headers.push({
-				source: '/assets/:path*',
 				headers: [{ key: 'Cache-Control', value: 'no-cache' }],
+				source: '/assets/:path*',
 			});
 		}
 
 		return headers;
 	};
+
+	nextConfig.redirects = async () =>
+		LEGACY_RECORD_ROUTE_REDIRECTS.map((redirect) => ({
+			...redirect,
+			permanent: true,
+		}));
 }
 
 export default nextConfig;

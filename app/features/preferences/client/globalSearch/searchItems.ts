@@ -39,7 +39,7 @@ const BASE_PREFERENCE_SEARCH_ITEMS = [
 	},
 	{
 		description: '显示或隐藏顾客页可用的料理、酒水和食材',
-		key: 'customer-hidden-items',
+		key: 'guest-hidden-items',
 		keywords: [
 			'隐藏酒水',
 			'隐藏料理',
@@ -51,9 +51,9 @@ const BASE_PREFERENCE_SEARCH_ITEMS = [
 		label: '隐藏料理/酒水/食材',
 	},
 	{
-		action: 'open-customer-plans',
+		action: 'open-special-guest-plans',
 		description: '打开营业预设抽屉，集中查看可能出现的稀客和套餐',
-		key: 'customer-rare-plan-drawer',
+		key: 'special-guest-plan-drawer',
 		keywords: [
 			'稀客开店预设',
 			'开店预设',
@@ -67,7 +67,7 @@ const BASE_PREFERENCE_SEARCH_ITEMS = [
 	},
 	{
 		description: '设置稀客页面套餐推荐卡片显示和自动推荐参数',
-		key: 'customer-suggest-meals',
+		key: 'special-guest-suggest-meals',
 		keywords: [
 			'猜您想要',
 			'套餐推荐',
@@ -84,12 +84,12 @@ const BASE_PREFERENCE_SEARCH_ITEMS = [
 	},
 	{
 		description: '选择稀客点单需求标签时同步筛选表格',
-		key: 'customer-order-linked-filter',
+		key: 'special-guest-order-linked-filter',
 		label: '选择点单需求的同时筛选表格',
 	},
 	{
 		description: '显示料理标签所对应的关键词',
-		key: 'customer-show-tag-description',
+		key: 'special-guest-show-tag-description',
 		label: '显示料理标签描述',
 	},
 	{
@@ -186,13 +186,14 @@ export function buildPreferenceSearchIndex(
 	options: IPreferenceSearchIndexOptions = {}
 ): IGlobalSearchIndexItem[] {
 	return getPreferenceSearchItems(options).map((item) => {
-		const keywords = 'keywords' in item ? item.keywords.join(' ') : '';
+		const keywordValues = 'keywords' in item ? [...item.keywords] : [];
+		const keywords = keywordValues.join(' ');
 		const navigationAction =
 			'action' in item
 				? item.action === 'open-account'
 					? ({ type: 'open-account' } as const)
-					: ({ type: 'open-customer-plans' } as const)
-				: ({ targetId: item.key, type: 'open-preference' } as const);
+					: ({ type: 'open-special-guest-plans' } as const)
+				: ({ targetKey: item.key, type: 'open-preference' } as const);
 
 		return {
 			description: item.description,
@@ -201,12 +202,14 @@ export function buildPreferenceSearchIndex(
 					fieldType: 'name',
 					label: '名称',
 					text: item.label,
+					value: item.label,
 					weight: 5,
 				},
 				{
 					fieldType: 'description',
 					label: '说明',
 					text: item.description,
+					value: item.description,
 					weight: 2,
 				},
 				...(keywords.length === 0
@@ -216,6 +219,7 @@ export function buildPreferenceSearchIndex(
 								fieldType: 'description' as const,
 								label: '关键词',
 								text: keywords,
+								value: keywordValues,
 								weight: 1.4,
 							},
 						]),
@@ -226,7 +230,6 @@ export function buildPreferenceSearchIndex(
 			navigationAction,
 			section: 'preferences',
 			sectionLabel: 'sectionLabel' in item ? item.sectionLabel : '设置',
-			targetName: item.key,
 		};
 	});
 }

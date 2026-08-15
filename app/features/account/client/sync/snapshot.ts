@@ -14,13 +14,13 @@ import {
 	writeAccountJsonStorage,
 } from '@/features/account/client/storage';
 import type { IAccountSyncMeta } from '@/features/account/sync/contracts';
-import { customerNormalMealsSerializer } from '@/features/account/sync/serializers/customerNormalMeals';
-import { customerRareMealsSerializer } from '@/features/account/sync/serializers/customerRareMeals';
-import { customerRarePlansSerializer } from '@/features/account/sync/serializers/customerRarePlans';
-import { customerRareSettingsSerializer } from '@/features/account/sync/serializers/customerRareSettings';
 import { globalPreferencesSerializer } from '@/features/account/sync/serializers/globalPreferences';
+import { normalGuestMealsSerializer } from '@/features/account/sync/serializers/normalGuestMeals';
+import { specialGuestMealsSerializer } from '@/features/account/sync/serializers/specialGuestMeals';
+import { specialGuestPlansSerializer } from '@/features/account/sync/serializers/specialGuestPlans';
+import { specialGuestSettingsSerializer } from '@/features/account/sync/serializers/specialGuestSettings';
 import { themeSerializer } from '@/features/account/sync/serializers/theme';
-import { tutorialCustomerRareSerializer } from '@/features/account/sync/serializers/tutorialCustomerRare';
+import { tutorialSpecialGuestSerializer } from '@/features/account/sync/serializers/tutorialSpecialGuest';
 import type {
 	ISyncNamespaceSerializer,
 	ISyncStateRecord,
@@ -30,6 +30,7 @@ import { withCrossTabLock } from '@/infrastructure/browser/crossTab/withCrossTab
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 import { writeAccountSyncBaseSnapshot } from './baseSnapshot';
 import { createSnapshotHash } from './dirtyQueue/snapshotHash';
@@ -44,13 +45,13 @@ type TStoredAccountSyncMeta = Omit<
 > & { lastAppliedRemoteHash?: unknown; revisions?: unknown };
 
 const serializers = {
-	[SYNC_NAMESPACE_MAP.customerNormalMeals]: customerNormalMealsSerializer,
-	[SYNC_NAMESPACE_MAP.customerRareMeals]: customerRareMealsSerializer,
-	[SYNC_NAMESPACE_MAP.customerRarePlans]: customerRarePlansSerializer,
-	[SYNC_NAMESPACE_MAP.customerRareSettings]: customerRareSettingsSerializer,
+	[SYNC_NAMESPACE_MAP.normalGuestMeals]: normalGuestMealsSerializer,
+	[SYNC_NAMESPACE_MAP.specialGuestMeals]: specialGuestMealsSerializer,
+	[SYNC_NAMESPACE_MAP.specialGuestPlans]: specialGuestPlansSerializer,
+	[SYNC_NAMESPACE_MAP.specialGuestSettings]: specialGuestSettingsSerializer,
 	[SYNC_NAMESPACE_MAP.globalPreferences]: globalPreferencesSerializer,
 	[SYNC_NAMESPACE_MAP.theme]: themeSerializer,
-	[SYNC_NAMESPACE_MAP.tutorialCustomerRare]: tutorialCustomerRareSerializer,
+	[SYNC_NAMESPACE_MAP.tutorialSpecialGuest]: tutorialSpecialGuestSerializer,
 } as const satisfies Record<TSyncNamespace, ISyncNamespaceSerializer<unknown>>;
 
 export function getAccountSyncSerializer(namespace: string) {
@@ -120,14 +121,14 @@ function readStoredSyncMetaMap<T>(
 	value: unknown,
 	validateValue: (item: unknown) => item is T
 ) {
-	if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+	if (!checkIsRecord(value)) {
 		return {};
 	}
 
 	return Object.values(SYNC_NAMESPACE_MAP).reduce<
 		Partial<Record<TSyncNamespace, T>>
 	>((result, namespace) => {
-		const item = (value as Record<string, unknown>)[namespace];
+		const item = value[namespace];
 		if (validateValue(item)) {
 			result[namespace] = item;
 		}

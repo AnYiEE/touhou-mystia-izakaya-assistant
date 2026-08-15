@@ -1,3 +1,5 @@
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+
 export class ServiceApiError<TData = unknown> extends Error {
 	readonly data: TData | undefined;
 	readonly retryAfter: number | null;
@@ -23,12 +25,7 @@ export class ServiceApiError<TData = unknown> extends Error {
 }
 
 export function readServiceApiErrorData(error: ServiceApiError) {
-	const data =
-		error.data !== null &&
-		!Array.isArray(error.data) &&
-		typeof error.data === 'object'
-			? { ...(error.data as Record<string, unknown>) }
-			: undefined;
+	const data = checkIsRecord(error.data) ? { ...error.data } : undefined;
 	if (error.retryAfter !== null) {
 		return { ...data, retry_after: error.retryAfter };
 	}

@@ -60,8 +60,8 @@ type TImportLegacyBackupStateError =
 
 export type TImportLegacyBackupUseCaseResult =
 	| {
-			error: 'sync-account-capacity-exceeded';
 			details: IImportLegacyBackupCapacityDetails;
+			error: 'sync-account-capacity-exceeded';
 			status: 'error';
 	  }
 	| { error: TImportLegacyBackupSimpleError; status: 'error' }
@@ -105,8 +105,8 @@ function createImportErrorResult(
 		return null;
 	}
 
-	if (error.message === 'unauthorized') {
-		return { error: 'unauthorized', status: 'error' };
+	if (error.message === 'backup-code-lock-lost') {
+		return { error: 'backup-code-lock-lost', status: 'error' };
 	}
 	if (error.message === 'backup-code-not-found') {
 		return { error: 'backup-code-not-found', status: 'error' };
@@ -120,8 +120,8 @@ function createImportErrorResult(
 	if (error.message === 'sync-conflict') {
 		return { error: 'sync-conflict', status: 'error' };
 	}
-	if (error.message === 'backup-code-lock-lost') {
-		return { error: 'backup-code-lock-lost', status: 'error' };
+	if (error.message === 'unauthorized') {
+		return { error: 'unauthorized', status: 'error' };
 	}
 
 	return null;
@@ -193,6 +193,16 @@ export async function importLegacyBackupUseCase({
 						}
 						throw error;
 					}
+					if (importResult.status === 'already-imported') {
+						await writeAccountAuditLog(
+							createAuditInput(
+								'already-imported',
+								importResult.results.length,
+								user.state_epoch
+							)
+						);
+						return { results: importResult.results, status: 'ok' };
+					}
 					if (importResult.status === 'not-found') {
 						return {
 							error: 'backup-code-not-found',
@@ -216,16 +226,6 @@ export async function importLegacyBackupUseCase({
 							'sync-paused',
 							importResult
 						);
-					}
-					if (importResult.status === 'already-imported') {
-						await writeAccountAuditLog(
-							createAuditInput(
-								'already-imported',
-								importResult.results.length,
-								user.state_epoch
-							)
-						);
-						return { results: importResult.results, status: 'ok' };
 					}
 
 					lockModule.markBackupCodeLockCommitted(signal);

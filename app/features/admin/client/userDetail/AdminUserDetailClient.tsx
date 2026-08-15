@@ -35,9 +35,9 @@ import { BackupImportsPanel } from './BackupImportsPanel';
 import { PasskeysPanel } from './PasskeysPanel';
 import { SsoGrantCallbackNotice, SsoGrantsPanel } from './SsoGrantsPanel';
 import { SyncNamespacesPanel } from './SyncNamespacesPanel';
+import { useAdminUserDetailController } from './useAdminUserDetailController';
 import { UserAccountActions } from './UserAccountActions';
 import { UserIdentityMetrics, UserOverviewMetrics } from './UserMetrics';
-import { useAdminUserDetailController } from './useAdminUserDetailController';
 
 interface IAdminUserDetailClientProps {
 	initialData: IAdminUserDetailInitialData;

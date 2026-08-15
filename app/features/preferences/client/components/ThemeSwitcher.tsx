@@ -26,6 +26,10 @@ import Dropdown, {
 	type IDropdownProps,
 } from '@/design/ui/components/dropdown';
 import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
+import {
+	selectionToKnownValues,
+	toSelectionKeySet,
+} from '@/design/ui/components/selectionKeys';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
@@ -56,29 +60,38 @@ const THEME_LABEL_ICON_MAP = {
 } as const satisfies Record<TTheme, FontAwesomeIconProps['icon']>;
 
 const THEME_ITEMS = Object.values(THEME_MAP).map(toGetValueCollection);
+const THEME_BY_KEY: ReadonlyMap<string, TTheme> = new Map(
+	THEME_ITEMS.map(({ value }) => [value, value])
+);
+const THEME_SPINNER_CLASS_NAMES = { base: 'flex', wrapper: 'h-5 w-5' } as const;
+const THEME_MENU_ITEM_CLASSES = {
+	base: 'my-px transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
+} as const;
 
 interface IProps extends Pick<IDropdownProps, 'className'> {
 	isMenu?: boolean;
 }
 
 export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
+	const { isHighAppearance } = useDesignPreferences();
 	const isMounted = useHydrated();
-	const [theme, setTheme] = useTheme();
-	const [selectedTheme, setSelectedTheme] = useState<SelectionSet>(
-		new Set([theme])
-	);
 	const vibrate = useVibrate();
 
-	const { isHighAppearance } = useDesignPreferences();
+	const [theme, setTheme] = useTheme();
+	const [selectedTheme, setSelectedTheme] = useState<Set<string>>(
+		new Set([theme])
+	);
 
 	const onSelectedThemeChange = useCallback(
 		(value: Selection) => {
-			const newValue = value as SelectionSet;
-			const currentSelectedTheme = newValue.values().next()
-				.value as TTheme;
+			const [currentSelectedTheme] =
+				selectionToKnownValues(value, THEME_BY_KEY) ?? [];
+			if (currentSelectedTheme === undefined) {
+				return;
+			}
 
 			setTheme(currentSelectedTheme);
-			setSelectedTheme(newValue);
+			setSelectedTheme(toSelectionKeySet([currentSelectedTheme]));
 		},
 		[setTheme]
 	);
@@ -93,6 +106,14 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 		() => THEME_ICON_MAP[selectedTheme.values().next().value as TTheme],
 		[selectedTheme]
 	);
+	const dropdownClassNames = useMemo(
+		() => ({
+			content: cn('p-0 [&>[data-slot="base"]]:w-max', {
+				'bg-background/70 backdrop-saturate-150': isHighAppearance,
+			}),
+		}),
+		[isHighAppearance]
+	);
 
 	if (!isMounted) {
 		return (
@@ -100,7 +121,7 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 				<Spinner
 					color="default"
 					title={THEME_LABEL_MAP.switcher}
-					classNames={{ base: 'flex', wrapper: 'h-5 w-5' }}
+					classNames={THEME_SPINNER_CLASS_NAMES}
 				/>
 			</div>
 		);
@@ -111,11 +132,7 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 			shouldCloseOnScroll
 			showArrow
 			onOpenChange={vibrate}
-			classNames={{
-				content: cn('p-0 [&>[data-slot="base"]]:w-max', {
-					'bg-background/70 backdrop-saturate-150': isHighAppearance,
-				}),
-			}}
+			classNames={dropdownClassNames}
 		>
 			<Tooltip
 				showArrow
@@ -147,9 +164,7 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 				onSelectionChange={onSelectedThemeChange}
 				aria-label={THEME_LABEL_MAP.list}
 				className="w-28"
-				itemClasses={{
-					base: 'my-px transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
-				}}
+				itemClasses={THEME_MENU_ITEM_CLASSES}
 			>
 				{({ value }) => (
 					<DropdownItem

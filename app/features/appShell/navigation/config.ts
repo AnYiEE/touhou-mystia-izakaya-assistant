@@ -1,66 +1,65 @@
-/* eslint-disable sort-keys */
 import type { ILink } from '@/shared/site/contracts';
 
 import type { TNavItem } from './contracts';
 
 export const NAV_ITEMS = [
-	{ label: '首页', href: '/' },
-	{ label: '稀客', href: '/customer-rare' },
-	{ label: '普客', href: '/customer-normal' },
+	{ href: '/', label: '首页' },
+	{ href: '/special-guests', label: '稀客' },
+	{ href: '/normal-guests', label: '普客' },
 	{
 		查询: [
 			{
+				href: '/foods',
 				label: '料理',
-				href: '/recipes',
-				sprite: 'recipe',
-				spriteIndex: 0,
+				sprite: 'food',
+				spriteRecordId: 0,
 			},
 			{
-				label: '酒水',
 				href: '/beverages',
+				label: '酒水',
 				sprite: 'beverage',
-				spriteIndex: 0,
+				spriteRecordId: 0,
 			},
 			{
-				label: '食材',
 				href: '/ingredients',
+				label: '食材',
 				sprite: 'ingredient',
-				spriteIndex: 0,
+				spriteRecordId: 0,
 			},
 			{
-				label: '厨具',
 				href: '/cookers',
+				label: '厨具',
 				sprite: 'cooker',
-				spriteIndex: 0,
+				spriteRecordId: 0,
 			},
 			{
+				href: '/decorations',
 				label: '摆件',
-				href: '/ornaments',
-				sprite: 'ornament',
-				spriteIndex: 0,
+				sprite: 'decoration',
+				spriteRecordId: 32,
 			},
 			{
-				label: '衣服',
 				href: '/clothes',
+				label: '衣服',
 				sprite: 'clothes',
-				spriteIndex: 2,
+				spriteRecordId: 23,
 			},
 			{
-				label: '伙伴',
 				href: '/partners',
+				label: '伙伴',
 				sprite: 'partner',
-				spriteIndex: 0,
+				spriteRecordId: 14,
 			},
 			{
-				label: '货币',
 				href: '/currencies',
-				sprite: 'currency',
-				spriteIndex: 0,
+				label: '货币',
+				sprite: 'currency_item',
+				spriteRecordId: 3,
 			},
 		],
 	},
-	{ label: '设置', href: '/preferences' },
-	{ label: '关于', href: '/about' },
+	{ href: '/preferences', label: '设置' },
+	{ href: '/about', label: '关于' },
 ] as const satisfies TNavItem[];
 
 export const NAV_MENU_ITEMS = NAV_ITEMS.flatMap<ILink>((navItem) =>

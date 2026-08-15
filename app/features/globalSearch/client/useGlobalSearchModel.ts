@@ -6,6 +6,7 @@ import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { getCatalogSearchFilterAction } from '@/features/catalog/globalSearch/client/filterActions';
 import { useCatalogSearchContributor } from '@/features/catalog/globalSearch/client/useCatalogSearchContributor';
 import { getCatalogSearchFieldValueOrderMap } from '@/features/catalog/globalSearch/fieldValueOrdering';
+import { createCatalogSearchSuggestionRecordMap } from '@/features/catalog/globalSearch/suggestionRecords';
 import type {
 	IGlobalSearchIndexItem,
 	TGlobalSearchIndexSection,
@@ -94,7 +95,7 @@ export function useGlobalSearchModel(query: string, selectedIndex: number) {
 		[index, searchContextSection, catalogContributor.visiblePlaceValues]
 	);
 	const nameSuggestionItemMap = useMemo(() => {
-		const itemMap = new Map<string, IGlobalSearchIndexItem>();
+		const itemMap = new Map<string, IGlobalSearchIndexItem[]>();
 		index.forEach((item) => {
 			if (
 				searchContextSection !== null &&
@@ -105,12 +106,19 @@ export function useGlobalSearchModel(query: string, selectedIndex: number) {
 			) {
 				return;
 			}
-			if (!itemMap.has(item.name)) {
-				itemMap.set(item.name, item);
+			const items = itemMap.get(item.name);
+			if (items === undefined) {
+				itemMap.set(item.name, [item]);
+			} else {
+				items.push(item);
 			}
 		});
 		return itemMap;
 	}, [index, searchContextSection]);
+	const catalogSuggestionRecordMap = useMemo(
+		() => createCatalogSearchSuggestionRecordMap(index),
+		[index]
+	);
 	const results = useMemo(
 		() =>
 			searchGlobalIndex({
@@ -210,6 +218,7 @@ export function useGlobalSearchModel(query: string, selectedIndex: number) {
 	return {
 		activeFieldCondition,
 		ast,
+		catalogSuggestionRecordMap,
 		currentSection,
 		examplePreviewItemMap,
 		fieldConditionDisplayValues,

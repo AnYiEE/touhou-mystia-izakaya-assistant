@@ -25,9 +25,9 @@ export default memo<PropsWithChildren<IProps>>(function ScrollMask({
 	className,
 	containerClassName,
 }) {
-	const [scrollState, setScrollState] = useState(DEFAULT_SCROLL_STATE);
-
 	const { isHighAppearance } = useDesignPreferences();
+
+	const [scrollState, setScrollState] = useState(DEFAULT_SCROLL_STATE);
 
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const contentRef = useRef<HTMLDivElement>(null);

@@ -1,7 +1,6 @@
 'use client';
 
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
-import { type Key } from 'react';
 
 import Input from '@/design/ui/components/input';
 
@@ -31,11 +30,11 @@ interface IAdminAuditFiltersProps {
 	isLoading: boolean;
 	onActionInputChange: (value: string) => void;
 	onActorIdInputChange: (value: string) => void;
-	onActorTypeAction: (key: Key) => void;
+	onActorTypeAction: (value: TActorTypeFilter) => void;
 	onEndTimeInputChange: (value: string) => void;
 	onQueryInputChange: (value: string) => void;
 	onRefresh: () => void;
-	onScopeAction: (key: Key) => void;
+	onScopeAction: (value: TScopeFilter) => void;
 	onStartTimeInputChange: (value: string) => void;
 	onTargetIdInputChange: (value: string) => void;
 	onTargetTypeInputChange: (value: string) => void;

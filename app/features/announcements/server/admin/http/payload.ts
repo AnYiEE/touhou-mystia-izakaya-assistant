@@ -1,3 +1,5 @@
+import isObject from 'lodash/isObject.js';
+
 import { type IAdminAnnouncementBody } from '@/features/announcements/contracts';
 import {
 	checkAnnouncementAudience,
@@ -11,9 +13,7 @@ const MAX_ANNOUNCEMENT_TITLE_LENGTH = 80;
 const RESERVED_ANNOUNCEMENT_IDS = new Set(['cleanup', 'new', 'preview']);
 
 function normalizeInputObject(value: unknown) {
-	return value !== null && typeof value === 'object'
-		? (value as Record<string, unknown>)
-		: null;
+	return isObject(value) ? (value as Record<string, unknown>) : null;
 }
 
 function normalizeString(value: unknown, maxLength: number) {

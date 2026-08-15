@@ -2,7 +2,6 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import {
-	type Key,
 	type SyntheticEvent,
 	useCallback,
 	useEffect,
@@ -230,13 +229,13 @@ export function useAdminAuditController(initialData: IAdminAuditInitialData) {
 	}, [checkAdmin, initialData.admin]);
 
 	useEffect(() => {
-		let timeoutId: ReturnType<typeof globalThis.setTimeout> | null = null;
+		let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
 		if (admin !== null) {
 			if (isServerInitialRef.current) {
 				isServerInitialRef.current = false;
 			} else {
-				timeoutId = globalThis.setTimeout(() => {
+				timeoutId = setTimeout(() => {
 					refreshLogs(page);
 				}, ADMIN_LIST_DEBOUNCE_MS);
 			}
@@ -244,7 +243,7 @@ export function useAdminAuditController(initialData: IAdminAuditInitialData) {
 
 		return () => {
 			if (timeoutId !== null) {
-				globalThis.clearTimeout(timeoutId);
+				clearTimeout(timeoutId);
 			}
 		};
 	}, [admin, page, refreshLogs]);
@@ -272,18 +271,18 @@ export function useAdminAuditController(initialData: IAdminAuditInitialData) {
 			...(endTime === undefined ? {} : { endTime }),
 			...(startTime === undefined ? {} : { startTime }),
 		});
-		const currentHref = `${globalThis.location.pathname}${globalThis.location.search}`;
+		const currentHref = `${location.pathname}${location.search}`;
 
 		if (currentHref === nextHref) {
 			return;
 		}
 
-		const timeoutId = globalThis.setTimeout(() => {
+		const timeoutId = setTimeout(() => {
 			router.replace(nextHref, { scroll: false });
 		}, ADMIN_LIST_DEBOUNCE_MS);
 
 		return () => {
-			globalThis.clearTimeout(timeoutId);
+			clearTimeout(timeoutId);
 		};
 	}, [
 		actionInput,
@@ -313,15 +312,21 @@ export function useAdminAuditController(initialData: IAdminAuditInitialData) {
 		[]
 	);
 
-	const handleScopeAction = useCallback((key: Key) => {
-		setPage(1);
-		setScope(String(key) as IAdminAuditInitialData['scope']);
-	}, []);
+	const handleScopeAction = useCallback(
+		(value: IAdminAuditInitialData['scope']) => {
+			setPage(1);
+			setScope(value);
+		},
+		[]
+	);
 
-	const handleActorTypeAction = useCallback((key: Key) => {
-		setPage(1);
-		setActorType(String(key) as IAdminAuditInitialData['actorType']);
-	}, []);
+	const handleActorTypeAction = useCallback(
+		(value: IAdminAuditInitialData['actorType']) => {
+			setPage(1);
+			setActorType(value);
+		},
+		[]
+	);
 
 	const handlePreviousPage = useCallback(() => {
 		setPage((currentPage) => Math.max(1, currentPage - 1));

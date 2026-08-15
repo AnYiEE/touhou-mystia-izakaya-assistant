@@ -5,7 +5,7 @@ import {
 	type FontAwesomeIconProps,
 } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
-import { type PropsWithChildren, memo } from 'react';
+import { type PropsWithChildren, memo, useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Card from '@/design/ui/components/card';
@@ -20,21 +20,21 @@ export const AdminPanel = memo<IAdminPanelProps>(function AdminPanel({
 }) {
 	const { isHighAppearance } = useDesignPreferences();
 
+	const classNames = useMemo(
+		() => ({
+			base: cn(
+				'overflow-hidden p-4',
+				isHighAppearance
+					? 'bg-content1/40 backdrop-blur'
+					: 'bg-content1/60 dark:bg-content1/50',
+				className
+			),
+		}),
+		[className, isHighAppearance]
+	);
+
 	return (
-		<Card
-			as="section"
-			fullWidth
-			shadow="sm"
-			classNames={{
-				base: cn(
-					'overflow-hidden p-4',
-					isHighAppearance
-						? 'bg-content1/40 backdrop-blur'
-						: 'bg-content1/60 dark:bg-content1/50',
-					className
-				),
-			}}
-		>
+		<Card as="section" fullWidth shadow="sm" classNames={classNames}>
 			{children}
 		</Card>
 	);

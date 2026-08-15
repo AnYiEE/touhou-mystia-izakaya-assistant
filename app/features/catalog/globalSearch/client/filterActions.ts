@@ -2,16 +2,24 @@
 
 import { hasEquivalentDlcFilters } from '@/domain/availability';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
+import {
+	COOKER_SERIES_LABEL_MAP,
+	COOKER_TYPE_LABEL_MAP,
+} from '@/domain/data/cookers/cookerFacts';
+import { INGREDIENT_TYPE_MAP } from '@/domain/data/ingredients/ingredientFacts';
+import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 import type { TDlc } from '@/domain/data/shared/types';
+import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import type { TFoodTagId } from '@/domain/data/tags/types';
 
 import { beveragesStore } from '@/features/catalog/items/beverages/client/state/store';
 import { clothesStore } from '@/features/catalog/items/clothes/client/state/store';
 import { cookersStore } from '@/features/catalog/items/cookers/client/state/store';
-import { currenciesStore } from '@/features/catalog/items/currencies/client/state/store';
+import { currencyItemsStore } from '@/features/catalog/items/currencyItems/client/state/store';
+import { decorationsStore } from '@/features/catalog/items/decorations/client/state/store';
+import { foodsStore } from '@/features/catalog/items/foods/client/state/store';
 import { ingredientsStore } from '@/features/catalog/items/ingredients/client/state/store';
-import { ornamentsStore } from '@/features/catalog/items/ornaments/client/state/store';
 import { partnersStore } from '@/features/catalog/items/partners/client/state/store';
-import { recipesStore } from '@/features/catalog/items/recipes/client/state/store';
 import type {
 	IGlobalSearchFilterAction,
 	IGlobalSearchQueryAst,
@@ -29,22 +37,22 @@ type TFilterableGlobalSearchSection = Extract<
 	| 'beverages'
 	| 'clothes'
 	| 'cookers'
-	| 'currencies'
+	| 'currency-items'
 	| 'ingredients'
-	| 'ornaments'
+	| 'decorations'
 	| 'partners'
-	| 'recipes'
+	| 'foods'
 >;
 
 const GLOBAL_SEARCH_FILTERABLE_SECTIONS = [
 	'beverages',
 	'clothes',
 	'cookers',
-	'currencies',
+	'currency-items',
+	'decorations',
+	'foods',
 	'ingredients',
-	'ornaments',
 	'partners',
-	'recipes',
 ] as const satisfies ReadonlyArray<TFilterableGlobalSearchSection>;
 
 function getMappableConditions(ast: IGlobalSearchQueryAst) {
@@ -118,6 +126,28 @@ function resolveAvailableValue(
 	);
 }
 
+function resolveTypedAvailableValue<TValue extends number | string>(
+	availableValues: Array<{ name?: string; value: TValue }>,
+	keyword: string,
+	getLabel: (option: { name?: string; value: TValue }) => string = (option) =>
+		option.name ?? option.value.toString()
+) {
+	const normalizedKeyword = normalizeSearchMatchText(keyword);
+	const exactMatch = availableValues.find(
+		(option) =>
+			normalizeSearchMatchText(getLabel(option)) === normalizedKeyword
+	);
+	const match =
+		exactMatch ??
+		availableValues.find((option) =>
+			checkValueMatchesKeyword(getLabel(option), keyword)
+		);
+
+	return match === undefined
+		? null
+		: { label: getLabel(match), value: match.value };
+}
+
 function getDlcSearchTexts(value: string | number) {
 	const normalizedValue = value.toString();
 	const dlc = Number(normalizedValue) as TDlc;
@@ -161,19 +191,19 @@ function resolveDlcAvailableValue(
 	);
 }
 
-function appendFilterValue<T extends string>(
+function appendFilterValue<T extends number | string>(
 	currentValues: T[],
 	setValues: (values: T[]) => void,
-	value: string
+	value: T
 ) {
-	if (currentValues.includes(value as T)) {
+	if (currentValues.includes(value)) {
 		return;
 	}
 
-	setValues([...currentValues, value as T]);
+	setValues([...currentValues, value]);
 }
 
-function createAppendFilterAction<T extends string>({
+function createAppendFilterAction<T extends number | string>({
 	currentValues,
 	description,
 	setValues,
@@ -182,7 +212,7 @@ function createAppendFilterAction<T extends string>({
 	currentValues: () => T[];
 	description: string;
 	setValues: (values: T[]) => void;
-	value: string;
+	value: T;
 }): Omit<IGlobalSearchFilterAction, 'label' | 'targetSection'> {
 	return {
 		description,
@@ -231,102 +261,110 @@ function getDlcFilterKind(
 			: null;
 }
 
-function createRecipeFilterAction(
+function createFoodFilterAction(
 	fieldType: TGlobalSearchFieldType,
 	keyword: string
 ): Omit<IGlobalSearchFilterAction, 'label' | 'targetSection'> | null {
 	const dlcFilterKind = getDlcFilterKind(
 		fieldType,
-		recipesStore.instance.get().data
+		foodsStore.instance.get().data
 	);
 	if (dlcFilterKind !== null) {
 		return createDlcFilterAction({
 			availableValues:
 				dlcFilterKind === 'availability'
-					? recipesStore.availableAvailabilityDlcs.get
-					: recipesStore.availableContentDlcs.get,
+					? foodsStore.availableAvailabilityDlcs.get
+					: foodsStore.availableContentDlcs.get,
 			currentValues:
 				dlcFilterKind === 'availability'
-					? recipesStore.persistence.filters.availabilityDlcs.get
-					: recipesStore.persistence.filters.contentDlcs.get,
+					? foodsStore.persistence.filters.availabilityDlcs.get
+					: foodsStore.persistence.filters.contentDlcs.get,
 			filterLabel:
 				dlcFilterKind === 'availability' ? '可获取于' : '内容归属',
 			keyword,
 			setValues:
 				dlcFilterKind === 'availability'
-					? recipesStore.persistence.filters.availabilityDlcs.set
-					: recipesStore.persistence.filters.contentDlcs.set,
+					? foodsStore.persistence.filters.availabilityDlcs.set
+					: foodsStore.persistence.filters.contentDlcs.set,
 		});
 	}
 
 	if (fieldType === 'ingredient') {
-		const availableValues = recipesStore.availableIngredients.get();
-		const value = resolveAvailableValue(availableValues, keyword);
-		if (value === null) {
+		const availableValues = foodsStore.availableIngredients.get();
+		const match = resolveTypedAvailableValue(availableValues, keyword);
+		if (match === null) {
 			return null;
 		}
 		return createAppendFilterAction({
-			currentValues: recipesStore.persistence.filters.ingredients.get,
-			description: `筛选食材包含：${value}`,
-			setValues: recipesStore.persistence.filters.ingredients.set,
-			value,
+			currentValues: foodsStore.persistence.filters.ingredients.get,
+			description: `筛选食材包含：${match.label}`,
+			setValues: foodsStore.persistence.filters.ingredients.set,
+			value: match.value,
 		});
 	}
 
 	if (fieldType === 'positive-tag') {
-		const availableValues = recipesStore.availablePositiveTags.get();
-		const value = resolveAvailableValue(availableValues, keyword);
-		if (value === null) {
+		const availableValues = foodsStore.availablePositiveTags.get();
+		const match = resolveTypedAvailableValue(
+			availableValues,
+			keyword,
+			({ value }) => FOOD_TAG_MAP[value]
+		);
+		if (match === null) {
 			return null;
 		}
 		return createAppendFilterAction({
-			currentValues: recipesStore.persistence.filters.positiveTags.get,
-			description: `筛选正特性包含：${value}`,
-			setValues: recipesStore.persistence.filters.positiveTags.set,
-			value,
+			currentValues: foodsStore.persistence.filters.positiveTags.get,
+			description: `筛选正特性包含：${match.label}`,
+			setValues: foodsStore.persistence.filters.positiveTags.set,
+			value: match.value,
 		});
 	}
 
 	if (fieldType === 'negative-tag') {
-		const availableValues = recipesStore.availableNegativeTags.get();
-		const value = resolveAvailableValue(availableValues, keyword);
-		if (value === null) {
+		const availableValues = foodsStore.availableNegativeTags.get();
+		const match = resolveTypedAvailableValue(
+			availableValues,
+			keyword,
+			({ value }) => FOOD_TAG_MAP[value]
+		);
+		if (match === null) {
 			return null;
 		}
 		return createAppendFilterAction({
-			currentValues: recipesStore.persistence.filters.negativeTags.get,
-			description: `筛选反特性包含：${value}`,
-			setValues: recipesStore.persistence.filters.negativeTags.set,
-			value,
+			currentValues: foodsStore.persistence.filters.negativeTags.get,
+			description: `筛选反特性包含：${match.label}`,
+			setValues: foodsStore.persistence.filters.negativeTags.set,
+			value: match.value,
 		});
 	}
 
 	if (fieldType === 'tag') {
-		const positiveValue = resolveAvailableValue(
-			recipesStore.availablePositiveTags.get(),
-			keyword
+		const positiveMatch = resolveTypedAvailableValue(
+			foodsStore.availablePositiveTags.get(),
+			keyword,
+			({ value }) => FOOD_TAG_MAP[value]
 		);
-		const negativeValue = resolveAvailableValue(
-			recipesStore.availableNegativeTags.get(),
-			keyword
+		const negativeMatch = resolveTypedAvailableValue(
+			foodsStore.availableNegativeTags.get(),
+			keyword,
+			({ value }) => FOOD_TAG_MAP[value as TFoodTagId]
 		);
 
-		if (positiveValue !== null && negativeValue === null) {
+		if (positiveMatch !== null && negativeMatch === null) {
 			return createAppendFilterAction({
-				currentValues:
-					recipesStore.persistence.filters.positiveTags.get,
-				description: `筛选正特性包含：${positiveValue}`,
-				setValues: recipesStore.persistence.filters.positiveTags.set,
-				value: positiveValue,
+				currentValues: foodsStore.persistence.filters.positiveTags.get,
+				description: `筛选正特性包含：${positiveMatch.label}`,
+				setValues: foodsStore.persistence.filters.positiveTags.set,
+				value: positiveMatch.value,
 			});
 		}
-		if (negativeValue !== null && positiveValue === null) {
+		if (negativeMatch !== null && positiveMatch === null) {
 			return createAppendFilterAction({
-				currentValues:
-					recipesStore.persistence.filters.negativeTags.get,
-				description: `筛选反特性包含：${negativeValue}`,
-				setValues: recipesStore.persistence.filters.negativeTags.set,
-				value: negativeValue,
+				currentValues: foodsStore.persistence.filters.negativeTags.get,
+				description: `筛选反特性包含：${negativeMatch.label}`,
+				setValues: foodsStore.persistence.filters.negativeTags.set,
+				value: negativeMatch.value,
 			});
 		}
 
@@ -334,43 +372,43 @@ function createRecipeFilterAction(
 	}
 
 	if (fieldType === 'from' || fieldType === 'place') {
-		const availableValues = recipesStore.availablePlaces.get();
-		const value = resolveAvailableValue(availableValues, keyword);
-		if (value === null) {
+		const availableValues = foodsStore.availableSources.get();
+		const match = resolveTypedAvailableValue(availableValues, keyword);
+		if (match === null) {
 			return null;
 		}
 		return createAppendFilterAction({
-			currentValues: recipesStore.persistence.filters.places.get,
-			description: `筛选地区包含：${value}`,
-			setValues: recipesStore.persistence.filters.places.set,
-			value,
+			currentValues: foodsStore.persistence.filters.places.get,
+			description: `筛选地区包含：${match.label}`,
+			setValues: foodsStore.persistence.filters.places.set,
+			value: match.value,
 		});
 	}
 
-	if (fieldType === 'cooker') {
-		const availableValues = recipesStore.availableCookers.get();
-		const value = resolveAvailableValue(availableValues, keyword);
-		if (value === null) {
+	if (fieldType === 'cooker-type') {
+		const availableValues = foodsStore.availableCookerTypes.get();
+		const match = resolveTypedAvailableValue(availableValues, keyword);
+		if (match === null) {
 			return null;
 		}
 		return createAppendFilterAction({
-			currentValues: recipesStore.persistence.filters.cookers.get,
-			description: `筛选厨具：${value}`,
-			setValues: recipesStore.persistence.filters.cookers.set,
-			value,
+			currentValues: foodsStore.persistence.filters.cookerTypes.get,
+			description: `筛选厨具：${match.label}`,
+			setValues: foodsStore.persistence.filters.cookerTypes.set,
+			value: match.value,
 		});
 	}
 
 	if (fieldType === 'level') {
-		const availableValues = recipesStore.availableLevels.get();
+		const availableValues = foodsStore.availableLevels.get();
 		const value = resolveAvailableValue(availableValues, keyword);
 		if (value === null) {
 			return null;
 		}
 		return createAppendFilterAction({
-			currentValues: recipesStore.persistence.filters.levels.get,
+			currentValues: foodsStore.persistence.filters.levels.get,
 			description: `筛选等级：${value}`,
-			setValues: recipesStore.persistence.filters.levels.set,
+			setValues: foodsStore.persistence.filters.levels.set,
 			value,
 		});
 	}
@@ -408,38 +446,38 @@ function createBeverageFilterAction(
 
 	if (fieldType === 'beverage-tag' || fieldType === 'tag') {
 		const availableValues = beveragesStore.availableTags.get();
-		const value = resolveAvailableValue(availableValues, keyword);
-		if (value === null) {
+		const match = resolveTypedAvailableValue(
+			availableValues,
+			keyword,
+			({ value }) => BEVERAGE_TAG_MAP[value]
+		);
+		if (match === null) {
 			return null;
 		}
-		return {
-			description: `筛选标签包含：${value}`,
-			run: () => {
-				appendFilterValue(
-					beveragesStore.persistence.filters.tags.get(),
-					beveragesStore.persistence.filters.tags.set,
-					value
-				);
-			},
-		};
+		return createAppendFilterAction({
+			currentValues: beveragesStore.persistence.filters.tags.get,
+			description: `筛选标签包含：${match.label}`,
+			setValues: beveragesStore.persistence.filters.tags.set,
+			value: match.value,
+		});
 	}
 
 	if (fieldType === 'from' || fieldType === 'place') {
-		const availableValues = beveragesStore.availablePlaces.get();
-		const value = resolveAvailableValue(availableValues, keyword);
-		if (value === null) {
+		const availableValues = beveragesStore.availableMaps.get();
+		const match = resolveTypedAvailableValue(
+			availableValues,
+			keyword,
+			({ value }) => MAP_FACTS[value].label
+		);
+		if (match === null) {
 			return null;
 		}
-		return {
-			description: `筛选地区包含：${value}`,
-			run: () => {
-				appendFilterValue(
-					beveragesStore.persistence.filters.places.get(),
-					beveragesStore.persistence.filters.places.set,
-					value
-				);
-			},
-		};
+		return createAppendFilterAction({
+			currentValues: beveragesStore.persistence.filters.places.get,
+			description: `筛选地区包含：${match.label}`,
+			setValues: beveragesStore.persistence.filters.places.set,
+			value: match.value,
+		});
 	}
 
 	if (fieldType === 'level') {
@@ -488,57 +526,65 @@ function createIngredientFilterAction(
 	}
 
 	if (fieldType === 'type') {
-		const availableValues = ingredientsStore.availableTypes.get();
-		const value = resolveAvailableValue(availableValues, keyword);
-		if (value === null) {
+		const availableTypes = ingredientsStore.availableTypes.get();
+		const match = resolveTypedAvailableValue(
+			availableTypes,
+			keyword,
+			({ value }) => INGREDIENT_TYPE_MAP[value]
+		);
+		if (match === null) {
 			return null;
 		}
+		const type = match.value;
 		return {
-			description: `筛选类型：${value}`,
+			description: `筛选类型：${INGREDIENT_TYPE_MAP[type]}`,
 			run: () => {
-				appendFilterValue(
-					ingredientsStore.persistence.filters.types.get(),
-					ingredientsStore.persistence.filters.types.set,
-					value
-				);
+				const currentTypes =
+					ingredientsStore.persistence.filters.types.get();
+				if (!currentTypes.includes(type)) {
+					ingredientsStore.persistence.filters.types.set([
+						...currentTypes,
+						type,
+					]);
+				}
 			},
 		};
 	}
 
 	if (fieldType === 'tag') {
 		const availableValues = ingredientsStore.availableTags.get();
-		const value = resolveAvailableValue(availableValues, keyword);
-		if (value === null) {
+		const match = resolveTypedAvailableValue(
+			availableValues,
+			keyword,
+			({ value }) => FOOD_TAG_MAP[value]
+		);
+		if (match === null) {
 			return null;
 		}
-		return {
-			description: `筛选标签包含：${value}`,
-			run: () => {
-				appendFilterValue(
-					ingredientsStore.persistence.filters.tags.get(),
-					ingredientsStore.persistence.filters.tags.set,
-					value
-				);
-			},
-		};
+		return createAppendFilterAction({
+			currentValues: ingredientsStore.persistence.filters.tags.get,
+			description: `筛选标签包含：${match.label}`,
+			setValues: ingredientsStore.persistence.filters.tags.set,
+			value: match.value,
+		});
 	}
 
 	if (fieldType === 'from' || fieldType === 'place') {
-		const availableValues = ingredientsStore.availablePlaces.get();
-		const value = resolveAvailableValue(availableValues, keyword);
-		if (value === null) {
+		const availableValues = ingredientsStore.availableMaps.get();
+		const match = resolveTypedAvailableValue(
+			availableValues,
+			keyword,
+			({ value }) => MAP_FACTS[value].label
+		);
+		if (match === null) {
 			return null;
 		}
-		return {
-			description: `筛选地区包含：${value}`,
-			run: () => {
-				appendFilterValue(
-					ingredientsStore.persistence.filters.places.get(),
-					ingredientsStore.persistence.filters.places.set,
-					value
-				);
-			},
-		};
+		return createAppendFilterAction({
+			currentValues: ingredientsStore.persistence.filters.places.get,
+			description: `筛选地区包含：${match.label}`,
+			setValues: ingredientsStore.persistence.filters.places.set,
+			value: match.value,
+		});
 	}
 
 	if (fieldType === 'level') {
@@ -588,36 +634,52 @@ function createCookerFilterAction(
 
 	if (fieldType === 'type') {
 		const availableValues = cookersStore.availableTypes.get();
-		const value = resolveAvailableValue(availableValues, keyword);
-		if (value === null) {
+		const match = resolveTypedAvailableValue(
+			availableValues,
+			keyword,
+			({ value }) => COOKER_TYPE_LABEL_MAP[value]
+		);
+		if (match === null) {
 			return null;
 		}
-		return {
-			description: `筛选类型：${value}`,
-			run: () => {
-				appendFilterValue(
-					cookersStore.persistence.filters.types.get(),
-					cookersStore.persistence.filters.types.set,
-					value
-				);
-			},
-		};
+		return createAppendFilterAction({
+			currentValues: cookersStore.persistence.filters.types.get,
+			description: `筛选类型：${match.label}`,
+			setValues: cookersStore.persistence.filters.types.set,
+			value: match.value,
+		});
 	}
 
 	if (fieldType === 'category') {
-		const availableValues = cookersStore.availableCategories.get();
-		const value = resolveAvailableValue(availableValues, keyword);
-		if (value === null) {
+		const availableValues = cookersStore.availableSeries.get();
+		const match = resolveTypedAvailableValue(
+			availableValues,
+			keyword,
+			({ value }) => COOKER_SERIES_LABEL_MAP[value]
+		);
+		if (match === null) {
+			return null;
+		}
+		const group = availableValues.find(
+			({ value }) => value === match.value
+		);
+		if (group === undefined) {
 			return null;
 		}
 		return {
-			description: `筛选类别：${value}`,
+			description: `筛选系列：${match.label}`,
 			run: () => {
-				appendFilterValue(
-					cookersStore.persistence.filters.categories.get(),
-					cookersStore.persistence.filters.categories.set,
-					value
-				);
+				const currentValues =
+					cookersStore.persistence.filters.series.get();
+				const values = [...currentValues];
+				for (const series of group.series) {
+					if (!values.includes(series)) {
+						values.push(series);
+					}
+				}
+				if (values.length > currentValues.length) {
+					cookersStore.persistence.filters.series.set(values);
+				}
 			},
 		};
 	}
@@ -628,21 +690,21 @@ function createCookerFilterAction(
 function createDlcOnlyFilterAction(
 	targetSection: Exclude<
 		TFilterableGlobalSearchSection,
-		'beverages' | 'cookers' | 'ingredients' | 'recipes'
+		'beverages' | 'cookers' | 'foods' | 'ingredients'
 	>,
 	fieldType: TGlobalSearchFieldType,
 	keyword: string
 ): Omit<IGlobalSearchFilterAction, 'label' | 'targetSection'> | null {
 	const storeMap = {
 		clothes: clothesStore,
-		currencies: currenciesStore,
-		ornaments: ornamentsStore,
+		'currency-items': currencyItemsStore,
+		decorations: decorationsStore,
 		partners: partnersStore,
 	} as const;
 	const dataMap = {
 		clothes: clothesStore.instance.get().data,
-		currencies: currenciesStore.instance.get().data,
-		ornaments: ornamentsStore.instance.get().data,
+		'currency-items': currencyItemsStore.instance.get().data,
+		decorations: decorationsStore.instance.get().data,
 		partners: partnersStore.instance.get().data,
 	} as const;
 	const targetStore = storeMap[targetSection];
@@ -695,11 +757,11 @@ function getFilterTargetLabel(section: TFilterableGlobalSearchSection) {
 		beverages: '酒水',
 		clothes: '衣服',
 		cookers: '厨具',
-		currencies: '货币',
+		'currency-items': '货币',
+		decorations: '摆件',
+		foods: '料理',
 		ingredients: '食材',
-		ornaments: '摆件',
 		partners: '伙伴',
-		recipes: '料理',
 	} as const;
 
 	return labelMap[section];
@@ -710,8 +772,8 @@ function createFilterAction(
 	fieldType: TGlobalSearchFieldType,
 	keyword: string
 ) {
-	return targetSection === 'recipes'
-		? createRecipeFilterAction(fieldType, keyword)
+	return targetSection === 'foods'
+		? createFoodFilterAction(fieldType, keyword)
 		: targetSection === 'beverages'
 			? createBeverageFilterAction(fieldType, keyword)
 			: targetSection === 'ingredients'

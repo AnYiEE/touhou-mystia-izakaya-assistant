@@ -1,4 +1,3 @@
-/* eslint-disable sort-keys */
 import { type MetadataRoute } from 'next';
 
 import { COLOR_MAP } from './design/theme/runtime/constants';
@@ -19,6 +18,7 @@ export default function manifest(): TManifest {
 		id: isOffline ? `${id}-offline` : id,
 		name: isOffline ? `${name}（离线版）` : name,
 		short_name: isOffline ? `${shortName}（离线版）` : shortName,
+
 		categories: ['games'],
 		description,
 
@@ -30,35 +30,35 @@ export default function manifest(): TManifest {
 
 		icons: [
 			{
-				src: `${cdnUrl}/icons/pwa-icon-192.png`,
 				sizes: '192x192',
+				src: `${cdnUrl}/icons/pwa-icon-192.png`,
 				type: 'image/png',
 			},
 			{
-				src: `${cdnUrl}/icons/pwa-icon-512.png`,
 				sizes: '512x512',
+				src: `${cdnUrl}/icons/pwa-icon-512.png`,
 				type: 'image/png',
 			},
 		],
 		shortcuts: [
 			{
-				name: '为稀有顾客搭配料理套餐',
-				short_name: '搭配稀客套餐',
 				description:
 					'搭配稀客的料理套餐或查看顾客图鉴（包括羁绊奖励和符卡效果查询）',
-				url: '/customer-rare',
 				icons: [
 					{
-						src: `${cdnUrl}/icons/pwa-icon-192.png`,
 						sizes: '192x192',
+						src: `${cdnUrl}/icons/pwa-icon-192.png`,
 						type: 'image/png',
 					},
 					{
-						src: `${cdnUrl}/icons/pwa-icon-512.png`,
 						sizes: '512x512',
+						src: `${cdnUrl}/icons/pwa-icon-512.png`,
 						type: 'image/png',
 					},
 				],
+				name: '为稀有顾客搭配料理套餐',
+				short_name: '搭配稀客套餐',
+				url: '/special-guests',
 			},
 		],
 

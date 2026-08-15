@@ -419,11 +419,11 @@ export default function AdminAnnouncementForm({
 	initialData,
 	mode,
 }: IAdminAnnouncementFormProps) {
+	const { isHighAppearance } = useDesignPreferences();
 	const router = useRouter();
 	const requestIdRef = useRef(0);
 	const targetUserBackfillRequestIdRef = useRef(0);
 	const targetUserSearchRequestIdRef = useRef(0);
-	const { isHighAppearance } = useDesignPreferences();
 	const isEditMode = mode === 'edit';
 	const initialAnnouncement = initialData.announcement;
 	const [admin, setAdmin] = useState<IAdminMeData | null>(initialData.admin);
@@ -487,6 +487,7 @@ export default function AdminAnnouncementForm({
 		() => createAnnouncementSelectClassNames('w-40', isHighAppearance),
 		[isHighAppearance]
 	);
+
 	const targetUserAutocompleteClassNames = useMemo(
 		() => ({
 			base: 'w-full',
@@ -503,6 +504,9 @@ export default function AdminAnnouncementForm({
 		}),
 		[isHighAppearance]
 	);
+
+	const audienceSelectedKeys = useMemo(() => new Set([audience]), [audience]);
+	const levelSelectedKeys = useMemo(() => new Set([level]), [level]);
 
 	const csrfToken =
 		admin?.csrf_token ?? accountStore.shared.adminCsrfToken.get();
@@ -889,12 +893,12 @@ export default function AdminAnnouncementForm({
 
 	const handleTargetUserSelect = useCallback(
 		(key: Key | null) => {
-			if (key === null) {
+			if (typeof key !== 'string') {
 				return;
 			}
 
 			const selectedUser = targetUserOptions.find(
-				(user) => user.id === String(key)
+				(user) => user.id === key
 			);
 			if (selectedUser === undefined) {
 				return;
@@ -987,7 +991,7 @@ export default function AdminAnnouncementForm({
 		targetUserSearchRequestIdRef.current = requestId;
 		setIsTargetUsersLoading(true);
 
-		const timeoutId = globalThis.setTimeout(() => {
+		const timeoutId = setTimeout(() => {
 			void listAdminUsers({ page: 1, query })
 				.then((result) => {
 					if (targetUserSearchRequestIdRef.current !== requestId) {
@@ -1035,7 +1039,7 @@ export default function AdminAnnouncementForm({
 		}, ADMIN_LIST_DEBOUNCE_MS);
 
 		return () => {
-			globalThis.clearTimeout(timeoutId);
+			clearTimeout(timeoutId);
 		};
 	}, [audience, targetUserQuery, targetUsers]);
 
@@ -1326,19 +1330,17 @@ export default function AdminAnnouncementForm({
 								aria-label="选择通知等级"
 								classNames={compactSelectClassNames}
 								isDisabled={isSaving}
-								selectedKeys={new Set([level])}
+								selectedKeys={levelSelectedKeys}
 								selectionMode="single"
 								size="sm"
 								variant="flat"
 								onSelectionChange={(keys) => {
 									const key = getSingleSelectionKey(keys);
-									if (
-										key !== null &&
-										LEVEL_OPTIONS.some(
-											(option) => option.key === key
-										)
-									) {
-										setLevel(key as TAnnouncementLevel);
+									const option = LEVEL_OPTIONS.find(
+										(item) => item.key === key
+									);
+									if (option !== undefined) {
+										setLevel(option.key);
 									}
 								}}
 							>
@@ -1361,21 +1363,17 @@ export default function AdminAnnouncementForm({
 								aria-label="选择通知受众"
 								classNames={audienceSelectClassNames}
 								isDisabled={isSaving}
-								selectedKeys={new Set([audience])}
+								selectedKeys={audienceSelectedKeys}
 								selectionMode="single"
 								size="sm"
 								variant="flat"
 								onSelectionChange={(keys) => {
 									const key = getSingleSelectionKey(keys);
-									if (
-										key !== null &&
-										AUDIENCE_OPTIONS.some(
-											(option) => option.key === key
-										)
-									) {
-										setAudience(
-											key as TAnnouncementAudience
-										);
+									const option = AUDIENCE_OPTIONS.find(
+										(item) => item.key === key
+									);
+									if (option !== undefined) {
+										setAudience(option.key);
 									}
 								}}
 							>

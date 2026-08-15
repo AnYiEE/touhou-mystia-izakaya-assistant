@@ -249,8 +249,8 @@ export async function withBackupCodeLock<T>(
 			code: string;
 			committed: boolean;
 			ownerId: string;
-			renewedAt: number;
 			reason?: unknown;
+			renewedAt: number;
 		} = {
 			aborted: false,
 			code,

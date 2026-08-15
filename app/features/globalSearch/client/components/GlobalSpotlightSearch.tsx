@@ -4,6 +4,7 @@ import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Button from '@/design/ui/components/button';
@@ -15,23 +16,35 @@ import { useGlobalSearchController } from '@/features/globalSearch/client/useGlo
 import { getFieldPrefixLabel } from '@/features/globalSearch/core/parser';
 import { CoordinatedModal } from '@/features/overlays/client';
 
-import { SearchHome } from './SearchHome';
-import { SearchInput } from './SearchInput';
-import { SearchResults } from './SearchResults';
-import { FieldValueSuggestions, PrefixSuggestions } from './SearchSuggestions';
-import { renderSearchSyntax } from './SearchSyntax';
-import { SpotlightMotionBlock } from './SpotlightMotion';
 import {
 	SPOTLIGHT_CONTENT_TRANSITION,
 	SPOTLIGHT_LIST_TRANSITION,
 	SPOTLIGHT_MAIN_CONTENT_VARIANTS,
 	SPOTLIGHT_MODAL_MOTION_PROPS,
 } from './motion';
+import { SearchHome } from './SearchHome';
+import { SearchInput } from './SearchInput';
+import { SearchResults } from './SearchResults';
+import { FieldValueSuggestions, PrefixSuggestions } from './SearchSuggestions';
+import { renderSearchSyntax } from './SearchSyntax';
+import { SpotlightMotionBlock } from './SpotlightMotion';
+
+const SPOTLIGHT_COLLAPSIBLE_ANIMATE = { height: 'auto', opacity: 1 } as const;
+const SPOTLIGHT_COLLAPSIBLE_EXIT = { height: 0, opacity: 0 } as const;
+const SPOTLIGHT_COLLAPSIBLE_INITIAL = { height: 0, opacity: 0 } as const;
+const SPOTLIGHT_COLLAPSIBLE_STYLE = { overflow: 'hidden' } as const;
+const SPOTLIGHT_MODAL_CLASS_NAMES = {
+	base: 'overflow-hidden',
+	body: 'gap-0 px-0 py-0',
+	closeButton: 'hidden',
+	content: 'py-0',
+} as const;
 
 export default function GlobalSpotlightSearch() {
-	const controller = useGlobalSearchController();
 	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
+
+	const controller = useGlobalSearchController();
 	const {
 		applyQueryPreset,
 		baseId,
@@ -63,6 +76,7 @@ export default function GlobalSpotlightSearch() {
 	const {
 		activeFieldCondition,
 		ast,
+		catalogSuggestionRecordMap,
 		examplePreviewItemMap,
 		fieldConditionDisplayValues,
 		fieldValueSuggestions: fieldValueSuggestionValues,
@@ -75,6 +89,11 @@ export default function GlobalSpotlightSearch() {
 		prefixSuggestions: prefixSuggestionValues,
 		shouldShowQueryMeta,
 	} = model;
+
+	const coordination = useMemo(
+		() => ({ id: 'global.search' as const, shortcuts }),
+		[shortcuts]
+	);
 
 	const suggestionPanelClassName = cn(
 		'border-b border-default-200/60 px-4 py-3 sm:px-5',
@@ -92,6 +111,7 @@ export default function GlobalSpotlightSearch() {
 	const fieldValueSuggestions = (
 		<FieldValueSuggestions
 			activeFieldCondition={activeFieldCondition}
+			catalogSuggestionRecordMap={catalogSuggestionRecordMap}
 			nameSuggestionItemMap={nameSuggestionItemMap}
 			resultSection={ast.resultSection}
 			suggestions={fieldValueSuggestionValues}
@@ -101,18 +121,13 @@ export default function GlobalSpotlightSearch() {
 
 	return (
 		<CoordinatedModal
-			coordination={{ id: 'global.search', shortcuts }}
+			coordination={coordination}
 			isOpen={isOpen}
 			motionProps={SPOTLIGHT_MODAL_MOTION_PROPS}
 			onClose={handleCloseRequest}
 			size="5xl"
 			scrollShadow={false}
-			classNames={{
-				base: 'overflow-hidden',
-				body: 'gap-0 px-0 py-0',
-				closeButton: 'hidden',
-				content: 'py-0',
-			}}
+			classNames={SPOTLIGHT_MODAL_CLASS_NAMES}
 		>
 			<div
 				ref={rootRef}
@@ -137,10 +152,10 @@ export default function GlobalSpotlightSearch() {
 					{shouldShowQueryMeta && (
 						<motion.div
 							key="query-meta"
-							animate={{ height: 'auto', opacity: 1 }}
-							exit={{ height: 0, opacity: 0 }}
-							initial={{ height: 0, opacity: 0 }}
-							style={{ overflow: 'hidden' }}
+							animate={SPOTLIGHT_COLLAPSIBLE_ANIMATE}
+							exit={SPOTLIGHT_COLLAPSIBLE_EXIT}
+							initial={SPOTLIGHT_COLLAPSIBLE_INITIAL}
+							style={SPOTLIGHT_COLLAPSIBLE_STYLE}
 							transition={SPOTLIGHT_LIST_TRANSITION}
 						>
 							<div
@@ -224,10 +239,10 @@ export default function GlobalSpotlightSearch() {
 						!isPrefixSuggestionOnly && (
 							<motion.div
 								key="prefix-suggestions"
-								animate={{ height: 'auto', opacity: 1 }}
-								exit={{ height: 0, opacity: 0 }}
-								initial={{ height: 0, opacity: 0 }}
-								style={{ overflow: 'hidden' }}
+								animate={SPOTLIGHT_COLLAPSIBLE_ANIMATE}
+								exit={SPOTLIGHT_COLLAPSIBLE_EXIT}
+								initial={SPOTLIGHT_COLLAPSIBLE_INITIAL}
+								style={SPOTLIGHT_COLLAPSIBLE_STYLE}
 								transition={SPOTLIGHT_LIST_TRANSITION}
 							>
 								<div className={suggestionPanelClassName}>
@@ -242,10 +257,10 @@ export default function GlobalSpotlightSearch() {
 						!isFieldValueSuggestionOnly && (
 							<motion.div
 								key="field-value-suggestions"
-								animate={{ height: 'auto', opacity: 1 }}
-								exit={{ height: 0, opacity: 0 }}
-								initial={{ height: 0, opacity: 0 }}
-								style={{ overflow: 'hidden' }}
+								animate={SPOTLIGHT_COLLAPSIBLE_ANIMATE}
+								exit={SPOTLIGHT_COLLAPSIBLE_EXIT}
+								initial={SPOTLIGHT_COLLAPSIBLE_INITIAL}
+								style={SPOTLIGHT_COLLAPSIBLE_STYLE}
 								transition={SPOTLIGHT_LIST_TRANSITION}
 							>
 								<div className={suggestionPanelClassName}>
@@ -338,6 +353,7 @@ export default function GlobalSpotlightSearch() {
 						</motion.div>
 					) : (
 						<SearchResults
+							key="search-results"
 							baseId={baseId}
 							isHighAppearance={isHighAppearance}
 							isReducedMotion={isReducedMotion}

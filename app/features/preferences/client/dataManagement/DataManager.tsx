@@ -1,5 +1,5 @@
 import { Tab, Tabs } from '@heroui/tabs';
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import Heading from '@/design/ui/components/heading';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
@@ -10,13 +10,15 @@ import { accountStore } from '@/features/account/client/state/accountStore';
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
 import CloudBackupPanel from './CloudBackupPanel';
+import { getClosestModalScrollContainer } from './dataManagerScroll';
 import LocalDataManager from './LocalDataManager';
 import ResetSavedDataPanel from './ResetSavedDataPanel';
-import { getClosestModalScrollContainer } from './dataManagerScroll';
 
 const { isAccountFeatureClientEnabled } = PUBLIC_RUNTIME_CONFIG;
 
 type TResetTarget = 'meals' | 'plans';
+
+const DATA_MANAGER_TAB_CLASS_NAMES = { base: '-ml-3' } as const;
 
 interface IProps {
 	onModalClose?: (() => void) | undefined;
@@ -63,6 +65,10 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		};
 	}, [isResetPopoverOpened]);
 
+	const handleSelectionChange = useCallback(() => {
+		setLocalDataManagerKey((currentKey) => currentKey + 1);
+	}, []);
+
 	return (
 		<div ref={dataManagerRef}>
 			<Heading subTitle="备份/还原/重置顾客套餐和营业预设数据">
@@ -75,11 +81,9 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 					disableAnimation={isReducedMotion}
 					isDisabled={isResetPopoverOpened}
 					variant="underlined"
-					onSelectionChange={() => {
-						setLocalDataManagerKey((currentKey) => currentKey + 1);
-					}}
+					onSelectionChange={handleSelectionChange}
 					aria-label="数据管理选项卡"
-					classNames={{ base: '-ml-3' }}
+					classNames={DATA_MANAGER_TAB_CLASS_NAMES}
 				>
 					<Tab key="backup-local" title="本地导入/导出">
 						<LocalDataManager key={localDataManagerKey} />

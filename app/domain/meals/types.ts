@@ -1,18 +1,31 @@
-import type { TCookerType } from '@/domain/data/cookers/types';
-import type { TIngredientName } from '@/domain/data/ingredients/types';
-import type { TRecipeName } from '@/domain/data/recipes/types';
+import type { TBeverageId } from '@/domain/data/beverages/types';
+import type { TCookerTypeId } from '@/domain/data/cookers/types';
+import type { TFoodId, TRecipeId } from '@/domain/data/foods/types';
+import type { TIngredientId } from '@/domain/data/ingredients/types';
+import type { IGuestOrder } from '@/domain/orders/types';
 
-export interface IMealRecipe {
-	extraIngredients: TIngredientName[];
-	name: TRecipeName;
-	recipeId: number;
+export interface IMealFood {
+	extraIngredients: TIngredientId[];
+	recipeId: TRecipeId;
 }
 
-export interface IResolvedMealRecipe {
-	baseIngredients: ReadonlyArray<TIngredientName>;
-	cooker: TCookerType;
+export interface IResolvedMealFood {
+	baseIngredients: ReadonlyArray<TIngredientId>;
+	cookerType: TCookerTypeId;
 	cookTime: { max: number; min: number };
-	extraIngredients: ReadonlyArray<TIngredientName>;
-	name: TRecipeName;
-	recipeId: number;
+	extraIngredients: ReadonlyArray<TIngredientId>;
+	food: TFoodId;
+	recipeId: TRecipeId;
+}
+
+export interface INormalGuestSavedMeal {
+	beverage: TBeverageId | null;
+	food: IMealFood;
+}
+
+export interface ISpecialGuestSavedMeal {
+	beverage: TBeverageId;
+	food: IMealFood;
+	hasMystiaCooker: boolean;
+	order: IGuestOrder;
 }

@@ -5,29 +5,29 @@ import {
 	type TSyncNamespace,
 } from '@/domain/account/contracts';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
-import { CustomerNormal } from '@/domain/catalog/customers/CustomerNormal';
-import { CustomerRare } from '@/domain/catalog/customers/CustomerRare';
-import { Beverage } from '@/domain/catalog/food/Beverage';
-import { Ingredient } from '@/domain/catalog/food/Ingredient';
-import { Recipe } from '@/domain/catalog/food/Recipe';
-import { ALL_PLACES_SET } from '@/domain/data/places/placeFacts';
-
-import { CUSTOMER_RARE_PLAN_MAX_NAME_LENGTH } from '@/features/customerPlans/constants';
+import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
+import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
 
-import {
-	SYNC_SCHEMA_VERSION_MAP,
-	checkSupportedSyncSchemaVersion,
-} from './constants';
+import { SYNC_SCHEMA_VERSION_MAP } from './constants';
 import { parseClientSyncGeneration } from './protocol';
-import { validateMealRecipeV1 as checkMealRecipeV1 } from './serializers/meals';
 import {
-	checkBeverageTag,
-	checkPopularTag,
-	checkRecipeTag,
-} from './serializers/tags';
+	validateLegacyNormalGuestSavedMealV1,
+	validateLegacyNormalGuestSavedMealV2,
+	validateLegacySpecialGuestSavedMealV1,
+	validateLegacySpecialGuestSavedMealV2,
+} from './serializers/legacySavedMeals';
+import {
+	validateLegacyMealSnapshot,
+	validateMealSnapshot,
+	validateNormalGuestSavedMeal,
+	validateSpecialGuestSavedMeal,
+} from './serializers/meals';
+import { validateSpecialGuestPlansData as checkSpecialGuestPlansData } from './serializers/specialGuestPlansMerge';
+import { checkLegacyPopularTag, checkPopularTag } from './serializers/tags';
 import {
 	hasExactKeys,
 	isAllowedStringArray,
@@ -36,19 +36,24 @@ import {
 } from './serializers/utils';
 import type { ISyncStateChange, ISyncStatePutBody } from './types';
 
+export { validateSpecialGuestPlansData } from './serializers/specialGuestPlansMerge';
+
 const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
 	Object.values(SYNC_NAMESPACE_MAP)
 );
-const beverageNames = new Set<string>(Beverage.getInstance().getNames());
-const customerNormalNames = new Set<string>(
-	CustomerNormal.getInstance().getNames()
+const beverageNames = new Set<string>(BeverageCatalog.getInstance().getNames());
+const beverages = new Set<number>(
+	BeverageCatalog.getInstance().getValuesByProp('id')
 );
-const customerRareNames = new Set<string>(
-	CustomerRare.getInstance().getNames()
+const ingredientNames = new Set<string>(
+	IngredientCatalog.getInstance().getNames()
 );
-const ingredientNames = new Set<string>(Ingredient.getInstance().getNames());
-const recipeInstance = Recipe.getInstance();
-const recipeNames = new Set<string>(recipeInstance.getNames());
+const ingredients = new Set<number>(
+	IngredientCatalog.getInstance().getValuesByProp('id')
+);
+const foodCatalog = FoodCatalog.getInstance();
+const foodNames = new Set<string>(foodCatalog.getNames());
+const foods = new Set<number>(foodCatalog.getValuesByProp('id'));
 const dlcKeys = new Set<string>(Object.keys(DLC_LABEL_MAP));
 const beverageColumnKeys = new Set([
 	'beverage',
@@ -56,7 +61,7 @@ const beverageColumnKeys = new Set([
 	'suitability',
 	'action',
 ]);
-const recipeColumnKeys = new Set([
+const legacyRecipeColumnKeys = new Set([
 	'recipe',
 	'cooker',
 	'ingredient',
@@ -65,192 +70,89 @@ const recipeColumnKeys = new Set([
 	'action',
 	'time',
 ]);
-const themeValues = new Set<string>(Object.values(THEME_MAP));
-const customerRarePlanSortValues = new Set([
-	'default',
-	'pinyin-asc',
-	'pinyin-asc-flat',
-	'pinyin-desc',
-	'pinyin-desc-flat',
+const foodColumnKeys = new Set([
+	'food',
+	'cookerType',
+	'ingredient',
+	'price',
+	'suitability',
+	'action',
+	'time',
 ]);
-const customerRarePlanKeys = [
-	'createdAt',
-	'customerSort',
-	'excludes',
-	'id',
-	'includes',
-	'manualCustomers',
-	'mealSource',
-	'mode',
-	'name',
-	'places',
-	'updatedAt',
-];
-const legacyCustomerRarePlanKeys = customerRarePlanKeys.filter(
-	(key) => key !== 'customerSort'
-);
-
-function validateMealRecipeV2(data: unknown) {
-	return recipeInstance.isMealRecipe(data);
-}
-
-function validateCustomerNormalMeal(
+const themeValues = new Set<string>(Object.values(THEME_MAP));
+export function validateNormalGuestMealsData(
 	data: unknown,
-	validateMealRecipe: (recipe: unknown) => boolean
+	schemaVersion: number = SYNC_SCHEMA_VERSION_MAP[
+		SYNC_NAMESPACE_MAP.normalGuestMeals
+	]
 ) {
+	if (schemaVersion === 1 || schemaVersion === 2) {
+		return validateLegacyMealSnapshot(data, {
+			guestType: 'normal',
+			validateMeal:
+				schemaVersion === 1
+					? validateLegacyNormalGuestSavedMealV1
+					: validateLegacyNormalGuestSavedMealV2,
+		});
+	}
+
 	return (
-		isObjectTagRecord(data) &&
-		hasExactKeys(data, ['beverage', 'recipe']) &&
-		(data['beverage'] === null ||
-			(typeof data['beverage'] === 'string' &&
-				beverageNames.has(data['beverage']))) &&
-		validateMealRecipe(data['recipe'])
+		schemaVersion === 3 &&
+		validateMealSnapshot(data, {
+			guestType: 'normal',
+			validateMeal: validateNormalGuestSavedMeal,
+		})
 	);
 }
 
-function validateCustomerRareMeal(
+export function validateSpecialGuestMealsData(
 	data: unknown,
-	validateMealRecipe: (recipe: unknown) => boolean
+	schemaVersion: number = SYNC_SCHEMA_VERSION_MAP[
+		SYNC_NAMESPACE_MAP.specialGuestMeals
+	]
 ) {
+	if (schemaVersion === 1 || schemaVersion === 2) {
+		return validateLegacyMealSnapshot(data, {
+			guestType: 'special',
+			validateMeal:
+				schemaVersion === 1
+					? validateLegacySpecialGuestSavedMealV1
+					: validateLegacySpecialGuestSavedMealV2,
+		});
+	}
+
 	return (
-		isObjectTagRecord(data) &&
-		hasExactKeys(data, [
-			'beverage',
-			'hasMystiaCooker',
-			'order',
-			'recipe',
-		]) &&
-		typeof data['beverage'] === 'string' &&
-		beverageNames.has(data['beverage']) &&
-		typeof data['hasMystiaCooker'] === 'boolean' &&
-		isObjectTagRecord(data['order']) &&
-		hasExactKeys(data['order'], ['beverageTag', 'recipeTag']) &&
-		(data['order']['beverageTag'] === null ||
-			checkBeverageTag(data['order']['beverageTag'])) &&
-		(data['order']['recipeTag'] === null ||
-			checkRecipeTag(data['order']['recipeTag'])) &&
-		validateMealRecipe(data['recipe'])
+		schemaVersion === 3 &&
+		validateMealSnapshot(data, {
+			guestType: 'special',
+			validateMeal: validateSpecialGuestSavedMeal,
+		})
 	);
 }
 
-function validateMealSnapshot(
-	data: unknown,
-	{
-		customerNames,
-		validateMeal,
-	}: { customerNames: Set<string>; validateMeal: (data: unknown) => boolean }
-) {
+function isAllowedNumberArray(data: unknown, values: ReadonlySet<number>) {
 	return (
-		isObjectTagRecord(data) &&
-		Object.entries(data).every(
-			([customerName, meals]) =>
-				customerNames.has(customerName) &&
-				Array.isArray(meals) &&
-				meals.every(validateMeal)
+		Array.isArray(data) &&
+		data.every(
+			(value) =>
+				typeof value === 'number' &&
+				Number.isSafeInteger(value) &&
+				values.has(value)
 		)
 	);
 }
 
-export function validateCustomerNormalMealsData(
-	data: unknown,
-	schemaVersion: number = SYNC_SCHEMA_VERSION_MAP[
-		SYNC_NAMESPACE_MAP.customerNormalMeals
-	]
-) {
-	if (schemaVersion !== 1 && schemaVersion !== 2) {
-		return false;
-	}
-	const validateRecipe =
-		schemaVersion === 1 ? checkMealRecipeV1 : validateMealRecipeV2;
-	return validateMealSnapshot(data, {
-		customerNames: customerNormalNames,
-		validateMeal: (meal) =>
-			validateCustomerNormalMeal(meal, validateRecipe),
-	});
-}
-
-export function validateCustomerRareMealsData(
-	data: unknown,
-	schemaVersion: number = SYNC_SCHEMA_VERSION_MAP[
-		SYNC_NAMESPACE_MAP.customerRareMeals
-	]
-) {
-	if (schemaVersion !== 1 && schemaVersion !== 2) {
-		return false;
-	}
-	const validateRecipe =
-		schemaVersion === 1 ? checkMealRecipeV1 : validateMealRecipeV2;
-	return validateMealSnapshot(data, {
-		customerNames: customerRareNames,
-		validateMeal: (meal) => validateCustomerRareMeal(meal, validateRecipe),
-	});
-}
-
-function validateCustomerRarePlan(
-	data: unknown,
-	{ allowLegacyCustomerSort = false } = {}
-) {
-	if (!isObjectTagRecord(data)) {
-		return false;
-	}
-
-	const hasCustomerSort = 'customerSort' in data;
-	if (!hasCustomerSort && !allowLegacyCustomerSort) {
-		return false;
-	}
-
-	return (
-		(hasCustomerSort
-			? hasExactKeys(data, customerRarePlanKeys)
-			: hasExactKeys(data, legacyCustomerRarePlanKeys)) &&
-		isIntegerInRange(data['createdAt'], 0, Number.MAX_SAFE_INTEGER - 1) &&
-		(!hasCustomerSort ||
-			(typeof data['customerSort'] === 'string' &&
-				customerRarePlanSortValues.has(data['customerSort']))) &&
-		isAllowedStringArray(data['excludes'], customerRareNames) &&
-		typeof data['id'] === 'string' &&
-		data['id'].length > 0 &&
-		data['id'].length <= 128 &&
-		isAllowedStringArray(data['includes'], customerRareNames) &&
-		isAllowedStringArray(data['manualCustomers'], customerRareNames) &&
-		(data['mealSource'] === 'recommended' ||
-			data['mealSource'] === 'saved') &&
-		(data['mode'] === 'manual' || data['mode'] === 'region') &&
-		typeof data['name'] === 'string' &&
-		data['name'].trim().length > 0 &&
-		data['name'].length <= CUSTOMER_RARE_PLAN_MAX_NAME_LENGTH &&
-		isAllowedStringArray(data['places'], ALL_PLACES_SET) &&
-		isIntegerInRange(data['updatedAt'], 0, Number.MAX_SAFE_INTEGER - 1)
-	);
-}
-
-export function validateCustomerRarePlansData(
-	data: unknown,
-	{ allowLegacyCustomerSort = false } = {}
-) {
+function validateGlobalPreferences(data: unknown, schemaVersion: number) {
 	if (
 		!isObjectTagRecord(data) ||
-		!hasExactKeys(data, ['activeId', 'items']) ||
-		(data['activeId'] !== null && typeof data['activeId'] !== 'string') ||
-		!Array.isArray(data['items']) ||
-		!data['items'].every((plan) =>
-			validateCustomerRarePlan(plan, { allowLegacyCustomerSort })
-		)
+		(schemaVersion !== 1 && schemaVersion !== 2)
 	) {
 		return false;
 	}
-
-	const planIds = new Set(
-		data['items'].map((plan) => (plan as Record<string, unknown>)['id'])
-	);
-
-	return data['activeId'] === null || planIds.has(data['activeId']);
-}
-
-function validateGlobalPreferences(data: unknown) {
-	if (!isObjectTagRecord(data)) {
-		return false;
-	}
+	const tagsTooltipKey =
+		schemaVersion === 2
+			? 'guestCardTagsTooltip'
+			: 'customerCardTagsTooltip';
 
 	const { donationModal, hiddenItems, popularTrend, suggestMeals, table } =
 		data;
@@ -268,9 +170,9 @@ function validateGlobalPreferences(data: unknown) {
 	const tableHiddenItems = table['hiddenItems'];
 	return (
 		hasExactKeys(data, [
-			'customerCardTagsTooltip',
 			'donationModal',
 			'famousShop',
+			tagsTooltipKey,
 			'hiddenItems',
 			'highAppearance',
 			'popularTrend',
@@ -296,12 +198,13 @@ function validateGlobalPreferences(data: unknown) {
 		isObjectTagRecord(tableColumns) &&
 		hasExactKeys(tableColumns, ['beverage', 'recipe']) &&
 		isObjectTagRecord(tableHiddenItems) &&
-		hasExactKeys(tableHiddenItems, [
-			'beverages',
-			'ingredients',
-			'recipes',
-		]) &&
-		typeof data['customerCardTagsTooltip'] === 'boolean' &&
+		hasExactKeys(
+			tableHiddenItems,
+			schemaVersion === 1
+				? ['beverages', 'ingredients', 'recipes']
+				: ['beverages', 'foods', 'ingredients']
+		) &&
+		typeof data[tagsTooltipKey] === 'boolean' &&
 		isIntegerInRange(
 			donationModal['interactionCount'],
 			0,
@@ -323,7 +226,9 @@ function validateGlobalPreferences(data: unknown) {
 		typeof data['highAppearance'] === 'boolean' &&
 		typeof popularTrend['isNegative'] === 'boolean' &&
 		(popularTrend['tag'] === null ||
-			checkPopularTag(popularTrend['tag'])) &&
+			(schemaVersion === 1
+				? checkLegacyPopularTag(popularTrend['tag'])
+				: checkPopularTag(popularTrend['tag']))) &&
 		typeof suggestMeals['enabled'] === 'boolean' &&
 		(suggestMeals['maxExtraIngredients'] === null ||
 			isIntegerInRange(suggestMeals['maxExtraIngredients'], 0, 4)) &&
@@ -334,13 +239,27 @@ function validateGlobalPreferences(data: unknown) {
 			beverageColumnKeys.has(item)
 		) &&
 		isStringArray(tableColumns['recipe']) &&
-		tableColumns['recipe'].every((item) => recipeColumnKeys.has(item)) &&
-		isAllowedStringArray(tableHiddenItems['beverages'], beverageNames) &&
-		isAllowedStringArray(
-			tableHiddenItems['ingredients'],
-			ingredientNames
+		tableColumns['recipe'].every((item) =>
+			(schemaVersion === 2 ? foodColumnKeys : legacyRecipeColumnKeys).has(
+				item
+			)
 		) &&
-		isAllowedStringArray(tableHiddenItems['recipes'], recipeNames) &&
+		(schemaVersion === 1
+			? isAllowedStringArray(
+					tableHiddenItems['beverages'],
+					beverageNames
+				) &&
+				isAllowedStringArray(
+					tableHiddenItems['ingredients'],
+					ingredientNames
+				) &&
+				isAllowedStringArray(tableHiddenItems['recipes'], foodNames)
+			: isAllowedNumberArray(tableHiddenItems['beverages'], beverages) &&
+				isAllowedNumberArray(tableHiddenItems['foods'], foods) &&
+				isAllowedNumberArray(
+					tableHiddenItems['ingredients'],
+					ingredients
+				)) &&
 		isIntegerInRange(table['row'], 5, 20) &&
 		typeof data['tachie'] === 'boolean' &&
 		typeof data['vibrate'] === 'boolean'
@@ -348,24 +267,22 @@ function validateGlobalPreferences(data: unknown) {
 }
 
 export function validateSyncStateData(change: ISyncStateChange) {
-	if (change.namespace === SYNC_NAMESPACE_MAP.customerNormalMeals) {
-		return validateCustomerNormalMealsData(
+	if (change.namespace === SYNC_NAMESPACE_MAP.globalPreferences) {
+		return validateGlobalPreferences(change.data, change.schema_version);
+	}
+	if (change.namespace === SYNC_NAMESPACE_MAP.normalGuestMeals) {
+		return validateNormalGuestMealsData(change.data, change.schema_version);
+	}
+	if (change.namespace === SYNC_NAMESPACE_MAP.specialGuestMeals) {
+		return validateSpecialGuestMealsData(
 			change.data,
 			change.schema_version
 		);
 	}
-	if (change.namespace === SYNC_NAMESPACE_MAP.customerRareMeals) {
-		return validateCustomerRareMealsData(
-			change.data,
-			change.schema_version
-		);
+	if (change.namespace === SYNC_NAMESPACE_MAP.specialGuestPlans) {
+		return checkSpecialGuestPlansData(change.data, change.schema_version);
 	}
-	if (change.namespace === SYNC_NAMESPACE_MAP.customerRarePlans) {
-		return validateCustomerRarePlansData(change.data, {
-			allowLegacyCustomerSort: change.schema_version === 1,
-		});
-	}
-	if (change.namespace === SYNC_NAMESPACE_MAP.customerRareSettings) {
+	if (change.namespace === SYNC_NAMESPACE_MAP.specialGuestSettings) {
 		return (
 			isObjectTagRecord(change.data) &&
 			hasExactKeys(change.data, [
@@ -375,9 +292,6 @@ export function validateSyncStateData(change: ISyncStateChange) {
 			typeof change.data['orderLinkedFilter'] === 'boolean' &&
 			typeof change.data['showTagDescription'] === 'boolean'
 		);
-	}
-	if (change.namespace === SYNC_NAMESPACE_MAP.globalPreferences) {
-		return validateGlobalPreferences(change.data);
 	}
 	if (change.namespace === SYNC_NAMESPACE_MAP.theme) {
 		return typeof change.data === 'string' && themeValues.has(change.data);
@@ -442,10 +356,9 @@ export function parseSyncStatePutBody(
 			!isNonNegativeSafeInteger(change['revision']) ||
 			change['revision'] >= Number.MAX_SAFE_INTEGER ||
 			!('schema_version' in change) ||
-			!checkSupportedSyncSchemaVersion(
-				change['namespace'],
-				change['schema_version']
-			)
+			!isNonNegativeSafeInteger(change['schema_version']) ||
+			change['schema_version'] !==
+				SYNC_SCHEMA_VERSION_MAP[change['namespace']]
 		) {
 			return null;
 		}

@@ -334,16 +334,16 @@ export async function authenticateSessionSnapshotInTransaction(
 	}
 
 	const userStatus: string = user.status;
-	if (userStatus === USER_STATUS_MAP.disabled) {
-		return {
-			cleanupFailed: await deleteCurrentSessionBestEffort(),
-			status: 'user-disabled',
-		};
-	}
 	if (userStatus === USER_STATUS_MAP.deleted) {
 		return {
 			cleanupFailed: await deleteCurrentSessionBestEffort(),
 			status: 'user-deleted',
+		};
+	}
+	if (userStatus === USER_STATUS_MAP.disabled) {
+		return {
+			cleanupFailed: await deleteCurrentSessionBestEffort(),
+			status: 'user-disabled',
 		};
 	}
 	if (userStatus !== USER_STATUS_MAP.active) {

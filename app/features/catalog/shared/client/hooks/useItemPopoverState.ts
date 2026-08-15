@@ -1,26 +1,25 @@
 import { useCallback } from 'react';
 
-import type { TItemName } from '@/domain/data/types';
-
 import { type IDefaultOpenedPopover } from './useOpenedItemPopover';
 
 export function useItemPopoverState(
 	defaultOpenedPopover: IDefaultOpenedPopover | null
 ) {
 	const checkDefaultOpen = useCallback(
-		(name: TItemName) =>
-			defaultOpenedPopover !== null && defaultOpenedPopover.name === name,
+		(recordId: number) =>
+			defaultOpenedPopover !== null &&
+			defaultOpenedPopover.recordId === recordId,
 		[defaultOpenedPopover]
 	);
 
 	const getPopoverKey = useCallback(
-		(key: number, name: TItemName) =>
-			defaultOpenedPopover?.name === name
+		(key: number, recordId: number) =>
+			defaultOpenedPopover?.recordId === recordId
 				? `${key}:${defaultOpenedPopover.requestId}`
 				: key,
 		[defaultOpenedPopover]
 	);
-	const checkShouldEffect = useCallback<(name: TItemName) => boolean>(
+	const checkShouldEffect = useCallback<(recordId: number) => boolean>(
 		() => true,
 		[]
 	);

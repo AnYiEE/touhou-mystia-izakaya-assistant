@@ -1,6 +1,6 @@
-import type { TBeverageTag, TRecipeTag } from '@/domain/data/tags/types';
+import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 
-export interface ICustomerOrder {
-	beverageTag: TBeverageTag | null;
-	recipeTag: TRecipeTag | null;
+export interface IGuestOrder {
+	beverageTag: TBeverageTagId | null;
+	foodTag: TFoodTagId | null;
 }

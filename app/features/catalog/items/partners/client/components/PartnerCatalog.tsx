@@ -1,5 +1,5 @@
 import { cn } from '@heroui/theme';
-import { Fragment, memo, useRef } from 'react';
+import { memo, useMemo, useRef } from 'react';
 import useBreakpoint from 'use-breakpoint';
 
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
@@ -8,8 +8,10 @@ import Popover, {
 	PopoverTrigger,
 } from '@/design/ui/components/popover';
 
-import { type Partner } from '@/domain/catalog/items/Partner';
-import type { IPartner } from '@/domain/data/partners/schema';
+import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { type PartnerCatalog as PartnerCatalogModel } from '@/domain/catalog/items/PartnerCatalog';
+import type { TPartnerSource } from '@/domain/data/partners/schema';
+import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { getPartnerTachiePath } from '@/features/catalog/presentation/tachiePaths';
@@ -28,10 +30,30 @@ import type { TItemData } from '@/features/catalog/shared/contracts';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
 
-import { checkObjectOrStringEmpty } from '@/shared/utilities/collections/check';
-
 interface IProps {
-	data: TItemData<Partner>;
+	data: TItemData<PartnerCatalogModel>;
+}
+
+const specialGuestCatalog = SpecialGuestCatalog.getInstance();
+
+function formatPartnerSource(source: TPartnerSource) {
+	if ('self' in source) {
+		return '初始拥有';
+	}
+	if ('mapMainTask' in source) {
+		return `完成地区【${MAP_FACTS[source.mapMainTask.map].label}】主线任务`;
+	}
+	if ('allMapSpecialGuestBondsMaxed' in source) {
+		return `地区【${MAP_FACTS[source.allMapSpecialGuestBondsMaxed.map].label}】全部稀客羁绊满级`;
+	}
+	if ('unlockedMapDialogue' in source) {
+		return `解锁地区【${MAP_FACTS[source.unlockedMapDialogue.map].label}】后，和【${specialGuestCatalog.getPropsById(source.unlockedMapDialogue.specialGuest, 'name')}】对话。`;
+	}
+	if ('datedMapTrial' in source) {
+		return `解锁地区【${MAP_FACTS[source.datedMapTrial.map].label}】后，完成由【${specialGuestCatalog.getPropsById(source.datedMapTrial.specialGuest, 'name')}】于${source.datedMapTrial.month}月${source.datedMapTrial.day}日发起的试炼。`;
+	}
+
+	return `${source.storyDialogue.prerequisiteLabel}后，和地区【${source.storyDialogue.placeLabel}】的【${specialGuestCatalog.getPropsById(source.storyDialogue.specialGuest, 'name')}】对话，选择“${source.storyDialogue.dialogueOptionLabel}”。`;
 }
 
 export default memo<IProps>(function PartnerCatalog({ data }) {
@@ -44,29 +66,46 @@ export default memo<IProps>(function PartnerCatalog({ data }) {
 		{ 'right-start': 426, top: -1 },
 		'top'
 	);
+	const presentationData = useMemo(
+		() =>
+			data.map((record) => ({
+				...record,
+				presentationDescription: { description: record.description },
+			})),
+		[data]
+	);
 
-	return data.map(
+	return presentationData.map(
 		(
-			{ description, dlc, effect, from, id, name, pay, speed },
+			{
+				dlc,
+				effect,
+				from,
+				id,
+				name,
+				pay,
+				presentationDescription,
+				speed,
+			},
 			dataIndex
 		) => (
 			<ItemPopover
-				key={getPopoverKey(dataIndex, name)}
+				key={getPopoverKey(dataIndex, id)}
 				showArrow
 				/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/3736} is fixed. */
 				// backdrop={isHighAppearance ? 'blur' : 'opaque'}
-				defaultOpen={checkDefaultOpen(name)}
-				{...getPopoverOpenChangeProps(name)}
+				defaultOpen={checkDefaultOpen(id)}
+				{...getPopoverOpenChangeProps(id)}
 			>
 				<ItemPopoverTrigger>
 					<ItemCard
-						isHoverable={checkShouldEffect(name)}
-						isPressable={checkShouldEffect(name)}
+						isHoverable={checkShouldEffect(id)}
+						isPressable={checkShouldEffect(id)}
 						name={name}
 						image={
 							<Sprite
 								target="partner"
-								name={name}
+								recordId={id}
 								size={3}
 								className="scale-90 rounded-xl"
 							/>
@@ -82,48 +121,19 @@ export default memo<IProps>(function PartnerCatalog({ data }) {
 				</ItemPopoverTrigger>
 				<ItemPopoverContent>
 					<ItemPopoverCloseButton />
-					<ItemShareButton name={name} />
+					<ItemShareButton name={name} recordId={id} />
 					<ItemPopoverCard
 						target="partner"
 						id={id}
 						name={name}
-						description={{ description }}
+						description={presentationDescription}
 						dlc={dlc}
 						ref={popoverCardRef}
 					>
-						{!checkObjectOrStringEmpty(from) && (
-							<p>
-								<span className="font-semibold">来源：</span>
-								{typeof from === 'string'
-									? from
-									: Object.entries(from).map(
-											(fromObject, fromIndex) => {
-												type TFrom = Exclude<
-													IPartner['from'],
-													string
-												>;
-												const [method, target] =
-													fromObject as [
-														keyof TFrom,
-														ExtractCollectionValue<TFrom>,
-													];
-												const isPlace =
-													method === 'place';
-												const isSelf =
-													method === 'self';
-												return (
-													<Fragment key={fromIndex}>
-														{isPlace
-															? `地区【${target}】全部稀客羁绊满级`
-															: isSelf
-																? '初始拥有'
-																: `完成地区【${target}】主线任务`}
-													</Fragment>
-												);
-											}
-										)}
-							</p>
-						)}
+						<p>
+							<span className="font-semibold">来源：</span>
+							{formatPartnerSource(from)}
+						</p>
 						<p>
 							<span className="font-semibold">
 								支付当天营收的：
@@ -165,7 +175,7 @@ export default memo<IProps>(function PartnerCatalog({ data }) {
 								<PopoverContent>
 									<Tachie
 										alt={name}
-										src={getPartnerTachiePath(name)}
+										src={getPartnerTachiePath(id)}
 										width={240}
 									/>
 								</PopoverContent>

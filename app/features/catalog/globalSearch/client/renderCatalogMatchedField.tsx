@@ -1,12 +1,23 @@
 import { cn } from '@heroui/theme';
+import isObject from 'lodash/isObject.js';
 
+import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
+import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
+import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import { ALL_MAP_LABELS_SET, MAP_FACTS } from '@/domain/data/places/placeFacts';
+import type { TMapLabel } from '@/domain/data/places/types';
 import type { TSpriteTarget } from '@/domain/data/sprites/types';
-import type { TTag } from '@/domain/data/tags/types';
+import type {
+	TBeverageTagLabel,
+	TFoodTagLabel,
+} from '@/domain/data/tags/types';
 
 import {
 	BEVERAGE_TAG_STYLE,
+	FOOD_TAG_STYLE,
 	INGREDIENT_TAG_STYLE,
-	RECIPE_TAG_STYLE,
 } from '@/features/catalog/presentation/tagStyles';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import TagsComponent from '@/features/catalog/shared/client/components/Tags';
@@ -21,9 +32,36 @@ import {
 	getGlobalSearchMatchedDlcDisplayText,
 } from '@/features/globalSearch/core/fieldValueSuggestions';
 
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+
 const MATCH_FIELD_SPRITE_TARGET_MAP: Partial<
 	Record<IGlobalSearchIndexField['fieldType'], TSpriteTarget>
-> = { cooker: 'cooker', ingredient: 'ingredient' };
+> = { 'cooker-type': 'cooker', ingredient: 'ingredient' };
+
+function flattenFieldValue(value: unknown): string[] {
+	if (typeof value === 'string' || typeof value === 'number') {
+		return value.toString().split(/\s+/u).filter(Boolean);
+	}
+	if (Array.isArray(value)) {
+		return value.flatMap(flattenFieldValue);
+	}
+	if (isObject(value)) {
+		return Object.values(value).flatMap(flattenFieldValue);
+	}
+
+	return [];
+}
+
+function flattenNumericFieldValue(value: unknown): number[] {
+	if (typeof value === 'number') {
+		return [value];
+	}
+	if (Array.isArray(value)) {
+		return value.flatMap(flattenNumericFieldValue);
+	}
+
+	return [];
+}
 
 export function getCatalogMatchedFieldSpriteTarget(
 	fieldType: IGlobalSearchIndexField['fieldType']
@@ -37,59 +75,69 @@ function getMatchedFieldSpriteTokens(match: IGlobalSearchMatchedField) {
 		return null;
 	}
 
-	const names = match.field.text.split(/\s+/u).filter(Boolean);
-	if (names.length === 0) {
+	const ids = flattenNumericFieldValue(match.field.value);
+	if (ids.length === 0) {
 		return null;
 	}
 
-	return names.map((name) => ({
-		isMatched:
-			match.keyword.trim().length > 0 &&
-			checkGlobalSearchNameMatchesKeyword(name, match.keyword),
-		name,
-		target,
-	}));
+	const ingredientCatalog = IngredientCatalog.getInstance();
+	const cookerCatalog = CookerCatalog.getInstance();
+
+	return ids.map((id) => {
+		const name =
+			target === 'ingredient'
+				? ingredientCatalog.getPropsById(id as never, 'name')
+				: COOKER_TYPE_LABEL_MAP[
+						id as keyof typeof COOKER_TYPE_LABEL_MAP
+					];
+		const recordId =
+			target === 'ingredient'
+				? id
+				: cookerCatalog.getIdByTypeAndSeries(id as never, 0);
+
+		return {
+			isMatched:
+				match.keyword.trim().length > 0 &&
+				checkGlobalSearchNameMatchesKeyword(name, match.keyword),
+			name,
+			recordId,
+			target,
+		};
+	});
 }
 
-function splitMatchedFieldTags(value: string) {
-	return value.split(/\s+/u).filter(Boolean);
-}
-
-function getRecipeTagConfig(
+function getFoodTagConfig(
 	item: IGlobalSearchIndexItem,
 	fieldType: IGlobalSearchIndexField['fieldType'],
 	tag: string
 ) {
 	if (fieldType === 'negative-tag') {
 		return {
-			tagStyle: RECIPE_TAG_STYLE.negative,
+			tagStyle: FOOD_TAG_STYLE.negative,
 			tagType: 'negative' as const,
 		};
 	}
 
-	if (fieldType === 'tag' && item.section === 'recipes') {
+	if (fieldType === 'tag' && item.section === 'foods') {
 		const negativeTagField = item.fields.find(
 			(field) => field.fieldType === 'negative-tag'
 		);
 		const negativeTags = new Set(
-			splitMatchedFieldTags(negativeTagField?.text ?? '')
+			flattenFieldValue(negativeTagField?.value)
 		);
 
 		if (negativeTags.has(tag)) {
 			return {
-				tagStyle: RECIPE_TAG_STYLE.negative,
+				tagStyle: FOOD_TAG_STYLE.negative,
 				tagType: 'negative' as const,
 			};
 		}
 	}
 
-	return {
-		tagStyle: RECIPE_TAG_STYLE.positive,
-		tagType: 'positive' as const,
-	};
+	return { tagStyle: FOOD_TAG_STYLE.positive, tagType: 'positive' as const };
 }
 
-function getCustomerTagConfig(
+function getGuestTagConfig(
 	item: IGlobalSearchIndexItem,
 	fieldType: IGlobalSearchIndexField['fieldType'],
 	tag: string
@@ -100,13 +148,7 @@ function getCustomerTagConfig(
 			tagType: 'positive' as const,
 		};
 	}
-	if (fieldType === 'negative-tag') {
-		return {
-			tagStyle: RECIPE_TAG_STYLE.negative,
-			tagType: 'negative' as const,
-		};
-	}
-	if (fieldType === 'customer-tag') {
+	if (fieldType === 'guest-tag') {
 		const negativeTagField = item.fields.find(
 			(field) => field.fieldType === 'negative-tag'
 		);
@@ -114,15 +156,15 @@ function getCustomerTagConfig(
 			(field) => field.fieldType === 'beverage-tag'
 		);
 		const negativeTags = new Set(
-			splitMatchedFieldTags(negativeTagField?.text ?? '')
+			flattenFieldValue(negativeTagField?.value)
 		);
 		const beverageTags = new Set(
-			splitMatchedFieldTags(beverageTagField?.text ?? '')
+			flattenFieldValue(beverageTagField?.value)
 		);
 
 		if (negativeTags.has(tag)) {
 			return {
-				tagStyle: RECIPE_TAG_STYLE.negative,
+				tagStyle: FOOD_TAG_STYLE.negative,
 				tagType: 'negative' as const,
 			};
 		}
@@ -133,11 +175,14 @@ function getCustomerTagConfig(
 			};
 		}
 	}
+	if (fieldType === 'negative-tag') {
+		return {
+			tagStyle: FOOD_TAG_STYLE.negative,
+			tagType: 'negative' as const,
+		};
+	}
 
-	return {
-		tagStyle: RECIPE_TAG_STYLE.positive,
-		tagType: 'positive' as const,
-	};
+	return { tagStyle: FOOD_TAG_STYLE.positive, tagType: 'positive' as const };
 }
 
 function getMatchedFieldTagTokens(
@@ -146,11 +191,11 @@ function getMatchedFieldTagTokens(
 ) {
 	const { keyword } = match;
 	const {
-		field: { fieldType, text },
+		field: { fieldType, value },
 	} = match;
 	if (
 		fieldType !== 'beverage-tag' &&
-		fieldType !== 'customer-tag' &&
+		fieldType !== 'guest-tag' &&
 		fieldType !== 'negative-tag' &&
 		fieldType !== 'positive-tag' &&
 		fieldType !== 'tag'
@@ -158,7 +203,7 @@ function getMatchedFieldTagTokens(
 		return null;
 	}
 
-	const tags = splitMatchedFieldTags(text);
+	const tags = flattenFieldValue(value);
 	if (tags.length === 0) {
 		return null;
 	}
@@ -175,10 +220,10 @@ function getMatchedFieldTagTokens(
 							tagStyle: INGREDIENT_TAG_STYLE.positive,
 							tagType: 'positive' as const,
 						}
-					: item.section === 'customer-normal' ||
-						  item.section === 'customer-rare'
-						? getCustomerTagConfig(item, fieldType, tag)
-						: getRecipeTagConfig(item, fieldType, tag);
+					: item.section === 'normal-guests' ||
+						  item.section === 'special-guests'
+						? getGuestTagConfig(item, fieldType, tag)
+						: getFoodTagConfig(item, fieldType, tag);
 
 		return {
 			isMatched:
@@ -195,50 +240,66 @@ function renderMatchedFieldSourceContent(match: IGlobalSearchMatchedField) {
 		return null;
 	}
 
-	const bondMatch = /^【(.+)】羁绊(?: Lv\.(\d+) ➞ Lv\.(\d+))?$/u.exec(
-		match.field.text
-	);
-	if (bondMatch !== null) {
-		const [, name, fromLevel, toLevel] = bondMatch;
+	const source = match.field.value;
+	if (
+		checkIsRecord(source) &&
+		'bond' in source &&
+		Object.keys(source).every((key) => key === 'bond')
+	) {
+		const { bond } = source;
+		if (!checkIsRecord(bond) || typeof bond['specialGuest'] !== 'number') {
+			return null;
+		}
+
+		const { specialGuest } = bond;
+		const name = SpecialGuestCatalog.getInstance().getPropsById(
+			specialGuest as TSpecialGuestId,
+			'name'
+		);
+		const level = typeof bond['level'] === 'number' ? bond['level'] : null;
 
 		return (
 			<span className="inline-flex min-h-6 max-w-full flex-wrap items-center">
 				<span className="mr-1 inline-flex items-center">
 					【
 					<Sprite
-						target="customer_rare"
-						name={name as never}
+						target="special_guest"
+						recordId={specialGuest as TSpecialGuestId}
 						size={1.15}
 						className="mx-0.5 rounded-full"
 					/>
 					{name}】羁绊
 				</span>
-				{fromLevel !== undefined && toLevel !== undefined && (
+				{level !== null && (
 					<>
-						<span>Lv.{fromLevel}</span>
+						<span>Lv.{(level - 1).toString()}</span>
 						<span className="mx-0.5">➞</span>
-						<span>Lv.{toLevel}</span>
+						<span>Lv.{level.toString()}</span>
 					</>
 				)}
 			</span>
 		);
 	}
 
-	const levelupMatch = /^游戏等级 Lv\.(\d+) ➞ Lv\.(\d+)(.*)$/u.exec(
-		match.field.text
-	);
-	if (levelupMatch !== null) {
-		const [, fromLevel, toLevel, suffix] = levelupMatch;
-		const trimmedSuffix = suffix?.trim() ?? '';
+	if (checkIsRecord(source) && checkIsRecord(source['levelup'])) {
+		const { level, map } = source['levelup'];
+		if (typeof level !== 'number') {
+			return null;
+		}
+
+		const mapDisplayLabel =
+			typeof map === 'string' && ALL_MAP_LABELS_SET.has(map)
+				? MAP_FACTS[map as TMapLabel].label
+				: null;
 
 		return (
 			<span className="inline-flex min-h-6 max-w-full flex-wrap items-center">
 				<span className="mr-1">游戏等级</span>
-				<span>Lv.{fromLevel}</span>
+				<span>Lv.{level - 1}</span>
 				<span className="mx-0.5">➞</span>
-				<span>Lv.{toLevel}</span>
-				{trimmedSuffix.length > 0 && (
-					<span className="ml-0.5">{trimmedSuffix}</span>
+				<span>Lv.{level}</span>
+				{mapDisplayLabel !== null && (
+					<span className="ml-0.5">{`且已解锁地区【${mapDisplayLabel}】`}</span>
 				)}
 			</span>
 		);
@@ -255,7 +316,7 @@ export function renderCatalogMatchedField(
 		return (
 			<span className="min-w-0 break-words">
 				{getGlobalSearchMatchedDlcDisplayText(
-					match.field.text,
+					flattenFieldValue(match.field.value).join(' '),
 					match.keyword
 				)}
 			</span>
@@ -272,7 +333,7 @@ export function renderCatalogMatchedField(
 		return tagTokens.map(({ isMatched, tag, tagStyle, tagType }) => (
 			<TagsComponent.Tag
 				key={`${tagType}:${tag}`}
-				tag={tag as TTag}
+				tag={tag as TBeverageTagLabel | TFoodTagLabel}
 				tagStyle={tagStyle}
 				tagType={tagType}
 				className={cn(
@@ -286,9 +347,9 @@ export function renderCatalogMatchedField(
 
 	const spriteTokens = getMatchedFieldSpriteTokens(match);
 	if (spriteTokens !== null) {
-		return spriteTokens.map(({ isMatched, name, target }, index) => (
+		return spriteTokens.map(({ isMatched, name, recordId, target }) => (
 			<span
-				key={`${target}:${name}:${index}`}
+				key={`${target}:${recordId}`}
 				className={cn(
 					'inline-flex h-6 max-w-full items-center gap-1.5 rounded-small border px-1.5 pr-2',
 					isMatched
@@ -297,7 +358,11 @@ export function renderCatalogMatchedField(
 				)}
 			>
 				<span className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-small bg-default/25">
-					<Sprite target={target} name={name as never} size={1} />
+					<Sprite
+						target={target}
+						recordId={recordId as never}
+						size={1}
+					/>
 				</span>
 				<span className="truncate">{name}</span>
 			</span>

@@ -1,4 +1,4 @@
-import { isNil } from 'lodash';
+import isNil from 'lodash/isNil.js';
 
 type TPxString = `${number}px`;
 type TResult<T> = T extends TPxString ? number : T;

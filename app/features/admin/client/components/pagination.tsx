@@ -7,6 +7,11 @@ import { useDesignPreferences } from '@/design/preferences/DesignPreferencesCont
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
 
+const ADMIN_PAGE_INPUT_CLASS_NAMES = {
+	input: 'text-center',
+	inputWrapper: 'h-8 min-h-8',
+} as const;
+
 interface IAdminPaginationProps {
 	currentPage: number;
 	isLoading: boolean;
@@ -77,10 +82,7 @@ export const AdminPagination = memo<IAdminPaginationProps>(
 						<Input
 							aria-label="跳转页码"
 							className="w-20"
-							classNames={{
-								input: 'text-center',
-								inputWrapper: 'h-8 min-h-8',
-							}}
+							classNames={ADMIN_PAGE_INPUT_CLASS_NAMES}
 							inputMode="numeric"
 							placeholder="页码"
 							size="sm"

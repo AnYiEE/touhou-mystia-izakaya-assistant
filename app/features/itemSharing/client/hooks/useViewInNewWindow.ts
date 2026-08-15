@@ -5,20 +5,21 @@ import {
 	ITEM_PREVIEW_PARAM_NAME,
 	ITEM_SHARE_PARAM_NAME,
 	type TItemRoutePath,
+	type TShareableItemId,
 	type TShareableItemName,
 } from '@/features/itemSharing/contracts';
 
 export function useViewInNewWindow() {
-	const [windowItemName, setWindowItemName] = useState<
-		[TShareableItemName] | null
-	>(null);
+	const [windowRecord, setWindowRecord] = useState<[TShareableItemId] | null>(
+		null
+	);
 	const [windowItemPath, setWindowItemPath] = useState<
 		[TItemRoutePath] | null
 	>(null);
 	const windowObjectRef = useRef<Window | null>(null);
 
 	useEffect(() => {
-		if (windowItemName === null || windowItemPath === null) {
+		if (windowRecord === null || windowItemPath === null) {
 			return;
 		}
 
@@ -26,7 +27,7 @@ export function useViewInNewWindow() {
 		windowObjectRef.current = null;
 
 		const pathname = `/${windowItemPath[0]}?${new URLSearchParams({
-			[ITEM_SHARE_PARAM_NAME]: windowItemName[0],
+			[ITEM_SHARE_PARAM_NAME]: String(windowRecord[0]),
 			// eslint-disable-next-line sort-keys -- Preserve the existing select-before-preview query serialization.
 			[ITEM_PREVIEW_PARAM_NAME]: '1',
 		}).toString()}`;
@@ -41,17 +42,21 @@ export function useViewInNewWindow() {
 		);
 
 		windowObjectRef.current = newWindowObject;
-	}, [windowItemName, windowItemPath]);
+	}, [windowItemPath, windowRecord]);
 
 	const openWindow = useCallback(
-		(path: TItemRoutePath, name: TShareableItemName) => {
+		(
+			path: TItemRoutePath,
+			recordId: TShareableItemId,
+			name: TShareableItemName
+		) => {
 			trackEvent(
 				trackEvent.category.click,
 				'OpenWindow Button',
 				path,
 				name
 			);
-			setWindowItemName([name]);
+			setWindowRecord([recordId]);
 			setWindowItemPath([path]);
 		},
 		[]

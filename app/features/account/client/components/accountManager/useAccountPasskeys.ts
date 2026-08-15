@@ -71,8 +71,8 @@ export interface IUseAccountPasskeysResult {
 	handleRenamePasskeyCancel: () => void;
 	handleRenamePasskeyOpen: (id: string, currentName: string | null) => void;
 	handleRenamePasskeySave: () => void;
-	isAddPasskeyFormOpen: boolean;
 	isAddingPasskey: boolean;
+	isAddPasskeyFormOpen: boolean;
 	isPasskeyListLoading: boolean;
 	isWebauthnAutofillSupported: boolean;
 	isWebauthnSupported: boolean;

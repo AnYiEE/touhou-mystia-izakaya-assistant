@@ -739,11 +739,11 @@ export async function flushAccountSyncQueue() {
 					if (!checkAfterFlushHandler(remainingEntries)) {
 						return false;
 					}
-					if (conflictResult === 'confirmed') {
-						uploadedNamespaces.push(result.namespace);
+					if (conflictResult === 'auto-resolving') {
 						continue;
 					}
-					if (conflictResult === 'auto-resolving') {
+					if (conflictResult === 'confirmed') {
+						uploadedNamespaces.push(result.namespace);
 						continue;
 					}
 					if (conflictResult === 'stale') {

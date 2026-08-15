@@ -219,15 +219,6 @@ export async function putSyncStateChanges({
 			});
 			continue;
 		}
-		if (result.status === 'schema-version-downgrade') {
-			results.push({
-				current_schema_version: result.current_schema_version,
-				message: 'sync-schema-update-required',
-				namespace: preparedChange.change.namespace,
-				status: 'error',
-			});
-			continue;
-		}
 		if (result.status === 'conflict') {
 			try {
 				results.push(
@@ -250,6 +241,15 @@ export async function putSyncStateChanges({
 					status: 'error',
 				});
 			}
+			continue;
+		}
+		if (result.status === 'schema-version-downgrade') {
+			results.push({
+				current_schema_version: result.current_schema_version,
+				message: 'sync-schema-update-required',
+				namespace: preparedChange.change.namespace,
+				status: 'error',
+			});
 			continue;
 		}
 

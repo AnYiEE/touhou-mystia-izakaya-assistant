@@ -24,6 +24,8 @@ import {
 	writeOptionalLocalCache,
 } from '@/infrastructure/browser/storage/safeStorage';
 
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+
 import { createSnapshotHash } from './dirtyQueue/snapshotHash';
 import {
 	captureAccountSyncResetGeneration,
@@ -48,19 +50,14 @@ function checkBaseSnapshotContainer(
 	namespace: TSyncNamespace
 ): value is IAccountSyncBaseSnapshot {
 	return (
-		value !== null &&
-		typeof value === 'object' &&
-		!Array.isArray(value) &&
-		(value as IAccountSyncBaseSnapshot).namespace === namespace &&
-		Number.isSafeInteger((value as IAccountSyncBaseSnapshot).revision) &&
-		(value as IAccountSyncBaseSnapshot).revision >= 0 &&
-		(value as IAccountSyncBaseSnapshot).revision <
-			Number.MAX_SAFE_INTEGER &&
-		Number.isSafeInteger(
-			(value as IAccountSyncBaseSnapshot).schema_version
-		) &&
-		(value as IAccountSyncBaseSnapshot).schema_version >= 0 &&
-		typeof (value as IAccountSyncBaseSnapshot).snapshotHash === 'string' &&
+		checkIsRecord(value) &&
+		value['namespace'] === namespace &&
+		Number.isSafeInteger(value['revision']) &&
+		(value['revision'] as number) >= 0 &&
+		(value['revision'] as number) < Number.MAX_SAFE_INTEGER &&
+		Number.isSafeInteger(value['schema_version']) &&
+		(value['schema_version'] as number) >= 0 &&
+		typeof value['snapshotHash'] === 'string' &&
 		'data' in value
 	);
 }
@@ -170,8 +167,8 @@ export function writeAccountSyncBaseSnapshot({
 	data: unknown;
 	generationToken: string | null;
 	namespace: TSyncNamespace;
-	revision: number;
 	resetOperationId?: string;
+	revision: number;
 	userId: string;
 }) {
 	const checkGeneration = () =>

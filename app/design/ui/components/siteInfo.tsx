@@ -29,6 +29,12 @@ export default memo<ISiteInfoProps>(function SiteInfo({
 		}),
 		[fontSize, name, style]
 	);
+	const baseUrlStyle = useMemo(
+		() => ({
+			fontSize: `${(fontSize * name.length) / (baseUrl.length + 0.85)}px`,
+		}),
+		[baseUrl.length, fontSize, name.length]
+	);
 
 	return (
 		<div
@@ -42,15 +48,7 @@ export default memo<ISiteInfoProps>(function SiteInfo({
 		>
 			<div className="space-y-0.5">
 				<p>{name}</p>
-				<p
-					style={{
-						fontSize: `${
-							(fontSize * name.length) / (baseUrl.length + 0.85)
-						}px`,
-					}}
-				>
-					https://{baseUrl}
-				</p>
+				<p style={baseUrlStyle}>https://{baseUrl}</p>
 			</div>
 		</div>
 	);

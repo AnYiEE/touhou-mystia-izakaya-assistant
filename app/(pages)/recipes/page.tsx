@@ -1,5 +1,5 @@
-import RecipesCatalogPage from '@/features/catalog/items/recipes/client/components/RecipesCatalogPage';
+import LegacyRouteRedirect from '@/features/appShell/client/navigation/LegacyRouteRedirect';
 
-export default function Recipes() {
-	return <RecipesCatalogPage />;
+export default function LegacyRecipesPage() {
+	return <LegacyRouteRedirect from="/recipes" to="/foods" />;
 }

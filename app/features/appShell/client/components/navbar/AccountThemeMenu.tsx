@@ -2,8 +2,15 @@ import { faChevronDown, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { NavbarItem } from '@heroui/navbar';
 import { cn } from '@heroui/theme';
-import { debounce } from 'lodash';
-import { type Key, useCallback, useRef, useState } from 'react';
+import debounce from 'lodash/debounce.js';
+import {
+	type Key,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 
 import Button from '@/design/ui/components/button';
 import Dropdown, {
@@ -19,7 +26,6 @@ import { NAVBAR_THEME_ITEMS } from './themeItems';
 
 const ACCOUNT_ACTION_MENU_ITEM_CLASS_NAME =
 	'flex min-w-0 items-center gap-1 py-0.5 text-small';
-
 const ACCOUNT_ACTION_MENU_SECTION_CLASS_NAMES = {
 	base: 'mb-0',
 	divider: 'mx-1 my-1 bg-default-200/70',
@@ -27,6 +33,9 @@ const ACCOUNT_ACTION_MENU_SECTION_CLASS_NAMES = {
 	heading:
 		'block px-2 pb-0.5 pt-2.5 text-tiny font-medium uppercase text-default-500',
 };
+const ACCOUNT_THEME_MENU_ITEM_CLASSES = {
+	base: 'my-px transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
+} as const;
 
 interface IProps {
 	accountActionLabel: string;
@@ -103,6 +112,27 @@ export default function AccountThemeMenu({
 		[handleMenuClickCapture]
 	);
 
+	const accountActionKeyDown = useMemo(
+		() => debounce(checkA11yConfirmKey(handleAccountAction)),
+		[handleAccountAction]
+	);
+
+	useEffect(
+		() => () => {
+			accountActionKeyDown.cancel();
+		},
+		[accountActionKeyDown]
+	);
+
+	const dropdownClassNames = useMemo(
+		() => ({
+			content: cn('m-1 min-w-36 max-w-36 p-1', {
+				'bg-background/70 backdrop-saturate-150': isHighAppearance,
+			}),
+		}),
+		[isHighAppearance]
+	);
+
 	const menu = (
 		<DropdownMenu
 			ref={setMenuElementRef}
@@ -112,9 +142,7 @@ export default function AccountThemeMenu({
 			selectedKeys={selectedThemeKeys}
 			selectionMode="single"
 			aria-label="账号和主题"
-			itemClasses={{
-				base: 'my-px transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
-			}}
+			itemClasses={ACCOUNT_THEME_MENU_ITEM_CLASSES}
 		>
 			<DropdownSection
 				title={
@@ -138,9 +166,7 @@ export default function AccountThemeMenu({
 					key="account"
 					closeOnSelect={false}
 					data-account-action="true"
-					onKeyDown={debounce(
-						checkA11yConfirmKey(handleAccountAction)
-					)}
+					onKeyDown={accountActionKeyDown}
 					textValue={accountActionLabel}
 				>
 					<div className={ACCOUNT_ACTION_MENU_ITEM_CLASS_NAME}>
@@ -176,12 +202,7 @@ export default function AccountThemeMenu({
 				isOpen={isOpen}
 				shouldCloseOnScroll
 				onOpenChange={handleOpenChange}
-				classNames={{
-					content: cn('m-1 min-w-36 max-w-36 p-1', {
-						'bg-background/70 backdrop-saturate-150':
-							isHighAppearance,
-					}),
-				}}
+				classNames={dropdownClassNames}
 			>
 				<DropdownTrigger>
 					<Button

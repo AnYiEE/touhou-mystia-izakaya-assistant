@@ -13,11 +13,11 @@ export function setScriptUrlTag(
 		const scriptElement = document.createElement('script');
 		scriptElement.src = url;
 
-		if (crossOrigin) {
-			scriptElement.crossOrigin = 'anonymous';
-		}
 		if (method === 'async') {
 			scriptElement.async = true;
+		}
+		if (crossOrigin) {
+			scriptElement.crossOrigin = 'anonymous';
 		}
 		if (method === 'defer') {
 			scriptElement.defer = true;

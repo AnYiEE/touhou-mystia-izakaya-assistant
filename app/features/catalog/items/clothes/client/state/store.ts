@@ -1,7 +1,7 @@
 import { store } from '@davstack/store';
 
 import { filterAvailableItemsByHiddenDlcs } from '@/domain/availability';
-import { Clothes } from '@/domain/catalog/items/Clothes';
+import { ClothesCatalog } from '@/domain/catalog/items/ClothesCatalog';
 import type { TDlc } from '@/domain/data/shared/types';
 
 import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
@@ -16,15 +16,14 @@ import { sortBy } from '@/shared/utilities/collections/sortBy';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 
+import {
+	CLOTHES_STORE_VERSION,
+	migrateClothesPersistedState,
+} from './migratePersistedState';
+
 import '@/infrastructure/state/enableImmerMapSet';
 
-const instance = Clothes.getInstance();
-
-const storeVersion = {
-	initial: 0,
-	removeSearchValue: 1, // eslint-disable-next-line sort-keys
-	availabilityDlcFilter: 2,
-} as const;
+const instance = ClothesCatalog.getInstance();
 
 const state = {
 	instance,
@@ -44,28 +43,17 @@ const getNames = createNamesCache(instance);
 export const clothesStore = store(state, {
 	middlewares: [
 		createPersistMiddleware<typeof state>({
+			migrate: (persistedState, version) =>
+				migrateClothesPersistedState(
+					persistedState,
+					version
+				) as typeof state,
 			name: 'page-clothes-storage',
-			version: storeVersion.availabilityDlcFilter,
-
-			migrate(persistedState, version) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-				const oldState = persistedState as any;
-				if (version < storeVersion.removeSearchValue) {
-					delete oldState.persistence.searchValue;
-				}
-				if (version < storeVersion.availabilityDlcFilter) {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					oldState.persistence.filters.contentDlcs =
-						oldState.persistence.filters.dlcs;
-					oldState.persistence.filters.availabilityDlcs = [];
-					delete oldState.persistence.filters.dlcs;
-				}
-				return persistedState as typeof state;
-			},
 			partialize: (currentStore) =>
 				({
 					persistence: currentStore.persistence,
 				}) as typeof currentStore,
+			version: CLOTHES_STORE_VERSION.availabilityDlcFilter,
 		}),
 	],
 }).computed((currentStore) => ({

@@ -12,7 +12,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@heroui/theme';
 import {
-	type Key,
 	type SyntheticEvent,
 	memo,
 	useCallback,
@@ -324,20 +323,29 @@ export default function AdminAnnouncementsClient({
 		setQueryInput(value);
 	}, []);
 
-	const handleStatusFilterAction = useCallback((key: Key) => {
-		setPage(1);
-		setStatusFilter(String(key) as TAnnouncementComputedStatus | '');
-	}, []);
+	const handleStatusFilterAction = useCallback(
+		(value: TAnnouncementComputedStatus | '') => {
+			setPage(1);
+			setStatusFilter(value);
+		},
+		[]
+	);
 
-	const handleLevelFilterAction = useCallback((key: Key) => {
-		setPage(1);
-		setLevelFilter(String(key) as TAnnouncementLevel | '');
-	}, []);
+	const handleLevelFilterAction = useCallback(
+		(value: TAnnouncementLevel | '') => {
+			setPage(1);
+			setLevelFilter(value);
+		},
+		[]
+	);
 
-	const handleAudienceFilterAction = useCallback((key: Key) => {
-		setPage(1);
-		setAudienceFilter(String(key) as TAnnouncementAudience | '');
-	}, []);
+	const handleAudienceFilterAction = useCallback(
+		(value: TAnnouncementAudience | '') => {
+			setPage(1);
+			setAudienceFilter(value);
+		},
+		[]
+	);
 
 	const handleRefreshPress = useCallback(() => {
 		const nextQuery = queryInput;
@@ -463,7 +471,7 @@ export default function AdminAnnouncementsClient({
 	}, [checkAdmin, initialData.admin]);
 
 	useEffect(() => {
-		let timeoutId: ReturnType<typeof globalThis.setTimeout> | null = null;
+		let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
 		if (admin !== null) {
 			if (isServerInitialAnnouncementsRef.current) {
@@ -471,7 +479,7 @@ export default function AdminAnnouncementsClient({
 			} else if (skipNextAutoRefreshRef.current) {
 				skipNextAutoRefreshRef.current = false;
 			} else {
-				timeoutId = globalThis.setTimeout(() => {
+				timeoutId = setTimeout(() => {
 					refreshAnnouncements();
 				}, ADMIN_LIST_DEBOUNCE_MS);
 			}
@@ -479,7 +487,7 @@ export default function AdminAnnouncementsClient({
 
 		return () => {
 			if (timeoutId !== null) {
-				globalThis.clearTimeout(timeoutId);
+				clearTimeout(timeoutId);
 			}
 		};
 	}, [
@@ -499,13 +507,13 @@ export default function AdminAnnouncementsClient({
 			return;
 		}
 
-		const timeoutId = globalThis.setTimeout(() => {
+		const timeoutId = setTimeout(() => {
 			setPage(1);
 			setQuery(queryInput);
 		}, ADMIN_LIST_DEBOUNCE_MS);
 
 		return () => {
-			globalThis.clearTimeout(timeoutId);
+			clearTimeout(timeoutId);
 		};
 	}, [queryInput]);
 

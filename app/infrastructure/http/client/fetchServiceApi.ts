@@ -1,9 +1,7 @@
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
-import type {
-	IApiErrorResponse,
-	IApiSuccessResponse,
-} from '@/infrastructure/http/contracts';
 import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
+
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 import { ServiceApiError } from './serviceApiError';
 
@@ -18,7 +16,7 @@ export function normalizeServiceRetryAfterSeconds(value: unknown) {
 }
 
 function createPathUrl(path: string) {
-	return new URL(path, globalThis.location.origin).toString();
+	return new URL(path, location.origin).toString();
 }
 
 function readRetryAfterHeader(headers: Headers) {
@@ -33,11 +31,11 @@ function readRetryAfterHeader(headers: Headers) {
 }
 
 function readRetryAfterData(data: unknown) {
-	if (data === null || Array.isArray(data) || typeof data !== 'object') {
+	if (!checkIsRecord(data)) {
 		return null;
 	}
 
-	const retryAfter = (data as Record<string, unknown>)['retry_after'];
+	const retryAfter = data['retry_after'];
 
 	return normalizeServiceRetryAfterSeconds(retryAfter);
 }
@@ -90,12 +88,7 @@ export async function fetchServiceApi<TData>(
 		});
 	}
 
-	if (
-		body === null ||
-		Array.isArray(body) ||
-		typeof body !== 'object' ||
-		!('status' in body)
-	) {
+	if (!checkIsRecord(body) || !('status' in body)) {
 		throw new ServiceApiError({
 			message: 'invalid-api-response',
 			retryAfter: readRetryAfterHeader(response.headers),
@@ -103,20 +96,19 @@ export async function fetchServiceApi<TData>(
 		});
 	}
 
-	if (response.ok && body.status === 'ok' && 'data' in body) {
-		return (body as IApiSuccessResponse<TData>).data;
+	if (response.ok && body['status'] === 'ok' && 'data' in body) {
+		return body['data'] as TData;
 	}
 
-	const errorBody = body as IApiErrorResponse;
 	throw new ServiceApiError({
-		data: errorBody.data,
+		data: body['data'],
 		message:
-			typeof errorBody.message === 'string'
-				? errorBody.message
+			typeof body['message'] === 'string'
+				? body['message']
 				: response.statusText,
 		retryAfter:
 			readRetryAfterHeader(response.headers) ??
-			readRetryAfterData(errorBody.data),
+			readRetryAfterData(body['data']),
 		status: response.status,
 	});
 }

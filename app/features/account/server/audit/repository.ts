@@ -1,4 +1,5 @@
 import { type Transaction, sql } from 'kysely';
+import isNil from 'lodash/isNil.js';
 
 import { type TSsoActorType } from '@/domain/account/contracts';
 
@@ -111,10 +112,10 @@ function serializeAuditMetadata(metadata: Record<string, unknown> | undefined) {
 
 function createAuditMetadata(input: IAuditLogWriteInput) {
 	return {
-		...(input.ipAddress === undefined || input.ipAddress === null
+		...(isNil(input.ipAddress)
 			? {}
 			: { ip_summary: createIpSummary(input.ipAddress) }),
-		...(input.userAgent === undefined || input.userAgent === null
+		...(isNil(input.userAgent)
 			? {}
 			: { user_agent_summary: createUserAgentSummary(input.userAgent) }),
 		...input.metadata,

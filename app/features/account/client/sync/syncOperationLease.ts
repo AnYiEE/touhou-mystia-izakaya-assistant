@@ -14,6 +14,7 @@ import type { TAccountSyncOperationKind } from '@/features/account/sync/types';
 import { withCrossTabLock } from '@/infrastructure/browser/crossTab/withCrossTabLock';
 
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 import { postAccountSyncBroadcastMessage } from './broadcast';
 import { withAccountSyncPaused } from './stateGuards';
@@ -67,27 +68,18 @@ function checkOperationLease(
 	value: unknown
 ): value is IAccountSyncOperationLease {
 	return (
-		value !== null &&
-		typeof value === 'object' &&
-		!Array.isArray(value) &&
+		checkIsRecord(value) &&
 		ACCOUNT_SYNC_OPERATION_KIND_SET.has(
-			(value as IAccountSyncOperationLease).kind
+			value['kind'] as TAccountSyncOperationKind
 		) &&
-		typeof (value as IAccountSyncOperationLease).operationId === 'string' &&
-		(value as IAccountSyncOperationLease).operationId !== '' &&
-		(value as IAccountSyncOperationLease).operationId.length <=
-			MAX_OPERATION_ID_LENGTH &&
-		typeof (value as IAccountSyncOperationLease).ownerTabId === 'string' &&
-		(value as IAccountSyncOperationLease).ownerTabId !== '' &&
-		isNonNegativeSafeInteger(
-			(value as IAccountSyncOperationLease).expiresAt
-		) &&
-		isNonNegativeSafeInteger(
-			(value as IAccountSyncOperationLease).renewedAt
-		) &&
-		isNonNegativeSafeInteger(
-			(value as IAccountSyncOperationLease).startedAt
-		)
+		typeof value['operationId'] === 'string' &&
+		value['operationId'] !== '' &&
+		value['operationId'].length <= MAX_OPERATION_ID_LENGTH &&
+		typeof value['ownerTabId'] === 'string' &&
+		value['ownerTabId'] !== '' &&
+		isNonNegativeSafeInteger(value['expiresAt']) &&
+		isNonNegativeSafeInteger(value['renewedAt']) &&
+		isNonNegativeSafeInteger(value['startedAt'])
 	);
 }
 

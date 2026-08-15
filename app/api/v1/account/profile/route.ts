@@ -1,3 +1,4 @@
+import isObject from 'lodash/isObject.js';
 import { type NextRequest } from 'next/server';
 
 import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
-	if (body === null || typeof body !== 'object') {
+	if (!isObject(body)) {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
 			400

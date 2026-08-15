@@ -1,6 +1,6 @@
 import AccountInitialStateHydrator from '@/features/account/client/components/AccountInitialStateHydrator';
 import AccountSsoGrantInitialDataHydrator from '@/features/account/client/components/AccountSsoGrantInitialDataHydrator';
-import { SSO_AUTHORIZE_MESSAGE_MAP } from '@/features/account/sso/authorize/copy';
+import type { TAccountMeResponse } from '@/features/account/contracts';
 import {
 	SsoAuthorizeAccountGate,
 	SsoAuthorizeAccountGateButton,
@@ -11,8 +11,20 @@ import {
 	SsoAuthorizePanel,
 	authorizePanelIcons,
 } from '@/features/account/sso/authorize/client';
+import { SSO_AUTHORIZE_MESSAGE_MAP } from '@/features/account/sso/authorize/copy';
 
 import { readSsoAuthorizeInitialData } from './initialData';
+
+const SSO_AUTHORIZE_LOGGED_OUT_ACCOUNT_STATE = {
+	csrf_token: null,
+	featureEnabled: true,
+	has_password: false,
+	isLoggedIn: false,
+	password_must_change: false,
+	state_epoch: null,
+	syncMeta: null,
+	user: null,
+} as const satisfies TAccountMeResponse;
 
 function SsoAuthorizeMessage({ status }: { status: string | null }) {
 	const message =
@@ -44,16 +56,7 @@ function SsoAuthorizeLoginRequired() {
 	return (
 		<div className="min-h-main-content text-foreground">
 			<AccountInitialStateHydrator
-				data={{
-					csrf_token: null,
-					featureEnabled: true,
-					has_password: false,
-					isLoggedIn: false,
-					password_must_change: false,
-					state_epoch: null,
-					syncMeta: null,
-					user: null,
-				}}
+				data={SSO_AUTHORIZE_LOGGED_OUT_ACCOUNT_STATE}
 			/>
 			<SsoAuthorizeAccountGate />
 			<SsoAuthorizePanel
@@ -96,11 +99,11 @@ export default async function SsoAuthorizePageContent({
 		resolvedSearchParams.status ?? null
 	);
 
-	if (initialData.kind === 'message') {
-		return <SsoAuthorizeMessage status={initialData.status} />;
-	}
 	if (initialData.kind === 'login-required') {
 		return <SsoAuthorizeLoginRequired />;
+	}
+	if (initialData.kind === 'message') {
+		return <SsoAuthorizeMessage status={initialData.status} />;
 	}
 	if (initialData.kind === 'password-change-required') {
 		return (

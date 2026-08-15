@@ -7,6 +7,8 @@ import {
 
 import { withCrossTabLock } from '@/infrastructure/browser/crossTab/withCrossTabLock';
 
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+
 /**
  * Durable reset protocol invariants:
  * - `prepared` is an incomplete, recoverable transaction and blocks ordinary sync writes/uploads.
@@ -56,9 +58,7 @@ export function readAccountSyncResetGeneration(
 		return { raw, status: 'invalid' };
 	}
 	if (
-		value !== null &&
-		typeof value === 'object' &&
-		!Array.isArray(value) &&
+		checkIsRecord(value) &&
 		Number.isSafeInteger((value as { version?: unknown }).version) &&
 		(value as { version: number }).version > 1
 	) {

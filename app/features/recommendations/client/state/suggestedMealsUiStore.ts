@@ -1,8 +1,8 @@
 import { store } from '@davstack/store';
 
-import type { TCookerName } from '@/domain/data/cookers/types';
+import type { TCookerId } from '@/domain/data/cookers/types';
 
 export const suggestedMealsUiStore = store({
-	cooker: null as TCookerName | null,
+	cooker: null as TCookerId | null,
 	visibility: false,
 });

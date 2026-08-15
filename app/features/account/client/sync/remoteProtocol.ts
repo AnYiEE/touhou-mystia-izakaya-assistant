@@ -16,14 +16,11 @@ import type {
 } from '@/features/account/sync/types';
 
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
 	Object.values(SYNC_NAMESPACE_MAP)
 );
-
-function checkPlainObject(value: unknown): value is Record<string, unknown> {
-	return value !== null && !Array.isArray(value) && typeof value === 'object';
-}
 
 export function checkRemoteRevision(value: unknown): value is number {
 	return isNonNegativeSafeInteger(value) && value < Number.MAX_SAFE_INTEGER;
@@ -51,7 +48,7 @@ function checkRemoteSyncSchemaVersion(
 }
 
 function validateRemoteSyncRecord(record: unknown): ISyncStateRecord {
-	if (!checkPlainObject(record)) {
+	if (!checkIsRecord(record)) {
 		throw new TypeError('invalid-sync-state-record');
 	}
 	const {
@@ -85,7 +82,7 @@ function validateRemoteSyncRecord(record: unknown): ISyncStateRecord {
 export function validateRemoteSyncState(
 	response: unknown
 ): ISyncStateGetResponse {
-	if (!checkPlainObject(response)) {
+	if (!checkIsRecord(response)) {
 		throw new TypeError('invalid-sync-state');
 	}
 
@@ -119,7 +116,7 @@ export function validateRemoteSyncState(
 }
 
 function validateSyncPutResult(result: unknown): TSyncStatePutResult {
-	if (!checkPlainObject(result)) {
+	if (!checkIsRecord(result)) {
 		throw new TypeError('invalid-sync-result');
 	}
 	const { namespace, status } = result;
@@ -132,22 +129,6 @@ function validateSyncPutResult(result: unknown): TSyncStatePutResult {
 		const { message } = result;
 		if (typeof message !== 'string') {
 			throw new TypeError('invalid-sync-result');
-		}
-		if (message === 'sync-schema-update-required') {
-			const { current_schema_version: currentSchemaVersion } = result;
-			if (
-				!isNonNegativeSafeInteger(currentSchemaVersion) ||
-				currentSchemaVersion <= SYNC_SCHEMA_VERSION_MAP[namespace]
-			) {
-				throw new TypeError('invalid-sync-result');
-			}
-
-			return {
-				current_schema_version: currentSchemaVersion,
-				message,
-				namespace,
-				status,
-			};
 		}
 		if (message === 'sync-account-capacity-exceeded') {
 			const {
@@ -180,6 +161,22 @@ function validateSyncPutResult(result: unknown): TSyncStatePutResult {
 				message,
 				namespace,
 				namespaces,
+				status,
+			};
+		}
+		if (message === 'sync-schema-update-required') {
+			const { current_schema_version: currentSchemaVersion } = result;
+			if (
+				!isNonNegativeSafeInteger(currentSchemaVersion) ||
+				currentSchemaVersion <= SYNC_SCHEMA_VERSION_MAP[namespace]
+			) {
+				throw new TypeError('invalid-sync-result');
+			}
+
+			return {
+				current_schema_version: currentSchemaVersion,
+				message,
+				namespace,
 				status,
 			};
 		}
@@ -220,7 +217,7 @@ function validateSyncPutResult(result: unknown): TSyncStatePutResult {
 export function validateSyncPutResponse(
 	response: unknown
 ): ISyncStatePutResponse {
-	if (!checkPlainObject(response)) {
+	if (!checkIsRecord(response)) {
 		throw new TypeError('invalid-sync-result');
 	}
 

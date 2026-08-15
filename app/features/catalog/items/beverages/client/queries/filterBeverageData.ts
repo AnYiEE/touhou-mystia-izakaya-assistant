@@ -1,9 +1,12 @@
+import type { TMapLabel } from '@/domain/data/places/types';
+import type { TBeverageTagId } from '@/domain/data/tags/types';
+
 interface IFilterableBeverage {
 	availabilityDlcs: ReadonlyArray<number>;
 	dlc: number;
 	level: number;
-	places: ReadonlyArray<string>;
-	tags: ReadonlyArray<string>;
+	maps: ReadonlyArray<TMapLabel>;
+	tags: ReadonlyArray<TBeverageTagId>;
 }
 
 export function filterBeverageData<TBeverage extends IFilterableBeverage>({
@@ -11,29 +14,29 @@ export function filterBeverageData<TBeverage extends IFilterableBeverage>({
 	filterAvailabilityDlcs,
 	filterContentDlcs,
 	filterLevels,
-	filterNoPlaces,
+	filterMaps,
+	filterNoMaps,
 	filterNoTags,
-	filterPlaces,
 	filterTags,
 }: {
 	data: ReadonlyArray<TBeverage>;
 	filterAvailabilityDlcs: ReadonlyArray<string>;
 	filterContentDlcs: ReadonlyArray<string>;
 	filterLevels: ReadonlyArray<string>;
-	filterNoPlaces: ReadonlyArray<string>;
-	filterNoTags: ReadonlyArray<string>;
-	filterPlaces: ReadonlyArray<string>;
-	filterTags: ReadonlyArray<string>;
+	filterMaps: ReadonlyArray<TMapLabel>;
+	filterNoMaps: ReadonlyArray<TMapLabel>;
+	filterNoTags: ReadonlyArray<TBeverageTagId>;
+	filterTags: ReadonlyArray<TBeverageTagId>;
 }): TBeverage[] {
 	const hasAvailabilityDlcFilter = filterAvailabilityDlcs.length > 0;
 	const hasContentDlcFilter = filterContentDlcs.length > 0;
 	const hasLevelFilter = filterLevels.length > 0;
-	const hasNoPlaceFilter = filterNoPlaces.length > 0;
+	const hasNoMapFilter = filterNoMaps.length > 0;
 	const hasNoTagFilter = filterNoTags.length > 0;
-	const hasPlaceFilter = filterPlaces.length > 0;
+	const hasMapFilter = filterMaps.length > 0;
 	const hasTagFilter = filterTags.length > 0;
 
-	return data.filter(({ availabilityDlcs, dlc, level, places, tags }) => {
+	return data.filter(({ availabilityDlcs, dlc, level, maps, tags }) => {
 		if (
 			hasAvailabilityDlcFilter &&
 			!filterAvailabilityDlcs.some((selectedDlc) =>
@@ -57,14 +60,14 @@ export function filterBeverageData<TBeverage extends IFilterableBeverage>({
 			return false;
 		}
 		if (
-			hasPlaceFilter &&
-			!filterPlaces.some((place) => places.includes(place))
+			hasMapFilter &&
+			!filterMaps.some((filterMap) => maps.includes(filterMap))
 		) {
 			return false;
 		}
 		if (
-			hasNoPlaceFilter &&
-			filterNoPlaces.some((place) => places.includes(place))
+			hasNoMapFilter &&
+			filterNoMaps.some((filterMap) => maps.includes(filterMap))
 		) {
 			return false;
 		}

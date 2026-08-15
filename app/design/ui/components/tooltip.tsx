@@ -33,13 +33,17 @@ export default memo<IProps>(function Tooltip({
 	showArrow,
 	...props
 }) {
+	const { isHighAppearance } = useDesignPreferences();
 	const motionProps = useMotionProps('tooltip');
 	const isReducedMotion = useReducedMotion();
-	const { isHighAppearance } = useDesignPreferences();
 
 	const styleBlur = useMemo(
 		() => getStyleBlur(color, disableBlur, isHighAppearance),
 		[color, disableBlur, isHighAppearance]
+	);
+	const mergedClassNames = useMemo(
+		() => ({ ...classNames, content: cn(styleBlur, classNames?.content) }),
+		[classNames, styleBlur]
 	);
 
 	return (
@@ -50,10 +54,7 @@ export default memo<IProps>(function Tooltip({
 			// The same radius as `Popover`.
 			radius={radius ?? 'lg'}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
-			classNames={{
-				...classNames,
-				content: cn(styleBlur, classNames?.content),
-			}}
+			classNames={mergedClassNames}
 			{...props}
 		/>
 	);

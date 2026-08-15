@@ -1,5 +1,5 @@
 import { cn } from '@heroui/theme';
-import { type PropsWithChildren, memo } from 'react';
+import { type PropsWithChildren, memo, useMemo } from 'react';
 
 import Switch, { type ISwitchProps } from '@/design/ui/components/switch';
 import Tooltip from '@/design/ui/components/tooltip';
@@ -22,6 +22,16 @@ export default memo<PropsWithChildren<IProps>>(function SwitchItem({
 	title,
 	...props
 }) {
+	const classNames = useMemo(
+		() => ({
+			base: cn(isDisabled && 'pointer-events-auto cursor-not-allowed'),
+			endContent: 'leading-none',
+			hiddenInput: cn(isDisabled && 'pointer-events-none'),
+			startContent: 'leading-none',
+		}),
+		[isDisabled]
+	);
+
 	return (
 		<div className={cn('flex items-center gap-2', className)}>
 			{children !== undefined && (
@@ -40,15 +50,7 @@ export default memo<PropsWithChildren<IProps>>(function SwitchItem({
 					isSelected={isSelected}
 					size="sm"
 					onValueChange={onValueChange}
-					classNames={{
-						base: cn(
-							isDisabled &&
-								'pointer-events-auto cursor-not-allowed'
-						),
-						endContent: 'leading-none',
-						hiddenInput: cn(isDisabled && 'pointer-events-none'),
-						startContent: 'leading-none',
-					}}
+					classNames={classNames}
 					{...props}
 				/>
 			</Tooltip>

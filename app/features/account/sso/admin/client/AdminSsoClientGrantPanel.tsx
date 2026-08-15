@@ -429,12 +429,12 @@ export default memo<IProps>(function AdminSsoClientGrantPanel({
 			return;
 		}
 
-		const timeout = globalThis.setTimeout(() => {
+		const timeout = setTimeout(() => {
 			refreshGrantsRef.current(1);
 		}, 300);
 
 		return () => {
-			globalThis.clearTimeout(timeout);
+			clearTimeout(timeout);
 		};
 	}, [grantQuery]);
 

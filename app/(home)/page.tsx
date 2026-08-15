@@ -23,6 +23,9 @@ import { SITE_METADATA } from '@/shared/site/metadata';
 const links = SITE_LINKS;
 const { shortName } = SITE_METADATA;
 
+const QQ_OVERLAY_CLASS_NAMES = { content: 'px-0 pb-1' } as const;
+const REDNOTE_TOOLTIP_CLASS_NAMES = { content: 'p-0 pb-1' } as const;
+
 export default function Home() {
 	const qqCodeContent = useMemo(
 		() => (
@@ -130,7 +133,7 @@ export default function Home() {
 										);
 									}
 								}}
-								classNames={{ content: 'px-0 pb-1' }}
+								classNames={QQ_OVERLAY_CLASS_NAMES}
 							>
 								<Tooltip
 									showArrow
@@ -144,7 +147,7 @@ export default function Home() {
 											);
 										}
 									}}
-									classNames={{ content: 'px-0 pb-1' }}
+									classNames={QQ_OVERLAY_CLASS_NAMES}
 								>
 									<span className="inline-flex">
 										<PopoverTrigger>
@@ -175,7 +178,7 @@ export default function Home() {
 										);
 									}
 								}}
-								classNames={{ content: 'p-0 pb-1' }}
+								classNames={REDNOTE_TOOLTIP_CLASS_NAMES}
 							>
 								<Button
 									as={Link}

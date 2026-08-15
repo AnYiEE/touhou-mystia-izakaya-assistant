@@ -1,4 +1,4 @@
-import type { TIngredientName } from '@/domain/data/ingredients/types';
+import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type {
 	ISuggestMealsExecution,
 	ISuggestMealsYieldScheduler,
@@ -26,47 +26,47 @@ import { createSuggestMealsExecution } from './scheduler';
 export function buildSuggestMealsCacheKey({
 	cooker,
 	currentBeverage,
-	currentRecipe,
-	customerName,
-	customerOrder,
+	currentFood,
+	guestOrder,
 	hasMystiaCooker,
 	hiddenBeverages,
 	hiddenDlcs,
+	hiddenFoods,
 	hiddenIngredients,
-	hiddenRecipes,
 	isFamousShop,
 	maxExtraIngredients,
 	maxRating,
 	maxResults,
 	popularTrend,
+	specialGuest,
 }: ISuggestParams) {
 	return [
 		cooker ?? '',
 		currentBeverage ?? '',
-		currentRecipe
-			? `${currentRecipe.name}:${currentRecipe.recipeId}:${currentRecipe.extraIngredients.join(',')}`
+		currentFood
+			? `${currentFood.recipeId}:${currentFood.extraIngredients.join(',')}`
 			: '',
-		customerName,
-		customerOrder.beverageTag ?? '',
-		customerOrder.recipeTag ?? '',
+		guestOrder.beverageTag ?? '',
+		guestOrder.foodTag ?? '',
 		hasMystiaCooker ? '1' : '0',
 		[...hiddenBeverages].sort().join(','),
 		[...hiddenDlcs].sort().join(','),
+		[...hiddenFoods].sort().join(','),
 		[...hiddenIngredients].sort().join(','),
-		[...hiddenRecipes].sort().join(','),
 		isFamousShop ? '1' : '0',
 		maxExtraIngredients?.toString() ?? '',
 		maxResults.toString(),
 		maxRating.toString(),
 		popularTrend.tag ?? '',
 		popularTrend.isNegative ? '1' : '0',
+		specialGuest,
 	].join('|');
 }
 
 export async function getScoreBasedAlternatives(
 	params: IScoreBasedAlternativesParams,
 	options: ISuggestMealsOptions = {}
-): Promise<Map<TIngredientName, TIngredientName[]>> {
+): Promise<Map<TIngredientId, TIngredientId[]>> {
 	return getScoreBasedAlternativesCore(
 		params,
 		createSuggestMealsExecution(options)
@@ -95,36 +95,34 @@ export function getRecommendationMemoryCacheStats(): IRecommendationMemoryCacheS
 }
 
 function cloneSuggestedMeals(meals: ReadonlyArray<ISuggestedMeal>) {
-	return meals.map(({ beverage, price, rating, recipe }) => ({
+	return meals.map(({ beverage, food, price, rating }) => ({
 		beverage,
+		food: {
+			extraIngredients: [...food.extraIngredients],
+			recipeId: food.recipeId,
+		},
 		price,
 		rating,
-		recipe: {
-			extraIngredients: [...recipe.extraIngredients],
-			name: recipe.name,
-			recipeId: recipe.recipeId,
-		},
 	}));
 }
 
 function createSuggestParamsSnapshot(params: ISuggestParams): ISuggestParams {
 	return {
 		...params,
-		currentRecipe:
-			params.currentRecipe === null
+		currentFood:
+			params.currentFood === null
 				? null
 				: {
 						extraIngredients: [
-							...params.currentRecipe.extraIngredients,
+							...params.currentFood.extraIngredients,
 						],
-						name: params.currentRecipe.name,
-						recipeId: params.currentRecipe.recipeId,
+						recipeId: params.currentFood.recipeId,
 					},
-		customerOrder: { ...params.customerOrder },
+		guestOrder: { ...params.guestOrder },
 		hiddenBeverages: new Set(params.hiddenBeverages),
 		hiddenDlcs: new Set(params.hiddenDlcs),
+		hiddenFoods: new Set(params.hiddenFoods),
 		hiddenIngredients: new Set(params.hiddenIngredients),
-		hiddenRecipes: new Set(params.hiddenRecipes),
 		popularTrend: { ...params.popularTrend },
 	};
 }

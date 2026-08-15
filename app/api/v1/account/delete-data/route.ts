@@ -21,6 +21,8 @@ import {
 	createNoStoreJsonResponse,
 } from '@/infrastructure/http/server/responses';
 
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +34,7 @@ interface IDeleteAccountDataBody {
 function parseDeleteAccountDataBody(
 	value: unknown
 ): IDeleteAccountDataBody | null {
-	if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+	if (!checkIsRecord(value)) {
 		return null;
 	}
 	const parsedGeneration = parseClientSyncGeneration(value);
@@ -172,15 +174,20 @@ export async function DELETE(request: NextRequest) {
 					auditNow
 				)
 		);
-	if (clearResult.status === 'unauthorized') {
-		return createNoStoreErrorResponse(
-			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
-			401
-		);
-	}
 	if (clearResult.status === 'state-epoch-mismatch') {
 		return createNoStoreErrorResponse(
 			ACCOUNT_API_RESPONSE_CODE_MAP.stateEpochMismatch,
+			409,
+			{
+				state_epoch: clearResult.state_epoch,
+				sync_generation: clearResult.sync_generation,
+				sync_status: clearResult.sync_status,
+			}
+		);
+	}
+	if (clearResult.status === 'sync-generation-mismatch') {
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.generationMismatch,
 			409,
 			{
 				state_epoch: clearResult.state_epoch,
@@ -200,15 +207,10 @@ export async function DELETE(request: NextRequest) {
 			}
 		);
 	}
-	if (clearResult.status === 'sync-generation-mismatch') {
+	if (clearResult.status === 'unauthorized') {
 		return createNoStoreErrorResponse(
-			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.generationMismatch,
-			409,
-			{
-				state_epoch: clearResult.state_epoch,
-				sync_generation: clearResult.sync_generation,
-				sync_status: clearResult.sync_status,
-			}
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
 		);
 	}
 	return createNoStoreJsonResponse({
