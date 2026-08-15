@@ -1,15 +1,24 @@
 import { SYNC_NAMESPACE_MAP } from '@/domain/account/contracts';
-import { CustomerNormal } from '@/domain/catalog/customers/CustomerNormal';
-import { CustomerRare } from '@/domain/catalog/customers/CustomerRare';
-import { Beverage } from '@/domain/catalog/food/Beverage';
-import { Ingredient } from '@/domain/catalog/food/Ingredient';
-import { Recipe } from '@/domain/catalog/food/Recipe';
+import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
+import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import { NormalGuestCatalog } from '@/domain/catalog/guests/NormalGuestCatalog';
+import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { resolveLegacyRecordName } from '@/domain/catalog/legacy/resolveLegacyRecordName';
+import type { TBeverageId, TBeverageName } from '@/domain/data/beverages/types';
+import type { TFoodId, TFoodName, TRecipeId } from '@/domain/data/foods/types';
+import type { TNormalGuestName } from '@/domain/data/guests/normal/types';
+import type { TSpecialGuestName } from '@/domain/data/guests/special/types';
 import type { TIngredientName } from '@/domain/data/ingredients/types';
-import type { TRecipeName } from '@/domain/data/recipes/types';
-import type { IMealRecipe } from '@/domain/meals/types';
+import type {
+	IMealFood,
+	INormalGuestSavedMeal,
+	ISpecialGuestSavedMeal,
+} from '@/domain/meals/types';
 
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
 
+import { checkBeverageTag, checkFoodTag } from './tags';
 import {
 	checkSnapshotEqual,
 	createMergeResult,
@@ -19,48 +28,98 @@ import {
 } from './utils';
 
 type TMealSyncNamespace =
-	| typeof SYNC_NAMESPACE_MAP.customerNormalMeals
-	| typeof SYNC_NAMESPACE_MAP.customerRareMeals;
+	| typeof SYNC_NAMESPACE_MAP.normalGuestMeals
+	| typeof SYNC_NAMESPACE_MAP.specialGuestMeals;
 
-const beverageNames = new Set<string>(Beverage.getInstance().getNames());
-const customerNormalNames = new Set<string>(
-	CustomerNormal.getInstance().getNames()
+const beverageCatalog = BeverageCatalog.getInstance();
+const foodCatalog = FoodCatalog.getInstance();
+const ingredientCatalog = IngredientCatalog.getInstance();
+const normalGuestCatalog = NormalGuestCatalog.getInstance();
+const specialGuestCatalog = SpecialGuestCatalog.getInstance();
+const beverageNames = new Set<string>(beverageCatalog.getNames());
+const beverageKeys = new Set(beverageCatalog.data.map(({ id }) => String(id)));
+const foodNames = new Set<string>(foodCatalog.getNames());
+const ingredientNames = new Set<string>(ingredientCatalog.getNames());
+const normalGuestNames = new Set<string>(normalGuestCatalog.getNames());
+const normalGuestKeys = new Set(
+	normalGuestCatalog.data.map(({ id }) => String(id))
 );
-const customerRareNames = new Set<string>(
-	CustomerRare.getInstance().getNames()
+const specialGuestNames = new Set<string>(specialGuestCatalog.getNames());
+const specialGuestKeys = new Set(
+	specialGuestCatalog.data.map(({ id }) => String(id))
 );
-const ingredientNames = new Set<string>(Ingredient.getInstance().getNames());
-const recipeInstance = Recipe.getInstance();
-const recipeNames = new Set<string>(recipeInstance.getNames());
-
-export type TMealSnapshot<TMeal> = Partial<Record<string, TMeal[]>>;
-
-export interface IMealRecipeV1 {
-	extraIngredients: TIngredientName[];
-	name: TRecipeName;
-}
-
-function getCustomerNamesForType(customerType: 'normal' | 'rare') {
-	return customerType === 'normal' ? customerNormalNames : customerRareNames;
-}
-
-function getCustomerNamesForNamespace(namespace: TMealSyncNamespace) {
-	switch (namespace) {
-		case SYNC_NAMESPACE_MAP.customerNormalMeals:
-			return customerNormalNames;
-		case SYNC_NAMESPACE_MAP.customerRareMeals:
-			return customerRareNames;
+const recipeFoodNames = new Map<number, TFoodName>();
+for (const { name, recipes } of foodCatalog.data) {
+	for (const { id } of recipes) {
+		recipeFoodNames.set(id, name);
 	}
+}
+
+export type TMealSnapshot<TMeal> = Record<string, TMeal[]>;
+
+export interface ILegacyMealFoodV1 {
+	extraIngredients: TIngredientName[];
+	name: TFoodName;
+}
+
+export interface ILegacyMealFoodV2 extends ILegacyMealFoodV1 {
+	recipeId: TRecipeId;
+}
+
+function getGuestKeys(guestType: 'normal' | 'special') {
+	return guestType === 'normal' ? normalGuestKeys : specialGuestKeys;
+}
+
+function getGuestKeysForNamespace(namespace: TMealSyncNamespace) {
+	switch (namespace) {
+		case SYNC_NAMESPACE_MAP.normalGuestMeals:
+			return normalGuestKeys;
+		case SYNC_NAMESPACE_MAP.specialGuestMeals:
+			return specialGuestKeys;
+	}
+}
+
+function getLegacyGuestNames(guestType: 'normal' | 'special') {
+	return guestType === 'normal' ? normalGuestNames : specialGuestNames;
+}
+
+function checkLegacyFoodName(value: unknown): value is TFoodName {
+	return typeof value === 'string' && foodNames.has(value);
+}
+
+function checkLegacyIngredientName(value: unknown): value is TIngredientName {
+	return typeof value === 'string' && ingredientNames.has(value);
+}
+
+function checkLegacyNormalGuestName(value: unknown): value is TNormalGuestName {
+	return typeof value === 'string' && normalGuestNames.has(value);
+}
+
+function checkLegacyRecipeReference(
+	value: unknown,
+	foodName: TFoodName
+): value is TRecipeId {
+	return (
+		typeof value === 'number' &&
+		Number.isSafeInteger(value) &&
+		recipeFoodNames.get(value) === foodName
+	);
+}
+
+function checkLegacySpecialGuestName(
+	value: unknown
+): value is TSpecialGuestName {
+	return typeof value === 'string' && specialGuestNames.has(value);
 }
 
 function sanitizeMealSnapshot<TMeal>(
 	data: TMealSnapshot<TMeal>,
-	customerNames: Set<string>
+	guestKeys: Set<string>
 ) {
 	return Object.entries(data).reduce<TMealSnapshot<TMeal>>(
-		(result, [customerName, meals]) => {
-			if (customerNames.has(customerName) && Array.isArray(meals)) {
-				result[customerName] = meals;
+		(result, [guestKey, meals]) => {
+			if (guestKeys.has(guestKey) && Array.isArray(meals)) {
+				result[guestKey] = meals;
 			}
 
 			return result;
@@ -69,87 +128,232 @@ function sanitizeMealSnapshot<TMeal>(
 	);
 }
 
-export function validateMealRecipeV1(data: unknown): data is IMealRecipeV1 {
-	return (
-		isObjectTagRecord(data) &&
-		hasExactKeys(data, ['extraIngredients', 'name']) &&
-		typeof data['name'] === 'string' &&
-		recipeNames.has(data['name']) &&
-		Array.isArray(data['extraIngredients']) &&
-		data['extraIngredients'].every(
-			(ingredient) =>
-				typeof ingredient === 'string' &&
-				ingredientNames.has(ingredient)
-		)
+function resolveLegacyIngredientNames(names: ReadonlyArray<TIngredientName>) {
+	return names.map((name) =>
+		resolveLegacyRecordName({
+			catalog: ingredientCatalog,
+			category: 'ingredient',
+			name,
+		})
 	);
 }
 
-export function validateMealRecipe(data: unknown): data is IMealRecipe {
-	return recipeInstance.isMealRecipe(data);
+function resolveLegacyGuestName(guestType: 'normal' | 'special', name: string) {
+	if (guestType === 'normal') {
+		if (!checkLegacyNormalGuestName(name)) {
+			return null;
+		}
+
+		return resolveLegacyRecordName({
+			catalog: normalGuestCatalog,
+			category: 'normalGuest',
+			name,
+		});
+	}
+	if (!checkLegacySpecialGuestName(name)) {
+		return null;
+	}
+
+	return resolveLegacyRecordName({
+		catalog: specialGuestCatalog,
+		category: 'specialGuest',
+		name,
+	});
 }
 
-export function migrateMealRecipeV1(data: IMealRecipeV1): IMealRecipe {
-	return {
-		extraIngredients: [...data.extraIngredients],
-		name: data.name,
-		recipeId: recipeInstance.getDefaultRecipeVariant(data.name).id,
-	};
+function getLegacyDefaultRecipe(food: TFoodId) {
+	const [recipe] = foodCatalog.getPropsById(food, 'recipes');
+	return recipe.id;
 }
 
-export function normalizeMealRecipe(data: IMealRecipe): IMealRecipe {
-	return {
-		extraIngredients: [...data.extraIngredients],
+export function migrateMealFoodV1ToV2(
+	data: ILegacyMealFoodV1
+): ILegacyMealFoodV2 {
+	const food = resolveLegacyRecordName({
+		catalog: foodCatalog,
+		category: 'food',
 		name: data.name,
+	});
+
+	return { ...data, recipeId: getLegacyDefaultRecipe(food) };
+}
+
+export function migrateMealFoodV2(data: ILegacyMealFoodV2): IMealFood {
+	return {
+		extraIngredients: resolveLegacyIngredientNames(data.extraIngredients),
 		recipeId: data.recipeId,
 	};
 }
 
-export function validateMealSnapshot<TMeal>(
+export function validateLegacyMealFoodV1(
+	data: unknown
+): data is ILegacyMealFoodV1 {
+	if (
+		!isObjectTagRecord(data) ||
+		!hasExactKeys(data, ['extraIngredients', 'name']) ||
+		!checkLegacyFoodName(data['name']) ||
+		!Array.isArray(data['extraIngredients']) ||
+		!data['extraIngredients'].every(checkLegacyIngredientName)
+	) {
+		return false;
+	}
+
+	return true;
+}
+
+export function validateLegacyMealFoodV2(
+	data: unknown
+): data is ILegacyMealFoodV2 {
+	if (
+		!isObjectTagRecord(data) ||
+		!hasExactKeys(data, ['extraIngredients', 'name', 'recipeId']) ||
+		!checkLegacyFoodName(data['name']) ||
+		!checkLegacyRecipeReference(data['recipeId'], data['name']) ||
+		!Array.isArray(data['extraIngredients']) ||
+		!data['extraIngredients'].every(checkLegacyIngredientName)
+	) {
+		return false;
+	}
+
+	return true;
+}
+
+export function validateMealFood(data: unknown): data is IMealFood {
+	return foodCatalog.isMealFood(data);
+}
+
+export function checkBeverage(data: unknown): data is TBeverageId {
+	return typeof data === 'number' && beverageKeys.has(String(data));
+}
+
+export function validateNormalGuestSavedMeal(
+	data: unknown
+): data is INormalGuestSavedMeal {
+	return (
+		isObjectTagRecord(data) &&
+		hasExactKeys(data, ['beverage', 'food']) &&
+		(data['beverage'] === null || checkBeverage(data['beverage'])) &&
+		validateMealFood(data['food'])
+	);
+}
+
+export function validateSpecialGuestSavedMeal(
+	data: unknown
+): data is ISpecialGuestSavedMeal {
+	return (
+		isObjectTagRecord(data) &&
+		hasExactKeys(data, ['beverage', 'food', 'hasMystiaCooker', 'order']) &&
+		checkBeverage(data['beverage']) &&
+		typeof data['hasMystiaCooker'] === 'boolean' &&
+		isObjectTagRecord(data['order']) &&
+		hasExactKeys(data['order'], ['beverageTag', 'foodTag']) &&
+		(data['order']['beverageTag'] === null ||
+			checkBeverageTag(data['order']['beverageTag'])) &&
+		(data['order']['foodTag'] === null ||
+			checkFoodTag(data['order']['foodTag'])) &&
+		validateMealFood(data['food'])
+	);
+}
+
+export function normalizeMealFood(data: IMealFood): IMealFood {
+	return {
+		extraIngredients: [...data.extraIngredients],
+		recipeId: data.recipeId,
+	};
+}
+
+export function validateLegacyMealSnapshot<TMeal>(
 	data: unknown,
 	{
-		customerType,
+		guestType,
 		validateMeal,
 	}: {
-		customerType: 'normal' | 'rare';
+		guestType: 'normal' | 'special';
 		validateMeal: (data: unknown) => data is TMeal;
 	}
 ): data is TMealSnapshot<TMeal> {
 	if (!isObjectTagRecord(data)) {
 		return false;
 	}
-
-	const customerNames = getCustomerNamesForType(customerType);
+	const guestNames = getLegacyGuestNames(guestType);
 
 	return Object.entries(data).every(
-		([customerName, meals]) =>
-			customerNames.has(customerName) &&
+		([guestName, meals]) =>
+			guestNames.has(guestName) &&
 			Array.isArray(meals) &&
 			meals.every(validateMeal)
+	);
+}
+
+export function migrateLegacyMealSnapshot<TMeal, TNormalizedMeal>(
+	data: TMealSnapshot<TMeal>,
+	{
+		guestType,
+		migrateMeal,
+	}: {
+		guestType: 'normal' | 'special';
+		migrateMeal: (meal: TMeal) => TNormalizedMeal;
+	}
+) {
+	return Object.entries(data).reduce<TMealSnapshot<TNormalizedMeal>>(
+		(result, [guestName, meals]) => {
+			const guest = resolveLegacyGuestName(guestType, guestName);
+			if (guest === null) {
+				return result;
+			}
+			const guestKey = String(guest);
+			const migratedMeals = meals.map(migrateMeal);
+			result[guestKey] = [...(result[guestKey] ?? []), ...migratedMeals];
+
+			return result;
+		},
+		{}
+	);
+}
+
+export function validateMealSnapshot<TMeal>(
+	data: unknown,
+	{
+		guestType,
+		validateMeal,
+	}: {
+		guestType: 'normal' | 'special';
+		validateMeal: (data: unknown) => data is TMeal;
+	}
+): data is TMealSnapshot<TMeal> {
+	return (
+		isObjectTagRecord(data) &&
+		Object.entries(data).every(
+			([guestKey, meals]) =>
+				getGuestKeys(guestType).has(guestKey) &&
+				Array.isArray(meals) &&
+				meals.every(validateMeal)
+		)
 	);
 }
 
 export function normalizeMealSnapshot<TMeal, TNormalizedMeal>(
 	data: TMealSnapshot<TMeal>,
 	normalizeMeal: (meal: TMeal) => TNormalizedMeal,
-	customerType?: 'normal' | 'rare'
+	guestType?: 'normal' | 'special'
 ) {
 	if (!isObjectTagRecord(data)) {
 		return {};
 	}
 	const snapshot =
-		customerType === undefined
+		guestType === undefined
 			? data
-			: sanitizeMealSnapshot(data, getCustomerNamesForType(customerType));
+			: sanitizeMealSnapshot(data, getGuestKeys(guestType));
 
 	return Object.entries(snapshot).reduce<TMealSnapshot<TNormalizedMeal>>(
-		(result, [customerName, meals]) => {
+		(result, [guestKey, meals]) => {
 			if (!Array.isArray(meals)) {
 				return result;
 			}
 
 			const normalizedMeals = meals.map(normalizeMeal);
 			if (normalizedMeals.length > 0) {
-				result[customerName] = normalizedMeals;
+				result[guestKey] = normalizedMeals;
 			}
 			return result;
 		},
@@ -157,7 +361,15 @@ export function normalizeMealSnapshot<TMeal, TNormalizedMeal>(
 	);
 }
 
-export function checkBeverageName(data: unknown) {
+export function resolveLegacyBeverage(name: TBeverageName): TBeverageId {
+	return resolveLegacyRecordName({
+		catalog: beverageCatalog,
+		category: 'beverage',
+		name,
+	});
+}
+
+export function checkLegacyBeverage(data: unknown): data is TBeverageName {
 	return typeof data === 'string' && beverageNames.has(data);
 }
 
@@ -273,14 +485,12 @@ export function mergeMealSnapshot<TMeal>({
 	local: TMealSnapshot<TMeal>;
 	namespace: TMealSyncNamespace;
 }) {
-	const allowedCustomerNames = getCustomerNamesForNamespace(namespace);
+	const allowedGuestKeys = getGuestKeysForNamespace(namespace);
 	const baseSnapshot =
-		base === null ? null : sanitizeMealSnapshot(base, allowedCustomerNames);
+		base === null ? null : sanitizeMealSnapshot(base, allowedGuestKeys);
 	const cloudSnapshot =
-		cloud === null
-			? null
-			: sanitizeMealSnapshot(cloud, allowedCustomerNames);
-	const localSnapshot = sanitizeMealSnapshot(local, allowedCustomerNames);
+		cloud === null ? null : sanitizeMealSnapshot(cloud, allowedGuestKeys);
+	const localSnapshot = sanitizeMealSnapshot(local, allowedGuestKeys);
 
 	if (cloudSnapshot === null) {
 		return createMergeResult({
@@ -307,24 +517,24 @@ export function mergeMealSnapshot<TMeal>({
 				shouldUpload: true,
 			});
 		}
-		const customerNames = new Set([
+		const guestKeys = new Set([
 			...Object.keys(cloudSnapshot),
 			...Object.keys(localSnapshot),
 		]);
 		const data: TMealSnapshot<TMeal> = {};
 
-		customerNames.forEach((customerName) => {
+		guestKeys.forEach((guestKey) => {
 			const localAdditions = getMealAdditions(
-				localSnapshot[customerName] ?? [],
-				cloudSnapshot[customerName] ?? []
+				localSnapshot[guestKey] ?? [],
+				cloudSnapshot[guestKey] ?? []
 			);
 			const mergedMeals = [
-				...(cloudSnapshot[customerName] ?? []),
+				...(cloudSnapshot[guestKey] ?? []),
 				...localAdditions,
 			];
 
 			if (mergedMeals.length > 0) {
-				data[customerName] = mergedMeals;
+				data[guestKey] = mergedMeals;
 			}
 		});
 
@@ -335,25 +545,25 @@ export function mergeMealSnapshot<TMeal>({
 		});
 	}
 
-	const customerNames = new Set([
+	const guestKeys = new Set([
 		...Object.keys(baseSnapshot),
 		...Object.keys(cloudSnapshot),
 		...Object.keys(localSnapshot),
 	]);
 	const data: TMealSnapshot<TMeal> = {};
 
-	const hasConflict = customerNames.values().some((customerName) => {
+	const hasConflict = guestKeys.values().some((guestKey) => {
 		const mergedMeals = mergeMealList({
-			baseMeals: baseSnapshot[customerName] ?? [],
-			cloudMeals: cloudSnapshot[customerName] ?? [],
-			localMeals: localSnapshot[customerName] ?? [],
+			baseMeals: baseSnapshot[guestKey] ?? [],
+			cloudMeals: cloudSnapshot[guestKey] ?? [],
+			localMeals: localSnapshot[guestKey] ?? [],
 		});
 
 		if (mergedMeals === null) {
 			return true;
 		}
 		if (mergedMeals.length > 0) {
-			data[customerName] = mergedMeals;
+			data[guestKey] = mergedMeals;
 		}
 
 		return false;

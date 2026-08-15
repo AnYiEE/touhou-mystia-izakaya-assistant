@@ -1,35 +1,32 @@
 import type { TBeverageName, TBeverages } from './beverages/types';
 import type { TClothes, TClothesName } from './clothes/types';
 import type { TCookerName, TCookers } from './cookers/types';
-import type { TCurrencies, TCurrencyName } from './currencies/types';
-import type {
-	TCustomerNormalName,
-	TCustomerNormals,
-} from './customers/normal/types';
-import type { TCustomerRareName, TCustomerRares } from './customers/rare/types';
+import type { TCurrencyItemName, TCurrencyItems } from './currencyItems/types';
+import type { TDecorationName, TDecorations } from './decorations/types';
+import type { TFoodName, TFoods } from './foods/types';
+import type { TNormalGuestName, TNormalGuests } from './guests/normal/types';
+import type { TSpecialGuestName, TSpecialGuests } from './guests/special/types';
 import type { TIngredientName, TIngredients } from './ingredients/types';
-import type { TOrnamentName, TOrnaments } from './ornaments/types';
 import type { TPartnerName, TPartners } from './partners/types';
-import type { TRecipeName, TRecipes } from './recipes/types';
 
-export type TCustomers = TCustomerNormals | TCustomerRares;
-export type TFoods = TBeverages | TIngredients | TRecipes;
+export type TGuests = TNormalGuests | TSpecialGuests;
+export type TTaggedRecords = TBeverages | TFoods | TIngredients;
 export type TItems =
-	| TCustomers
-	| TFoods
+	| TGuests
+	| TTaggedRecords
 	| TClothes
 	| TCookers
-	| TCurrencies
-	| TOrnaments
+	| TCurrencyItems
+	| TDecorations
 	| TPartners;
 
-export type TCustomerName = TCustomerNormalName | TCustomerRareName;
-export type TFoodName = TBeverageName | TIngredientName | TRecipeName;
+export type TGuestName = TNormalGuestName | TSpecialGuestName;
+export type TTaggedRecordName = TBeverageName | TFoodName | TIngredientName;
 export type TItemName =
-	| TCustomerName
-	| TFoodName
+	| TGuestName
+	| TTaggedRecordName
 	| TClothesName
 	| TCookerName
-	| TCurrencyName
-	| TOrnamentName
+	| TCurrencyItemName
+	| TDecorationName
 	| TPartnerName;

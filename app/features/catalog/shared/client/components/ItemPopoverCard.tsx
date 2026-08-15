@@ -11,10 +11,14 @@ import Popover, {
 import Tooltip from '@/design/ui/components/tooltip';
 
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
-import type { ICooker } from '@/domain/data/cookers/schema';
-import type { IIngredient } from '@/domain/data/ingredients/schema';
+import { type COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
+import type { TIngredientTypeLabel } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
-import type { TTag } from '@/domain/data/tags/types';
+import type { TSpriteId, TSpriteTarget } from '@/domain/data/sprites/types';
+import type {
+	TBeverageTagLabel,
+	TFoodTagLabel,
+} from '@/domain/data/tags/types';
 import type { TItemName } from '@/domain/data/types';
 
 import { type ITagStyle } from '@/features/catalog/presentation/tagStyles';
@@ -22,29 +26,37 @@ import { type ITagStyle } from '@/features/catalog/presentation/tagStyles';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 import Price from './Price';
-import Sprite, { type ISpriteProps } from './Sprite';
+import Sprite from './Sprite';
 import TagsComponent from './Tags';
 
-interface IItemPopoverCardProps
-	extends Pick<ISpriteProps, 'target'>, RefProps<HTMLDivElement> {
+type TCookerTypeLabel =
+	(typeof COOKER_TYPE_LABEL_MAP)[keyof typeof COOKER_TYPE_LABEL_MAP];
+type TTagLabel = TBeverageTagLabel | TFoodTagLabel;
+
+interface IItemPopoverCardBase extends RefProps<HTMLDivElement> {
 	// Basic info.
-	id: number;
-	name: TItemName;
-	displayName?: ReactNodeWithoutBoolean;
 	description: {
 		description: string;
 		level?: number;
 		price?: number;
-		type?: ICooker['type'] | IIngredient['type'];
+		type?: TCookerTypeLabel | TCookerTypeLabel[] | TIngredientTypeLabel;
 	};
-	dlc?: number;
 	details?: ReactNodeWithoutBoolean;
+	displayName?: ReactNodeWithoutBoolean;
+	dlc?: number;
+	name: TItemName;
 	// For tags.
-	tags?: { [key in keyof ITagStyle]: TTag[] };
 	tagColors?: ITagStyle;
+	tags?: { [key in keyof ITagStyle]: TTagLabel[] };
 }
 
-const ItemPopoverCard = memo<PropsWithChildren<IItemPopoverCardProps>>(
+type TItemPopoverIdentity = {
+	[T in TSpriteTarget]: { id: TSpriteId<T>; target: T };
+}[TSpriteTarget];
+
+type TItemPopoverCardProps = IItemPopoverCardBase & TItemPopoverIdentity;
+
+const ItemPopoverCard = memo<PropsWithChildren<TItemPopoverCardProps>>(
 	function ItemPopoverCard({
 		children,
 		description,
@@ -93,7 +105,7 @@ const ItemPopoverCard = memo<PropsWithChildren<IItemPopoverCardProps>>(
 				<div className="flex items-center gap-2 text-small text-foreground">
 					<Sprite
 						target={target}
-						name={name}
+						recordId={id}
 						size={2}
 						className={cn(
 							'transition-transform hover:scale-150 motion-reduce:transition-none',
@@ -185,7 +197,7 @@ const ItemPopoverCard = memo<PropsWithChildren<IItemPopoverCardProps>>(
 					)}
 					<p>
 						<span className="font-semibold">
-							{target === 'recipe' ? '料理' : ''}ID：
+							{target === 'food' ? '料理' : ''}ID：
 						</span>
 						<Price showSymbol={false}>{id}</Price>
 					</p>

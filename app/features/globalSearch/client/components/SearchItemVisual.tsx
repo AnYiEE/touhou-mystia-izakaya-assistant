@@ -11,12 +11,12 @@ import type { IGlobalSearchIndexItem } from '@/features/globalSearch/contracts';
 function isRoundedSpriteContentTarget(item: IGlobalSearchIndexItem) {
 	return (
 		item.spriteTarget !== undefined &&
-		['customer_rare', 'partner'].includes(item.spriteTarget)
+		['special_guest', 'partner'].includes(item.spriteTarget)
 	);
 }
 
 function getSpriteSize(item: IGlobalSearchIndexItem, size: 'md' | 'sm') {
-	if (item.spriteTarget === 'customer_normal') {
+	if (item.spriteTarget === 'normal_guest') {
 		return size === 'sm' ? 1.61 : 2.2;
 	}
 	return size === 'sm' ? 1.15 : 1.55;
@@ -25,9 +25,9 @@ function getSpriteSize(item: IGlobalSearchIndexItem, size: 'md' | 'sm') {
 function getSpriteClassName(item: IGlobalSearchIndexItem, size: 'md' | 'sm') {
 	return cn({
 		'-translate-x-[0.2rem] -translate-y-[0.05rem]':
-			item.spriteTarget === 'customer_normal' && size === 'sm',
+			item.spriteTarget === 'normal_guest' && size === 'sm',
 		'-translate-x-[0.3rem] -translate-y-[0.1rem]':
-			item.spriteTarget === 'customer_normal' && size === 'md',
+			item.spriteTarget === 'normal_guest' && size === 'md',
 		'rounded-full': isRoundedSpriteContentTarget(item),
 	});
 }
@@ -40,8 +40,8 @@ export function SearchItemVisual({
 	size: 'md' | 'sm';
 }) {
 	const visualSizeClassName = size === 'sm' ? 'h-6 w-6' : 'h-9 w-9';
-	const isCustomerNormalVisual = item?.spriteTarget === 'customer_normal';
-	const customerNormalCropSizeClassName =
+	const isNormalGuestVisual = item?.spriteTarget === 'normal_guest';
+	const normalGuestCropSizeClassName =
 		size === 'sm' ? 'h-[1.15rem] w-[1.15rem]' : 'h-[1.55rem] w-[1.55rem]';
 
 	return (
@@ -51,8 +51,7 @@ export function SearchItemVisual({
 				visualSizeClassName
 			)}
 		>
-			{item?.spriteTarget === undefined ||
-			item.targetName === undefined ? (
+			{item?.spriteTarget === undefined ? (
 				<FontAwesomeIcon
 					icon={
 						item?.section === 'preferences'
@@ -64,16 +63,16 @@ export function SearchItemVisual({
 						'text-foreground-500'
 					)}
 				/>
-			) : isCustomerNormalVisual ? (
+			) : isNormalGuestVisual ? (
 				<span
 					className={cn(
 						'block overflow-hidden rounded-full',
-						customerNormalCropSizeClassName
+						normalGuestCropSizeClassName
 					)}
 				>
 					<Sprite
 						target={item.spriteTarget}
-						name={item.targetName as never}
+						recordId={item.recordId}
 						size={getSpriteSize(item, size)}
 						className={getSpriteClassName(item, size)}
 					/>
@@ -81,7 +80,7 @@ export function SearchItemVisual({
 			) : (
 				<Sprite
 					target={item.spriteTarget}
-					name={item.targetName as never}
+					recordId={item.recordId}
 					size={getSpriteSize(item, size)}
 					className={getSpriteClassName(item, size)}
 				/>

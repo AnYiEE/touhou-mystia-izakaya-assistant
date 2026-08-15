@@ -13,12 +13,17 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 import { ACCOUNT_SYNC_API_RESPONSE_CODE_MAP } from '@/features/account/sync/apiResponseCodes';
+import { checkSyncProtocolRequestBody } from '@/features/account/sync/protocol';
 import { getAccountSyncCapacityConfiguration } from '@/features/account/sync/server/capacity';
+import { createSyncClientUpdateRequiredResponse } from '@/features/account/sync/server/protocolResponse';
 import {
 	createUserStateRecord,
 	parseUserStateRecord,
 } from '@/features/account/sync/server/state';
-import type { ISyncStateRebuildBody } from '@/features/account/sync/types';
+import type {
+	ISyncProtocolRequest,
+	ISyncStateRebuildBody,
+} from '@/features/account/sync/types';
 import {
 	checkSyncStateRebuildChanges,
 	findUnsupportedSyncSchemaVersion,
@@ -96,10 +101,9 @@ export async function POST(request: NextRequest) {
 	}
 
 	const capacityConfiguration = getAccountSyncCapacityConfiguration();
-	const bodyResult = await readJsonBodyResult<ISyncStateRebuildBody>(
-		request,
-		capacityConfiguration.requestMaxBytes
-	);
+	const bodyResult = await readJsonBodyResult<
+		ISyncProtocolRequest & ISyncStateRebuildBody
+	>(request, capacityConfiguration.requestMaxBytes);
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse(
 			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.requestTooLarge,
@@ -108,7 +112,10 @@ export async function POST(request: NextRequest) {
 		);
 	}
 	const rawBody = bodyResult.status === 'ok' ? bodyResult.data : null;
-	const body = parseSyncStatePutBody(rawBody);
+	if (bodyResult.status === 'ok' && !checkSyncProtocolRequestBody(rawBody)) {
+		return createSyncClientUpdateRequiredResponse();
+	}
+	const body = parseSyncStatePutBody(rawBody, ['protocol_version']);
 	if (body === null || !checkSyncStateRebuildChanges(body.changes)) {
 		const unsupportedSchema = findUnsupportedSyncSchemaVersion(rawBody);
 		if (unsupportedSchema !== null) {

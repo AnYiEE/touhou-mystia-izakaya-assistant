@@ -1,3 +1,5 @@
+import isObject from 'lodash/isObject.js';
+
 import { type TSyncNamespace } from '@/domain/account/contracts';
 
 import type {
@@ -7,7 +9,7 @@ import type {
 import { checkSnapshotEqual, createMergeResult, mergeFieldMap } from './utils';
 
 const GLOBAL_PREFERENCE_ATOMIC_GROUP_PATHS = [
-	['customerCardTagsTooltip'],
+	['guestCardTagsTooltip'],
 	['famousShop'],
 	['highAppearance'],
 	['popularTrend'],
@@ -26,7 +28,7 @@ function readPreferenceGroup(
 ) {
 	return path.reduce<unknown>(
 		(value, key) =>
-			value !== null && typeof value === 'object'
+			isObject(value)
 				? (value as Record<string, unknown>)[key]
 				: undefined,
 		snapshot
@@ -44,10 +46,7 @@ function writePreferenceGroup(
 	}
 	const key = path.at(-1);
 	if (key !== undefined) {
-		target[key] =
-			value !== null && typeof value === 'object'
-				? structuredClone(value)
-				: value;
+		target[key] = isObject(value) ? structuredClone(value) : value;
 	}
 }
 
@@ -122,7 +121,7 @@ function mergeDonationModal(
 	};
 }
 
-function mergeStringSet<T extends string>({
+function mergeSet<T extends number | string>({
 	base,
 	cloud,
 	local,
@@ -168,43 +167,42 @@ function mergeReliableBaseSnapshots({
 		cloud.donationModal,
 		local.donationModal
 	);
-	data.hiddenItems.dlcs = mergeStringSet({
+	data.hiddenItems.dlcs = mergeSet({
 		base: base.hiddenItems.dlcs,
 		cloud: cloud.hiddenItems.dlcs,
 		local: local.hiddenItems.dlcs,
 		valueOrder: setValueOrders.hiddenDlcs,
 	});
-	data.table.columns.beverage = mergeStringSet({
+	data.table.columns.beverage = mergeSet({
 		base: base.table.columns.beverage,
 		cloud: cloud.table.columns.beverage,
 		local: local.table.columns.beverage,
 		valueOrder: setValueOrders.beverageColumns,
 	}) as TGlobalPreferencesSnapshot['table']['columns']['beverage'];
-	data.table.columns.recipe = mergeStringSet({
+	data.table.columns.recipe = mergeSet({
 		base: base.table.columns.recipe,
 		cloud: cloud.table.columns.recipe,
 		local: local.table.columns.recipe,
-		valueOrder: setValueOrders.recipeColumns,
+		valueOrder: setValueOrders.foodColumns,
 	}) as TGlobalPreferencesSnapshot['table']['columns']['recipe'];
-	data.table.hiddenItems.beverages = mergeStringSet({
+	data.table.hiddenItems.beverages = mergeSet({
 		base: base.table.hiddenItems.beverages,
 		cloud: cloud.table.hiddenItems.beverages,
 		local: local.table.hiddenItems.beverages,
 		valueOrder: setValueOrders.hiddenBeverages,
-	}) as TGlobalPreferencesSnapshot['table']['hiddenItems']['beverages'];
-	data.table.hiddenItems.ingredients = mergeStringSet({
+	});
+	data.table.hiddenItems.foods = mergeSet({
+		base: base.table.hiddenItems.foods,
+		cloud: cloud.table.hiddenItems.foods,
+		local: local.table.hiddenItems.foods,
+		valueOrder: setValueOrders.hiddenFoods,
+	});
+	data.table.hiddenItems.ingredients = mergeSet({
 		base: base.table.hiddenItems.ingredients,
 		cloud: cloud.table.hiddenItems.ingredients,
 		local: local.table.hiddenItems.ingredients,
 		valueOrder: setValueOrders.hiddenIngredients,
-	}) as TGlobalPreferencesSnapshot['table']['hiddenItems']['ingredients'];
-	data.table.hiddenItems.recipes = mergeStringSet({
-		base: base.table.hiddenItems.recipes,
-		cloud: cloud.table.hiddenItems.recipes,
-		local: local.table.hiddenItems.recipes,
-		valueOrder: setValueOrders.hiddenRecipes,
-	}) as TGlobalPreferencesSnapshot['table']['hiddenItems']['recipes'];
-
+	});
 	for (const path of GLOBAL_PREFERENCE_ATOMIC_GROUP_PATHS) {
 		const baseValue = readPreferenceGroup(base, path);
 		const cloudValue = readPreferenceGroup(cloud, path);

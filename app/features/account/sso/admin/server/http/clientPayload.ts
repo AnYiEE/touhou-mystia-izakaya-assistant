@@ -1,3 +1,5 @@
+import isObject from 'lodash/isObject.js';
+
 import type {
 	IAdminSsoClientCreateBody,
 	IAdminSsoClientUpdateBody,
@@ -42,9 +44,7 @@ function normalizeOptionalUri(value: unknown) {
 }
 
 function normalizeInputObject(value: unknown) {
-	return value !== null && typeof value === 'object'
-		? (value as Record<string, unknown>)
-		: null;
+	return isObject(value) ? (value as Record<string, unknown>) : null;
 }
 
 function parseBaseClientBody(data: unknown) {

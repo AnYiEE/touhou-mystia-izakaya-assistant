@@ -15,6 +15,19 @@ import {
 import { incrementTrackedInteractionCount } from './interactionCount';
 import { pushWithAnalyticsUserId } from './matomoQueue';
 
+function queueTrackEvent(
+	category: TTrackCategory,
+	action: TTrackAction,
+	name: string,
+	value?: number | string
+) {
+	pushWithAnalyticsUserId((tracker) => {
+		tracker.setCustomUrl(location.href);
+		tracker.setDocumentTitle(document.title);
+		tracker.trackEvent(category, action, name, value);
+	});
+}
+
 function trackEventFunction(
 	category: typeof TRACK_CATEGORY_MAP.click,
 	action: TActions | TItemCard,
@@ -47,14 +60,12 @@ function trackEventFunction(
 	name: string,
 	value?: number | string
 ) {
-	pushWithAnalyticsUserId((tracker) => {
-		tracker.setCustomUrl(location.href);
-		tracker.setDocumentTitle(document.title);
-		tracker.trackEvent(category, action, name, value);
-	});
+	queueTrackEvent(category, action, name, value);
 	incrementTrackedInteractionCount();
 }
 
 export const trackEvent = trackEventFunction as TTrackEvent;
+export const trackEventWithoutInteractionCount = queueTrackEvent as TTrackEvent;
 
 trackEvent.category = TRACK_CATEGORY_MAP;
+trackEventWithoutInteractionCount.category = TRACK_CATEGORY_MAP;

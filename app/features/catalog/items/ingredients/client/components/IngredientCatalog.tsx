@@ -1,6 +1,8 @@
-import { memo, useRef } from 'react';
+import { memo, useMemo, useRef } from 'react';
 
-import { type Ingredient } from '@/domain/catalog/food/Ingredient';
+import { type IngredientCatalog as IngredientCatalogModel } from '@/domain/catalog/food/IngredientCatalog';
+import { INGREDIENT_TYPE_MAP } from '@/domain/data/ingredients/ingredientFacts';
+import { FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { ingredientsStore } from '@/features/catalog/items/ingredients/client/state/store';
@@ -21,11 +23,13 @@ import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 
-import IngredientRelatedRecipes from './IngredientRelatedRecipes';
+import { numberSort } from '@/shared/utilities/sort/numberSort';
+
+import IngredientRelatedFoods from './IngredientRelatedFoods';
 import IngredientSourceDetails from './IngredientSourceDetails';
 
 interface IProps {
-	data: TItemData<Ingredient>;
+	data: TItemData<IngredientCatalogModel>;
 }
 
 export default memo<IProps>(function IngredientCatalog({ data }) {
@@ -37,28 +41,50 @@ export default memo<IProps>(function IngredientCatalog({ data }) {
 	const openWindow = useViewInNewWindow();
 
 	const hiddenDlcs = ingredientsStore.shared.hiddenItems.dlcs.use();
+	const presentationData = useMemo(
+		() =>
+			data.map((item) => ({
+				description: {
+					description: item.description,
+					level: item.level,
+					price: item.price,
+					type: INGREDIENT_TYPE_MAP[item.type],
+				},
+				item,
+				tags: {
+					positive: item.tags
+						.toSorted(numberSort)
+						.map((tag) => FOOD_TAG_MAP[tag]),
+				},
+			})),
+		[data]
+	);
 
-	return data.map(
+	return presentationData.map(
 		(
-			{ description, dlc, from, id, level, name, price, tags, type },
+			{ description, item: { dlc, from, id, name, price }, tags },
 			dataIndex
 		) => (
 			<ItemPopover
-				key={getPopoverKey(dataIndex, name)}
+				key={getPopoverKey(dataIndex, id)}
 				showArrow
 				/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/3736} is fixed. */
 				// backdrop={isHighAppearance ? 'blur' : 'opaque'}
-				defaultOpen={checkDefaultOpen(name)}
-				{...getPopoverOpenChangeProps(name)}
+				defaultOpen={checkDefaultOpen(id)}
+				{...getPopoverOpenChangeProps(id)}
 			>
 				<ItemPopoverTrigger>
 					<ItemCard
-						isHoverable={checkShouldEffect(name)}
-						isPressable={checkShouldEffect(name)}
+						isHoverable={checkShouldEffect(id)}
+						isPressable={checkShouldEffect(id)}
 						name={name}
 						description={<Price>{price}</Price>}
 						image={
-							<Sprite target="ingredient" name={name} size={3} />
+							<Sprite
+								target="ingredient"
+								recordId={id}
+								size={3}
+							/>
 						}
 						onPress={() => {
 							trackEvent(
@@ -71,20 +97,20 @@ export default memo<IProps>(function IngredientCatalog({ data }) {
 				</ItemPopoverTrigger>
 				<ItemPopoverContent>
 					<ItemPopoverCloseButton />
-					<ItemShareButton name={name} />
+					<ItemShareButton name={name} recordId={id} />
 					<ItemPopoverCard
 						target="ingredient"
 						id={id}
 						name={name}
-						description={{ description, level, price, type }}
+						description={description}
 						dlc={dlc}
-						tags={{ positive: tags }}
+						tags={tags}
 						tagColors={INGREDIENT_TAG_STYLE}
 						ref={popoverCardRef}
 					>
-						<IngredientRelatedRecipes
+						<IngredientRelatedFoods
 							hiddenDlcs={hiddenDlcs}
-							name={name}
+							ingredient={id}
 							openWindow={openWindow}
 						/>
 						<IngredientSourceDetails from={from} />

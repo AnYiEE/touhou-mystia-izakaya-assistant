@@ -310,7 +310,7 @@ export function quarantineInvalidDirtyQueueIntents(
 	}
 	const fixedKeys = [
 		createDirtyQueueKey(userId, namespace),
-		...(namespace === SYNC_NAMESPACE_MAP.customerRarePlans
+		...(namespace === SYNC_NAMESPACE_MAP.specialGuestPlans
 			? [createLegacyDirtyQueueKey(userId, namespace)]
 			: []),
 	];
@@ -454,7 +454,7 @@ export function readActiveDirtyQueueIntent(
 		intent.resultValue,
 	].includes(canonicalValue);
 	const legacyValue =
-		namespace === SYNC_NAMESPACE_MAP.customerRarePlans
+		namespace === SYNC_NAMESPACE_MAP.specialGuestPlans
 			? readAccountStorage(createLegacyDirtyQueueKey(userId, namespace))
 			: null;
 	const legacyMatches =
@@ -486,11 +486,11 @@ export function writeDirtyQueueIntent(intent: IDirtyQueueIntent) {
 	);
 }
 
-export function migrateLegacyCustomerRarePlansDirtyQueueEntry(
+export function migrateLegacySpecialGuestPlansDirtyQueueEntry(
 	generationToken: string | null,
 	userId: string
 ) {
-	const namespace = SYNC_NAMESPACE_MAP.customerRarePlans;
+	const namespace = SYNC_NAMESPACE_MAP.specialGuestPlans;
 	if (
 		!checkAccountSyncResetWriteAllowed({
 			expectedGeneration: generationToken,
@@ -639,7 +639,7 @@ export function readDirtyQueueEntry(userId: string, namespace: TSyncNamespace) {
 		userId,
 	});
 	const legacyRaw =
-		namespace === SYNC_NAMESPACE_MAP.customerRarePlans
+		namespace === SYNC_NAMESPACE_MAP.specialGuestPlans
 			? readAccountStorage(createLegacyDirtyQueueKey(userId, namespace))
 			: null;
 	const legacyEntry = sanitizeDirtyQueueRawValue({
@@ -672,7 +672,7 @@ export function readDirtyQueueEntry(userId: string, namespace: TSyncNamespace) {
 		return intentEntry.entry;
 	}
 
-	if (namespace === SYNC_NAMESPACE_MAP.customerRarePlans) {
+	if (namespace === SYNC_NAMESPACE_MAP.specialGuestPlans) {
 		if (
 			canonicalRaw !== null &&
 			legacyRaw !== null &&
@@ -762,7 +762,7 @@ export function readDirtyQueueCollisionState(
 		createDirtyQueueKey(userId, namespace)
 	);
 	const legacyValue =
-		namespace === SYNC_NAMESPACE_MAP.customerRarePlans
+		namespace === SYNC_NAMESPACE_MAP.specialGuestPlans
 			? readAccountStorage(createLegacyDirtyQueueKey(userId, namespace))
 			: null;
 	const canonicalKey = createDirtyQueueKey(userId, namespace);
@@ -785,7 +785,7 @@ export function readDirtyQueueCollisionState(
 			sourceKey: canonicalKey,
 			value: canonicalValue,
 		},
-		...(namespace === SYNC_NAMESPACE_MAP.customerRarePlans
+		...(namespace === SYNC_NAMESPACE_MAP.specialGuestPlans
 			? [
 					{
 						label: DIRTY_QUEUE_COLLISION_SOURCE_LABEL_MAP.legacyQueue,
@@ -921,7 +921,7 @@ export function createDirtyQueueNamespaceGenerationHash(
 			createDirtyQueueIntentPrefix(userId, namespace)
 		),
 		legacy:
-			namespace === SYNC_NAMESPACE_MAP.customerRarePlans
+			namespace === SYNC_NAMESPACE_MAP.specialGuestPlans
 				? readAccountStorage(
 						createLegacyDirtyQueueKey(userId, namespace)
 					)

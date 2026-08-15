@@ -74,8 +74,8 @@ export interface IListAnnouncementsOptions {
 
 export interface IListAnnouncementsResult {
 	activeCount: number;
-	archivedCount: number;
 	announcements: TAnnouncement[];
+	archivedCount: number;
 	filteredCount: number;
 	totalCount: number;
 }

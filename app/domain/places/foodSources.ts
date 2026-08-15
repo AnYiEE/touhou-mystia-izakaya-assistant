@@ -1,39 +1,37 @@
-import { ALL_PLACES, ALL_PLACES_SET } from '@/domain/data/places/placeFacts';
-import type { TPlace } from '@/domain/data/places/types';
+import { ALL_MAP_LABELS } from '@/domain/data/places/placeFacts';
+import type { TMapLabel } from '@/domain/data/places/types';
 import type { IFoodBase } from '@/domain/data/shared/foodSchema';
 
-import { extractPlacesFromCollectionLocation } from './collectionLocations';
-import { PLACE_NAME_REGEX } from './parsePlace';
+import { extractMapsFromCollectionPoint } from './collectionLocations';
 
 type TFoodFrom = IFoodBase['from'] & { self?: boolean };
 
-export function extractPlacesFromFoodFrom(from: TFoodFrom) {
+export function extractMapsFromFoodFrom(from: TFoodFrom) {
 	if ('self' in from && from.self) {
-		return ALL_PLACES;
+		return ALL_MAP_LABELS;
 	}
 	if (Object.keys(from).length === 0) {
 		return [];
 	}
 
-	const places = new Set<TPlace>();
+	const maps = new Set<TMapLabel>();
 
 	from.buy?.forEach((item) => {
-		const merchant = typeof item === 'string' ? item : item[0];
-		const match = PLACE_NAME_REGEX.exec(merchant);
-		if (match?.[1] && ALL_PLACES_SET.has(match[1])) {
-			places.add(match[1] as TPlace);
+		const merchant = Array.isArray(item) ? item[0] : item;
+		if ('map' in merchant) {
+			maps.add(merchant.map);
 		}
 	});
 
 	from.collect?.forEach((item) => {
-		const location = typeof item === 'string' ? item : item[0];
-		extractPlacesFromCollectionLocation(location).forEach((place) => {
-			places.add(place);
+		const collectionPoint = Array.isArray(item) ? item[0] : item;
+		extractMapsFromCollectionPoint(collectionPoint).forEach((map) => {
+			maps.add(map);
 		});
 	});
 
-	from.fishing?.forEach((p) => places.add(p));
-	from.fishingAdvanced?.forEach((p) => places.add(p));
+	from.fishing?.forEach((map) => maps.add(map));
+	from.fishingAdvanced?.forEach((map) => maps.add(map));
 
-	return [...places];
+	return [...maps];
 }

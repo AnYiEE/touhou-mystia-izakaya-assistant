@@ -11,7 +11,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-	type Key,
 	type SyntheticEvent,
 	memo,
 	useCallback,
@@ -474,13 +473,13 @@ export default function AdminSsoGrantsClient({
 	}, [checkAdmin, initialData.admin]);
 
 	useEffect(() => {
-		let timeoutId: ReturnType<typeof globalThis.setTimeout> | null = null;
+		let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
 		if (admin !== null) {
 			if (isServerInitialRef.current) {
 				isServerInitialRef.current = false;
 			} else {
-				timeoutId = globalThis.setTimeout(() => {
+				timeoutId = setTimeout(() => {
 					refreshGrants(page);
 				}, ADMIN_LIST_DEBOUNCE_MS);
 			}
@@ -488,7 +487,7 @@ export default function AdminSsoGrantsClient({
 
 		return () => {
 			if (timeoutId !== null) {
-				globalThis.clearTimeout(timeoutId);
+				clearTimeout(timeoutId);
 			}
 		};
 	}, [admin, page, refreshGrants]);
@@ -511,18 +510,18 @@ export default function AdminSsoGrantsClient({
 			userId: userIdInput,
 			userStatus,
 		});
-		const currentHref = `${globalThis.location.pathname}${globalThis.location.search}`;
+		const currentHref = `${location.pathname}${location.search}`;
 
 		if (currentHref === nextHref) {
 			return;
 		}
 
-		const timeoutId = globalThis.setTimeout(() => {
+		const timeoutId = setTimeout(() => {
 			router.replace(nextHref, { scroll: false });
 		}, ADMIN_LIST_DEBOUNCE_MS);
 
 		return () => {
-			globalThis.clearTimeout(timeoutId);
+			clearTimeout(timeoutId);
 		};
 	}, [
 		clientIdInput,
@@ -712,14 +711,17 @@ export default function AdminSsoGrantsClient({
 		[]
 	);
 
-	const handleClientStatusAction = useCallback((key: Key) => {
-		setPage(1);
-		setClientStatus(String(key) as TClientStatusFilter);
-	}, []);
+	const handleClientStatusAction = useCallback(
+		(value: TClientStatusFilter) => {
+			setPage(1);
+			setClientStatus(value);
+		},
+		[]
+	);
 
-	const handleUserStatusAction = useCallback((key: Key) => {
+	const handleUserStatusAction = useCallback((value: TUserStatusFilter) => {
 		setPage(1);
-		setUserStatus(String(key) as TUserStatusFilter);
+		setUserStatus(value);
 	}, []);
 
 	const handlePreviousPage = useCallback(() => {

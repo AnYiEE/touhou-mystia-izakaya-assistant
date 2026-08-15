@@ -44,13 +44,11 @@ export function scheduleAnnouncementTimer(
 	callback: () => void,
 	delayMs: number
 ) {
-	return globalThis.setTimeout(callback, delayMs);
+	return setTimeout(callback, delayMs);
 }
 
-export function cancelAnnouncementTimer(
-	timer: ReturnType<typeof globalThis.setTimeout>
-) {
-	globalThis.clearTimeout(timer);
+export function cancelAnnouncementTimer(timer: ReturnType<typeof setTimeout>) {
+	clearTimeout(timer);
 }
 
 interface IDisplayedMarqueeMetrics extends IAnnouncementMarqueeMetrics {
@@ -66,9 +64,9 @@ export function useAnnouncementCarouselController(
 	const accountUser = accountStore.shared.user.use();
 	const rootRef = useRef<HTMLElement>(null);
 	const lastPointerInteractionAtRef = useRef(0);
-	const autoRotateTimerRef = useRef<ReturnType<
-		typeof globalThis.setTimeout
-	> | null>(null);
+	const autoRotateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+		null
+	);
 	const initialToken = serverAnnouncements[0]?.dismissed_token ?? null;
 	const [activeToken, setActiveToken] = useState<string | null>(initialToken);
 	const [displayToken, setDisplayToken] = useState<string | null>(
@@ -138,8 +136,7 @@ export function useAnnouncementCarouselController(
 				rect === undefined
 					? 0
 					: Math.max(0, Math.min(rect.bottom, rect.height));
-
-			globalThis.document.documentElement.style.setProperty(
+			document.documentElement.style.setProperty(
 				'--announcement-bar-offset',
 				`${offset}px`
 			);
@@ -541,12 +538,11 @@ export function useAnnouncementCarouselController(
 	);
 
 	const writeDismissedCookie = useCallback((token: string) => {
-		globalThis.document.cookie =
-			createAnnouncementDismissedCookieAssignment({
-				cookie: globalThis.document.cookie,
-				protocol: globalThis.location.protocol,
-				token,
-			});
+		document.cookie = createAnnouncementDismissedCookieAssignment({
+			cookie: document.cookie,
+			protocol: location.protocol,
+			token,
+		});
 	}, []);
 
 	const handlePrevious = useCallback(() => {

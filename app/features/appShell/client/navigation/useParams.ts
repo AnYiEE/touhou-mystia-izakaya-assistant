@@ -28,11 +28,7 @@ export function useParams() {
 
 	const pushState = useCallback<TUpdateParams>(
 		(newParams) => {
-			globalThis.history.pushState(
-				null,
-				'',
-				concatParams(pathname, newParams)
-			);
+			history.pushState(null, '', concatParams(pathname, newParams));
 		},
 		[pathname]
 	);
@@ -46,11 +42,7 @@ export function useParams() {
 
 	const replaceState = useCallback<TUpdateParams>(
 		(newParams) => {
-			globalThis.history.replaceState(
-				null,
-				'',
-				concatParams(pathname, newParams)
-			);
+			history.replaceState(null, '', concatParams(pathname, newParams));
 		},
 		[pathname]
 	);

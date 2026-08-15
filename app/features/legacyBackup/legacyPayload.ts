@@ -1,4 +1,4 @@
-export function compatibilityCustomerRareData(
+export function compatibilitySpecialGuestData(
 	objects: Record<string, object[]>
 ) {
 	Object.values(objects).forEach((data) => {

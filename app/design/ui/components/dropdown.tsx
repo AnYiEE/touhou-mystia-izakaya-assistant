@@ -5,7 +5,7 @@ import {
 	Dropdown as HeroUIDropdown,
 } from '@heroui/dropdown';
 import { cn } from '@heroui/theme';
-import { type JSX, memo } from 'react';
+import { type JSX, memo, useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
@@ -21,9 +21,24 @@ export default memo<IProps>(function Dropdown({
 	showArrow,
 	...props
 }) {
+	const { isHighAppearance } = useDesignPreferences();
 	const motionProps = useMotionProps('popover');
 	const isReducedMotion = useReducedMotion();
-	const { isHighAppearance } = useDesignPreferences();
+
+	const mergedClassNames = useMemo(
+		() => ({
+			...classNames,
+			content: cn(
+				'min-w-min',
+				{
+					'bg-content1/40 backdrop-blur-lg dark:bg-content1/70':
+						isHighAppearance,
+				},
+				classNames?.content
+			),
+		}),
+		[classNames, isHighAppearance]
+	);
 
 	return (
 		<HeroUIDropdown
@@ -32,17 +47,7 @@ export default memo<IProps>(function Dropdown({
 			shouldBlockScroll={Boolean(shouldBlockScroll)}
 			shouldCloseOnScroll={Boolean(shouldCloseOnScroll)}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
-			classNames={{
-				...classNames,
-				content: cn(
-					'min-w-min',
-					{
-						'bg-content1/40 backdrop-blur-lg dark:bg-content1/70':
-							isHighAppearance,
-					},
-					classNames?.content
-				),
-			}}
+			classNames={mergedClassNames}
 			{...props}
 		/>
 	);

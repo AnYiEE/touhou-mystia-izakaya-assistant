@@ -11,15 +11,14 @@ export function serializeV1RecommendationResult(
 	meals: ReadonlyArray<ISuggestedMeal>
 ) {
 	return {
-		meals: meals.map(({ beverage, price, rating, recipe }) => ({
-			beverage,
+		meals: meals.map(({ beverage, food, price, rating }) => ({
+			beverage_id: beverage,
+			food: {
+				extra_ingredient_ids: [...food.extraIngredients],
+				recipe_id: food.recipeId,
+			},
 			price,
 			rating,
-			recipe: {
-				extra_ingredients: [...recipe.extraIngredients],
-				name: recipe.name,
-				recipe_id: recipe.recipeId,
-			},
 		})),
 		request_id: requestId,
 		type: 'recommendation.result',

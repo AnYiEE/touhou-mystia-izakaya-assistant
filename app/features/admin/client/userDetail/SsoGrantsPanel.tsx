@@ -1,11 +1,11 @@
 'use client';
 
-import type { SyntheticEvent } from 'react';
 import {
 	faSearch,
 	faServer,
 	faUserSlash,
 } from '@fortawesome/free-solid-svg-icons';
+import type { SyntheticEvent } from 'react';
 
 import TimeAgo from '@/design/ui/components/timeAgo';
 

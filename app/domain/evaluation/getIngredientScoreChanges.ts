@@ -1,10 +1,9 @@
-import type { TIngredientName } from '@/domain/data/ingredients/types';
-import type { TRecipeName } from '@/domain/data/recipes/types';
-import {
-	DARK_MATTER_META_MAP,
-	DYNAMIC_TAG_MAP,
-} from '@/domain/data/tags/tagFacts';
-import type { TIngredientTag, TRecipeTag } from '@/domain/data/tags/types';
+import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import type { TFoodId } from '@/domain/data/foods/types';
+import type { TIngredientId } from '@/domain/data/ingredients/types';
+import { DYNAMIC_FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import type { TFoodTagId } from '@/domain/data/tags/types';
+import type { IMealFood } from '@/domain/meals/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import type {
@@ -12,6 +11,8 @@ import type {
 	IIngredientScoreChangesResult,
 	TIngredientScoreRestriction,
 } from './types';
+
+const foodCatalog = FoodCatalog.getInstance();
 
 function getIngredientRestriction(
 	scoreChange: number,
@@ -40,29 +41,33 @@ function getIngredientRestriction(
 function getLargePartitionScoreChange({
 	before,
 	currentPopularTrend,
-	customerNegativeTags,
-	customerPositiveTags,
 	isLargePartitionTagNext,
 	shouldCalculateLargePartitionTag,
+	specialGuestNegativeTags,
+	specialGuestPositiveTags,
 }: {
-	before: ReadonlyArray<TRecipeTag>;
+	before: ReadonlyArray<TFoodTagId>;
 	currentPopularTrend: IPopularTrend;
-	customerNegativeTags: ReadonlyArray<TRecipeTag>;
-	customerPositiveTags: ReadonlyArray<TRecipeTag>;
 	isLargePartitionTagNext: boolean;
 	shouldCalculateLargePartitionTag: boolean;
+	specialGuestNegativeTags: ReadonlyArray<TFoodTagId>;
+	specialGuestPositiveTags: ReadonlyArray<TFoodTagId>;
 }) {
 	let scoreChange = 0;
 
 	if (
 		isLargePartitionTagNext &&
-		!before.includes(DYNAMIC_TAG_MAP.largePartition)
+		!before.includes(DYNAMIC_FOOD_TAG_MAP.largePartition)
 	) {
 		scoreChange -= Number(
-			customerNegativeTags.includes(DYNAMIC_TAG_MAP.largePartition)
+			specialGuestNegativeTags.includes(
+				DYNAMIC_FOOD_TAG_MAP.largePartition
+			)
 		);
 		scoreChange += Number(
-			customerPositiveTags.includes(DYNAMIC_TAG_MAP.largePartition)
+			specialGuestPositiveTags.includes(
+				DYNAMIC_FOOD_TAG_MAP.largePartition
+			)
 		);
 	}
 
@@ -71,149 +76,141 @@ function getLargePartitionScoreChange({
 	}
 
 	scoreChange -= Number(
-		customerNegativeTags.includes(DYNAMIC_TAG_MAP.popularNegative) &&
-			currentPopularTrend.isNegative
+		specialGuestNegativeTags.includes(
+			DYNAMIC_FOOD_TAG_MAP.popularNegative
+		) && currentPopularTrend.isNegative
 	);
 	scoreChange -= Number(
-		customerNegativeTags.includes(DYNAMIC_TAG_MAP.popularPositive) &&
-			!currentPopularTrend.isNegative
+		specialGuestNegativeTags.includes(
+			DYNAMIC_FOOD_TAG_MAP.popularPositive
+		) && !currentPopularTrend.isNegative
 	);
 	scoreChange += Number(
-		customerPositiveTags.includes(DYNAMIC_TAG_MAP.popularNegative) &&
-			currentPopularTrend.isNegative
+		specialGuestPositiveTags.includes(
+			DYNAMIC_FOOD_TAG_MAP.popularNegative
+		) && currentPopularTrend.isNegative
 	);
 	scoreChange += Number(
-		customerPositiveTags.includes(DYNAMIC_TAG_MAP.popularPositive) &&
-			!currentPopularTrend.isNegative
+		specialGuestPositiveTags.includes(
+			DYNAMIC_FOOD_TAG_MAP.popularPositive
+		) && !currentPopularTrend.isNegative
 	);
 
 	return scoreChange;
 }
 
 export function getIngredientScoreChanges({
+	calculateFoodTagsWithTrend,
 	calculateIngredientTagsWithTrend,
-	calculateRecipeTagsWithTrend,
 	candidates,
-	composeRecipeTagsWithPopularTrend,
-	currentCustomerOrderRecipeTag = null,
+	composeFoodTagsWithPopularTrend,
+	currentGuestOrderFoodTag = null,
+	currentMealFood,
 	currentPopularTrend,
-	currentRecipeExtraIngredients,
-	currentRecipeIngredients,
-	currentRecipeName,
-	currentRecipeNegativeTags,
-	customerNegativeTags = [],
-	customerPositiveTags,
 	getIngredientEasterEggScore,
 	getIngredientScoreChange,
 	getIngredientTags,
 	isDarkMatter = false,
+	specialGuestNegativeTags = [],
+	specialGuestPositiveTags,
 }: {
-	candidates: ReadonlyArray<IIngredientScoreCandidate>;
+	calculateFoodTagsWithTrend: (
+		tags: ReadonlyArray<TFoodTagId>
+	) => TFoodTagId[];
 	calculateIngredientTagsWithTrend: (
-		tags: ReadonlyArray<TIngredientTag>
-	) => TRecipeTag[];
-	calculateRecipeTagsWithTrend: (
-		tags: ReadonlyArray<TRecipeTag>
-	) => TRecipeTag[];
-	composeRecipeTagsWithPopularTrend: (
-		tags: ReadonlyArray<TIngredientTag | TRecipeTag>
-	) => TRecipeTag[];
-	currentCustomerOrderRecipeTag?: TRecipeTag | null;
+		tags: ReadonlyArray<TFoodTagId>
+	) => TFoodTagId[];
+	candidates: ReadonlyArray<IIngredientScoreCandidate>;
+	composeFoodTagsWithPopularTrend: (
+		tags: ReadonlyArray<TFoodTagId>
+	) => TFoodTagId[];
+	currentGuestOrderFoodTag?: TFoodTagId | null;
+	currentMealFood: IMealFood;
 	currentPopularTrend: IPopularTrend;
-	currentRecipeExtraIngredients: ReadonlyArray<TIngredientName>;
-	currentRecipeIngredients: ReadonlyArray<TIngredientName>;
-	currentRecipeName: TRecipeName;
-	currentRecipeNegativeTags: ReadonlyArray<TRecipeTag>;
-	customerNegativeTags?: ReadonlyArray<TRecipeTag>;
-	customerPositiveTags: ReadonlyArray<TRecipeTag>;
 	getIngredientEasterEggScore?: (args: {
-		currentIngredients: ReadonlyArray<TIngredientName>;
-		currentRecipeName: TRecipeName;
-		ingredientName: TIngredientName;
+		currentFood: TFoodId;
+		currentIngredients: ReadonlyArray<TIngredientId>;
+		ingredient: TIngredientId;
 	}) => number | null | undefined;
 	getIngredientScoreChange: (
-		oldRecipePositiveTags: ReadonlyArray<TRecipeTag>,
-		newRecipePositiveTags: ReadonlyArray<TRecipeTag>,
-		customerPositiveTags: ReadonlyArray<TRecipeTag>,
-		customerNegativeTags?: ReadonlyArray<TRecipeTag>
+		oldFoodPositiveTags: ReadonlyArray<TFoodTagId>,
+		newFoodPositiveTags: ReadonlyArray<TFoodTagId>,
+		specialGuestPositiveTags: ReadonlyArray<TFoodTagId>,
+		specialGuestNegativeTags?: ReadonlyArray<TFoodTagId>
 	) => number;
-	getIngredientTags: (
-		ingredientName: TIngredientName
-	) => ReadonlyArray<TIngredientTag>;
+	getIngredientTags: (ingredient: TIngredientId) => ReadonlyArray<TFoodTagId>;
 	isDarkMatter?: boolean;
+	specialGuestNegativeTags?: ReadonlyArray<TFoodTagId>;
+	specialGuestPositiveTags: ReadonlyArray<TFoodTagId>;
 }): IIngredientScoreChangesResult {
-	const currentRecipeAllIngredients = [
-		...new Set([
-			...currentRecipeIngredients,
-			...currentRecipeExtraIngredients,
-		]),
+	const { food: currentFood, recipe: currentRecipe } =
+		foodCatalog.getRecipeOwnerById(currentMealFood.recipeId);
+	const currentFoodExtraIngredients = currentMealFood.extraIngredients;
+	const currentFoodIngredients = currentRecipe.ingredients;
+	const currentFoodNegativeTags = currentFood.negativeTags;
+	const currentFoodAllIngredients = [
+		...new Set([...currentFoodIngredients, ...currentFoodExtraIngredients]),
 	];
-	const currentRecipeExtraIngredientsTags =
-		currentRecipeExtraIngredients.flatMap((extraIngredient) =>
-			getIngredientTags(extraIngredient)
-		);
-	const currentRecipeExtraIngredientsTagsWithTrend =
-		calculateIngredientTagsWithTrend(currentRecipeExtraIngredientsTags);
-	const currentRecipeComposedTags = composeRecipeTagsWithPopularTrend(
-		currentRecipeExtraIngredientsTagsWithTrend
+	const currentFoodExtraIngredientTags = currentFoodExtraIngredients.flatMap(
+		(extraIngredient) => getIngredientTags(extraIngredient)
 	);
-	const currentRecipeTagsWithTrend = [
-		...new Set(calculateRecipeTagsWithTrend(currentRecipeComposedTags)),
+	const currentFoodExtraIngredientTagsWithTrend =
+		calculateIngredientTagsWithTrend(currentFoodExtraIngredientTags);
+	const currentFoodComposedTags = composeFoodTagsWithPopularTrend(
+		currentFoodExtraIngredientTagsWithTrend
+	);
+	const currentFoodTagsWithTrend = [
+		...new Set(calculateFoodTagsWithTrend(currentFoodComposedTags)),
 	];
-	const before = composeRecipeTagsWithPopularTrend(
-		currentRecipeTagsWithTrend
-	);
+	const before = composeFoodTagsWithPopularTrend(currentFoodTagsWithTrend);
 
 	const currentIngredientCount =
-		currentRecipeIngredients.length + currentRecipeExtraIngredients.length;
+		currentFoodIngredients.length + currentFoodExtraIngredients.length;
 	const isLargePartitionTagNext = currentIngredientCount === 4;
 	const shouldCalculateLargePartitionTag =
 		isLargePartitionTagNext &&
-		currentPopularTrend.tag === DYNAMIC_TAG_MAP.largePartition;
+		currentPopularTrend.tag === DYNAMIC_FOOD_TAG_MAP.largePartition;
 
-	const negativeTagSet = new Set(currentRecipeNegativeTags);
-	const darkIngredientNames: TIngredientName[] = [];
-	for (const { name, tags } of candidates) {
-		if (tags.some((tag) => negativeTagSet.has(tag as TRecipeTag))) {
-			darkIngredientNames.push(name);
+	const negativeTagSet = new Set<TFoodTagId>(currentFoodNegativeTags);
+	const darkIngredients: TIngredientId[] = [];
+	for (const { id, tags } of candidates) {
+		if (tags.some((tag) => negativeTagSet.has(tag))) {
+			darkIngredients.push(id);
 		}
 	}
-	const darkIngredientSet = new Set(darkIngredientNames);
+	const darkIngredientSet = new Set(darkIngredients);
 
-	const changesByName: IIngredientScoreChangesResult['changesByName'] = {};
+	const changesById: IIngredientScoreChangesResult['changesById'] = {};
 
-	candidates.forEach(({ name, tags }) => {
+	candidates.forEach(({ id, tags }) => {
 		const tagsWithTrend = calculateIngredientTagsWithTrend(tags);
 		const allTagsWithTrend = [
-			...new Set([...currentRecipeTagsWithTrend, ...tagsWithTrend]),
+			...new Set([...currentFoodTagsWithTrend, ...tagsWithTrend]),
 		];
-		const after = composeRecipeTagsWithPopularTrend(allTagsWithTrend);
+		const after = composeFoodTagsWithPopularTrend(allTagsWithTrend);
 
 		let scoreChange = getIngredientScoreChange(
 			before,
 			after,
-			customerPositiveTags,
-			customerNegativeTags
+			specialGuestPositiveTags,
+			specialGuestNegativeTags
 		);
 		scoreChange += getLargePartitionScoreChange({
 			before,
 			currentPopularTrend,
-			customerNegativeTags,
-			customerPositiveTags,
 			isLargePartitionTagNext,
 			shouldCalculateLargePartitionTag,
+			specialGuestNegativeTags,
+			specialGuestPositiveTags,
 		});
 
-		const isDarkIngredient = darkIngredientSet.has(name);
+		const isDarkIngredient = darkIngredientSet.has(id);
 		const easterEggScore = getIngredientEasterEggScore?.({
+			currentFood: isDarkIngredient || isDarkMatter ? -1 : currentFood.id,
 			currentIngredients: [
-				...new Set([...currentRecipeAllIngredients, name]),
+				...new Set([...currentFoodAllIngredients, id]),
 			],
-			currentRecipeName:
-				isDarkIngredient || isDarkMatter
-					? DARK_MATTER_META_MAP.name
-					: currentRecipeName,
-			ingredientName: name,
+			ingredient: id,
 		});
 
 		if (easterEggScore !== null && easterEggScore !== undefined) {
@@ -229,12 +226,12 @@ export function getIngredientScoreChanges({
 		}
 
 		const isOrderTag =
-			currentCustomerOrderRecipeTag !== null &&
-			tagsWithTrend.includes(currentCustomerOrderRecipeTag) &&
-			after.includes(currentCustomerOrderRecipeTag) &&
-			!before.includes(currentCustomerOrderRecipeTag);
+			currentGuestOrderFoodTag !== null &&
+			tagsWithTrend.includes(currentGuestOrderFoodTag) &&
+			after.includes(currentGuestOrderFoodTag) &&
+			!before.includes(currentGuestOrderFoodTag);
 
-		changesByName[name] = {
+		changesById[id] = {
 			isDarkIngredient,
 			isOrderTag,
 			restriction: getIngredientRestriction(
@@ -246,5 +243,5 @@ export function getIngredientScoreChanges({
 		};
 	});
 
-	return { changesByName, darkIngredientNames };
+	return { changesById, darkIngredients };
 }

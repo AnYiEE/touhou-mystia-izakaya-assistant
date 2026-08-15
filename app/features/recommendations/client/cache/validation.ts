@@ -1,62 +1,76 @@
-import { CustomerRare } from '@/domain/catalog/customers/CustomerRare';
-import { Beverage } from '@/domain/catalog/food/Beverage';
-import { Ingredient } from '@/domain/catalog/food/Ingredient';
-import { Recipe } from '@/domain/catalog/food/Recipe';
-import type { TBeverageName } from '@/domain/data/beverages/types';
-import { DYNAMIC_TAG_MAP } from '@/domain/data/tags/tagFacts';
-import type { TBeverageTag, TRecipeTag } from '@/domain/data/tags/types';
+import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
+import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
+import type { TBeverageId } from '@/domain/data/beverages/types';
+import type { TCookerId } from '@/domain/data/cookers/types';
+import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import type { TRatingKey } from '@/domain/evaluation/types';
-import type { IMealRecipe } from '@/domain/meals/types';
+import type { IMealFood } from '@/domain/meals/types';
 import type { ISuggestedMeal } from '@/domain/recommendations/types';
-
-import type { IResolvedCustomerRarePlanGroup } from '@/features/customerPlans/contracts';
 
 import {
 	isNonNegativeSafeInteger,
 	isNullableNonNegativeSafeInteger,
 } from '@/shared/utilities/numbers/check';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
-type TCustomerRarePlanMeals = IResolvedCustomerRarePlanGroup['meals'];
-
-const beverageInstance = Beverage.getInstance();
-const customerInstance = CustomerRare.getInstance();
-const ingredientInstance = Ingredient.getInstance();
-const recipeInstance = Recipe.getInstance();
-
-const beverageNames = new Set<string>(beverageInstance.getNames());
-const beverageTags = new Set<string>([
-	...beverageInstance.getValuesByProp('tags'),
-	...customerInstance.getValuesByProp('beverageTags'),
-]);
-const recipeTags = new Set<string>([
-	...customerInstance.getValuesByProp(['negativeTags', 'positiveTags']),
-	...ingredientInstance.getValuesByProp('tags'),
-	...recipeInstance.getValuesByProp(['negativeTags', 'positiveTags']),
-	...Object.values(DYNAMIC_TAG_MAP),
-]);
-const ratingKeys = new Set<string>(['bad', 'exbad', 'exgood', 'good', 'norm']);
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
+export interface ICachedSpecialGuestPlanRecommendationMeal {
+	cooker: TCookerId;
+	dataIndex: number | null;
+	evaluation: {
+		isDarkMatter: boolean;
+		price: number;
+		rating: TRatingKey | null;
+	};
+	meal: {
+		beverage: TBeverageId;
+		food: IMealFood;
+		hasMystiaCooker: boolean;
+		order: {
+			beverageTag: TBeverageTagId | null;
+			foodTag: TFoodTagId | null;
+		};
+	};
+	recommendedSetIndex: number | null;
+	source: 'recommended';
+	visibleIndex: number;
 }
+
+type TSpecialGuestPlanRecommendationCacheResult =
+	ICachedSpecialGuestPlanRecommendationMeal[];
+
+const beverageCatalog = BeverageCatalog.getInstance();
+const cookerCatalog = CookerCatalog.getInstance();
+const foodCatalog = FoodCatalog.getInstance();
+
+const beverages = new Set<number>(beverageCatalog.getValuesByProp('id'));
+const cookers = new Set<number>(cookerCatalog.getValuesByProp('id'));
+const ratingKeys = new Set<string>(['bad', 'exbad', 'exgood', 'good', 'norm']);
 
 function isFiniteNumber(value: unknown): value is number {
 	return typeof value === 'number' && Number.isFinite(value);
 }
 
-function isBeverageName(value: unknown): value is TBeverageName {
-	return typeof value === 'string' && beverageNames.has(value);
+function isBeverage(value: unknown): value is TBeverageId {
+	return typeof value === 'number' && beverages.has(value);
 }
 
-function isBeverageTagOrNull(value: unknown): value is TBeverageTag | null {
+function isCooker(value: unknown): value is TCookerId {
+	return typeof value === 'number' && cookers.has(value);
+}
+
+function isBeverageTagOrNull(value: unknown): value is TBeverageTagId | null {
 	return (
-		value === null || (typeof value === 'string' && beverageTags.has(value))
+		value === null ||
+		(typeof value === 'number' && Object.hasOwn(BEVERAGE_TAG_MAP, value))
 	);
 }
 
-function isRecipeTagOrNull(value: unknown): value is TRecipeTag | null {
+function isFoodTagOrNull(value: unknown): value is TFoodTagId | null {
 	return (
-		value === null || (typeof value === 'string' && recipeTags.has(value))
+		value === null ||
+		(typeof value === 'number' && Object.hasOwn(FOOD_TAG_MAP, value))
 	);
 }
 
@@ -64,37 +78,36 @@ function isRatingKey(value: unknown): value is TRatingKey {
 	return typeof value === 'string' && ratingKeys.has(value);
 }
 
-function validateMealRecipe(value: unknown): IMealRecipe | undefined {
-	if (!recipeInstance.isMealRecipe(value)) {
-		return;
+function validateMealFood(value: unknown): IMealFood | undefined {
+	if (!foodCatalog.isMealFood(value)) {
+		return undefined;
 	}
 
 	return {
 		extraIngredients: [...value.extraIngredients],
-		name: value.name,
 		recipeId: value.recipeId,
 	};
 }
 
 function validateSuggestedMeal(value: unknown): ISuggestedMeal | undefined {
 	if (
-		!isRecord(value) ||
-		!isBeverageName(value['beverage']) ||
+		!checkIsRecord(value) ||
+		!isBeverage(value['beverage']) ||
 		!isFiniteNumber(value['price']) ||
 		!isRatingKey(value['rating'])
 	) {
 		return undefined;
 	}
-	const recipe = validateMealRecipe(value['recipe']);
-	if (recipe === undefined) {
+	const food = validateMealFood(value['food']);
+	if (food === undefined) {
 		return undefined;
 	}
 
 	return {
 		beverage: value['beverage'],
+		food,
 		price: value['price'],
 		rating: value['rating'],
-		recipe,
 	};
 }
 
@@ -115,37 +128,39 @@ export function validateSuggestedMealResult(
 	return result;
 }
 
-function validateCustomerRarePlanMeal(
+function validateSpecialGuestPlanMeal(
 	value: unknown
-): TCustomerRarePlanMeals[number] | undefined {
+): ICachedSpecialGuestPlanRecommendationMeal | undefined {
 	if (
-		!isRecord(value) ||
+		!checkIsRecord(value) ||
+		!isCooker(value['cooker']) ||
 		!isNullableNonNegativeSafeInteger(value['dataIndex']) ||
 		!isNullableNonNegativeSafeInteger(value['recommendedSetIndex']) ||
 		value['source'] !== 'recommended' ||
 		!isNonNegativeSafeInteger(value['visibleIndex']) ||
-		!isRecord(value['evaluation']) ||
+		!checkIsRecord(value['evaluation']) ||
 		typeof value['evaluation']['isDarkMatter'] !== 'boolean' ||
 		!isFiniteNumber(value['evaluation']['price']) ||
 		!(
 			value['evaluation']['rating'] === null ||
 			isRatingKey(value['evaluation']['rating'])
 		) ||
-		!isRecord(value['meal']) ||
-		!isBeverageName(value['meal']['beverage']) ||
+		!checkIsRecord(value['meal']) ||
+		!isBeverage(value['meal']['beverage']) ||
 		typeof value['meal']['hasMystiaCooker'] !== 'boolean' ||
-		!isRecord(value['meal']['order']) ||
+		!checkIsRecord(value['meal']['order']) ||
 		!isBeverageTagOrNull(value['meal']['order']['beverageTag']) ||
-		!isRecipeTagOrNull(value['meal']['order']['recipeTag'])
+		!isFoodTagOrNull(value['meal']['order']['foodTag'])
 	) {
 		return undefined;
 	}
-	const recipe = validateMealRecipe(value['meal']['recipe']);
-	if (recipe === undefined) {
+	const food = validateMealFood(value['meal']['food']);
+	if (food === undefined) {
 		return undefined;
 	}
 
 	return {
+		cooker: value['cooker'],
 		dataIndex: value['dataIndex'],
 		evaluation: {
 			isDarkMatter: value['evaluation']['isDarkMatter'],
@@ -154,12 +169,12 @@ function validateCustomerRarePlanMeal(
 		},
 		meal: {
 			beverage: value['meal']['beverage'],
+			food,
 			hasMystiaCooker: value['meal']['hasMystiaCooker'],
 			order: {
 				beverageTag: value['meal']['order']['beverageTag'],
-				recipeTag: value['meal']['order']['recipeTag'],
+				foodTag: value['meal']['order']['foodTag'],
 			},
-			recipe,
 		},
 		recommendedSetIndex: value['recommendedSetIndex'],
 		source: 'recommended',
@@ -167,15 +182,15 @@ function validateCustomerRarePlanMeal(
 	};
 }
 
-export function validateCustomerRarePlanResult(
+export function validateSpecialGuestPlanResult(
 	value: unknown
-): TCustomerRarePlanMeals | undefined {
+): TSpecialGuestPlanRecommendationCacheResult | undefined {
 	if (!Array.isArray(value)) {
 		return undefined;
 	}
-	const result: TCustomerRarePlanMeals = [];
+	const result: TSpecialGuestPlanRecommendationCacheResult = [];
 	for (const item of value) {
-		const meal = validateCustomerRarePlanMeal(item);
+		const meal = validateSpecialGuestPlanMeal(item);
 		if (meal === undefined) {
 			return undefined;
 		}

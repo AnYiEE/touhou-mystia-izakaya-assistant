@@ -1,9 +1,9 @@
-import {
-	type IAdminSsoClientSecretRecord,
-	type TAdminSsoCallbackDeliveryStatus,
-	type TAdminSsoCallbackEvent,
-	type TAdminSsoCallbackQueueStatus,
-	type TAdminSsoTicketStatus,
+import type {
+	IAdminSsoClientSecretRecord,
+	TAdminSsoCallbackDeliveryStatus,
+	TAdminSsoCallbackEvent,
+	TAdminSsoCallbackQueueStatus,
+	TAdminSsoTicketStatus,
 } from '@/features/account/contracts';
 
 export const ADMIN_SSO_MESSAGE_MAP = {

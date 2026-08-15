@@ -8,8 +8,7 @@ import PressElement, {
 	type IPressProp,
 } from '@/design/ui/components/pressElement';
 
-import type { TSpriteTarget } from '@/domain/data/sprites/types';
-import type { TItemName } from '@/domain/data/types';
+import type { TSpriteId, TSpriteTarget } from '@/domain/data/sprites/types';
 
 import { Sprite as SpriteClass } from '@/features/catalog/presentation/SpriteModel';
 
@@ -25,30 +24,32 @@ const getSpriteStyle = (target: TSpriteTarget): CSSProperties => {
 	return { backgroundImage: `url('${basePath}/${target}.png')` };
 };
 
-interface ISpriteBase {
-	target: TSpriteTarget;
-	index?: number;
-	name?: TItemName;
-	size?: number;
+type TSpriteIdentity<T extends TSpriteTarget> =
+	| { index: number; recordId?: never }
+	| { index?: never; recordId: TSpriteId<T> };
+
+interface ISpriteBase<T extends TSpriteTarget> {
 	height?: number;
+	size?: number;
+	target: T;
 	width?: number;
 }
 
-interface IProps
-	extends
-		HTMLSpanElementAttributes,
-		Partial<IPressProp<HTMLSpanElement>>,
-		ISpriteBase,
-		RefProps<HTMLSpanElement> {}
+type IProps<T extends TSpriteTarget = TSpriteTarget> =
+	HTMLSpanElementAttributes &
+		Partial<IPressProp<HTMLSpanElement>> &
+		ISpriteBase<T> &
+		RefProps<HTMLSpanElement> &
+		TSpriteIdentity<T>;
 
-export default memo<IProps>(function Sprite({
+function Sprite<T extends TSpriteTarget>({
 	className,
 	height,
 	index,
-	name,
 	onClick,
 	onKeyDown,
 	onPress,
+	recordId,
 	role,
 	size,
 	style,
@@ -57,26 +58,21 @@ export default memo<IProps>(function Sprite({
 	title,
 	width,
 	...props
-}) {
+}: IProps<T>) {
 	const instance = SpriteClass.getInstance(target);
 
 	const { calculatedIndex, calculatedName } = useMemo(() => {
-		let _calculatedIndex = index;
-		let _calculatedName = name;
-
-		if (_calculatedIndex !== undefined) {
-			_calculatedName = instance.findNameByIndex(_calculatedIndex);
-		} else if (_calculatedName === undefined) {
-			_calculatedIndex = 0;
-		} else {
-			_calculatedIndex = instance.findIndexByName(_calculatedName);
+		const _calculatedIndex =
+			recordId === undefined ? index : instance.findIndexById(recordId);
+		if (_calculatedIndex === undefined) {
+			throw new TypeError('Sprite requires a recordId or index.');
 		}
 
 		return {
 			calculatedIndex: _calculatedIndex,
-			calculatedName: _calculatedName,
+			calculatedName: instance.findNameByIndex(_calculatedIndex),
 		};
-	}, [index, instance, name]);
+	}, [index, instance, recordId]);
 
 	const { calculatedHeight, calculatedSize, calculatedWidth } =
 		useMemo(() => {
@@ -117,6 +113,10 @@ export default memo<IProps>(function Sprite({
 			target,
 		]
 	);
+	const mergedStyle = useMemo(
+		() => ({ ...calculatedStyle, ...style }),
+		[calculatedStyle, style]
+	);
 
 	const finalTitle = title ?? calculatedName;
 	const isAsButton = role === 'button';
@@ -137,10 +137,12 @@ export default memo<IProps>(function Sprite({
 				},
 				className
 			)}
-			style={{ ...calculatedStyle, ...style }}
+			style={mergedStyle}
 			{...props}
 		/>
 	);
-});
+}
+
+export default memo(Sprite) as typeof Sprite;
 
 export type { IProps as ISpriteProps };

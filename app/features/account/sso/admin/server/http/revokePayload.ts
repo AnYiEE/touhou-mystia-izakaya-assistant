@@ -1,3 +1,5 @@
+import isNil from 'lodash/isNil.js';
+
 export interface IAdminSsoRevokeBody {
 	reason?: string;
 }
@@ -5,7 +7,7 @@ export interface IAdminSsoRevokeBody {
 export function parseAdminSsoRevokeBody(
 	value: unknown
 ): IAdminSsoRevokeBody | null {
-	if (value === null || value === undefined) {
+	if (isNil(value)) {
 		return {};
 	}
 	if (typeof value !== 'object') {

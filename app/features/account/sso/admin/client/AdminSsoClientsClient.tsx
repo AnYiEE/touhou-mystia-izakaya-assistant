@@ -12,7 +12,6 @@ import {
 import { cn } from '@heroui/theme';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-	type Key,
 	type SyntheticEvent,
 	memo,
 	useCallback,
@@ -360,13 +359,13 @@ export default function AdminSsoClientsClient({
 	}, [checkAdmin, initialData.admin]);
 
 	useEffect(() => {
-		let timeoutId: ReturnType<typeof globalThis.setTimeout> | null = null;
+		let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
 		if (admin !== null) {
 			if (isServerInitialClientsRef.current) {
 				isServerInitialClientsRef.current = false;
 			} else {
-				timeoutId = globalThis.setTimeout(() => {
+				timeoutId = setTimeout(() => {
 					refreshClients(page);
 				}, ADMIN_LIST_DEBOUNCE_MS);
 			}
@@ -374,7 +373,7 @@ export default function AdminSsoClientsClient({
 
 		return () => {
 			if (timeoutId !== null) {
-				globalThis.clearTimeout(timeoutId);
+				clearTimeout(timeoutId);
 			}
 		};
 	}, [admin, page, refreshClients]);
@@ -389,18 +388,18 @@ export default function AdminSsoClientsClient({
 		}
 
 		const nextHref = createAdminHref('/admin/sso', listLocationState);
-		const currentHref = `${globalThis.location.pathname}${globalThis.location.search}`;
+		const currentHref = `${location.pathname}${location.search}`;
 
 		if (currentHref === nextHref) {
 			return;
 		}
 
-		const timeoutId = globalThis.setTimeout(() => {
+		const timeoutId = setTimeout(() => {
 			router.replace(nextHref, { scroll: false });
 		}, ADMIN_LIST_DEBOUNCE_MS);
 
 		return () => {
-			globalThis.clearTimeout(timeoutId);
+			clearTimeout(timeoutId);
 		};
 	}, [listLocationState, pathname, router]);
 
@@ -427,19 +426,19 @@ export default function AdminSsoClientsClient({
 		setQueryInput(value);
 	}, []);
 
-	const handleStatusAction = useCallback((key: Key) => {
+	const handleStatusAction = useCallback((value: TClientStatusFilter) => {
 		setPage(1);
-		setStatusFilter(String(key) as TClientStatusFilter);
+		setStatusFilter(value);
 	}, []);
 
-	const handleCallbackAction = useCallback((key: Key) => {
+	const handleCallbackAction = useCallback((value: TCallbackFilter) => {
 		setPage(1);
-		setCallbackFilter(String(key) as TCallbackFilter);
+		setCallbackFilter(value);
 	}, []);
 
-	const handleGrantAction = useCallback((key: Key) => {
+	const handleGrantAction = useCallback((value: TGrantFilter) => {
 		setPage(1);
-		setGrantFilter(String(key) as TGrantFilter);
+		setGrantFilter(value);
 	}, []);
 
 	const handlePreviousPage = useCallback(() => {

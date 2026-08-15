@@ -1,7 +1,8 @@
 import { cn } from '@heroui/theme';
-import { memo, useRef } from 'react';
+import { memo, useMemo, useRef } from 'react';
 
-import { type Beverage } from '@/domain/catalog/food/Beverage';
+import { type BeverageCatalog as BeverageCatalogModel } from '@/domain/catalog/food/BeverageCatalog';
+import { BEVERAGE_TAG_MAP } from '@/domain/data/tags/tagFacts';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { BEVERAGE_TAG_STYLE } from '@/features/catalog/presentation/tagStyles';
@@ -23,7 +24,7 @@ import { ItemShareButton } from '@/features/itemSharing/client/components/ItemSh
 import BeverageSourceDetails from './BeverageSourceDetails';
 
 interface IProps {
-	data: TItemData<Beverage>;
+	data: TItemData<BeverageCatalogModel>;
 }
 
 export default memo<IProps>(function BeverageCatalog({ data }) {
@@ -32,36 +33,50 @@ export default memo<IProps>(function BeverageCatalog({ data }) {
 		useOpenedItemPopover(popoverCardRef);
 	const { checkDefaultOpen, checkShouldEffect, getPopoverKey } =
 		useItemPopoverState(defaultOpenedPopover);
+	const presentationData = useMemo(
+		() =>
+			data.map((item) => ({
+				description: {
+					description: item.description,
+					level: item.level,
+					price: item.price,
+				},
+				item,
+				tags: {
+					beverage: item.tags.map((tag) => BEVERAGE_TAG_MAP[tag]),
+				},
+			})),
+		[data]
+	);
 
-	return data.map(
+	return presentationData.map(
 		(
-			{ description, dlc, from, id, level, name, price, tags },
+			{ description, item: { dlc, from, id, name, price }, tags },
 			dataIndex
 		) => (
 			<ItemPopover
-				key={getPopoverKey(dataIndex, name)}
+				key={getPopoverKey(dataIndex, id)}
 				showArrow
 				/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/3736} is fixed. */
 				// backdrop={isHighAppearance ? 'blur' : 'opaque'}
-				defaultOpen={checkDefaultOpen(name)}
-				{...getPopoverOpenChangeProps(name)}
+				defaultOpen={checkDefaultOpen(id)}
+				{...getPopoverOpenChangeProps(id)}
 			>
 				<ItemPopoverTrigger>
 					<ItemCard
-						isHoverable={checkShouldEffect(name)}
-						isPressable={checkShouldEffect(name)}
+						isHoverable={checkShouldEffect(id)}
+						isPressable={checkShouldEffect(id)}
 						name={name}
 						description={<Price>{price}</Price>}
 						image={
 							<Sprite
 								target="beverage"
-								name={name}
+								recordId={id}
 								size={3}
 								className={cn({
-									'-translate-x-0.5': name === '教父',
-									'-translate-x-px': name === '玉露茶',
-									'translate-x-px':
-										name === '冬酿' || name === '太空啤酒',
+									'-translate-x-0.5': id === 17,
+									'-translate-x-px': id === 22,
+									'translate-x-px': id === 19 || id === 5003,
 								})}
 							/>
 						}
@@ -76,14 +91,14 @@ export default memo<IProps>(function BeverageCatalog({ data }) {
 				</ItemPopoverTrigger>
 				<ItemPopoverContent>
 					<ItemPopoverCloseButton />
-					<ItemShareButton name={name} />
+					<ItemShareButton name={name} recordId={id} />
 					<ItemPopoverCard
 						target="beverage"
 						id={id}
 						name={name}
-						description={{ description, level, price }}
+						description={description}
 						dlc={dlc}
-						tags={{ beverage: tags }}
+						tags={tags}
 						tagColors={BEVERAGE_TAG_STYLE}
 						ref={popoverCardRef}
 					>

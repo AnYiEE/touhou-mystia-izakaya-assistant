@@ -20,9 +20,9 @@ interface IConflictVersionCardProps {
 	isDisabled: boolean;
 	isHighAppearance: boolean;
 	isLoading: boolean;
+	onSelect: () => void;
 	title: string;
 	valueKey: 'cloud' | 'local';
-	onSelect: () => void;
 }
 
 const ConflictVersionCard = memo<IConflictVersionCardProps>(

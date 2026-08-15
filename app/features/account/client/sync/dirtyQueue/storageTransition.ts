@@ -104,7 +104,7 @@ function commitDirtyQueueStorageTransition({
 		expectedEntry === null ? null : JSON.stringify(expectedEntry);
 	const legacySourceValue =
 		previousIntent === undefined
-			? namespace === SYNC_NAMESPACE_MAP.customerRarePlans
+			? namespace === SYNC_NAMESPACE_MAP.specialGuestPlans
 				? readAccountStorage(
 						createLegacyDirtyQueueKey(userId, namespace)
 					)
@@ -229,7 +229,7 @@ export function replaceDirtyQueueCollisionIfCurrent({
 		createDirtyQueueKey(userId, nextEntry.namespace)
 	);
 	const legacySourceValue =
-		nextEntry.namespace === SYNC_NAMESPACE_MAP.customerRarePlans
+		nextEntry.namespace === SYNC_NAMESPACE_MAP.specialGuestPlans
 			? readAccountStorage(
 					createLegacyDirtyQueueKey(userId, nextEntry.namespace)
 				)

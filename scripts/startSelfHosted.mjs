@@ -1,3 +1,4 @@
+import lodash from 'lodash';
 import { spawn } from 'node:child_process';
 import { constants as fileSystemConstants } from 'node:fs';
 import { lstat, readFile, realpath } from 'node:fs/promises';
@@ -65,8 +66,7 @@ async function validateStoragePath(path, expectedType, errorCode) {
 		await lstat(path);
 	} catch (error) {
 		if (
-			typeof error === 'object' &&
-			error !== null &&
+			lodash.isObject(error) &&
 			'code' in error &&
 			error.code === 'ENOENT'
 		) {
@@ -80,12 +80,7 @@ async function validateStoragePath(path, expectedType, errorCode) {
 
 /** @param {unknown} error */
 function checkMissingPathError(error) {
-	return (
-		typeof error === 'object' &&
-		error !== null &&
-		'code' in error &&
-		error.code === 'ENOENT'
-	);
+	return lodash.isObject(error) && 'code' in error && error.code === 'ENOENT';
 }
 
 /** @param {string} path */

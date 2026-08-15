@@ -23,14 +23,14 @@ import {
 } from '@/features/account/constants';
 import type { IWebauthnCredentialSummary } from '@/features/account/contracts';
 
-import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
 import {
 	AccountAnimatedList,
 	AccountAnimatedListItem,
 	AccountCollapseMotion,
 	AccountPanel,
 	formatSessionTimestamp,
-} from './layout';
+} from './accountPanelLayout';
+import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
 
 interface IAccountPasskeysPanelProps {
 	deleteTargetPasskeyId: string | null;
@@ -46,8 +46,8 @@ interface IAccountPasskeysPanelProps {
 	handleRenamePasskeyCancel: () => void;
 	handleRenamePasskeyOpen: (id: string, currentName: string | null) => void;
 	handleRenamePasskeySave: () => void;
-	isAddPasskeyFormOpen: boolean;
 	isAddingPasskey: boolean;
+	isAddPasskeyFormOpen: boolean;
 	isPasskeyListLoading: boolean;
 	isPasskeyListReady: boolean;
 	isSubmitting: boolean;

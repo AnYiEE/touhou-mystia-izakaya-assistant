@@ -251,8 +251,16 @@ export async function updateProfile({
 				},
 				userId: account.user.id,
 			});
-			if (failureState.status === 'unauthorized') {
-				return { message: 'unauthorized', status: 'error' };
+			if (failureState.status === 'locked') {
+				await writeProfileAuditLogsBestEffort({
+					request,
+					userId: account.user.id,
+					usernameMetadata: {
+						...usernameMetadata,
+						result: 'credential-locked-after-failure',
+					},
+				});
+				return failureState;
 			}
 			if (failureState.status === 'stale') {
 				await writeProfileAuditLogsBestEffort({
@@ -265,16 +273,8 @@ export async function updateProfile({
 				});
 				return { message: 'credential-changed', status: 'error' };
 			}
-			if (failureState.status === 'locked') {
-				await writeProfileAuditLogsBestEffort({
-					request,
-					userId: account.user.id,
-					usernameMetadata: {
-						...usernameMetadata,
-						result: 'credential-locked-after-failure',
-					},
-				});
-				return failureState;
+			if (failureState.status === 'unauthorized') {
+				return { message: 'unauthorized', status: 'error' };
 			}
 
 			await writeProfileAuditLogsBestEffort({
@@ -354,6 +354,9 @@ export async function updateProfile({
 			});
 			return { message: 'credential-changed', status: 'error' };
 		}
+		if (result.status === 'unauthorized') {
+			return { message: 'unauthorized', status: 'error' };
+		}
 		if (result.status === 'username-conflict') {
 			await writeProfileAuditLogsBestEffort({
 				request,
@@ -368,9 +371,6 @@ export async function updateProfile({
 						}),
 			});
 			return { message: 'username-conflict', status: 'error' };
-		}
-		if (result.status === 'unauthorized') {
-			return { message: 'unauthorized', status: 'error' };
 		}
 
 		return {

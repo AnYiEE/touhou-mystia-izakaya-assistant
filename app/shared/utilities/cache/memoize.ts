@@ -1,4 +1,4 @@
-import { isObject } from 'lodash';
+import isObject from 'lodash/isObject.js';
 
 type TIsObject<T> = T extends object ? (T extends null ? false : true) : false;
 

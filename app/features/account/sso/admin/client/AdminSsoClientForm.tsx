@@ -90,6 +90,10 @@ import {
 	updateAdminSsoClientSecret,
 } from './api/clients';
 
+const SECRET_LABEL_INPUT_CLASS_NAMES = {
+	inputWrapper: 'h-10 min-h-10',
+} as const;
+
 function joinLines(values: string[]) {
 	return values.join('\n');
 }
@@ -1209,6 +1213,14 @@ export default memo<IProps>(function AdminSsoClientForm({
 		]
 	);
 
+	const handleCopyGeneratedSecret = useCallback(() => {
+		if (generatedSecret === null) {
+			return;
+		}
+
+		void handleCopySecret(generatedSecret);
+	}, [generatedSecret, handleCopySecret]);
+
 	if (isAuthLoading) {
 		return (
 			<AdminLoadingState
@@ -1372,9 +1384,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					copyLabel="复制本次生成的客户端Secret"
 					isCopyDisabled={isSaving}
 					value={generatedSecret}
-					onCopy={() => {
-						void handleCopySecret(generatedSecret);
-					}}
+					onCopy={handleCopyGeneratedSecret}
 				/>
 			)}
 			{isCreatedClient && (
@@ -1473,9 +1483,9 @@ export default memo<IProps>(function AdminSsoClientForm({
 										<Input
 											aria-label="新SSO客户端Secret备注"
 											className="min-w-0 flex-1"
-											classNames={{
-												inputWrapper: 'h-10 min-h-10',
-											}}
+											classNames={
+												SECRET_LABEL_INPUT_CLASS_NAMES
+											}
 											isDisabled={!canMutateSecrets}
 											placeholder="备注"
 											value={secretLabel}

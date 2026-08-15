@@ -1,26 +1,27 @@
-import { CustomerRare } from '@/domain/catalog/customers/CustomerRare';
-import { Beverage } from '@/domain/catalog/food/Beverage';
-import { Ingredient } from '@/domain/catalog/food/Ingredient';
-import { Recipe } from '@/domain/catalog/food/Recipe';
-import type { IProcessedRecipeVariant } from '@/domain/catalog/food/types';
-import type { TBeverageName } from '@/domain/data/beverages/types';
-import type { TCustomerRareName } from '@/domain/data/customers/rare/types';
-import type { TIngredientName } from '@/domain/data/ingredients/types';
-import type { TRecipeName } from '@/domain/data/recipes/types';
+import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
+import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import type { IProcessedRecipe } from '@/domain/catalog/food/types';
+import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
+import type { TBeverageId } from '@/domain/data/beverages/types';
+import type { TFoodId, TRecipeId } from '@/domain/data/foods/types';
+import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
 import { DARK_MATTER_META_MAP } from '@/domain/data/tags/tagFacts';
-import type { TBeverageTag, TRecipeTag } from '@/domain/data/tags/types';
+import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import {
-	checkRecipeEasterEgg,
-	createMealEvaluator,
-	createMealEvaluatorRecipeSideCache,
-	createMealEvaluatorWithRecipeSideCache,
-	evaluateRareCustomerMeal,
+	checkFoodEasterEgg,
+	createSpecialGuestMealEvaluator,
+	createSpecialGuestMealEvaluatorFoodSideCache,
+	createSpecialGuestMealEvaluatorWithFoodSideCache,
+	evaluateSpecialGuestMeal,
 	getIngredientEasterEggTarget,
-} from '@/domain/evaluation/rareCustomerMeal';
+} from '@/domain/evaluation/specialGuestMeal';
 import type { TRatingKey } from '@/domain/evaluation/types';
-import type { IMealRecipe } from '@/domain/meals/types';
-import type { ICustomerOrder } from '@/domain/orders/types';
+import type { IMealFood } from '@/domain/meals/types';
+import type { IGuestOrder } from '@/domain/orders/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import {
@@ -51,11 +52,11 @@ import type {
 type TCatalogData<TCatalog extends { readonly data: ReadonlyArray<unknown> }> =
 	TCatalog['data'];
 
-type TRecipeCatalogItem = TCatalogData<Recipe>[number];
+type TFoodCatalogItem = TCatalogData<FoodCatalog>[number];
 
-interface IRecipeVariantCandidate {
-	readonly recipe: TRecipeCatalogItem;
-	readonly variant: IProcessedRecipeVariant;
+interface IFoodRecipeCandidate {
+	readonly food: TFoodCatalogItem;
+	readonly recipe: IProcessedRecipe;
 }
 
 interface IPlanWeightMetrics {
@@ -85,7 +86,7 @@ const SUGGEST_INGREDIENT_RESOURCE_WEIGHTS = {
 	price: 0.35,
 } as const;
 const COOPERATIVE_SORT_RUN_SIZE = 128;
-const EMPTY_INGREDIENT_NAME_SET: ReadonlySet<TIngredientName> = new Set();
+const EMPTY_INGREDIENT_SET: ReadonlySet<TIngredientId> = new Set();
 
 async function stableSortWithExecution<T>(
 	values: ReadonlyArray<T>,
@@ -169,21 +170,21 @@ async function stableSortWithExecution<T>(
 	return runs[0] ?? [];
 }
 
-function computeMaxEase(easeMap: ReadonlyMap<string, number>) {
+function computeMaxEase(easeMap: ReadonlyMap<number, number>) {
 	return [...easeMap.values()].reduce(
 		(max, ease) => (ease !== Infinity && ease > max ? ease : max),
 		0
 	);
 }
 
-function buildEaseMap<T extends string>(
-	items: ReadonlyArray<{ name: T }>,
+function buildEaseMap<T extends number>(
+	items: ReadonlyArray<{ id: T }>,
 	priorityMap: ReadonlyMap<T, IRecommendationPriorityMetrics>
 ): { easeMap: Map<T, number>; maxEase: number } {
 	const easeMap = new Map<T, number>(
 		items.map((item): [T, number] => [
-			item.name,
-			priorityMap.get(item.name)?.acquisitionEase ?? 0,
+			item.id,
+			priorityMap.get(item.id)?.acquisitionEase ?? 0,
 		])
 	);
 
@@ -191,11 +192,11 @@ function buildEaseMap<T extends string>(
 }
 
 function normalizeEase(
-	name: string,
-	easeMap: ReadonlyMap<string, number>,
+	id: number,
+	easeMap: ReadonlyMap<number, number>,
 	maxEase: number
 ) {
-	const ease = easeMap.get(name) ?? 0;
+	const ease = easeMap.get(id) ?? 0;
 
 	if (ease === Infinity) {
 		return 1;
@@ -219,10 +220,13 @@ function normalizeAcquisitionEase(ease: number, maxEase: number) {
 }
 
 export function getSuggestIngredientAcquisitionPenalty(
-	name: TIngredientName,
+	ingredient: TIngredientId,
 	{ ingredientEaseMap, maxIngredientEase }: ISuggestIngredientPenaltyContext
 ) {
-	return 30 * (1 - normalizeEase(name, ingredientEaseMap, maxIngredientEase));
+	return (
+		30 *
+		(1 - normalizeEase(ingredient, ingredientEaseMap, maxIngredientEase))
+	);
 }
 
 function normalizeResourceMetric(value: number, min: number, max: number) {
@@ -230,13 +234,13 @@ function normalizeResourceMetric(value: number, min: number, max: number) {
 }
 
 export function getSuggestIngredientResourcePenalty(
-	name: TIngredientName,
+	ingredient: TIngredientId,
 	context: ISuggestIngredientPenaltyContext
 ): ISuggestIngredientResourcePenalty {
 	const { level: ingredientLevel, price: ingredientPrice } =
-		Ingredient.getInstance().getPropsByName(name);
+		IngredientCatalog.getInstance().getPropsById(ingredient);
 	const acquisition =
-		getSuggestIngredientAcquisitionPenalty(name, context) / 30;
+		getSuggestIngredientAcquisitionPenalty(ingredient, context) / 30;
 	const level = normalizeResourceMetric(
 		ingredientLevel,
 		context.minIngredientLevel,
@@ -260,10 +264,10 @@ export function getSuggestIngredientResourcePenalty(
 }
 
 function buildSuggestIngredientPenaltyContext(
-	ingredients: TCatalogData<Ingredient>,
-	priorityMap: ReadonlyMap<TIngredientName, IRecommendationPriorityMetrics>
+	ingredients: TCatalogData<IngredientCatalog>,
+	priorityMap: ReadonlyMap<TIngredientId, IRecommendationPriorityMetrics>
 ): ISuggestIngredientPenaltyContext {
-	const { easeMap, maxEase } = buildEaseMap<TIngredientName>(
+	const { easeMap, maxEase } = buildEaseMap<TIngredientId>(
 		ingredients,
 		priorityMap
 	);
@@ -297,41 +301,41 @@ function buildSuggestIngredientPenaltyContext(
 }
 
 export function createSuggestIngredientPenaltyContext({
-	customerName,
 	hiddenDlcs,
 	hiddenIngredients,
+	specialGuest,
 }: {
-	customerName: TCustomerRareName;
 	hiddenDlcs: ReadonlySet<TDlc>;
-	hiddenIngredients: ReadonlySet<TIngredientName>;
+	hiddenIngredients: ReadonlySet<TIngredientId>;
+	specialGuest: TSpecialGuestId;
 }) {
-	const instance_customer = CustomerRare.getInstance();
-	const instance_ingredient = Ingredient.getInstance();
-	const { dlc: customerDlc, places: customerPlaces } =
-		instance_customer.getPropsByName(customerName);
+	const ingredientCatalog = IngredientCatalog.getInstance();
+	const specialGuestCatalog = SpecialGuestCatalog.getInstance();
+	const { dlc: specialGuestDlc, maps: specialGuestMaps } =
+		specialGuestCatalog.getPropsById(specialGuest);
 	const ingredientPriorityMap = new Map<
-		TIngredientName,
+		TIngredientId,
 		IRecommendationPriorityMetrics
 	>();
-	const ingredients = instance_ingredient.data.filter((item) => {
+	const ingredients = ingredientCatalog.data.filter((item) => {
 		const priority = getRecommendationItemPriority({
 			allowFishingFallback: false,
 			availabilityPaths: item.availabilityPaths,
 			contentDlc: item.dlc,
-			customerDlc,
-			customerPlaces,
+			guestDlc: specialGuestDlc,
+			guestPlaces: specialGuestMaps,
 			hiddenDlcs,
 		});
 		if (priority !== null) {
-			ingredientPriorityMap.set(item.name, priority);
+			ingredientPriorityMap.set(item.id, priority);
 		}
 
 		return (
 			priority !== null &&
-			!instance_ingredient.blockedIngredients.has(item.name) &&
-			!instance_ingredient.blockedLevels.has(item.level) &&
-			!hiddenIngredients.has(item.name) &&
-			!item.tags.some((tag) => instance_ingredient.blockedTags.has(tag))
+			!ingredientCatalog.blockedIngredients.has(item.id) &&
+			!ingredientCatalog.blockedLevels.has(item.level) &&
+			!hiddenIngredients.has(item.id) &&
+			!item.tags.some((tag) => ingredientCatalog.blockedTags.has(tag))
 		);
 	});
 
@@ -342,128 +346,135 @@ export function createSuggestIngredientPenaltyContext({
 }
 
 function createSuggestContext({
-	cooker: selectedCooker,
-	customerName,
+	cooker,
 	hiddenBeverages,
 	hiddenDlcs,
+	hiddenFoods,
 	hiddenIngredients,
-	hiddenRecipes,
+	specialGuest,
 }: ISuggestParams) {
-	const instance_beverage = Beverage.getInstance();
-	const instance_customer = CustomerRare.getInstance();
-	const instance_ingredient = Ingredient.getInstance();
-	const instance_recipe = Recipe.getInstance();
+	const beverageCatalog = BeverageCatalog.getInstance();
+	const foodCatalog = FoodCatalog.getInstance();
+	const ingredientCatalog = IngredientCatalog.getInstance();
+	const specialGuestCatalog = SpecialGuestCatalog.getInstance();
+	const selectedCookerTypes =
+		cooker === null
+			? null
+			: CookerCatalog.getInstance().getPropsById(
+					cooker,
+					'availableTypes'
+				);
 
 	const {
-		beverageTags: customerBeverageTags,
-		dlc: customerDlc,
-		enduranceLimit: customerEnduranceLimit,
-		negativeTags: customerNegativeTags,
-		places: customerPlaces,
-		positiveTags: customerPositiveTags,
-		price: customerPrice,
-	} = instance_customer.getPropsByName(customerName);
+		beverageTags: specialGuestBeverageTags,
+		dlc: specialGuestDlc,
+		enduranceLimit: specialGuestEnduranceLimit,
+		maps: specialGuestMaps,
+		negativeTags: specialGuestNegativeTags,
+		positiveTags: specialGuestPositiveTags,
+		price: specialGuestPrice,
+	} = specialGuestCatalog.getPropsById(specialGuest);
 
-	const [, budgetSoftMax] = customerPrice;
-	const budgetMax = Math.ceil(budgetSoftMax * customerEnduranceLimit);
+	const [, budgetSoftMax] = specialGuestPrice;
+	const budgetMax = Math.ceil(budgetSoftMax * specialGuestEnduranceLimit);
 
 	const beveragePriorityMap = new Map<
-		TBeverageName,
+		TBeverageId,
 		IRecommendationPriorityMetrics
 	>();
 	const ingredientPriorityMap = new Map<
-		TIngredientName,
+		TIngredientId,
 		IRecommendationPriorityMetrics
 	>();
-	const recipePriorityMap = new Map<
-		TRecipeName,
-		IRecommendationPriorityMetrics
-	>();
+	const foodPriorityMap = new Map<TFoodId, IRecommendationPriorityMetrics>();
 
-	for (const item of instance_beverage.data) {
+	for (const item of beverageCatalog.data) {
 		const priority = getRecommendationItemPriority({
 			allowFishingFallback: false,
 			availabilityPaths: item.availabilityPaths,
 			contentDlc: item.dlc,
-			customerDlc,
-			customerPlaces,
+			guestDlc: specialGuestDlc,
+			guestPlaces: specialGuestMaps,
 			hiddenDlcs,
 		});
 		if (priority !== null) {
-			beveragePriorityMap.set(item.name, priority);
+			beveragePriorityMap.set(item.id, priority);
 		}
 	}
-	for (const item of instance_ingredient.data) {
+	for (const item of ingredientCatalog.data) {
 		const priority = getRecommendationItemPriority({
 			allowFishingFallback: false,
 			availabilityPaths: item.availabilityPaths,
 			contentDlc: item.dlc,
-			customerDlc,
-			customerPlaces,
+			guestDlc: specialGuestDlc,
+			guestPlaces: specialGuestMaps,
 			hiddenDlcs,
 		});
 		if (priority !== null) {
-			ingredientPriorityMap.set(item.name, priority);
+			ingredientPriorityMap.set(item.id, priority);
 		}
 	}
-	for (const item of instance_recipe.data) {
+	for (const item of foodCatalog.data) {
 		const priority = getRecommendationItemPriority({
 			allowFishingFallback: false,
 			availabilityPaths: item.availabilityPaths,
 			contentDlc: item.dlc,
-			customerDlc,
-			customerPlaces,
+			guestDlc: specialGuestDlc,
+			guestPlaces: specialGuestMaps,
 			hiddenDlcs,
 		});
 		if (priority !== null) {
-			recipePriorityMap.set(item.name, priority);
+			foodPriorityMap.set(item.id, priority);
 		}
 	}
 
-	const baseGameBeverages = instance_beverage.data.filter(
-		({ name }) =>
-			beveragePriorityMap.has(name) && !hiddenBeverages.has(name)
+	const baseGameBeverages = beverageCatalog.data.filter(
+		({ id }) => beveragePriorityMap.has(id) && !hiddenBeverages.has(id)
 	);
 
-	const unavailableRecipeIngredientNames = new Set(
-		instance_ingredient.data
+	const unavailableFoodIngredients = new Set(
+		ingredientCatalog.data
 			.filter(
-				({ name }) =>
-					!ingredientPriorityMap.has(name) ||
-					hiddenIngredients.has(name)
+				({ id }) =>
+					!ingredientPriorityMap.has(id) || hiddenIngredients.has(id)
 			)
-			.map(({ name }) => name)
+			.map(({ id }) => id)
 	);
 
-	const baseGameRecipeCandidates: IRecipeVariantCandidate[] = [];
-	for (const recipe of instance_recipe.data) {
+	const baseGameFoodCandidates: IFoodRecipeCandidate[] = [];
+	for (const food of foodCatalog.data) {
 		if (
-			!recipePriorityMap.has(recipe.name) ||
-			instance_recipe.blockedRecipes.has(recipe.name) ||
-			hiddenRecipes.has(recipe.name)
+			!foodPriorityMap.has(food.id) ||
+			foodCatalog.blockedFoods.has(food.id) ||
+			hiddenFoods.has(food.id)
 		) {
 			continue;
 		}
-		for (const variant of recipe.recipes) {
+		for (const recipe of food.recipes) {
 			if (
-				variant.ingredients.length <= 5 &&
-				!variant.ingredients.some((ingredient) =>
-					unavailableRecipeIngredientNames.has(ingredient)
+				recipe.ingredients.length <= 5 &&
+				!recipe.ingredients.some((ingredient) =>
+					unavailableFoodIngredients.has(ingredient)
 				) &&
-				(selectedCooker === null || variant.cooker === selectedCooker)
+				(selectedCookerTypes === null ||
+					(
+						selectedCookerTypes as ReadonlyArray<
+							typeof recipe.cookerType
+						>
+					).includes(recipe.cookerType))
 			) {
-				baseGameRecipeCandidates.push({ recipe, variant });
+				baseGameFoodCandidates.push({ food, recipe });
 			}
 		}
 	}
 
-	const baseGameIngredients = instance_ingredient.data.filter(
-		({ level, name, tags }) =>
-			ingredientPriorityMap.has(name) &&
-			!instance_ingredient.blockedIngredients.has(name) &&
-			!instance_ingredient.blockedLevels.has(level) &&
-			!hiddenIngredients.has(name) &&
-			!tags.some((tag) => instance_ingredient.blockedTags.has(tag))
+	const baseGameIngredients = ingredientCatalog.data.filter(
+		({ id, level, tags }) =>
+			ingredientPriorityMap.has(id) &&
+			!ingredientCatalog.blockedIngredients.has(id) &&
+			!ingredientCatalog.blockedLevels.has(level) &&
+			!hiddenIngredients.has(id) &&
+			!tags.some((tag) => ingredientCatalog.blockedTags.has(tag))
 	);
 
 	const ingredientPenaltyContext = buildSuggestIngredientPenaltyContext(
@@ -474,20 +485,19 @@ function createSuggestContext({
 		baseGameBeverages,
 		beveragePriorityMap
 	);
-	const recipeAggregatePriorityMap = new Map<
-		number,
+	const foodAggregatePriorityMap = new Map<
+		TRecipeId,
 		IRecommendationPriorityMetrics
 	>();
-	for (const { recipe, variant } of baseGameRecipeCandidates) {
-		let aggregate = recipePriorityMap.get(recipe.name);
+	for (const { food, recipe } of baseGameFoodCandidates) {
+		let aggregate = foodPriorityMap.get(food.id);
 		if (aggregate === undefined) {
 			continue;
 		}
 
 		const ingredientEase: number[] = [];
-		for (const ingredientName of variant.ingredients) {
-			const ingredientPriority =
-				ingredientPriorityMap.get(ingredientName);
+		for (const ingredient of recipe.ingredients) {
+			const ingredientPriority = ingredientPriorityMap.get(ingredient);
 			if (ingredientPriority === undefined) {
 				aggregate = undefined;
 				break;
@@ -504,7 +514,7 @@ function createSuggestContext({
 			);
 		}
 		if (aggregate !== undefined) {
-			recipeAggregatePriorityMap.set(variant.id, {
+			foodAggregatePriorityMap.set(recipe.id, {
 				...aggregate,
 				acquisitionEase:
 					ingredientEase.length === 0
@@ -516,33 +526,34 @@ function createSuggestContext({
 
 	return {
 		baseGameBeverages,
+		baseGameFoodCandidates,
 		baseGameIngredients,
-		baseGameRecipeCandidates,
+		beverageCatalog,
 		beveragePriorityMap,
 		budgetMax,
 		budgetSoftMax,
-		customerBeverageTags,
-		customerDlc,
-		customerNegativeTags,
-		customerPlaces,
-		customerPositiveTags,
+		fixedFoodAggregatePriorityMap: new Map<
+			TRecipeId,
+			IRecommendationPriorityMetrics
+		>(),
 		fixedItemPriorityMap: new WeakMap<
 			object,
 			IRecommendationPriorityMetrics
 		>(),
-		fixedRecipeAggregatePriorityMap: new Map<
-			number,
-			IRecommendationPriorityMetrics
-		>(),
+		foodAggregatePriorityMap,
+		foodCatalog,
+		foodPriorityMap,
 		hiddenDlcs,
+		ingredientCatalog,
 		ingredientPenaltyContext,
 		ingredientPriorityMap,
-		instance_beverage,
-		instance_ingredient,
-		instance_recipe,
 		maxBeverageEase,
-		recipeAggregatePriorityMap,
-		recipePriorityMap,
+		specialGuest,
+		specialGuestBeverageTags,
+		specialGuestDlc,
+		specialGuestMaps,
+		specialGuestNegativeTags,
+		specialGuestPositiveTags,
 	};
 }
 
@@ -552,23 +563,23 @@ function getSuggestContextLogicalWeight(context: TSuggestContext) {
 	return (
 		context.baseGameBeverages.length +
 		context.baseGameIngredients.length +
-		context.baseGameRecipeCandidates.length +
+		context.baseGameFoodCandidates.length +
 		context.beveragePriorityMap.size +
-		context.ingredientPriorityMap.size +
-		context.recipeAggregatePriorityMap.size +
-		context.recipePriorityMap.size
+		context.foodAggregatePriorityMap.size +
+		context.foodPriorityMap.size +
+		context.ingredientPriorityMap.size
 	);
 }
 
 interface IMealPriorityOptions {
-	readonly fixedExtraIngredients: ReadonlySet<TIngredientName>;
+	readonly fixedExtraIngredients: ReadonlySet<TIngredientId>;
 	readonly isBeverageFixed: boolean;
-	readonly isRecipeFixed: boolean;
+	readonly isFoodFixed: boolean;
 }
 
 function getFixedItemPriority(
 	item: {
-		readonly availabilityPaths: TCatalogData<Ingredient>[number]['availabilityPaths'];
+		readonly availabilityPaths: TCatalogData<IngredientCatalog>[number]['availabilityPaths'];
 		readonly dlc: TDlc;
 	},
 	context: TSuggestContext
@@ -582,8 +593,8 @@ function getFixedItemPriority(
 		allowFishingFallback: true,
 		availabilityPaths: item.availabilityPaths,
 		contentDlc: item.dlc,
-		customerDlc: context.customerDlc,
-		customerPlaces: context.customerPlaces,
+		guestDlc: context.specialGuestDlc,
+		guestPlaces: context.specialGuestMaps,
 		hiddenDlcs: context.hiddenDlcs,
 	});
 	if (priority !== null) {
@@ -595,7 +606,7 @@ function getFixedItemPriority(
 
 function requireItemPriority(
 	item: {
-		readonly availabilityPaths: TCatalogData<Ingredient>[number]['availabilityPaths'];
+		readonly availabilityPaths: TCatalogData<IngredientCatalog>[number]['availabilityPaths'];
 		readonly dlc: TDlc;
 	},
 	context: TSuggestContext,
@@ -611,8 +622,8 @@ function requireItemPriority(
 				allowFishingFallback: false,
 				availabilityPaths: item.availabilityPaths,
 				contentDlc: item.dlc,
-				customerDlc: context.customerDlc,
-				customerPlaces: context.customerPlaces,
+				guestDlc: context.specialGuestDlc,
+				guestPlaces: context.specialGuestMaps,
 				hiddenDlcs: context.hiddenDlcs,
 			});
 	if (priority === null) {
@@ -623,35 +634,32 @@ function requireItemPriority(
 }
 
 function checkFixedSelectionsAvailable(
-	{ currentBeverage, currentRecipe }: ISuggestParams,
+	{ currentBeverage, currentFood }: ISuggestParams,
 	context: TSuggestContext
 ) {
 	if (currentBeverage !== null) {
-		const beverage =
-			context.instance_beverage.getPropsByName(currentBeverage);
+		const beverage = context.beverageCatalog.getPropsById(currentBeverage);
 		if (getFixedItemPriority(beverage, context) === null) {
 			return false;
 		}
 	}
-	if (currentRecipe === null) {
+	if (currentFood === null) {
 		return true;
 	}
 
-	const recipe = context.instance_recipe.getPropsByName(currentRecipe.name);
-	if (getFixedItemPriority(recipe, context) === null) {
+	const { food, recipe } = context.foodCatalog.getRecipeOwnerById(
+		currentFood.recipeId
+	);
+	if (getFixedItemPriority(food, context) === null) {
 		return false;
 	}
-	const variant = context.instance_recipe.getRecipeVariantById(
-		currentRecipe.name,
-		currentRecipe.recipeId
-	);
-	for (const ingredientName of [
-		...variant.ingredients,
-		...currentRecipe.extraIngredients,
+	for (const ingredient of [
+		...recipe.ingredients,
+		...currentFood.extraIngredients,
 	]) {
-		const ingredient =
-			context.instance_ingredient.getPropsByName(ingredientName);
-		if (getFixedItemPriority(ingredient, context) === null) {
+		const ingredientProps =
+			context.ingredientCatalog.getPropsById(ingredient);
+		if (getFixedItemPriority(ingredientProps, context) === null) {
 			return false;
 		}
 	}
@@ -659,39 +667,39 @@ function checkFixedSelectionsAvailable(
 	return true;
 }
 
-function getRecipeAggregatePriority(
-	recipe: TRecipeCatalogItem,
-	variant: IProcessedRecipeVariant,
+function getFoodAggregatePriority(
+	food: TFoodCatalogItem,
+	recipe: IProcessedRecipe,
 	context: TSuggestContext,
 	isFixed: boolean
 ) {
 	if (!isFixed) {
-		const automatic = context.recipeAggregatePriorityMap.get(variant.id);
+		const automatic = context.foodAggregatePriorityMap.get(recipe.id);
 		if (automatic !== undefined) {
 			return automatic;
 		}
 	}
 
-	const cached = context.fixedRecipeAggregatePriorityMap.get(variant.id);
+	const cached = context.fixedFoodAggregatePriorityMap.get(recipe.id);
 	if (cached !== undefined) {
 		return cached;
 	}
 
 	let aggregate = requireItemPriority(
-		recipe,
+		food,
 		context,
 		isFixed,
-		context.recipePriorityMap.get(recipe.name)
+		context.foodPriorityMap.get(food.id)
 	);
 	const ingredientEase: number[] = [];
-	for (const ingredientName of variant.ingredients) {
-		const ingredient =
-			context.instance_ingredient.getPropsByName(ingredientName);
+	for (const ingredient of recipe.ingredients) {
+		const ingredientProps =
+			context.ingredientCatalog.getPropsById(ingredient);
 		const ingredientPriority = requireItemPriority(
-			ingredient,
+			ingredientProps,
 			context,
 			isFixed,
-			context.ingredientPriorityMap.get(ingredientName)
+			context.ingredientPriorityMap.get(ingredient)
 		);
 		aggregate = addRecommendationPriorityMetrics(
 			aggregate,
@@ -711,7 +719,7 @@ function getRecipeAggregatePriority(
 			ingredientEase.length === 0 ? 0.5 : Math.min(...ingredientEase),
 	};
 	if (isFixed) {
-		context.fixedRecipeAggregatePriorityMap.set(variant.id, result);
+		context.fixedFoodAggregatePriorityMap.set(recipe.id, result);
 	}
 
 	return result;
@@ -723,43 +731,41 @@ function getMealPriority(
 	{
 		fixedExtraIngredients,
 		isBeverageFixed,
-		isRecipeFixed,
+		isFoodFixed,
 	}: IMealPriorityOptions
 ) {
-	const recipe = context.instance_recipe.getPropsByName(meal.recipe.name);
-	const variant = context.instance_recipe.getRecipeVariantById(
-		meal.recipe.name,
-		meal.recipe.recipeId
+	const { food, recipe } = context.foodCatalog.getRecipeOwnerById(
+		meal.food.recipeId
 	);
-	const beverage = context.instance_beverage.getPropsByName(meal.beverage);
-	const recipePriority = getRecipeAggregatePriority(
+	const beverage = context.beverageCatalog.getPropsById(meal.beverage);
+	const foodPriority = getFoodAggregatePriority(
+		food,
 		recipe,
-		variant,
 		context,
-		isRecipeFixed
+		isFoodFixed
 	);
 	const beveragePriority = requireItemPriority(
 		beverage,
 		context,
 		isBeverageFixed,
-		context.beveragePriorityMap.get(beverage.name)
+		context.beveragePriorityMap.get(beverage.id)
 	);
 	let priority = addRecommendationPriorityMetrics(
 		EMPTY_RECOMMENDATION_PRIORITY_METRICS,
-		recipePriority
+		foodPriority
 	);
 	priority = addRecommendationPriorityMetrics(priority, beveragePriority);
 
-	for (const ingredientName of meal.recipe.extraIngredients) {
-		const ingredient =
-			context.instance_ingredient.getPropsByName(ingredientName);
+	for (const ingredient of meal.food.extraIngredients) {
+		const ingredientProps =
+			context.ingredientCatalog.getPropsById(ingredient);
 		priority = addRecommendationPriorityMetrics(
 			priority,
 			requireItemPriority(
-				ingredient,
+				ingredientProps,
 				context,
-				fixedExtraIngredients.has(ingredientName),
-				context.ingredientPriorityMap.get(ingredient.name)
+				fixedExtraIngredients.has(ingredient),
+				context.ingredientPriorityMap.get(ingredientProps.id)
 			)
 		);
 	}
@@ -771,7 +777,7 @@ function getMealPriority(
 
 	return {
 		...priority,
-		acquisitionEase: recipePriority.acquisitionEase + beverageEase,
+		acquisitionEase: foodPriority.acquisitionEase + beverageEase,
 	};
 }
 
@@ -787,19 +793,19 @@ const suggestContextCache = createBoundedRuntimeCache<string, TSuggestContext>(
 
 function buildSuggestContextCacheKey({
 	cooker,
-	customerName,
 	hiddenBeverages,
 	hiddenDlcs,
+	hiddenFoods,
 	hiddenIngredients,
-	hiddenRecipes,
+	specialGuest,
 }: ISuggestParams) {
 	return [
 		cooker ?? '',
-		customerName,
+		specialGuest,
 		[...hiddenBeverages].sort().join(','),
 		[...hiddenDlcs].sort().join(','),
 		[...hiddenIngredients].sort().join(','),
-		[...hiddenRecipes].sort().join(','),
+		[...hiddenFoods].sort().join(','),
 	].join('|');
 }
 
@@ -818,42 +824,41 @@ function getSuggestContext(params: ISuggestParams) {
 }
 
 function buildRelevantTagSet(
-	customerPositiveTags: ReadonlyArray<TRecipeTag>,
-	customerNegativeTags: ReadonlyArray<TRecipeTag>,
-	orderRecipeTag: TRecipeTag | null
+	specialGuestPositiveTags: ReadonlyArray<TFoodTagId>,
+	specialGuestNegativeTags: ReadonlyArray<TFoodTagId>,
+	orderFoodTag: TFoodTagId | null
 ) {
-	const keepTags = new Set<string>(customerPositiveTags);
+	const keepTags = new Set<TFoodTagId>(specialGuestPositiveTags);
 
-	if (orderRecipeTag !== null) {
-		keepTags.add(orderRecipeTag);
+	if (orderFoodTag !== null) {
+		keepTags.add(orderFoodTag);
 	}
 
-	Object.entries(Recipe.tagCoverMap).forEach(([coverTag, coveredTag]) => {
-		if (
-			(customerNegativeTags as ReadonlyArray<string>).includes(coverTag)
-		) {
-			keepTags.add(coveredTag);
+	Object.entries(FoodCatalog.tagCoverMap).forEach(
+		([coverTag, coveredTag]) => {
+			const normalizedCoverTag = Number(coverTag) as TFoodTagId;
+			if (specialGuestNegativeTags.includes(normalizedCoverTag)) {
+				keepTags.add(coveredTag);
+			}
+			if (specialGuestNegativeTags.includes(coveredTag)) {
+				keepTags.add(normalizedCoverTag);
+			}
 		}
-		if (
-			(customerNegativeTags as ReadonlyArray<string>).includes(coveredTag)
-		) {
-			keepTags.add(coverTag);
-		}
-	});
+	);
 
 	return keepTags;
 }
 
 function filterRelevantIngredients(
-	baseGameIngredients: TCatalogData<Ingredient>,
-	customerPositiveTags: ReadonlyArray<TRecipeTag>,
-	customerNegativeTags: ReadonlyArray<TRecipeTag>,
-	orderRecipeTag: TRecipeTag | null
-): TCatalogData<Ingredient> {
+	baseGameIngredients: TCatalogData<IngredientCatalog>,
+	specialGuestPositiveTags: ReadonlyArray<TFoodTagId>,
+	specialGuestNegativeTags: ReadonlyArray<TFoodTagId>,
+	orderFoodTag: TFoodTagId | null
+): TCatalogData<IngredientCatalog> {
 	const keepTags = buildRelevantTagSet(
-		customerPositiveTags,
-		customerNegativeTags,
-		orderRecipeTag
+		specialGuestPositiveTags,
+		specialGuestNegativeTags,
+		orderFoodTag
 	);
 
 	return baseGameIngredients.filter(({ tags }) =>
@@ -862,25 +867,25 @@ function filterRelevantIngredients(
 }
 
 interface IBeverageTagGroup {
-	members: Array<{ name: TBeverageName; price: number }>;
-	tags: TBeverageTag[];
+	members: Array<{ id: TBeverageId; price: number }>;
+	tags: TBeverageTagId[];
 }
 
-function buildRecipeSuitabilityList(
-	instance_recipe: Recipe,
-	baseGameRecipeCandidates: ReadonlyArray<IRecipeVariantCandidate>,
-	customerName: TCustomerRareName,
-	customerPositiveTags: ReadonlyArray<TRecipeTag>,
-	customerNegativeTags: ReadonlyArray<TRecipeTag>,
+function buildFoodSuitabilityList(
+	foodCatalog: FoodCatalog,
+	baseGameFoodCandidates: ReadonlyArray<IFoodRecipeCandidate>,
+	specialGuest: TSpecialGuestId,
+	specialGuestPositiveTags: ReadonlyArray<TFoodTagId>,
+	specialGuestNegativeTags: ReadonlyArray<TFoodTagId>,
 	popularTrend: IPopularTrend,
 	isFamousShop: boolean
 ) {
-	const list = baseGameRecipeCandidates.map(({ recipe, variant }) => {
-		const recipeTagsWithTrend = instance_recipe.calculateTagsWithTrend(
-			instance_recipe.composeTagsWithPopularTrend(
-				variant.ingredients,
+	const list = baseGameFoodCandidates.map(({ food, recipe }) => {
+		const foodTagsWithTrend = foodCatalog.calculateFoodTagsWithTrend(
+			foodCatalog.composeFoodTagsWithPopularTrend(
+				recipe.ingredients,
 				[],
-				recipe.positiveTags,
+				food.positiveTags,
 				[],
 				popularTrend
 			),
@@ -888,9 +893,9 @@ function buildRecipeSuitabilityList(
 			isFamousShop
 		);
 
-		const { score: easterEggScore } = checkRecipeEasterEgg({
-			currentCustomerName: customerName,
-			currentRecipeName: recipe.name,
+		const { score: easterEggScore } = checkFoodEasterEgg({
+			currentFood: food.id,
+			currentSpecialGuest: specialGuest,
 		});
 
 		const suitability =
@@ -898,13 +903,13 @@ function buildRecipeSuitabilityList(
 				? Infinity
 				: easterEggScore < 0
 					? -Infinity
-					: instance_recipe.getCustomerSuitability(
-							recipeTagsWithTrend,
-							customerPositiveTags,
-							customerNegativeTags
+					: foodCatalog.getGuestSuitabilityByTags(
+							foodTagsWithTrend,
+							specialGuestPositiveTags,
+							specialGuestNegativeTags
 						).suitability;
 
-		return { recipe, recipeTagsWithTrend, suitability, variant };
+		return { food, foodTagsWithTrend, recipe, suitability };
 	});
 
 	list.sort((a, b) => b.suitability - a.suitability);
@@ -912,17 +917,17 @@ function buildRecipeSuitabilityList(
 	return list;
 }
 
-function buildBeverageTagGroups(beverages: TCatalogData<Beverage>) {
+function buildBeverageTagGroups(beverages: TCatalogData<BeverageCatalog>) {
 	const groups = new Map<string, IBeverageTagGroup>();
 
-	beverages.forEach(({ name, price, tags }) => {
+	beverages.forEach(({ id, price, tags }) => {
 		const tagKey = [...tags].sort().join(',');
 		let group = groups.get(tagKey);
 		if (group === undefined) {
 			group = { members: [], tags };
 			groups.set(tagKey, group);
 		}
-		group.members.push({ name, price });
+		group.members.push({ id, price });
 	});
 
 	return groups;
@@ -955,18 +960,18 @@ function checkSameDiversityLayer(
 
 interface IResultDiversityOptions {
 	readonly isBeverageFixed: boolean;
-	readonly isRecipeFixed: boolean;
+	readonly isFoodFixed: boolean;
 }
 
 function findDiverseResultIndex(
 	results: ReadonlyArray<IScoredResult>,
-	seenBeverages: ReadonlySet<TBeverageName>,
-	seenRecipes: ReadonlySet<TRecipeName>,
-	{ isBeverageFixed, isRecipeFixed }: IResultDiversityOptions
+	seenBeverages: ReadonlySet<TBeverageId>,
+	seenFoods: ReadonlySet<TFoodId>,
+	{ isBeverageFixed, isFoodFixed }: IResultDiversityOptions
 ) {
 	const highestLayer = results[0]?.metrics;
 	let newBeverageIndex = -1;
-	let newRecipeIndex = -1;
+	let newFoodIndex = -1;
 
 	for (const [index, { meal, metrics }] of results.entries()) {
 		if (
@@ -977,36 +982,39 @@ function findDiverseResultIndex(
 		}
 
 		const isNewBeverage = !seenBeverages.has(meal.beverage);
-		const isNewRecipe = !seenRecipes.has(meal.recipe.name);
+		const food = FoodCatalog.getInstance().getRecipeOwnerById(
+			meal.food.recipeId
+		).food.id;
+		const isNewFood = !seenFoods.has(food);
 
-		if (isRecipeFixed) {
+		if (isFoodFixed) {
 			if (isNewBeverage) {
 				return index;
 			}
 			continue;
 		}
 		if (isBeverageFixed) {
-			if (isNewRecipe) {
+			if (isNewFood) {
 				return index;
 			}
 			continue;
 		}
-		if (isNewRecipe && isNewBeverage) {
+		if (isNewFood && isNewBeverage) {
 			return index;
 		}
-		if (isNewRecipe && newRecipeIndex === -1) {
-			newRecipeIndex = index;
+		if (isNewFood && newFoodIndex === -1) {
+			newFoodIndex = index;
 		}
 		if (isNewBeverage && newBeverageIndex === -1) {
 			newBeverageIndex = index;
 		}
 	}
 
-	return newRecipeIndex === -1
+	return newFoodIndex === -1
 		? newBeverageIndex === -1
 			? 0
 			: newBeverageIndex
-		: newRecipeIndex;
+		: newFoodIndex;
 }
 
 async function selectScoredResults(
@@ -1042,8 +1050,8 @@ async function selectScoredResults(
 	}
 
 	const remainingResults = [...dedupedResults];
-	const seenBeverages = new Set<TBeverageName>();
-	const seenRecipes = new Set<TRecipeName>();
+	const seenBeverages = new Set<TBeverageId>();
+	const seenFoods = new Set<TFoodId>();
 	const out: ISuggestedMeal[] = [];
 
 	while (out.length < maxResults && remainingResults.length > 0) {
@@ -1057,7 +1065,7 @@ async function selectScoredResults(
 				: findDiverseResultIndex(
 						remainingResults,
 						seenBeverages,
-						seenRecipes,
+						seenFoods,
 						diversityOptions
 					);
 		const [result] = remainingResults.splice(resultIndex, 1);
@@ -1067,18 +1075,22 @@ async function selectScoredResults(
 
 		out.push(result.meal);
 		seenBeverages.add(result.meal.beverage);
-		seenRecipes.add(result.meal.recipe.name);
+		seenFoods.add(
+			FoodCatalog.getInstance().getRecipeOwnerById(
+				result.meal.food.recipeId
+			).food.id
+		);
 	}
 
 	return out;
 }
 
-interface IRecipeIngredientSummary {
-	readonly currentIngredients: ReadonlyArray<TIngredientName>;
-	readonly extraIngredients: ReadonlyArray<TIngredientName>;
+interface IFoodIngredientSummary {
+	readonly currentIngredients: ReadonlyArray<TIngredientId>;
+	readonly extraIngredients: ReadonlyArray<TIngredientId>;
+	readonly foodTagsWithTrend: ReadonlyArray<TFoodTagId>;
 	readonly ingredientPenalty: number;
 	readonly priority: IRecommendationPriorityMetrics;
-	readonly recipeTagsWithTrend: ReadonlyArray<TRecipeTag>;
 }
 
 const EXACT_INGREDIENT_STATE_CACHE_MAX_ENTRIES = 4000;
@@ -1094,52 +1106,54 @@ const exactIngredientStateCache = createBoundedRuntimeCache<
 });
 const recipeIngredientSummaryCache = createBoundedRuntimeCache<
 	string,
-	ReadonlyArray<ReadonlyArray<IRecipeIngredientSummary>>
+	ReadonlyArray<ReadonlyArray<IFoodIngredientSummary>>
 >(RECIPE_INGREDIENT_SUMMARY_CACHE_MAX_ENTRIES, {
 	getWeight: (layers) =>
 		layers.reduce((total, layer) => total + layer.length, 0),
 	maxWeight: RECIPE_INGREDIENT_SUMMARY_CACHE_MAX_SUMMARIES,
 });
-const exactIngredientStateTableIds = new WeakMap<
+const exactIngredientStateTableCacheKeys = new WeakMap<
 	IExactIngredientStateTable,
 	number
 >();
-let nextExactIngredientStateTableId = 1;
+let nextExactIngredientStateTableCacheKey = 1;
 
-function getExactIngredientStateTableId(table: IExactIngredientStateTable) {
-	const cached = exactIngredientStateTableIds.get(table);
+function getExactIngredientStateTableCacheKey(
+	table: IExactIngredientStateTable
+) {
+	const cached = exactIngredientStateTableCacheKeys.get(table);
 	if (cached !== undefined) {
 		return cached;
 	}
 
-	const id = nextExactIngredientStateTableId++;
-	exactIngredientStateTableIds.set(table, id);
+	const cacheKey = nextExactIngredientStateTableCacheKey++;
+	exactIngredientStateTableCacheKeys.set(table, cacheKey);
 
-	return id;
+	return cacheKey;
 }
 
 function buildExactIngredientStateCacheKey({
 	candidates,
 	maxCount,
-	orderSensitiveTags = new Set<TRecipeTag>(),
+	orderSensitiveTags = new Set<TFoodTagId>(),
 }: {
 	candidates: ReadonlyArray<{
 		effectKeys: ReadonlyArray<string>;
-		name: TIngredientName;
+		id: TIngredientId;
 		penalty: number;
 		priority: IRecommendationPriorityMetrics;
-		tags: ReadonlyArray<string>;
+		tags: ReadonlyArray<TFoodTagId>;
 	}>;
 	maxCount: number;
-	orderSensitiveTags?: ReadonlySet<TRecipeTag>;
+	orderSensitiveTags?: ReadonlySet<TFoodTagId>;
 }) {
 	return [
 		maxCount.toString(),
 		[...orderSensitiveTags].join(','),
 		candidates
 			.map(
-				({ effectKeys, name, penalty, priority, tags }) =>
-					`${name}:${penalty}:${priority.contentMismatchCount}:${priority.pathMismatchCount}:${priority.primaryPlaceMismatchCount}:${priority.customerPlacesMismatchCount}:${priority.unknownSourceCount}:${priority.lateSourceCount}:${priority.maxLateTierDistance}:${priority.totalLateTierDistance}:${priority.acquisitionEase}:${tags.join(',')}:${effectKeys.join(',')}`
+				({ effectKeys, id, penalty, priority, tags }) =>
+					`${id}:${penalty}:${priority.contentMismatchCount}:${priority.pathMismatchCount}:${priority.primaryPlaceMismatchCount}:${priority.guestPlacesMismatchCount}:${priority.unknownSourceCount}:${priority.lateSourceCount}:${priority.maxLateTierDistance}:${priority.totalLateTierDistance}:${priority.acquisitionEase}:${tags.join(',')}:${effectKeys.join(',')}`
 			)
 			.join('|'),
 	].join('::');
@@ -1163,34 +1177,34 @@ async function getExactIngredientStateTable(
 	return table;
 }
 
-async function getRecipeIngredientSummaries({
+async function getFoodIngredientSummaries({
+	baseFoodTags,
 	execution,
 	extraSlots,
+	food,
 	isFamousShop,
 	popularTrend,
 	recipeId,
 	recipeIngredients,
-	recipeName,
-	recipeTagsBase,
 	stateTable,
 }: {
+	baseFoodTags: ReadonlyArray<TFoodTagId>;
 	execution: ISuggestMealsExecution;
 	extraSlots: number;
+	food: TFoodId;
 	isFamousShop: boolean;
 	popularTrend: IPopularTrend;
-	recipeIngredients: ReadonlyArray<TIngredientName>;
-	recipeId: number;
-	recipeName: TRecipeName;
-	recipeTagsBase: ReadonlyArray<TRecipeTag>;
+	recipeId: TRecipeId;
+	recipeIngredients: ReadonlyArray<TIngredientId>;
 	stateTable: IExactIngredientStateTable;
 }) {
 	const cacheKey = [
-		getExactIngredientStateTableId(stateTable).toString(),
+		getExactIngredientStateTableCacheKey(stateTable).toString(),
 		extraSlots.toString(),
-		recipeName,
+		food.toString(),
 		recipeId.toString(),
 		recipeIngredients.join(','),
-		recipeTagsBase.join(','),
+		baseFoodTags.join(','),
 		popularTrend.tag ?? '',
 		popularTrend.isNegative ? '1' : '0',
 		isFamousShop ? '1' : '0',
@@ -1200,7 +1214,7 @@ async function getRecipeIngredientSummaries({
 		return cached;
 	}
 
-	const layers: IRecipeIngredientSummary[][] = Array.from(
+	const layers: IFoodIngredientSummary[][] = Array.from(
 		{ length: extraSlots + 1 },
 		() => []
 	);
@@ -1215,22 +1229,22 @@ async function getRecipeIngredientSummaries({
 			if (checkpointPromise !== undefined) {
 				await checkpointPromise;
 			}
-			const tagSet = new Set<TRecipeTag>(recipeTagsBase);
+			const tagSet = new Set<TFoodTagId>(baseFoodTags);
 			for (const tag of getExactIngredientStateTags(
 				stateTable,
 				state
-			) as ReadonlyArray<TRecipeTag>) {
+			) as ReadonlyArray<TFoodTagId>) {
 				tagSet.add(tag);
 			}
 
-			Recipe.applyLargePartition(
+			FoodCatalog.applyLargePartition(
 				tagSet,
 				recipeIngredients.length + state.count,
 				popularTrend
 			);
-			Recipe.applyTagCovers(tagSet, popularTrend);
-			Recipe.applyFamousShop(tagSet, isFamousShop);
-			Recipe.applyPopularTrend(tagSet, popularTrend);
+			FoodCatalog.applyTagCovers(tagSet, popularTrend);
+			FoodCatalog.applyFamousShop(tagSet, isFamousShop);
+			FoodCatalog.applyPopularTrend(tagSet, popularTrend);
 
 			summaries.push({
 				currentIngredients: [
@@ -1238,9 +1252,9 @@ async function getRecipeIngredientSummaries({
 					...state.extraIngredients,
 				],
 				extraIngredients: state.extraIngredients,
+				foodTagsWithTrend: [...tagSet],
 				ingredientPenalty: state.ingredientPenalty,
 				priority: state.priority,
-				recipeTagsWithTrend: [...tagSet],
 			});
 		}
 	}
@@ -1253,51 +1267,51 @@ async function getRecipeIngredientSummaries({
 
 interface IBestExtraIngredientsPreparation {
 	readonly summaryLayers: Awaited<
-		ReturnType<typeof getRecipeIngredientSummaries>
+		ReturnType<typeof getFoodIngredientSummaries>
 	>;
 }
 
 interface IPrepareBestExtraIngredientsParams {
-	readonly baseGameIngredients: TCatalogData<Ingredient>;
-	readonly customerName: TCustomerRareName;
-	readonly customerPositiveTags: ReadonlyArray<TRecipeTag>;
-	readonly excludedExtraIngredients: ReadonlyArray<TIngredientName>;
+	readonly baseFoodTags: ReadonlyArray<TFoodTagId>;
+	readonly baseGameIngredients: TCatalogData<IngredientCatalog>;
+	readonly excludedExtraIngredients: ReadonlyArray<TIngredientId>;
 	readonly execution: ISuggestMealsExecution;
 	readonly extraSlots: number;
+	readonly food: TFoodId;
+	readonly foodNegativeTags: ReadonlyArray<TFoodTagId>;
 	readonly hasMystiaCooker: boolean;
 	readonly ingredientPenaltyContext: ISuggestIngredientPenaltyContext;
 	readonly ingredientPriorityMap: ReadonlyMap<
-		TIngredientName,
+		TIngredientId,
 		IRecommendationPriorityMetrics
 	>;
 	readonly isFamousShop: boolean;
 	readonly popularTrend: IPopularTrend;
-	readonly recipeId: number;
-	readonly recipeIngredients: ReadonlyArray<TIngredientName>;
-	readonly recipeName: TRecipeName;
-	readonly recipeNegativeTags: ReadonlyArray<TRecipeTag>;
-	readonly recipeTagsBase: ReadonlyArray<TRecipeTag>;
+	readonly recipeId: TRecipeId;
+	readonly recipeIngredients: ReadonlyArray<TIngredientId>;
+	readonly specialGuest: TSpecialGuestId;
+	readonly specialGuestPositiveTags: ReadonlyArray<TFoodTagId>;
 }
 
 interface ISelectBestExtraIngredientsParams {
-	readonly evaluateRecipe: ReturnType<typeof createMealEvaluator>;
+	readonly evaluateFood: ReturnType<typeof createSpecialGuestMealEvaluator>;
 	readonly execution: ISuggestMealsExecution;
 	readonly extraSlots: number;
 	readonly maxRating: number;
 	readonly preparation: IBestExtraIngredientsPreparation;
-	readonly recipeName: TRecipeName;
+	readonly recipeId: TRecipeId;
 }
 
 interface IFindBestExtraIngredientsParams extends IPrepareBestExtraIngredientsParams {
-	readonly beverageTags: ReadonlyArray<TBeverageTag>;
-	readonly customerBeverageTags: ReadonlyArray<TBeverageTag>;
-	readonly customerNegativeTags: ReadonlyArray<TRecipeTag>;
-	readonly customerOrder: ICustomerOrder;
+	readonly beverageTags: ReadonlyArray<TBeverageTagId>;
+	readonly guestOrder: IGuestOrder;
 	readonly maxRating: number;
+	readonly specialGuestBeverageTags: ReadonlyArray<TBeverageTagId>;
+	readonly specialGuestNegativeTags: ReadonlyArray<TFoodTagId>;
 }
 
 interface IBestExtraIngredientsResult {
-	readonly extraIngredients: TIngredientName[];
+	readonly extraIngredients: TIngredientId[];
 	readonly ingredientPenalty: number;
 	readonly priority: IRecommendationPriorityMetrics;
 	readonly rating: TRatingKey;
@@ -1305,12 +1319,13 @@ interface IBestExtraIngredientsResult {
 }
 
 async function prepareBestExtraIngredients({
+	baseFoodTags,
 	baseGameIngredients,
-	customerName,
-	customerPositiveTags,
 	excludedExtraIngredients,
 	execution,
 	extraSlots,
+	food,
+	foodNegativeTags,
 	hasMystiaCooker,
 	ingredientPenaltyContext,
 	ingredientPriorityMap,
@@ -1318,36 +1333,35 @@ async function prepareBestExtraIngredients({
 	popularTrend,
 	recipeId,
 	recipeIngredients,
-	recipeName,
-	recipeNegativeTags,
-	recipeTagsBase,
+	specialGuest,
+	specialGuestPositiveTags,
 }: IPrepareBestExtraIngredientsParams): Promise<IBestExtraIngredientsPreparation> {
-	const negativeTagSet = new Set<string>(recipeNegativeTags);
+	const negativeTagSet = new Set<TFoodTagId>(foodNegativeTags);
 	const fixedIngredientSet = new Set(excludedExtraIngredients);
-	const effectIngredient = getIngredientEasterEggTarget(customerName);
+	const effectIngredient = getIngredientEasterEggTarget(specialGuest);
 	const candidates = baseGameIngredients.flatMap((ingredient) => {
 		if (
-			fixedIngredientSet.has(ingredient.name) ||
+			fixedIngredientSet.has(ingredient.id) ||
 			ingredient.tags.some((tag) => negativeTagSet.has(tag))
 		) {
 			return [];
 		}
-		const priority = ingredientPriorityMap.get(ingredient.name);
+		const priority = ingredientPriorityMap.get(ingredient.id);
 		if (priority === undefined) {
 			throw new Error(
-				`推荐食材“${ingredient.name}”缺少已选择的可获取路径`
+				`推荐食材 ID “${ingredient.id}”缺少已选择的可获取路径`
 			);
 		}
 
 		return [
 			{
 				effectKeys:
-					ingredient.name === effectIngredient
+					ingredient.id === effectIngredient
 						? ['ingredient-easter-egg']
 						: [],
-				name: ingredient.name,
+				id: ingredient.id,
 				penalty: getSuggestIngredientResourcePenalty(
-					ingredient.name,
+					ingredient.id,
 					ingredientPenaltyContext
 				).total,
 				priority: { ...priority, acquisitionEase: 0 },
@@ -1360,20 +1374,20 @@ async function prepareBestExtraIngredients({
 			candidates,
 			maxCount: Math.max(0, 5 - recipeIngredients.length),
 			orderSensitiveTags: hasMystiaCooker
-				? new Set(customerPositiveTags)
-				: new Set<TRecipeTag>(),
+				? new Set(specialGuestPositiveTags)
+				: new Set<TFoodTagId>(),
 		},
 		execution
 	);
-	const summaryLayers = await getRecipeIngredientSummaries({
+	const summaryLayers = await getFoodIngredientSummaries({
+		baseFoodTags,
 		execution,
 		extraSlots,
+		food,
 		isFamousShop,
 		popularTrend,
 		recipeId,
 		recipeIngredients,
-		recipeName,
-		recipeTagsBase,
 		stateTable,
 	});
 
@@ -1381,16 +1395,16 @@ async function prepareBestExtraIngredients({
 }
 
 async function selectBestExtraIngredients({
-	evaluateRecipe,
+	evaluateFood,
 	execution,
 	extraSlots,
 	maxRating,
 	preparation,
-	recipeName,
+	recipeId,
 }: ISelectBestExtraIngredientsParams): Promise<IBestExtraIngredientsResult | null> {
 	let bestRating: TRatingKey | null = null;
 	let bestScore = 0;
-	let bestSummary: IRecipeIngredientSummary | null = null;
+	let bestSummary: IFoodIngredientSummary | null = null;
 
 	for (let count = 1; count <= extraSlots; count++) {
 		for (const summary of preparation.summaryLayers[count] ?? []) {
@@ -1398,10 +1412,12 @@ async function selectBestExtraIngredients({
 			if (checkpointPromise !== undefined) {
 				await checkpointPromise;
 			}
-			const rating = evaluateRecipe({
-				currentIngredients: summary.currentIngredients,
-				currentRecipeName: recipeName,
-				currentRecipeTagsWithTrend: summary.recipeTagsWithTrend,
+			const rating = evaluateFood({
+				currentFoodTagsWithTrend: summary.foodTagsWithTrend,
+				currentMealFood: {
+					extraIngredients: [...summary.extraIngredients],
+					recipeId,
+				},
 				isDarkMatter: false,
 			});
 			if (rating === null) {
@@ -1446,59 +1462,65 @@ async function selectBestExtraIngredients({
 
 async function findBestExtraIngredients({
 	beverageTags,
-	customerBeverageTags,
-	customerName,
-	customerNegativeTags,
-	customerOrder,
-	customerPositiveTags,
+	guestOrder,
 	hasMystiaCooker,
 	maxRating,
+	specialGuest,
+	specialGuestBeverageTags,
+	specialGuestNegativeTags,
+	specialGuestPositiveTags,
 	...preparationParams
 }: IFindBestExtraIngredientsParams) {
 	const preparation = await prepareBestExtraIngredients({
-		customerName,
-		customerPositiveTags,
 		hasMystiaCooker,
+		specialGuest,
+		specialGuestPositiveTags,
 		...preparationParams,
 	});
-	const evaluateRecipe = createMealEvaluator({
+	const evaluateFood = createSpecialGuestMealEvaluator({
 		currentBeverageTags: beverageTags,
-		currentCustomerBeverageTags: customerBeverageTags,
-		currentCustomerName: customerName,
-		currentCustomerNegativeTags: customerNegativeTags,
-		currentCustomerOrder: customerOrder,
-		currentCustomerPositiveTags: customerPositiveTags,
+		currentSpecialGuest: specialGuest,
+		currentSpecialGuestBeverageTags: specialGuestBeverageTags,
+		currentSpecialGuestNegativeTags: specialGuestNegativeTags,
+		currentSpecialGuestOrder: guestOrder,
+		currentSpecialGuestPositiveTags: specialGuestPositiveTags,
 		hasMystiaCooker,
 	});
 
 	return selectBestExtraIngredients({
-		evaluateRecipe,
+		evaluateFood,
 		execution: preparationParams.execution,
 		extraSlots: preparationParams.extraSlots,
 		maxRating,
 		preparation,
-		recipeName: preparationParams.recipeName,
+		recipeId: preparationParams.recipeId,
 	});
 }
 
 interface IAutomaticSuggestContextBatchState {
 	readonly beverageTagGroups: Map<
-		TBeverageTag,
+		TBeverageTagId,
 		Map<string, IBeverageTagGroup>
 	>;
 	readonly extraIngredientPreparations: Map<
-		TCatalogData<Ingredient>,
+		TCatalogData<IngredientCatalog>,
 		Map<string, IBestExtraIngredientsPreparation>
 	>;
-	readonly recipesWithSuitability: Map<
+	readonly foodSideCache: ReturnType<
+		typeof createSpecialGuestMealEvaluatorFoodSideCache
+	>;
+	readonly foodsWithSuitability: Map<
 		string,
-		ReturnType<typeof buildRecipeSuitabilityList>
+		ReturnType<typeof buildFoodSuitabilityList>
 	>;
-	readonly recipeSideCache: ReturnType<
-		typeof createMealEvaluatorRecipeSideCache
+	readonly relevantIngredientGroups: Map<
+		string,
+		TCatalogData<IngredientCatalog>
 	>;
-	readonly relevantIngredientGroups: Map<string, TCatalogData<Ingredient>>;
-	readonly relevantIngredients: Map<TRecipeTag, TCatalogData<Ingredient>>;
+	readonly relevantIngredients: Map<
+		TFoodTagId,
+		TCatalogData<IngredientCatalog>
+	>;
 }
 
 interface IAutomaticSuggestBatchState {
@@ -1521,11 +1543,11 @@ function getAutomaticSuggestContextBatchState(
 	const state: IAutomaticSuggestContextBatchState = {
 		beverageTagGroups: new Map(),
 		extraIngredientPreparations: new Map(),
-		recipeSideCache: createMealEvaluatorRecipeSideCache({
-			currentCustomerNegativeTags: context.customerNegativeTags,
-			currentCustomerPositiveTags: context.customerPositiveTags,
+		foodSideCache: createSpecialGuestMealEvaluatorFoodSideCache({
+			currentSpecialGuestNegativeTags: context.specialGuestNegativeTags,
+			currentSpecialGuestPositiveTags: context.specialGuestPositiveTags,
 		}),
-		recipesWithSuitability: new Map(),
+		foodsWithSuitability: new Map(),
 		relevantIngredientGroups: new Map(),
 		relevantIngredients: new Map(),
 	};
@@ -1537,7 +1559,7 @@ function getAutomaticSuggestContextBatchState(
 function getAutomaticBeverageTagGroups(
 	context: TSuggestContext,
 	state: IAutomaticSuggestContextBatchState,
-	orderBeverageTag: TBeverageTag
+	orderBeverageTag: TBeverageTagId
 ) {
 	const cached = state.beverageTagGroups.get(orderBeverageTag);
 	if (cached !== undefined) {
@@ -1547,11 +1569,11 @@ function getAutomaticBeverageTagGroups(
 	const groups = buildBeverageTagGroups(
 		context.baseGameBeverages.filter(
 			({ tags }) =>
-				(tags as ReadonlyArray<TBeverageTag>).includes(
+				(tags as ReadonlyArray<TBeverageTagId>).includes(
 					orderBeverageTag
 				) &&
 				(
-					context.customerBeverageTags as ReadonlyArray<TBeverageTag>
+					context.specialGuestBeverageTags as ReadonlyArray<TBeverageTagId>
 				).includes(orderBeverageTag)
 		)
 	);
@@ -1563,32 +1585,32 @@ function getAutomaticBeverageTagGroups(
 function getAutomaticRelevantIngredients(
 	context: TSuggestContext,
 	state: IAutomaticSuggestContextBatchState,
-	orderRecipeTag: TRecipeTag
+	orderFoodTag: TFoodTagId
 ) {
-	const cached = state.relevantIngredients.get(orderRecipeTag);
+	const cached = state.relevantIngredients.get(orderFoodTag);
 	if (cached !== undefined) {
 		return cached;
 	}
 
 	const ingredients = filterRelevantIngredients(
 		context.baseGameIngredients,
-		context.customerPositiveTags,
-		context.customerNegativeTags,
-		orderRecipeTag
+		context.specialGuestPositiveTags,
+		context.specialGuestNegativeTags,
+		orderFoodTag
 	);
-	const signature = JSON.stringify(ingredients.map(({ name }) => name));
+	const signature = JSON.stringify(ingredients.map(({ id }) => id));
 	const sharedIngredients =
 		state.relevantIngredientGroups.get(signature) ?? ingredients;
 	state.relevantIngredientGroups.set(signature, sharedIngredients);
-	state.relevantIngredients.set(orderRecipeTag, sharedIngredients);
+	state.relevantIngredients.set(orderFoodTag, sharedIngredients);
 
 	return sharedIngredients;
 }
 
-function getAutomaticRecipesWithSuitability(
+function getAutomaticFoodsWithSuitability(
 	context: TSuggestContext,
 	state: IAutomaticSuggestContextBatchState,
-	customerName: TCustomerRareName,
+	specialGuest: TSpecialGuestId,
 	isFamousShop: boolean,
 	popularTrend: IPopularTrend
 ) {
@@ -1597,29 +1619,28 @@ function getAutomaticRecipesWithSuitability(
 		popularTrend.tag ?? '',
 		popularTrend.isNegative ? '1' : '0',
 	].join('|');
-	const cached = state.recipesWithSuitability.get(key);
+	const cached = state.foodsWithSuitability.get(key);
 	if (cached !== undefined) {
 		return cached;
 	}
 
-	const recipes = buildRecipeSuitabilityList(
-		context.instance_recipe,
-		context.baseGameRecipeCandidates,
-		customerName,
-		context.customerPositiveTags,
-		context.customerNegativeTags,
+	const foods = buildFoodSuitabilityList(
+		context.foodCatalog,
+		context.baseGameFoodCandidates,
+		specialGuest,
+		context.specialGuestPositiveTags,
+		context.specialGuestNegativeTags,
 		popularTrend,
 		isFamousShop
 	);
-	state.recipesWithSuitability.set(key, recipes);
+	state.foodsWithSuitability.set(key, foods);
 
-	return recipes;
+	return foods;
 }
 
 async function getAutomaticExtraIngredientPreparation({
 	candidate,
 	context,
-	customerName,
 	execution,
 	extraSlots,
 	isFamousShop,
@@ -1627,17 +1648,16 @@ async function getAutomaticExtraIngredientPreparation({
 	relevantIngredients,
 	state,
 }: {
-	candidate: IRecipeVariantCandidate;
+	candidate: IFoodRecipeCandidate;
 	context: TSuggestContext;
-	customerName: TCustomerRareName;
 	execution: ISuggestMealsExecution;
 	extraSlots: number;
 	isFamousShop: boolean;
 	popularTrend: IPopularTrend;
-	relevantIngredients: TCatalogData<Ingredient>;
+	relevantIngredients: TCatalogData<IngredientCatalog>;
 	state: IAutomaticSuggestContextBatchState;
 }) {
-	const { recipe, variant } = candidate;
+	const { food, recipe } = candidate;
 	let preparations =
 		state.extraIngredientPreparations.get(relevantIngredients);
 	if (preparations === undefined) {
@@ -1648,8 +1668,8 @@ async function getAutomaticExtraIngredientPreparation({
 		);
 	}
 	const key = [
-		recipe.name,
-		variant.id.toString(),
+		food.id.toString(),
+		recipe.id.toString(),
 		extraSlots.toString(),
 		isFamousShop ? '1' : '0',
 		popularTrend.tag ?? '',
@@ -1661,22 +1681,22 @@ async function getAutomaticExtraIngredientPreparation({
 	}
 
 	const preparation = await prepareBestExtraIngredients({
+		baseFoodTags: food.positiveTags,
 		baseGameIngredients: relevantIngredients,
-		customerName,
-		customerPositiveTags: context.customerPositiveTags,
 		excludedExtraIngredients: [],
 		execution,
 		extraSlots,
+		food: food.id,
+		foodNegativeTags: food.negativeTags,
 		hasMystiaCooker: false,
 		ingredientPenaltyContext: context.ingredientPenaltyContext,
 		ingredientPriorityMap: context.ingredientPriorityMap,
 		isFamousShop,
 		popularTrend,
-		recipeId: variant.id,
-		recipeIngredients: variant.ingredients,
-		recipeName: recipe.name,
-		recipeNegativeTags: recipe.negativeTags,
-		recipeTagsBase: recipe.positiveTags,
+		recipeId: recipe.id,
+		recipeIngredients: recipe.ingredients,
+		specialGuest: context.specialGuest,
+		specialGuestPositiveTags: context.specialGuestPositiveTags,
 	});
 	execution.throwIfAborted();
 	preparations.set(key, preparation);
@@ -1686,14 +1706,14 @@ async function getAutomaticExtraIngredientPreparation({
 
 async function computeSuggestions(
 	{
-		customerName,
-		customerOrder,
+		guestOrder,
 		hasMystiaCooker,
 		isFamousShop,
 		maxExtraIngredients,
 		maxRating,
 		maxResults,
 		popularTrend,
+		specialGuest,
 	}: ISuggestParams,
 	context: TSuggestContext,
 	execution: ISuggestMealsExecution,
@@ -1702,17 +1722,12 @@ async function computeSuggestions(
 	const {
 		budgetMax,
 		budgetSoftMax,
-		customerBeverageTags,
-		customerNegativeTags,
-		customerPositiveTags,
+		specialGuestBeverageTags,
+		specialGuestNegativeTags,
+		specialGuestPositiveTags,
 	} = context;
-	const { beverageTag: orderBeverageTag, recipeTag: orderRecipeTag } =
-		customerOrder;
-	if (
-		orderBeverageTag === null ||
-		orderRecipeTag === null ||
-		hasMystiaCooker
-	) {
+	const { beverageTag: orderBeverageTag, foodTag: orderFoodTag } = guestOrder;
+	if (orderBeverageTag === null || orderFoodTag === null || hasMystiaCooker) {
 		return [];
 	}
 
@@ -1723,12 +1738,12 @@ async function computeSuggestions(
 	const relevantIngredients = getAutomaticRelevantIngredients(
 		context,
 		contextBatchState,
-		orderRecipeTag
+		orderFoodTag
 	);
-	const recipesWithSuitability = getAutomaticRecipesWithSuitability(
+	const foodsWithSuitability = getAutomaticFoodsWithSuitability(
 		context,
 		contextBatchState,
-		customerName,
+		specialGuest,
 		isFamousShop,
 		popularTrend
 	);
@@ -1741,28 +1756,28 @@ async function computeSuggestions(
 	const beverageGroupsWithEvaluators = [...beverageTagGroups.values()].map(
 		(group) => ({
 			...group,
-			evaluateRecipe: createMealEvaluatorWithRecipeSideCache(
+			evaluateFood: createSpecialGuestMealEvaluatorWithFoodSideCache(
 				{
 					currentBeverageTags: group.tags,
-					currentCustomerBeverageTags: customerBeverageTags,
-					currentCustomerName: customerName,
-					currentCustomerNegativeTags: customerNegativeTags,
-					currentCustomerOrder: customerOrder,
-					currentCustomerPositiveTags: customerPositiveTags,
+					currentSpecialGuest: specialGuest,
+					currentSpecialGuestBeverageTags: specialGuestBeverageTags,
+					currentSpecialGuestNegativeTags: specialGuestNegativeTags,
+					currentSpecialGuestOrder: guestOrder,
+					currentSpecialGuestPositiveTags: specialGuestPositiveTags,
 					hasMystiaCooker: false,
 				},
-				contextBatchState.recipeSideCache
+				contextBatchState.foodSideCache
 			),
 		})
 	);
 
 	for (const {
+		food,
+		food: { price: foodPrice },
+		foodTagsWithTrend,
 		recipe,
-		recipe: { name: recipeName, price: recipePrice },
-		recipeTagsWithTrend,
-		variant,
-		variant: { id: recipeId, ingredients: recipeIngredients },
-	} of recipesWithSuitability) {
+		recipe: { id: recipeId, ingredients: recipeIngredients },
+	} of foodsWithSuitability) {
 		const checkpointPromise = execution.checkpoint();
 		if (checkpointPromise !== undefined) {
 			await checkpointPromise;
@@ -1773,17 +1788,16 @@ async function computeSuggestions(
 				: Math.min(5 - recipeIngredients.length, maxExtraIngredients);
 
 		for (const {
-			evaluateRecipe,
+			evaluateFood,
 			members: beverageMembers,
 		} of beverageGroupsWithEvaluators) {
 			const checkpointPromise = execution.checkpoint();
 			if (checkpointPromise !== undefined) {
 				await checkpointPromise;
 			}
-			const rating = evaluateRecipe({
-				currentIngredients: recipeIngredients,
-				currentRecipeName: recipeName,
-				currentRecipeTagsWithTrend: recipeTagsWithTrend,
+			const rating = evaluateFood({
+				currentFoodTagsWithTrend: foodTagsWithTrend,
+				currentMealFood: { extraIngredients: [], recipeId },
 				isDarkMatter: false,
 			});
 
@@ -1795,15 +1809,14 @@ async function computeSuggestions(
 
 			let finalScore = score;
 			let finalRating: TRatingKey = rating;
-			let finalExtra: TIngredientName[] = [];
+			let finalExtraIngredients: TIngredientId[] = [];
 			let ingredientPenalty = 0;
 
 			if (extraSlots > 0 && (score < 4 || score > maxRating)) {
 				const preparation =
 					await getAutomaticExtraIngredientPreparation({
-						candidate: { recipe, variant },
+						candidate: { food, recipe },
 						context,
-						customerName,
 						execution,
 						extraSlots,
 						isFamousShop,
@@ -1812,12 +1825,12 @@ async function computeSuggestions(
 						state: contextBatchState,
 					});
 				const bestExtra = await selectBestExtraIngredients({
-					evaluateRecipe,
+					evaluateFood,
 					execution,
 					extraSlots,
 					maxRating,
 					preparation,
-					recipeName,
+					recipeId,
 				});
 
 				if (
@@ -1826,30 +1839,29 @@ async function computeSuggestions(
 				) {
 					finalScore = bestExtra.score;
 					finalRating = bestExtra.rating;
-					finalExtra = bestExtra.extraIngredients;
+					finalExtraIngredients = bestExtra.extraIngredients;
 					ingredientPenalty = bestExtra.ingredientPenalty;
 				}
 			}
 
 			if (finalScore <= maxRating) {
 				for (const {
-					name: beverageName,
+					id: beverage,
 					price: beveragePrice,
 				} of beverageMembers) {
-					const totalPrice = beveragePrice + recipePrice;
+					const totalPrice = beveragePrice + foodPrice;
 					if (totalPrice > budgetMax) {
 						continue;
 					}
 
 					const meal: ISuggestedMeal = {
-						beverage: beverageName,
-						price: totalPrice,
-						rating: finalRating,
-						recipe: {
-							extraIngredients: finalExtra,
-							name: recipeName,
+						beverage,
+						food: {
+							extraIngredients: finalExtraIngredients,
 							recipeId,
 						},
+						price: totalPrice,
+						rating: finalRating,
 					};
 
 					results.push({
@@ -1858,10 +1870,9 @@ async function computeSuggestions(
 							ingredientPenalty,
 							isOverSoftBudget: totalPrice > budgetSoftMax,
 							priority: getMealPriority(meal, context, {
-								fixedExtraIngredients:
-									EMPTY_INGREDIENT_NAME_SET,
+								fixedExtraIngredients: EMPTY_INGREDIENT_SET,
 								isBeverageFixed: false,
-								isRecipeFixed: false,
+								isFoodFixed: false,
 							}),
 							score: finalScore,
 						},
@@ -1876,64 +1887,64 @@ async function computeSuggestions(
 		results,
 		maxResults,
 		(m) =>
-			`${m.recipe.name}|${m.recipe.recipeId}|${m.beverage}|${m.recipe.extraIngredients.join(',')}`,
-		{ isBeverageFixed: false, isRecipeFixed: false },
+			`${m.food.recipeId}|${m.beverage}|${m.food.extraIngredients.join(',')}`,
+		{ isBeverageFixed: false, isFoodFixed: false },
 		execution
 	);
 }
 
 async function suggestIngredients(
 	{
-		customerName,
-		customerOrder,
+		guestOrder,
 		hasMystiaCooker,
 		isFamousShop,
 		maxExtraIngredients,
 		maxRating,
 		popularTrend,
+		specialGuest,
 	}: ISuggestParams,
 	context: TSuggestContext,
-	currentRecipe: IMealRecipe,
-	currentBeverage: TBeverageName,
+	currentFood: IMealFood,
+	currentBeverage: TBeverageId,
 	execution: ISuggestMealsExecution
 ) {
 	const {
 		baseGameIngredients,
+		beverageCatalog,
 		budgetMax,
-		customerBeverageTags,
-		customerNegativeTags,
-		customerPositiveTags,
+		foodCatalog,
 		ingredientPenaltyContext,
 		ingredientPriorityMap,
-		instance_beverage,
-		instance_recipe,
+		specialGuestBeverageTags,
+		specialGuestNegativeTags,
+		specialGuestPositiveTags,
 	} = context;
-	const { recipeTag: orderRecipeTag } = customerOrder;
+	const { foodTag: orderFoodTag } = guestOrder;
 
 	const { price: beveragePrice, tags: beverageTags } =
-		instance_beverage.getPropsByName(currentBeverage);
+		beverageCatalog.getPropsById(currentBeverage);
 
+	const { food: foodRecord, recipe } = foodCatalog.getRecipeOwnerById(
+		currentFood.recipeId
+	);
 	const {
-		negativeTags: recipeNegativeTags,
-		positiveTags: recipePositiveTags,
-		price: recipePrice,
-	} = instance_recipe.getPropsByName(currentRecipe.name);
-	const { ingredients: recipeIngredients } =
-		instance_recipe.getRecipeVariantById(
-			currentRecipe.name,
-			currentRecipe.recipeId
-		);
+		id: food,
+		negativeTags: foodNegativeTags,
+		positiveTags: foodPositiveTags,
+		price: foodPrice,
+	} = foodRecord;
+	const { ingredients: recipeIngredients } = recipe;
 
 	const allCurrentIngredients = [
 		...recipeIngredients,
-		...currentRecipe.extraIngredients,
+		...currentFood.extraIngredients,
 	];
 	const extraSlots =
 		maxExtraIngredients === null
 			? 5 - allCurrentIngredients.length
 			: Math.min(
 					5 - allCurrentIngredients.length,
-					maxExtraIngredients - currentRecipe.extraIngredients.length
+					maxExtraIngredients - currentFood.extraIngredients.length
 				);
 
 	if (extraSlots <= 0) {
@@ -1941,38 +1952,37 @@ async function suggestIngredients(
 	}
 
 	const { extraTags: existingExtraTags, isDarkMatter: isBaseDarkMatter } =
-		instance_recipe.checkDarkMatter({
-			extraIngredients: currentRecipe.extraIngredients,
-			negativeTags: recipeNegativeTags,
+		foodCatalog.checkDarkMatter({
+			extraIngredients: currentFood.extraIngredients,
+			negativeTags: foodNegativeTags,
 		});
 
 	if (isBaseDarkMatter) {
 		return [];
 	}
 
-	const composedBaseRecipeTags = instance_recipe.composeTagsWithPopularTrend(
+	const composedBaseFoodTags = foodCatalog.composeFoodTagsWithPopularTrend(
 		recipeIngredients,
-		currentRecipe.extraIngredients,
-		recipePositiveTags,
+		currentFood.extraIngredients,
+		foodPositiveTags,
 		existingExtraTags,
 		popularTrend
 	);
-	const baseRecipeTagsWithTrend = instance_recipe.calculateTagsWithTrend(
-		composedBaseRecipeTags,
+	const baseFoodTagsWithTrend = foodCatalog.calculateFoodTagsWithTrend(
+		composedBaseFoodTags,
 		popularTrend,
 		isFamousShop
 	);
 
-	const baseRating = evaluateRareCustomerMeal({
+	const baseRating = evaluateSpecialGuestMeal({
 		currentBeverageTags: beverageTags,
-		currentCustomerBeverageTags: customerBeverageTags,
-		currentCustomerName: customerName,
-		currentCustomerNegativeTags: customerNegativeTags,
-		currentCustomerOrder: customerOrder,
-		currentCustomerPositiveTags: customerPositiveTags,
-		currentIngredients: allCurrentIngredients,
-		currentRecipeName: currentRecipe.name,
-		currentRecipeTagsWithTrend: baseRecipeTagsWithTrend,
+		currentFoodTagsWithTrend: baseFoodTagsWithTrend,
+		currentMealFood: currentFood,
+		currentSpecialGuest: specialGuest,
+		currentSpecialGuestBeverageTags: specialGuestBeverageTags,
+		currentSpecialGuestNegativeTags: specialGuestNegativeTags,
+		currentSpecialGuestOrder: guestOrder,
+		currentSpecialGuestPositiveTags: specialGuestPositiveTags,
 		hasMystiaCooker,
 		isDarkMatter: false,
 	});
@@ -1985,33 +1995,33 @@ async function suggestIngredients(
 
 	const relevantIngredients = filterRelevantIngredients(
 		baseGameIngredients,
-		customerPositiveTags,
-		customerNegativeTags,
-		orderRecipeTag
+		specialGuestPositiveTags,
+		specialGuestNegativeTags,
+		orderFoodTag
 	);
 
 	const bestExtra = await findBestExtraIngredients({
+		baseFoodTags: composedBaseFoodTags,
 		baseGameIngredients: relevantIngredients,
 		beverageTags,
-		customerBeverageTags,
-		customerName,
-		customerNegativeTags,
-		customerOrder,
-		customerPositiveTags,
-		excludedExtraIngredients: currentRecipe.extraIngredients,
+		excludedExtraIngredients: currentFood.extraIngredients,
 		execution,
 		extraSlots,
+		food,
+		foodNegativeTags,
+		guestOrder,
 		hasMystiaCooker,
 		ingredientPenaltyContext,
 		ingredientPriorityMap,
 		isFamousShop,
 		maxRating,
 		popularTrend,
-		recipeId: currentRecipe.recipeId,
+		recipeId: currentFood.recipeId,
 		recipeIngredients: allCurrentIngredients,
-		recipeName: currentRecipe.name,
-		recipeNegativeTags,
-		recipeTagsBase: composedBaseRecipeTags,
+		specialGuest,
+		specialGuestBeverageTags,
+		specialGuestNegativeTags,
+		specialGuestPositiveTags,
 	});
 
 	if (
@@ -2019,26 +2029,25 @@ async function suggestIngredients(
 		(bestExtra.score > baseScore || baseScore > maxRating) &&
 		bestExtra.score <= maxRating
 	) {
-		const totalPrice = beveragePrice + recipePrice;
+		const totalPrice = beveragePrice + foodPrice;
 		if (totalPrice > budgetMax) {
 			return [];
 		}
 
 		const allExtra = [
-			...currentRecipe.extraIngredients,
+			...currentFood.extraIngredients,
 			...bestExtra.extraIngredients,
 		];
 
 		return [
 			{
 				beverage: currentBeverage,
+				food: {
+					extraIngredients: allExtra,
+					recipeId: currentFood.recipeId,
+				},
 				price: totalPrice,
 				rating: bestExtra.rating,
-				recipe: {
-					extraIngredients: allExtra,
-					name: currentRecipe.name,
-					recipeId: currentRecipe.recipeId,
-				},
 			},
 		];
 	}
@@ -2048,50 +2057,50 @@ async function suggestIngredients(
 
 async function suggestForBeverage(
 	{
-		customerName,
-		customerOrder,
+		guestOrder,
 		hasMystiaCooker,
 		isFamousShop,
 		maxExtraIngredients,
 		maxRating,
 		maxResults,
 		popularTrend,
+		specialGuest,
 	}: ISuggestParams,
 	context: TSuggestContext,
-	currentBeverage: TBeverageName,
+	currentBeverage: TBeverageId,
 	execution: ISuggestMealsExecution
 ) {
 	const {
+		baseGameFoodCandidates,
 		baseGameIngredients,
-		baseGameRecipeCandidates,
+		beverageCatalog,
 		budgetMax,
 		budgetSoftMax,
-		customerBeverageTags,
-		customerNegativeTags,
-		customerPositiveTags,
+		foodCatalog,
 		ingredientPenaltyContext,
 		ingredientPriorityMap,
-		instance_beverage,
-		instance_recipe,
+		specialGuestBeverageTags,
+		specialGuestNegativeTags,
+		specialGuestPositiveTags,
 	} = context;
-	const { recipeTag: orderRecipeTag } = customerOrder;
+	const { foodTag: orderFoodTag } = guestOrder;
 
 	const { price: beveragePrice, tags: beverageTags } =
-		instance_beverage.getPropsByName(currentBeverage);
+		beverageCatalog.getPropsById(currentBeverage);
 
 	const relevantIngredients = filterRelevantIngredients(
 		baseGameIngredients,
-		customerPositiveTags,
-		customerNegativeTags,
-		orderRecipeTag
+		specialGuestPositiveTags,
+		specialGuestNegativeTags,
+		orderFoodTag
 	);
 
-	const recipesWithSuitability = buildRecipeSuitabilityList(
-		instance_recipe,
-		baseGameRecipeCandidates,
-		customerName,
-		customerPositiveTags,
-		customerNegativeTags,
+	const foodsWithSuitability = buildFoodSuitabilityList(
+		foodCatalog,
+		baseGameFoodCandidates,
+		specialGuest,
+		specialGuestPositiveTags,
+		specialGuestNegativeTags,
 		popularTrend,
 		isFamousShop
 	);
@@ -2099,29 +2108,28 @@ async function suggestForBeverage(
 	const results: IScoredResult[] = [];
 
 	for (const {
-		recipe: {
-			name: recipeName,
-			negativeTags: recipeNegativeTags,
-			positiveTags: recipePositiveTags,
-			price: recipePrice,
+		food: {
+			id: food,
+			negativeTags: foodNegativeTags,
+			positiveTags: foodPositiveTags,
+			price: foodPrice,
 		},
-		recipeTagsWithTrend,
-		variant: { id: recipeId, ingredients: recipeIngredients },
-	} of recipesWithSuitability) {
+		foodTagsWithTrend,
+		recipe: { id: recipeId, ingredients: recipeIngredients },
+	} of foodsWithSuitability) {
 		const checkpointPromise = execution.checkpoint();
 		if (checkpointPromise !== undefined) {
 			await checkpointPromise;
 		}
-		const rating = evaluateRareCustomerMeal({
+		const rating = evaluateSpecialGuestMeal({
 			currentBeverageTags: beverageTags,
-			currentCustomerBeverageTags: customerBeverageTags,
-			currentCustomerName: customerName,
-			currentCustomerNegativeTags: customerNegativeTags,
-			currentCustomerOrder: customerOrder,
-			currentCustomerPositiveTags: customerPositiveTags,
-			currentIngredients: recipeIngredients,
-			currentRecipeName: recipeName,
-			currentRecipeTagsWithTrend: recipeTagsWithTrend,
+			currentFoodTagsWithTrend: foodTagsWithTrend,
+			currentMealFood: { extraIngredients: [], recipeId },
+			currentSpecialGuest: specialGuest,
+			currentSpecialGuestBeverageTags: specialGuestBeverageTags,
+			currentSpecialGuestNegativeTags: specialGuestNegativeTags,
+			currentSpecialGuestOrder: guestOrder,
+			currentSpecialGuestPositiveTags: specialGuestPositiveTags,
 			hasMystiaCooker,
 			isDarkMatter: false,
 		});
@@ -2133,9 +2141,9 @@ async function suggestForBeverage(
 		let score = SCORE_MAP[rating];
 		let bestMeal: ISuggestedMeal = {
 			beverage: currentBeverage,
-			price: beveragePrice + recipePrice,
+			food: { extraIngredients: [], recipeId },
+			price: beveragePrice + foodPrice,
 			rating,
-			recipe: { extraIngredients: [], name: recipeName, recipeId },
 		};
 
 		let ingredientPenalty = 0;
@@ -2145,16 +2153,15 @@ async function suggestForBeverage(
 				: Math.min(5 - recipeIngredients.length, maxExtraIngredients);
 		if (extraSlots > 0 && (score < 4 || score > maxRating)) {
 			const bestExtra = await findBestExtraIngredients({
+				baseFoodTags: foodPositiveTags,
 				baseGameIngredients: relevantIngredients,
 				beverageTags,
-				customerBeverageTags,
-				customerName,
-				customerNegativeTags,
-				customerOrder,
-				customerPositiveTags,
 				excludedExtraIngredients: [],
 				execution,
 				extraSlots,
+				food,
+				foodNegativeTags,
+				guestOrder,
 				hasMystiaCooker,
 				ingredientPenaltyContext,
 				ingredientPriorityMap,
@@ -2163,9 +2170,10 @@ async function suggestForBeverage(
 				popularTrend,
 				recipeId,
 				recipeIngredients,
-				recipeName,
-				recipeNegativeTags,
-				recipeTagsBase: recipePositiveTags,
+				specialGuest,
+				specialGuestBeverageTags,
+				specialGuestNegativeTags,
+				specialGuestPositiveTags,
 			});
 
 			if (
@@ -2176,13 +2184,12 @@ async function suggestForBeverage(
 				ingredientPenalty = bestExtra.ingredientPenalty;
 				bestMeal = {
 					beverage: currentBeverage,
-					price: beveragePrice + recipePrice,
-					rating: bestExtra.rating,
-					recipe: {
+					food: {
 						extraIngredients: bestExtra.extraIngredients,
-						name: recipeName,
 						recipeId,
 					},
+					price: beveragePrice + foodPrice,
+					rating: bestExtra.rating,
 				};
 			}
 		}
@@ -2199,9 +2206,9 @@ async function suggestForBeverage(
 					ingredientPenalty,
 					isOverSoftBudget: totalPrice > budgetSoftMax,
 					priority: getMealPriority(bestMeal, context, {
-						fixedExtraIngredients: EMPTY_INGREDIENT_NAME_SET,
+						fixedExtraIngredients: EMPTY_INGREDIENT_SET,
 						isBeverageFixed: true,
-						isRecipeFixed: false,
+						isFoodFixed: false,
 					}),
 					score,
 				},
@@ -2213,26 +2220,25 @@ async function suggestForBeverage(
 	return selectScoredResults(
 		results,
 		maxResults,
-		(m) =>
-			`${m.recipe.name}|${m.recipe.recipeId}|${m.recipe.extraIngredients.join(',')}`,
-		{ isBeverageFixed: true, isRecipeFixed: false },
+		(m) => `${m.food.recipeId}|${m.food.extraIngredients.join(',')}`,
+		{ isBeverageFixed: true, isFoodFixed: false },
 		execution
 	);
 }
 
-async function suggestForRecipe(
+async function suggestForFood(
 	{
-		customerName,
-		customerOrder,
+		guestOrder,
 		hasMystiaCooker,
 		isFamousShop,
 		maxExtraIngredients,
 		maxRating,
 		maxResults,
 		popularTrend,
+		specialGuest,
 	}: ISuggestParams,
 	context: TSuggestContext,
-	currentRecipe: IMealRecipe,
+	currentFood: IMealFood,
 	execution: ISuggestMealsExecution
 ) {
 	const {
@@ -2240,52 +2246,50 @@ async function suggestForRecipe(
 		baseGameIngredients,
 		budgetMax,
 		budgetSoftMax,
-		customerBeverageTags,
-		customerNegativeTags,
-		customerPositiveTags,
+		foodCatalog,
 		ingredientPenaltyContext,
 		ingredientPriorityMap,
-		instance_recipe,
+		specialGuestBeverageTags,
+		specialGuestNegativeTags,
+		specialGuestPositiveTags,
 	} = context;
-	const { beverageTag: orderBeverageTag, recipeTag: orderRecipeTag } =
-		customerOrder;
+	const { beverageTag: orderBeverageTag, foodTag: orderFoodTag } = guestOrder;
 
 	const filteredBeverages =
 		orderBeverageTag === null
 			? baseGameBeverages
 			: baseGameBeverages.filter(
 					({ tags }) =>
-						(tags as ReadonlyArray<TBeverageTag>).includes(
+						(tags as ReadonlyArray<TBeverageTagId>).includes(
 							orderBeverageTag
 						) &&
 						(
-							customerBeverageTags as ReadonlyArray<TBeverageTag>
+							specialGuestBeverageTags as ReadonlyArray<TBeverageTagId>
 						).includes(orderBeverageTag)
 				);
 
 	const relevantIngredients = filterRelevantIngredients(
 		baseGameIngredients,
-		customerPositiveTags,
-		customerNegativeTags,
-		orderRecipeTag
+		specialGuestPositiveTags,
+		specialGuestNegativeTags,
+		orderFoodTag
 	);
 
-	const recipe = instance_recipe.getPropsByName(currentRecipe.name);
+	const { food: foodRecord, recipe } = foodCatalog.getRecipeOwnerById(
+		currentFood.recipeId
+	);
 	const {
-		negativeTags: recipeNegativeTags,
-		positiveTags: recipePositiveTags,
-		price: recipePrice,
-	} = recipe;
-	const { ingredients: recipeIngredients } =
-		instance_recipe.getRecipeVariantById(
-			currentRecipe.name,
-			currentRecipe.recipeId
-		);
+		id: food,
+		negativeTags: foodNegativeTags,
+		positiveTags: foodPositiveTags,
+		price: foodPrice,
+	} = foodRecord;
+	const { ingredients: recipeIngredients } = recipe;
 
 	if (
-		recipeIngredients.length + currentRecipe.extraIngredients.length > 5 ||
+		recipeIngredients.length + currentFood.extraIngredients.length > 5 ||
 		(maxExtraIngredients !== null &&
-			currentRecipe.extraIngredients.length > maxExtraIngredients)
+			currentFood.extraIngredients.length > maxExtraIngredients)
 	) {
 		return [];
 	}
@@ -2293,29 +2297,29 @@ async function suggestForRecipe(
 	const results: IScoredResult[] = [];
 
 	const { extraTags: baseExtraTags, isDarkMatter: isBaseDarkMatter } =
-		instance_recipe.checkDarkMatter({
-			extraIngredients: currentRecipe.extraIngredients,
-			negativeTags: recipeNegativeTags,
+		foodCatalog.checkDarkMatter({
+			extraIngredients: currentFood.extraIngredients,
+			negativeTags: foodNegativeTags,
 		});
 
-	const composedRecipeTags = instance_recipe.composeTagsWithPopularTrend(
+	const composedFoodTags = foodCatalog.composeFoodTagsWithPopularTrend(
 		recipeIngredients,
-		currentRecipe.extraIngredients,
-		recipePositiveTags,
+		currentFood.extraIngredients,
+		foodPositiveTags,
 		baseExtraTags,
 		popularTrend
 	);
-	const recipeTagsWithTrend = instance_recipe.calculateTagsWithTrend(
-		composedRecipeTags,
+	const foodTagsWithTrend = foodCatalog.calculateFoodTagsWithTrend(
+		composedFoodTags,
 		popularTrend,
 		isFamousShop
 	);
 
 	const allCurrentIngredients = [
 		...recipeIngredients,
-		...currentRecipe.extraIngredients,
+		...currentFood.extraIngredients,
 	];
-	const fixedExtraIngredients = new Set(currentRecipe.extraIngredients);
+	const fixedExtraIngredients = new Set(currentFood.extraIngredients);
 
 	const beverageTagGroups = buildBeverageTagGroups(filteredBeverages);
 
@@ -2324,7 +2328,7 @@ async function suggestForRecipe(
 			? 5 - allCurrentIngredients.length
 			: Math.min(
 					5 - allCurrentIngredients.length,
-					maxExtraIngredients - currentRecipe.extraIngredients.length
+					maxExtraIngredients - currentFood.extraIngredients.length
 				);
 
 	for (const {
@@ -2335,16 +2339,15 @@ async function suggestForRecipe(
 		if (checkpointPromise !== undefined) {
 			await checkpointPromise;
 		}
-		const rating = evaluateRareCustomerMeal({
+		const rating = evaluateSpecialGuestMeal({
 			currentBeverageTags: beverageTags,
-			currentCustomerBeverageTags: customerBeverageTags,
-			currentCustomerName: customerName,
-			currentCustomerNegativeTags: customerNegativeTags,
-			currentCustomerOrder: customerOrder,
-			currentCustomerPositiveTags: customerPositiveTags,
-			currentIngredients: allCurrentIngredients,
-			currentRecipeName: currentRecipe.name,
-			currentRecipeTagsWithTrend: recipeTagsWithTrend,
+			currentFoodTagsWithTrend: foodTagsWithTrend,
+			currentMealFood: currentFood,
+			currentSpecialGuest: specialGuest,
+			currentSpecialGuestBeverageTags: specialGuestBeverageTags,
+			currentSpecialGuestNegativeTags: specialGuestNegativeTags,
+			currentSpecialGuestOrder: guestOrder,
+			currentSpecialGuestPositiveTags: specialGuestPositiveTags,
 			hasMystiaCooker,
 			isDarkMatter: isBaseDarkMatter,
 		});
@@ -2356,7 +2359,7 @@ async function suggestForRecipe(
 		const baseScore = SCORE_MAP[rating];
 		let useExtra = false;
 		let finalScore = baseScore;
-		let extraIngredients: TIngredientName[] = [];
+		let extraIngredients: TIngredientId[] = [];
 		let finalRating: TRatingKey = rating;
 		let ingredientPenalty = 0;
 
@@ -2366,27 +2369,27 @@ async function suggestForRecipe(
 			(baseScore < 4 || baseScore > maxRating)
 		) {
 			const bestExtra = await findBestExtraIngredients({
+				baseFoodTags: composedFoodTags,
 				baseGameIngredients: relevantIngredients,
 				beverageTags,
-				customerBeverageTags,
-				customerName,
-				customerNegativeTags,
-				customerOrder,
-				customerPositiveTags,
-				excludedExtraIngredients: currentRecipe.extraIngredients,
+				excludedExtraIngredients: currentFood.extraIngredients,
 				execution,
 				extraSlots,
+				food,
+				foodNegativeTags,
+				guestOrder,
 				hasMystiaCooker,
 				ingredientPenaltyContext,
 				ingredientPriorityMap,
 				isFamousShop,
 				maxRating,
 				popularTrend,
-				recipeId: currentRecipe.recipeId,
+				recipeId: currentFood.recipeId,
 				recipeIngredients: allCurrentIngredients,
-				recipeName: currentRecipe.name,
-				recipeNegativeTags,
-				recipeTagsBase: composedRecipeTags,
+				specialGuest,
+				specialGuestBeverageTags,
+				specialGuestNegativeTags,
+				specialGuestPositiveTags,
 			});
 
 			if (
@@ -2402,33 +2405,32 @@ async function suggestForRecipe(
 		}
 
 		if (finalScore <= maxRating) {
-			const baseRecipePrice = isBaseDarkMatter
+			const baseFoodPrice = isBaseDarkMatter
 				? DARK_MATTER_META_MAP.price
-				: recipePrice;
+				: foodPrice;
 
 			for (const {
-				name: beverageName,
+				id: beverage,
 				price: beveragePrice,
 			} of beverageMembers) {
 				const bestMeal: ISuggestedMeal = useExtra
 					? {
-							beverage: beverageName,
-							price: beveragePrice + baseRecipePrice,
-							rating: finalRating,
-							recipe: {
+							beverage,
+							food: {
 								extraIngredients: [
-									...currentRecipe.extraIngredients,
+									...currentFood.extraIngredients,
 									...extraIngredients,
 								],
-								name: currentRecipe.name,
-								recipeId: currentRecipe.recipeId,
+								recipeId: currentFood.recipeId,
 							},
+							price: beveragePrice + baseFoodPrice,
+							rating: finalRating,
 						}
 					: {
-							beverage: beverageName,
-							price: beveragePrice + baseRecipePrice,
+							beverage,
+							food: currentFood,
+							price: beveragePrice + baseFoodPrice,
 							rating,
-							recipe: currentRecipe,
 						};
 
 				const totalPrice = bestMeal.price;
@@ -2444,7 +2446,7 @@ async function suggestForRecipe(
 						priority: getMealPriority(bestMeal, context, {
 							fixedExtraIngredients,
 							isBeverageFixed: false,
-							isRecipeFixed: true,
+							isFoodFixed: true,
 						}),
 						score: finalScore,
 					},
@@ -2458,8 +2460,8 @@ async function suggestForRecipe(
 		results,
 		maxResults,
 		(m) =>
-			`${m.recipe.recipeId}|${m.beverage}|${m.recipe.extraIngredients.join(',')}`,
-		{ isBeverageFixed: false, isRecipeFixed: true },
+			`${m.food.recipeId}|${m.beverage}|${m.food.extraIngredients.join(',')}`,
+		{ isBeverageFixed: false, isFoodFixed: true },
 		execution
 	);
 }
@@ -2469,19 +2471,19 @@ async function suggestBySelection(
 	context: TSuggestContext,
 	execution: ISuggestMealsExecution
 ) {
-	const { currentBeverage, currentRecipe } = params;
+	const { currentBeverage, currentFood } = params;
 
-	if (currentRecipe !== null && currentBeverage !== null) {
+	if (currentFood !== null && currentBeverage !== null) {
 		return suggestIngredients(
 			params,
 			context,
-			currentRecipe,
+			currentFood,
 			currentBeverage,
 			execution
 		);
 	}
-	if (currentRecipe !== null) {
-		return suggestForRecipe(params, context, currentRecipe, execution);
+	if (currentFood !== null) {
+		return suggestForFood(params, context, currentFood, execution);
 	}
 	if (currentBeverage !== null) {
 		return suggestForBeverage(params, context, currentBeverage, execution);
@@ -2492,40 +2494,40 @@ async function suggestBySelection(
 
 export interface IScoreBasedAlternativesParams {
 	baseRating: TRatingKey;
-	beverageTags: TBeverageTag[];
-	customerBeverageTags: ReadonlyArray<TBeverageTag>;
-	customerName: TCustomerRareName;
-	customerNegativeTags: ReadonlyArray<TRecipeTag>;
-	customerOrder: ICustomerOrder;
-	customerPositiveTags: ReadonlyArray<TRecipeTag>;
-	extraIngredients: TIngredientName[];
+	beverageTags: TBeverageTagId[];
+	extraIngredients: TIngredientId[];
+	food: TFoodId;
+	foodCatalog: FoodCatalog;
+	foodNegativeTags: ReadonlyArray<TFoodTagId>;
+	foodPositiveTags: ReadonlyArray<TFoodTagId>;
+	guestOrder: IGuestOrder;
 	hasMystiaCooker: boolean;
 	hiddenDlcs: ReadonlySet<TDlc>;
-	hiddenIngredients: ReadonlySet<TIngredientName>;
-	instance_ingredient: Ingredient;
-	instance_recipe: Recipe;
+	hiddenIngredients: ReadonlySet<TIngredientId>;
+	ingredientCatalog: IngredientCatalog;
 	isFamousShop: boolean;
 	popularTrend: IPopularTrend;
-	recipeId: number;
-	recipeIngredients: ReadonlyArray<TIngredientName>;
-	recipeName: TRecipeName;
-	recipeNegativeTags: ReadonlyArray<TRecipeTag>;
-	recipePositiveTags: ReadonlyArray<TRecipeTag>;
+	recipeId: TRecipeId;
+	recipeIngredients: ReadonlyArray<TIngredientId>;
+	specialGuest: TSpecialGuestId;
+	specialGuestBeverageTags: ReadonlyArray<TBeverageTagId>;
+	specialGuestNegativeTags: ReadonlyArray<TFoodTagId>;
+	specialGuestPositiveTags: ReadonlyArray<TFoodTagId>;
 }
 
 function cloneScoreBasedAlternatives(
-	alternatives: ReadonlyMap<TIngredientName, ReadonlyArray<TIngredientName>>
+	alternatives: ReadonlyMap<TIngredientId, ReadonlyArray<TIngredientId>>
 ) {
-	const cloned = new Map<TIngredientName, TIngredientName[]>();
-	for (const [ingredientName, candidates] of alternatives) {
-		cloned.set(ingredientName, [...candidates]);
+	const cloned = new Map<TIngredientId, TIngredientId[]>();
+	for (const [ingredient, candidates] of alternatives) {
+		cloned.set(ingredient, [...candidates]);
 	}
 
 	return cloned;
 }
 
 function getScoreBasedAlternativesLogicalWeight(
-	alternatives: ReadonlyMap<TIngredientName, ReadonlyArray<TIngredientName>>
+	alternatives: ReadonlyMap<TIngredientId, ReadonlyArray<TIngredientId>>
 ) {
 	let weight = 0;
 	for (const candidates of alternatives.values()) {
@@ -2539,7 +2541,7 @@ const SCORE_BASED_ALTERNATIVES_CACHE_MAX_ENTRIES = 4000;
 const SCORE_BASED_ALTERNATIVES_CACHE_MAX_ITEMS = 20_000;
 const scoreBasedAlternativesCache = createBoundedRuntimeCache<
 	string,
-	Map<TIngredientName, TIngredientName[]>
+	Map<TIngredientId, TIngredientId[]>
 >(SCORE_BASED_ALTERNATIVES_CACHE_MAX_ENTRIES, {
 	getWeight: getScoreBasedAlternativesLogicalWeight,
 	maxWeight: SCORE_BASED_ALTERNATIVES_CACHE_MAX_ITEMS,
@@ -2548,12 +2550,11 @@ const scoreBasedAlternativesCache = createBoundedRuntimeCache<
 function buildScoreBasedAlternativesCacheKey({
 	baseRating,
 	beverageTags,
-	customerBeverageTags,
-	customerName,
-	customerNegativeTags,
-	customerOrder,
-	customerPositiveTags,
 	extraIngredients,
+	food,
+	foodNegativeTags,
+	foodPositiveTags,
+	guestOrder,
 	hasMystiaCooker,
 	hiddenDlcs,
 	hiddenIngredients,
@@ -2561,19 +2562,19 @@ function buildScoreBasedAlternativesCacheKey({
 	popularTrend,
 	recipeId,
 	recipeIngredients,
-	recipeName,
-	recipeNegativeTags,
-	recipePositiveTags,
+	specialGuest,
+	specialGuestBeverageTags,
+	specialGuestNegativeTags,
+	specialGuestPositiveTags,
 }: IScoreBasedAlternativesParams) {
 	return JSON.stringify({
 		baseRating,
 		beverageTags,
-		customerBeverageTags,
-		customerName,
-		customerNegativeTags,
-		customerOrder,
-		customerPositiveTags,
 		extraIngredients,
+		food,
+		foodNegativeTags,
+		foodPositiveTags,
+		guestOrder,
 		hasMystiaCooker,
 		hiddenDlcs: [...hiddenDlcs].sort(),
 		hiddenIngredients: [...hiddenIngredients].sort(),
@@ -2581,41 +2582,42 @@ function buildScoreBasedAlternativesCacheKey({
 		popularTrend,
 		recipeId,
 		recipeIngredients,
-		recipeName,
-		recipeNegativeTags,
-		recipePositiveTags,
+		specialGuest,
+		specialGuestBeverageTags,
+		specialGuestNegativeTags,
+		specialGuestPositiveTags,
 	});
 }
 
 export async function getScoreBasedAlternativesCore(
 	params: IScoreBasedAlternativesParams,
 	execution: ISuggestMealsExecution
-): Promise<Map<TIngredientName, TIngredientName[]>> {
+): Promise<Map<TIngredientId, TIngredientId[]>> {
 	const {
 		baseRating,
 		beverageTags,
-		customerBeverageTags,
-		customerName,
-		customerNegativeTags,
-		customerOrder,
-		customerPositiveTags,
 		extraIngredients,
+		foodCatalog,
+		foodNegativeTags,
+		foodPositiveTags,
+		guestOrder,
 		hasMystiaCooker,
 		hiddenDlcs,
 		hiddenIngredients,
-		instance_ingredient,
-		instance_recipe,
+		ingredientCatalog,
 		isFamousShop,
 		popularTrend,
+		recipeId,
 		recipeIngredients,
-		recipeName,
-		recipeNegativeTags,
-		recipePositiveTags,
+		specialGuest,
+		specialGuestBeverageTags,
+		specialGuestNegativeTags,
+		specialGuestPositiveTags,
 	} = params;
 	execution.throwIfAborted();
 	const canUseCache =
-		instance_ingredient === Ingredient.getInstance() &&
-		instance_recipe === Recipe.getInstance();
+		ingredientCatalog === IngredientCatalog.getInstance() &&
+		foodCatalog === FoodCatalog.getInstance();
 	const cacheKey = canUseCache
 		? buildScoreBasedAlternativesCacheKey(params)
 		: null;
@@ -2627,84 +2629,83 @@ export async function getScoreBasedAlternativesCore(
 	}
 	await execution.checkpoint(true);
 	const baseScore = SCORE_MAP[baseRating];
-	const result = new Map<TIngredientName, TIngredientName[]>();
+	const result = new Map<TIngredientId, TIngredientId[]>();
 
 	const keepTags = buildRelevantTagSet(
-		customerPositiveTags,
-		customerNegativeTags,
-		customerOrder.recipeTag
+		specialGuestPositiveTags,
+		specialGuestNegativeTags,
+		guestOrder.foodTag
 	);
-	const { dlc: customerDlc, places: customerPlaces } =
-		CustomerRare.getInstance().getPropsByName(customerName);
+	const { dlc: specialGuestDlc, maps: specialGuestMaps } =
+		SpecialGuestCatalog.getInstance().getPropsById(specialGuest);
 	const candidatePriorityMap = new Map<
-		TIngredientName,
+		TIngredientId,
 		IRecommendationPriorityMetrics
 	>();
 
-	const filteredCandidates = instance_ingredient.data.filter((item) => {
+	const filteredCandidates = ingredientCatalog.data.filter((item) => {
 		const priority = getRecommendationItemPriority({
 			allowFishingFallback: false,
 			availabilityPaths: item.availabilityPaths,
 			contentDlc: item.dlc,
-			customerDlc,
-			customerPlaces,
+			guestDlc: specialGuestDlc,
+			guestPlaces: specialGuestMaps,
 			hiddenDlcs,
 		});
 		if (priority !== null) {
-			candidatePriorityMap.set(item.name, priority);
+			candidatePriorityMap.set(item.id, priority);
 		}
 
 		return (
 			priority !== null &&
-			!instance_ingredient.blockedIngredients.has(item.name) &&
-			!instance_ingredient.blockedLevels.has(item.level) &&
-			!hiddenIngredients.has(item.name) &&
-			!item.tags.some((tag) =>
-				instance_ingredient.blockedTags.has(tag)
-			) &&
+			!ingredientCatalog.blockedIngredients.has(item.id) &&
+			!ingredientCatalog.blockedLevels.has(item.level) &&
+			!hiddenIngredients.has(item.id) &&
+			!item.tags.some((tag) => ingredientCatalog.blockedTags.has(tag)) &&
 			item.tags.some((tag) => keepTags.has(tag))
 		);
 	});
 	const ingredientPenaltyContext = createSuggestIngredientPenaltyContext({
-		customerName,
 		hiddenDlcs,
 		hiddenIngredients,
+		specialGuest,
 	});
 
-	const allExtraTags = extraIngredients.map((e) =>
-		instance_ingredient.getPropsByName(e, 'tags')
+	const allExtraTags = extraIngredients.map((ingredient) =>
+		ingredientCatalog.getPropsById(ingredient, 'tags')
 	);
 
-	const baseTagSets: Array<Set<string>> = extraIngredients.map(
-		(_name, pos) => {
-			const otherTags = allExtraTags.filter((_, i) => i !== pos).flat();
-			return new Set<string>([
-				...recipePositiveTags,
-				...(otherTags as TRecipeTag[]),
-			]);
+	const baseTagSets: Array<Set<TFoodTagId>> = extraIngredients.map(
+		(_, pos) => {
+			const otherTags = allExtraTags
+				.filter((_, index) => index !== pos)
+				.flat();
+			return new Set<TFoodTagId>([...foodPositiveTags, ...otherTags]);
 		}
 	);
 
 	const totalIngredientCount =
 		recipeIngredients.length + extraIngredients.length;
-	const evaluateRecipe = createMealEvaluator({
+	const evaluateFood = createSpecialGuestMealEvaluator({
 		currentBeverageTags: beverageTags,
-		currentCustomerBeverageTags: customerBeverageTags,
-		currentCustomerName: customerName,
-		currentCustomerNegativeTags: customerNegativeTags,
-		currentCustomerOrder: customerOrder,
-		currentCustomerPositiveTags: customerPositiveTags,
+		currentSpecialGuest: specialGuest,
+		currentSpecialGuestBeverageTags: specialGuestBeverageTags,
+		currentSpecialGuestNegativeTags: specialGuestNegativeTags,
+		currentSpecialGuestOrder: guestOrder,
+		currentSpecialGuestPositiveTags: specialGuestPositiveTags,
 		hasMystiaCooker,
 	});
 
-	for (const [pos, targetName] of extraIngredients.entries()) {
+	for (const [pos, targetIngredient] of extraIngredients.entries()) {
 		const checkpointPromise = execution.checkpoint();
 		if (checkpointPromise !== undefined) {
 			await checkpointPromise;
 		}
-		const otherExtras = extraIngredients.filter((_, i) => i !== pos);
+		const otherExtraIngredients = extraIngredients.filter(
+			(_, index) => index !== pos
+		);
 		const candidates: Array<{
-			name: TIngredientName;
+			id: TIngredientId;
 			penalty: number;
 			priority: IRecommendationPriorityMetrics;
 			score: number;
@@ -2716,17 +2717,20 @@ export async function getScoreBasedAlternativesCore(
 				await checkpointPromise;
 			}
 			if (
-				item.name === targetName ||
-				otherExtras.includes(item.name) ||
-				(recipeIngredients as ReadonlyArray<string>).includes(item.name)
+				item.id === targetIngredient ||
+				otherExtraIngredients.includes(item.id) ||
+				recipeIngredients.includes(item.id)
 			) {
 				continue;
 			}
 
-			const replacedExtras = [...otherExtras, item.name];
-			const { isDarkMatter } = instance_recipe.checkDarkMatter({
-				extraIngredients: replacedExtras,
-				negativeTags: recipeNegativeTags,
+			const replacedExtraIngredients = [
+				...otherExtraIngredients,
+				item.id,
+			];
+			const { isDarkMatter } = foodCatalog.checkDarkMatter({
+				extraIngredients: replacedExtraIngredients,
+				negativeTags: foodNegativeTags,
 			});
 			if (isDarkMatter) {
 				continue;
@@ -2736,42 +2740,39 @@ export async function getScoreBasedAlternativesCore(
 			for (const tag of item.tags) {
 				tagSet.add(tag);
 			}
-			Recipe.applyLargePartition(
+			FoodCatalog.applyLargePartition(
 				tagSet,
 				totalIngredientCount,
 				popularTrend
 			);
-			Recipe.applyTagCovers(tagSet as Set<TRecipeTag>, popularTrend);
+			FoodCatalog.applyTagCovers(tagSet, popularTrend);
 
-			const tagsWithTrend = instance_recipe.calculateTagsWithTrend(
-				[...tagSet] as TRecipeTag[],
+			const foodTagsWithTrend = foodCatalog.calculateFoodTagsWithTrend(
+				[...tagSet],
 				popularTrend,
 				isFamousShop
 			);
 
-			const rating = evaluateRecipe({
-				currentIngredients: [
-					...new Set([
-						...(recipeIngredients as TIngredientName[]),
-						...replacedExtras,
-					]),
-				],
-				currentRecipeName: recipeName,
-				currentRecipeTagsWithTrend: tagsWithTrend,
+			const rating = evaluateFood({
+				currentFoodTagsWithTrend: foodTagsWithTrend,
+				currentMealFood: {
+					extraIngredients: replacedExtraIngredients,
+					recipeId,
+				},
 				isDarkMatter,
 			});
 
 			if (rating !== null && SCORE_MAP[rating] >= baseScore) {
-				const priority = candidatePriorityMap.get(item.name);
+				const priority = candidatePriorityMap.get(item.id);
 				if (priority === undefined) {
 					throw new Error(
-						`替代食材“${item.name}”缺少已选择的可获取路径`
+						`替代食材 ID “${item.id}”缺少已选择的可获取路径`
 					);
 				}
 				candidates.push({
-					name: item.name,
+					id: item.id,
 					penalty: getSuggestIngredientResourcePenalty(
-						item.name,
+						item.id,
 						ingredientPenaltyContext
 					).total,
 					priority,
@@ -2787,8 +2788,8 @@ export async function getScoreBasedAlternativesCore(
 				a.penalty - b.penalty
 		);
 		result.set(
-			targetName,
-			candidates.map((c) => c.name)
+			targetIngredient,
+			candidates.map((candidate) => candidate.id)
 		);
 	}
 
@@ -2830,11 +2831,11 @@ export function createSuggestMealsCoreSession(): ISuggestMealsCoreSession {
 
 	return {
 		async suggest(params, execution) {
-			const { currentBeverage, currentRecipe } = params;
+			const { currentBeverage, currentFood } = params;
 			const context = getSuggestContext(params);
 
 			return checkFixedSelectionsAvailable(params, context)
-				? currentBeverage !== null || currentRecipe !== null
+				? currentBeverage !== null || currentFood !== null
 					? suggestBySelection(params, context, execution)
 					: computeSuggestions(
 							params,

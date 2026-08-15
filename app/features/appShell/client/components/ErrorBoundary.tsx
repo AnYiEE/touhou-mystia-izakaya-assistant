@@ -103,8 +103,8 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 
 interface IStates {
 	error: Error | null;
-	info: ErrorInfo | null;
 	hasError: boolean;
+	info: ErrorInfo | null;
 }
 
 interface IProps extends PropsWithChildren<object> {}

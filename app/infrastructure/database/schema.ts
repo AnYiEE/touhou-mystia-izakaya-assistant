@@ -62,8 +62,8 @@ interface ITableBackupFileRecord {
 	code: string;
 	created_at: number;
 	file_name: string | null;
-	last_accessed: number;
 	ip_address: string;
+	last_accessed: number;
 	user_agent: string;
 	user_id: string;
 }
@@ -362,14 +362,14 @@ export interface TDatabase {
 	site_runtime_states: ITableSiteRuntimeState;
 	sso_callback_deliveries: ITableSsoCallbackDelivery;
 	sso_callback_queue: ITableSsoCallbackQueue;
-	sso_clients: ITableSsoClient;
 	sso_client_secrets: ITableSsoClientSecret;
+	sso_clients: ITableSsoClient;
 	sso_grant_events: ITableSsoGrantEvent;
 	sso_tickets: ITableSsoTicket;
 	sso_user_client_grants: ITableSsoUserClientGrant;
-	users: ITableUser;
 	user_credentials: ITableUserCredential;
 	user_state: ITableUserState;
 	user_webauthn_credentials: ITableUserWebauthnCredential;
+	users: ITableUser;
 	webauthn_challenges: ITableWebauthnChallenge;
 }

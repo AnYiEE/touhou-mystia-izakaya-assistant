@@ -20,6 +20,7 @@ import {
 	memo,
 	useCallback,
 	useEffect,
+	useMemo,
 	useState,
 } from 'react';
 
@@ -58,6 +59,17 @@ import { createRecommendationBridgeContinuationUrl } from '@/features/recommenda
 import { createMainSiteUrl } from '@/infrastructure/http/siteUrl';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
+const ACCOUNT_PASSWORD_MODAL_CLASS_NAMES = {
+	body: 'px-[18px] py-0.5',
+} as const;
+const ACCOUNT_PASSWORD_MODAL_COORDINATION = {
+	id: 'account.password-required',
+	requestOwnership: 'external',
+} as const;
+const ACCOUNT_PASSWORD_MODAL_HEADING_CLASS_NAMES = {
+	subTitle: '!-mt-3',
+} as const;
+
 interface IPasswordChangePanelProps extends PropsWithChildren<
 	Pick<HTMLDivElementAttributes, 'className'>
 > {}
@@ -66,17 +78,17 @@ const PasswordChangePanel = memo<IPasswordChangePanelProps>(
 	function PasswordChangePanel({ children, className }) {
 		const { isHighAppearance } = useDesignPreferences();
 
+		const classNames = useMemo(
+			() => ({
+				base: cn('p-4', className, {
+					'bg-content1/40 backdrop-blur': isHighAppearance,
+				}),
+			}),
+			[className, isHighAppearance]
+		);
+
 		return (
-			<Card
-				as="section"
-				fullWidth
-				shadow="sm"
-				classNames={{
-					base: cn('p-4', className, {
-						'bg-content1/40 backdrop-blur': isHighAppearance,
-					}),
-				}}
-			>
+			<Card as="section" fullWidth shadow="sm" classNames={classNames}>
 				{children}
 			</Card>
 		);
@@ -274,7 +286,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 				});
 
 				if (shouldResumeSso) {
-					globalThis.location.assign(
+					location.assign(
 						createRecommendationBridgeContinuationUrl(
 							createMainSiteUrl('/sso/authorize').toString()
 						)
@@ -417,10 +429,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 		return (
 			<CoordinatedModal
 				aria-label="更新账号密码"
-				coordination={{
-					id: 'account.password-required',
-					requestOwnership: 'external',
-				}}
+				coordination={ACCOUNT_PASSWORD_MODAL_COORDINATION}
 				isOpen={false}
 			>
 				<div />
@@ -445,15 +454,12 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 			aria-label={
 				shouldResumeSso ? 'SSO授权 - 更新账号密码' : '更新账号密码'
 			}
-			coordination={{
-				id: 'account.password-required',
-				requestOwnership: 'external',
-			}}
+			coordination={ACCOUNT_PASSWORD_MODAL_COORDINATION}
 			hideCloseButton
 			isKeyboardDismissDisabled
 			isOpen
 			isDismissable={false}
-			classNames={{ body: 'px-[18px] py-0.5' }}
+			classNames={ACCOUNT_PASSWORD_MODAL_CLASS_NAMES}
 		>
 			<div className="space-y-4 p-1.5">
 				<Heading
@@ -464,7 +470,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 							? '管理员已重置此账号的登录凭据。请更新密码后继续授权给外部应用。'
 							: '管理员已重置此账号的登录凭据。完成密码更新后，账号同步和数据操作会恢复可用。'
 					}
-					classNames={{ subTitle: '!-mt-3' }}
+					classNames={ACCOUNT_PASSWORD_MODAL_HEADING_CLASS_NAMES}
 				>
 					{shouldResumeSso
 						? 'SSO授权 - 更新账号密码'

@@ -30,6 +30,7 @@ import {
 	canIncrementNonNegativeSafeInteger,
 	isNonNegativeSafeInteger,
 } from '@/shared/utilities/numbers/check';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 import {
 	calculateAccountSyncCapacity,
@@ -72,10 +73,10 @@ function parseBackupImportResults(value: TBackupImportRecord['results']) {
 	}
 
 	return parsedValue.flatMap((item) => {
-		if (item === null || typeof item !== 'object' || Array.isArray(item)) {
+		if (!checkIsRecord(item)) {
 			return [];
 		}
-		const record = item as Record<string, unknown>;
+		const record = item;
 		const { namespace, revision, status } = record;
 		if (
 			status !== 'ok' ||

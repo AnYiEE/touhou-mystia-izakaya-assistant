@@ -127,7 +127,7 @@ export function useAdminUserDetailController(
 	);
 
 	const ssoGrantQueryTimeoutRef = useRef<ReturnType<
-		typeof globalThis.setTimeout
+		typeof setTimeout
 	> | null>(null);
 
 	const adminCsrfToken = admin?.csrf_token;
@@ -168,7 +168,7 @@ export function useAdminUserDetailController(
 			return;
 		}
 
-		globalThis.clearTimeout(ssoGrantQueryTimeoutRef.current);
+		clearTimeout(ssoGrantQueryTimeoutRef.current);
 		ssoGrantQueryTimeoutRef.current = null;
 	}, []);
 
@@ -244,6 +244,10 @@ export function useAdminUserDetailController(
 					if (!checkDetailRequestId(requestId)) {
 						return;
 					}
+					if (result.status === 'error') {
+						handleActionError(result);
+						return;
+					}
 					if (result.status === 'mutation-committed-detail-error') {
 						onSuccess?.();
 						setMessage(
@@ -252,10 +256,6 @@ export function useAdminUserDetailController(
 								result.detailError.displayMessage
 							)
 						);
-						return;
-					}
-					if (result.status === 'error') {
-						handleActionError(result);
 						return;
 					}
 
@@ -463,7 +463,7 @@ export function useAdminUserDetailController(
 				return;
 			}
 
-			ssoGrantQueryTimeoutRef.current = globalThis.setTimeout(() => {
+			ssoGrantQueryTimeoutRef.current = setTimeout(() => {
 				ssoGrantQueryTimeoutRef.current = null;
 				requestSsoGrants(1, value);
 			}, ADMIN_LIST_DEBOUNCE_MS);

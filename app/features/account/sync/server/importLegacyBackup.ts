@@ -1,5 +1,6 @@
 // Server-side legacy backup import orchestration.
 import { type Kysely, type Transaction } from 'kysely';
+import isObject from 'lodash/isObject.js';
 
 import {
 	ACCOUNT_SYNC_STATUS_MAP,
@@ -7,6 +8,10 @@ import {
 	type TSyncNamespace,
 	USER_STATUS_MAP,
 } from '@/domain/account/contracts';
+import type {
+	INormalGuestSavedMeal,
+	ISpecialGuestSavedMeal,
+} from '@/domain/meals/types';
 
 import { MAX_BACKUP_DATA_BYTES } from '@/features/account/requestLimits';
 import { getAccountDatabase } from '@/features/account/server/persistence/database';
@@ -14,24 +19,16 @@ import {
 	SYNC_SCHEMA_VERSION_MAP,
 	checkSupportedSyncSchemaVersion,
 } from '@/features/account/sync/constants';
+import { type TMealSnapshot } from '@/features/account/sync/serializers/meals';
 import {
-	checkBeverageName,
-	migrateMealRecipeV1,
-	normalizeMealRecipe,
-	validateMealRecipe,
-	validateMealRecipeV1,
-	validateMealSnapshot,
-} from '@/features/account/sync/serializers/meals';
+	migrateNormalGuestMealsSnapshot,
+	migrateSpecialGuestMealsSnapshot,
+	migrateUnversionedNormalGuestMealsSnapshot,
+	migrateUnversionedSpecialGuestMealsSnapshot,
+} from '@/features/account/sync/serializers/savedMealsMigration';
+import { stableJson } from '@/features/account/sync/serializers/utils';
 import {
-	checkBeverageTag,
-	checkRecipeTag,
-} from '@/features/account/sync/serializers/tags';
-import {
-	hasExactKeys,
-	stableJson,
-} from '@/features/account/sync/serializers/utils';
-import {
-	compatibilityCustomerRareData,
+	compatibilitySpecialGuestData,
 	deleteIndexProperty,
 } from '@/features/legacyBackup/legacyPayload';
 import { type IBackupCodeLockSignal } from '@/features/legacyBackup/server/backupCodeLock';
@@ -65,11 +62,20 @@ import {
 } from './capacity';
 
 type TMealSyncNamespace =
-	| typeof SYNC_NAMESPACE_MAP.customerNormalMeals
-	| typeof SYNC_NAMESPACE_MAP.customerRareMeals;
+	| typeof SYNC_NAMESPACE_MAP.normalGuestMeals
+	| typeof SYNC_NAMESPACE_MAP.specialGuestMeals;
+
+type TImportMealSnapshot = TMealSnapshot<
+	INormalGuestSavedMeal | ISpecialGuestSavedMeal
+>;
+
+interface ILegacyImportNamespaceData {
+	data: Record<string, object[]>;
+	namespace: TMealSyncNamespace;
+}
 
 interface IImportNamespaceData {
-	data: Record<string, object[]>;
+	data: TImportMealSnapshot;
 	namespace: TMealSyncNamespace;
 }
 
@@ -150,160 +156,19 @@ async function getBackupImportResult(
 	};
 }
 
-function normalizeMealRecipeForSchema(data: unknown, schemaVersion: number) {
-	if (schemaVersion === 1) {
-		return validateMealRecipeV1(data) ? migrateMealRecipeV1(data) : null;
-	}
-
-	return validateMealRecipe(data) ? normalizeMealRecipe(data) : null;
-}
-
 function checkMealRecord(value: unknown): value is Record<string, object[]> {
 	return (
-		value !== null &&
-		typeof value === 'object' &&
+		isObject(value) &&
 		Object.values(value).every(
 			(meals) =>
-				Array.isArray(meals) &&
-				meals.every((meal) => meal !== null && typeof meal === 'object')
+				Array.isArray(meals) && meals.every((meal) => isObject(meal))
 		)
 	);
 }
-
-function validateCustomerNormalMeal(
-	data: unknown,
-	schemaVersion: number
-): data is Record<string, unknown> {
-	return (
-		isObjectTagRecord(data) &&
-		hasExactKeys(data, ['beverage', 'recipe']) &&
-		(data['beverage'] === null || checkBeverageName(data['beverage'])) &&
-		(schemaVersion === 1
-			? validateMealRecipeV1(data['recipe'])
-			: validateMealRecipe(data['recipe']))
-	);
-}
-
-function normalizeCustomerNormalMeal(data: unknown, schemaVersion: number) {
-	if (!validateCustomerNormalMeal(data, schemaVersion)) {
-		return null;
-	}
-
-	const recipe = normalizeMealRecipeForSchema(data['recipe'], schemaVersion);
-	if (recipe === null) {
-		return null;
-	}
-
-	return { beverage: data['beverage'], recipe };
-}
-
-function validateCustomerRareMeal(
-	data: unknown,
-	schemaVersion: number
-): data is Record<string, unknown> {
-	return (
-		isObjectTagRecord(data) &&
-		hasExactKeys(data, [
-			'beverage',
-			'hasMystiaCooker',
-			'order',
-			'recipe',
-		]) &&
-		checkBeverageName(data['beverage']) &&
-		typeof data['hasMystiaCooker'] === 'boolean' &&
-		isObjectTagRecord(data['order']) &&
-		hasExactKeys(data['order'], ['beverageTag', 'recipeTag']) &&
-		(data['order']['beverageTag'] === null ||
-			checkBeverageTag(data['order']['beverageTag'])) &&
-		(data['order']['recipeTag'] === null ||
-			checkRecipeTag(data['order']['recipeTag'])) &&
-		(schemaVersion === 1
-			? validateMealRecipeV1(data['recipe'])
-			: validateMealRecipe(data['recipe']))
-	);
-}
-
-function normalizeCustomerRareMeal(data: unknown, schemaVersion: number) {
-	if (!validateCustomerRareMeal(data, schemaVersion)) {
-		return null;
-	}
-
-	const recipe = normalizeMealRecipeForSchema(data['recipe'], schemaVersion);
-	if (recipe === null || !isObjectTagRecord(data['order'])) {
-		return null;
-	}
-
-	return {
-		beverage: data['beverage'],
-		hasMystiaCooker: data['hasMystiaCooker'],
-		order: {
-			beverageTag: data['order']['beverageTag'],
-			recipeTag: data['order']['recipeTag'],
-		},
-		recipe,
-	};
-}
-
-function normalizeMealRecord(
-	data: Record<string, object[]>,
-	normalizeMeal: (data: unknown) => object | null
-) {
-	return Object.entries(data).reduce<Record<string, object[]> | null>(
-		(result, [customerName, meals]) => {
-			if (result === null) {
-				return null;
-			}
-
-			const normalizedMeals = meals.map(normalizeMeal);
-			if (normalizedMeals.includes(null)) {
-				return null;
-			}
-
-			result[customerName] = normalizedMeals as object[];
-			return result;
-		},
-		{}
-	);
-}
-
-function validateImportNamespaceData(
-	item: IImportNamespaceData,
-	schemaVersion: number
-) {
-	if (item.namespace === SYNC_NAMESPACE_MAP.customerNormalMeals) {
-		return validateMealSnapshot(item.data, {
-			customerType: 'normal',
-			validateMeal: (meal) =>
-				validateCustomerNormalMeal(meal, schemaVersion),
-		});
-	}
-
-	return validateMealSnapshot(item.data, {
-		customerType: 'rare',
-		validateMeal: (meal) => validateCustomerRareMeal(meal, schemaVersion),
-	});
-}
-
-function normalizeImportNamespaceData(
-	item: IImportNamespaceData,
-	schemaVersion: number
-) {
-	if (!validateImportNamespaceData(item, schemaVersion)) {
-		return null;
-	}
-
-	const data = normalizeMealRecord(
-		item.data,
-		item.namespace === SYNC_NAMESPACE_MAP.customerNormalMeals
-			? (meal) => normalizeCustomerNormalMeal(meal, schemaVersion)
-			: (meal) => normalizeCustomerRareMeal(meal, schemaVersion)
-	);
-
-	return data === null ? null : { ...item, data };
-}
-
-function normalizeBackupData(data: unknown): IImportNamespaceData[] | null {
-	if (data === null || typeof data !== 'object') {
+function normalizeBackupData(
+	data: unknown
+): ILegacyImportNamespaceData[] | null {
+	if (!isObject(data)) {
 		return null;
 	}
 
@@ -321,16 +186,16 @@ function normalizeBackupData(data: unknown): IImportNamespaceData[] | null {
 
 		deleteIndexProperty(backupData.customer_normal);
 		deleteIndexProperty(backupData.customer_rare);
-		compatibilityCustomerRareData(backupData.customer_rare);
+		compatibilitySpecialGuestData(backupData.customer_rare);
 
 		return [
 			{
 				data: backupData.customer_normal,
-				namespace: SYNC_NAMESPACE_MAP.customerNormalMeals,
+				namespace: SYNC_NAMESPACE_MAP.normalGuestMeals,
 			},
 			{
 				data: backupData.customer_rare,
-				namespace: SYNC_NAMESPACE_MAP.customerRareMeals,
+				namespace: SYNC_NAMESPACE_MAP.specialGuestMeals,
 			},
 		];
 	}
@@ -340,9 +205,9 @@ function normalizeBackupData(data: unknown): IImportNamespaceData[] | null {
 	}
 
 	deleteIndexProperty(data);
-	compatibilityCustomerRareData(data);
+	compatibilitySpecialGuestData(data);
 
-	return [{ data, namespace: SYNC_NAMESPACE_MAP.customerRareMeals }];
+	return [{ data, namespace: SYNC_NAMESPACE_MAP.specialGuestMeals }];
 }
 
 function normalizeLegacyBackupMealData(
@@ -353,11 +218,17 @@ function normalizeLegacyBackupMealData(
 		return null;
 	}
 
-	const normalized = namespaceData
-		.map((item) => normalizeImportNamespaceData(item, 1))
-		.filter((item): item is IImportNamespaceData => item !== null);
-
-	return normalized.length === 0 ? null : normalized;
+	try {
+		return namespaceData.map(({ data: legacyData, namespace }) => ({
+			data:
+				namespace === SYNC_NAMESPACE_MAP.normalGuestMeals
+					? migrateUnversionedNormalGuestMealsSnapshot(legacyData)
+					: migrateUnversionedSpecialGuestMealsSnapshot(legacyData),
+			namespace,
+		}));
+	} catch {
+		return null;
+	}
 }
 
 function createMealSignature(meal: object) {
@@ -374,13 +245,13 @@ function createMealSignatureCountMap(meals: object[]) {
 }
 
 function mergeMealRecord(
-	cloud: Record<string, object[]> | null,
-	imported: Record<string, object[]>
+	cloud: TImportMealSnapshot | null,
+	imported: TImportMealSnapshot
 ) {
-	const result: Record<string, object[]> = cloud === null ? {} : { ...cloud };
+	const result: TImportMealSnapshot = cloud === null ? {} : { ...cloud };
 
-	Object.entries(imported).forEach(([customerName, importedMeals]) => {
-		const cloudMeals = result[customerName] ?? [];
+	Object.entries(imported).forEach(([guestKey, importedMeals]) => {
+		const cloudMeals = result[guestKey] ?? [];
 		const signatureCountMap = createMealSignatureCountMap(cloudMeals);
 		const additions = importedMeals.filter((meal) => {
 			const signature = createMealSignature(meal);
@@ -398,7 +269,7 @@ function mergeMealRecord(
 			return true;
 		});
 
-		result[customerName] = [...cloudMeals, ...additions];
+		result[guestKey] = [...cloudMeals, ...additions];
 	});
 
 	return result;
@@ -421,19 +292,13 @@ function normalizeCloudMealRecordForImport(
 	} catch {
 		throw new Error('server-misconfigured');
 	}
-	if (!checkMealRecord(data)) {
+	try {
+		return namespace === SYNC_NAMESPACE_MAP.normalGuestMeals
+			? migrateNormalGuestMealsSnapshot(data, record.schema_version)
+			: migrateSpecialGuestMealsSnapshot(data, record.schema_version);
+	} catch {
 		throw new Error('server-misconfigured');
 	}
-
-	const normalized = normalizeImportNamespaceData(
-		{ data, namespace },
-		record.schema_version
-	);
-	if (normalized === null) {
-		throw new Error('server-misconfigured');
-	}
-
-	return normalized.data;
 }
 
 async function checkImportBackupDataPreconditions(

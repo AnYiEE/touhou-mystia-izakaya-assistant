@@ -1,3 +1,4 @@
+import isObject from 'lodash/isObject.js';
 import { type NextRequest } from 'next/server';
 
 import type { TAdminSsoTicketStatus } from '@/features/account/contracts';
@@ -42,7 +43,7 @@ function parseTicketStatus(value: string | undefined) {
 }
 
 function parseTicketMutationBody(value: unknown): ITicketMutationBody | null {
-	if (value === null || typeof value !== 'object') {
+	if (!isObject(value)) {
 		return null;
 	}
 

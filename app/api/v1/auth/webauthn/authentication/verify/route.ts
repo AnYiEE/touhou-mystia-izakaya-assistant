@@ -1,4 +1,5 @@
 import { type AuthenticationResponseJSON } from '@simplewebauthn/server';
+import isObject from 'lodash/isObject.js';
 import { type NextRequest } from 'next/server';
 
 import { USER_STATUS_MAP } from '@/domain/account/contracts';
@@ -62,11 +63,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
-	if (
-		body === null ||
-		typeof body.response !== 'object' ||
-		body.response === null
-	) {
+	if (body === null || !isObject(body.response)) {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
 			400

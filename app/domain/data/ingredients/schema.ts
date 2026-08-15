@@ -1,9 +1,10 @@
 import type { IFoodBase } from '@/domain/data/shared/foodSchema';
-import type { TIngredientTagSchema } from '@/domain/data/tags/schema';
+import type { TFoodTagId } from '@/domain/data/tags/types';
 
-type TType = '肉类' | '海鲜' | '蔬菜' | '其他';
+type TIngredientTypeId =
+	keyof typeof import('./ingredientFacts').INGREDIENT_TYPE_MAP;
 
 export interface IIngredient extends IFoodBase {
-	type: TType;
-	tags: TIngredientTagSchema[];
+	tags: TFoodTagId[];
+	type: TIngredientTypeId;
 }

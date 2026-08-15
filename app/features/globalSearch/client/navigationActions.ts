@@ -5,11 +5,7 @@ import { useCallback } from 'react';
 
 import { openAccountModal } from '@/features/account/client/overlayCommands';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
-import { selectCatalogCustomer } from '@/features/catalog/globalSearch/client/navigationCommands';
-import {
-	closeCustomerPlansDrawer,
-	openCustomerPlansDrawer,
-} from '@/features/customerPlans/client/drawerCommands';
+import { selectCatalogGuest } from '@/features/catalog/globalSearch/client/navigationCommands';
 import type {
 	IGlobalSearchFilterAction,
 	IGlobalSearchIndexItem,
@@ -20,85 +16,23 @@ import {
 	getGlobalSearchSectionPath,
 } from '@/features/globalSearch/core/constants';
 import {
-	createShareableItemUrl,
+	getGlobalSearchItemNavigationHref,
+	getGlobalSearchItemNavigationUrl,
+	getGlobalSearchItemShareUrl,
+} from '@/features/globalSearch/itemNavigation';
+import {
 	openItemInNewTab,
 	shareItem,
 } from '@/features/itemSharing/client/shareCommands';
 import { handoffOverlay } from '@/features/overlays/client';
 import { openPreferenceTarget } from '@/features/preferences/client/globalSearch/openPreferenceTarget';
+import {
+	closeSpecialGuestPlansDrawer,
+	openSpecialGuestPlansDrawer,
+} from '@/features/specialGuestPlans/client/drawerCommands';
 
 import { closeGlobalSearch, setGlobalSearchTransientTarget } from './commands';
-import { setCustomerRareTutorialAllowedPathname } from './customerRareTutorialHandoff';
-
-const CUSTOMER_INFO_FIELD_TYPES = new Set<
-	IGlobalSearchMatchedField['field']['fieldType']
->([
-	'description',
-	'chat',
-	'evaluation',
-	'positive-spell-card',
-	'negative-spell-card',
-	'reward',
-]);
-
-function checkShouldOpenCustomerInfo(
-	item: IGlobalSearchIndexItem,
-	match: IGlobalSearchMatchedField | undefined
-) {
-	return (
-		(item.section === 'customer-normal' ||
-			item.section === 'customer-rare') &&
-		match !== undefined &&
-		CUSTOMER_INFO_FIELD_TYPES.has(match.field.fieldType)
-	);
-}
-
-export function getGlobalSearchItemNavigationHref(
-	item: IGlobalSearchIndexItem,
-	match?: IGlobalSearchMatchedField
-) {
-	return checkShouldOpenCustomerInfo(item, match)
-		? `${item.href}?info`
-		: item.href;
-}
-
-export function getGlobalSearchItemShareUrl(item: IGlobalSearchIndexItem) {
-	if (typeof location === 'undefined') {
-		return item.href;
-	}
-
-	if (item.section === 'preferences') {
-		return `${location.origin}/preferences`;
-	}
-	if (
-		item.section === 'customer-normal' ||
-		item.section === 'customer-rare'
-	) {
-		return `${location.origin}${item.href}`;
-	}
-
-	return createShareableItemUrl({
-		name: item.name,
-		pathname: getGlobalSearchSectionPath(item.section),
-	});
-}
-
-function getGlobalSearchItemNavigationUrl(
-	item: IGlobalSearchIndexItem,
-	match?: IGlobalSearchMatchedField
-) {
-	if (
-		item.section === 'customer-normal' ||
-		item.section === 'customer-rare'
-	) {
-		const href = getGlobalSearchItemNavigationHref(item, match);
-		return typeof location === 'undefined'
-			? href
-			: `${location.origin}${href}`;
-	}
-
-	return getGlobalSearchItemShareUrl(item);
-}
+import { setSpecialGuestTutorialAllowedPathname } from './specialGuestTutorialHandoff';
 
 export function useGlobalSearchNavigationActions() {
 	const { pathname } = usePathname();
@@ -115,40 +49,37 @@ export function useGlobalSearchNavigationActions() {
 						onOpenTarget: openAccountModal,
 						toId: 'account.main',
 					});
-					return;
-				}
-				if (action?.type === 'open-customer-plans') {
-					const sourcePathname = globalThis.location.pathname;
-					handoffOverlay({
-						fromId: 'global.search',
-						isValid: () =>
-							globalThis.location.pathname === sourcePathname,
-						onCloseSource: closeGlobalSearch,
-						onOpenTarget: () => {
-							if (
-								pathname !==
-								GLOBAL_SEARCH_SECTION_PATH_MAP['customer-rare']
-							) {
-								router.push(
-									GLOBAL_SEARCH_SECTION_PATH_MAP[
-										'customer-rare'
-									]
-								);
-							}
-							openCustomerPlansDrawer();
-						},
-						toId: 'customer-rare.plan-drawer',
-					});
-					return;
 				}
 				if (action?.type === 'open-preference') {
 					handoffOverlay({
 						fromId: 'global.search',
 						onCloseSource: closeGlobalSearch,
 						onOpenTarget: () => {
-							openPreferenceTarget(action.targetId);
+							openPreferenceTarget(action.targetKey);
 						},
 						toId: 'preferences',
+					});
+				}
+				if (action?.type === 'open-special-guest-plans') {
+					const sourcePathname = location.pathname;
+					handoffOverlay({
+						fromId: 'global.search',
+						isValid: () => location.pathname === sourcePathname,
+						onCloseSource: closeGlobalSearch,
+						onOpenTarget: () => {
+							if (
+								pathname !==
+								GLOBAL_SEARCH_SECTION_PATH_MAP['special-guests']
+							) {
+								router.push(
+									GLOBAL_SEARCH_SECTION_PATH_MAP[
+										'special-guests'
+									]
+								);
+							}
+							openSpecialGuestPlansDrawer();
+						},
+						toId: 'special-guest.plan-drawer',
 					});
 				}
 				return;
@@ -156,20 +87,28 @@ export function useGlobalSearchNavigationActions() {
 
 			closeGlobalSearch();
 			if (
-				item.section === 'customer-normal' ||
-				item.section === 'customer-rare'
+				item.section === 'normal-guests' ||
+				item.section === 'special-guests'
 			) {
-				selectCatalogCustomer(item.section, item.name);
-				if (item.section === 'customer-rare') {
-					closeCustomerPlansDrawer();
-					setCustomerRareTutorialAllowedPathname(item.href);
+				if (item.recordId === undefined) {
+					throw new Error(
+						'Catalog search guest record ID is missing.'
+					);
+				}
+				selectCatalogGuest(item.section, item.recordId);
+				if (item.section === 'special-guests') {
+					closeSpecialGuestPlansDrawer();
+					setSpecialGuestTutorialAllowedPathname(item.href);
 				}
 				router.push(getGlobalSearchItemNavigationHref(item, match));
 				return;
 			}
+			if (item.recordId === undefined) {
+				throw new Error('Catalog search item record ID is missing.');
+			}
 
 			setGlobalSearchTransientTarget({
-				name: item.name,
+				recordId: item.recordId,
 				section: item.section,
 			});
 			const targetPathname = getGlobalSearchSectionPath(item.section);

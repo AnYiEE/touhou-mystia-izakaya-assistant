@@ -1,3 +1,5 @@
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+
 import { createAccountClientId } from './clientId';
 import {
 	ACCOUNT_STORAGE_KEY_MAP,
@@ -42,10 +44,6 @@ const ACCOUNT_RUNTIME_INVALIDATION_REASON_SET =
 		'session-expired',
 	]);
 const processedAccountRuntimeOperations = new Map<string, number>();
-
-function checkPlainObject(value: unknown): value is Record<string, unknown> {
-	return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
 
 function checkBoundedString(value: unknown): value is string {
 	return (
@@ -105,7 +103,7 @@ export function parseAccountRuntimeSignal({
 		return null;
 	}
 
-	if (!checkPlainObject(parsed)) {
+	if (!checkIsRecord(parsed)) {
 		return null;
 	}
 

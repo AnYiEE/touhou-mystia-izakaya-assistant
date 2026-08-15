@@ -1,5 +1,3 @@
-'use client';
-
 import {
 	faArrowLeft,
 	faMagnifyingGlass,
@@ -7,7 +5,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
 import { motion } from 'framer-motion';
-import type { KeyboardEventHandler, RefObject } from 'react';
+import { type KeyboardEventHandler, type RefObject, useMemo } from 'react';
 
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
@@ -75,6 +73,25 @@ export function SearchInput({
 					? '没有找到结果'
 					: `找到${model.results.length}个结果，当前选中第${model.resolvedSelectedIndex + 1}个：${model.selectedResult.item.name}${selectedMatch === undefined ? '' : `，${selectedMatch.field.label}中命中`}`;
 
+	const inputClassNames = useMemo(
+		() => ({
+			base: 'min-w-0 flex-1',
+			clearButton: cn(
+				'bg-transparent text-foreground-500 transition duration-150 ease-out data-[hover=true]:bg-default/30 data-[pressed=true]:bg-default/40 data-[hover=true]:text-foreground-700 motion-reduce:transition-none',
+				isInputFocused && query.length > 0
+					? '!scale-100 !opacity-100'
+					: '!pointer-events-none !scale-85 !opacity-0'
+			),
+			input: 'text-medium',
+			inputWrapper: cn(
+				'h-12 rounded-small border border-default-200/70 bg-default-100/80 shadow-sm transition-background motion-reduce:transition-none dark:bg-default-100/20',
+				isHighAppearance &&
+					'bg-default/45 backdrop-blur data-[hover=true]:bg-default/55'
+			),
+		}),
+		[isHighAppearance, isInputFocused, query.length]
+	);
+
 	return (
 		<div
 			className={cn(
@@ -139,21 +156,7 @@ export function SearchInput({
 					role="combobox"
 					{...inputActiveDescendantProps}
 					{...inputControlsProps}
-					classNames={{
-						base: 'min-w-0 flex-1',
-						clearButton: cn(
-							'bg-transparent text-foreground-500 transition duration-150 ease-out data-[hover=true]:bg-default/30 data-[pressed=true]:bg-default/40 data-[hover=true]:text-foreground-700 motion-reduce:transition-none',
-							isInputFocused && query.length > 0
-								? '!scale-100 !opacity-100'
-								: '!pointer-events-none !scale-85 !opacity-0'
-						),
-						input: 'text-medium',
-						inputWrapper: cn(
-							'h-12 rounded-small border border-default-200/70 bg-default-100/80 shadow-sm transition-background motion-reduce:transition-none dark:bg-default-100/20',
-							isHighAppearance &&
-								'bg-default/45 backdrop-blur data-[hover=true]:bg-default/55'
-						),
-					}}
+					classNames={inputClassNames}
 					startContent={
 						<FontAwesomeIcon
 							icon={faMagnifyingGlass}

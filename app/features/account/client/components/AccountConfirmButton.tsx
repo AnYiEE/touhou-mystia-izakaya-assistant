@@ -22,8 +22,8 @@ interface IProps {
 	confirmLabel: ReactNodeWithoutBoolean;
 	fullWidth?: boolean;
 	icon: FontAwesomeIconProps['icon'];
-	isIconOnly?: boolean;
 	isDisabled: boolean;
+	isIconOnly?: boolean;
 	isLoading: boolean;
 	isOpen: boolean;
 	onCancel: () => void;

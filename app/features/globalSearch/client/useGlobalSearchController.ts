@@ -409,8 +409,8 @@ export function useGlobalSearchController() {
 	);
 
 	useEffect(() => {
-		setRecentState(readGlobalSearchRecentState());
-	}, []);
+		setRecentState(readGlobalSearchRecentState(model.index));
+	}, [model.index]);
 
 	useEffect(
 		() => () => {

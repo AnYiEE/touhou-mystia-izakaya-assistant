@@ -1,6 +1,6 @@
 import { faUpRightAndDownLeftFromCenter } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@heroui/theme';
-import { isNil } from 'lodash';
+import isNil from 'lodash/isNil.js';
 import {
 	type ReactElement,
 	type RefObject,
@@ -35,6 +35,12 @@ interface IUsePictureInPictureReturn {
 export function usePictureInPicture(
 	options: IUsePictureInPictureOptions = {}
 ): IUsePictureInPictureReturn {
+	const {
+		height: requestedHeight,
+		offset: { height: offsetHeight = 0, width: offsetWidth = 0 } = {},
+		width: requestedWidth,
+	} = options;
+
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const [pipWindow, setPipWindow] = useState<Window | null>(null);
 
@@ -62,15 +68,15 @@ export function usePictureInPicture(
 		try {
 			const element = containerRef.current;
 
-			let width = options.width ?? element?.offsetWidth;
+			let width = requestedWidth ?? element?.offsetWidth;
 			if (width !== undefined) {
-				width += options.offset?.width ?? 0;
+				width += offsetWidth;
 			}
 			let height =
-				options.height ??
+				requestedHeight ??
 				element?.offsetHeight ??
 				globalThis.screen.height / 2;
-			height += options.offset?.height ?? 0;
+			height += offsetHeight;
 			height = Math.min(height, globalThis.screen.height / 2);
 			height = Math.max(height, 96);
 
@@ -165,7 +171,13 @@ export function usePictureInPicture(
 				errorCode: getLogSafeErrorCode(error),
 			});
 		}
-	}, [isSupported, options]);
+	}, [
+		isSupported,
+		offsetHeight,
+		offsetWidth,
+		requestedHeight,
+		requestedWidth,
+	]);
 
 	const PipButton = useCallback<IUsePictureInPictureReturn['PipButton']>(
 		({ onOpen }) => {

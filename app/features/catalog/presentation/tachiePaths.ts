@@ -1,40 +1,37 @@
-import { CustomerRare } from '@/domain/catalog/customers/CustomerRare';
-import { Clothes } from '@/domain/catalog/items/Clothes';
-import { Partner } from '@/domain/catalog/items/Partner';
-import type { TClothesName } from '@/domain/data/clothes/types';
-import type { TCustomerRareName } from '@/domain/data/customers/rare/types';
-import type { TPartnerName } from '@/domain/data/partners/types';
+import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { ClothesCatalog } from '@/domain/catalog/items/ClothesCatalog';
+import { PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
+import type { TClothesId } from '@/domain/data/clothes/types';
+import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import type { TPartnerId } from '@/domain/data/partners/types';
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
 const { cdnUrl } = PUBLIC_RUNTIME_CONFIG;
 
-const clothesTachiePathCache = new Map<TClothesName, string>();
-const customerRareTachiePathCache = new Map<TCustomerRareName, string>();
-const partnerTachiePathCache = new Map<TPartnerName, string>();
+const clothesTachiePathCache = new Map<TClothesId, string>();
+const partnerTachiePathCache = new Map<TPartnerId, string>();
+const specialGuestTachiePathCache = new Map<TSpecialGuestId, string>();
 
-export function getClothesTachiePath(name: TClothesName) {
-	return clothesTachiePathCache.getOrInsertComputed(name, () => {
-		const clothes = Clothes.getInstance();
-		const { gif, id } = clothes.getPropsByName(name);
+export function getClothesTachiePath(id: TClothesId) {
+	return clothesTachiePathCache.getOrInsertComputed(id, () => {
+		const clothes = ClothesCatalog.getInstance();
+		const { gif } = clothes.getPropsById(id);
 		return `${cdnUrl}/assets/tachies/clothes/${clothes.formatId(id)}.${gif ? 'gif' : 'png'}`;
 	});
 }
 
-export function getCustomerRareTachiePath(name: TCustomerRareName | null) {
-	if (name === null) {
-		return getClothesTachiePath('夜雀服');
-	}
-	return customerRareTachiePathCache.getOrInsertComputed(name, () => {
-		const customer = CustomerRare.getInstance();
-		const basePath = `${cdnUrl}/assets/tachies/customer_rare`;
-		return `${basePath}/${customer.formatId(customer.getPropsByName(name, 'id'))}.png`;
+export function getSpecialGuestTachiePath(id: TSpecialGuestId) {
+	return specialGuestTachiePathCache.getOrInsertComputed(id, () => {
+		const specialGuest = SpecialGuestCatalog.getInstance();
+		const basePath = `${cdnUrl}/assets/tachies/special_guest`;
+		return `${basePath}/${specialGuest.formatId(id)}.png`;
 	});
 }
 
-export function getPartnerTachiePath(name: TPartnerName) {
-	return partnerTachiePathCache.getOrInsertComputed(name, () => {
-		const partner = Partner.getInstance();
-		return `${cdnUrl}/assets/tachies/partners/${partner.formatId(partner.getPropsByName(name, 'id'))}.png`;
+export function getPartnerTachiePath(id: TPartnerId) {
+	return partnerTachiePathCache.getOrInsertComputed(id, () => {
+		const partner = PartnerCatalog.getInstance();
+		return `${cdnUrl}/assets/tachies/partners/${partner.formatId(id)}.png`;
 	});
 }

@@ -1,6 +1,6 @@
 import { Select, SelectItem } from '@heroui/select';
 import { cn } from '@heroui/theme';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Button from '@/design/ui/components/button';
@@ -9,6 +9,7 @@ import Switch from '@/design/ui/components/switch';
 import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
 
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
+import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import { DYNAMIC_TAG_MAP } from '@/domain/data/tags/tagFacts';
 
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
@@ -21,6 +22,12 @@ import {
 	getPreferenceTargetClassName,
 	getPreferenceTargetDataProps,
 } from './preferenceTarget';
+
+const SHAMEIMARU_AYA_ID: TSpecialGuestId = 4000;
+const POPULAR_TREND_SWITCH_CLASS_NAMES = {
+	base: 'mx-2',
+	wrapper: 'bg-primary',
+} as const;
 
 interface IProps {
 	highlightedPreferenceKey: null | TPreferenceTargetKey;
@@ -35,6 +42,7 @@ export default memo<IProps>(function GlobalPreferencesSection({
 	isReducedMotion,
 	onModalClose,
 }) {
+	const { isHighAppearance } = useDesignPreferences();
 	const popoverMotionProps = useMotionProps('popover');
 	const vibrate = useVibrate();
 
@@ -47,7 +55,34 @@ export default memo<IProps>(function GlobalPreferencesSection({
 		globalStore.persistence.popularTrend.isNegative.use();
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
 
-	const { isHighAppearance } = useDesignPreferences();
+	const popularTagPopoverProps = useMemo(
+		() => ({ motionProps: popoverMotionProps }),
+		[popoverMotionProps]
+	);
+	const popularTagSelectClassNames = useMemo(
+		() => ({
+			base: 'w-28',
+			listboxWrapper: cn(
+				'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
+				{
+					'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
+						isHighAppearance,
+				}
+			),
+			popoverContent: cn({
+				'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+			}),
+			trigger: cn('transition-background motion-reduce:transition-none', {
+				'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40':
+					isHighAppearance,
+				'bg-default-200 data-[hover=true]:bg-default':
+					!isHighAppearance,
+				'dark:bg-default-100 dark:data-[hover=true]:bg-default-200':
+					!isHighAppearance && onModalClose === undefined,
+			}),
+		}),
+		[isHighAppearance, onModalClose]
+	);
 
 	const onClearPopularTrendButtonPress = useCallback(() => {
 		vibrate();
@@ -128,7 +163,7 @@ export default memo<IProps>(function GlobalPreferencesSection({
 							globalStore.persistence.popularTrend.isNegative.set
 						}
 						aria-label={`设置为${isPopularTrendNegative ? DYNAMIC_TAG_MAP.popularPositive : DYNAMIC_TAG_MAP.popularNegative}`}
-						classNames={{ base: 'mx-2', wrapper: 'bg-primary' }}
+						classNames={POPULAR_TREND_SWITCH_CLASS_NAMES}
 					/>
 					{DYNAMIC_TAG_MAP.popularNegative}
 				</div>
@@ -147,42 +182,19 @@ export default memo<IProps>(function GlobalPreferencesSection({
 							}
 							aria-label="选择游戏中现时流行的标签"
 							title="选择游戏中现时流行的标签"
-							popoverProps={{ motionProps: popoverMotionProps }}
-							classNames={{
-								base: 'w-28',
-								listboxWrapper: cn(
-									'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
-									{
-										'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
-											isHighAppearance,
-									}
-								),
-								popoverContent: cn({
-									'bg-content1/70 backdrop-blur-lg':
-										isHighAppearance,
-								}),
-								trigger: cn(
-									'transition-background motion-reduce:transition-none',
-									{
-										'bg-default/40 backdrop-blur data-[hover=true]:bg-default-400/40':
-											isHighAppearance,
-										'bg-default-200 data-[hover=true]:bg-default':
-											!isHighAppearance,
-										'dark:bg-default-100 dark:data-[hover=true]:bg-default-200':
-											!isHighAppearance &&
-											onModalClose === undefined,
-									}
-								),
-							}}
+							popoverProps={popularTagPopoverProps}
+							classNames={popularTagSelectClassNames}
 						>
-							{({ value }) => (
-								<SelectItem key={value}>{value}</SelectItem>
+							{({ tag, value }) => (
+								<SelectItem key={tag.toString()}>
+									{value}
+								</SelectItem>
 							)}
 						</Select>
 					</div>
 					<Button
 						color="primary"
-						isDisabled={selectedPopularTag.has(null as never)}
+						isDisabled={selectedPopularTag.size === 0}
 						size="sm"
 						variant="flat"
 						onPress={onClearPopularTrendButtonPress}
@@ -200,8 +212,8 @@ export default memo<IProps>(function GlobalPreferencesSection({
 					<span className="text-tiny text-foreground-500">
 						【
 						<Sprite
-							target="customer_rare"
-							name="射命丸文"
+							target="special_guest"
+							recordId={SHAMEIMARU_AYA_ID}
 							size={1}
 							className="mx-0.5 rounded-full align-text-top"
 						/>

@@ -13,6 +13,12 @@ import { type IOfflinePackagePaths } from './paths';
 
 const offlineFilePattern = /\.offline\.(jsx?|tsx?)$/u;
 const routeFilePattern = /^route\.(?:[cm]?js|jsx|ts|tsx)$/u;
+const LEGACY_ROUTE_NAMES = [
+	'ornaments',
+	'recipes',
+	'customer-normal',
+	'customer-rare',
+] as const;
 
 async function checkPathExists(path: string) {
 	try {
@@ -295,6 +301,50 @@ async function restoreAdminPages({
 	await moveTreeIfExists(offlineAdminPath, adminPath);
 }
 
+async function restoreOfflineLegacyRoutes({
+	appPath,
+	offlinePagesPath,
+}: IOfflinePackagePaths) {
+	for (const routeName of LEGACY_ROUTE_NAMES) {
+		await moveTreeIfExists(
+			resolve(offlinePagesPath, 'legacy-routes', routeName),
+			resolve(appPath, '(pages)', routeName)
+		);
+	}
+}
+
+async function moveOfflineLegacyRoutes({
+	appPath,
+	offlinePagesPath,
+}: IOfflinePackagePaths) {
+	for (const routeName of LEGACY_ROUTE_NAMES) {
+		await moveTreeIfExists(
+			resolve(appPath, '(pages)', routeName),
+			resolve(offlinePagesPath, 'legacy-routes', routeName)
+		);
+	}
+}
+
+async function restoreStaticSsoPages({
+	appPath,
+	offlinePagesPath,
+}: IOfflinePackagePaths) {
+	await moveTreeIfExists(
+		resolve(offlinePagesPath, 'sso'),
+		resolve(appPath, '(pages)/sso')
+	);
+}
+
+async function moveStaticSsoPages({
+	appPath,
+	offlinePagesPath,
+}: IOfflinePackagePaths) {
+	await moveTreeIfExists(
+		resolve(appPath, '(pages)/sso'),
+		resolve(offlinePagesPath, 'sso')
+	);
+}
+
 export async function restoreOfflineRouterReplacement(
 	paths: IOfflinePackagePaths
 ) {
@@ -302,6 +352,17 @@ export async function restoreOfflineRouterReplacement(
 	await restoreOfflineSourceFiles(paths);
 	await restoreRouterFiles(paths.fakeApiPath, paths.apiPath);
 	await restoreAdminPages(paths);
+	await restoreOfflineLegacyRoutes(paths);
+	await rm(paths.offlinePagesPath, { force: true, recursive: true });
+}
+
+export async function restoreStaticRouterReplacement(
+	paths: IOfflinePackagePaths
+) {
+	await restoreRootMiddleware(paths);
+	await restoreRouterFiles(paths.fakeApiPath, paths.apiPath);
+	await restoreAdminPages(paths);
+	await restoreStaticSsoPages(paths);
 	await rm(paths.offlinePagesPath, { force: true, recursive: true });
 }
 
@@ -311,5 +372,15 @@ export async function prepareOfflineRouterReplacement(
 	await moveRootMiddlewareForOffline(paths);
 	await moveRouterFiles(paths.apiPath, paths.fakeApiPath);
 	await moveTreeIfExists(paths.adminPath, paths.offlineAdminPath);
+	await moveOfflineLegacyRoutes(paths);
 	await replaceWithOfflineSourceFiles(paths);
+}
+
+export async function prepareStaticRouterReplacement(
+	paths: IOfflinePackagePaths
+) {
+	await moveRootMiddlewareForOffline(paths);
+	await moveRouterFiles(paths.apiPath, paths.fakeApiPath);
+	await moveTreeIfExists(paths.adminPath, paths.offlineAdminPath);
+	await moveStaticSsoPages(paths);
 }

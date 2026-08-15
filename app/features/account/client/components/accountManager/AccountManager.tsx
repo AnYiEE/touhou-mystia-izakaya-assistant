@@ -6,7 +6,7 @@ import {
 	faPowerOff,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
 import Heading from '@/design/ui/components/heading';
@@ -28,6 +28,7 @@ import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import AccountAuthPanel from './AccountAuthPanel';
 import AccountDangerZone from './AccountDangerZone';
+import { AccountPanel, AccountPanelTitle } from './accountPanelLayout';
 import AccountPasskeysPanel from './AccountPasskeysPanel';
 import AccountProfilePanel, {
 	AccountProfileSummary,
@@ -40,13 +41,18 @@ import {
 	ACCOUNT_MANAGER_SUCCESS_MESSAGE_SET,
 	getAccountBootstrapErrorMessage,
 } from './copy';
-import { AccountPanel, AccountPanelTitle } from './layout';
 import { useAccountAuthentication } from './useAccountAuthentication';
 import { useAccountDestructiveActions } from './useAccountDestructiveActions';
 import { useAccountPasskeys } from './useAccountPasskeys';
 import { useAccountProfile } from './useAccountProfile';
 import { useAccountSessions } from './useAccountSessions';
 import { useAccountSsoGrants } from './useAccountSsoGrants';
+
+const ACCOUNT_DATA_MANAGER_COORDINATION = {
+	id: 'account.data-manager',
+} as const;
+const ACCOUNT_HEADING_CLASS_NAMES = { subTitle: '!-mt-3' } as const;
+const ACCOUNT_LEGAL_COORDINATION = { id: 'account.legal' } as const;
 
 interface IProps {}
 
@@ -185,6 +191,19 @@ export default memo<IProps>(function AccountManager() {
 	const { ssoGrants, ssoGrantsUserId } = ssoGrantsController;
 	const { handleLogout, handleLogoutAll } = destructiveActions;
 
+	const visibleSsoGrants = useMemo(
+		() => (user?.id === ssoGrantsUserId ? ssoGrants : []),
+		[ssoGrants, ssoGrantsUserId, user?.id]
+	);
+	const visibleAccountSessions = useMemo(
+		() => (user?.id === accountSessionsUserId ? accountSessions : []),
+		[accountSessions, accountSessionsUserId, user?.id]
+	);
+	const visiblePasskeys = useMemo(
+		() => (user?.id === passkeysUserId ? passkeys : []),
+		[passkeys, passkeysUserId, user?.id]
+	);
+
 	if (bootstrapStatus === 'error') {
 		return (
 			<div className="space-y-4">
@@ -220,6 +239,9 @@ export default memo<IProps>(function AccountManager() {
 			: null;
 	const authCredentialErrorMessage =
 		registrationNicknameErrorMessage === null ? authErrorMessage : null;
+	const shouldShowAccountSupportLink =
+		authMode === 'login' &&
+		(message === 'user-deleted' || message === 'user-disabled');
 	const accountStatusMessage =
 		messageText !== null && authErrorMessage === null ? messageText : null;
 	const isAccountSyncPaused =
@@ -251,13 +273,9 @@ export default memo<IProps>(function AccountManager() {
 			: null;
 	const profileCurrentPasswordErrorMessage =
 		profileError === 'invalid-password' ? profileErrorMessage : null;
-	const visibleSsoGrants = user?.id === ssoGrantsUserId ? ssoGrants : [];
 	const isSsoGrantsReady = user !== null && ssoGrantsUserId === user.id;
-	const visibleAccountSessions =
-		user?.id === accountSessionsUserId ? accountSessions : [];
 	const isAccountSessionsReady =
 		user !== null && accountSessionsUserId === user.id;
-	const visiblePasskeys = user?.id === passkeysUserId ? passkeys : [];
 	const isPasskeyListReady = user !== null && passkeysUserId === user.id;
 
 	return (
@@ -277,7 +295,7 @@ export default memo<IProps>(function AccountManager() {
 							: '登录后可在不同设备间同步此浏览器保存的数据'
 						: '管理当前账号、同步状态和云端数据'
 				}
-				classNames={{ subTitle: '!-mt-3' }}
+				classNames={ACCOUNT_HEADING_CLASS_NAMES}
 			>
 				{isSsoContext && user === null ? 'SSO登录' : '账号'}
 			</Heading>
@@ -291,6 +309,7 @@ export default memo<IProps>(function AccountManager() {
 					registrationNicknameErrorMessage={
 						registrationNicknameErrorMessage
 					}
+					shouldShowAccountSupportLink={shouldShowAccountSupportLink}
 				/>
 			) : (
 				<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
@@ -424,7 +443,7 @@ export default memo<IProps>(function AccountManager() {
 				</div>
 			)}
 			<CoordinatedModal
-				coordination={{ id: 'account.data-manager' }}
+				coordination={ACCOUNT_DATA_MANAGER_COORDINATION}
 				isOpen={isDataManagerModalOpen}
 				size="2xl"
 				onClose={handleCloseDataManagerModal}
@@ -437,7 +456,7 @@ export default memo<IProps>(function AccountManager() {
 				</div>
 			</CoordinatedModal>
 			<CoordinatedModal
-				coordination={{ id: 'account.legal' }}
+				coordination={ACCOUNT_LEGAL_COORDINATION}
 				isOpen={isLegalModalOpen}
 				size="2xl"
 				onClose={handleCloseLegalModal}

@@ -4,81 +4,79 @@ import { useMemo } from 'react';
 
 import { isAvailableWithHiddenDlcs } from '@/domain/availability';
 import type { IAvailabilityItemData } from '@/domain/availability/types';
-import { CustomerNormal } from '@/domain/catalog/customers/CustomerNormal';
-import { CustomerRare } from '@/domain/catalog/customers/CustomerRare';
-import { Beverage } from '@/domain/catalog/food/Beverage';
-import { Ingredient } from '@/domain/catalog/food/Ingredient';
-import { Recipe } from '@/domain/catalog/food/Recipe';
-import type { TRecipe } from '@/domain/catalog/food/types';
-import { Clothes } from '@/domain/catalog/items/Clothes';
-import { Cooker } from '@/domain/catalog/items/Cooker';
-import { Currency } from '@/domain/catalog/items/Currency';
-import { Ornament } from '@/domain/catalog/items/Ornament';
-import { Partner } from '@/domain/catalog/items/Partner';
-import type { TIngredientName } from '@/domain/data/ingredients/types';
-import { ALL_PLACES, PLACE_DLC_MAP } from '@/domain/data/places/placeFacts';
+import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
+import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import type { TFood } from '@/domain/catalog/food/types';
+import { NormalGuestCatalog } from '@/domain/catalog/guests/NormalGuestCatalog';
+import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { ClothesCatalog } from '@/domain/catalog/items/ClothesCatalog';
+import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
+import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
+import { DecorationCatalog } from '@/domain/catalog/items/DecorationCatalog';
+import { PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
+import type { TIngredientId } from '@/domain/data/ingredients/types';
+import { ALL_MAP_LABELS, MAP_FACTS } from '@/domain/data/places/placeFacts';
 import type { TDlc } from '@/domain/data/shared/types';
 
-import { customerNormalStore } from '@/features/catalog/customers/normal/client/state/store';
-import { customerRareStore } from '@/features/catalog/customers/rare/client/state/store';
 import { buildCatalogSearchIndex } from '@/features/catalog/globalSearch/buildCatalogSearchIndex';
+import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
+import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { beveragesStore } from '@/features/catalog/items/beverages/client/state/store';
 import { clothesStore } from '@/features/catalog/items/clothes/client/state/store';
 import { cookersStore } from '@/features/catalog/items/cookers/client/state/store';
-import { currenciesStore } from '@/features/catalog/items/currencies/client/state/store';
+import { currencyItemsStore } from '@/features/catalog/items/currencyItems/client/state/store';
+import { decorationsStore } from '@/features/catalog/items/decorations/client/state/store';
+import { foodsStore } from '@/features/catalog/items/foods/client/state/store';
 import { ingredientsStore } from '@/features/catalog/items/ingredients/client/state/store';
-import { ornamentsStore } from '@/features/catalog/items/ornaments/client/state/store';
 import { partnersStore } from '@/features/catalog/items/partners/client/state/store';
-import { recipesStore } from '@/features/catalog/items/recipes/client/state/store';
 
-function filterRecipeVariantsByHiddenIngredients(
-	recipes: TRecipe['recipes'],
-	hiddenIngredients: ReadonlySet<TIngredientName>
-): TRecipe['recipes'] | null {
+function filterRecipesByHiddenIngredients(
+	recipes: TFood['recipes'],
+	hiddenIngredients: ReadonlySet<TIngredientId>
+): TFood['recipes'] | null {
 	const visibleRecipes = recipes.filter(
-		({ ingredients: variantIngredients }) =>
-			!variantIngredients.some((ingredient) =>
-				hiddenIngredients.has(ingredient)
-			)
+		({ ingredients }) =>
+			!ingredients.some((ingredient) => hiddenIngredients.has(ingredient))
 	);
 
 	if (visibleRecipes.length === 0) {
 		return null;
 	}
 
-	return visibleRecipes as TRecipe['recipes'];
+	return visibleRecipes as TFood['recipes'];
 }
 
 export function useCatalogSearchContributor() {
 	const beverageHiddenDlcs = beveragesStore.shared.hiddenItems.dlcs.use();
 	const clothesHiddenDlcs = clothesStore.shared.hiddenItems.dlcs.use();
 	const cookerHiddenDlcs = cookersStore.shared.hiddenItems.dlcs.use();
-	const currencyHiddenDlcs = currenciesStore.shared.hiddenItems.dlcs.use();
+	const currencyItemHiddenDlcs =
+		currencyItemsStore.shared.hiddenItems.dlcs.use();
+	const decorationHiddenDlcs = decorationsStore.shared.hiddenItems.dlcs.use();
+	const foodHiddenDlcs = foodsStore.shared.hiddenItems.dlcs.use();
 	const ingredientHiddenDlcs = ingredientsStore.shared.hiddenItems.dlcs.use();
-	const ornamentHiddenDlcs = ornamentsStore.shared.hiddenItems.dlcs.use();
+	const normalGuestHiddenDlcs =
+		normalGuestStore.shared.hiddenItems.dlcs.use();
 	const partnerHiddenDlcs = partnersStore.shared.hiddenItems.dlcs.use();
-	const recipeHiddenDlcs = recipesStore.shared.hiddenItems.dlcs.use();
-	const customerNormalHiddenDlcs =
-		customerNormalStore.shared.hiddenItems.dlcs.use();
-	const customerRareHiddenDlcs =
-		customerRareStore.shared.hiddenItems.dlcs.use();
+	const specialGuestHiddenDlcs =
+		specialGuestStore.shared.hiddenItems.dlcs.use();
 
 	const hiddenBeverages =
-		customerNormalStore.shared.beverage.table.hiddenBeverages.use();
+		normalGuestStore.shared.beverage.table.hiddenBeverages.use();
+	const hiddenFoods = normalGuestStore.shared.recipe.table.hiddenFoods.use();
 	const hiddenIngredients =
-		customerNormalStore.shared.recipe.table.hiddenIngredients.use();
-	const hiddenRecipes =
-		customerNormalStore.shared.recipe.table.hiddenRecipes.use();
-	const isFamousShop = ingredientsStore.shared.famousShop.use();
+		normalGuestStore.shared.recipe.table.hiddenIngredients.use();
+	const foodIsFamousShop = foodsStore.shared.famousShop.use();
+	const foodPopularTrend = foodsStore.shared.popularTrend.use();
+	const ingredientIsFamousShop = ingredientsStore.shared.famousShop.use();
 	const ingredientPopularTrend = ingredientsStore.shared.popularTrend.use();
-	const recipePopularTrend = recipesStore.shared.popularTrend.use();
-	const recipeIsFamousShop = recipesStore.shared.famousShop.use();
 
 	const visiblePlaceValues = useMemo(
 		() =>
-			ALL_PLACES.filter(
-				(place) => !ingredientHiddenDlcs.has(PLACE_DLC_MAP[place])
-			),
+			ALL_MAP_LABELS.filter(
+				(map) => !ingredientHiddenDlcs.has(MAP_FACTS[map].dlc)
+			).map((map) => MAP_FACTS[map].label),
 		[ingredientHiddenDlcs]
 	);
 
@@ -87,34 +85,18 @@ export function useCatalogSearchContributor() {
 			(hiddenDlcs: ReadonlySet<TDlc>) =>
 			({ availabilityPaths }: IAvailabilityItemData) =>
 				isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs);
-		const ingredientInstance = Ingredient.getInstance();
-		const recipeInstance = Recipe.getInstance();
-		const ingredients = ingredientInstance.data
+		const foodInstance = FoodCatalog.getInstance();
+		const ingredientInstance = IngredientCatalog.getInstance();
+		const foods = foodInstance.data
 			.filter(
-				({ availabilityPaths, name }) =>
+				({ availabilityPaths, id }) =>
 					isAvailableWithHiddenDlcs(
 						availabilityPaths,
-						ingredientHiddenDlcs
-					) && !hiddenIngredients.has(name)
-			)
-			.map((item) => ({
-				...item,
-				tags: ingredientInstance.calculateTagsWithTrend(
-					item.tags,
-					ingredientPopularTrend,
-					isFamousShop
-				),
-			}));
-		const recipes = recipeInstance.data
-			.filter(
-				({ availabilityPaths, name }) =>
-					isAvailableWithHiddenDlcs(
-						availabilityPaths,
-						recipeHiddenDlcs
-					) && !hiddenRecipes.has(name)
+						foodHiddenDlcs
+					) && !hiddenFoods.has(id)
 			)
 			.flatMap((item) => {
-				const recipes = filterRecipeVariantsByHiddenIngredients(
+				const recipes = filterRecipesByHiddenIngredients(
 					item.recipes,
 					hiddenIngredients
 				);
@@ -124,17 +106,17 @@ export function useCatalogSearchContributor() {
 
 				const positiveTags = [
 					...new Set(
-						recipes.flatMap(({ ingredients: variantIngredients }) =>
-							recipeInstance.calculateTagsWithTrend(
-								recipeInstance.composeTagsWithPopularTrend(
-									variantIngredients,
+						recipes.flatMap(({ ingredients }) =>
+							foodInstance.calculateFoodTagsWithTrend(
+								foodInstance.composeFoodTagsWithPopularTrend(
+									ingredients,
 									[],
 									item.positiveTags,
 									[],
-									recipePopularTrend
+									foodPopularTrend
 								),
-								recipePopularTrend,
-								recipeIsFamousShop
+								foodPopularTrend,
+								foodIsFamousShop
 							)
 						)
 					),
@@ -142,58 +124,74 @@ export function useCatalogSearchContributor() {
 
 				return [{ ...item, positiveTags, recipes }];
 			});
+		const ingredients = ingredientInstance.data
+			.filter(
+				({ availabilityPaths, id }) =>
+					isAvailableWithHiddenDlcs(
+						availabilityPaths,
+						ingredientHiddenDlcs
+					) && !hiddenIngredients.has(id)
+			)
+			.map((item) => ({
+				...item,
+				tags: ingredientInstance.calculateIngredientTagsWithTrend(
+					item.tags,
+					ingredientPopularTrend,
+					ingredientIsFamousShop
+				),
+			}));
 
 		return buildCatalogSearchIndex({
-			beverages: Beverage.getInstance().data.filter(
-				({ availabilityPaths, name }) =>
+			beverages: BeverageCatalog.getInstance().data.filter(
+				({ availabilityPaths, id }) =>
 					isAvailableWithHiddenDlcs(
 						availabilityPaths,
 						beverageHiddenDlcs
-					) && !hiddenBeverages.has(name)
+					) && !hiddenBeverages.has(id)
 			),
-			clothes: Clothes.getInstance().data.filter(
+			clothes: ClothesCatalog.getInstance().data.filter(
 				filterByHiddenDlcs(clothesHiddenDlcs)
 			),
-			cookers: Cooker.getInstance().data.filter(
+			cookers: CookerCatalog.getInstance().data.filter(
 				filterByHiddenDlcs(cookerHiddenDlcs)
 			),
-			currencies: Currency.getInstance().data.filter(
-				filterByHiddenDlcs(currencyHiddenDlcs)
+			currencyItems: CurrencyItemCatalog.getInstance().data.filter(
+				filterByHiddenDlcs(currencyItemHiddenDlcs)
 			),
-			customerNormal: CustomerNormal.getInstance().data.filter(
-				filterByHiddenDlcs(customerNormalHiddenDlcs)
+			decorations: DecorationCatalog.getInstance().data.filter(
+				filterByHiddenDlcs(decorationHiddenDlcs)
 			),
-			customerRare: CustomerRare.getInstance().data.filter(
-				filterByHiddenDlcs(customerRareHiddenDlcs)
-			),
+			foods,
 			ingredients:
 				ingredients as unknown as typeof ingredientInstance.data,
-			ornaments: Ornament.getInstance().data.filter(
-				filterByHiddenDlcs(ornamentHiddenDlcs)
+			normalGuests: NormalGuestCatalog.getInstance().data.filter(
+				filterByHiddenDlcs(normalGuestHiddenDlcs)
 			),
-			partners: Partner.getInstance().data.filter(
+			partners: PartnerCatalog.getInstance().data.filter(
 				filterByHiddenDlcs(partnerHiddenDlcs)
 			),
-			recipes,
+			specialGuests: SpecialGuestCatalog.getInstance().data.filter(
+				filterByHiddenDlcs(specialGuestHiddenDlcs)
+			),
 		});
 	}, [
 		beverageHiddenDlcs,
 		clothesHiddenDlcs,
 		cookerHiddenDlcs,
-		currencyHiddenDlcs,
-		customerNormalHiddenDlcs,
-		customerRareHiddenDlcs,
+		currencyItemHiddenDlcs,
+		decorationHiddenDlcs,
+		foodHiddenDlcs,
+		foodIsFamousShop,
+		foodPopularTrend,
 		hiddenBeverages,
+		hiddenFoods,
 		hiddenIngredients,
-		hiddenRecipes,
 		ingredientHiddenDlcs,
+		ingredientIsFamousShop,
 		ingredientPopularTrend,
-		isFamousShop,
-		ornamentHiddenDlcs,
+		normalGuestHiddenDlcs,
 		partnerHiddenDlcs,
-		recipeHiddenDlcs,
-		recipeIsFamousShop,
-		recipePopularTrend,
+		specialGuestHiddenDlcs,
 	]);
 
 	return { index, visiblePlaceValues } as const;

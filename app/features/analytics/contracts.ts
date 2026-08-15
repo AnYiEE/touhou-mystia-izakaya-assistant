@@ -47,8 +47,8 @@ type TAction =
 	| 'Remove'
 	| 'Reset'
 	| 'Save'
-	| 'Share'
 	| 'Select'
+	| 'Share'
 	| 'SSO Authorize'
 	| 'Theme'
 	| 'Tutorial';

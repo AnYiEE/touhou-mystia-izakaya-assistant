@@ -1,7 +1,11 @@
 import { store } from '@davstack/store';
 
 import { filterAvailableItemsByHiddenDlcs } from '@/domain/availability';
-import { Cooker } from '@/domain/catalog/items/Cooker';
+import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
+import type {
+	TCookerSeriesId,
+	TCookerTypeId,
+} from '@/domain/data/cookers/types';
 import type { TDlc } from '@/domain/data/shared/types';
 
 import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
@@ -15,17 +19,15 @@ import { createPersistMiddleware } from '@/infrastructure/browser/storage/create
 import { sortBy } from '@/shared/utilities/collections/sortBy';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
+
+import {
+	COOKERS_STORE_VERSION,
+	migrateCookersPersistedState,
+} from './migratePersistedState';
 
 import '@/infrastructure/state/enableImmerMapSet';
 
-const instance = Cooker.getInstance();
-
-const storeVersion = {
-	initial: 0,
-	removeSearchValue: 1, // eslint-disable-next-line sort-keys
-	availabilityDlcFilter: 2,
-} as const;
+const instance = CookerCatalog.getInstance();
 
 const state = {
 	instance,
@@ -33,11 +35,11 @@ const state = {
 	persistence: {
 		filters: {
 			availabilityDlcs: [] as string[],
-			categories: [] as string[],
 			contentDlcs: [] as string[],
-			noCategories: [] as string[],
-			types: [] as string[], // eslint-disable-next-line sort-keys
-			noTypes: [] as string[],
+			noSeries: [] as TCookerSeriesId[],
+			noTypes: [] as TCookerTypeId[],
+			series: [] as TCookerSeriesId[],
+			types: [] as TCookerTypeId[],
 		},
 		pinyinSortState: PINYIN_SORT_STATE_MAP.none as TPinyinSortState,
 	},
@@ -49,28 +51,17 @@ const getNames = createNamesCache(instance);
 export const cookersStore = store(state, {
 	middlewares: [
 		createPersistMiddleware<typeof state>({
+			migrate: (persistedState, version) =>
+				migrateCookersPersistedState(
+					persistedState,
+					version
+				) as typeof state,
 			name: 'page-cookers-storage',
-			version: storeVersion.availabilityDlcFilter,
-
-			migrate(persistedState, version) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-				const oldState = persistedState as any;
-				if (version < storeVersion.removeSearchValue) {
-					delete oldState.persistence.searchValue;
-				}
-				if (version < storeVersion.availabilityDlcFilter) {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					oldState.persistence.filters.contentDlcs =
-						oldState.persistence.filters.dlcs;
-					oldState.persistence.filters.availabilityDlcs = [];
-					delete oldState.persistence.filters.dlcs;
-				}
-				return persistedState as typeof state;
-			},
 			partialize: (currentStore) =>
 				({
 					persistence: currentStore.persistence,
 				}) as typeof currentStore,
+			version: COOKERS_STORE_VERSION.recordIdentity,
 		}),
 	],
 }).computed((currentStore) => ({
@@ -83,17 +74,6 @@ export const cookersStore = store(state, {
 				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
 			.sort(numberSort);
-	},
-	availableCategories: () => {
-		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-		return sortBy(
-			instance.sortedCategories,
-			instance.getValuesByProp(
-				'category',
-				false,
-				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
-			)
-		).map(toGetValueCollection);
 	},
 	availableContentDlcs: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
@@ -116,25 +96,33 @@ export const cookersStore = store(state, {
 			)
 		).map(toGetValueCollection);
 	},
+	availableSeries: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		const visibleSeries = instance.getValuesByProp(
+			'series',
+			false,
+			filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
+		);
+		return instance.groupSeriesByLabel(visibleSeries.sort(numberSort));
+	},
 	availableTypes: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-		return instance
-			.getValuesByProp(
-				'type',
-				true,
-				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
-			)
-			.sort(pinyinSort);
+		const visibleTypes = instance.getValuesByProp(
+			'availableTypes',
+			false,
+			filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
+		);
+		return visibleTypes.sort(numberSort).map(toGetValueCollection);
 	},
 }));
 
 cookersStore.shared.hiddenItems.dlcs.onChange(() => {
 	cookersStore.persistence.filters.set({
 		availabilityDlcs: [],
-		categories: [],
 		contentDlcs: [],
-		noCategories: [],
+		noSeries: [],
 		noTypes: [],
+		series: [],
 		types: [],
 	});
 });

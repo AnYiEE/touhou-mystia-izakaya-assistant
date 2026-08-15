@@ -10,7 +10,13 @@ import {
 	type FontAwesomeIconProps,
 } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
-import { type Key, type PropsWithChildren, memo } from 'react';
+import {
+	type Key,
+	type PropsWithChildren,
+	memo,
+	useCallback,
+	useMemo,
+} from 'react';
 
 import Button, { type IButtonProps } from '@/design/ui/components/button';
 import Dropdown, {
@@ -25,6 +31,10 @@ import Popover, {
 } from '@/design/ui/components/popover';
 
 export const ADMIN_LIST_DEBOUNCE_MS = 300;
+const ADMIN_SEARCH_INPUT_CLASS_NAMES = {
+	inputWrapper: 'h-12 min-h-12',
+} as const;
+
 interface IAdminInputIconProps extends Pick<FontAwesomeIconProps, 'icon'> {}
 
 export const AdminInputIcon = memo<IAdminInputIconProps>(
@@ -62,7 +72,7 @@ export const AdminSearchInput = memo<IAdminSearchInputProps>(
 					'w-full min-w-0 md:min-w-80 md:flex-[1_1_20rem]',
 					className
 				)}
-				classNames={{ inputWrapper: 'h-12 min-h-12' }}
+				classNames={ADMIN_SEARCH_INPUT_CLASS_NAMES}
 				placeholder={placeholder}
 				startContent={<AdminInputIcon icon={icon} />}
 				value={value}
@@ -223,7 +233,7 @@ export const AdminFilterReferencePanel = memo<IAdminFilterReferencePanelProps>(
 
 interface IAdminDropdownFilterProps<TValue extends string> {
 	ariaLabel: string;
-	onAction: (key: Key) => void;
+	onAction: (value: TValue) => void;
 	options: ReadonlyArray<{ label: string; value: TValue }>;
 	value: TValue;
 }
@@ -241,6 +251,22 @@ function AdminDropdownFilterBase<TValue extends string>({
 	options,
 	value,
 }: IAdminDropdownFilterProps<TValue>) {
+	const optionByKey = useMemo<ReadonlyMap<Key, TValue>>(
+		() => new Map(options.map((option) => [option.value, option.value])),
+		[options]
+	);
+	const selectedKeys = useMemo(() => [value], [value]);
+
+	const handleAction = useCallback(
+		(key: Key) => {
+			const selectedValue = optionByKey.get(key);
+			if (selectedValue !== undefined) {
+				onAction(selectedValue);
+			}
+		},
+		[onAction, optionByKey]
+	);
+
 	return (
 		<Dropdown className="w-full shrink-0 md:w-auto md:flex-none" showArrow>
 			<DropdownTrigger>
@@ -263,10 +289,10 @@ function AdminDropdownFilterBase<TValue extends string>({
 			<DropdownMenu
 				disallowEmptySelection
 				aria-label={ariaLabel}
-				selectedKeys={[value]}
+				selectedKeys={selectedKeys}
 				selectionMode="single"
 				variant="flat"
-				onAction={onAction}
+				onAction={handleAction}
 			>
 				{options.map((option) => (
 					<DropdownItem key={option.value} textValue={option.label}>

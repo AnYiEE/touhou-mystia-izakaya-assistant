@@ -28,8 +28,8 @@ export interface IDirtyQueueIntent {
 	covers: string[];
 	createdAt: number;
 	expectedValue: string | null;
-	isolationReason: null | 'corrupt-legacy' | 'legacy-canonical-collision';
 	intentHash: string;
+	isolationReason: null | 'corrupt-legacy' | 'legacy-canonical-collision';
 	legacySourceValue?: string | null;
 	namespace: TSyncNamespace;
 	operationId: string;

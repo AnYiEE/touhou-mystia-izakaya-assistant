@@ -11,7 +11,10 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 import { ACCOUNT_SYNC_API_RESPONSE_CODE_MAP } from '@/features/account/sync/apiResponseCodes';
+import { checkSyncProtocolRequestBody } from '@/features/account/sync/protocol';
 import { type TImportLegacyBackupUseCaseResult } from '@/features/account/sync/server/importLegacyBackupUseCase';
+import { createSyncClientUpdateRequiredResponse } from '@/features/account/sync/server/protocolResponse';
+import type { ISyncProtocolRequest } from '@/features/account/sync/types';
 
 import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
@@ -23,7 +26,7 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-interface IImportBackupCodeBody {
+interface IImportBackupCodeBody extends ISyncProtocolRequest {
 	code: string;
 }
 
@@ -157,6 +160,9 @@ export async function POST(request: NextRequest) {
 			HTTP_API_RESPONSE_CODE_MAP.forbidden,
 			403
 		);
+	}
+	if (!checkSyncProtocolRequestBody(body)) {
+		return createSyncClientUpdateRequiredResponse();
 	}
 
 	const result = await importModule.importLegacyBackupUseCase({

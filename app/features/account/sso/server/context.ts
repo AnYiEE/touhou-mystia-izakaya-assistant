@@ -9,6 +9,8 @@ import {
 } from '@/features/account/server/auth/crypto';
 import { createAccountCookieDomainOptions } from '@/features/account/server/auth/session';
 
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+
 import {
 	checkSsoClientId,
 	checkSsoCodeChallenge,
@@ -113,11 +115,7 @@ function parseSsoContextCookieValue(value: string, now = Date.now()) {
 		return null;
 	}
 
-	if (
-		payload === null ||
-		Array.isArray(payload) ||
-		typeof payload !== 'object'
-	) {
+	if (!checkIsRecord(payload)) {
 		return null;
 	}
 	if (
@@ -128,25 +126,25 @@ function parseSsoContextCookieValue(value: string, now = Date.now()) {
 		!('transaction_id' in payload) ||
 		!('expires_at' in payload) ||
 		!('version' in payload) ||
-		payload.version !== SSO_CONTEXT_VERSION ||
-		typeof payload.client_id !== 'string' ||
-		typeof payload.redirect_uri !== 'string' ||
-		typeof payload.state !== 'string' ||
-		typeof payload.code_challenge !== 'string' ||
-		typeof payload.transaction_id !== 'string' ||
-		typeof payload.expires_at !== 'number' ||
-		!Number.isSafeInteger(payload.expires_at) ||
-		payload.expires_at <= now
+		payload['version'] !== SSO_CONTEXT_VERSION ||
+		typeof payload['client_id'] !== 'string' ||
+		typeof payload['redirect_uri'] !== 'string' ||
+		typeof payload['state'] !== 'string' ||
+		typeof payload['code_challenge'] !== 'string' ||
+		typeof payload['transaction_id'] !== 'string' ||
+		typeof payload['expires_at'] !== 'number' ||
+		!Number.isSafeInteger(payload['expires_at']) ||
+		payload['expires_at'] <= now
 	) {
 		return null;
 	}
 
 	const context = {
-		client_id: payload.client_id,
-		code_challenge: payload.code_challenge,
-		redirect_uri: payload.redirect_uri,
-		state: payload.state,
-		transaction_id: payload.transaction_id,
+		client_id: payload['client_id'],
+		code_challenge: payload['code_challenge'],
+		redirect_uri: payload['redirect_uri'],
+		state: payload['state'],
+		transaction_id: payload['transaction_id'],
 	} satisfies ISsoContext;
 
 	return checkSsoClientId(context.client_id) &&

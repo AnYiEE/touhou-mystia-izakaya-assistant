@@ -1,5 +1,5 @@
 import { cn } from '@heroui/theme';
-import { memo, useRef } from 'react';
+import { memo, useMemo, useRef } from 'react';
 import useBreakpoint from 'use-breakpoint';
 
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
@@ -8,7 +8,7 @@ import Popover, {
 	PopoverTrigger,
 } from '@/design/ui/components/popover';
 
-import { type Clothes } from '@/domain/catalog/items/Clothes';
+import { type ClothesCatalog as ClothesCatalogModel } from '@/domain/catalog/items/ClothesCatalog';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { getClothesTachiePath } from '@/features/catalog/presentation/tachiePaths';
@@ -31,7 +31,7 @@ import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewI
 import ClothesSourceDetails from './ClothesSourceDetails';
 
 interface IProps {
-	data: TItemData<Clothes>;
+	data: TItemData<ClothesCatalogModel>;
 }
 
 export default memo<IProps>(function ClothesCatalog({ data }) {
@@ -45,43 +45,47 @@ export default memo<IProps>(function ClothesCatalog({ data }) {
 		{ 'right-start': 426, top: -1 },
 		'top'
 	);
+	const presentationData = useMemo(
+		() =>
+			data.map((record) => ({
+				...record,
+				presentationDescription: { description: record.description },
+			})),
+		[data]
+	);
 
-	return data.map(
-		({ description, dlc, from, id, izakaya, name }, dataIndex) => (
+	return presentationData.map(
+		(
+			{ dlc, from, id, izakaya, name, presentationDescription },
+			dataIndex
+		) => (
 			<ItemPopover
-				key={getPopoverKey(dataIndex, name)}
+				key={getPopoverKey(dataIndex, id)}
 				showArrow
 				/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/3736} is fixed. */
 				// backdrop={isHighAppearance ? 'blur' : 'opaque'}
-				defaultOpen={checkDefaultOpen(name)}
-				{...getPopoverOpenChangeProps(name)}
+				defaultOpen={checkDefaultOpen(id)}
+				{...getPopoverOpenChangeProps(id)}
 			>
 				<ItemPopoverTrigger>
 					<ItemCard
-						isHoverable={checkShouldEffect(name)}
-						isPressable={checkShouldEffect(name)}
+						isHoverable={checkShouldEffect(id)}
+						isPressable={checkShouldEffect(id)}
 						name={name}
 						image={
 							<Sprite
 								target="clothes"
-								name={name}
+								recordId={id}
 								size={3}
 								className={cn({
-									'-translate-x-0.5 scale-85':
-										name === '夜雀服',
-									'scale-90': name === '雀酒屋工作装',
+									'-translate-x-0.5 scale-85': id === -1,
+									'scale-90': id === -2,
 									'translate-x-px': [
-										'中华风校服',
-										'锦绣中国娃娃',
-										'圣诞节特典晚装',
-										'魔女服',
-										'仙女服',
-									].includes(name),
+										24, 57, 59, 1002, 3002,
+									].includes(id),
 									'translate-y-px': [
-										'冬季水手服',
-										'魔女服',
-										'朋克演出服',
-									].includes(name),
+										1001, 1002, 2500,
+									].includes(id),
 								})}
 							/>
 						}
@@ -96,12 +100,12 @@ export default memo<IProps>(function ClothesCatalog({ data }) {
 				</ItemPopoverTrigger>
 				<ItemPopoverContent>
 					<ItemPopoverCloseButton />
-					<ItemShareButton name={name} />
+					<ItemShareButton name={name} recordId={id} />
 					<ItemPopoverCard
 						target="clothes"
 						id={id}
 						name={name}
-						description={{ description }}
+						description={presentationDescription}
 						dlc={dlc}
 						ref={popoverCardRef}
 					>
@@ -136,7 +140,7 @@ export default memo<IProps>(function ClothesCatalog({ data }) {
 								<PopoverContent>
 									<Tachie
 										alt={name}
-										src={getClothesTachiePath(name)}
+										src={getClothesTachiePath(id)}
 										width={240}
 									/>
 								</PopoverContent>

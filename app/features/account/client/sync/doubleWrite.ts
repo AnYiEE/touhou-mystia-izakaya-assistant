@@ -1,3 +1,5 @@
+import isObject from 'lodash/isObject.js';
+
 import { STORAGE_KEY } from '@/design/theme/runtime/constants';
 import { addThemeChangeListener } from '@/design/theme/runtime/useTheme';
 
@@ -9,10 +11,10 @@ import {
 
 import { createAccountClientId } from '@/features/account/client/clientId';
 import { accountStore } from '@/features/account/client/state/accountStore';
-import { customerNormalStore } from '@/features/catalog/customers/normal/client/state/store';
-import { customerRareStore } from '@/features/catalog/customers/rare/client/state/store';
-import { customerPlansStore } from '@/features/customerPlans/client/state/store';
+import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
+import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
+import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/state/store';
 
 import { postAccountSyncBroadcastMessage } from './broadcast';
 import { reconcileAccountSyncPausedConflictLocalChange } from './conflicts/reconciliation';
@@ -247,9 +249,8 @@ async function reconcileNamespaceLocalSnapshot(
 			}
 
 			if (
-				namespace === SYNC_NAMESPACE_MAP.tutorialCustomerRare &&
-				typeof data === 'object' &&
-				data !== null &&
+				namespace === SYNC_NAMESPACE_MAP.tutorialSpecialGuest &&
+				isObject(data) &&
 				'completed' in data &&
 				data.completed !== true
 			) {
@@ -413,47 +414,43 @@ export function startAccountStoreSyncWatchers() {
 	);
 
 	watch(
-		customerNormalStore.persistence.meals.onChange(() => {
+		normalGuestStore.persistence.meals.onChange(() => {
 			enqueueAccountSyncLocalSnapshotReconcile(
-				SYNC_NAMESPACE_MAP.customerNormalMeals
+				SYNC_NAMESPACE_MAP.normalGuestMeals
 			);
 		})
 	);
 	watch(
-		customerRareStore.persistence.meals.onChange(() => {
+		specialGuestStore.persistence.meals.onChange(() => {
 			enqueueAccountSyncLocalSnapshotReconcile(
-				SYNC_NAMESPACE_MAP.customerRareMeals
+				SYNC_NAMESPACE_MAP.specialGuestMeals
 			);
 		})
 	);
 	watch(
-		customerPlansStore.persistence.plans.onChange(() => {
+		specialGuestPlansStore.persistence.plans.onChange(() => {
 			enqueueAccountSyncLocalSnapshotReconcile(
-				SYNC_NAMESPACE_MAP.customerRarePlans
+				SYNC_NAMESPACE_MAP.specialGuestPlans
 			);
 		})
 	);
 	watch(
-		customerRareStore.persistence.customer.orderLinkedFilter.onChange(
-			() => {
-				enqueueAccountSyncLocalSnapshotReconcile(
-					SYNC_NAMESPACE_MAP.customerRareSettings
-				);
-			}
-		)
+		specialGuestStore.persistence.guest.orderLinkedFilter.onChange(() => {
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.specialGuestSettings
+			);
+		})
 	);
 	watch(
-		customerRareStore.persistence.customer.showTagDescription.onChange(
-			() => {
-				enqueueAccountSyncLocalSnapshotReconcile(
-					SYNC_NAMESPACE_MAP.customerRareSettings
-				);
-			}
-		)
+		specialGuestStore.persistence.guest.showTagDescription.onChange(() => {
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.specialGuestSettings
+			);
+		})
 	);
 
 	watch(
-		globalStore.persistence.customerCardTagsTooltip.onChange(() => {
+		globalStore.persistence.guestCardTagsTooltip.onChange(() => {
 			enqueueAccountSyncLocalSnapshotReconcile(
 				SYNC_NAMESPACE_MAP.globalPreferences
 			);
@@ -534,14 +531,14 @@ export function startAccountStoreSyncWatchers() {
 		})
 	);
 	watch(
-		globalStore.persistence.table.hiddenItems.ingredients.onChange(() => {
+		globalStore.persistence.table.hiddenItems.foods.onChange(() => {
 			enqueueAccountSyncLocalSnapshotReconcile(
 				SYNC_NAMESPACE_MAP.globalPreferences
 			);
 		})
 	);
 	watch(
-		globalStore.persistence.table.hiddenItems.recipes.onChange(() => {
+		globalStore.persistence.table.hiddenItems.ingredients.onChange(() => {
 			enqueueAccountSyncLocalSnapshotReconcile(
 				SYNC_NAMESPACE_MAP.globalPreferences
 			);
@@ -592,7 +589,7 @@ export function startAccountStoreSyncWatchers() {
 	watch(
 		globalStore.persistence.dirver.onChange(() => {
 			enqueueAccountSyncLocalSnapshotReconcile(
-				SYNC_NAMESPACE_MAP.tutorialCustomerRare
+				SYNC_NAMESPACE_MAP.tutorialSpecialGuest
 			);
 		})
 	);

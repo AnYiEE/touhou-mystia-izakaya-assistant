@@ -1,11 +1,13 @@
-import { CUSTOMER_NORMAL_LIST } from '@/domain/data/customers/normal/records';
-import { CUSTOMER_RARE_LIST } from '@/domain/data/customers/rare/records';
-import type { TCustomerRareName } from '@/domain/data/customers/rare/types';
-import { PLACE_DLC_MAP } from '@/domain/data/places/placeFacts';
-import type { TMerchant, TPlace } from '@/domain/data/places/types';
-import type { IFoodBase } from '@/domain/data/shared/foodSchema';
+import { SPECIAL_GUEST_LIST } from '@/domain/data/guests/special/records';
+import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+import type {
+	ITaskReference,
+	TMapLabel,
+	TMerchantReference,
+	TTaskLabel,
+} from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
-import { PLACE_NAME_REGEX } from '@/domain/places/parsePlace';
 
 import { DLC_LABEL_MAP } from './messages';
 import { createAvailabilityPath } from './path';
@@ -15,23 +17,17 @@ import type {
 	IAvailabilityResult,
 } from './types';
 
-type TFoodTask = NonNullable<IFoodBase['from']['task']>[number];
-
-const FOOD_TASK_DLC_MAP = new Map<TFoodTask, TDlc>([
+const FOOD_TASK_DLC_MAP = new Map<TTaskLabel, TDlc>([
 	['阿求小姐的色纸', 0],
 	['女仆长的采购委托', 0],
 	['月都试炼', 5],
 	['最终收网行动', 5],
 ]);
 
-const SPECIAL_MERCHANT_DLC_MAP = new Map<TMerchant, TDlc>([
-	['【人间之里】舞', 9],
-	['【人间之里】雪', 9],
+const SPECIAL_MERCHANT_DLC_MAP = new Map<TMerchantReference['label'], TDlc>([
+	['舞', 9],
+	['雪', 9],
 ]);
-
-const CUSTOMER_DLC_ENTRIES = [...CUSTOMER_RARE_LIST, ...CUSTOMER_NORMAL_LIST]
-	.map(({ dlc, name }) => ({ dlc, name }))
-	.sort((left, right) => right.name.length - left.name.length);
 
 function createDlcPath(
 	dlc: TDlc,
@@ -48,27 +44,27 @@ function createResult(
 	return { availabilityPaths, diagnostics };
 }
 
-export function resolvePlaceAvailabilityPath(
-	place: TPlace,
+export function resolveMapAvailabilityPath(
+	map: TMapLabel,
 	source: string,
 	acquisitionSources: ReadonlyArray<IAvailabilityAcquisitionSource> = []
 ) {
-	return createDlcPath(PLACE_DLC_MAP[place], source, acquisitionSources);
+	return createDlcPath(MAP_FACTS[map].dlc, source, acquisitionSources);
 }
 
 export function resolveFoodTaskAvailabilityPath(
-	task: TFoodTask,
+	task: ITaskReference,
 	source: string
 ) {
-	const dlc = FOOD_TASK_DLC_MAP.get(task);
+	const dlc = FOOD_TASK_DLC_MAP.get(task.task);
 	if (dlc === undefined) {
-		throw new Error(`未配置食材任务“${task}”的可获取DLC`);
+		throw new Error(`未配置食材任务“${task.task}”的可获取DLC`);
 	}
 
 	return createDlcPath(dlc, source, [
 		{
 			kind: 'task',
-			name: task,
+			name: task.task,
 			place: null,
 			probability: null,
 			timeWindow: null,
@@ -76,65 +72,84 @@ export function resolveFoodTaskAvailabilityPath(
 	]);
 }
 
+export function formatMerchantReference(merchant: TMerchantReference) {
+	if ('map' in merchant) {
+		return `【${MAP_FACTS[merchant.map].label}】${merchant.label}`;
+	}
+
+	const specialGuest = SPECIAL_GUEST_LIST.find(
+		({ id }) => id === merchant.specialGuest
+	);
+	if (specialGuest === undefined) {
+		throw new Error(`找不到商人关联的稀客“${merchant.specialGuest}”`);
+	}
+
+	return `【${specialGuest.name}】${merchant.label}`;
+}
+
 export function resolveMerchantAvailabilityResult(
-	merchant: TMerchant,
+	merchant: TMerchantReference,
 	fallbackDlc: TDlc,
 	source: string,
 	probability = 100
 ): IAvailabilityResult {
-	const placeMatch = PLACE_NAME_REGEX.exec(merchant);
-	const parsedPlace = placeMatch?.[1];
-	const place =
-		parsedPlace !== undefined && Object.hasOwn(PLACE_DLC_MAP, parsedPlace)
-			? (parsedPlace as TPlace)
-			: null;
+	const merchantName = formatMerchantReference(merchant);
+	const map = 'map' in merchant ? merchant.map : null;
 	const acquisitionSources: IAvailabilityAcquisitionSource[] = [
-		{ kind: 'buy', name: merchant, place, probability, timeWindow: null },
+		{
+			kind: 'buy',
+			name: merchantName,
+			place: map,
+			probability,
+			timeWindow: null,
+		},
 	];
-	const specialDlc = SPECIAL_MERCHANT_DLC_MAP.get(merchant);
+	const specialDlc = SPECIAL_MERCHANT_DLC_MAP.get(merchant.label);
 	if (specialDlc !== undefined) {
 		return createResult([
 			createDlcPath(specialDlc, source, acquisitionSources),
 		]);
 	}
 
-	if (place !== null) {
+	if (map !== null) {
 		return createResult([
-			resolvePlaceAvailabilityPath(place, source, acquisitionSources),
+			resolveMapAvailabilityPath(map, source, acquisitionSources),
 		]);
 	}
 
-	const matchingCustomer = CUSTOMER_DLC_ENTRIES.find(
-		({ name }) => name === parsedPlace
+	const specialGuest = SPECIAL_GUEST_LIST.find(
+		({ id }) => id === merchant.specialGuest
 	);
-	if (matchingCustomer !== undefined) {
+	if (specialGuest !== undefined) {
 		return createResult([
-			createDlcPath(matchingCustomer.dlc, source, acquisitionSources),
+			createDlcPath(specialGuest.dlc, source, acquisitionSources),
 		]);
 	}
 
 	return createResult(
 		[createDlcPath(fallbackDlc, source, acquisitionSources)],
 		[
-			`商人“${merchant}”无法解析，已回退到内容归属${DLC_LABEL_MAP[fallbackDlc].label}`,
+			`商人“${merchantName}”无法解析，已回退到内容归属${DLC_LABEL_MAP[fallbackDlc].label}`,
 		]
 	);
 }
 
-export function resolveRareCustomerBondAvailabilityResult(
-	name: TCustomerRareName,
+export function resolveSpecialGuestBondAvailabilityResult(
+	specialGuest: TSpecialGuestId,
 	source: string
 ): IAvailabilityResult {
-	const customer = CUSTOMER_RARE_LIST.find((item) => item.name === name);
-	if (customer === undefined) {
-		return createResult([], [`找不到羁绊顾客“${name}”`]);
+	const specialGuestRecord = SPECIAL_GUEST_LIST.find(
+		(item) => item.id === specialGuest
+	);
+	if (specialGuestRecord === undefined) {
+		return createResult([], [`找不到羁绊顾客“${specialGuest}”`]);
 	}
 
 	return createResult([
-		createDlcPath(customer.dlc, source, [
+		createDlcPath(specialGuestRecord.dlc, source, [
 			{
 				kind: 'bond',
-				name,
+				name: specialGuestRecord.name,
 				place: null,
 				probability: null,
 				timeWindow: null,

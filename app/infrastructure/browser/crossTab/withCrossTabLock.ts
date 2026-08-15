@@ -7,6 +7,7 @@ import {
 	isNonNegativeSafeInteger,
 	isPositiveSafeInteger,
 } from '@/shared/utilities/numbers/check';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 import {
 	acquireCrossTabIdbLock,
@@ -85,7 +86,7 @@ function createCrossTabLockOwnerId() {
 		).join('');
 	}
 
-	return `${Date.now().toString(36)}-${globalThis.performance.now().toString(36)}`;
+	return `${Date.now().toString(36)}-${performance.now().toString(36)}`;
 }
 
 function createCrossTabFallbackLockKey(name: string) {
@@ -109,11 +110,7 @@ function parseCrossTabFallbackLockRecord(
 
 	try {
 		const parsed: unknown = JSON.parse(value);
-		if (
-			parsed === null ||
-			Array.isArray(parsed) ||
-			typeof parsed !== 'object'
-		) {
+		if (!checkIsRecord(parsed)) {
 			return null;
 		}
 

@@ -1,19 +1,19 @@
-import type { TBeverageName } from '@/domain/data/beverages/types';
-import type { TIngredientName } from '@/domain/data/ingredients/types';
-import type { TRecipeName } from '@/domain/data/recipes/types';
+import type { TBeverageId } from '@/domain/data/beverages/types';
+import type { TFoodId } from '@/domain/data/foods/types';
+import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import {
 	type TBeverageTableColumnKey,
-	type TRecipeTableColumnKey,
-} from '@/features/catalog/customers/shared/state/tableDescriptors';
+	type TFoodTableColumnKey,
+} from '@/features/catalog/guests/shared/state/tableDescriptors';
 
 import { globalStore } from './globalPersistenceStore';
 
 export interface IGlobalPreferencesPersistenceSource {
-	customerCardTagsTooltip: unknown;
 	donationModal: unknown;
 	famousShop: unknown;
+	guestCardTagsTooltip: unknown;
 	hiddenItems: unknown;
 	highAppearance: unknown;
 	popularTrend: unknown;
@@ -24,13 +24,13 @@ export interface IGlobalPreferencesPersistenceSource {
 }
 
 export interface IGlobalPreferencesPersistenceSnapshot {
-	customerCardTagsTooltip: boolean;
 	donationModal: {
 		interactionCount: number;
 		lastMilestoneShown: number;
 		lastShown: number | null;
 	};
 	famousShop: boolean;
+	guestCardTagsTooltip: boolean;
 	hiddenItems: { dlcs: string[] };
 	highAppearance: boolean;
 	popularTrend: IPopularTrend;
@@ -43,12 +43,12 @@ export interface IGlobalPreferencesPersistenceSnapshot {
 	table: {
 		columns: {
 			beverage: TBeverageTableColumnKey[];
-			recipe: TRecipeTableColumnKey[];
+			recipe: TFoodTableColumnKey[];
 		};
 		hiddenItems: {
-			beverages: TBeverageName[];
-			ingredients: TIngredientName[];
-			recipes: TRecipeName[];
+			beverages: TBeverageId[];
+			foods: TFoodId[];
+			ingredients: TIngredientId[];
 		};
 		row: number;
 	};
@@ -60,9 +60,9 @@ export function readGlobalPreferencesPersistenceSource(): IGlobalPreferencesPers
 	const persistence = globalStore.persistence.get();
 
 	return {
-		customerCardTagsTooltip: persistence.customerCardTagsTooltip,
 		donationModal: persistence.donationModal,
 		famousShop: persistence.famousShop,
+		guestCardTagsTooltip: persistence.guestCardTagsTooltip,
 		hiddenItems: persistence.hiddenItems,
 		highAppearance: persistence.highAppearance,
 		popularTrend: persistence.popularTrend,
@@ -77,9 +77,9 @@ export function replaceGlobalPreferencesPersistenceSnapshot(
 	snapshot: IGlobalPreferencesPersistenceSnapshot
 ): void {
 	globalStore.persistence.assign({
-		customerCardTagsTooltip: snapshot.customerCardTagsTooltip,
 		donationModal: snapshot.donationModal,
 		famousShop: snapshot.famousShop,
+		guestCardTagsTooltip: snapshot.guestCardTagsTooltip,
 		hiddenItems: snapshot.hiddenItems,
 		highAppearance: snapshot.highAppearance,
 		popularTrend: snapshot.popularTrend,

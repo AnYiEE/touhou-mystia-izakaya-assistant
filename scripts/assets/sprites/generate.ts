@@ -7,24 +7,24 @@ import sharp from 'sharp';
 import { BEVERAGE_LIST } from '@/domain/data/beverages/records';
 import { CLOTHES_LIST } from '@/domain/data/clothes/records';
 import { COOKER_LIST } from '@/domain/data/cookers/records';
-import { CURRENCY_LIST } from '@/domain/data/currencies/records';
-import { CUSTOMER_NORMAL_LIST } from '@/domain/data/customers/normal/records';
-import { CUSTOMER_RARE_LIST } from '@/domain/data/customers/rare/records';
+import { CURRENCY_ITEM_LIST } from '@/domain/data/currencyItems/records';
+import { DECORATION_LIST } from '@/domain/data/decorations/records';
+import { FOOD_LIST } from '@/domain/data/foods/records';
+import { NORMAL_GUEST_LIST } from '@/domain/data/guests/normal/records';
+import { SPECIAL_GUEST_LIST } from '@/domain/data/guests/special/records';
 import { INGREDIENT_LIST } from '@/domain/data/ingredients/records';
-import { ORNAMENT_LIST } from '@/domain/data/ornaments/records';
 import { PARTNER_LIST } from '@/domain/data/partners/records';
-import { RECIPE_LIST } from '@/domain/data/recipes/records';
 import {
 	BEVERAGE_SPRITE_CONFIG,
 	CLOTHES_SPRITE_CONFIG,
 	COOKER_SPRITE_CONFIG,
-	CURRENCY_SPRITE_CONFIG,
-	CUSTOMER_NORMAL_SPRITE_CONFIG,
-	CUSTOMER_RARE_SPRITE_CONFIG,
+	CURRENCY_ITEM_SPRITE_CONFIG,
+	DECORATION_SPRITE_CONFIG,
+	FOOD_SPRITE_CONFIG,
 	INGREDIENT_SPRITE_CONFIG,
-	ORNAMENT_SPRITE_CONFIG,
+	NORMAL_GUEST_SPRITE_CONFIG,
 	PARTNER_SPRITE_CONFIG,
-	RECIPE_SPRITE_CONFIG,
+	SPECIAL_GUEST_SPRITE_CONFIG,
 } from '@/domain/data/sprites/configs';
 import type { ISpriteConfig, TSpriteTarget } from '@/domain/data/sprites/types';
 
@@ -67,8 +67,8 @@ async function compositeSprites(
 	const missingFileIds: number[] = [];
 
 	const compositeOperations = await Promise.all(
-		lodash.chunk(sprites, col).flatMap((rowSprites, rowIndex) =>
-			rowSprites.map(async (sprite, colIndex) => {
+		lodash.chunk(sprites, col).flatMap((row, rowIndex) =>
+			row.map(async (sprite, colIndex) => {
 				let buffer: Buffer;
 
 				try {
@@ -193,22 +193,22 @@ export async function generateSprites(
 			outputName: 'cooker.png',
 		},
 		{
-			config: CURRENCY_SPRITE_CONFIG,
-			list: CURRENCY_LIST,
-			name: 'currencies',
-			outputName: 'currency.png',
+			config: CURRENCY_ITEM_SPRITE_CONFIG,
+			list: CURRENCY_ITEM_LIST,
+			name: 'currency_items',
+			outputName: 'currency_item.png',
 		},
 		{
-			config: CUSTOMER_NORMAL_SPRITE_CONFIG,
-			list: CUSTOMER_NORMAL_LIST,
-			name: 'customer_normal',
-			outputName: 'customer_normal.png',
+			config: DECORATION_SPRITE_CONFIG,
+			list: DECORATION_LIST,
+			name: 'decorations',
+			outputName: 'decoration.png',
 		},
 		{
-			config: CUSTOMER_RARE_SPRITE_CONFIG,
-			list: CUSTOMER_RARE_LIST,
-			name: 'customer_rare',
-			outputName: 'customer_rare.png',
+			config: FOOD_SPRITE_CONFIG,
+			list: FOOD_LIST,
+			name: 'foods',
+			outputName: 'food.png',
 		},
 		{
 			config: INGREDIENT_SPRITE_CONFIG,
@@ -217,10 +217,10 @@ export async function generateSprites(
 			outputName: 'ingredient.png',
 		},
 		{
-			config: ORNAMENT_SPRITE_CONFIG,
-			list: ORNAMENT_LIST,
-			name: 'ornaments',
-			outputName: 'ornament.png',
+			config: NORMAL_GUEST_SPRITE_CONFIG,
+			list: NORMAL_GUEST_LIST,
+			name: 'normal_guests',
+			outputName: 'normal_guest.png',
 		},
 		{
 			config: PARTNER_SPRITE_CONFIG,
@@ -229,10 +229,10 @@ export async function generateSprites(
 			outputName: 'partner.png',
 		},
 		{
-			config: RECIPE_SPRITE_CONFIG,
-			list: RECIPE_LIST,
-			name: 'recipes',
-			outputName: 'recipe.png',
+			config: SPECIAL_GUEST_SPRITE_CONFIG,
+			list: SPECIAL_GUEST_LIST,
+			name: 'special_guests',
+			outputName: 'special_guest.png',
 		},
 	];
 
@@ -330,9 +330,9 @@ if (argv.help) {
 
 选项:
   --categories <名称>  仅生成指定的类别（逗号或空格分隔）
-                       可用类别: beverages, clothes, cookers, currencies,
-                                 customer_normal, customer_rare, ingredients,
-                                 ornaments, partners, recipes
+                       可用类别: beverages, clothes, cookers, currency_items,
+                                 decorations, foods, ingredients, normal_guests,
+                                 partners, special_guests
   --dry-run            仅验证并显示输入/输出路径，不写入精灵图
   --help               显示此帮助信息
 

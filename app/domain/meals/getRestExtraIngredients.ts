@@ -1,7 +1,7 @@
-import type { TIngredientName } from '@/domain/data/ingredients/types';
+import type { TIngredientId } from '@/domain/data/ingredients/types';
 
 export function getRestExtraIngredients(
-	extraIngredients: ReadonlyArray<TIngredientName>,
+	extraIngredients: ReadonlyArray<TIngredientId>,
 	originalIngredientsLength: number
 ) {
 	return extraIngredients.slice(

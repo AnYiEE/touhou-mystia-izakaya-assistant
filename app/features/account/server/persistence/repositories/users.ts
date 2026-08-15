@@ -318,13 +318,13 @@ export async function updateActiveUserProfile({
 	oldUsername?: TUser['username'];
 	session: Pick<TSession, 'id' | 'token_hash'>;
 	userId: TUser['id'];
+	username?: TUser['username'];
+	usernameNormalized?: TUser['username_normalized'];
 	writeAuditLog?: (
 		trx: Transaction<TDatabase>,
 		now: number,
 		user: TUser
 	) => Promise<void>;
-	username?: TUser['username'];
-	usernameNormalized?: TUser['username_normalized'];
 }): Promise<TUpdateActiveUserProfileResult> {
 	const db = await getAccountDatabase();
 

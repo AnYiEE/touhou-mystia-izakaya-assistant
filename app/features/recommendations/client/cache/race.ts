@@ -13,7 +13,7 @@ interface IPersistentRecommendationRaceResult<T> {
 }
 
 type TRaceEvent<T> =
-	| { readonly kind: 'compute-error'; readonly error: unknown }
+	| { readonly error: unknown; readonly kind: 'compute-error' }
 	| { readonly kind: 'compute-result'; readonly result: T }
 	| { readonly kind: 'grace' }
 	| { readonly kind: 'persistent'; readonly result: T | undefined };

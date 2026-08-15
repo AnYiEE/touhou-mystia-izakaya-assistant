@@ -1,6 +1,6 @@
 import { faKey } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { isObject } from 'lodash';
+import isObject from 'lodash/isObject.js';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
@@ -11,12 +11,10 @@ import Popover, {
 import Snippet from '@/design/ui/components/snippet';
 import TimeAgo from '@/design/ui/components/timeAgo';
 
-import { customerNormalMealsSerializer } from '@/features/account/sync/serializers/customerNormalMeals';
-import { customerRareMealsSerializer } from '@/features/account/sync/serializers/customerRareMeals';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { useAnonymousVisitorId } from '@/features/analytics/client/visitorIdentity';
-import { customerNormalStore } from '@/features/catalog/customers/normal/client/state/store';
-import { customerRareStore } from '@/features/catalog/customers/rare/client/state/store';
+import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
+import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import {
 	LEGACY_BACKUP_FREQUENCY_TTL,
 	deleteLegacyBackup,
@@ -24,10 +22,6 @@ import {
 	fetchLegacyBackupMetadata,
 	uploadLegacyBackup,
 } from '@/features/legacyBackup/client/api';
-import {
-	compatibilityCustomerRareData,
-	deleteIndexProperty,
-} from '@/features/legacyBackup/legacyPayload';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
@@ -39,8 +33,19 @@ import {
 	LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_MAP,
 	createLegacyCloudBackupRetryMessage,
 } from './copy';
+import { parseGuestDataImport } from './parseGuestDataImport';
 
 type TCloudState = 'danger' | 'default' | 'success';
+
+const CLOUD_CODE_TOOLTIP_PROPS = {
+	content: '点击以复制备份码',
+	delay: 0,
+	offset: 0,
+	size: 'sm',
+} as const;
+const CLOUD_CODE_CLASS_NAMES = {
+	pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
+} as const;
 
 function setErrorState({
 	error,
@@ -87,8 +92,8 @@ function setErrorState({
 }
 
 export default memo(function CloudBackupPanel() {
-	const currentNormalMealData = customerNormalStore.persistence.meals.use();
-	const currentRareMealData = customerRareStore.persistence.meals.use();
+	const currentNormalMealData = normalGuestStore.persistence.meals.use();
+	const currentRareMealData = specialGuestStore.persistence.meals.use();
 
 	const currentMealData = useMemo(
 		() => ({
@@ -97,13 +102,6 @@ export default memo(function CloudBackupPanel() {
 		}),
 		[currentNormalMealData, currentRareMealData]
 	);
-
-	type TLegacyMealData =
-		| {
-				customer_normal: Record<string, object[]>;
-				customer_rare: Record<string, object[]>;
-		  }
-		| Record<string, object[]>;
 
 	const [isCloudDeleteButtonDisabled, setIsCloudDeleteButtonDisabled] =
 		useState(false);
@@ -301,30 +299,17 @@ export default memo(function CloudBackupPanel() {
 		);
 		let didDownload = false;
 
-		downloadLegacyBackup<TLegacyMealData>(code)
+		downloadLegacyBackup<unknown>(code)
 			.then((data) => {
-				if ('customer_normal' in data) {
-					const combinedData = data as {
-						customer_normal: Record<string, object[]>;
-						customer_rare: Record<string, object[]>;
-					};
-					deleteIndexProperty(combinedData.customer_normal);
-					deleteIndexProperty(combinedData.customer_rare);
-					const normalMeals = customerNormalMealsSerializer.migrate(
-						combinedData.customer_normal,
-						1
+				const importedData = parseGuestDataImport(data).data;
+				if (importedData.customer_normal_meals !== undefined) {
+					normalGuestStore.persistence.meals.set(
+						importedData.customer_normal_meals
 					);
-					const rareMeals = customerRareMealsSerializer.migrate(
-						combinedData.customer_rare,
-						1
-					);
-					customerNormalStore.persistence.meals.set(normalMeals);
-					customerRareStore.persistence.meals.set(rareMeals);
-				} else {
-					deleteIndexProperty(data);
-					compatibilityCustomerRareData(data);
-					customerRareStore.persistence.meals.set(
-						customerRareMealsSerializer.migrate(data, 1)
+				}
+				if (importedData.customer_rare_meals !== undefined) {
+					specialGuestStore.persistence.meals.set(
+						importedData.customer_rare_meals
 					);
 				}
 
@@ -445,15 +430,8 @@ export default memo(function CloudBackupPanel() {
 										className="mr-1 !align-middle text-default-700"
 									/>
 								}
-								tooltipProps={{
-									content: '点击以复制备份码',
-									delay: 0,
-									offset: 0,
-									size: 'sm',
-								}}
-								classNames={{
-									pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
-								}}
+								tooltipProps={CLOUD_CODE_TOOLTIP_PROPS}
+								classNames={CLOUD_CODE_CLASS_NAMES}
 							>
 								{currentCloudCode}
 							</Snippet>

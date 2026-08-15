@@ -118,8 +118,8 @@ export function resolveAccountSyncConflictUnlocked({
 	expectedEntry: IDirtyQueueEntry;
 	generationToken: string | null;
 	onStage?: (stage: TAccountSyncConflictResolutionJournalStage) => void;
-	resultClientMutationId?: string;
 	resolution: TSyncConflictResolution;
+	resultClientMutationId?: string;
 	userId: string;
 }) {
 	if (conflict.userId !== userId) {

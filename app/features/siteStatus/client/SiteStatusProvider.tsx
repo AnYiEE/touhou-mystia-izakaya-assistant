@@ -116,7 +116,7 @@ export default function SiteStatusProvider({ children }: PropsWithChildren) {
 
 		void fetchSiteStatus();
 
-		const intervalId = globalThis.setInterval(() => {
+		const intervalId = setInterval(() => {
 			if (PUBLIC_RUNTIME_CONFIG.isAnalytics) {
 				ping();
 			}
@@ -124,7 +124,7 @@ export default function SiteStatusProvider({ children }: PropsWithChildren) {
 		}, POLL_INTERVAL_MS);
 
 		return () => {
-			globalThis.clearInterval(intervalId);
+			clearInterval(intervalId);
 			inFlightControllerRef.current?.abort();
 			inFlightControllerRef.current = null;
 		};
@@ -147,12 +147,9 @@ export default function SiteStatusProvider({ children }: PropsWithChildren) {
 			return;
 		}
 
-		const timeoutId = globalThis.setTimeout(
-			clearExpiredMaintenance,
-			expiresIn
-		);
+		const timeoutId = setTimeout(clearExpiredMaintenance, expiresIn);
 		return () => {
-			globalThis.clearTimeout(timeoutId);
+			clearTimeout(timeoutId);
 		};
 	}, [maintenance]);
 

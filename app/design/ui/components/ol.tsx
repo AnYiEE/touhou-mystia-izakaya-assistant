@@ -1,5 +1,6 @@
 import { cn } from '@heroui/theme';
-import { isNil, isObject } from 'lodash';
+import isNil from 'lodash/isNil.js';
+import isObject from 'lodash/isObject.js';
 import { type PropsWithChildren, memo } from 'react';
 
 function findStringContent(node: unknown, depth = 0): string | null {

@@ -19,7 +19,7 @@ export default memo<IProps>(function ExperiencePreferencesSection({
 	highlightedPreferenceKey,
 }) {
 	const isShowTagsTooltip =
-		globalStore.persistence.customerCardTagsTooltip.use();
+		globalStore.persistence.guestCardTagsTooltip.use();
 	const isVibrateEnabled = globalStore.persistence.vibrate.use();
 
 	return (
@@ -54,7 +54,7 @@ export default memo<IProps>(function ExperiencePreferencesSection({
 					<SwitchItem
 						isSelected={isShowTagsTooltip}
 						onValueChange={
-							globalStore.persistence.customerCardTagsTooltip.set
+							globalStore.persistence.guestCardTagsTooltip.set
 						}
 						aria-label={`${isShowTagsTooltip ? '隐藏' : '显示'}标签浮动提示`}
 					>

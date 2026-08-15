@@ -1,5 +1,3 @@
-'use client';
-
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AnimatePresence } from 'framer-motion';

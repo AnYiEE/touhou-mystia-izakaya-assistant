@@ -1,5 +1,5 @@
 import { cn } from '@heroui/theme';
-import { type PropsWithChildren, memo, useRef } from 'react';
+import { type PropsWithChildren, memo, useMemo, useRef } from 'react';
 
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
 import Popover, {
@@ -8,8 +8,11 @@ import Popover, {
 } from '@/design/ui/components/popover';
 import Tooltip from '@/design/ui/components/tooltip';
 
-import { type Cooker } from '@/domain/catalog/items/Cooker';
-import type { TCookerCategory } from '@/domain/data/cookers/types';
+import { type CookerCatalog as CookerCatalogModel } from '@/domain/catalog/items/CookerCatalog';
+import {
+	COOKER_SERIES_LABEL_MAP,
+	COOKER_TYPE_LABEL_MAP,
+} from '@/domain/data/cookers/cookerFacts';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import ItemCard from '@/features/catalog/shared/client/components/ItemCard';
@@ -30,7 +33,7 @@ import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewI
 import CookerSourceDetails from './CookerSourceDetails';
 
 interface INameProps {
-	category: TCookerCategory;
+	category: (typeof COOKER_SERIES_LABEL_MAP)[keyof typeof COOKER_SERIES_LABEL_MAP];
 }
 
 const Name = memo<PropsWithChildren<INameProps>>(function Name({
@@ -51,7 +54,7 @@ const Name = memo<PropsWithChildren<INameProps>>(function Name({
 });
 
 interface IProps {
-	data: TItemData<Cooker>;
+	data: TItemData<CookerCatalogModel>;
 }
 
 export default memo<IProps>(function CookerCatalog({ data }) {
@@ -61,29 +64,59 @@ export default memo<IProps>(function CookerCatalog({ data }) {
 	const { checkDefaultOpen, checkShouldEffect, getPopoverKey } =
 		useItemPopoverState(defaultOpenedPopover);
 	const openWindow = useViewInNewWindow();
+	const presentationData = useMemo(
+		() =>
+			data.map((record) => {
+				const category = COOKER_SERIES_LABEL_MAP[record.series];
+				const types = record.availableTypes.map(
+					(type) => COOKER_TYPE_LABEL_MAP[type]
+				);
+				const type = types.length === 1 ? types[0] : types;
 
-	return data.map(
+				return {
+					...record,
+					cardName: <Name category={category}>{record.name}</Name>,
+					displayName: <Name category={category}>{record.name}</Name>,
+					presentationDescription: {
+						description: record.description,
+						...(type === undefined ? {} : { type }),
+					},
+				};
+			}),
+		[data]
+	);
+
+	return presentationData.map(
 		(
-			{ category, description, dlc, effect, from, id, name, type },
+			{
+				cardName,
+				displayName,
+				dlc,
+				effect,
+				from,
+				id,
+				name,
+				presentationDescription,
+			},
 			dataIndex
 		) => (
 			<ItemPopover
-				key={getPopoverKey(dataIndex, name)}
+				key={getPopoverKey(dataIndex, id)}
 				showArrow
 				/** @todo Add it back after {@link https://github.com/heroui-inc/heroui/issues/3736} is fixed. */
 				// backdrop={isHighAppearance ? 'blur' : 'opaque'}
-				defaultOpen={checkDefaultOpen(name)}
-				{...getPopoverOpenChangeProps(name)}
+				defaultOpen={checkDefaultOpen(id)}
+				{...getPopoverOpenChangeProps(id)}
 			>
 				<ItemPopoverTrigger>
 					<ItemCard
-						isHoverable={checkShouldEffect(name)}
-						isPressable={checkShouldEffect(name)}
-						name={<Name category={category}>{name}</Name>}
+						isHoverable={checkShouldEffect(id)}
+						isPressable={checkShouldEffect(id)}
+						name={cardName}
 						image={
 							<Sprite
 								target="cooker"
-								name={name}
+								recordId={id}
 								size={3}
 								className={cn({
 									'translate-y-px': name.includes('油锅'),
@@ -101,13 +134,13 @@ export default memo<IProps>(function CookerCatalog({ data }) {
 				</ItemPopoverTrigger>
 				<ItemPopoverContent>
 					<ItemPopoverCloseButton />
-					<ItemShareButton name={name} />
+					<ItemShareButton name={name} recordId={id} />
 					<ItemPopoverCard
 						target="cooker"
 						id={id}
 						name={name}
-						displayName={<Name category={category}>{name}</Name>}
-						description={{ description, type }}
+						displayName={displayName}
+						description={presentationDescription}
 						dlc={dlc}
 						ref={popoverCardRef}
 					>

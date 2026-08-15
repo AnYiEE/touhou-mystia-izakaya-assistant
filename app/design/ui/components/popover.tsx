@@ -72,13 +72,17 @@ export default memo<IProps>(function Popover({
 	size,
 	...props
 }) {
+	const { isHighAppearance } = useDesignPreferences();
 	const motionProps = useMotionProps('popover');
 	const isReducedMotion = useReducedMotion();
-	const { isHighAppearance } = useDesignPreferences();
 
 	const styleBlur = useMemo(
 		() => getStyleBlur(color, disableBlur, isHighAppearance),
 		[color, disableBlur, isHighAppearance]
+	);
+	const mergedClassNames = useMemo(
+		() => ({ ...classNames, content: cn(styleBlur, classNames?.content) }),
+		[classNames, styleBlur]
 	);
 
 	return (
@@ -103,10 +107,7 @@ export default memo<IProps>(function Popover({
 			shouldCloseOnScroll={Boolean(shouldCloseOnScroll)}
 			showArrow={isHighAppearance ? false : Boolean(showArrow)}
 			size={size}
-			classNames={{
-				...classNames,
-				content: cn(styleBlur, classNames?.content),
-			}}
+			classNames={mergedClassNames}
 			{...props}
 		/>
 	);

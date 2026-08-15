@@ -13,7 +13,7 @@ function checkBackgroundColor(
 		target.lightTheme !== colors.brown[200]
 	) {
 		throw new Error(
-			'[design/theme/semantic]: `defaultBackgrounds` does not match `colors.constants`'
+			'[design/theme/colors/semantic]: `defaultBackgrounds` does not match `colors.constants`'
 		);
 	}
 }

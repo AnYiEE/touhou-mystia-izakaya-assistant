@@ -13,9 +13,14 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 import { ACCOUNT_SYNC_API_RESPONSE_CODE_MAP } from '@/features/account/sync/apiResponseCodes';
+import { checkSyncProtocolRequestBody } from '@/features/account/sync/protocol';
 import { getAccountSyncCapacityConfiguration } from '@/features/account/sync/server/capacity';
+import { createSyncClientUpdateRequiredResponse } from '@/features/account/sync/server/protocolResponse';
 import { putSyncStateChanges } from '@/features/account/sync/server/state';
-import type { ISyncStatePingBody } from '@/features/account/sync/types';
+import type {
+	ISyncProtocolRequest,
+	ISyncStatePingBody,
+} from '@/features/account/sync/types';
 import { parseSyncStatePutBody } from '@/features/account/sync/validation';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
@@ -70,10 +75,9 @@ export async function POST(request: NextRequest) {
 	}
 
 	const capacityConfiguration = getAccountSyncCapacityConfiguration();
-	const bodyResult = await readJsonBodyResult<ISyncStatePingBody>(
-		request,
-		capacityConfiguration.requestMaxBytes
-	);
+	const bodyResult = await readJsonBodyResult<
+		ISyncProtocolRequest & ISyncStatePingBody
+	>(request, capacityConfiguration.requestMaxBytes);
 	if (bodyResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse(
 			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.requestTooLarge,
@@ -90,14 +94,6 @@ export async function POST(request: NextRequest) {
 		);
 	}
 
-	const parsedBody = parseSyncStatePutBody(body, ['csrf_token']);
-	if (parsedBody === null) {
-		return createNoStoreErrorResponse(
-			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
-			400
-		);
-	}
-
 	if (
 		!csrfModule.verifyAccountCsrfToken(
 			body.csrf_token,
@@ -107,6 +103,20 @@ export async function POST(request: NextRequest) {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.forbidden,
 			403
+		);
+	}
+	if (!checkSyncProtocolRequestBody(body)) {
+		return createSyncClientUpdateRequiredResponse();
+	}
+
+	const parsedBody = parseSyncStatePutBody(body, [
+		'csrf_token',
+		'protocol_version',
+	]);
+	if (parsedBody === null) {
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
 		);
 	}
 	if (auth.data.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
@@ -149,26 +159,15 @@ export async function POST(request: NextRequest) {
 		session: auth.data.session,
 		userId: auth.data.user.id,
 	});
-	if (writeResult.status === 'unauthorized') {
+	if (writeResult.status === 'corrupt-user-state') {
 		return createNoStoreErrorResponse(
-			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
-			401
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.corruptUserState,
+			500
 		);
 	}
 	if (writeResult.status === 'state-epoch-mismatch') {
 		return createNoStoreErrorResponse(
 			ACCOUNT_API_RESPONSE_CODE_MAP.stateEpochMismatch,
-			409,
-			{
-				state_epoch: writeResult.state_epoch,
-				sync_generation: writeResult.sync_generation,
-				sync_status: writeResult.sync_status,
-			}
-		);
-	}
-	if (writeResult.status === 'sync-paused') {
-		return createNoStoreErrorResponse(
-			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.paused,
 			409,
 			{
 				state_epoch: writeResult.state_epoch,
@@ -188,10 +187,21 @@ export async function POST(request: NextRequest) {
 			}
 		);
 	}
-	if (writeResult.status === 'corrupt-user-state') {
+	if (writeResult.status === 'sync-paused') {
 		return createNoStoreErrorResponse(
-			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.corruptUserState,
-			500
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.paused,
+			409,
+			{
+				state_epoch: writeResult.state_epoch,
+				sync_generation: writeResult.sync_generation,
+				sync_status: writeResult.sync_status,
+			}
+		);
+	}
+	if (writeResult.status === 'unauthorized') {
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
 		);
 	}
 

@@ -1,45 +1,45 @@
-import type { TSpriteTarget } from '@/domain/data/sprites/types';
+import type {
+	TSpriteRecordIdentity,
+	TSpriteTarget,
+} from '@/domain/data/sprites/types';
 
 export type TGlobalSearchSection =
 	| 'beverages'
 	| 'clothes'
 	| 'cookers'
-	| 'currencies'
-	| 'customers'
-	| 'customer-normal'
-	| 'customer-rare'
+	| 'currency-items'
+	| 'decorations'
+	| 'foods'
+	| 'guests'
 	| 'ingredients'
-	| 'ornaments'
+	| 'normal-guests'
 	| 'partners'
 	| 'preferences'
-	| 'recipes';
+	| 'special-guests';
 
-export type TGlobalSearchIndexSection = Exclude<
-	TGlobalSearchSection,
-	'customers'
->;
+export type TGlobalSearchIndexSection = Exclude<TGlobalSearchSection, 'guests'>;
 
 export type TGlobalSearchFieldType =
+	| 'availability-dlc'
 	| 'beverage-tag'
 	| 'category'
 	| 'chat'
 	| 'content-dlc'
-	| 'cooker'
-	| 'customer-tag'
+	| 'cooker-type'
 	| 'description'
-	| 'availability-dlc'
 	| 'effect'
 	| 'evaluation'
 	| 'from'
+	| 'guest-tag'
 	| 'ingredient'
 	| 'level'
 	| 'moving-speed'
 	| 'name'
-	| 'negative-tag'
 	| 'negative-spell-card'
+	| 'negative-tag'
 	| 'place'
-	| 'positive-tag'
 	| 'positive-spell-card'
+	| 'positive-tag'
 	| 'price'
 	| 'reward'
 	| 'speed'
@@ -94,10 +94,11 @@ export interface IGlobalSearchIndexField {
 	fieldType: TGlobalSearchFieldType;
 	label: string;
 	text: string;
+	value: unknown;
 	weight: number;
 }
 
-export interface IGlobalSearchIndexItem {
+interface IGlobalSearchIndexItemBase {
 	description: string;
 	fields: IGlobalSearchIndexField[];
 	href: string;
@@ -106,9 +107,10 @@ export interface IGlobalSearchIndexItem {
 	navigationAction?: TGlobalSearchNavigationAction;
 	section: TGlobalSearchIndexSection;
 	sectionLabel: string;
-	spriteTarget?: TSpriteTarget;
-	targetName?: string;
 }
+
+export type IGlobalSearchIndexItem = IGlobalSearchIndexItemBase &
+	(TSpriteRecordIdentity | { recordId?: number; spriteTarget?: never });
 
 export interface IGlobalSearchMatchedField {
 	field: IGlobalSearchIndexField;
@@ -126,21 +128,21 @@ export interface IGlobalSearchResult {
 export interface IGlobalSearchPrefixSuggestion {
 	alias: string;
 	insertText: string;
-	kind: TGlobalSearchPrefixKind;
 	key: TGlobalSearchFieldType | TGlobalSearchSection;
+	kind: TGlobalSearchPrefixKind;
 	label: string;
 	valueTypeLabel?: string;
 }
 
 export interface IGlobalSearchTransientTarget {
-	name: string;
+	recordId: number;
 	section: TGlobalSearchIndexSection;
 }
 
 export type TGlobalSearchNavigationAction =
 	| { type: 'open-account' }
-	| { type: 'open-customer-plans' }
-	| { targetId: string; type: 'open-preference' };
+	| { type: 'open-special-guest-plans' }
+	| { targetKey: string; type: 'open-preference' };
 
 export interface IGlobalSearchFilterAction {
 	description: string;
@@ -151,10 +153,10 @@ export interface IGlobalSearchFilterAction {
 		| 'beverages'
 		| 'clothes'
 		| 'cookers'
-		| 'currencies'
+		| 'currency-items'
 		| 'ingredients'
-		| 'ornaments'
+		| 'decorations'
 		| 'partners'
-		| 'recipes'
+		| 'foods'
 	>;
 }

@@ -4,6 +4,11 @@ import {
 } from '@/domain/account/contracts';
 
 import { type ACCOUNT_SYNC_OPERATION_KIND_MAP } from './constants';
+import { type SYNC_PROTOCOL_VERSION } from './protocol';
+
+export interface ISyncProtocolRequest {
+	protocol_version: typeof SYNC_PROTOCOL_VERSION;
+}
 
 export interface ISyncStateChange {
 	data: unknown;
@@ -72,6 +77,7 @@ export interface IAccountSyncBroadcastMessage {
 		| 'conflict-heartbeat'
 		| 'conflict-resolved'
 		| 'queue-changed';
+	state_epoch: number;
 	syncOperation?: {
 		expiresAt: number;
 		kind: TAccountSyncOperationKind;
@@ -79,7 +85,6 @@ export interface IAccountSyncBroadcastMessage {
 		startedAt: number;
 		status: 'ended' | 'renewed' | 'started';
 	};
-	state_epoch: number;
 	tabId: string;
 	type:
 		| 'account-updated'
@@ -95,8 +100,8 @@ export interface IAccountSyncBroadcastMessage {
 export interface IAccountSyncBaseSnapshot {
 	data: unknown;
 	namespace: TSyncNamespace;
-	revision: number;
 	resetGeneration?: string | null;
+	revision: number;
 	schema_version: number;
 	snapshotHash: string;
 }

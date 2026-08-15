@@ -2,7 +2,7 @@
 
 import { Snippet as HeroUISnippet, type SnippetProps } from '@heroui/snippet';
 import { type InternalForwardRefRenderFunction } from '@heroui/system';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
@@ -16,17 +16,20 @@ export default memo<IProps>(function Snippet({
 }) {
 	const isReducedMotion = useReducedMotion();
 
+	const resolvedCopyButtonProps = useMemo(
+		() => ({ disableAnimation: isReducedMotion, ...copyButtonProps }),
+		[copyButtonProps, isReducedMotion]
+	);
+	const resolvedTooltipProps = useMemo(
+		() => ({ disableAnimation: isReducedMotion, ...tooltipProps }),
+		[isReducedMotion, tooltipProps]
+	);
+
 	return (
 		<HeroUISnippet
-			copyButtonProps={{
-				disableAnimation: isReducedMotion,
-				...copyButtonProps,
-			}}
+			copyButtonProps={resolvedCopyButtonProps}
 			disableAnimation={disableAnimation ?? isReducedMotion}
-			tooltipProps={{
-				disableAnimation: isReducedMotion,
-				...tooltipProps,
-			}}
+			tooltipProps={resolvedTooltipProps}
 			{...props}
 		/>
 	);

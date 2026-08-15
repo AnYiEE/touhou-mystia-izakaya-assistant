@@ -3,7 +3,7 @@
 import { type ButtonProps, Button as HeroUIButton } from '@heroui/button';
 import { type InternalForwardRefRenderFunction } from '@heroui/system';
 import { cn } from '@heroui/theme';
-import { debounce } from 'lodash';
+import debounce from 'lodash/debounce.js';
 import { memo, useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
@@ -16,21 +16,20 @@ interface IProps extends Omit<ButtonProps, 'onClick'> {
 	onClickEvent?: ButtonProps['onClick'];
 }
 
-export default memo<IProps>(function Button(buttonProps) {
-	const {
-		children,
-		className,
-		color,
-		disableAnimation,
-		endContent,
-		onClick,
-		onClickEvent,
-		onKeyDown,
-		variant,
-		...props
-	} = buttonProps;
-	const isReducedMotion = useReducedMotion();
+export default memo<IProps>(function Button({
+	children,
+	className,
+	color,
+	disableAnimation,
+	endContent,
+	onClick,
+	onClickEvent,
+	onKeyDown,
+	variant,
+	...props
+}) {
 	const { isHighAppearance } = useDesignPreferences();
+	const isReducedMotion = useReducedMotion();
 
 	const styleBase = useMemo(() => {
 		const effect = cn(

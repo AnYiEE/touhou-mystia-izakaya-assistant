@@ -21,7 +21,7 @@ import {
 	AccountInputIcon,
 	AccountPanel,
 	AccountPanelTitle,
-} from './layout';
+} from './accountPanelLayout';
 
 interface IAccountProfileSummaryProps {
 	accountStatusDescription: string;

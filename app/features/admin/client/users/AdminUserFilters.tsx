@@ -6,7 +6,7 @@ import {
 	faRotate,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { type Key, memo } from 'react';
+import { type Key, memo, useCallback, useMemo } from 'react';
 
 import Button from '@/design/ui/components/button';
 import Dropdown, {
@@ -22,6 +22,17 @@ import { AdminFilterPanel } from '@/features/admin/client/components/panels';
 import { getAdminStatusLabel } from '@/features/admin/client/components/statusBadges';
 import { ADMIN_USER_STATUS_FILTER_OPTIONS } from '@/features/admin/copy';
 
+const ADMIN_USER_STATUS_ITEM_CLASSES = {
+	base: 'transition-background motion-reduce:transition-none',
+} as const;
+
+const ADMIN_USER_STATUS_BY_KEY: ReadonlyMap<Key, TUserStatus | ''> = new Map(
+	ADMIN_USER_STATUS_FILTER_OPTIONS.map((option) => [
+		option.value,
+		option.value === 'all' ? '' : option.value,
+	])
+);
+
 export function getFilterStatusLabel(status: TUserStatus | '') {
 	return status === '' ? '全部状态' : getAdminStatusLabel(status);
 }
@@ -34,7 +45,7 @@ interface IAdminUserFilterPanelProps {
 	isUsersLoading: boolean;
 	onQueryInputChange: (value: string) => void;
 	onRefresh: () => void;
-	onStatusAction: (key: Key) => void;
+	onStatusAction: (value: TUserStatus | '') => void;
 	queryInput: string;
 	statusFilterKey: string;
 	statusFilterLabel: string;
@@ -50,6 +61,21 @@ export const AdminUserFilterPanel = memo<IAdminUserFilterPanelProps>(
 		statusFilterKey,
 		statusFilterLabel,
 	}) {
+		const selectedStatusKeys = useMemo(
+			() => [statusFilterKey],
+			[statusFilterKey]
+		);
+
+		const handleStatusAction = useCallback(
+			(key: Key) => {
+				const value = ADMIN_USER_STATUS_BY_KEY.get(key);
+				if (value !== undefined) {
+					onStatusAction(value);
+				}
+			},
+			[onStatusAction]
+		);
+
 		return (
 			<AdminFilterPanel icon={faMagnifyingGlass}>
 				<AdminSearchInput
@@ -79,13 +105,11 @@ export const AdminUserFilterPanel = memo<IAdminUserFilterPanelProps>(
 					<DropdownMenu
 						disallowEmptySelection
 						aria-label="筛选用户状态"
-						selectedKeys={[statusFilterKey]}
+						selectedKeys={selectedStatusKeys}
 						selectionMode="single"
 						variant="flat"
-						itemClasses={{
-							base: 'transition-background motion-reduce:transition-none',
-						}}
-						onAction={onStatusAction}
+						itemClasses={ADMIN_USER_STATUS_ITEM_CLASSES}
+						onAction={handleStatusAction}
 					>
 						{ADMIN_USER_STATUS_FILTER_OPTIONS.map((option) => (
 							<DropdownItem

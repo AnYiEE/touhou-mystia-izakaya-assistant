@@ -2,7 +2,6 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import {
-	type Key,
 	type SyntheticEvent,
 	useCallback,
 	useEffect,
@@ -70,9 +69,9 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 	const isListStateInitializedRef = useRef(false);
 	const isServerInitialUsersRef = useRef(initialData.users !== null);
 	const lastServerRenderedAtRef = useRef(initialData.renderedAt);
-	const queryInputTimeoutRef = useRef<ReturnType<
-		typeof globalThis.setTimeout
-	> | null>(null);
+	const queryInputTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+		null
+	);
 	const syncedServerQueryInputRef = useRef<string | null>(null);
 	const refreshUsersRequestIdRef = useRef(0);
 	const skipNextAutoRefreshRef = useRef(false);
@@ -84,7 +83,7 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 			return;
 		}
 
-		globalThis.clearTimeout(queryInputTimeoutRef.current);
+		clearTimeout(queryInputTimeoutRef.current);
 		queryInputTimeoutRef.current = null;
 	}, []);
 
@@ -310,9 +309,9 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 		setQueryInput(value);
 	}, []);
 
-	const handleStatusAction = useCallback((key: Key) => {
+	const handleStatusAction = useCallback((value: TUserStatus | '') => {
 		setPage(1);
-		setStatus(key === 'all' ? '' : (key as TUserStatus));
+		setStatus(value);
 	}, []);
 
 	const handleRefreshPress = useCallback(() => {
@@ -460,7 +459,7 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 			return;
 		}
 
-		queryInputTimeoutRef.current = globalThis.setTimeout(() => {
+		queryInputTimeoutRef.current = setTimeout(() => {
 			queryInputTimeoutRef.current = null;
 			if (!isAdminListPathRef.current) {
 				return;
@@ -481,18 +480,18 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 		}
 
 		const nextHref = getAdminListHref({ page, query, status });
-		const currentHref = `${globalThis.location.pathname}${globalThis.location.search}`;
+		const currentHref = `${location.pathname}${location.search}`;
 
 		if (currentHref === nextHref) {
 			return;
 		}
 
-		const timeoutId = globalThis.setTimeout(() => {
+		const timeoutId = setTimeout(() => {
 			router.replace(nextHref, { scroll: false });
 		}, ADMIN_LIST_DEBOUNCE_MS);
 
 		return () => {
-			globalThis.clearTimeout(timeoutId);
+			clearTimeout(timeoutId);
 		};
 	}, [isAdminListPath, page, query, router, status]);
 
@@ -601,7 +600,7 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 	}, [admin, adminAuthStatus, checkAdminAuth]);
 
 	useEffect(() => {
-		let timeoutId: ReturnType<typeof globalThis.setTimeout> | null = null;
+		let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
 		if (admin !== null) {
 			if (isServerInitialUsersRef.current) {
@@ -609,7 +608,7 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 			} else if (skipNextAutoRefreshRef.current) {
 				skipNextAutoRefreshRef.current = false;
 			} else {
-				timeoutId = globalThis.setTimeout(() => {
+				timeoutId = setTimeout(() => {
 					refreshUsers();
 				}, ADMIN_LIST_DEBOUNCE_MS);
 			}
@@ -617,7 +616,7 @@ export function useAdminUsersController(initialData: IAdminPageInitialData) {
 
 		return () => {
 			if (timeoutId !== null) {
-				globalThis.clearTimeout(timeoutId);
+				clearTimeout(timeoutId);
 			}
 		};
 	}, [admin, refreshUsers]);

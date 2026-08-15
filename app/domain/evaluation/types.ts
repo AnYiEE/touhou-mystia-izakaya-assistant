@@ -1,6 +1,6 @@
-import type { TEvaluationKeySchema } from '@/domain/data/customers/rare/schema';
-import type { TIngredientName } from '@/domain/data/ingredients/types';
-import type { TIngredientTag } from '@/domain/data/tags/types';
+import type { TSpecialGuestEvaluationKey } from '@/domain/data/guests/special/schema';
+import type { TIngredientId } from '@/domain/data/ingredients/types';
+import type { TFoodTagId } from '@/domain/data/tags/types';
 
 export type TEvaluation =
 	| '极度不满'
@@ -12,7 +12,7 @@ export type TEvaluation =
 	| '大额超支'
 	| '被驱赶'
 	| '评价驱赶行为';
-export type TEvaluationKey = TEvaluationKeySchema;
+export type TEvaluationKey = TSpecialGuestEvaluationKey;
 
 export type TRating = Exclude<
 	TEvaluation,
@@ -30,8 +30,8 @@ export type TRatingKeyMap = Record<TRating, TRatingKey>;
 export type TRatingMap = Record<TRatingKey, TRating>;
 
 export interface IIngredientScoreCandidate {
-	name: TIngredientName;
-	tags: ReadonlyArray<TIngredientTag>;
+	id: TIngredientId;
+	tags: ReadonlyArray<TFoodTagId>;
 }
 
 export type TIngredientScoreRestriction =
@@ -42,9 +42,9 @@ export type TIngredientScoreRestriction =
 	| 'none';
 
 export interface IIngredientScoreChangesResult {
-	changesByName: Partial<
+	changesById: Partial<
 		Record<
-			TIngredientName,
+			TIngredientId,
 			{
 				isDarkIngredient: boolean;
 				isOrderTag: boolean;
@@ -53,5 +53,5 @@ export interface IIngredientScoreChangesResult {
 			}
 		>
 	>;
-	darkIngredientNames: TIngredientName[];
+	darkIngredients: TIngredientId[];
 }

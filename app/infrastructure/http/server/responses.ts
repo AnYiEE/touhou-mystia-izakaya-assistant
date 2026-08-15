@@ -5,6 +5,8 @@ import type {
 	IApiSuccessResponse,
 } from '@/infrastructure/http/contracts';
 
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+
 type TJsonBodyReadResult<T extends object> =
 	| { data: Partial<T>; status: 'ok' }
 	| { status: 'invalid' | 'payload-too-large' };
@@ -150,11 +152,11 @@ export async function readJsonBodyResult<T extends object>(
 		}
 
 		const data: unknown = JSON.parse(text);
-		if (data === null || Array.isArray(data) || typeof data !== 'object') {
+		if (!checkIsRecord(data)) {
 			return { status: 'invalid' };
 		}
 
-		return { data, status: 'ok' };
+		return { data: data as unknown as Partial<T>, status: 'ok' };
 	} catch {
 		return { status: 'invalid' };
 	}

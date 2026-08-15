@@ -15,11 +15,12 @@ import {
 } from './dirtyQueue/snapshotHash';
 import { updatePausedConflictEntryIfCurrent } from './queue';
 import { captureAccountSyncResetGeneration } from './resetGeneration';
+import { getAccountSyncSerializer } from './snapshot';
+import { getAccountSyncLifecyclePort } from './syncLifecyclePort';
 import {
 	ACCOUNT_SYNC_OPERATION_TTL,
 	checkAccountSyncOperationActive,
 } from './syncOperationLease';
-import { getAccountSyncSerializer } from './snapshot';
 import {
 	completeAccountSyncConflictResolutionRuntime,
 	setAccountSyncConflictResolutionReadiness,
@@ -46,6 +47,17 @@ function createResolutionResult(
 	status: TAccountSyncConflictResolutionResultStatus
 ): IAccountSyncConflictResolutionResult {
 	return { status };
+}
+
+export function scheduleAccountSyncConflictResolutionFlush(
+	result: IAccountSyncConflictResolutionResult
+) {
+	if (
+		result.status === 'resolved' ||
+		result.status === 'resolved-elsewhere'
+	) {
+		getAccountSyncLifecyclePort().scheduleFlush();
+	}
 }
 
 function checkConflictSnapshotsEqual(
@@ -295,6 +307,7 @@ export async function resolveAccountSyncConflict({
 		result ??
 		classifyCurrentConflictState({ conflict, userId }) ??
 		createResolutionResult('busy');
+	scheduleAccountSyncConflictResolutionFlush(resolvedResult);
 	if (
 		resolvedResult.status !== 'resolved' &&
 		resolvedResult.status !== 'resolved-elsewhere'

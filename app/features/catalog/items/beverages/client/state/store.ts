@@ -1,8 +1,11 @@
 import { store } from '@davstack/store';
 
 import { filterAvailableItemsByHiddenDlcs } from '@/domain/availability';
-import { Beverage } from '@/domain/catalog/food/Beverage';
+import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
+import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
+import type { TBeverageTagId } from '@/domain/data/tags/types';
 
 import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
 import {
@@ -17,17 +20,14 @@ import { toGetValueCollection } from '@/shared/utilities/objects/convertCollecti
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
+import {
+	BEVERAGES_STORE_VERSION,
+	migrateBeveragesPersistedState,
+} from './migratePersistedState';
+
 import '@/infrastructure/state/enableImmerMapSet';
 
-const instance = Beverage.getInstance();
-
-const storeVersion = {
-	initial: 0,
-	popular: 1, // eslint-disable-next-line sort-keys
-	filterPlaces: 2,
-	removeSearchValue: 3, // eslint-disable-next-line sort-keys
-	availabilityDlcFilter: 4,
-} as const;
+const instance = BeverageCatalog.getInstance();
 
 const state = {
 	instance,
@@ -37,10 +37,10 @@ const state = {
 			availabilityDlcs: [] as string[],
 			contentDlcs: [] as string[],
 			levels: [] as string[],
-			noPlaces: [] as string[],
-			noTags: [] as string[],
-			places: [] as string[],
-			tags: [] as string[],
+			noPlaces: [] as TMapLabel[],
+			noTags: [] as TBeverageTagId[],
+			places: [] as TMapLabel[],
+			tags: [] as TBeverageTagId[],
 		},
 		pinyinSortState: PINYIN_SORT_STATE_MAP.none as TPinyinSortState,
 	},
@@ -52,41 +52,17 @@ const getNames = createNamesCache(instance);
 export const beveragesStore = store(state, {
 	middlewares: [
 		createPersistMiddleware<typeof state>({
+			migrate: (persistedState, version) =>
+				migrateBeveragesPersistedState(
+					persistedState,
+					version
+				) as typeof state,
 			name: 'page-beverages-storage',
-			version: storeVersion.availabilityDlcFilter,
-
-			migrate(persistedState, version) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-				const oldState = persistedState as any;
-				if (version < storeVersion.popular) {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					oldState.persistence = oldState.page;
-					delete oldState.page;
-				}
-				if (version < storeVersion.filterPlaces) {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					const {
-						persistence: { filters },
-					} = oldState;
-					filters.places = [];
-					filters.noPlaces = [];
-				}
-				if (version < storeVersion.removeSearchValue) {
-					delete oldState.persistence.searchValue;
-				}
-				if (version < storeVersion.availabilityDlcFilter) {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					oldState.persistence.filters.contentDlcs =
-						oldState.persistence.filters.dlcs;
-					oldState.persistence.filters.availabilityDlcs = [];
-					delete oldState.persistence.filters.dlcs;
-				}
-				return persistedState as typeof state;
-			},
 			partialize: (currentStore) =>
 				({
 					persistence: currentStore.persistence,
 				}) as typeof currentStore,
+			version: BEVERAGES_STORE_VERSION.recordIdentity,
 		}),
 	],
 }).computed((currentStore) => ({
@@ -120,6 +96,22 @@ export const beveragesStore = store(state, {
 			)
 			.sort(numberSort);
 	},
+	availableMaps: () => {
+		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+		return instance
+			.getValuesByProp(
+				'maps',
+				false,
+				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
+			)
+			.map(toGetValueCollection)
+			.sort((left, right) =>
+				pinyinSort(
+					MAP_FACTS[left.value].label,
+					MAP_FACTS[right.value].label
+				)
+			);
+	},
 	availableNames: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		return sortBy(
@@ -131,26 +123,14 @@ export const beveragesStore = store(state, {
 			)
 		).map(toGetValueCollection);
 	},
-	availablePlaces: () => {
-		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-		return instance
-			.getValuesByProp(
-				'places',
-				true,
-				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
-			)
-			.sort(pinyinSort);
-	},
 	availableTags: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
-		return sortBy(
-			instance.sortedTags,
-			instance.getValuesByProp(
-				'tags',
-				false,
-				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
-			)
-		).map(toGetValueCollection);
+		const visibleTags = instance.getValuesByProp(
+			'tags',
+			false,
+			filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
+		);
+		return visibleTags.sort(numberSort).map(toGetValueCollection);
 	},
 }));
 

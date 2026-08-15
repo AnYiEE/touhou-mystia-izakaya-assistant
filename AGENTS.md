@@ -35,7 +35,7 @@ The project is a Next.js 15 / React 19 application written in strict TypeScript.
 - Preserve all maintainer-owned staged, unstaged, and untracked changes. Repository-wide formatting, cleanup, generated files, and unrelated rewrites require separate authorization.
 - Subagents do not require separate user approval. Use them at the agent's discretion when independent tasks have a real parallelism or independent-review benefit that outweighs coordination cost. Give each subagent bounded scope, avoid concurrent edits to the same files, and independently verify its output before relying on it.
 - When a task needs a real browser and no reusable browser session is available, use the Playwright skill to launch and control one. A missing pre-existing session is not a blocker; report a limitation only if browser automation cannot start or the task specifically requires unavailable user session state.
-- When a task or verification session ends, close agent-started browser or Playwright sessions and development servers, and remove agent-created temporary scripts, fixtures, screenshots, traces, and generated verification directories. Keep them when the user asks for them, the task is still active, or they are intentional deliverables.
+- When a task or verification session ends, close agent-started browser or Playwright sessions and development servers. Before removing agent-created temporary scripts, fixtures, screenshots, traces, or generated verification directories, list the cleanup candidates and obtain explicit maintainer confirmation. Keep them while the task is active, when the maintainer asks to retain them, or when they are intentional deliverables.
 
 ## Pre-change investigation gate
 
@@ -125,6 +125,8 @@ A namespace or schema-version change must preserve existing local, queued, confl
 
 Raw game schemas, records and record-derived literal types live under `app/domain/data/**`; processed domain singletons and reusable queries live under their `app/domain/catalog/**`, `app/domain/evaluation/**`, `app/domain/meals/**` and other semantic owners. Use singleton APIs for application queries because they include derived data absent from raw records. Recommendation adapters call `suggestMeals` and existing evaluation helpers instead of reimplementing their rules.
 
+`app/domain/catalog/legacy/legacyNameOwners.ts` remains a sparse declaration for current same-category duplicate-name groups, not a routine record-maintenance list or complete name-to-ID table. Adding a record whose name remains unique requires no entry. If a duplicate name could occur in a supported historical payload, declare the original record's ID as `historicalOwnerId`; if every member of the duplicate group is new and no supported historical payload could contain the name, declare `noHistoricalOwner: true`. Never guess an owner.
+
 ### Recommendation cache versioning
 
 `app/features/recommendations/client/cache/constants.ts` owns the explicit recommendation cache versions. Any change that can alter recommendation candidates, ratings, ordering, diversity, availability interpretation, or request semantics must increment `RECOMMENDATION_ALGORITHM_VERSION` in the same patch. Equivalent refactors, performance-only optimizations, comments, and formatting do not increment it. Recommendation-relevant game data changes are covered automatically by the normalized data fingerprint and do not require an algorithm version change.
@@ -160,6 +162,8 @@ Apply these conventions to edited code while preserving established public contr
 - Before adding or retaining a local implementation, inspect the whole project for an existing semantically equivalent capability. Reuse the correct owner, including domain queries, feature helpers/services, infrastructure adapters, design wrappers and shared utilities, instead of duplicating it.
 - Reuse must preserve dependency direction and ownership. Do not make a lower layer import a feature, turn a feature-specific policy into a generic helper, or add a forwarding facade merely to share code.
 - Do not mechanically replace allocation-sensitive loops or direct operations in rating, recommendation, catalog-query or other demonstrated hot paths. Keep a local implementation when reuse would add a `Set`, copy, intermediate collection, traversal, changed identity or short-circuit order; record the concrete performance reason during review.
+- Application modules may use only the `isNil`, `isObject`, `debounce`, and `throttle` Lodash leaves, imported as default bindings from `lodash/<api>.js`; do not use package-level default or named Lodash imports there. Direct Node scripts may use `import lodash from 'lodash'`, and their Lodash API calls are not restricted by the application leaf allowlist. Code serialized into or injected as a self-contained page script must not depend on module imports.
+- Lodash `isObject` returns `true` for functions. Replace a paired object/null guard with `isObject` only when the complete pair can be replaced without changing behavior for every reachable value. When that equivalence cannot be established, retain the original `typeof ... === 'object'`/null guard (or its De Morgan inverse); do not combine `typeof` and `isObject` into a redundant guard.
 
 ### TypeScript and naming
 

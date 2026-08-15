@@ -15,6 +15,7 @@ import { memo } from 'react';
 
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
+import Link from '@/design/ui/components/link';
 
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
 import {
@@ -22,15 +23,16 @@ import {
 	PASSWORD_RULE_DESCRIPTION,
 	USERNAME_RULE_DESCRIPTION,
 } from '@/features/account/constants';
+import { SITE_LINKS } from '@/features/appShell/links';
 
-import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
 import {
 	AccountAuthEntryMotion,
 	AccountCollapseMotion,
 	AccountInputIcon,
 	AccountPanel,
 	AccountPanelTitle,
-} from './layout';
+} from './accountPanelLayout';
+import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
 import { type IUseAccountAuthenticationResult } from './useAccountAuthentication';
 
 const ACCOUNT_AUTH_PASSWORD_FORM_ID = 'account-auth-password-form';
@@ -41,6 +43,7 @@ interface IAccountAuthPanelProps extends IUseAccountAuthenticationResult {
 	isSubmitting: boolean;
 	passwordDescription: string | undefined;
 	registrationNicknameErrorMessage: string | null;
+	shouldShowAccountSupportLink: boolean;
 }
 
 export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
@@ -49,6 +52,7 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 	isSubmitting,
 	passwordDescription,
 	registrationNicknameErrorMessage,
+	shouldShowAccountSupportLink,
 	...authentication
 }) {
 	const {
@@ -407,6 +411,29 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 												handleAuthPasswordChange
 											}
 										/>
+										<AccountCollapseMotion
+											motionKey="account-status-support"
+											shouldAnimateOpacity={false}
+										>
+											{shouldShowAccountSupportLink ? (
+												<p className="px-1 pt-1 text-tiny leading-5">
+													<Link
+														isExternal
+														showAnchorIcon
+														href={
+															SITE_LINKS.qqGroup1
+																.href
+														}
+														title={
+															SITE_LINKS.qqGroup1
+																.label
+														}
+													>
+														加入QQ交流群联系管理员
+													</Link>
+												</p>
+											) : null}
+										</AccountCollapseMotion>
 									</div>
 								</form>
 							</div>

@@ -4,8 +4,8 @@ import {
 } from '@/features/itemSharing/shareUrl';
 
 export function createShareableItemUrl(options: {
-	name: string;
 	pathname: string;
+	recordId: number;
 }) {
 	return createItemShareUrl(options);
 }

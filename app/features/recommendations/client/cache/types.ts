@@ -1,7 +1,7 @@
 import { type DBSchema } from 'idb';
 
 export type TRecommendationCacheResultStoreName =
-	| 'customerRarePlanResults'
+	| 'specialGuestPlanResults'
 	| 'suggestedMealCardResults';
 
 export interface IRecommendationCacheRecord {
@@ -30,8 +30,8 @@ interface IRecommendationCacheResultStore {
 }
 
 export interface IRecommendationCacheDatabase extends DBSchema {
-	customerRarePlanResults: IRecommendationCacheResultStore;
 	metadata: { key: string; value: IRecommendationCacheMetadata };
+	specialGuestPlanResults: IRecommendationCacheResultStore;
 	suggestedMealCardResults: IRecommendationCacheResultStore;
 }
 

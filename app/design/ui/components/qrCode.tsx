@@ -3,7 +3,7 @@
 import { cn } from '@heroui/theme';
 import { useQRCode } from 'next-qrcode';
 import { type IQRCode } from 'next-qrcode/dist/useQRCode';
-import { type PropsWithChildren, memo } from 'react';
+import { type PropsWithChildren, memo, useMemo } from 'react';
 
 interface IProps
 	extends
@@ -18,23 +18,21 @@ export default memo<PropsWithChildren<IProps>>(function QRCode({
 }) {
 	const { SVG } = useQRCode();
 
+	const qrCodeOptions = useMemo(
+		() => ({
+			color: { dark: '#000000ff', light: '#ffffff00', ...options?.color },
+			errorCorrectionLevel: 'L' as const,
+			margin: 1.5,
+			scale: 1,
+			...options,
+		}),
+		[options]
+	);
+
 	return (
 		<div className="flex flex-col items-center">
 			<div aria-hidden className={cn('w-32 dark:invert', className)}>
-				<SVG
-					options={{
-						color: {
-							dark: '#000000ff',
-							light: '#ffffff00',
-							...options?.color,
-						},
-						errorCorrectionLevel: 'L',
-						margin: 1.5,
-						scale: 1,
-						...options,
-					}}
-					text={text}
-				/>
+				<SVG options={qrCodeOptions} text={text} />
 			</div>
 			{children !== undefined && (
 				<p className="text-center text-tiny">{children}</p>

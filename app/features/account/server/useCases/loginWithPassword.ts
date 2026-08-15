@@ -103,17 +103,6 @@ export async function loginWithPassword({
 		});
 		return { message: 'invalid-credentials', status: 'error' };
 	}
-	if (user.status === USER_STATUS_MAP.disabled) {
-		await consumePasswordVerificationCost(password);
-		await writeLoginFailure({
-			reason: 'user-disabled',
-			request,
-			targetId: user.id,
-			username,
-			usernameNormalized,
-		});
-		return { message: 'user-disabled', status: 'error' };
-	}
 	if (user.status === USER_STATUS_MAP.deleted) {
 		await consumePasswordVerificationCost(password);
 		await writeLoginFailure({
@@ -124,6 +113,17 @@ export async function loginWithPassword({
 			usernameNormalized,
 		});
 		return { message: 'user-deleted', status: 'error' };
+	}
+	if (user.status === USER_STATUS_MAP.disabled) {
+		await consumePasswordVerificationCost(password);
+		await writeLoginFailure({
+			reason: 'user-disabled',
+			request,
+			targetId: user.id,
+			username,
+			usernameNormalized,
+		});
+		return { message: 'user-disabled', status: 'error' };
 	}
 
 	const credential = await getCredentialByUserId(user.id);

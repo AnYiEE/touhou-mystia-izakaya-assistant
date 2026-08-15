@@ -12,7 +12,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-	type Key,
 	type SyntheticEvent,
 	memo,
 	useCallback,
@@ -368,13 +367,13 @@ export default function AdminSsoTicketsClient({
 	}, [checkAdmin, initialData.admin]);
 
 	useEffect(() => {
-		let timeoutId: ReturnType<typeof globalThis.setTimeout> | null = null;
+		let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
 		if (admin !== null) {
 			if (isServerInitialRef.current) {
 				isServerInitialRef.current = false;
 			} else {
-				timeoutId = globalThis.setTimeout(() => {
+				timeoutId = setTimeout(() => {
 					refreshTickets(page);
 				}, ADMIN_LIST_DEBOUNCE_MS);
 			}
@@ -382,7 +381,7 @@ export default function AdminSsoTicketsClient({
 
 		return () => {
 			if (timeoutId !== null) {
-				globalThis.clearTimeout(timeoutId);
+				clearTimeout(timeoutId);
 			}
 		};
 	}, [admin, page, refreshTickets]);
@@ -404,18 +403,18 @@ export default function AdminSsoTicketsClient({
 			status: statusFilter,
 			userId: userIdInput,
 		});
-		const currentHref = `${globalThis.location.pathname}${globalThis.location.search}`;
+		const currentHref = `${location.pathname}${location.search}`;
 
 		if (currentHref === nextHref) {
 			return;
 		}
 
-		const timeoutId = globalThis.setTimeout(() => {
+		const timeoutId = setTimeout(() => {
 			router.replace(nextHref, { scroll: false });
 		}, ADMIN_LIST_DEBOUNCE_MS);
 
 		return () => {
-			globalThis.clearTimeout(timeoutId);
+			clearTimeout(timeoutId);
 		};
 	}, [
 		clientIdInput,
@@ -546,9 +545,9 @@ export default function AdminSsoTicketsClient({
 		setUserIdInput(value);
 	}, []);
 
-	const handleStatusAction = useCallback((key: Key) => {
+	const handleStatusAction = useCallback((value: TTicketStatusFilter) => {
 		setPage(1);
-		setStatusFilter(String(key) as TTicketStatusFilter);
+		setStatusFilter(value);
 	}, []);
 
 	const handlePreviousPage = useCallback(() => {

@@ -1,4 +1,3 @@
-/* eslint-disable sort-keys */
 'use client';
 
 import { Fragment } from 'react';
@@ -16,6 +15,7 @@ import { SITE_LINKS } from '@/features/appShell/links';
 
 const links = SITE_LINKS;
 
+/* eslint-disable sort-keys -- Changelog entries keep version before changes for release-note readability. */
 const changelog = [
 	{ version: 'v0.1', changes: ['新增：料理、酒水和食材页面。'] },
 	{
@@ -196,9 +196,10 @@ const changelog = [
 	},
 	{ version: 'v2.7', changes: ['新增：料理支持多套食谱。'] },
 ] as const satisfies Array<{
-	version: `v${string}`;
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
+	version: `v${string}`;
 }>;
+/* eslint-enable sort-keys */
 
 export default function ChangeLog() {
 	return (

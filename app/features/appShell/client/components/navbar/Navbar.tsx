@@ -2,7 +2,14 @@
 
 import { Navbar as HeroUINavbar } from '@heroui/navbar';
 import { useRouter } from 'next/navigation';
-import { type Key, useCallback, useEffect, useRef, useState } from 'react';
+import {
+	type Key,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 import { useProgress } from 'react-transition-progress';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
@@ -38,19 +45,25 @@ import { NAVBAR_THEME_ITEMS } from './themeItems';
 
 const { isAccountFeatureClientEnabled } = PUBLIC_RUNTIME_CONFIG;
 
+const NAVBAR_CLASS_NAMES = {
+	base: 'pt-titlebar',
+	wrapper: 'max-w-screen-xl 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl',
+} as const;
+
 export default function Navbar() {
 	const { pathname } = usePathname();
-	const basePathname = `/${pathname.split('/', 2)[1]}`;
-	const router = useRouter();
 	const startProgress = useProgress();
-	const vibrate = useVibrate();
-	const [isMenuOpened, setIsMenuOpened] = useState(false);
-	const menuCloseActionVersionRef = useRef(0);
-	const [isApplePlatform, setIsApplePlatform] = useState(false);
-	const isReducedMotion = useReducedMotion();
-	const [theme, setTheme] = useTheme();
+	const router = useRouter();
+	const basePathname = `/${pathname.split('/', 2)[1]}`;
 
 	const { isHighAppearance } = useDesignPreferences();
+	const isReducedMotion = useReducedMotion();
+	const [theme, setTheme] = useTheme();
+	const vibrate = useVibrate();
+
+	const [isApplePlatform, setIsApplePlatform] = useState(false);
+	const [isMenuOpened, setIsMenuOpened] = useState(false);
+	const menuCloseActionVersionRef = useRef(0);
 
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const accountUser = accountStore.shared.user.use();
@@ -63,10 +76,19 @@ export default function Navbar() {
 		accountBootstrapStatus,
 		accountUser
 	);
-	const accountMenuDisabledKeys =
-		accountBootstrapStatus === 'unknown' ? ['account'] : [];
-	const selectedThemeKeys = [`theme:${theme}`];
+	const accountMenuDisabledKeys = useMemo(
+		() => (accountBootstrapStatus === 'unknown' ? ['account'] : []),
+		[accountBootstrapStatus]
+	);
+	const selectedThemeKeys = useMemo(() => [`theme:${theme}`], [theme]);
 	const searchShortcutLabel = isApplePlatform ? '⌘K' : 'Ctrl+K';
+	const getMobileMenuRootElement = useCallback(
+		() =>
+			document.querySelector<HTMLElement>(
+				'[data-coordinated-overlay-id="navigation.mobile-menu"]'
+			),
+		[]
+	);
 
 	const requestMenuBusinessClose = useCallback(() => {
 		setIsMenuOpened(false);
@@ -80,10 +102,7 @@ export default function Navbar() {
 	} = useCoordinatedOverlay({
 		dismissable: true,
 		exitDelayMs: isReducedMotion ? 0 : MOBILE_NAV_MENU_EXIT_DELAY_MS,
-		getRootElement: () =>
-			document.querySelector<HTMLElement>(
-				'[data-coordinated-overlay-id="navigation.mobile-menu"]'
-			),
+		getRootElement: getMobileMenuRootElement,
 		id: 'navigation.mobile-menu',
 		isOpen: isMenuOpened,
 		keepOpenWhenCovered: true,
@@ -223,6 +242,17 @@ export default function Navbar() {
 		handleSearchButtonPress(isMenuOpened);
 	}, [handleSearchButtonPress, isMenuOpened]);
 
+	const handleMobileAccountPress = useCallback(() => {
+		handleAccountMenuClick(true);
+	}, [handleAccountMenuClick]);
+
+	const handleMobileNavigate = useCallback(
+		(href: string) => {
+			handlePress(href, true);
+		},
+		[handlePress]
+	);
+
 	useEffect(() => {
 		setIsApplePlatform(checkIsApplePlatform());
 	}, []);
@@ -236,7 +266,10 @@ export default function Navbar() {
 
 	const handleActionMenu = useCallback(
 		(key: Key, isInNavbarMenu?: boolean) => {
-			const actionKey = String(key);
+			if (typeof key !== 'string') {
+				return;
+			}
+			const actionKey = key;
 			if (actionKey === 'account') {
 				handleAccountMenuClick(isInNavbarMenu);
 				return;
@@ -277,11 +310,7 @@ export default function Navbar() {
 				isBlurred={isHighAppearance && !shouldSuppressBackdropBlur}
 				isMenuOpen={isMenuPresentationOpen}
 				onMenuOpenChange={handleMenuOpenChange}
-				classNames={{
-					base: 'pt-titlebar',
-					wrapper:
-						'max-w-screen-xl 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl',
-				}}
+				classNames={NAVBAR_CLASS_NAMES}
 			>
 				<DesktopNavigation
 					accountActionLabel={accountActionLabel}
@@ -310,13 +339,9 @@ export default function Navbar() {
 					isMenuActiveTask={isMenuActiveTask}
 					isMenuOpened={isMenuOpened}
 					mobileActionSectionTitle={mobileActionSectionTitle}
-					onAccountPress={() => {
-						handleAccountMenuClick(true);
-					}}
+					onAccountPress={handleMobileAccountPress}
 					onMenuToggleChange={vibrate}
-					onNavigate={(href) => {
-						handlePress(href, true);
-					}}
+					onNavigate={handleMobileNavigate}
 					onSearchPress={handleMobileSearchButtonPress}
 					onThemeAction={handleActionMenu}
 					selectedThemeKeys={selectedThemeKeys}

@@ -22,8 +22,8 @@ import { createAccountSessionRecord } from './presentation/session';
 
 interface IAccountFeatureInitialData {
 	account: TAccountMeResponse;
-	ssoGrants: IAccountSsoGrantInitialData | null;
 	sessions: IAccountSessionInitialData | null;
+	ssoGrants: IAccountSsoGrantInitialData | null;
 	viewer: TAccountFeatureViewer;
 	webauthn: IAccountWebauthnInitialData | null;
 }

@@ -1,3 +1,4 @@
+import lodash from 'lodash';
 import { constants as fileSystemConstants, readFileSync } from 'node:fs';
 import { access, lstat, mkdir, stat } from 'node:fs/promises';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
@@ -33,12 +34,7 @@ function createError(code, cause) {
 
 /** @param {unknown} error */
 function checkMissingPathError(error) {
-	return (
-		typeof error === 'object' &&
-		error !== null &&
-		'code' in error &&
-		error.code === 'ENOENT'
-	);
+	return lodash.isObject(error) && 'code' in error && error.code === 'ENOENT';
 }
 
 /** @param {string} parentDirectory @param {string} candidatePath */
@@ -115,11 +111,7 @@ export function parseCurrentRelease(contents) {
 	try {
 		/** @type {unknown} */
 		const value = JSON.parse(contents);
-		if (
-			value === null ||
-			typeof value !== 'object' ||
-			Array.isArray(value)
-		) {
+		if (!lodash.isObject(value) || Array.isArray(value)) {
 			throw createError('invalid-self-hosted-current');
 		}
 		const currentValue = /** @type {Record<string, unknown>} */ (value);

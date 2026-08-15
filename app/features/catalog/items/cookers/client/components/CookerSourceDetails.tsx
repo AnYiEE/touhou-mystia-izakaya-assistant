@@ -1,14 +1,18 @@
-import { isObject } from 'lodash';
 import { Fragment } from 'react';
 
 import Tooltip from '@/design/ui/components/tooltip';
 
-import type { ICooker } from '@/domain/data/cookers/schema';
+import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
+import type { ICooker, TCookerSource } from '@/domain/data/cookers/schema';
+import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+import type { TMerchantReference } from '@/domain/data/places/types';
 
 import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import {
 	type TItemRoutePath,
+	type TShareableItemId,
 	type TShareableItemName,
 } from '@/features/itemSharing/contracts';
 
@@ -16,7 +20,132 @@ import { checkObjectOrStringEmpty } from '@/shared/utilities/collections/check';
 
 interface IProps {
 	from: ICooker['from'];
-	openWindow: (path: TItemRoutePath, name: TShareableItemName) => void;
+	openWindow: (
+		path: TItemRoutePath,
+		recordId: TShareableItemId,
+		name: TShareableItemName
+	) => void;
+}
+
+type TCookerPricePart = Extract<
+	TCookerSource,
+	{ buy: unknown }
+>['buy']['price'][number];
+type TCurrencyItemPrice = Extract<
+	TCookerPricePart,
+	{ currencyItem: unknown }
+>['currencyItem'];
+
+function getMerchantDisplayName(merchant: TMerchantReference) {
+	if (merchant.map !== undefined) {
+		return `【${MAP_FACTS[merchant.map].label}】${merchant.label}`;
+	}
+
+	const specialGuestName = SpecialGuestCatalog.getInstance().getPropsById(
+		merchant.specialGuest,
+		'name'
+	);
+	return `【${specialGuestName}】${merchant.label}`;
+}
+
+function renderCurrencyItemPrice(
+	price: TCurrencyItemPrice,
+	openWindow: IProps['openWindow']
+) {
+	const { amount, currencyItem } = price;
+	const currencyItemName = CurrencyItemCatalog.getInstance().getPropsById(
+		currencyItem,
+		'name'
+	);
+	return (
+		<span className="inline-flex items-center">
+			<Price showSymbol={false}>{amount}×</Price>
+			<Tooltip
+				showArrow
+				content={`点击：在新窗口中查看货币【${currencyItemName}】的详情`}
+				offset={1}
+				size="sm"
+			>
+				<Sprite
+					target="currency_item"
+					recordId={currencyItem}
+					size={1.25}
+					onPress={() => {
+						openWindow(
+							'currencies',
+							currencyItem,
+							currencyItemName
+						);
+					}}
+					aria-label={`点击：在新窗口中查看货币【${currencyItemName}】的详情`}
+					role="button"
+				/>
+			</Tooltip>
+		</span>
+	);
+}
+
+function renderCookerSource(
+	item: TCookerSource,
+	fromIndex: number,
+	openWindow: IProps['openWindow']
+) {
+	if ('self' in item) {
+		return '初始拥有';
+	}
+
+	if ('bond' in item) {
+		const { level, specialGuest } = item.bond;
+		const specialGuestName = SpecialGuestCatalog.getInstance().getPropsById(
+			specialGuest,
+			'name'
+		);
+		return (
+			<>
+				<span className="mr-1 inline-flex items-center">
+					【
+					<Sprite
+						target="special_guest"
+						recordId={specialGuest}
+						size={1.25}
+						className="mx-0.5 rounded-full"
+					/>
+					{specialGuestName}】羁绊
+				</span>
+				Lv.{level - 1}
+				<span className="mx-0.5">➞</span>
+				Lv.{level}
+			</>
+		);
+	}
+
+	if ('buy' in item) {
+		return (
+			<>
+				{getMerchantDisplayName(item.buy.merchant)}（
+				{item.buy.price.map((priceItem, priceIndex) => (
+					<Fragment key={`${fromIndex}-0-${priceIndex}`}>
+						{priceIndex > 0 && <span className="mx-1">+</span>}
+						{'money' in priceItem ? (
+							<Price>{priceItem.money.amount}</Price>
+						) : (
+							renderCurrencyItemPrice(
+								priceItem.currencyItem,
+								openWindow
+							)
+						)}
+					</Fragment>
+				))}
+				）
+			</>
+		);
+	}
+
+	if ('dlcSideTask' in item) {
+		return `【DLC${item.dlcSideTask.dlc}】${item.dlcSideTask.task}`;
+	}
+
+	return `完成“${item.competitionReward.competitionLabel}”后自动获得`;
 }
 
 export default function CookerSourceDetails({ from, openWindow }: IProps) {
@@ -30,120 +159,7 @@ export default function CookerSourceDetails({ from, openWindow }: IProps) {
 			{from.map((item, fromIndex) => (
 				<Fragment key={fromIndex}>
 					{fromIndex > 0 && '、'}
-					{typeof item === 'string'
-						? item
-						: Object.entries(item).map((itemObject, itemIndex) => {
-								type TFrom = Exclude<
-									ICooker['from'][number],
-									string
-								>;
-								const [method, target] = itemObject as [
-									keyof TFrom,
-									ExtractCollectionValue<TFrom>,
-								];
-								const isBond =
-									method === 'bond' &&
-									typeof target === 'string';
-								const isBuy =
-									method === 'buy' && isObject(target);
-								const isSelf = method === 'self';
-								return (
-									<Fragment key={`${fromIndex}-${itemIndex}`}>
-										{isSelf ? (
-											'初始拥有'
-										) : isBond ? (
-											<>
-												<span className="mr-1 inline-flex items-center">
-													【
-													<Sprite
-														target="customer_rare"
-														name={target}
-														size={1.25}
-														className="mx-0.5 rounded-full"
-													/>
-													{target}】羁绊
-												</span>
-												Lv.4
-												<span className="mx-0.5">
-													➞
-												</span>
-												Lv.5
-											</>
-										) : (
-											isBuy && (
-												<>
-													{target.name}（
-													{target.price.map(
-														(
-															priceItem,
-															priceIndex
-														) => (
-															<Fragment
-																key={`${fromIndex}-${itemIndex}-${priceIndex}`}
-															>
-																{priceIndex >
-																	0 && (
-																	<span className="mx-1">
-																		+
-																	</span>
-																)}
-																{typeof priceItem ===
-																'number' ? (
-																	<Price>
-																		{
-																			priceItem
-																		}
-																	</Price>
-																) : (
-																	<span className="inline-flex items-center">
-																		<Price
-																			showSymbol={
-																				false
-																			}
-																		>
-																			{
-																				priceItem.amount
-																			}
-																			×
-																		</Price>
-																		<Tooltip
-																			showArrow
-																			content={`点击：在新窗口中查看货币【${priceItem.currency}】的详情`}
-																			offset={
-																				1
-																			}
-																			size="sm"
-																		>
-																			<Sprite
-																				target="currency"
-																				name={
-																					priceItem.currency
-																				}
-																				size={
-																					1.25
-																				}
-																				onPress={() => {
-																					openWindow(
-																						'currencies',
-																						priceItem.currency
-																					);
-																				}}
-																				aria-label={`点击：在新窗口中查看货币【${priceItem.currency}】的详情`}
-																				role="button"
-																			/>
-																		</Tooltip>
-																	</span>
-																)}
-															</Fragment>
-														)
-													)}
-													）
-												</>
-											)
-										)}
-									</Fragment>
-								);
-							})}
+					{renderCookerSource(item, fromIndex, openWindow)}
 				</Fragment>
 			))}
 		</p>

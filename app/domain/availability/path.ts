@@ -1,3 +1,4 @@
+import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 import type { TDlc } from '@/domain/data/shared/types';
 
 import type {
@@ -44,11 +45,23 @@ function normalizeSources(sources: ReadonlyArray<string>) {
 	return [...new Set(sources)].sort(compareStrings);
 }
 
-function getAcquisitionSourceKey(source: IAvailabilityAcquisitionSource) {
+function getAcquisitionSourceIdentityKey(
+	source: IAvailabilityAcquisitionSource
+) {
 	return JSON.stringify([
 		source.kind,
 		source.name,
 		source.place,
+		source.probability,
+		source.timeWindow,
+	]);
+}
+
+function getAcquisitionSourceSortKey(source: IAvailabilityAcquisitionSource) {
+	return JSON.stringify([
+		source.kind,
+		source.name,
+		source.place === null ? null : MAP_FACTS[source.place].label,
 		source.probability,
 		source.timeWindow,
 	]);
@@ -60,12 +73,15 @@ function normalizeAcquisitionSources(
 	const sourceMap = new Map<string, IAvailabilityAcquisitionSource>();
 
 	sources.forEach((source) => {
-		sourceMap.set(getAcquisitionSourceKey(source), source);
+		sourceMap.set(getAcquisitionSourceIdentityKey(source), source);
 	});
 
-	return [...sourceMap.entries()]
-		.sort(([left], [right]) => compareStrings(left, right))
-		.map(([, source]) => source);
+	return [...sourceMap.values()].sort((left, right) =>
+		compareStrings(
+			getAcquisitionSourceSortKey(left),
+			getAcquisitionSourceSortKey(right)
+		)
+	);
 }
 
 function getPathKey(path: IAvailabilityPath) {

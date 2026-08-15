@@ -72,17 +72,17 @@ export async function resetUserPassword({
 		);
 	} catch (error) {
 		if (Error.isError(error)) {
-			if (error.message === 'user-not-found') {
-				return { message: 'target-user-not-found', status: 'error' };
-			}
-			if (error.message === 'invalid-user-status') {
-				return { message: 'invalid-user-status', status: 'error' };
-			}
 			if (error.message === 'credential-not-found') {
 				console.warn(
 					'Account credential is missing during password reset.'
 				);
 				return { message: 'server-misconfigured', status: 'error' };
+			}
+			if (error.message === 'invalid-user-status') {
+				return { message: 'invalid-user-status', status: 'error' };
+			}
+			if (error.message === 'user-not-found') {
+				return { message: 'target-user-not-found', status: 'error' };
 			}
 		}
 

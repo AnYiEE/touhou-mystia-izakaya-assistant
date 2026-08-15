@@ -16,12 +16,12 @@ import Tooltip from '@/design/ui/components/tooltip';
 import AccountConfirmButton from '@/features/account/client/components/AccountConfirmButton';
 import type { IAccountSessionRecord } from '@/features/account/contracts';
 
-import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
 import {
 	AccountAnimatedList,
 	AccountAnimatedListItem,
 	formatSessionTimestamp,
-} from './layout';
+} from './accountPanelLayout';
+import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
 
 interface IAccountSessionsPanelProps {
 	handleRefreshSessions: () => void;

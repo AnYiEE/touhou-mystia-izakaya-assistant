@@ -1,4 +1,9 @@
+import isNil from 'lodash/isNil.js';
+import isObject from 'lodash/isObject.js';
+
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
+import { ALL_MAP_LABELS_SET, MAP_FACTS } from '@/domain/data/places/placeFacts';
+import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
 
 import type {
@@ -27,8 +32,8 @@ const GLOBAL_SEARCH_VALUE_SUGGESTION_FIELD_TYPES = new Set<
 	'category',
 	'availability-dlc',
 	'content-dlc',
-	'cooker',
-	'customer-tag',
+	'cooker-type',
+	'guest-tag',
 	'ingredient',
 	'level',
 	'moving-speed',
@@ -183,16 +188,42 @@ export function getGlobalSearchFieldValueDisplayText(
 		: value;
 }
 
+function flattenFieldValue(value: unknown): string[] {
+	if (typeof value === 'string' || typeof value === 'number') {
+		return value.toString().split(/\s+/u).filter(Boolean);
+	}
+	if (Array.isArray(value)) {
+		return value.flatMap(flattenFieldValue);
+	}
+	if (isObject(value)) {
+		return Object.values(value).flatMap(flattenFieldValue);
+	}
+
+	return [];
+}
+
 function getFieldValueTokens(
 	fieldType: IGlobalSearchIndexField['fieldType'],
-	value: string
+	value: unknown,
+	text: string
 ) {
-	const tokens = value.split(/\s+/u).filter(Boolean);
+	if (fieldType === 'cooker-type' || fieldType === 'ingredient') {
+		return text.split(/\s+/u).filter(Boolean);
+	}
+
+	const tokens = flattenFieldValue(value);
 
 	if (checkGlobalSearchFieldTypeIsDlc(fieldType)) {
 		return tokens.filter((token) => getDlcLabelMeta(token) !== null);
 	}
 
+	if (fieldType === 'place') {
+		return tokens.map((token) =>
+			ALL_MAP_LABELS_SET.has(token)
+				? MAP_FACTS[token as TMapLabel].label
+				: token
+		);
+	}
 	if (fieldType === 'speed') {
 		return tokens.map((token) => token.split('：').at(-1) ?? token);
 	}
@@ -313,7 +344,7 @@ export function createGlobalSearchFieldValueCache({
 			return;
 		}
 
-		item.fields.forEach(({ fieldType, text }) => {
+		item.fields.forEach(({ fieldType, text, value }) => {
 			if (!GLOBAL_SEARCH_VALUE_SUGGESTION_FIELD_TYPES.has(fieldType)) {
 				return;
 			}
@@ -332,8 +363,8 @@ export function createGlobalSearchFieldValueCache({
 					cacheFieldType,
 					createEmptyStringSet
 				);
-				getFieldValueTokens(fieldType, text).forEach((value) => {
-					valueSet.add(value);
+				getFieldValueTokens(fieldType, value, text).forEach((token) => {
+					valueSet.add(token);
 				});
 			});
 		});
@@ -463,9 +494,7 @@ export function createRelaxedGlobalSearchQuery(ast: IGlobalSearchQueryAst) {
 			? null
 			: getSectionPrefixGroup(ast.resultSection);
 	const tokens = [
-		sectionGroup === null || sectionGroup === undefined
-			? ''
-			: `@${sectionGroup.aliases[0]}`,
+		isNil(sectionGroup) ? '' : `@${sectionGroup.aliases[0]}`,
 		...ast.freeKeywords,
 		...ast.fieldConditions.map(({ keyword }) => keyword).filter(Boolean),
 	].filter(Boolean);

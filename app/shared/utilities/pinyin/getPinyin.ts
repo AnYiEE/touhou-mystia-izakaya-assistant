@@ -1,4 +1,3 @@
-/* eslint-disable sort-keys */
 import { customPinyin, pinyin } from 'pinyin-pro';
 
 import { memoize } from '@/shared/utilities/cache/memoize';
@@ -6,11 +5,11 @@ import { memoize } from '@/shared/utilities/cache/memoize';
 customPinyin(
 	{
 		// cSpell:disable
+		冯风渡御: 'píng fēng dù yù',
+		冴月麟: 'hù yuè lín',
+		炸: 'zhá',
 		番长服: 'fān zhǎng fú',
 		访问着和服: 'fǎng wèn zhuó hé fú',
-		冴月麟: 'hù yuè lín',
-		冯风渡御: 'píng fēng dù yù',
-		炸: 'zhá',
 		// cSpell:enable
 	},
 	{ multiple: 'replace' }

@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@heroui/theme';
-import { type PropsWithChildren, memo } from 'react';
+import { type PropsWithChildren, memo, useCallback, useMemo } from 'react';
 
 import Link, { type ILinkProps } from '@/design/ui/components/link';
 import Tooltip, { type ITooltipProps } from '@/design/ui/components/tooltip';
@@ -14,6 +14,11 @@ interface IFooterLinkProps extends Pick<
 > {
 	content?: ReactNodeWithoutBoolean;
 }
+
+const FOOTER_LINK_CLASS_NAMES = {
+	base: 'rounded-small text-tiny text-primary',
+	underline: 'bottom-0',
+} as const;
 
 export const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(
 	function FooterLink({
@@ -35,10 +40,7 @@ export const FooterLink = memo<PropsWithChildren<IFooterLinkProps>>(
 						: (title ?? (children as string))
 				}
 				title={title}
-				classNames={{
-					base: 'rounded-small text-tiny text-primary',
-					underline: 'bottom-0',
-				}}
+				classNames={FOOTER_LINK_CLASS_NAMES}
 				{...props}
 			>
 				{children}
@@ -56,43 +58,44 @@ interface IFooterLinkWithTooltipProps
 export const FooterLinkWithTooltip = memo<
 	PropsWithChildren<IFooterLinkWithTooltipProps>
 >(function FooterLinkWithTooltip({ classNames, event, ...props }) {
+	const handleOpenChange = useCallback(
+		(isOpen: boolean) => {
+			if (isOpen && event?.show) {
+				trackEvent(trackEvent.category.show, 'Tooltip', event.click);
+			}
+		},
+		[event]
+	);
+
+	const handlePress = useCallback(() => {
+		if (event?.click !== undefined) {
+			trackEvent(trackEvent.category.click, 'Link', event.click);
+		}
+	}, [event]);
+
+	const resolvedClassNames = useMemo(
+		() => ({
+			...classNames,
+			content: cn(
+				'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
+				classNames?.content
+			),
+		}),
+		[classNames]
+	);
+
 	return (
 		<Tooltip
+			classNames={resolvedClassNames}
 			closeDelay={10}
 			content={props.content}
 			isDisabled={!props.content}
 			offset={1}
 			size="sm"
-			onOpenChange={(isOpen) => {
-				if (isOpen && event?.show) {
-					trackEvent(
-						trackEvent.category.show,
-						'Tooltip',
-						event.click
-					);
-				}
-			}}
-			classNames={{
-				...classNames,
-				content: cn(
-					'bg-content1/40 backdrop-blur-lg dark:bg-content1/70',
-					classNames?.content
-				),
-			}}
+			onOpenChange={handleOpenChange}
 		>
 			<span>
-				<FooterLink
-					onPress={() => {
-						if (event?.click !== undefined) {
-							trackEvent(
-								trackEvent.category.click,
-								'Link',
-								event.click
-							);
-						}
-					}}
-					{...props}
-				/>
+				<FooterLink onPress={handlePress} {...props} />
 			</span>
 		</Tooltip>
 	);

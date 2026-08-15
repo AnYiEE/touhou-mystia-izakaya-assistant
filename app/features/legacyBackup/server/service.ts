@@ -1,3 +1,4 @@
+import isNil from 'lodash/isNil.js';
 import { v7 as uuid, validate } from 'uuid';
 
 import { MAX_BACKUP_DATA_BYTES } from '@/features/account/requestLimits';
@@ -185,7 +186,7 @@ export async function uploadLegacyBackupData({
 			400
 		);
 	}
-	if (ua === null || ua === undefined) {
+	if (isNil(ua)) {
 		return createLegacyBackupServerError(
 			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidUserAgent,
 			400

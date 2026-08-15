@@ -1,3 +1,5 @@
+import isObject from 'lodash/isObject.js';
+
 import {
 	type IAdminAnnouncementProfile,
 	type IAdminAnnouncementVersionProfile,
@@ -17,14 +19,13 @@ import {
 	isNullableNonNegativeSafeInteger,
 	isPositiveSafeInteger,
 } from '@/shared/utilities/numbers/check';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 function parseJsonObject(value: string) {
 	try {
 		const parsed: unknown = JSON.parse(value);
 
-		return parsed !== null && typeof parsed === 'object'
-			? (parsed as Record<string, unknown>)
-			: null;
+		return isObject(parsed) ? (parsed as Record<string, unknown>) : null;
 	} catch {
 		return null;
 	}
@@ -38,15 +39,11 @@ function parseChangedFields(value: string): IAnnouncementChangedField[] {
 		}
 
 		return parsed.filter((field): field is IAnnouncementChangedField => {
-			if (
-				field === null ||
-				typeof field !== 'object' ||
-				Array.isArray(field)
-			) {
+			if (!checkIsRecord(field)) {
 				return false;
 			}
 
-			const record = field as Record<string, unknown>;
+			const record = field;
 
 			return (
 				typeof record['field'] === 'string' &&

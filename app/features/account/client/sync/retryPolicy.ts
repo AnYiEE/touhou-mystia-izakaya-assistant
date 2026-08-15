@@ -1,4 +1,4 @@
-import { AccountApiError } from '@/features/account/client/api';
+import { type AccountApiError } from '@/features/account/client/api';
 
 import {
 	MAX_SERVICE_RETRY_AFTER_SECONDS,

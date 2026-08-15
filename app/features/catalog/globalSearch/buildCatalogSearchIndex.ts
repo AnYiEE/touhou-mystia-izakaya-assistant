@@ -1,13 +1,13 @@
-import { type CustomerNormal } from '@/domain/catalog/customers/CustomerNormal';
-import { type CustomerRare } from '@/domain/catalog/customers/CustomerRare';
-import { type Beverage } from '@/domain/catalog/food/Beverage';
-import { type Ingredient } from '@/domain/catalog/food/Ingredient';
-import { type Recipe } from '@/domain/catalog/food/Recipe';
-import { type Clothes } from '@/domain/catalog/items/Clothes';
-import { type Cooker } from '@/domain/catalog/items/Cooker';
-import { type Currency } from '@/domain/catalog/items/Currency';
-import { type Ornament } from '@/domain/catalog/items/Ornament';
-import { type Partner } from '@/domain/catalog/items/Partner';
+import { type BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
+import { type FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import { type IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import { type NormalGuestCatalog } from '@/domain/catalog/guests/NormalGuestCatalog';
+import { type SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { type ClothesCatalog } from '@/domain/catalog/items/ClothesCatalog';
+import { type CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
+import { type CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
+import { type DecorationCatalog } from '@/domain/catalog/items/DecorationCatalog';
+import { type PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
 
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import type { IGlobalSearchIndexItem } from '@/features/globalSearch/contracts';
@@ -15,38 +15,38 @@ import type { IGlobalSearchIndexItem } from '@/features/globalSearch/contracts';
 import {
 	buildBeverageItems,
 	buildCookerItems,
-	buildCustomerItems,
+	buildFoodItems,
+	buildGuestItems,
 	buildIngredientItems,
-	buildRecipeItems,
 	buildSimpleItemSection,
 } from './sectionBuilders';
 
 interface IGlobalSearchIndexDataOptions {
-	beverages?: TItemData<Beverage>;
-	clothes?: TItemData<Clothes>;
-	cookers?: TItemData<Cooker>;
-	currencies?: TItemData<Currency>;
-	customerNormal?: TItemData<CustomerNormal>;
-	customerRare?: TItemData<CustomerRare>;
-	ingredients?: TItemData<Ingredient>;
-	ornaments?: TItemData<Ornament>;
-	partners?: TItemData<Partner>;
-	recipes?: TItemData<Recipe>;
+	beverages?: TItemData<BeverageCatalog>;
+	clothes?: TItemData<ClothesCatalog>;
+	cookers?: TItemData<CookerCatalog>;
+	currencyItems?: TItemData<CurrencyItemCatalog>;
+	decorations?: TItemData<DecorationCatalog>;
+	foods?: TItemData<FoodCatalog>;
+	ingredients?: TItemData<IngredientCatalog>;
+	normalGuests?: TItemData<NormalGuestCatalog>;
+	partners?: TItemData<PartnerCatalog>;
+	specialGuests?: TItemData<SpecialGuestCatalog>;
 }
 
 export function buildCatalogSearchIndex(
 	data: IGlobalSearchIndexDataOptions = {}
 ): IGlobalSearchIndexItem[] {
 	return [
-		...buildRecipeItems(data.recipes),
+		...buildFoodItems(data.foods),
 		...buildBeverageItems(data.beverages),
 		...buildIngredientItems(data.ingredients),
 		...buildCookerItems(data.cookers),
-		...buildSimpleItemSection('ornaments', data.ornaments),
+		...buildSimpleItemSection('decorations', data.decorations),
 		...buildSimpleItemSection('clothes', data.clothes),
 		...buildSimpleItemSection('partners', data.partners),
-		...buildSimpleItemSection('currencies', data.currencies),
-		...buildCustomerItems('customer-rare', data.customerRare),
-		...buildCustomerItems('customer-normal', data.customerNormal),
+		...buildSimpleItemSection('currency-items', data.currencyItems),
+		...buildGuestItems('special-guests', data.specialGuests),
+		...buildGuestItems('normal-guests', data.normalGuests),
 	];
 }

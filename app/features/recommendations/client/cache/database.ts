@@ -10,6 +10,7 @@ import {
 	isNonNegativeSafeInteger,
 	isPositiveSafeInteger,
 } from '@/shared/utilities/numbers/check';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 import {
 	RECOMMENDATION_CACHE_DATABASE_VERSION,
@@ -35,6 +36,8 @@ type TRecommendationCacheWriteTransaction = IDBPTransaction<
 	Array<TRecommendationCacheResultStoreName | 'metadata'>,
 	'readwrite'
 >;
+
+const LEGACY_SPECIAL_GUEST_PLAN_RESULT_STORE_NAME = 'customerRarePlanResults';
 
 let databasePromise:
 	| Promise<IDBPDatabase<IRecommendationCacheDatabase> | undefined>
@@ -100,10 +103,10 @@ function isValidMetadata(
 	namespace: string,
 	storeName: TRecommendationCacheResultStoreName
 ): value is IRecommendationCacheMetadata {
-	if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+	if (!checkIsRecord(value)) {
 		return false;
 	}
-	const metadata = value as Record<string, unknown>;
+	const metadata = value;
 	return (
 		metadata['id'] === createMetadataId(namespace, storeName) &&
 		metadata['namespace'] === namespace &&
@@ -206,30 +209,50 @@ async function getDatabase() {
 						disableCache();
 					},
 					upgrade(database) {
+						const legacyDatabase = database as unknown as Pick<
+							IDBDatabase,
+							'deleteObjectStore' | 'objectStoreNames'
+						>;
 						if (
-							!database.objectStoreNames.contains(
-								'suggestedMealCardResults'
+							legacyDatabase.objectStoreNames.contains(
+								LEGACY_SPECIAL_GUEST_PLAN_RESULT_STORE_NAME
 							)
 						) {
-							createResultStore(
-								database,
-								'suggestedMealCardResults'
+							legacyDatabase.deleteObjectStore(
+								LEGACY_SPECIAL_GUEST_PLAN_RESULT_STORE_NAME
 							);
-						}
-						if (
-							!database.objectStoreNames.contains(
-								'customerRarePlanResults'
-							)
-						) {
-							createResultStore(
-								database,
-								'customerRarePlanResults'
-							);
+							if (
+								legacyDatabase.objectStoreNames.contains(
+									'metadata'
+								)
+							) {
+								legacyDatabase.deleteObjectStore('metadata');
+							}
 						}
 						if (!database.objectStoreNames.contains('metadata')) {
 							database.createObjectStore('metadata', {
 								keyPath: 'id',
 							});
+						}
+						if (
+							!database.objectStoreNames.contains(
+								'specialGuestPlanResults'
+							)
+						) {
+							createResultStore(
+								database,
+								'specialGuestPlanResults'
+							);
+						}
+						if (
+							!database.objectStoreNames.contains(
+								'suggestedMealCardResults'
+							)
+						) {
+							createResultStore(
+								database,
+								'suggestedMealCardResults'
+							);
 						}
 					},
 				}
@@ -381,7 +404,7 @@ async function deleteOldNamespaceBatch(
 ) {
 	const { namespace } = getRecommendationCacheContext();
 	const transaction = database.transaction(
-		['suggestedMealCardResults', 'customerRarePlanResults', 'metadata'],
+		['suggestedMealCardResults', 'specialGuestPlanResults', 'metadata'],
 		'readwrite'
 	);
 	const deletedRecords: Array<{
@@ -391,7 +414,7 @@ async function deleteOldNamespaceBatch(
 	}> = [];
 	const storeNames = [
 		'suggestedMealCardResults',
-		'customerRarePlanResults',
+		'specialGuestPlanResults',
 	] as const;
 	await runTransaction(transaction, async () => {
 		for (const storeName of storeNames) {

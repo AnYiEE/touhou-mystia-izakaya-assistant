@@ -1,9 +1,9 @@
-import { Beverage } from '@/domain/catalog/food/Beverage';
-import { Ingredient } from '@/domain/catalog/food/Ingredient';
-import { Recipe } from '@/domain/catalog/food/Recipe';
-import type { TBeverageName } from '@/domain/data/beverages/types';
-import type { TIngredientName } from '@/domain/data/ingredients/types';
-import type { TRecipeName } from '@/domain/data/recipes/types';
+import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
+import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import type { TBeverageId } from '@/domain/data/beverages/types';
+import type { TFoodId } from '@/domain/data/foods/types';
+import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { ISuggestParams } from '@/domain/recommendations/types';
 
 import {
@@ -11,62 +11,62 @@ import {
 	type IV1RecommendationRequestMessage,
 } from './protocol';
 
-const beverageNames = Beverage.getInstance().getValuesByProp('name');
-const ingredientNames = Ingredient.getInstance().getValuesByProp('name');
-const recipeNames = Recipe.getInstance().getValuesByProp('name');
+const beverages = BeverageCatalog.getInstance().getValuesByProp('id');
+const foods = FoodCatalog.getInstance().getValuesByProp('id');
+const ingredients = IngredientCatalog.getInstance().getValuesByProp('id');
 
-function createHiddenNames<TName extends string>(
-	allNames: ReadonlyArray<TName>,
-	availability?: IV1RecommendationAvailabilityCategory<TName>
+function createHiddenItems<TId extends number>(
+	allItems: ReadonlyArray<TId>,
+	availability?: IV1RecommendationAvailabilityCategory<TId>
 ) {
-	const hiddenNames = new Set(availability?.exclude);
+	const hiddenItems = new Set(availability?.exclude);
 	if (availability?.include !== undefined) {
-		const includedNames = new Set(availability.include);
-		for (const name of allNames) {
-			if (!includedNames.has(name)) {
-				hiddenNames.add(name);
+		const includedItems = new Set(availability.include);
+		for (const item of allItems) {
+			if (!includedItems.has(item)) {
+				hiddenItems.add(item);
 			}
 		}
 	}
-	return hiddenNames;
+	return hiddenItems;
 }
 
 export function adaptV1RecommendationRequest({
 	payload,
 }: IV1RecommendationRequestMessage): ISuggestParams {
-	const { customer, options = {}, order, selection = {} } = payload;
+	const {
+		options = {},
+		order,
+		selection = {},
+		special_guest_id: specialGuest,
+	} = payload;
 	const availability = options.availability ?? {};
 	return {
-		cooker: options.cooker ?? null,
-		currentBeverage: selection.beverage ?? null,
-		currentRecipe:
-			selection.recipe === undefined
+		cooker: options.cooker_id ?? null,
+		currentBeverage: selection.beverage_id ?? null,
+		currentFood:
+			selection.food === undefined
 				? null
 				: {
 						extraIngredients: [
-							...(selection.recipe.extra_ingredients ?? []),
+							...(selection.food.extra_ingredient_ids ?? []),
 						],
-						name: selection.recipe.name,
-						recipeId: selection.recipe.recipe_id,
+						recipeId: selection.food.recipe_id,
 					},
-		customerName: customer,
-		customerOrder: {
-			beverageTag: order?.beverage_tag ?? null,
-			recipeTag: order?.recipe_tag ?? null,
+		guestOrder: {
+			beverageTag: order?.beverage_tag_id ?? null,
+			foodTag: order?.food_tag_id ?? null,
 		},
 		hasMystiaCooker: options.mystia_cooker ?? false,
-		hiddenBeverages: createHiddenNames<TBeverageName>(
-			beverageNames,
+		hiddenBeverages: createHiddenItems<TBeverageId>(
+			beverages,
 			availability.beverages
 		),
 		hiddenDlcs: new Set(),
-		hiddenIngredients: createHiddenNames<TIngredientName>(
-			ingredientNames,
+		hiddenFoods: createHiddenItems<TFoodId>(foods, availability.foods),
+		hiddenIngredients: createHiddenItems<TIngredientId>(
+			ingredients,
 			availability.ingredients
-		),
-		hiddenRecipes: createHiddenNames<TRecipeName>(
-			recipeNames,
-			availability.recipes
 		),
 		isFamousShop: options.famous_shop ?? false,
 		maxExtraIngredients: options.max_extra_ingredients ?? null,
@@ -74,7 +74,8 @@ export function adaptV1RecommendationRequest({
 		maxResults: options.max_results ?? 5,
 		popularTrend: {
 			isNegative: options.popular_trend?.negative ?? false,
-			tag: options.popular_trend?.tag ?? null,
+			tag: options.popular_trend?.food_tag_id ?? null,
 		},
+		specialGuest,
 	};
 }

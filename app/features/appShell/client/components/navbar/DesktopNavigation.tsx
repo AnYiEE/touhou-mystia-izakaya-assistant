@@ -5,7 +5,13 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { NavbarBrand, NavbarContent, NavbarItem } from '@heroui/navbar';
 import { cn } from '@heroui/theme';
-import { type Key, type PropsWithChildren, memo } from 'react';
+import {
+	type Key,
+	type PropsWithChildren,
+	memo,
+	useCallback,
+	useMemo,
+} from 'react';
 
 import Button, { type IButtonProps } from '@/design/ui/components/button';
 import Dropdown, {
@@ -33,6 +39,10 @@ const { baseURL } = PUBLIC_RUNTIME_CONFIG;
 const links = SITE_LINKS;
 const { name, shortName } = SITE_METADATA;
 const navItems = NAV_ITEMS;
+
+const NAVIGATION_MENU_ITEM_CLASSES = {
+	base: 'my-px p-0 transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
+} as const;
 
 interface INavbarButtonLinkProps extends Pick<
 	IButtonProps,
@@ -95,6 +105,24 @@ export default function DesktopNavigation({
 	shouldShowAccountAction,
 	shouldShowPreferences,
 }: IProps) {
+	const handleMenuAction = useCallback(
+		(key: Key) => {
+			if (typeof key === 'string') {
+				onNavigate(key);
+			}
+		},
+		[onNavigate]
+	);
+
+	const dropdownClassNames = useMemo(
+		() => ({
+			content: cn('p-0', {
+				'bg-background/70 backdrop-saturate-150': isHighAppearance,
+			}),
+		}),
+		[isHighAppearance]
+	);
+
 	return (
 		<>
 			<NavbarContent
@@ -164,12 +192,7 @@ export default function DesktopNavigation({
 										key={dropdownIndex}
 										shouldCloseOnScroll
 										onOpenChange={onDropdownOpenChange}
-										classNames={{
-											content: cn('p-0', {
-												'bg-background/70 backdrop-saturate-150':
-													isHighAppearance,
-											}),
-										}}
+										classNames={dropdownClassNames}
 									>
 										<NavbarItem>
 											<DropdownTrigger>
@@ -194,19 +217,17 @@ export default function DesktopNavigation({
 										</NavbarItem>
 										<DropdownMenu
 											items={dropdownItems}
-											onAction={(key) => {
-												onNavigate(key as string);
-											}}
+											onAction={handleMenuAction}
 											aria-label={`${dropdownLabel}列表`}
-											itemClasses={{
-												base: 'my-px p-0 transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
-											}}
+											itemClasses={
+												NAVIGATION_MENU_ITEM_CLASSES
+											}
 										>
 											{({
 												href,
 												label,
 												sprite,
-												spriteIndex,
+												spriteRecordId,
 											}) => (
 												<DropdownItem
 													key={href}
@@ -221,8 +242,8 @@ export default function DesktopNavigation({
 														startContent={
 															<Sprite
 																target={sprite}
-																index={
-																	spriteIndex
+																recordId={
+																	spriteRecordId
 																}
 																size={1.25}
 																className={cn({

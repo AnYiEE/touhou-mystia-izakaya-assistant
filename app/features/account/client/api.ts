@@ -20,8 +20,13 @@ import type {
 	IWebauthnCredentialListData,
 	TAccountMeResponse,
 } from '@/features/account/contracts';
+import {
+	SYNC_PROTOCOL_VERSION,
+	createSyncProtocolRequestBody,
+} from '@/features/account/sync/protocol';
 import type {
 	ISyncImportBackupCodeResponse,
+	ISyncProtocolRequest,
 	ISyncStateGetResponse,
 	ISyncStatePingBody,
 	ISyncStatePutBody,
@@ -411,6 +416,7 @@ export async function revokeAccountSsoGrant(
 
 export async function fetchSyncState(namespaces: string[] = []) {
 	const searchParams = new URLSearchParams();
+	searchParams.set('protocol_version', `${SYNC_PROTOCOL_VERSION}`);
 	namespaces.forEach((namespace) => {
 		searchParams.append('namespace', namespace);
 	});
@@ -426,11 +432,14 @@ export async function fetchSyncState(namespaces: string[] = []) {
 }
 
 export async function putSyncState(body: ISyncStatePutBody, csrfToken: string) {
+	const requestBody = createSyncProtocolRequestBody(
+		body
+	) satisfies ISyncProtocolRequest & ISyncStatePutBody;
 	try {
 		return await fetchServiceApi<ISyncStatePutResponse>(
 			'/api/v1/sync/state',
 			{
-				body: JSON.stringify(body),
+				body: JSON.stringify(requestBody),
 				headers: {
 					'Content-Type': FILE_TYPE_JSON,
 					'X-CSRF-Token': csrfToken,
@@ -447,11 +456,14 @@ export async function rebuildSyncState(
 	body: ISyncStateRebuildBody,
 	csrfToken: string
 ) {
+	const requestBody = createSyncProtocolRequestBody(
+		body
+	) satisfies ISyncProtocolRequest & ISyncStateRebuildBody;
 	try {
 		return await fetchServiceApi<ISyncStateRebuildResponse>(
 			'/api/v1/sync/rebuild',
 			{
-				body: JSON.stringify(body),
+				body: JSON.stringify(requestBody),
 				headers: {
 					'Content-Type': FILE_TYPE_JSON,
 					'X-CSRF-Token': csrfToken,
@@ -465,11 +477,14 @@ export async function rebuildSyncState(
 }
 
 export async function importBackupCode(code: string, csrfToken: string) {
+	const requestBody = createSyncProtocolRequestBody({
+		code,
+	}) satisfies ISyncProtocolRequest & { code: string };
 	try {
 		return await fetchServiceApi<ISyncImportBackupCodeResponse>(
 			'/api/v1/sync/import-backup-code',
 			{
-				body: JSON.stringify({ code }),
+				body: JSON.stringify(requestBody),
 				headers: {
 					'Content-Type': FILE_TYPE_JSON,
 					'X-CSRF-Token': csrfToken,
@@ -488,8 +503,11 @@ export function sendSyncPing(body: ISyncStatePingBody) {
 	}
 
 	try {
+		const requestBody = createSyncProtocolRequestBody(
+			body
+		) satisfies ISyncProtocolRequest & ISyncStatePingBody;
 		void fetch(createServiceApiUrl('/api/v1/sync/ping'), {
-			body: JSON.stringify(body),
+			body: JSON.stringify(requestBody),
 			cache: 'no-store',
 			credentials: 'include',
 			headers: { 'Content-Type': FILE_TYPE_JSON },

@@ -1,37 +1,40 @@
-import type { TBeverageName, TBeverages } from '@/domain/data/beverages/types';
-import type { TClothes, TClothesName } from '@/domain/data/clothes/types';
-import type { TCookerName, TCookers } from '@/domain/data/cookers/types';
+import type { TBeverageId, TBeverages } from '@/domain/data/beverages/types';
+import type { TClothes, TClothesId } from '@/domain/data/clothes/types';
+import type { TCookerId, TCookers } from '@/domain/data/cookers/types';
 import type {
-	TCurrencies,
-	TCurrencyName,
-} from '@/domain/data/currencies/types';
+	TCurrencyItemId,
+	TCurrencyItems,
+} from '@/domain/data/currencyItems/types';
 import type {
-	TCustomerNormalName,
-	TCustomerNormals,
-} from '@/domain/data/customers/normal/types';
+	TDecorationId,
+	TDecorations,
+} from '@/domain/data/decorations/types';
+import type { TFoodId, TFoods } from '@/domain/data/foods/types';
 import type {
-	TCustomerRareName,
-	TCustomerRares,
-} from '@/domain/data/customers/rare/types';
+	TNormalGuestId,
+	TNormalGuests,
+} from '@/domain/data/guests/normal/types';
 import type {
-	TIngredientName,
+	TSpecialGuestId,
+	TSpecialGuests,
+} from '@/domain/data/guests/special/types';
+import type {
+	TIngredientId,
 	TIngredients,
 } from '@/domain/data/ingredients/types';
-import type { TOrnamentName, TOrnaments } from '@/domain/data/ornaments/types';
-import type { TPartnerName, TPartners } from '@/domain/data/partners/types';
-import type { TRecipeName, TRecipes } from '@/domain/data/recipes/types';
+import type { TPartnerId, TPartners } from '@/domain/data/partners/types';
 
 export type TSpriteTarget =
 	| 'beverage'
 	| 'clothes'
 	| 'cooker'
-	| 'currency'
-	| 'customer_normal'
-	| 'customer_rare'
+	| 'currency_item'
+	| 'decoration'
+	| 'food'
 	| 'ingredient'
-	| 'ornament'
+	| 'normal_guest'
 	| 'partner'
-	| 'recipe';
+	| 'special_guest';
 
 export type TSpriteData<T extends TSpriteTarget = TSpriteTarget> =
 	T extends 'beverage'
@@ -40,44 +43,48 @@ export type TSpriteData<T extends TSpriteTarget = TSpriteTarget> =
 			? TClothes
 			: T extends 'cooker'
 				? TCookers
-				: T extends 'currency'
-					? TCurrencies
-					: T extends 'customer_normal'
-						? TCustomerNormals
-						: T extends 'customer_rare'
-							? TCustomerRares
+				: T extends 'currency_item'
+					? TCurrencyItems
+					: T extends 'decoration'
+						? TDecorations
+						: T extends 'food'
+							? TFoods
 							: T extends 'ingredient'
 								? TIngredients
-								: T extends 'ornament'
-									? TOrnaments
+								: T extends 'normal_guest'
+									? TNormalGuests
 									: T extends 'partner'
 										? TPartners
-										: T extends 'recipe'
-											? TRecipes
+										: T extends 'special_guest'
+											? TSpecialGuests
 											: never;
 
-export type TSpriteName<T extends TSpriteTarget = TSpriteTarget> =
+export type TSpriteId<T extends TSpriteTarget = TSpriteTarget> =
 	T extends 'beverage'
-		? TBeverageName
+		? TBeverageId
 		: T extends 'clothes'
-			? TClothesName
+			? TClothesId
 			: T extends 'cooker'
-				? TCookerName
-				: T extends 'currency'
-					? TCurrencyName
-					: T extends 'customer_normal'
-						? TCustomerNormalName
-						: T extends 'customer_rare'
-							? TCustomerRareName
+				? TCookerId
+				: T extends 'currency_item'
+					? TCurrencyItemId
+					: T extends 'decoration'
+						? TDecorationId
+						: T extends 'food'
+							? TFoodId
 							: T extends 'ingredient'
-								? TIngredientName
-								: T extends 'ornament'
-									? TOrnamentName
+								? TIngredientId
+								: T extends 'normal_guest'
+									? TNormalGuestId
 									: T extends 'partner'
-										? TPartnerName
-										: T extends 'recipe'
-											? TRecipeName
+										? TPartnerId
+										: T extends 'special_guest'
+											? TSpecialGuestId
 											: never;
+
+export type TSpriteRecordIdentity<T extends TSpriteTarget = TSpriteTarget> = {
+	[TTarget in T]: { recordId: TSpriteId<TTarget>; spriteTarget: TTarget };
+}[T];
 
 export interface ISpriteConfig {
 	col: number;

@@ -5,10 +5,10 @@
 			"type": "recommendation.request",
 			"request_id": "reference-complete-meal",
 			"payload": {
-				"customer": "比那名居天子",
-				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
 				"options": {
-					"availability": { "ingredients": { "exclude": ["蜂蜜"] } },
+					"availability": { "ingredients": { "exclude": [24] } },
 					"max_results": 3
 				}
 			}
@@ -18,17 +18,15 @@
 		"name": "固定料理",
 		"request": {
 			"type": "recommendation.request",
-			"request_id": "reference-fixed-recipe",
+			"request_id": "reference-fixed-food",
 			"payload": {
-				"customer": "比那名居天子",
-				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
-				"selection": {
-					"recipe": { "name": "桃花羹", "recipe_id": 39 }
-				},
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"selection": { "food": { "recipe_id": 39 } },
 				"options": {
 					"availability": {
-						"recipes": { "include": ["桃花羹"] },
-						"ingredients": { "exclude": ["桃子"] }
+						"foods": { "include": [33] },
+						"ingredients": { "exclude": [21] }
 					},
 					"max_results": 3
 				}
@@ -41,15 +39,15 @@
 			"type": "recommendation.request",
 			"request_id": "reference-fixed-beverage",
 			"payload": {
-				"customer": "比那名居天子",
-				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
-				"selection": { "beverage": "教父" },
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"selection": { "beverage_id": 17 },
 				"options": {
 					"availability": {
-						"beverages": { "include": ["教父"] },
-						"recipes": { "include": ["华光玉煎包"] }
+						"beverages": { "include": [17] },
+						"foods": { "include": [63] }
 					},
-					"cooker": "油锅",
+					"cooker_id": 2,
 					"max_results": 3
 				}
 			}
@@ -61,16 +59,13 @@
 			"type": "recommendation.request",
 			"request_id": "reference-fixed-meal",
 			"payload": {
-				"customer": "比那名居天子",
-				"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
-				"selection": {
-					"recipe": { "name": "大奢宴", "recipe_id": 36 },
-					"beverage": "教父"
-				},
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"selection": { "beverage_id": 17, "food": { "recipe_id": 36 } },
 				"options": {
 					"availability": {
-						"recipes": { "include": ["大奢宴"] },
-						"beverages": { "include": ["教父"] }
+						"beverages": { "include": [17] },
+						"foods": { "include": [24] }
 					},
 					"max_results": 3
 				}

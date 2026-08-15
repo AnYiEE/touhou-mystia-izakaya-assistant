@@ -13,6 +13,7 @@ import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 import {
 	SSO_CALLBACK_CLAIM_LEASE_MS,
@@ -96,17 +97,12 @@ function parseSsoCallbackMetadata(
 		return {};
 	}
 
-	if (
-		parsed === null ||
-		typeof parsed !== 'object' ||
-		Array.isArray(parsed)
-	) {
+	if (!checkIsRecord(parsed)) {
 		return {};
 	}
 
-	const parsedRecord = parsed as Record<string, unknown>;
 	const metadata: Record<string, boolean | null | number | string> = {};
-	for (const [key, metadataValue] of Object.entries(parsedRecord)) {
+	for (const [key, metadataValue] of Object.entries(parsed)) {
 		if (
 			metadataValue === null ||
 			typeof metadataValue === 'boolean' ||
@@ -214,7 +210,7 @@ async function dispatchSsoCallback(
 		body
 	);
 	const abortController = new AbortController();
-	const timeoutId = globalThis.setTimeout(() => {
+	const timeoutId = setTimeout(() => {
 		abortController.abort();
 	}, SSO_CALLBACK_TIMEOUT_MS);
 	const startedAt = Date.now();
@@ -244,7 +240,7 @@ async function dispatchSsoCallback(
 			status: 'failed',
 		};
 	} finally {
-		globalThis.clearTimeout(timeoutId);
+		clearTimeout(timeoutId);
 	}
 	const durationMs = Date.now() - startedAt;
 

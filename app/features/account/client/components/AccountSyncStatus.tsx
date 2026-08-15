@@ -49,6 +49,15 @@ import AccountConfirmButton from './AccountConfirmButton';
 interface IProps {}
 
 const SYNC_DETAIL_ACCORDION_KEY = 'sync-detail';
+const CLOSED_SYNC_DETAIL_KEYS: ReadonlyArray<string> = [];
+const OPEN_SYNC_DETAIL_KEYS: ReadonlyArray<string> = [
+	SYNC_DETAIL_ACCORDION_KEY,
+];
+const SYNC_DETAIL_ITEM_CLASSES = {
+	base: 'p-0',
+	content: 'space-y-3 border-t border-default-200/80 pt-3',
+	trigger: 'hidden',
+} as const;
 const syncNamespaces = Object.values(SYNC_NAMESPACE_MAP);
 
 function getNamespaceLabel(namespace: TSyncNamespace) {
@@ -335,14 +344,14 @@ export default memo<IProps>(function AccountSyncStatus() {
 				disableAnimation={isReducedMotion}
 				hideIndicator
 				isCompact
-				selectedKeys={isDetailOpen ? [SYNC_DETAIL_ACCORDION_KEY] : []}
+				selectedKeys={
+					isDetailOpen
+						? OPEN_SYNC_DETAIL_KEYS
+						: CLOSED_SYNC_DETAIL_KEYS
+				}
 				selectionMode="multiple"
 				className="p-0"
-				itemClasses={{
-					base: 'p-0',
-					content: 'space-y-3 border-t border-default-200/80 pt-3',
-					trigger: 'hidden',
-				}}
+				itemClasses={SYNC_DETAIL_ITEM_CLASSES}
 			>
 				<AccordionItem
 					key={SYNC_DETAIL_ACCORDION_KEY}

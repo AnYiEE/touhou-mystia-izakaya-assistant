@@ -16,6 +16,7 @@ import {
 	memo,
 	useCallback,
 	useEffect,
+	useMemo,
 	useRef,
 	useState,
 } from 'react';
@@ -39,10 +40,9 @@ import {
 	ACCOUNT_SYNC_CONFLICT_RESULT_MESSAGE_MAP,
 	ACCOUNT_SYNC_CONTROL_LABEL_MAP,
 } from '@/features/account/client/sync/conflictCopy';
-import { scheduleAccountSyncFlush } from '@/features/account/client/sync/flush';
 import { setAccountSyncConflictResolutionReadiness } from '@/features/account/client/sync/syncRuntimeState';
 import type { ISyncConflictItem } from '@/features/account/sync/types';
-import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { trackEventWithoutInteractionCount } from '@/features/analytics/client/trackEvent';
 import { CoordinatedModal } from '@/features/overlays/client';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
@@ -83,6 +83,12 @@ const CONFLICT_COLLAPSE_MOTION_TRANSITION = {
 	duration: 0.14,
 	ease: 'easeInOut',
 } as const;
+const CONFLICT_COLLAPSE_REDUCED_MOTION_TRANSITION = { duration: 0 } as const;
+const CONFLICT_HEADING_CLASS_NAMES = { subTitle: 'mb-0' } as const;
+const CONFLICT_MODAL_COORDINATION = {
+	id: 'account.sync-conflict',
+	requestOwnership: 'external',
+} as const;
 
 interface IConflictCollapseProps {
 	className?: string;
@@ -101,19 +107,24 @@ const ConflictCollapse = memo<PropsWithChildren<IConflictCollapseProps>>(
 		onAnimationComplete,
 		onUpdate,
 	}) {
+		const animate = useMemo(
+			() => ({
+				gridTemplateRows: isOpen ? '1fr' : '0fr',
+				opacity: isOpen ? 1 : 0,
+			}),
+			[isOpen]
+		);
+
 		return (
 			<motion.div
-				animate={{
-					gridTemplateRows: isOpen ? '1fr' : '0fr',
-					opacity: isOpen ? 1 : 0,
-				}}
+				animate={animate}
 				aria-hidden={!isOpen}
 				className={cn('grid', className)}
 				initial={false}
 				inert={isOpen ? undefined : true}
 				transition={
 					isReducedMotion
-						? { duration: 0 }
+						? CONFLICT_COLLAPSE_REDUCED_MOTION_TRANSITION
 						: CONFLICT_COLLAPSE_MOTION_TRANSITION
 				}
 				{...(onAnimationComplete === undefined
@@ -130,10 +141,10 @@ const ConflictCollapse = memo<PropsWithChildren<IConflictCollapseProps>>(
 interface IProps {}
 
 export default memo<IProps>(function AccountConflictModal() {
+	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
 	const vibrate = useVibrate();
 
-	const { isHighAppearance } = useDesignPreferences();
 	const conflicts = accountStore.shared.sync.conflicts.use();
 	const hasIsolatedState = accountStore.shared.sync.hasIsolatedState.use();
 	const lastError = accountStore.shared.sync.lastError.use();
@@ -154,6 +165,7 @@ export default memo<IProps>(function AccountConflictModal() {
 		useState<TSyncConflictResolution | null>(null);
 	const [isTechnicalDetailsOpen, setIsTechnicalDetailsOpen] = useState(false);
 
+	const resolutionIntentSnapshotKeyRef = useRef<string | null>(null);
 	const resolvingTokenRef = useRef<symbol | null>(null);
 	const technicalDetailsRef = useRef<HTMLDivElement>(null);
 
@@ -184,6 +196,7 @@ export default memo<IProps>(function AccountConflictModal() {
 	}, [conflict, hasIsolatedState, remoteConflictNamespaces.length]);
 
 	useEffect(() => {
+		resolutionIntentSnapshotKeyRef.current = null;
 		resolvingTokenRef.current = null;
 		setResolvingResolution(null);
 		setMessage(null);
@@ -194,7 +207,11 @@ export default memo<IProps>(function AccountConflictModal() {
 
 	useEffect(() => {
 		if (isModalOpen && visibleConflictKey !== null) {
-			trackEvent(trackEvent.category.show, 'Modal', 'Account Conflict');
+			trackEventWithoutInteractionCount(
+				trackEventWithoutInteractionCount.category.show,
+				'Modal',
+				'Account Conflict'
+			);
 		}
 	}, [isModalOpen, visibleConflictKey]);
 
@@ -208,14 +225,6 @@ export default memo<IProps>(function AccountConflictModal() {
 				return;
 			}
 
-			vibrate();
-
-			trackEvent(
-				trackEvent.category.click,
-				'Account Conflict Button',
-				getConflictResolutionTrackName(resolution)
-			);
-
 			const resolvingToken = Symbol('conflict-resolution');
 			const resolutionAttempt =
 				createConflictResolutionPresentationAttempt({
@@ -223,6 +232,8 @@ export default memo<IProps>(function AccountConflictModal() {
 					resolutionToken: resolvingToken,
 					userId: user.id,
 				});
+			resolutionIntentSnapshotKeyRef.current =
+				resolutionAttempt.conflictSnapshotKey;
 			const checkPresentationAttemptCurrent = () => {
 				const currentUserId =
 					accountStore.shared.user.get()?.id ?? null;
@@ -261,6 +272,7 @@ export default memo<IProps>(function AccountConflictModal() {
 					currentConflict === undefined ||
 					!checkConflictSnapshotUnchanged(currentConflict, conflict)
 				) {
+					resolutionIntentSnapshotKeyRef.current = null;
 					setResolutionIntent(null);
 					setMessage(ACCOUNT_SYNC_CONFLICT_MESSAGE_MAP.stale);
 					return;
@@ -284,8 +296,13 @@ export default memo<IProps>(function AccountConflictModal() {
 					result.status === 'resolved' ||
 					result.status === 'resolved-elsewhere'
 				) {
+					resolutionIntentSnapshotKeyRef.current = null;
+					trackEventWithoutInteractionCount(
+						trackEventWithoutInteractionCount.category.click,
+						'Account Conflict Button',
+						getConflictResolutionTrackName(resolution)
+					);
 					setResolutionIntent(null);
-					scheduleAccountSyncFlush();
 					return;
 				}
 				setMessage(
@@ -294,6 +311,7 @@ export default memo<IProps>(function AccountConflictModal() {
 				if (result.status === 'busy') {
 					return;
 				}
+				resolutionIntentSnapshotKeyRef.current = null;
 				setResolutionIntent(null);
 			} catch (error) {
 				console.error('Failed to resolve conflict.', {
@@ -302,6 +320,7 @@ export default memo<IProps>(function AccountConflictModal() {
 				if (!checkPresentationAttemptCurrent()) {
 					return;
 				}
+				resolutionIntentSnapshotKeyRef.current = null;
 				setResolutionIntent(null);
 				setMessage(ACCOUNT_SYNC_CONFLICT_MESSAGE_MAP.unexpected);
 			} finally {
@@ -311,7 +330,7 @@ export default memo<IProps>(function AccountConflictModal() {
 				}
 			}
 		},
-		[conflict, user, vibrate]
+		[conflict, user]
 	);
 
 	const currentResolutionReadiness =
@@ -323,13 +342,19 @@ export default memo<IProps>(function AccountConflictModal() {
 		if (
 			currentResolutionReadiness !== 'ready' ||
 			resolutionIntent === null ||
+			resolutionIntentSnapshotKeyRef.current !== conflictSnapshotKey ||
 			resolvingTokenRef.current !== null
 		) {
 			return;
 		}
 
 		void resolveConflict(resolutionIntent);
-	}, [currentResolutionReadiness, resolutionIntent, resolveConflict]);
+	}, [
+		conflictSnapshotKey,
+		currentResolutionReadiness,
+		resolutionIntent,
+		resolveConflict,
+	]);
 
 	useEffect(() => {
 		if (
@@ -359,8 +384,11 @@ export default memo<IProps>(function AccountConflictModal() {
 	}, []);
 
 	const handleUseMerged = useCallback(() => {
+		vibrate();
+		setMessage(null);
+		setPendingResolution(null);
 		void resolveConflict('merged');
-	}, [resolveConflict]);
+	}, [resolveConflict, vibrate]);
 
 	const handleCancelResolution = useCallback(() => {
 		setPendingResolution(null);
@@ -371,8 +399,9 @@ export default memo<IProps>(function AccountConflictModal() {
 			return;
 		}
 
+		vibrate();
 		void resolveConflict(pendingResolution);
-	}, [pendingResolution, resolveConflict]);
+	}, [pendingResolution, resolveConflict, vibrate]);
 
 	const handleToggleTechnicalDetails = useCallback(() => {
 		setIsTechnicalDetailsOpen((isOpen) => !isOpen);
@@ -408,10 +437,7 @@ export default memo<IProps>(function AccountConflictModal() {
 			return (
 				<CoordinatedModal
 					aria-label="云同步冲突待处理"
-					coordination={{
-						id: 'account.sync-conflict',
-						requestOwnership: 'external',
-					}}
+					coordination={CONFLICT_MODAL_COORDINATION}
 					hideCloseButton
 					isDismissable={false}
 					isKeyboardDismissDisabled
@@ -453,10 +479,7 @@ export default memo<IProps>(function AccountConflictModal() {
 			return (
 				<CoordinatedModal
 					aria-label={isolatedStateCopy.title}
-					coordination={{
-						id: 'account.sync-conflict',
-						requestOwnership: 'external',
-					}}
+					coordination={CONFLICT_MODAL_COORDINATION}
 					hideCloseButton
 					isDismissable={false}
 					isKeyboardDismissDisabled
@@ -480,10 +503,7 @@ export default memo<IProps>(function AccountConflictModal() {
 		return (
 			<CoordinatedModal
 				aria-label="云同步冲突"
-				coordination={{
-					id: 'account.sync-conflict',
-					requestOwnership: 'external',
-				}}
+				coordination={CONFLICT_MODAL_COORDINATION}
 				isOpen={false}
 			>
 				<div />
@@ -524,10 +544,7 @@ export default memo<IProps>(function AccountConflictModal() {
 		return (
 			<CoordinatedModal
 				aria-label="跨标签页同步冲突"
-				coordination={{
-					id: 'account.sync-conflict',
-					requestOwnership: 'external',
-				}}
+				coordination={CONFLICT_MODAL_COORDINATION}
 				hideCloseButton
 				isDismissable={false}
 				isKeyboardDismissDisabled
@@ -539,7 +556,7 @@ export default memo<IProps>(function AccountConflictModal() {
 				<div className="w-full space-y-4">
 					<Heading
 						as="h2"
-						classNames={{ subTitle: 'mb-0' }}
+						classNames={CONFLICT_HEADING_CLASS_NAMES}
 						isFirst
 						subTitle={`多个标签页同时修改了“${namespaceLabel}”。所有候选都已保留，请明确选择一个版本。`}
 					>
@@ -590,6 +607,7 @@ export default memo<IProps>(function AccountConflictModal() {
 										}
 										variant="flat"
 										onPress={() => {
+											vibrate();
 											void resolveConflict(resolution);
 										}}
 									>
@@ -610,10 +628,7 @@ export default memo<IProps>(function AccountConflictModal() {
 	return (
 		<CoordinatedModal
 			aria-label="云同步冲突"
-			coordination={{
-				id: 'account.sync-conflict',
-				requestOwnership: 'external',
-			}}
+			coordination={CONFLICT_MODAL_COORDINATION}
 			hideCloseButton
 			isDismissable={false}
 			isKeyboardDismissDisabled
@@ -630,7 +645,7 @@ export default memo<IProps>(function AccountConflictModal() {
 					<div className="min-w-0">
 						<Heading
 							as="h2"
-							classNames={{ subTitle: 'mb-0' }}
+							classNames={CONFLICT_HEADING_CLASS_NAMES}
 							isFirst
 							subTitle={`当前设备和云端都修改过“${namespaceLabel}”，请选择要保留的内容。`}
 						>

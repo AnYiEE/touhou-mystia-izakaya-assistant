@@ -201,9 +201,6 @@ function tryResolveStoredAutomaticConflict(
 				result.status === 'resolved' ||
 				result.status === 'resolved-elsewhere'
 			) {
-				if (resolution === 'merged') {
-					getAccountSyncLifecyclePort().scheduleFlush();
-				}
 				return;
 			}
 			if (result.status === 'busy') {

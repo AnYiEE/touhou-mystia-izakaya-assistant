@@ -1,9 +1,8 @@
 import { faCircleInfo, faGear } from '@fortawesome/free-solid-svg-icons';
 import { type FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
 
-import type { TSpriteTarget } from '@/domain/data/sprites/types';
-
 import { NAV_ITEMS } from '@/features/appShell/navigation/config';
+import type { TSpriteNavigationItem } from '@/features/appShell/navigation/contracts';
 
 const navItems = NAV_ITEMS;
 
@@ -13,27 +12,22 @@ export interface IMobileIconNavItem {
 	label: string;
 }
 
-export interface IMobileSpriteNavItem {
-	href: string;
-	label: string;
-	sprite: TSpriteTarget;
-	spriteIndex: number;
-}
+export type TMobileSpriteNavItem = TSpriteNavigationItem;
 
-export const MOBILE_CUSTOMER_NAV_ITEMS = [
+export const MOBILE_GUEST_NAV_ITEMS = [
 	{
-		href: '/customer-rare',
+		href: '/special-guests',
 		label: '稀客',
-		sprite: 'customer_rare',
-		spriteIndex: 0,
+		sprite: 'special_guest',
+		spriteRecordId: 0,
 	},
 	{
-		href: '/customer-normal',
+		href: '/normal-guests',
 		label: '普客',
-		sprite: 'customer_normal',
-		spriteIndex: 0,
+		sprite: 'normal_guest',
+		spriteRecordId: 0,
 	},
-] as const satisfies ReadonlyArray<IMobileSpriteNavItem>;
+] as const satisfies ReadonlyArray<TMobileSpriteNavItem>;
 
 export const MOBILE_UTILITY_NAV_ITEMS = [
 	{ href: '/preferences', icon: faGear, label: '设置' },

@@ -1,3 +1,4 @@
+import isNil from 'lodash/isNil.js';
 import { type NextRequest } from 'next/server';
 
 import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
@@ -76,10 +77,9 @@ export async function POST(request: NextRequest) {
 			400
 		);
 	}
-	const nickname =
-		nicknameValue === undefined || nicknameValue === null
-			? null
-			: userModule.normalizeNickname(nicknameValue);
+	const nickname = isNil(nicknameValue)
+		? null
+		: userModule.normalizeNickname(nicknameValue);
 	if (!userModule.checkNicknamePolicy(nickname)) {
 		return createNoStoreErrorResponse(
 			ACCOUNT_API_RESPONSE_CODE_MAP.invalidNickname,

@@ -113,15 +113,15 @@ export async function POST(request: NextRequest) {
 		if (result.message === 'credential-state-stale') {
 			return createCredentialStateStaleResponse();
 		}
-		if (result.message === 'user-disabled') {
-			return createNoStoreErrorResponse(
-				ACCOUNT_API_RESPONSE_CODE_MAP.userDisabled,
-				403
-			);
-		}
 		if (result.message === 'user-deleted') {
 			return createNoStoreErrorResponse(
 				ACCOUNT_API_RESPONSE_CODE_MAP.userDeleted,
+				403
+			);
+		}
+		if (result.message === 'user-disabled') {
+			return createNoStoreErrorResponse(
+				ACCOUNT_API_RESPONSE_CODE_MAP.userDisabled,
 				403
 			);
 		}

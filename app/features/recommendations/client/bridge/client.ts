@@ -11,6 +11,7 @@ import { suggestMeals } from '@/features/recommendations/client/suggestMeals';
 import type { IAccountGatePort } from '@/features/recommendations/contracts';
 
 import { SITE_METADATA } from '@/shared/site/metadata';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 import {
 	discardRecommendationBridgeLaunchDescriptor,
@@ -63,10 +64,10 @@ interface IBridgeRuntime {
 	handshakeTimer: ReturnType<typeof setTimeout> | null;
 	maxInFlight: number;
 	offlineStartedAt: number | null;
+	readyStableTimer: ReturnType<typeof setTimeout> | null;
 	reconnectAttempt: number;
 	reconnectBudgetStartedAt: number | null;
 	reconnectTimer: ReturnType<typeof setTimeout> | null;
-	readyStableTimer: ReturnType<typeof setTimeout> | null;
 	socket: WebSocket | null;
 	state: TBridgeState;
 	stopSubscriptions: Array<() => void>;
@@ -93,7 +94,7 @@ function checkAccountGate(target: IBridgeRuntime) {
 
 function clearTimer(timer: ReturnType<typeof setTimeout> | null) {
 	if (timer !== null) {
-		globalThis.clearTimeout(timer);
+		clearTimeout(timer);
 	}
 }
 
@@ -190,7 +191,7 @@ function checkCloseCanReconnect(code: number) {
 
 async function checkLocalNetworkPermissionDenied() {
 	// eslint-disable-next-line compat/compat -- Queried conditionally with legacy-name and unsupported-browser fallbacks.
-	const permissions = globalThis.navigator.permissions as Permissions & {
+	const permissions = navigator.permissions as Permissions & {
 		query(descriptor: { name: string }): Promise<PermissionStatus>;
 	};
 	for (const name of ['loopback-network', 'local-network-access']) {
@@ -215,7 +216,7 @@ function scheduleReconnect(target: IBridgeRuntime) {
 	}
 	target.state = 'reconnecting';
 	abandonAllTasks(target);
-	if (!globalThis.navigator.onLine) {
+	if (!navigator.onLine) {
 		target.offlineStartedAt ??= Date.now();
 		return;
 	}
@@ -232,7 +233,7 @@ function scheduleReconnect(target: IBridgeRuntime) {
 		getReconnectDelay(target.reconnectAttempt++),
 		remainingBudgetMs
 	);
-	target.reconnectTimer = globalThis.setTimeout(() => {
+	target.reconnectTimer = setTimeout(() => {
 		target.reconnectTimer = null;
 		if (
 			target.reconnectBudgetStartedAt !== null &&
@@ -413,19 +414,14 @@ function cancelRecommendationTask(
 function readRequestEnvelope(text: string) {
 	const value = parseJsonWithUniqueMembers(text);
 	if (
-		typeof value !== 'object' ||
-		value === null ||
-		Array.isArray(value) ||
-		(value as Record<string, unknown>)['type'] !==
-			'recommendation.request' ||
-		typeof (value as Record<string, unknown>)['request_id'] !== 'string' ||
-		!V1_REQUEST_ID_PATTERN.test(
-			(value as Record<string, unknown>)['request_id'] as string
-		)
+		!checkIsRecord(value) ||
+		value['type'] !== 'recommendation.request' ||
+		typeof value['request_id'] !== 'string' ||
+		!V1_REQUEST_ID_PATTERN.test(value['request_id'])
 	) {
 		return null;
 	}
-	return (value as Record<string, unknown>)['request_id'] as string;
+	return value['request_id'];
 }
 
 function handleReadyMessage(
@@ -436,11 +432,9 @@ function handleReadyMessage(
 	const descriptor = readRecommendationBridgeLaunchDescriptor();
 	const rawMessage = parseJsonWithUniqueMembers(text);
 	if (
-		typeof rawMessage === 'object' &&
-		rawMessage !== null &&
-		!Array.isArray(rawMessage) &&
-		(rawMessage as Record<string, unknown>)['type'] === 'bridge.ready' &&
-		(rawMessage as Record<string, unknown>)['protocol_version'] !== 1
+		checkIsRecord(rawMessage) &&
+		rawMessage['type'] === 'bridge.ready' &&
+		rawMessage['protocol_version'] !== 1
 	) {
 		stopRuntime(target, {
 			closeCode: RECOMMENDATION_BRIDGE_CLOSE_CODES.unsupportedProtocol,
@@ -469,7 +463,7 @@ function handleReadyMessage(
 	recentRequestIds.length = 0;
 	recentRequestIdSet.clear();
 	clearTimer(target.readyStableTimer);
-	target.readyStableTimer = globalThis.setTimeout(() => {
+	target.readyStableTimer = setTimeout(() => {
 		if (
 			target.connectionGeneration === generation &&
 			target.state === 'ready'
@@ -653,7 +647,7 @@ async function connect(target: IBridgeRuntime) {
 				type: 'bridge.hello',
 			})
 		);
-		target.handshakeTimer = globalThis.setTimeout(() => {
+		target.handshakeTimer = setTimeout(() => {
 			if (
 				target.connectionGeneration !== generation ||
 				target.state !== 'connecting'

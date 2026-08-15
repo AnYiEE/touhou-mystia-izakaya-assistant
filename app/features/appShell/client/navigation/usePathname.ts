@@ -21,7 +21,7 @@ export function usePathname() {
 	);
 
 	const pushState = useCallback<TUpdateRoute>((route, path = '') => {
-		globalThis.history.pushState(null, '', concatPath(route, path));
+		history.pushState(null, '', concatPath(route, path));
 	}, []);
 
 	const replace = useCallback<TUpdateRoute>(
@@ -32,7 +32,7 @@ export function usePathname() {
 	);
 
 	const replaceState = useCallback<TUpdateRoute>((route, path = '') => {
-		globalThis.history.replaceState(null, '', concatPath(route, path));
+		history.replaceState(null, '', concatPath(route, path));
 	}, []);
 
 	return { pathname, push, pushState, replace, replaceState };

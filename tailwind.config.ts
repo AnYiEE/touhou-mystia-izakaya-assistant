@@ -1,5 +1,3 @@
-/* eslint-disable sort-keys */
-
 import { heroui } from '@heroui/theme';
 import { type Config } from 'tailwindcss';
 
@@ -30,6 +28,14 @@ const config: Config = {
 	],
 	darkMode: 'selector',
 	future: { hoverOnlyWhenSupported: true },
+	plugins: [
+		heroui({
+			themes: {
+				izakaya: { colors: semanticColors.light, extend: 'light' },
+				'izakaya-dark': { colors: semanticColors.dark, extend: 'dark' },
+			},
+		}),
+	],
 	safelist: IS_PRODUCTION
 		? [
 				// For compatible with browsers that do not support the `gap` property.
@@ -37,14 +43,6 @@ const config: Config = {
 			]
 		: [],
 	theme: { extend: getExtendConfig(CDN_URL), fontFamily },
-	plugins: [
-		heroui({
-			themes: {
-				'izakaya-dark': { extend: 'dark', colors: semanticColors.dark },
-				izakaya: { extend: 'light', colors: semanticColors.light },
-			},
-		}),
-	],
 };
 
 export default config;

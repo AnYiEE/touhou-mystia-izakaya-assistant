@@ -35,11 +35,11 @@ dotnet run --project RecommendationBridgeReference.csproj
 
 连接 ready 后，参考程序会发送这四个案例，再演示 `max_rating` 的全部五档取值、取消请求和可修正的业务错误。响应按 `request_id` 关联；`meals[0]` 是首选，其余项目是候选。
 
-固定料理必须同时发送标准料理名和安全整数 `recipe_id`。每个结果也必须返回算法实际采用的 `recipe_id`；Mod 比较套餐身份时必须包含料理名、食谱 ID、酒水和按无序集合规范化的额外食材。
+固定 Food 直接发送安全整数 `recipe_id`，其所属 Food 由该 Recipe ID 的唯一 owner 确定。每个结果也必须返回算法实际采用的 `recipe_id`；Mod 比较套餐身份时必须包含 Recipe ID、Beverage ID 和按无序集合规范化的额外 Ingredient ID。
 
-案例通过 `options.availability` 约束料理、酒水和食材。每类可以提供 `include` 白名单与 `exclude` 黑名单，最终范围为 `include（省略时为当前顾客可用全集）− exclude`。同一项同时出现时以黑名单为准。固定料理的基础食材不受食材范围限制，固定和算法新增的额外食材仍必须在最终食材范围内。
+案例通过 `options.availability` 的 `beverages/foods/ingredients` 约束对应分类 ID。每类可以提供 `include` 白名单与 `exclude` 黑名单，最终范围为 `include（省略时为当前 SpecialGuest 可用全集）− exclude`。同一 ID 同时出现时以黑名单为准。`foods` 按整份 Food 生效，Recipe 仍由 `recipe_id` 选择；固定 Food 的基础 Ingredient 不受 Ingredient 范围限制，固定和算法新增的额外 Ingredient 仍必须在最终范围内。
 
-[fixtures.v1.json](fixtures.v1.json) 固定 V1 的合法和非法边界，包括字段省略、空集合、白名单减黑名单、重复项、未知字段、旧 `excluded` 字段拒绝，以及固定项与可用范围冲突。fixture 不由参考程序发送。
+[fixtures.v1.json](fixtures.v1.json) 固定 V1 的合法和非法边界，包括字段省略、空集合、白名单减黑名单、重复 ID、未知或不可用 ID、和名称字段拒绝，以及固定项与可用范围冲突。fixture 不由参考程序发送。
 
 ## BepInEx 移植说明
 
@@ -53,7 +53,7 @@ dotnet run --project RecommendationBridgeReference.csproj
 - 只有新连接认证成功后才替换旧连接，未认证连接不能影响当前连接。
 - 限制握手时间、消息字节数和并发请求数；实现心跳、取消和断线清理。
 - Mod 输入严格按 V1 解析；网页输出可递归忽略未知可选字段，但已知字段缺失或类型错误时以 `4005` 关闭。
-- 固定料理请求和每个套餐结果都携带 `recipe_id`；料理名与 ID 必须成对解析，套餐身份必须包含 ID。
+- 请求只使用正确分类的 SpecialGuest、Tag、Beverage、Food、Recipe、Ingredient 和 Cooker ID，不接受名称 alias；每个套餐结果都携带 `beverage_id` 和嵌套 `food.recipe_id/extra_ingredient_ids`，不增加 cooker 或 `food_id`。
 - `pairing_token`、完整请求和结果不能写日志。
 
 正式集成还需要浏览器信任的 TLS 证书和本地 WSS 域名，并完成主方案中的 HTTPS/WSS、LNA、IPv4/IPv6、Origin 和 CSP 验收。本目录的 localhost WS 联调不能替代这些发布门槛。

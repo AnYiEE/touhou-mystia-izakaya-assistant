@@ -1,29 +1,33 @@
 import { store } from '@davstack/store';
 import { type Selection } from '@heroui/table';
 
-import { CustomerNormal } from '@/domain/catalog/customers/CustomerNormal';
-import { CustomerRare } from '@/domain/catalog/customers/CustomerRare';
-import { Beverage } from '@/domain/catalog/food/Beverage';
-import { Ingredient } from '@/domain/catalog/food/Ingredient';
-import { Recipe } from '@/domain/catalog/food/Recipe';
-import { Clothes } from '@/domain/catalog/items/Clothes';
-import { Cooker } from '@/domain/catalog/items/Cooker';
-import { Currency } from '@/domain/catalog/items/Currency';
-import { Ornament } from '@/domain/catalog/items/Ornament';
-import { Partner } from '@/domain/catalog/items/Partner';
-import type { TBeverageName } from '@/domain/data/beverages/types';
-import type { TIngredientName } from '@/domain/data/ingredients/types';
-import type { TRecipeName } from '@/domain/data/recipes/types';
+import { selectionToKnownValues } from '@/design/ui/components/selectionKeys';
+
+import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
+import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import { NormalGuestCatalog } from '@/domain/catalog/guests/NormalGuestCatalog';
+import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { ClothesCatalog } from '@/domain/catalog/items/ClothesCatalog';
+import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
+import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
+import { DecorationCatalog } from '@/domain/catalog/items/DecorationCatalog';
+import { PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
+import type { TBeverageId } from '@/domain/data/beverages/types';
+import type { TFoodId } from '@/domain/data/foods/types';
+import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
-import type { IPopularTrend, TPopularTag } from '@/domain/trends/types';
+import { FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import { checkPopularFoodTagId } from '@/domain/trends/checkPopularFoodTagId';
+import type { IPopularTrend, TPopularFoodTagId } from '@/domain/trends/types';
 
 import { accountRemoteStateApplicationGuard } from '@/features/account/client/sync/stateGuards';
 import {
 	type TBeverageTableColumnKey,
-	type TRecipeTableColumnKey,
+	type TFoodTableColumnKey,
 	beverageTableColumns,
-	recipeTableColumns,
-} from '@/features/catalog/customers/shared/state/tableDescriptors';
+	foodTableColumns,
+} from '@/features/catalog/guests/shared/state/tableDescriptors';
 import {
 	pushOverlayChild,
 	requestOverlayClose,
@@ -36,6 +40,7 @@ import { createStoreSyncMiddleware } from '@/infrastructure/browser/crossTab/cre
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
 
 import { generateRange } from '@/shared/utilities/collections/generateRange';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 import {
 	toGetItemWithKey,
 	toGetValueCollection,
@@ -44,6 +49,10 @@ import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord'
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
+import {
+	GLOBAL_PERSISTENCE_STORE_VERSION,
+	migrateGlobalPersistedState,
+} from './migratePersistedState';
 import { normalizeDonationModalPersistence } from './normalizeDonationModalPersistence';
 
 import '@/infrastructure/state/enableImmerMapSet';
@@ -51,68 +60,45 @@ import '@/infrastructure/state/enableImmerMapSet';
 const allDlcs = [
 	...new Set(
 		[
-			Beverage.getInstance().getValuesByProp('dlc'),
-			Clothes.getInstance().getValuesByProp('dlc'),
-			Cooker.getInstance().getValuesByProp('dlc'),
-			Currency.getInstance().getValuesByProp('dlc'),
-			Ingredient.getInstance().getValuesByProp('dlc'),
-			CustomerNormal.getInstance().getValuesByProp('dlc'),
-			CustomerRare.getInstance().getValuesByProp('dlc'),
-			Ornament.getInstance().getValuesByProp('dlc'),
-			Partner.getInstance().getValuesByProp('dlc'),
-			Recipe.getInstance().getValuesByProp('dlc'),
+			BeverageCatalog.getInstance().getValuesByProp('dlc'),
+			ClothesCatalog.getInstance().getValuesByProp('dlc'),
+			CookerCatalog.getInstance().getValuesByProp('dlc'),
+			CurrencyItemCatalog.getInstance().getValuesByProp('dlc'),
+			IngredientCatalog.getInstance().getValuesByProp('dlc'),
+			NormalGuestCatalog.getInstance().getValuesByProp('dlc'),
+			SpecialGuestCatalog.getInstance().getValuesByProp('dlc'),
+			DecorationCatalog.getInstance().getValuesByProp('dlc'),
+			PartnerCatalog.getInstance().getValuesByProp('dlc'),
+			FoodCatalog.getInstance().getValuesByProp('dlc'),
 		].flat()
 	),
 ].sort(numberSort) as TDlc[];
 
-const instance_ingredient = Ingredient.getInstance();
-const instance_recipe = Recipe.getInstance();
+const ingredientCatalog = IngredientCatalog.getInstance();
+const foodCatalog = FoodCatalog.getInstance();
 
-const ingredientTags = instance_ingredient
+const ingredientTags = ingredientCatalog
 	.getValuesByProp('tags')
-	.filter(
-		(tag) => !instance_ingredient.blockedTags.has(tag)
-	) as TPopularTag[];
+	.filter((tag) => !ingredientCatalog.blockedTags.has(tag));
 
-const recipePositiveTags = instance_recipe
+const foodPositiveTags = foodCatalog
 	.getValuesByProp('positiveTags')
-	.filter((tag) => !instance_recipe.blockedTags.has(tag)) as TPopularTag[];
+	.filter((tag) => !foodCatalog.blockedTags.has(tag));
 
 const validPopularTags = [
-	...new Set(ingredientTags).union(new Set(recipePositiveTags)),
+	...new Set(ingredientTags).union(new Set(foodPositiveTags)),
 ]
-	.map(toGetValueCollection)
-	.sort(pinyinSort);
-
+	.filter(checkPopularFoodTagId)
+	.sort((a, b) => pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b]))
+	.map((tag) => ({ tag, value: FOOD_TAG_MAP[tag] }));
 const storeName = 'global-storage';
-const storeVersion = {
-	initial: 0, // eslint-disable-next-line sort-keys
-	dirver: 1,
-	tagsTooltip: 2,
-	version: 3, // eslint-disable-next-line sort-keys
-	backgroundImage: 4,
-	tachie: 5,
-	vibrate: 6, // eslint-disable-next-line sort-keys
-	renameBg: 7, // eslint-disable-next-line sort-keys
-	famousShop: 8,
-	popularTrend: 9, // eslint-disable-next-line sort-keys
-	cloud: 10,
-	tableShare: 11,
-	userId: 12, // eslint-disable-next-line sort-keys
-	hiddenItems: 13, // eslint-disable-next-line sort-keys
-	hiddenDlcs: 14, // eslint-disable-next-line sort-keys
-	donationModal: 15,
-	donationModalRmDismiss: 16,
-	suggestMeals: 17,
-	suggestMealsExtra: 18,
-} as const;
 
 const state = {
 	dlcs: allDlcs.map(toGetValueCollection),
 	popularTags: validPopularTags,
 
 	persistence: {
-		customerCardTagsTooltip: true,
+		guestCardTagsTooltip: true,
 		hiddenItems: { dlcs: [] as string[] },
 		suggestMeals: {
 			enabled: true,
@@ -123,14 +109,14 @@ const state = {
 		table: {
 			columns: {
 				beverage: beverageTableColumns.map(toGetItemWithKey('key')),
-				recipe: recipeTableColumns
+				recipe: foodTableColumns
 					.filter(({ key }) => key !== 'time')
 					.map(toGetItemWithKey('key')),
 			},
 			hiddenItems: {
-				beverages: [] as TBeverageName[],
-				ingredients: [] as TIngredientName[],
-				recipes: [] as TRecipeName[],
+				beverages: [] as TBeverageId[],
+				foods: [] as TFoodId[],
+				ingredients: [] as TIngredientId[],
 			},
 			row: 8,
 		},
@@ -186,19 +172,50 @@ const state = {
 	},
 };
 
+const beverageTableColumnByKey = new Map<string, TBeverageTableColumnKey>(
+	beverageTableColumns.map(({ key }) => [key, key])
+);
+const foodTableColumnByKey = new Map<string, TFoodTableColumnKey>(
+	foodTableColumns.map(({ key }) => [key, key])
+);
+const maxSuggestMealExtraIngredientByKey = new Map<string, number | null>(
+	state.shared.suggestMeals.selectableMaxExtraIngredients.map(({ value }) => [
+		value === null ? '' : value.toString(),
+		value,
+	])
+);
+const maxSuggestMealRatingByKey = new Map<string, number>(
+	state.shared.suggestMeals.selectableMaxRatings.map(({ value }) => [
+		value.toString(),
+		value,
+	])
+);
+const maxSuggestMealResultByKey = new Map<string, number>(
+	state.shared.suggestMeals.selectableMaxResults.map(({ value }) => [
+		value.toString(),
+		value,
+	])
+);
+const popularTagByKey = new Map<string, TPopularFoodTagId>(
+	validPopularTags.map(({ tag }) => [tag.toString(), tag])
+);
+const tableRowByKey = new Map<string, number>(
+	state.shared.table.selectableRows.map(({ value }) => [
+		value.toString(),
+		value,
+	])
+);
+
 const hiddenDlcSetCache = new WeakMap<ReadonlyArray<string>, Set<TDlc>>();
 const hiddenBeverageSetCache = new WeakMap<
-	ReadonlyArray<TBeverageName>,
-	Set<TBeverageName>
+	ReadonlyArray<TBeverageId>,
+	Set<TBeverageId>
 >();
 const hiddenIngredientSetCache = new WeakMap<
-	ReadonlyArray<TIngredientName>,
-	Set<TIngredientName>
+	ReadonlyArray<TIngredientId>,
+	Set<TIngredientId>
 >();
-const hiddenRecipeSetCache = new WeakMap<
-	ReadonlyArray<TRecipeName>,
-	Set<TRecipeName>
->();
+const hiddenFoodSetCache = new WeakMap<ReadonlyArray<TFoodId>, Set<TFoodId>>();
 
 function createHiddenDlcSet(values: ReadonlyArray<string>) {
 	const hiddenDlcs = new Set(values.map(Number) as TDlc[]);
@@ -211,7 +228,7 @@ function createSet<T>(values: ReadonlyArray<T>) {
 }
 
 function normalizeGlobalStoreRemoteState(value: unknown) {
-	if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+	if (!checkIsRecord(value)) {
 		return null;
 	}
 
@@ -219,19 +236,45 @@ function normalizeGlobalStoreRemoteState(value: unknown) {
 	const remotePersistence = remoteState.persistence;
 	if (
 		remotePersistence === undefined ||
-		!isObjectTagRecord(remotePersistence) ||
-		!Object.hasOwn(remotePersistence, 'donationModal')
+		!isObjectTagRecord(remotePersistence)
 	) {
 		return remoteState;
 	}
+	const remotePersistenceRecord = remotePersistence as Record<
+		string,
+		unknown
+	>;
+	const hasDonationModal = Object.hasOwn(
+		remotePersistenceRecord,
+		'donationModal'
+	);
+	const hasLegacyTagsTooltip = Object.hasOwn(
+		remotePersistenceRecord,
+		'customerCardTagsTooltip'
+	);
+	if (!hasDonationModal && !hasLegacyTagsTooltip) {
+		return remoteState;
+	}
+	const {
+		customerCardTagsTooltip: legacyTagsTooltip,
+		...currentPersistence
+	} = remotePersistenceRecord;
 
 	return {
 		...remoteState,
 		persistence: {
-			...remotePersistence,
-			donationModal: normalizeDonationModalPersistence(
-				remotePersistence.donationModal
-			),
+			...currentPersistence,
+			...(hasLegacyTagsTooltip &&
+			!Object.hasOwn(remotePersistenceRecord, 'guestCardTagsTooltip')
+				? { guestCardTagsTooltip: legacyTagsTooltip }
+				: {}),
+			...(hasDonationModal
+				? {
+						donationModal: normalizeDonationModalPersistence(
+							remotePersistenceRecord['donationModal']
+						),
+					}
+				: {}),
 		},
 	} as Partial<typeof state>;
 }
@@ -246,11 +289,7 @@ export const globalStore = store(state, {
 		}),
 		createPersistMiddleware<typeof state>({
 			merge(persistedState, currentState) {
-				if (
-					persistedState === null ||
-					typeof persistedState !== 'object' ||
-					Array.isArray(persistedState)
-				) {
+				if (!checkIsRecord(persistedState)) {
 					return currentState;
 				}
 
@@ -275,108 +314,18 @@ export const globalStore = store(state, {
 					},
 				};
 			},
+			migrate: (persistedState, version) =>
+				migrateGlobalPersistedState(
+					persistedState,
+					version
+				) as typeof state,
 			name: storeName,
-			version: storeVersion.suggestMealsExtra,
-
-			migrate(persistedState, version) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-				const oldState = persistedState as any;
-				if (version < storeVersion.dirver) {
-					oldState.persistence.dirver = [];
-				}
-				if (version < storeVersion.tagsTooltip) {
-					oldState.persistence.customerCardTagsTooltip = true;
-				}
-				if (version < storeVersion.version) {
-					oldState.persistence.version = null;
-				}
-				if (version < storeVersion.backgroundImage) {
-					oldState.persistence.backgroundImage = true;
-				}
-				if (version < storeVersion.tachie) {
-					oldState.persistence.tachie = true;
-				}
-				if (version < storeVersion.vibrate) {
-					oldState.persistence.vibrate = true;
-				}
-				if (version < storeVersion.renameBg) {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					const { persistence } = oldState;
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					persistence.highAppearance = persistence.backgroundImage;
-					delete persistence.backgroundImage;
-				}
-				if (version < storeVersion.famousShop) {
-					oldState.persistence.famousShop = false;
-				}
-				if (version < storeVersion.popularTrend) {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					const { persistence } = oldState;
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					persistence.popularTrend = persistence.popular;
-					delete persistence.popular;
-				}
-				if (version < storeVersion.cloud) {
-					oldState.persistence.cloudCode = null;
-				}
-				if (version < storeVersion.tableShare) {
-					oldState.persistence.table = {
-						columns: {
-							beverage: beverageTableColumns.map(
-								toGetItemWithKey('key')
-							),
-							recipe: recipeTableColumns
-								.filter(({ key }) => key !== 'time')
-								.map(toGetItemWithKey('key')),
-						},
-						row: 8,
-					};
-				}
-				if (version < storeVersion.userId) {
-					oldState.persistence.userId = null;
-				}
-				if (version < storeVersion.hiddenItems) {
-					oldState.persistence.table.hiddenItems = {
-						beverages: [],
-						ingredients: [],
-						recipes: [],
-					};
-				}
-				if (version < storeVersion.hiddenDlcs) {
-					oldState.persistence.hiddenItems = { dlcs: [] };
-				}
-				if (version < storeVersion.donationModal) {
-					oldState.persistence.donationModal = {
-						interactionCount: 0,
-						isDismiss: false,
-						lastMilestoneShown: 0,
-						lastShown: null,
-					};
-				}
-				if (version < storeVersion.donationModalRmDismiss) {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					const { persistence } = oldState;
-					delete persistence.donationModal.isDismiss;
-				}
-				if (version < storeVersion.suggestMeals) {
-					oldState.persistence.suggestMeals = {
-						enabled: true,
-						maxResults: 5,
-					};
-				}
-				if (version < storeVersion.suggestMealsExtra) {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-					const { persistence } = oldState;
-					persistence.suggestMeals.maxExtraIngredients = null;
-					persistence.suggestMeals.maxRating = 4;
-				}
-				return persistedState as typeof state;
-			},
 			partialize(currentStore) {
 				return {
 					persistence: currentStore.persistence,
 				} as typeof currentStore;
 			},
+			version: GLOBAL_PERSISTENCE_STORE_VERSION.recordIdentity,
 		}),
 	],
 })
@@ -385,18 +334,26 @@ export const globalStore = store(state, {
 			read: () =>
 				new Set(currentStore.persistence.table.columns.beverage.use()),
 			write: (columns: Selection) => {
-				currentStore.persistence.table.columns.beverage.set([
-					...(columns === 'all' ? [columns] : columns),
-				] as TBeverageTableColumnKey[]);
+				const values = selectionToKnownValues(
+					columns,
+					beverageTableColumnByKey
+				);
+				if (values !== null) {
+					currentStore.persistence.table.columns.beverage.set(values);
+				}
 			},
 		},
-		recipeTableColumns: {
+		foodTableColumns: {
 			read: () =>
 				new Set(currentStore.persistence.table.columns.recipe.use()),
 			write: (columns: Selection) => {
-				currentStore.persistence.table.columns.recipe.set([
-					...(columns === 'all' ? [columns] : columns),
-				] as TRecipeTableColumnKey[]);
+				const values = selectionToKnownValues(
+					columns,
+					foodTableColumnByKey
+				);
+				if (values !== null) {
+					currentStore.persistence.table.columns.recipe.set(values);
+				}
 			},
 		},
 
@@ -404,11 +361,11 @@ export const globalStore = store(state, {
 			read: () =>
 				new Set([currentStore.persistence.table.row.use().toString()]),
 			write: (rows: Selection) => {
-				currentStore.persistence.table.row.set(
-					Number.parseInt(
-						[...(rows === 'all' ? [rows] : rows)][0] as string
-					)
-				);
+				const [value] =
+					selectionToKnownValues(rows, tableRowByKey) ?? [];
+				if (value !== undefined) {
+					currentStore.persistence.table.row.set(value);
+				}
 			},
 		},
 
@@ -439,12 +396,15 @@ export const globalStore = store(state, {
 					).toString(),
 				]),
 			write: (maxExtra: Selection) => {
-				const value = [
-					...(maxExtra === 'all' ? [maxExtra] : maxExtra),
-				][0] as string;
-				currentStore.persistence.suggestMeals.maxExtraIngredients.set(
-					value === '' ? null : Number.parseInt(value)
+				const values = selectionToKnownValues(
+					maxExtra,
+					maxSuggestMealExtraIngredientByKey
 				);
+				if (values !== null) {
+					currentStore.persistence.suggestMeals.maxExtraIngredients.set(
+						values[0] ?? null
+					);
+				}
 			},
 		},
 		maxSuggestMealRating: {
@@ -455,13 +415,14 @@ export const globalStore = store(state, {
 						.toString(),
 				]),
 			write: (maxRating: Selection) => {
-				currentStore.persistence.suggestMeals.maxRating.set(
-					Number.parseInt(
-						[
-							...(maxRating === 'all' ? [maxRating] : maxRating),
-						][0] as string
-					)
-				);
+				const [value] =
+					selectionToKnownValues(
+						maxRating,
+						maxSuggestMealRatingByKey
+					) ?? [];
+				if (value !== undefined) {
+					currentStore.persistence.suggestMeals.maxRating.set(value);
+				}
 			},
 		},
 		maxSuggestMealResults: {
@@ -472,15 +433,14 @@ export const globalStore = store(state, {
 						.toString(),
 				]),
 			write: (maxResults: Selection) => {
-				currentStore.persistence.suggestMeals.maxResults.set(
-					Number.parseInt(
-						[
-							...(maxResults === 'all'
-								? [maxResults]
-								: maxResults),
-						][0] as string
-					)
-				);
+				const [value] =
+					selectionToKnownValues(
+						maxResults,
+						maxSuggestMealResultByKey
+					) ?? [];
+				if (value !== undefined) {
+					currentStore.persistence.suggestMeals.maxResults.set(value);
+				}
 			},
 		},
 
@@ -493,9 +453,24 @@ export const globalStore = store(state, {
 					createSet
 				);
 			},
-			write: (beverages: Set<TBeverageName>) => {
+			write: (beverages: Set<TBeverageId>) => {
 				currentStore.persistence.table.hiddenItems.beverages.set([
 					...beverages,
+				]);
+			},
+		},
+		hiddenFoods: {
+			read: () => {
+				const hiddenFoodValues =
+					currentStore.persistence.table.hiddenItems.foods.use();
+				return hiddenFoodSetCache.getOrInsertComputed(
+					hiddenFoodValues,
+					createSet
+				);
+			},
+			write: (foods: Set<TFoodId>) => {
+				currentStore.persistence.table.hiddenItems.foods.set([
+					...foods,
 				]);
 			},
 		},
@@ -508,39 +483,25 @@ export const globalStore = store(state, {
 					createSet
 				);
 			},
-			write: (ingredients: Set<TIngredientName>) => {
+			write: (ingredients: Set<TIngredientId>) => {
 				currentStore.persistence.table.hiddenItems.ingredients.set([
 					...ingredients,
 				]);
 			},
 		},
-		hiddenRecipes: {
-			read: () => {
-				const hiddenRecipeValues =
-					currentStore.persistence.table.hiddenItems.recipes.use();
-				return hiddenRecipeSetCache.getOrInsertComputed(
-					hiddenRecipeValues,
-					createSet
-				);
-			},
-			write: (recipes: Set<TRecipeName>) => {
-				currentStore.persistence.table.hiddenItems.recipes.set([
-					...recipes,
-				]);
-			},
-		},
 
 		selectedPopularTag: {
-			read: () =>
-				new Set([
-					currentStore.persistence.popularTrend.tag.use(),
-				]) as SelectionSet,
+			read: () => {
+				const tag = currentStore.persistence.popularTrend.tag.use();
+				return new Set(tag === null ? [] : [tag.toString()]);
+			},
 			write: (tags: Selection) => {
-				const tag = [
-					...(tags === 'all' ? [tags] : tags),
-				][0] as typeof state.persistence.popularTrend.tag;
-				// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-				currentStore.persistence.popularTrend.tag.set(tag || null);
+				const values = selectionToKnownValues(tags, popularTagByKey);
+				if (values !== null) {
+					currentStore.persistence.popularTrend.tag.set(
+						values[0] ?? null
+					);
+				}
 			},
 		},
 	}))

@@ -30,7 +30,7 @@ export default function BeveragesCatalogPage() {
 		beveragesStore.availableAvailabilityDlcs.use();
 	const availableContentDlcs = beveragesStore.availableContentDlcs.use();
 	const availableLevels = beveragesStore.availableLevels.use();
-	const availablePlaces = beveragesStore.availablePlaces.use();
+	const availableMaps = beveragesStore.availableMaps.use();
 	const availableTags = beveragesStore.availableTags.use();
 
 	const pinyinSortState = beveragesStore.persistence.pinyinSortState.use();
@@ -54,9 +54,9 @@ export default function BeveragesCatalogPage() {
 					: filterAvailabilityDlcs,
 				filterContentDlcs,
 				filterLevels,
-				filterNoPlaces,
+				filterMaps: filterPlaces,
+				filterNoMaps: filterNoPlaces,
 				filterNoTags,
-				filterPlaces,
 				filterTags,
 			}),
 		[
@@ -112,12 +112,14 @@ export default function BeveragesCatalogPage() {
 				label: '酒水标签（包含）',
 				selectedKeys: filterTags,
 				setSelectedKeys: beveragesStore.persistence.filters.tags.set,
+				valueType: 'beverageTag',
 			},
 			{
 				items: availableTags,
 				label: '酒水标签（排除）',
 				selectedKeys: filterNoTags,
 				setSelectedKeys: beveragesStore.persistence.filters.noTags.set,
+				valueType: 'beverageTag',
 			},
 			{
 				items: availableLevels,
@@ -126,24 +128,26 @@ export default function BeveragesCatalogPage() {
 				setSelectedKeys: beveragesStore.persistence.filters.levels.set,
 			},
 			{
-				items: availablePlaces,
+				items: availableMaps,
 				label: '地区（包含）',
 				selectedKeys: filterPlaces,
 				setSelectedKeys: beveragesStore.persistence.filters.places.set,
+				valueType: 'map',
 			},
 			{
-				items: availablePlaces,
+				items: availableMaps,
 				label: '地区（排除）',
 				selectedKeys: filterNoPlaces,
 				setSelectedKeys:
 					beveragesStore.persistence.filters.noPlaces.set,
+				valueType: 'map',
 			},
 		],
 		[
 			availableAvailabilityDlcs,
 			availableContentDlcs,
 			availableLevels,
-			availablePlaces,
+			availableMaps,
 			availableTags,
 			filterAvailabilityDlcs,
 			filterContentDlcs,

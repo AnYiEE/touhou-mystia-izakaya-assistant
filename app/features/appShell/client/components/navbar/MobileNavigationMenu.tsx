@@ -16,10 +16,10 @@ import Sprite from '@/features/catalog/shared/client/components/Sprite';
 
 import {
 	type IMobileIconNavItem,
-	type IMobileSpriteNavItem,
-	MOBILE_CUSTOMER_NAV_ITEMS,
+	MOBILE_GUEST_NAV_ITEMS,
 	MOBILE_QUERY_NAV_GROUPS,
 	MOBILE_UTILITY_NAV_ITEMS,
+	type TMobileSpriteNavItem,
 } from './navigationItems';
 import { NAVBAR_THEME_ITEMS } from './themeItems';
 
@@ -122,12 +122,12 @@ export default function MobileNavigationMenu({
 		);
 	};
 
-	const renderMobileCustomerNavItem = ({
+	const renderMobileGuestNavItem = ({
 		href,
 		label,
 		sprite,
-		spriteIndex,
-	}: IMobileSpriteNavItem) => {
+		spriteRecordId,
+	}: TMobileSpriteNavItem) => {
 		const isActivated = href === basePathname;
 		return (
 			<Button
@@ -148,11 +148,11 @@ export default function MobileNavigationMenu({
 				)}
 			>
 				<span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full">
-					{sprite === 'customer_normal' ? (
+					{sprite === 'normal_guest' ? (
 						<span className="h-9 w-9 overflow-hidden rounded-full">
 							<Sprite
 								target={sprite}
-								index={spriteIndex}
+								recordId={spriteRecordId}
 								size={3.2}
 								className="-translate-x-[0.47rem] -translate-y-px"
 							/>
@@ -161,7 +161,7 @@ export default function MobileNavigationMenu({
 						<span className="h-9 w-9 overflow-hidden rounded-full">
 							<Sprite
 								target={sprite}
-								index={spriteIndex}
+								recordId={spriteRecordId}
 								size={2.25}
 							/>
 						</span>
@@ -180,8 +180,8 @@ export default function MobileNavigationMenu({
 		href,
 		label,
 		sprite,
-		spriteIndex,
-	}: IMobileSpriteNavItem) => {
+		spriteRecordId,
+	}: TMobileSpriteNavItem) => {
 		const isActivated = href === basePathname;
 		return (
 			<Button
@@ -211,7 +211,7 @@ export default function MobileNavigationMenu({
 				>
 					<Sprite
 						target={sprite}
-						index={spriteIndex}
+						recordId={spriteRecordId}
 						size={1.45}
 						className={cn({ 'rounded-full': href === '/partners' })}
 					/>
@@ -332,8 +332,8 @@ export default function MobileNavigationMenu({
 							顾客
 						</h2>
 						<div className="grid grid-cols-2 gap-2">
-							{MOBILE_CUSTOMER_NAV_ITEMS.map(
-								renderMobileCustomerNavItem
+							{MOBILE_GUEST_NAV_ITEMS.map(
+								renderMobileGuestNavItem
 							)}
 						</div>
 					</section>

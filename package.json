@@ -199,6 +199,7 @@
 			"core-js",
 			"esbuild",
 			"react-transition-progress",
+			"react-transition-progress@https://codeload.github.com/AnYiEE/react-transition-progress/tar.gz/dc17185bdfd2b0453ea9da9293e9cdef0e57ecda",
 			"sharp",
 			"unrs-resolver"
 		],

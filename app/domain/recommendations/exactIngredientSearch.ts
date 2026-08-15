@@ -1,5 +1,5 @@
-import type { TIngredientName } from '@/domain/data/ingredients/types';
-import type { TIngredientTag, TRecipeTag } from '@/domain/data/tags/types';
+import type { TIngredientId } from '@/domain/data/ingredients/types';
+import type { TFoodTagId } from '@/domain/data/tags/types';
 
 import type { ISuggestMealsExecution } from './execution';
 import {
@@ -10,16 +10,16 @@ import {
 
 export interface IExactIngredientCandidate {
 	readonly effectKeys: ReadonlyArray<string>;
-	readonly name: TIngredientName;
+	readonly id: TIngredientId;
 	readonly penalty: number;
 	readonly priority: IRecommendationPriorityMetrics;
-	readonly tags: ReadonlyArray<TIngredientTag>;
+	readonly tags: ReadonlyArray<TFoodTagId>;
 }
 
 export interface IExactIngredientState {
 	readonly count: number;
 	readonly effectMask: ReadonlyArray<number>;
-	readonly extraIngredients: ReadonlyArray<TIngredientName>;
+	readonly extraIngredients: ReadonlyArray<TIngredientId>;
 	readonly ingredientPenalty: number;
 	readonly orderedTagIndexes: ReadonlyArray<number>;
 	readonly priority: IRecommendationPriorityMetrics;
@@ -30,16 +30,18 @@ export interface IExactIngredientStateTable {
 	readonly effectKeys: ReadonlyArray<string>;
 	readonly layers: ReadonlyArray<ReadonlyArray<IExactIngredientState>>;
 	readonly stateCount: number;
-	readonly tagNames: ReadonlyArray<TIngredientTag>;
+	readonly tags: ReadonlyArray<TFoodTagId>;
 }
 
 interface IBuildExactIngredientStateTableParams {
 	readonly candidates: ReadonlyArray<IExactIngredientCandidate>;
 	readonly maxCount: number;
-	readonly orderSensitiveTags?: ReadonlySet<TRecipeTag>;
+	readonly orderSensitiveTags?: ReadonlySet<TFoodTagId>;
 }
 
-function buildIndex<T extends string>(values: ReadonlyArray<ReadonlyArray<T>>) {
+function buildIndex<T extends PropertyKey>(
+	values: ReadonlyArray<ReadonlyArray<T>>
+) {
 	const names: T[] = [];
 	const indexMap = new Map<T, number>();
 
@@ -132,9 +134,9 @@ function compareTerminalStates(
 
 function appendOrderedTagIndexes(
 	currentIndexes: ReadonlyArray<number>,
-	candidateTags: ReadonlyArray<TIngredientTag>,
-	tagIndexMap: ReadonlyMap<TIngredientTag, number>,
-	orderSensitiveTags: ReadonlySet<TRecipeTag>
+	candidateTags: ReadonlyArray<TFoodTagId>,
+	tagIndexMap: ReadonlyMap<TFoodTagId, number>,
+	orderSensitiveTags: ReadonlySet<TFoodTagId>
 ) {
 	if (orderSensitiveTags.size === 0) {
 		return currentIndexes;
@@ -146,7 +148,7 @@ function appendOrderedTagIndexes(
 		const index = tagIndexMap.get(tag);
 		if (
 			index !== undefined &&
-			orderSensitiveTags.has(tag as TRecipeTag) &&
+			orderSensitiveTags.has(tag) &&
 			!(nextIndexes ?? currentIndexes).includes(index)
 		) {
 			nextIndexes ??= [...currentIndexes];
@@ -161,7 +163,7 @@ export async function buildExactIngredientStateTable(
 	{
 		candidates,
 		maxCount,
-		orderSensitiveTags = new Set<TRecipeTag>(),
+		orderSensitiveTags = new Set<TFoodTagId>(),
 	}: IBuildExactIngredientStateTableParams,
 	execution: ISuggestMealsExecution
 ): Promise<IExactIngredientStateTable> {
@@ -173,8 +175,8 @@ export async function buildExactIngredientStateTable(
 
 	execution.throwIfAborted();
 
-	const { indexMap: tagIndexMap, names: tagNames } = buildIndex(
-		candidates.map(({ tags }) => tags)
+	const { indexMap: tagIndexMap, names: tags } = buildIndex(
+		candidates.map(({ tags: candidateTags }) => candidateTags)
 	);
 	const { indexMap: effectIndexMap, names: effectKeys } = buildIndex(
 		candidates.map(
@@ -188,7 +190,7 @@ export async function buildExactIngredientStateTable(
 		ingredientPenalty: 0,
 		orderedTagIndexes: [],
 		priority: EMPTY_RECOMMENDATION_PRIORITY_METRICS,
-		tagMask: createEmptyMask(tagNames.length),
+		tagMask: createEmptyMask(tags.length),
 	};
 	const layerMaps = Array.from(
 		{ length: maxCount + 1 },
@@ -248,9 +250,9 @@ export async function buildExactIngredientStateTable(
 					const contentMismatchCount =
 						sourceState.priority.contentMismatchCount +
 						candidate.priority.contentMismatchCount;
-					const customerPlacesMismatchCount =
-						sourceState.priority.customerPlacesMismatchCount +
-						candidate.priority.customerPlacesMismatchCount;
+					const guestPlacesMismatchCount =
+						sourceState.priority.guestPlacesMismatchCount +
+						candidate.priority.guestPlacesMismatchCount;
 					const lateSourceCount =
 						sourceState.priority.lateSourceCount +
 						candidate.priority.lateSourceCount;
@@ -296,8 +298,8 @@ export async function buildExactIngredientStateTable(
 									pathMismatchCount &&
 								state.priority.primaryPlaceMismatchCount <=
 									primaryPlaceMismatchCount &&
-								state.priority.customerPlacesMismatchCount <=
-									customerPlacesMismatchCount &&
+								state.priority.guestPlacesMismatchCount <=
+									guestPlacesMismatchCount &&
 								state.priority.unknownSourceCount <=
 									unknownSourceCount &&
 								state.priority.lateSourceCount <=
@@ -322,7 +324,7 @@ export async function buildExactIngredientStateTable(
 					const priority: IRecommendationPriorityMetrics = {
 						acquisitionEase,
 						contentMismatchCount,
-						customerPlacesMismatchCount,
+						guestPlacesMismatchCount,
 						lateSourceCount,
 						maxLateTierDistance,
 						pathMismatchCount,
@@ -335,7 +337,7 @@ export async function buildExactIngredientStateTable(
 						effectMask,
 						extraIngredients: [
 							...sourceState.extraIngredients,
-							candidate.name,
+							candidate.id,
 						],
 						ingredientPenalty,
 						orderedTagIndexes,
@@ -356,8 +358,8 @@ export async function buildExactIngredientStateTable(
 								state.priority.pathMismatchCount ||
 							primaryPlaceMismatchCount >
 								state.priority.primaryPlaceMismatchCount ||
-							customerPlacesMismatchCount >
-								state.priority.customerPlacesMismatchCount ||
+							guestPlacesMismatchCount >
+								state.priority.guestPlacesMismatchCount ||
 							unknownSourceCount >
 								state.priority.unknownSourceCount ||
 							lateSourceCount > state.priority.lateSourceCount ||
@@ -405,7 +407,7 @@ export async function buildExactIngredientStateTable(
 	}
 	execution.throwIfAborted();
 
-	return { effectKeys, layers, stateCount, tagNames };
+	return { effectKeys, layers, stateCount, tags };
 }
 
 function hasMaskIndex(mask: ReadonlyArray<number>, index: number) {
@@ -415,7 +417,7 @@ function hasMaskIndex(mask: ReadonlyArray<number>, index: number) {
 }
 
 export function getExactIngredientStateTags(
-	table: Pick<IExactIngredientStateTable, 'tagNames'>,
+	table: Pick<IExactIngredientStateTable, 'tags'>,
 	state:
 		| Pick<IExactIngredientState, 'orderedTagIndexes' | 'tagMask'>
 		| undefined
@@ -426,10 +428,10 @@ export function getExactIngredientStateTags(
 
 	const orderedIndexes = new Set(state.orderedTagIndexes);
 	const orderedTags = state.orderedTagIndexes.flatMap((index) => {
-		const tag = table.tagNames[index];
+		const tag = table.tags[index];
 		return tag === undefined ? [] : [tag];
 	});
-	const remainingTags = table.tagNames.filter(
+	const remainingTags = table.tags.filter(
 		(_tag, index) =>
 			!orderedIndexes.has(index) && hasMaskIndex(state.tagMask, index)
 	);

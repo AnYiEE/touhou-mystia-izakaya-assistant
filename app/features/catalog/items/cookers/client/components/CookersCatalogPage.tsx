@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from 'react';
 
 import { hasEquivalentDlcFilters } from '@/domain/availability';
+import type { TCookerSeriesId } from '@/domain/data/cookers/types';
 
 import { filterCookerData } from '@/features/catalog/items/cookers/client/queries/filterCookerData';
 import { cookersStore } from '@/features/catalog/items/cookers/client/state/store';
@@ -26,7 +27,7 @@ export default function CookersCatalogPage() {
 		instance.data
 	);
 
-	const availableCategories = cookersStore.availableCategories.use();
+	const availableSeries = cookersStore.availableSeries.use();
 	const availableAvailabilityDlcs =
 		cookersStore.availableAvailabilityDlcs.use();
 	const availableContentDlcs = cookersStore.availableContentDlcs.use();
@@ -38,11 +39,44 @@ export default function CookersCatalogPage() {
 		cookersStore.persistence.filters.availabilityDlcs.use();
 	const filterContentDlcs =
 		cookersStore.persistence.filters.contentDlcs.use();
-	const filterCategories = cookersStore.persistence.filters.categories.use();
-	const filterNoCategories =
-		cookersStore.persistence.filters.noCategories.use();
+	const filterSeries = cookersStore.persistence.filters.series.use();
+	const filterNoSeries = cookersStore.persistence.filters.noSeries.use();
 	const filterTypes = cookersStore.persistence.filters.types.use();
 	const filterNoTypes = cookersStore.persistence.filters.noTypes.use();
+	const filterSeriesGroupValues = useMemo(
+		() =>
+			availableSeries
+				.filter(({ series }) =>
+					series.some((value) => filterSeries.includes(value))
+				)
+				.map(({ value }) => value),
+		[availableSeries, filterSeries]
+	);
+	const filterNoSeriesGroupValues = useMemo(
+		() =>
+			availableSeries
+				.filter(({ series }) =>
+					series.some((value) => filterNoSeries.includes(value))
+				)
+				.map(({ value }) => value),
+		[availableSeries, filterNoSeries]
+	);
+	const setFilterSeriesGroupValues = useCallback(
+		(groupValues: TCookerSeriesId[]) => {
+			cookersStore.persistence.filters.series.set(
+				instance.expandSeriesGroupValues(availableSeries, groupValues)
+			);
+		},
+		[availableSeries, instance]
+	);
+	const setFilterNoSeriesGroupValues = useCallback(
+		(groupValues: TCookerSeriesId[]) => {
+			cookersStore.persistence.filters.noSeries.set(
+				instance.expandSeriesGroupValues(availableSeries, groupValues)
+			);
+		},
+		[availableSeries, instance]
+	);
 
 	const filterData = useCallback(
 		() =>
@@ -51,17 +85,17 @@ export default function CookersCatalogPage() {
 				filterAvailabilityDlcs: isAvailabilityDlcFilterRedundant
 					? []
 					: filterAvailabilityDlcs,
-				filterCategories,
 				filterContentDlcs,
-				filterNoCategories,
+				filterNoSeries,
 				filterNoTypes,
+				filterSeries,
 				filterTypes,
 			}),
 		[
 			filterAvailabilityDlcs,
-			filterCategories,
+			filterSeries,
 			filterContentDlcs,
-			filterNoCategories,
+			filterNoSeries,
 			filterNoTypes,
 			filterTypes,
 			instance.data,
@@ -105,44 +139,48 @@ export default function CookersCatalogPage() {
 						} satisfies TSelectConfig[number],
 					]),
 			{
-				items: availableCategories,
+				items: availableSeries,
 				label: '厨具系列（包含）',
-				selectedKeys: filterCategories,
-				setSelectedKeys:
-					cookersStore.persistence.filters.categories.set,
+				selectedKeys: filterSeriesGroupValues,
+				setSelectedKeys: setFilterSeriesGroupValues,
+				valueType: 'cookerSeries',
 			},
 			{
-				items: availableCategories,
+				items: availableSeries,
 				label: '厨具系列（排除）',
-				selectedKeys: filterNoCategories,
-				setSelectedKeys:
-					cookersStore.persistence.filters.noCategories.set,
+				selectedKeys: filterNoSeriesGroupValues,
+				setSelectedKeys: setFilterNoSeriesGroupValues,
+				valueType: 'cookerSeries',
 			},
 			{
 				items: availableTypes,
 				label: '厨具类别（包含）',
 				selectedKeys: filterTypes,
 				setSelectedKeys: cookersStore.persistence.filters.types.set,
+				valueType: 'cookerType',
 			},
 			{
 				items: availableTypes,
 				label: '厨具类别（排除）',
 				selectedKeys: filterNoTypes,
 				setSelectedKeys: cookersStore.persistence.filters.noTypes.set,
+				valueType: 'cookerType',
 			},
 		],
 		[
 			availableAvailabilityDlcs,
-			availableCategories,
+			availableSeries,
 			availableContentDlcs,
 			availableTypes,
 			filterAvailabilityDlcs,
-			filterCategories,
 			filterContentDlcs,
-			filterNoCategories,
+			filterNoSeriesGroupValues,
+			filterSeriesGroupValues,
 			filterNoTypes,
 			filterTypes,
 			isAvailabilityDlcFilterRedundant,
+			setFilterNoSeriesGroupValues,
+			setFilterSeriesGroupValues,
 		]
 	);
 

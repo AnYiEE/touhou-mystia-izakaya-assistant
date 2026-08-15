@@ -1,3 +1,4 @@
+import isNil from 'lodash/isNil.js';
 import { type NextRequest } from 'next/server';
 
 import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
@@ -20,7 +21,7 @@ interface IUpdateSecretBody {
 }
 
 function parseUpdateSecretBody(value: unknown): IUpdateSecretBody | null {
-	if (value === null || value === undefined) {
+	if (isNil(value)) {
 		return {};
 	}
 	if (typeof value !== 'object') {

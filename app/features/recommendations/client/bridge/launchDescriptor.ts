@@ -1,3 +1,5 @@
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+
 import {
 	RECOMMENDATION_BRIDGE_PROTOCOL_VERSION,
 	parseJsonWithUniqueMembers,
@@ -19,10 +21,6 @@ export interface IRecommendationBridgeLaunchDescriptor {
 
 let activeLaunchDescriptor: IRecommendationBridgeLaunchDescriptor | null = null;
 let activeLaunchFragment: string | null = null;
-
-function checkPlainObject(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function decodeBase64Url(value: string) {
 	if (value === '' || !/^[A-Za-z0-9_-]+$/u.test(value)) {
@@ -85,7 +83,7 @@ export function parseRecommendationBridgeLaunchDescriptor(
 	);
 	const value = decoded === null ? null : parseJsonWithUniqueMembers(decoded);
 	if (
-		!checkPlainObject(value) ||
+		!checkIsRecord(value) ||
 		Object.keys(value).length !== 4 ||
 		!Object.hasOwn(value, 'endpoint') ||
 		!Object.hasOwn(value, 'instance_id') ||
@@ -109,15 +107,15 @@ function captureLaunchDescriptor() {
 	if (!Object.hasOwn(globalThis, 'window')) {
 		return;
 	}
-	const fragment = globalThis.location.hash;
+	const fragment = location.hash;
 	if (!fragment.startsWith(LAUNCH_FRAGMENT_PREFIX)) {
 		return;
 	}
 
-	globalThis.history.replaceState(
-		globalThis.history.state,
+	history.replaceState(
+		history.state,
 		'',
-		`${globalThis.location.pathname}${globalThis.location.search}`
+		`${location.pathname}${location.search}`
 	);
 	const descriptor = parseRecommendationBridgeLaunchDescriptor(fragment);
 	if (descriptor !== null) {
@@ -146,13 +144,12 @@ export function createRecommendationBridgeContinuationUrl(targetUrl: string) {
 		return targetUrl;
 	}
 
-	const target = URL.parse(targetUrl, globalThis.location.href);
-	if (
-		target?.origin !== globalThis.location.origin ||
-		targetUrl.includes('#')
-	) {
+	const target = URL.parse(targetUrl, location.href);
+	if (target?.origin !== location.origin || targetUrl.includes('#')) {
 		return targetUrl;
 	}
+
 	target.hash = activeLaunchFragment;
+
 	return target.toString();
 }

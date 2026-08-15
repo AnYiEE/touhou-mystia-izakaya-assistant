@@ -1,35 +1,40 @@
+import type {
+	TCookerSeriesId,
+	TCookerTypeId,
+} from '@/domain/data/cookers/types';
+
 interface IFilterableCooker {
 	availabilityDlcs: ReadonlyArray<number>;
-	category: string;
+	availableTypes: ReadonlyArray<TCookerTypeId>;
 	dlc: number;
-	type: string | ReadonlyArray<string>;
+	series: TCookerSeriesId;
 }
 
 export function filterCookerData<TCooker extends IFilterableCooker>({
 	data,
 	filterAvailabilityDlcs,
-	filterCategories,
 	filterContentDlcs,
-	filterNoCategories,
+	filterNoSeries,
 	filterNoTypes,
+	filterSeries,
 	filterTypes,
 }: {
 	data: ReadonlyArray<TCooker>;
 	filterAvailabilityDlcs: ReadonlyArray<string>;
-	filterCategories: ReadonlyArray<string>;
 	filterContentDlcs: ReadonlyArray<string>;
-	filterNoCategories: ReadonlyArray<string>;
-	filterNoTypes: ReadonlyArray<string>;
-	filterTypes: ReadonlyArray<string>;
+	filterNoSeries: ReadonlyArray<TCookerSeriesId>;
+	filterNoTypes: ReadonlyArray<TCookerTypeId>;
+	filterSeries: ReadonlyArray<TCookerSeriesId>;
+	filterTypes: ReadonlyArray<TCookerTypeId>;
 }): TCooker[] {
 	const hasAvailabilityDlcFilter = filterAvailabilityDlcs.length > 0;
-	const hasCategoryFilter = filterCategories.length > 0;
+	const hasSeriesFilter = filterSeries.length > 0;
 	const hasContentDlcFilter = filterContentDlcs.length > 0;
-	const hasNoCategoryFilter = filterNoCategories.length > 0;
+	const hasNoSeriesFilter = filterNoSeries.length > 0;
 	const hasNoTypeFilter = filterNoTypes.length > 0;
 	const hasTypeFilter = filterTypes.length > 0;
 
-	return data.filter(({ availabilityDlcs, category, dlc, type }) => {
+	return data.filter(({ availabilityDlcs, availableTypes, dlc, series }) => {
 		if (
 			hasAvailabilityDlcFilter &&
 			!filterAvailabilityDlcs.some((selectedDlc) =>
@@ -43,18 +48,16 @@ export function filterCookerData<TCooker extends IFilterableCooker>({
 		if (hasContentDlcFilter && !filterContentDlcs.includes(String(dlc))) {
 			return false;
 		}
-		if (hasCategoryFilter && !filterCategories.includes(category)) {
+		if (hasSeriesFilter && !filterSeries.includes(series)) {
 			return false;
 		}
-		if (hasNoCategoryFilter && filterNoCategories.includes(category)) {
+		if (hasNoSeriesFilter && filterNoSeries.includes(series)) {
 			return false;
 		}
 		if (
 			hasTypeFilter &&
 			!filterTypes.some((selectedType) =>
-				Array.isArray(type)
-					? type.includes(selectedType)
-					: selectedType === type
+				availableTypes.includes(selectedType)
 			)
 		) {
 			return false;
@@ -62,9 +65,7 @@ export function filterCookerData<TCooker extends IFilterableCooker>({
 		if (
 			hasNoTypeFilter &&
 			filterNoTypes.some((selectedType) =>
-				Array.isArray(type)
-					? type.includes(selectedType)
-					: selectedType === type
+				availableTypes.includes(selectedType)
 			)
 		) {
 			return false;

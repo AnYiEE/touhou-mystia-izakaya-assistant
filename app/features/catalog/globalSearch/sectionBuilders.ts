@@ -1,17 +1,25 @@
-import { CustomerNormal } from '@/domain/catalog/customers/CustomerNormal';
-import { CustomerRare } from '@/domain/catalog/customers/CustomerRare';
-import { Beverage } from '@/domain/catalog/food/Beverage';
-import { Ingredient } from '@/domain/catalog/food/Ingredient';
-import { Recipe } from '@/domain/catalog/food/Recipe';
-import { Clothes } from '@/domain/catalog/items/Clothes';
-import { Cooker } from '@/domain/catalog/items/Cooker';
-import { Currency } from '@/domain/catalog/items/Currency';
-import { Ornament } from '@/domain/catalog/items/Ornament';
-import { Partner } from '@/domain/catalog/items/Partner';
-import { getBondRecipes } from '@/domain/catalog/queries/getBondRecipes';
+import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
+import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import { NormalGuestCatalog } from '@/domain/catalog/guests/NormalGuestCatalog';
+import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { ClothesCatalog } from '@/domain/catalog/items/ClothesCatalog';
+import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
+import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
+import { DecorationCatalog } from '@/domain/catalog/items/DecorationCatalog';
+import { PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
+import { getBondFoods } from '@/domain/catalog/queries/getBondFoods';
+import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
+import { INGREDIENT_TYPE_MAP } from '@/domain/data/ingredients/ingredientFacts';
+import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import type { TGlobalSearchSection } from '@/features/globalSearch/contracts';
+
+import { numberSort } from '@/shared/utilities/sort/numberSort';
+import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import {
 	CATALOG_SEARCH_FIELD_WEIGHT,
@@ -24,39 +32,78 @@ import {
 	formatSpellCardList,
 } from './valueFormatting';
 
-function getCustomerRareBondRewards(item: TItemData<CustomerRare>[number]) {
-	const customerName = item.name as never;
+function getBeverageTagLabels(tags: ReadonlyArray<TBeverageTagId>) {
+	return tags.toSorted(numberSort).map((id) => BEVERAGE_TAG_MAP[id]);
+}
+
+function getFoodTagLabels(tags: ReadonlyArray<TFoodTagId>) {
+	return tags
+		.toSorted((a, b) => pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b]))
+		.map((id) => FOOD_TAG_MAP[id]);
+}
+
+function getSpecialGuestBondRewards(
+	item: TItemData<SpecialGuestCatalog>[number]
+) {
+	const specialGuest = item.id;
+	const foodCatalog = FoodCatalog.getInstance();
+	const decorationCatalog = DecorationCatalog.getInstance();
 	const bondRewards: Array<{
 		level: number | string;
 		name: string;
 		type: string;
 	}> = [
-		...getBondRecipes(customerName, Recipe.getInstance().data).map(
-			({ level, name }) => ({ level, name, type: '料理' })
+		...getBondFoods(specialGuest, foodCatalog.data).map(
+			({ id, level }) => ({
+				level,
+				name: foodCatalog.getPropsById(id, 'name'),
+				type: '料理',
+			})
 		),
-		...Ornament.getInstance()
-			.getBondOrnaments(customerName)
-			.map(({ level, name }) => ({ level, name, type: '摆件' })),
+		...decorationCatalog
+			.getBondDecorationsBySpecialGuest(specialGuest)
+			.map(({ id, level }) => ({
+				level,
+				name: decorationCatalog.getPropsById(id, 'name'),
+				type: '摆件',
+			})),
 	];
-	const bondCooker = Cooker.getInstance().getBondCooker(customerName);
-	const bondClothes = Clothes.getInstance().getBondClothes(customerName);
-	const bondPartner = Partner.getInstance().getBondPartner(customerName);
+	const cookerCatalog = CookerCatalog.getInstance();
+	const clothesCatalog = ClothesCatalog.getInstance();
+	const partnerCatalog = PartnerCatalog.getInstance();
+	const bondCooker = cookerCatalog.getBondCookerBySpecialGuest(specialGuest);
+	const bondClothes =
+		clothesCatalog.getBondClothesBySpecialGuest(specialGuest);
+	const bondPartner =
+		partnerCatalog.getBondPartnerBySpecialGuest(specialGuest);
 
 	if (bondCooker !== null) {
-		bondRewards.push({ level: '伙伴', name: bondCooker, type: '厨具' });
+		bondRewards.push({
+			level: '伙伴',
+			name: cookerCatalog.getPropsById(bondCooker, 'name'),
+			type: '厨具',
+		});
 	}
 	if (bondClothes !== null) {
-		bondRewards.push({ level: '伙伴', name: bondClothes, type: '衣服' });
+		bondRewards.push({
+			level: '伙伴',
+			name: clothesCatalog.getPropsById(bondClothes, 'name'),
+			type: '衣服',
+		});
 	}
 	if (item.collection) {
 		bondRewards.push({
 			level: 5,
-			name: `采集【${item.places[0]}】`,
+			name: `采集【${MAP_FACTS[item.maps[0]].label}】`,
 			type: '采集',
 		});
 	}
 	if (bondPartner !== null) {
-		bondRewards.push({ level: '伙伴', name: bondPartner, type: '伙伴' });
+		bondRewards.push({
+			level: '伙伴',
+			name: partnerCatalog.getPropsById(bondPartner, 'name'),
+			type: '伙伴',
+		});
 	}
 
 	return bondRewards;
@@ -79,7 +126,7 @@ function createDistinctFields(
 	return [...fields.values()];
 }
 
-export function buildRecipeItems(data = Recipe.getInstance().data) {
+export function buildFoodItems(data = FoodCatalog.getInstance().data) {
 	return data.map((item) =>
 		createItem({
 			description: item.description,
@@ -110,33 +157,38 @@ export function buildRecipeItems(data = Recipe.getInstance().data) {
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createDistinctFields(
-					'cooker',
+					'cooker-type',
 					'厨具',
-					item.recipes.map(({ cooker }) => cooker),
+					item.recipes.map(({ cookerType }) => cookerType),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
 					'positive-tag',
 					'正特性',
-					item.positiveTags,
+					getFoodTagLabels(item.positiveTags),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
 					'negative-tag',
 					'反特性',
-					item.negativeTags,
+					getFoodTagLabels(item.negativeTags),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
 					'tag',
 					'标签',
-					[item.positiveTags, item.negativeTags],
+					[
+						getFoodTagLabels(item.positiveTags),
+						getFoodTagLabels(item.negativeTags),
+					],
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
 					'place',
 					'地区',
-					item.places,
+					extractPlacesFromSource(item.from, {
+						isSelfAvailableEverywhere: true,
+					}),
 					CATALOG_SEARCH_FIELD_WEIGHT.context
 				),
 				...createField(
@@ -147,12 +199,13 @@ export function buildRecipeItems(data = Recipe.getInstance().data) {
 				),
 			],
 			name: item.name,
-			section: 'recipes',
+			recordId: item.id,
+			section: 'foods',
 		})
 	);
 }
 
-export function buildBeverageItems(data = Beverage.getInstance().data) {
+export function buildBeverageItems(data = BeverageCatalog.getInstance().data) {
 	return data.map((item) =>
 		createItem({
 			description: item.description,
@@ -179,19 +232,21 @@ export function buildBeverageItems(data = Beverage.getInstance().data) {
 				...createField(
 					'tag',
 					'标签',
-					item.tags,
+					getBeverageTagLabels(item.tags),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
 					'beverage-tag',
 					'酒水标签',
-					item.tags,
+					getBeverageTagLabels(item.tags),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
 					'place',
 					'地区',
-					item.places,
+					extractPlacesFromSource(item.from, {
+						isSelfAvailableEverywhere: true,
+					}),
 					CATALOG_SEARCH_FIELD_WEIGHT.context
 				),
 				...createField(
@@ -202,12 +257,15 @@ export function buildBeverageItems(data = Beverage.getInstance().data) {
 				),
 			],
 			name: item.name,
+			recordId: item.id,
 			section: 'beverages',
 		})
 	);
 }
 
-export function buildIngredientItems(data = Ingredient.getInstance().data) {
+export function buildIngredientItems(
+	data = IngredientCatalog.getInstance().data
+) {
 	return data.map((item) =>
 		createItem({
 			description: item.description,
@@ -234,19 +292,19 @@ export function buildIngredientItems(data = Ingredient.getInstance().data) {
 				...createField(
 					'type',
 					'类型',
-					item.type,
+					INGREDIENT_TYPE_MAP[item.type],
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
 					'tag',
 					'标签',
-					item.tags,
+					getFoodTagLabels(item.tags),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
 					'place',
 					'地区',
-					item.places,
+					extractPlacesFromSource(item.from),
 					CATALOG_SEARCH_FIELD_WEIGHT.context
 				),
 				...createField(
@@ -257,12 +315,13 @@ export function buildIngredientItems(data = Ingredient.getInstance().data) {
 				),
 			],
 			name: item.name,
+			recordId: item.id,
 			section: 'ingredients',
 		})
 	);
 }
 
-export function buildCookerItems(data = Cooker.getInstance().data) {
+export function buildCookerItems(data = CookerCatalog.getInstance().data) {
 	return data.map((item) =>
 		createItem({
 			description: item.description,
@@ -277,13 +336,13 @@ export function buildCookerItems(data = Cooker.getInstance().data) {
 				...createField(
 					'type',
 					'类型',
-					item.type,
+					item.availableTypes.map((id) => COOKER_TYPE_LABEL_MAP[id]),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
 					'category',
 					'类别',
-					item.category,
+					CookerCatalog.getInstance().getSeriesLabelById(item.series),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
@@ -306,6 +365,7 @@ export function buildCookerItems(data = Cooker.getInstance().data) {
 				),
 			],
 			name: item.name,
+			recordId: item.id,
 			section: 'cookers',
 		})
 	);
@@ -314,13 +374,13 @@ export function buildCookerItems(data = Cooker.getInstance().data) {
 export function buildSimpleItemSection(
 	section: Extract<
 		TGlobalSearchSection,
-		'clothes' | 'currencies' | 'ornaments' | 'partners'
+		'clothes' | 'currency-items' | 'decorations' | 'partners'
 	>,
 	data = {
-		clothes: Clothes.getInstance().data,
-		currencies: Currency.getInstance().data,
-		ornaments: Ornament.getInstance().data,
-		partners: Partner.getInstance().data,
+		clothes: ClothesCatalog.getInstance().data,
+		'currency-items': CurrencyItemCatalog.getInstance().data,
+		decorations: DecorationCatalog.getInstance().data,
+		partners: PartnerCatalog.getInstance().data,
 	}[section]
 ) {
 	return data.map((item) =>
@@ -372,16 +432,17 @@ export function buildSimpleItemSection(
 				),
 			],
 			name: item.name,
+			recordId: item.id,
 			section,
 		})
 	);
 }
 
-export function buildCustomerItems(
-	section: 'customer-normal' | 'customer-rare',
-	data = section === 'customer-rare'
-		? CustomerRare.getInstance().data
-		: CustomerNormal.getInstance().data
+export function buildGuestItems(
+	section: 'normal-guests' | 'special-guests',
+	data = section === 'special-guests'
+		? SpecialGuestCatalog.getInstance().data
+		: NormalGuestCatalog.getInstance().data
 ) {
 	return data.map((item) =>
 		createItem({
@@ -397,28 +458,30 @@ export function buildCustomerItems(
 				...createField(
 					'place',
 					'地区',
-					item.places,
+					item.maps,
 					CATALOG_SEARCH_FIELD_WEIGHT.context
 				),
 				...createField(
 					'positive-tag',
 					'喜好',
-					item.positiveTags,
+					getFoodTagLabels(item.positiveTags),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
 					'beverage-tag',
 					'酒水偏好',
-					item.beverageTags,
+					getBeverageTagLabels(item.beverageTags),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
-					'customer-tag',
+					'guest-tag',
 					'标签',
 					[
-						item.positiveTags,
-						item.beverageTags,
-						'negativeTags' in item ? item.negativeTags : [],
+						getFoodTagLabels(item.positiveTags),
+						getBeverageTagLabels(item.beverageTags),
+						'negativeTags' in item
+							? getFoodTagLabels(item.negativeTags)
+							: [],
 					],
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
@@ -432,7 +495,7 @@ export function buildCustomerItems(
 					? createField(
 							'negative-tag',
 							'厌恶',
-							item.negativeTags,
+							getFoodTagLabels(item.negativeTags),
 							CATALOG_SEARCH_FIELD_WEIGHT.primary
 						)
 					: []),
@@ -472,7 +535,7 @@ export function buildCustomerItems(
 					? createField(
 							'reward',
 							'羁绊奖励',
-							getCustomerRareBondRewards(item),
+							getSpecialGuestBondRewards(item),
 							CATALOG_SEARCH_FIELD_WEIGHT.medium
 						)
 					: []),
@@ -486,6 +549,7 @@ export function buildCustomerItems(
 					: []),
 			],
 			name: item.name,
+			recordId: item.id,
 			section,
 		})
 	);

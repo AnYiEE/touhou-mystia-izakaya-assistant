@@ -12,7 +12,7 @@ import {
 import { postAccountSyncBroadcastMessage } from '@/features/account/client/sync/broadcast';
 import { readAccountSyncConflictResolutionJournal } from '@/features/account/client/sync/conflictResolutionJournal';
 import {
-	migrateLegacyCustomerRarePlansDirtyQueueEntry,
+	migrateLegacySpecialGuestPlansDirtyQueueEntry,
 	quarantineInvalidDirtyQueueIntents,
 	readDirtyQueueCollisionState,
 	readDirtyQueueEntry,
@@ -100,8 +100,8 @@ async function reconcileAccountSyncDirtyQueueCollision({
 			) {
 				return 'journal-pending' as const;
 			}
-			if (namespace === SYNC_NAMESPACE_MAP.customerRarePlans) {
-				migrateLegacyCustomerRarePlansDirtyQueueEntry(
+			if (namespace === SYNC_NAMESPACE_MAP.specialGuestPlans) {
+				migrateLegacySpecialGuestPlansDirtyQueueEntry(
 					generationToken,
 					userId
 				);

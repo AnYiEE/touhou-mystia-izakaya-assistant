@@ -1,10 +1,14 @@
 import type { TDlc } from '@/domain/data/shared/types';
+import type {
+	TSpriteId,
+	TSpriteRecordIdentity,
+	TSpriteTarget,
+} from '@/domain/data/sprites/types';
 
 import type {
 	IGlobalSearchIndexField,
 	IGlobalSearchIndexItem,
 	TGlobalSearchFieldType,
-	TGlobalSearchIndexSection,
 	TGlobalSearchSection,
 } from '@/features/globalSearch/contracts';
 import {
@@ -32,7 +36,7 @@ export function createField(
 ): IGlobalSearchIndexField[] {
 	const text = joinFieldValue(fieldType, value);
 
-	return text.length === 0 ? [] : [{ fieldType, label, text, weight }];
+	return text.length === 0 ? [] : [{ fieldType, label, text, value, weight }];
 }
 
 export function createDlcFields({
@@ -65,27 +69,53 @@ function getSectionLabel(section: TGlobalSearchSection) {
 	);
 }
 
-export function createItem({
+type TCatalogSearchSectionConfig = Extract<
+	(typeof GLOBAL_SEARCH_SECTION_PREFIX_GROUPS)[number],
+	{ spriteTarget: TSpriteTarget }
+>;
+type TCatalogSearchIndexSection = TCatalogSearchSectionConfig['key'];
+type TCatalogSearchSpriteTarget<TSection extends TCatalogSearchIndexSection> =
+	Extract<TCatalogSearchSectionConfig, { key: TSection }>['spriteTarget'];
+
+function getCatalogSearchSectionConfig<
+	TSection extends TCatalogSearchIndexSection,
+>(section: TSection) {
+	const config = GLOBAL_SEARCH_SECTION_PREFIX_GROUPS.find(
+		(
+			candidate
+		): candidate is Extract<
+			TCatalogSearchSectionConfig,
+			{ key: TSection }
+		> => candidate.key === section
+	);
+	if (config === undefined) {
+		throw new Error('catalog-search-section-config-not-found');
+	}
+
+	return config;
+}
+
+export function createItem<TSection extends TCatalogSearchIndexSection>({
 	description,
 	fields,
 	name,
+	recordId,
 	section,
 }: {
 	description?: unknown;
 	fields: IGlobalSearchIndexField[];
 	name: string;
-	section: TGlobalSearchIndexSection;
+	recordId: TSpriteId<TCatalogSearchSpriteTarget<TSection>>;
+	section: TSection;
 }): IGlobalSearchIndexItem {
-	const sectionConfig = GLOBAL_SEARCH_SECTION_PREFIX_GROUPS.find(
-		({ key }) => key === section
-	);
-	const spriteTarget =
-		sectionConfig !== undefined && 'spriteTarget' in sectionConfig
-			? sectionConfig.spriteTarget
-			: undefined;
+	const sectionConfig = getCatalogSearchSectionConfig(section);
+	const { spriteTarget } = sectionConfig;
+	const identity = { recordId, spriteTarget } as TSpriteRecordIdentity<
+		typeof spriteTarget
+	>;
 	const href =
-		section === 'customer-normal' || section === 'customer-rare'
-			? `${GLOBAL_SEARCH_SECTION_PATH_MAP[section]}/${name}`
+		section === 'normal-guests' || section === 'special-guests'
+			? `${GLOBAL_SEARCH_SECTION_PATH_MAP[section]}/${recordId}`
 			: getGlobalSearchSectionPath(section);
 
 	return {
@@ -100,11 +130,10 @@ export function createItem({
 			...fields,
 		],
 		href,
-		id: `${section}:${name}`,
+		id: `${spriteTarget}:${recordId}`,
+		...identity,
 		name,
 		section,
 		sectionLabel: getSectionLabel(section),
-		...(spriteTarget === undefined ? {} : { spriteTarget }),
-		targetName: name,
 	};
 }

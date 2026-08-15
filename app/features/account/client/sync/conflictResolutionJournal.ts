@@ -12,6 +12,7 @@ import {
 } from '@/features/account/client/storage';
 
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 import { checkAccountSyncResetWriteAllowed } from './resetGeneration';
 
@@ -31,13 +32,13 @@ export interface IAccountSyncConflictResolutionJournal {
 	clientMutationId: string;
 	cloudHash: string;
 	createdAt: number;
+	generationToken: string | null;
 	localHash: string;
 	mergedHash: string;
 	namespace: TSyncNamespace;
 	operationId: string;
-	resolution: TAccountSyncConflictResolution;
-	generationToken: string | null;
 	resetGeneration: string | null;
+	resolution: TAccountSyncConflictResolution;
 	resultBaseRevision: number | null;
 	resultClientMutationId: string | null;
 	resultQueueOperationId: string | null;
@@ -117,10 +118,6 @@ function checkConflictResolution(
 }
 const STAGE_ORDER: Record<TAccountSyncConflictResolutionJournalStage, number> =
 	{ committed: 4, prepared: 0, runtime: 3, snapshot: 1, state: 2 };
-
-function checkPlainObject(value: unknown): value is Record<string, unknown> {
-	return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
 
 function checkBoundedString(value: unknown): value is string {
 	return (
@@ -211,7 +208,7 @@ export function parseAccountSyncConflictResolutionJournalValue({
 	} catch {
 		return { status: 'invalid', version: null };
 	}
-	if (!checkPlainObject(parsed)) {
+	if (!checkIsRecord(parsed)) {
 		return { status: 'invalid', version: null };
 	}
 	if (parsed['version'] === 1) {
@@ -433,8 +430,8 @@ export function advanceAccountSyncConflictResolutionJournal({
 	generationToken: string | null;
 	namespace: TSyncNamespace;
 	operationId: string;
-	stage: TAccountSyncConflictResolutionJournalStage;
 	resetOperationId?: string;
+	stage: TAccountSyncConflictResolutionJournalStage;
 	userId: string;
 }) {
 	const checkGeneration = () =>

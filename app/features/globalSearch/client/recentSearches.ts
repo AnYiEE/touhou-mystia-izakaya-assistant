@@ -1,6 +1,13 @@
+import isObject from 'lodash/isObject.js';
+
 import { GLOBAL_SEARCH_RECENT_STORAGE_KEY } from '@/features/globalSearch/core/constants';
 
 import { safeStorage } from '@/infrastructure/browser/storage/safeStorage';
+
+import {
+	type TGlobalSearchRecentIndexItem,
+	migrateGlobalSearchRecentState,
+} from './migrateRecentSearches';
 
 const MAX_RECENT_ITEMS = 8;
 const MAX_RECENT_QUERIES = 8;
@@ -15,7 +22,16 @@ export const EMPTY_GLOBAL_SEARCH_RECENT_STATE: IGlobalSearchRecentState = {
 	queries: [],
 };
 
-export function readGlobalSearchRecentState(): IGlobalSearchRecentState {
+export function writeGlobalSearchRecentState(state: IGlobalSearchRecentState) {
+	safeStorage.setItem(
+		GLOBAL_SEARCH_RECENT_STORAGE_KEY,
+		JSON.stringify(state)
+	);
+}
+
+export function readGlobalSearchRecentState(
+	index: ReadonlyArray<TGlobalSearchRecentIndexItem>
+): IGlobalSearchRecentState {
 	const value = safeStorage.getItem(GLOBAL_SEARCH_RECENT_STORAGE_KEY);
 	if (value === null) {
 		return EMPTY_GLOBAL_SEARCH_RECENT_STATE;
@@ -24,15 +40,14 @@ export function readGlobalSearchRecentState(): IGlobalSearchRecentState {
 	try {
 		const parsed: unknown = JSON.parse(value);
 		if (
-			typeof parsed === 'object' &&
-			parsed !== null &&
+			isObject(parsed) &&
 			Array.isArray(
 				(parsed as Partial<IGlobalSearchRecentState>).items
 			) &&
 			Array.isArray((parsed as Partial<IGlobalSearchRecentState>).queries)
 		) {
 			const recentState = parsed as IGlobalSearchRecentState;
-			return {
+			const normalizedState = {
 				items: recentState.items
 					.filter((item): item is string => typeof item === 'string')
 					.slice(0, MAX_RECENT_ITEMS),
@@ -40,19 +55,20 @@ export function readGlobalSearchRecentState(): IGlobalSearchRecentState {
 					.filter((item): item is string => typeof item === 'string')
 					.slice(0, MAX_RECENT_QUERIES),
 			};
+			const migratedState = migrateGlobalSearchRecentState(
+				normalizedState,
+				index
+			);
+			if (migratedState !== normalizedState) {
+				writeGlobalSearchRecentState(migratedState);
+			}
+			return migratedState;
 		}
 	} catch {
 		/* empty */
 	}
 
 	return EMPTY_GLOBAL_SEARCH_RECENT_STATE;
-}
-
-export function writeGlobalSearchRecentState(state: IGlobalSearchRecentState) {
-	safeStorage.setItem(
-		GLOBAL_SEARCH_RECENT_STORAGE_KEY,
-		JSON.stringify(state)
-	);
 }
 
 export function addGlobalSearchRecentEntry({

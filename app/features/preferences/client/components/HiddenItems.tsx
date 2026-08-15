@@ -19,8 +19,8 @@ import { filterAvailableItemsByHiddenDlcs } from '@/domain/availability';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 
 import { beveragesStore } from '@/features/catalog/items/beverages/client/state/store';
+import { foodsStore } from '@/features/catalog/items/foods/client/state/store';
 import { ingredientsStore } from '@/features/catalog/items/ingredients/client/state/store';
-import { recipesStore } from '@/features/catalog/items/recipes/client/state/store';
 import Sprite, {
 	type ISpriteProps,
 } from '@/features/catalog/shared/client/components/Sprite';
@@ -42,6 +42,10 @@ import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 
 import SwitchItem from './PreferenceSwitchItem';
+
+const SETTINGS_MODAL_CLASS_NAMES = {
+	backdrop: 'bg-overlay/30 backdrop-saturate-150',
+} as const;
 
 interface ISettingsButtonProps {
 	isActive: boolean;
@@ -90,6 +94,7 @@ const SettingsModal = memo<ISettingsModalProps>(function SettingsModal({
 }) {
 	const ref = useRef<HTMLDivElement | null>(null);
 	const vibrate = useVibrate();
+	const coordination = useMemo(() => ({ id: overlayId }), [overlayId]);
 
 	const handleClose = useCallback(() => {
 		vibrate();
@@ -117,11 +122,11 @@ const SettingsModal = memo<ISettingsModalProps>(function SettingsModal({
 	return (
 		<CoordinatedModal
 			backdrop={isInModal ? 'opaque' : undefined}
-			coordination={{ id: overlayId }}
+			coordination={coordination}
 			isOpen={isOpen}
 			size="2xl"
 			onClose={handleClose}
-			classNames={{ backdrop: 'bg-overlay/30 backdrop-saturate-150' }}
+			classNames={SETTINGS_MODAL_CLASS_NAMES}
 			ref={ref}
 			{...props}
 		>
@@ -141,7 +146,7 @@ const SETTINGS_PANEL_RENDER_BATCH_SIZE = 24;
 
 interface ISettingsPanelProps<
 	T extends TData,
-	U extends T[number]['name'],
+	U extends T[number]['id'],
 > extends Pick<ISpriteProps, 'target'> {
 	data: T;
 	hiddenItems: Set<U>;
@@ -156,8 +161,8 @@ interface ISettingsPanelDlcGroupProps<U extends TData[number]> extends Pick<
 	dlc: U['dlc'];
 	getDlcToggleState: (dlc: U['dlc']) => boolean | 'disabled';
 	handleDlcToggle: (dlc: U['dlc']) => void;
-	handleValueChange: (name: U['name']) => void;
-	hiddenItems: Set<U['name']>;
+	handleValueChange: (id: U['id']) => void;
+	hiddenItems: Set<U['id']>;
 	index: number;
 	items: U[];
 }
@@ -198,17 +203,17 @@ function SettingsPanelDlcGroup<U extends TData[number]>({
 			setRenderedCount(nextRenderedCount);
 
 			if (nextRenderedCount < itemCount) {
-				timer = globalThis.setTimeout(renderNextBatch, 0);
+				timer = setTimeout(renderNextBatch, 0);
 			}
 		};
 
 		if (nextRenderedCount < itemCount) {
-			timer = globalThis.setTimeout(renderNextBatch, 0);
+			timer = setTimeout(renderNextBatch, 0);
 		}
 
 		return () => {
 			if (timer !== null) {
-				globalThis.clearTimeout(timer);
+				clearTimeout(timer);
 			}
 		};
 	}, [itemCount]);
@@ -241,15 +246,15 @@ function SettingsPanelDlcGroup<U extends TData[number]>({
 				/>
 			</div>
 			<div className="grid h-min grid-cols-2 content-start justify-items-start gap-4 sm:grid-cols-3 md:gap-2 md:gap-x-12">
-				{renderedItems.map(({ isHiddenByIngredient, name }) => (
+				{renderedItems.map(({ id, isHiddenByIngredient, name }) => (
 					<div
-						key={name}
+						key={id}
 						className="flex w-full items-center justify-between"
 					>
 						<p className="flex items-center text-small">
 							<Sprite
 								target={target}
-								name={name}
+								recordId={id}
 								size={1.25}
 								className="mr-0.5"
 							/>
@@ -260,12 +265,12 @@ function SettingsPanelDlcGroup<U extends TData[number]>({
 							isSelected={
 								isHiddenByIngredient
 									? false
-									: !hiddenItems.has(name)
+									: !hiddenItems.has(id)
 							}
 							onValueChange={() => {
-								handleValueChange(name);
+								handleValueChange(id);
 							}}
-							aria-label={`${hiddenItems.has(name) ? '显示' : '隐藏'}${name}`}
+							aria-label={`${hiddenItems.has(id) ? '显示' : '隐藏'}${name}`}
 							title={
 								isHiddenByIngredient
 									? '此料理因包含已被隐藏的食材而被隐藏'
@@ -288,7 +293,7 @@ const SettingsPanel = memo(function SettingsPanel<
 	setHiddenItems,
 	target,
 	title,
-}: ISettingsPanelProps<T, U['name']>) {
+}: ISettingsPanelProps<T, U['id']>) {
 	const dataGroupByDlcMap = useMemo(
 		() => Map.groupBy(data, (item) => item.dlc) as Map<U['dlc'], U[]>,
 		[data]
@@ -300,13 +305,13 @@ const SettingsPanel = memo(function SettingsPanel<
 	);
 
 	const handleValueChange = useCallback(
-		(name: U['name']) => {
+		(id: U['id']) => {
 			const newHiddenItems = new Set(hiddenItems);
 
-			if (newHiddenItems.has(name)) {
-				newHiddenItems.delete(name);
+			if (newHiddenItems.has(id)) {
+				newHiddenItems.delete(id);
 			} else {
-				newHiddenItems.add(name);
+				newHiddenItems.add(id);
 			}
 
 			setHiddenItems(newHiddenItems);
@@ -320,16 +325,16 @@ const SettingsPanel = memo(function SettingsPanel<
 			const newHiddenItems = new Set(hiddenItems);
 
 			const isAllHidden = dlcItems.every((item) =>
-				hiddenItems.has(item.name)
+				hiddenItems.has(item.id)
 			);
 
 			if (isAllHidden) {
 				dlcItems.forEach((item) => {
-					newHiddenItems.delete(item.name);
+					newHiddenItems.delete(item.id);
 				});
 			} else {
 				dlcItems.forEach((item) => {
-					newHiddenItems.add(item.name);
+					newHiddenItems.add(item.id);
 				});
 			}
 
@@ -342,8 +347,8 @@ const SettingsPanel = memo(function SettingsPanel<
 		(dlc: U['dlc']) => {
 			const dlcItems = dataGroupByDlcMap.get(dlc) ?? [];
 			const { hiddenByIngredientCount, hiddenCount } = dlcItems.reduce(
-				(acc, { isHiddenByIngredient, name }) => {
-					if (hiddenItems.has(name)) {
+				(acc, { id, isHiddenByIngredient }) => {
+					if (hiddenItems.has(id)) {
 						acc.hiddenCount++;
 					}
 					if (isHiddenByIngredient) {
@@ -386,7 +391,7 @@ const SettingsPanel = memo(function SettingsPanel<
 		</div>
 	);
 }) as <T extends TData, U extends T[number]>(
-	props: ISettingsPanelProps<T, U['name']>
+	props: ISettingsPanelProps<T, U['id']>
 ) => JSX.Element;
 
 interface IProps {
@@ -396,61 +401,61 @@ interface IProps {
 export default memo<IProps>(function HiddenItems({ onModalClose }) {
 	const [isBeveragesSettingsPanelOpen, setBeveragesSettingsPanelOpen] =
 		useState(false);
-	const [isIngredientsSettingsPanelOpen, setIngredientsSettingsPanelOpen] =
+	const [isFoodsSettingsPanelOpen, setFoodsSettingsPanelOpen] =
 		useState(false);
-	const [isRecipesSettingsPanelOpen, setRecipesSettingsPanelOpen] =
+	const [isIngredientsSettingsPanelOpen, setIngredientsSettingsPanelOpen] =
 		useState(false);
 
 	const hiddenDlcs = globalStore.hiddenDlcs.use();
 
 	const hiddenBeverages = globalStore.hiddenBeverages.use();
+	const hiddenFoods = globalStore.hiddenFoods.use();
 	const hiddenIngredients = globalStore.hiddenIngredients.use();
-	const hiddenRecipes = globalStore.hiddenRecipes.use();
 
-	const instance_beverage = beveragesStore.instance.get();
-	const instance_ingredient = ingredientsStore.instance.get();
-	const instance_recipe = recipesStore.instance.get();
+	const beverageInstance = beveragesStore.instance.get();
+	const foodInstance = foodsStore.instance.get();
+	const ingredientInstance = ingredientsStore.instance.get();
 
 	const beverageData = useMemo(
 		() =>
 			filterAvailableItemsByHiddenDlcs(
-				instance_beverage.getPinyinSortedData(),
+				beverageInstance.getPinyinSortedData(),
 				hiddenDlcs
 			),
-		[hiddenDlcs, instance_beverage]
+		[beverageInstance, hiddenDlcs]
+	);
+
+	const foodData = useMemo(
+		() =>
+			filterAvailableItemsByHiddenDlcs(
+				foodInstance.getPinyinSortedData(),
+				hiddenDlcs
+			)
+				.filter(({ id }) => !foodInstance.blockedFoods.has(id))
+				.map((food) => {
+					if (
+						food.recipes.every(({ ingredients }) =>
+							ingredients.some((ingredient) =>
+								hiddenIngredients.has(ingredient)
+							)
+						)
+					) {
+						return { ...food, isHiddenByIngredient: true };
+					}
+					return food;
+				}),
+		[foodInstance, hiddenDlcs, hiddenIngredients]
 	);
 
 	const ingredientData = useMemo(
 		() =>
 			filterAvailableItemsByHiddenDlcs(
-				instance_ingredient.getPinyinSortedData(),
+				ingredientInstance.getPinyinSortedData(),
 				hiddenDlcs
 			).filter(
-				({ name }) => !instance_ingredient.blockedIngredients.has(name)
+				({ id }) => !ingredientInstance.blockedIngredients.has(id)
 			),
-		[hiddenDlcs, instance_ingredient]
-	);
-
-	const recipeData = useMemo(
-		() =>
-			filterAvailableItemsByHiddenDlcs(
-				instance_recipe.getPinyinSortedData(),
-				hiddenDlcs
-			)
-				.filter(({ name }) => !instance_recipe.blockedRecipes.has(name))
-				.map((recipe) => {
-					if (
-						recipe.recipes.every(({ ingredients }) =>
-							ingredients.some((ingredientName) =>
-								hiddenIngredients.has(ingredientName)
-							)
-						)
-					) {
-						return { ...recipe, isHiddenByIngredient: true };
-					}
-					return recipe;
-				}),
-		[hiddenDlcs, hiddenIngredients, instance_recipe]
+		[hiddenDlcs, ingredientInstance]
 	);
 
 	const isInModal = onModalClose !== undefined;
@@ -482,9 +487,9 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 		});
 	}, [openSettingsPanel]);
 
-	const handleRecipesSettingsButtonClick = useCallback(() => {
-		openSettingsPanel('preferences.hidden-recipes', () => {
-			setRecipesSettingsPanelOpen(true);
+	const handleFoodsSettingsButtonClick = useCallback(() => {
+		openSettingsPanel('preferences.hidden-foods', () => {
+			setFoodsSettingsPanelOpen(true);
 		});
 	}, [openSettingsPanel]);
 
@@ -498,9 +503,9 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 		requestOverlayClose('preferences.hidden-ingredients');
 	}, []);
 
-	const handleRecipesSettingsPanelClose = useCallback(() => {
-		setRecipesSettingsPanelOpen(false);
-		requestOverlayClose('preferences.hidden-recipes');
+	const handleFoodsSettingsPanelClose = useCallback(() => {
+		setFoodsSettingsPanelOpen(false);
+		requestOverlayClose('preferences.hidden-foods');
 	}, []);
 
 	return (
@@ -529,20 +534,20 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 			<div className="flex items-center gap-2">
 				<span className="font-medium">启用或禁用特定料理</span>
 				<SettingsButton
-					isActive={!checkLengthEmpty(hiddenRecipes)}
-					onClick={handleRecipesSettingsButtonClick}
+					isActive={!checkLengthEmpty(hiddenFoods)}
+					onClick={handleFoodsSettingsButtonClick}
 				/>
 				<SettingsModal
 					isInModal={isInModal}
-					isOpen={isRecipesSettingsPanelOpen}
-					onClose={handleRecipesSettingsPanelClose}
-					overlayId="preferences.hidden-recipes"
+					isOpen={isFoodsSettingsPanelOpen}
+					onClose={handleFoodsSettingsPanelClose}
+					overlayId="preferences.hidden-foods"
 				>
 					<SettingsPanel
-						data={recipeData}
-						hiddenItems={hiddenRecipes}
-						setHiddenItems={globalStore.hiddenRecipes.set}
-						target="recipe"
+						data={foodData}
+						hiddenItems={hiddenFoods}
+						setHiddenItems={globalStore.hiddenFoods.set}
+						target="food"
 						title="启用或禁用特定料理"
 					/>
 				</SettingsModal>

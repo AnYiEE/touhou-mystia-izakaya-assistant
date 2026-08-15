@@ -28,9 +28,9 @@ interface IAnnouncementProgressStyle extends CSSProperties {
 interface IAnnouncementContentProps {
 	className?: string;
 	isMarqueeDisabled?: boolean;
+	isMarqueeLooping?: boolean;
 	isPaused?: boolean;
 	item: IAnnouncementPublicItem;
-	isMarqueeLooping?: boolean;
 	onMarqueeComplete?: () => void;
 	onMarqueeMetricsChange?: (metrics: IAnnouncementMarqueeMetrics) => void;
 }

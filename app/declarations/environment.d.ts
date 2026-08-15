@@ -23,8 +23,8 @@ declare global {
 			APP_SECRET?: string;
 			OFFLINE?: string;
 			SELF_HOSTED?: string;
-			SQLITE_DATABASE_PATH?: string;
 			SKIP_LINT?: string;
+			SQLITE_DATABASE_PATH?: string;
 			TRUST_PROXY?: string;
 			UPLOAD_DIR?: string;
 
@@ -36,8 +36,8 @@ declare global {
 			DISPATCH_SECRET?: string;
 
 			ACCOUNT_COOKIE_DOMAIN?: string;
-			SERVICE_API_ORIGIN?: string;
 			SERVICE_ALLOWED_ORIGINS?: string;
+			SERVICE_API_ORIGIN?: string;
 			WEBAUTHN_RP_ID?: string;
 		}
 	}

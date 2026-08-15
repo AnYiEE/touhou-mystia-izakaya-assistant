@@ -12,9 +12,10 @@ import { setGlobalSearchTransientTarget } from '@/features/globalSearch/client/c
 import { globalSearchStore } from '@/features/globalSearch/client/state/store';
 import { getGlobalSearchSectionFromPathname } from '@/features/globalSearch/core/context';
 import { ITEM_SHARE_PARAM_NAME } from '@/features/itemSharing/contracts';
+import { parseItemShareRecord } from '@/features/itemSharing/shareUrl';
 
 export interface IDefaultOpenedPopover {
-	name: string;
+	recordId: number;
 	requestId: number;
 	source: 'spotlight' | 'url';
 }
@@ -34,10 +35,10 @@ export function useOpenedItemPopover(
 	const requestIdRef = useRef(0);
 
 	const openDefaultPopover = useCallback(
-		(name: string, source: IDefaultOpenedPopover['source']) => {
+		(recordId: number, source: IDefaultOpenedPopover['source']) => {
 			requestIdRef.current += 1;
 			setDefaultOpenedPopover({
-				name,
+				recordId,
 				requestId: requestIdRef.current,
 				source,
 			});
@@ -58,7 +59,10 @@ export function useOpenedItemPopover(
 		}
 
 		handledParamRef.current = paramKey;
-		openDefaultPopover(param, 'url');
+		const recordId = parseItemShareRecord(param);
+		if (recordId !== null) {
+			openDefaultPopover(recordId, 'url');
+		}
 	}, [openDefaultPopover, params, pathname]);
 
 	useEffect(() => {
@@ -89,18 +93,18 @@ export function useOpenedItemPopover(
 			return;
 		}
 
-		openDefaultPopover(transientTarget.name, 'spotlight');
+		openDefaultPopover(transientTarget.recordId, 'spotlight');
 		setGlobalSearchTransientTarget(null);
 	}, [openDefaultPopover, pathname, transientTarget]);
 
 	const setOpenedPopover = useCallback(
-		(name: string | null) => {
+		(recordId: number | null) => {
 			const newParams = new URLSearchParams(params);
-			if (name === null) {
+			if (recordId === null) {
 				newParams.delete(ITEM_SHARE_PARAM_NAME);
 			} else {
-				newParams.set(ITEM_SHARE_PARAM_NAME, name);
-				openDefaultPopover(name, 'url');
+				newParams.set(ITEM_SHARE_PARAM_NAME, String(recordId));
+				openDefaultPopover(recordId, 'url');
 			}
 
 			replaceState(newParams);
@@ -109,10 +113,10 @@ export function useOpenedItemPopover(
 	);
 
 	const getPopoverOpenChangeProps = useCallback(
-		(name: string) => {
+		(recordId: number) => {
 			if (
 				defaultOpenedPopover?.source !== 'url' ||
-				defaultOpenedPopover.name !== name
+				defaultOpenedPopover.recordId !== recordId
 			) {
 				return {};
 			}

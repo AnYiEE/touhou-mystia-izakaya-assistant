@@ -11,7 +11,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-	type Key,
 	type SyntheticEvent,
 	memo,
 	useCallback,
@@ -381,13 +380,13 @@ export default function AdminSsoCallbackHistoryClient({
 	}, [checkAdmin, initialData.admin]);
 
 	useEffect(() => {
-		let timeoutId: ReturnType<typeof globalThis.setTimeout> | null = null;
+		let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
 		if (admin !== null) {
 			if (isServerInitialRef.current) {
 				isServerInitialRef.current = false;
 			} else {
-				timeoutId = globalThis.setTimeout(() => {
+				timeoutId = setTimeout(() => {
 					refreshDeliveries(page);
 				}, ADMIN_LIST_DEBOUNCE_MS);
 			}
@@ -395,7 +394,7 @@ export default function AdminSsoCallbackHistoryClient({
 
 		return () => {
 			if (timeoutId !== null) {
-				globalThis.clearTimeout(timeoutId);
+				clearTimeout(timeoutId);
 			}
 		};
 	}, [admin, page, refreshDeliveries]);
@@ -422,18 +421,18 @@ export default function AdminSsoCallbackHistoryClient({
 			...(endTime === undefined ? {} : { endTime }),
 			...(startTime === undefined ? {} : { startTime }),
 		});
-		const currentHref = `${globalThis.location.pathname}${globalThis.location.search}`;
+		const currentHref = `${location.pathname}${location.search}`;
 
 		if (currentHref === nextHref) {
 			return;
 		}
 
-		const timeoutId = globalThis.setTimeout(() => {
+		const timeoutId = setTimeout(() => {
 			router.replace(nextHref, { scroll: false });
 		}, ADMIN_LIST_DEBOUNCE_MS);
 
 		return () => {
-			globalThis.clearTimeout(timeoutId);
+			clearTimeout(timeoutId);
 		};
 	}, [
 		clientIdInput,
@@ -515,15 +514,18 @@ export default function AdminSsoCallbackHistoryClient({
 		setUserIdInput(value);
 	}, []);
 
-	const handleEventAction = useCallback((key: Key) => {
+	const handleEventAction = useCallback((value: TCallbackEventFilter) => {
 		setPage(1);
-		setEventFilter(String(key) as TCallbackEventFilter);
+		setEventFilter(value);
 	}, []);
 
-	const handleStatusAction = useCallback((key: Key) => {
-		setPage(1);
-		setStatusFilter(String(key) as TCallbackDeliveryStatusFilter);
-	}, []);
+	const handleStatusAction = useCallback(
+		(value: TCallbackDeliveryStatusFilter) => {
+			setPage(1);
+			setStatusFilter(value);
+		},
+		[]
+	);
 
 	const handleStartTimeInputChange = useCallback((value: string) => {
 		setPage(1);

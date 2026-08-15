@@ -13,6 +13,7 @@ import {
 	canAddNonNegativeSafeIntegers,
 	isNonNegativeSafeInteger,
 } from '@/shared/utilities/numbers/check';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 const CROSS_TAB_LOCK_DATABASE_NAME = 'touhou-mystia-izakaya-cross-tab-locks';
 const CROSS_TAB_LOCK_DATABASE_VERSION = 1;
@@ -54,7 +55,7 @@ function checkCrossTabLockRecord(
 	value: unknown,
 	name: string
 ): value is ICrossTabLockRecord {
-	if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+	if (!checkIsRecord(value)) {
 		return false;
 	}
 

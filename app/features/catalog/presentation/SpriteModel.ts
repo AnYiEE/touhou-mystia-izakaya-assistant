@@ -1,28 +1,28 @@
 import { type CSSProperties } from 'react';
 
-import { Item } from '@/domain/catalog/shared/Item';
+import { RecordCatalog } from '@/domain/catalog/shared/RecordCatalog';
 import type { TItemWithPinyin } from '@/domain/catalog/shared/types';
 import { BEVERAGE_LIST } from '@/domain/data/beverages/records';
 import { CLOTHES_LIST } from '@/domain/data/clothes/records';
 import { COOKER_LIST } from '@/domain/data/cookers/records';
-import { CURRENCY_LIST } from '@/domain/data/currencies/records';
-import { CUSTOMER_NORMAL_LIST } from '@/domain/data/customers/normal/records';
-import { CUSTOMER_RARE_LIST } from '@/domain/data/customers/rare/records';
+import { CURRENCY_ITEM_LIST } from '@/domain/data/currencyItems/records';
+import { DECORATION_LIST } from '@/domain/data/decorations/records';
+import { FOOD_LIST } from '@/domain/data/foods/records';
+import { NORMAL_GUEST_LIST } from '@/domain/data/guests/normal/records';
+import { SPECIAL_GUEST_LIST } from '@/domain/data/guests/special/records';
 import { INGREDIENT_LIST } from '@/domain/data/ingredients/records';
-import { ORNAMENT_LIST } from '@/domain/data/ornaments/records';
 import { PARTNER_LIST } from '@/domain/data/partners/records';
-import { RECIPE_LIST } from '@/domain/data/recipes/records';
 import {
 	BEVERAGE_SPRITE_CONFIG,
 	CLOTHES_SPRITE_CONFIG,
 	COOKER_SPRITE_CONFIG,
-	CURRENCY_SPRITE_CONFIG,
-	CUSTOMER_NORMAL_SPRITE_CONFIG,
-	CUSTOMER_RARE_SPRITE_CONFIG,
+	CURRENCY_ITEM_SPRITE_CONFIG,
+	DECORATION_SPRITE_CONFIG,
+	FOOD_SPRITE_CONFIG,
 	INGREDIENT_SPRITE_CONFIG,
-	ORNAMENT_SPRITE_CONFIG,
+	NORMAL_GUEST_SPRITE_CONFIG,
 	PARTNER_SPRITE_CONFIG,
-	RECIPE_SPRITE_CONFIG,
+	SPECIAL_GUEST_SPRITE_CONFIG,
 } from '@/domain/data/sprites/configs';
 import type {
 	ISpriteConfig,
@@ -36,33 +36,33 @@ const SPRITE_CONFIG_MAP = {
 	beverage: BEVERAGE_SPRITE_CONFIG,
 	clothes: CLOTHES_SPRITE_CONFIG,
 	cooker: COOKER_SPRITE_CONFIG,
-	currency: CURRENCY_SPRITE_CONFIG,
-	customer_normal: CUSTOMER_NORMAL_SPRITE_CONFIG,
-	customer_rare: CUSTOMER_RARE_SPRITE_CONFIG,
+	currency_item: CURRENCY_ITEM_SPRITE_CONFIG,
+	decoration: DECORATION_SPRITE_CONFIG,
+	food: FOOD_SPRITE_CONFIG,
 	ingredient: INGREDIENT_SPRITE_CONFIG,
-	ornament: ORNAMENT_SPRITE_CONFIG,
+	normal_guest: NORMAL_GUEST_SPRITE_CONFIG,
 	partner: PARTNER_SPRITE_CONFIG,
-	recipe: RECIPE_SPRITE_CONFIG,
+	special_guest: SPECIAL_GUEST_SPRITE_CONFIG,
 } as const satisfies Record<TSpriteTarget, ISpriteConfig>;
 
 const SPRITE_DATA_MAP = {
 	beverage: BEVERAGE_LIST,
 	clothes: CLOTHES_LIST,
 	cooker: COOKER_LIST,
-	currency: CURRENCY_LIST,
-	customer_normal: CUSTOMER_NORMAL_LIST,
-	customer_rare: CUSTOMER_RARE_LIST,
+	currency_item: CURRENCY_ITEM_LIST,
+	decoration: DECORATION_LIST,
+	food: FOOD_LIST,
 	ingredient: INGREDIENT_LIST,
-	ornament: ORNAMENT_LIST,
+	normal_guest: NORMAL_GUEST_LIST,
 	partner: PARTNER_LIST,
-	recipe: RECIPE_LIST,
+	special_guest: SPECIAL_GUEST_LIST,
 } as const satisfies Record<TSpriteTarget, TSpriteData>;
 
 export class Sprite<
 	TCurrentSpriteTarget extends TSpriteTarget,
 	TItems extends TSpriteData<TCurrentSpriteTarget> =
 		TSpriteData<TCurrentSpriteTarget>,
-> extends Item<TItems, TItemWithPinyin<TItems[number]>> {
+> extends RecordCatalog<TItems, TItemWithPinyin<TItems[number]>> {
 	private static _instances = new Map<TSpriteTarget, Sprite<TSpriteTarget>>();
 
 	private _config: ISpriteConfig;
@@ -156,5 +156,15 @@ export class Sprite<
 		bgPropsCache.set(cacheKey, result);
 
 		return result;
+	}
+
+	public getBackgroundPropsById(
+		id: TItems[number]['id'],
+		displaySize?: { displayHeight?: number; displayWidth?: number }
+	) {
+		return this.getBackgroundPropsByIndex(
+			this.findIndexById(id),
+			displaySize
+		);
 	}
 }

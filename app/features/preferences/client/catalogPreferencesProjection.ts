@@ -1,114 +1,104 @@
-import { Recipe } from '@/domain/catalog/food/Recipe';
-import type { TBeverageName } from '@/domain/data/beverages/types';
-import type { TIngredientName } from '@/domain/data/ingredients/types';
-import type { TRecipeName } from '@/domain/data/recipes/types';
+import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import type { TBeverageId } from '@/domain/data/beverages/types';
+import type { TFoodId } from '@/domain/data/foods/types';
+import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
-import type { IMealRecipe } from '@/domain/meals/types';
+import type { IMealFood } from '@/domain/meals/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
-import { customerNormalStore } from '@/features/catalog/customers/normal/client/state/store';
-import { customerRareStore } from '@/features/catalog/customers/rare/client/state/store';
+import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
+import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { beveragesStore } from '@/features/catalog/items/beverages/client/state/store';
 import { clothesStore } from '@/features/catalog/items/clothes/client/state/store';
 import { cookersStore } from '@/features/catalog/items/cookers/client/state/store';
-import { currenciesStore } from '@/features/catalog/items/currencies/client/state/store';
+import { currencyItemsStore } from '@/features/catalog/items/currencyItems/client/state/store';
+import { decorationsStore } from '@/features/catalog/items/decorations/client/state/store';
+import { foodsStore } from '@/features/catalog/items/foods/client/state/store';
 import { ingredientsStore } from '@/features/catalog/items/ingredients/client/state/store';
-import { ornamentsStore } from '@/features/catalog/items/ornaments/client/state/store';
 import { partnersStore } from '@/features/catalog/items/partners/client/state/store';
-import { recipesStore } from '@/features/catalog/items/recipes/client/state/store';
 import type { ICatalogPreferencesProjection } from '@/features/preferences/contracts';
 
 import { globalStore } from './state/globalPersistenceStore';
 
-const recipeInstance = Recipe.getInstance();
+const foodCatalog = FoodCatalog.getInstance();
 
-function checkRecipeDataHasHiddenBaseIngredient(
-	recipeData: IMealRecipe,
-	hiddenIngredients: ReadonlySet<TIngredientName>
+function checkMealFoodHasHiddenItem(
+	mealFood: IMealFood,
+	hiddenFoods: ReadonlySet<TFoodId>,
+	hiddenIngredients: ReadonlySet<TIngredientId>
 ) {
 	try {
-		return recipeInstance
-			.resolveMealRecipe(recipeData)
-			.baseIngredients.some((ingredientName) =>
-				hiddenIngredients.has(ingredientName)
-			);
+		const food = foodCatalog.resolveMealFood(mealFood);
+		return (
+			hiddenFoods.has(food.food) ||
+			food.baseIngredients.some((ingredient) =>
+				hiddenIngredients.has(ingredient)
+			)
+		);
 	} catch {
 		return true;
 	}
 }
 
-function updateRecipeDataForHiddenItems(
-	recipeData: IMealRecipe,
-	hiddenIngredients: ReadonlySet<TIngredientName>,
-	hiddenRecipes: ReadonlySet<TRecipeName>
-): IMealRecipe | null | undefined {
-	if (
-		hiddenRecipes.has(recipeData.name) ||
-		checkRecipeDataHasHiddenBaseIngredient(recipeData, hiddenIngredients)
-	) {
+function updateMealFoodForHiddenItems(
+	mealFood: IMealFood,
+	hiddenFoods: ReadonlySet<TFoodId>,
+	hiddenIngredients: ReadonlySet<TIngredientId>
+): IMealFood | null | undefined {
+	if (checkMealFoodHasHiddenItem(mealFood, hiddenFoods, hiddenIngredients)) {
 		return null;
 	}
 
-	const extraIngredients = recipeData.extraIngredients.filter(
-		(ingredientName) => !hiddenIngredients.has(ingredientName)
+	const extraIngredients = mealFood.extraIngredients.filter(
+		(ingredient) => !hiddenIngredients.has(ingredient)
 	);
 
-	if (extraIngredients.length !== recipeData.extraIngredients.length) {
-		return { ...recipeData, extraIngredients };
+	if (extraIngredients.length !== mealFood.extraIngredients.length) {
+		return { ...mealFood, extraIngredients };
 	}
 
 	return undefined;
 }
 
-function getNewlyHiddenItems<T>(
-	nextItems: ReadonlySet<T>,
-	previousItems: ReadonlySet<T>
-) {
-	return nextItems.difference(previousItems);
-}
-
 function clearHiddenBeverageSelections(
-	hiddenBeverages: ReadonlySet<TBeverageName>
+	hiddenBeverages: ReadonlySet<TBeverageId>
 ) {
-	const normalBeverageName = customerNormalStore.shared.beverage.name.get();
-	if (
-		normalBeverageName !== null &&
-		hiddenBeverages.has(normalBeverageName)
-	) {
-		customerNormalStore.shared.beverage.name.set(null);
+	const normalBeverage = normalGuestStore.shared.beverage.id.get();
+	if (normalBeverage !== null && hiddenBeverages.has(normalBeverage)) {
+		normalGuestStore.shared.beverage.id.set(null);
 	}
 
-	const rareBeverageName = customerRareStore.shared.beverage.name.get();
-	if (rareBeverageName !== null && hiddenBeverages.has(rareBeverageName)) {
-		customerRareStore.shared.beverage.name.set(null);
+	const specialBeverage = specialGuestStore.shared.beverage.id.get();
+	if (specialBeverage !== null && hiddenBeverages.has(specialBeverage)) {
+		specialGuestStore.shared.beverage.id.set(null);
 	}
 }
 
-function clearHiddenRecipeSelections(
-	hiddenIngredients: ReadonlySet<TIngredientName>,
-	hiddenRecipes: ReadonlySet<TRecipeName>
+function clearHiddenFoodSelections(
+	hiddenFoods: ReadonlySet<TFoodId>,
+	hiddenIngredients: ReadonlySet<TIngredientId>
 ) {
-	const normalRecipeData = customerNormalStore.shared.recipe.data.get();
-	if (normalRecipeData !== null) {
-		const nextNormalRecipeData = updateRecipeDataForHiddenItems(
-			normalRecipeData,
-			hiddenIngredients,
-			hiddenRecipes
+	const normalMealFood = normalGuestStore.shared.recipe.data.get();
+	if (normalMealFood !== null) {
+		const nextNormalMealFood = updateMealFoodForHiddenItems(
+			normalMealFood,
+			hiddenFoods,
+			hiddenIngredients
 		);
-		if (nextNormalRecipeData !== undefined) {
-			customerNormalStore.shared.recipe.data.set(nextNormalRecipeData);
+		if (nextNormalMealFood !== undefined) {
+			normalGuestStore.shared.recipe.data.set(nextNormalMealFood);
 		}
 	}
 
-	const rareRecipeData = customerRareStore.shared.recipe.data.get();
-	if (rareRecipeData !== null) {
-		const nextRareRecipeData = updateRecipeDataForHiddenItems(
-			rareRecipeData,
-			hiddenIngredients,
-			hiddenRecipes
+	const specialMealFood = specialGuestStore.shared.recipe.data.get();
+	if (specialMealFood !== null) {
+		const nextSpecialMealFood = updateMealFoodForHiddenItems(
+			specialMealFood,
+			hiddenFoods,
+			hiddenIngredients
 		);
-		if (nextRareRecipeData !== undefined) {
-			customerRareStore.shared.recipe.data.set(nextRareRecipeData);
+		if (nextSpecialMealFood !== undefined) {
+			specialGuestStore.shared.recipe.data.set(nextSpecialMealFood);
 		}
 	}
 }
@@ -122,13 +112,13 @@ function applyInitialHiddenDlcs(hiddenDlcValues: ReadonlyArray<string>) {
 	beveragesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	clothesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	cookersStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
-	currenciesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
-	customerNormalStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
-	customerRareStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	currencyItemsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	normalGuestStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	specialGuestStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	decorationsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	foodsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	ingredientsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
-	ornamentsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	partnersStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
-	recipesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 }
 
 function applyChangedHiddenDlcs(hiddenDlcValues: ReadonlyArray<string>) {
@@ -136,92 +126,85 @@ function applyChangedHiddenDlcs(hiddenDlcValues: ReadonlyArray<string>) {
 	beveragesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	clothesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	cookersStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
-	currenciesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	currencyItemsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	normalGuestStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	specialGuestStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	decorationsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	foodsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	ingredientsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
-	customerNormalStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
-	customerRareStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
-	ornamentsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	partnersStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
-	recipesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 }
 
 function applyFamousShop(famousShop: boolean) {
-	customerNormalStore.shared.customer.famousShop.set(famousShop);
-	customerRareStore.shared.customer.famousShop.set(famousShop);
+	normalGuestStore.shared.guest.famousShop.set(famousShop);
+	specialGuestStore.shared.guest.famousShop.set(famousShop);
+	foodsStore.shared.famousShop.set(famousShop);
 	ingredientsStore.shared.famousShop.set(famousShop);
-	recipesStore.shared.famousShop.set(famousShop);
 }
 
 function applyPopularTrend(popularTrend: IPopularTrend, isInitial: boolean) {
 	if (isInitial) {
-		customerNormalStore.shared.customer.popularTrend.set(popularTrend);
-		customerRareStore.shared.customer.popularTrend.set(popularTrend);
+		normalGuestStore.shared.guest.popularTrend.set(popularTrend);
+		specialGuestStore.shared.guest.popularTrend.set(popularTrend);
+		foodsStore.shared.popularTrend.set(popularTrend);
 		ingredientsStore.shared.popularTrend.set(popularTrend);
-		recipesStore.shared.popularTrend.set(popularTrend);
 		return;
 	}
 
-	customerNormalStore.shared.customer.popularTrend.assign(popularTrend);
-	customerRareStore.shared.customer.popularTrend.assign(popularTrend);
+	normalGuestStore.shared.guest.popularTrend.assign(popularTrend);
+	specialGuestStore.shared.guest.popularTrend.assign(popularTrend);
+	foodsStore.shared.popularTrend.assign(popularTrend);
 	ingredientsStore.shared.popularTrend.assign(popularTrend);
-	recipesStore.shared.popularTrend.assign(popularTrend);
 }
 
 function applyInitialTableState() {
 	const beverageColumns =
 		globalStore.persistence.table.columns.beverage.get();
-	const recipeColumns = globalStore.persistence.table.columns.recipe.get();
+	const foodColumns = globalStore.persistence.table.columns.recipe.get();
 	const row = globalStore.persistence.table.row.get();
 	const selectableRows = globalStore.shared.table.selectableRows.get();
 	const rowSet = new Set([row.toString()]);
 
-	customerNormalStore.shared.beverage.table.columns.set(
+	normalGuestStore.shared.beverage.table.columns.set(
 		new Set(beverageColumns)
 	);
-	customerNormalStore.shared.beverage.table.row.set(row);
-	customerNormalStore.shared.beverage.table.rows.set(rowSet);
-	customerNormalStore.shared.beverage.table.selectableRows.set(
-		selectableRows
-	);
-	customerNormalStore.shared.recipe.table.columns.set(new Set(recipeColumns));
-	customerNormalStore.shared.recipe.table.row.set(row);
-	customerNormalStore.shared.recipe.table.rows.set(rowSet);
-	customerNormalStore.shared.recipe.table.selectableRows.set(selectableRows);
-	customerRareStore.shared.beverage.table.columns.set(
+	normalGuestStore.shared.beverage.table.row.set(row);
+	normalGuestStore.shared.beverage.table.rows.set(rowSet);
+	normalGuestStore.shared.beverage.table.selectableRows.set(selectableRows);
+	normalGuestStore.shared.recipe.table.columns.set(new Set(foodColumns));
+	normalGuestStore.shared.recipe.table.row.set(row);
+	normalGuestStore.shared.recipe.table.rows.set(rowSet);
+	normalGuestStore.shared.recipe.table.selectableRows.set(selectableRows);
+	specialGuestStore.shared.beverage.table.columns.set(
 		new Set(beverageColumns)
 	);
-	customerRareStore.shared.beverage.table.row.set(row);
-	customerRareStore.shared.beverage.table.rows.set(rowSet);
-	customerRareStore.shared.beverage.table.selectableRows.set(selectableRows);
-	customerRareStore.shared.recipe.table.columns.set(new Set(recipeColumns));
-	customerRareStore.shared.recipe.table.row.set(row);
-	customerRareStore.shared.recipe.table.rows.set(rowSet);
-	customerRareStore.shared.recipe.table.selectableRows.set(selectableRows);
+	specialGuestStore.shared.beverage.table.row.set(row);
+	specialGuestStore.shared.beverage.table.rows.set(rowSet);
+	specialGuestStore.shared.beverage.table.selectableRows.set(selectableRows);
+	specialGuestStore.shared.recipe.table.columns.set(new Set(foodColumns));
+	specialGuestStore.shared.recipe.table.row.set(row);
+	specialGuestStore.shared.recipe.table.rows.set(rowSet);
+	specialGuestStore.shared.recipe.table.selectableRows.set(selectableRows);
 
 	const hiddenBeverages =
 		globalStore.persistence.table.hiddenItems.beverages.get();
+	const hiddenFoods = globalStore.persistence.table.hiddenItems.foods.get();
 	const hiddenIngredients =
 		globalStore.persistence.table.hiddenItems.ingredients.get();
-	const hiddenRecipes =
-		globalStore.persistence.table.hiddenItems.recipes.get();
-	customerNormalStore.shared.beverage.table.hiddenBeverages.set(
+	normalGuestStore.shared.beverage.table.hiddenBeverages.set(
 		new Set(hiddenBeverages)
 	);
-	customerNormalStore.shared.recipe.table.hiddenIngredients.set(
+	normalGuestStore.shared.recipe.table.hiddenIngredients.set(
 		new Set(hiddenIngredients)
 	);
-	customerNormalStore.shared.recipe.table.hiddenRecipes.set(
-		new Set(hiddenRecipes)
-	);
-	customerRareStore.shared.beverage.table.hiddenBeverages.set(
+	normalGuestStore.shared.recipe.table.hiddenFoods.set(new Set(hiddenFoods));
+	specialGuestStore.shared.beverage.table.hiddenBeverages.set(
 		new Set(hiddenBeverages)
 	);
-	customerRareStore.shared.recipe.table.hiddenIngredients.set(
+	specialGuestStore.shared.recipe.table.hiddenIngredients.set(
 		new Set(hiddenIngredients)
 	);
-	customerRareStore.shared.recipe.table.hiddenRecipes.set(
-		new Set(hiddenRecipes)
-	);
+	specialGuestStore.shared.recipe.table.hiddenFoods.set(new Set(hiddenFoods));
 }
 
 function applyInitialProjection() {
@@ -250,104 +233,86 @@ export function createCatalogPreferencesProjection(): ICatalogPreferencesProject
 				),
 				globalStore.persistence.table.columns.beverage.onChange(
 					(columns) => {
-						customerNormalStore.shared.beverage.table.columns.set(
+						normalGuestStore.shared.beverage.table.columns.set(
 							new Set(columns)
 						);
-						customerRareStore.shared.beverage.table.columns.set(
+						specialGuestStore.shared.beverage.table.columns.set(
 							new Set(columns)
 						);
 					}
 				),
 				globalStore.persistence.table.columns.recipe.onChange(
-					(columns) => {
-						customerNormalStore.shared.recipe.table.columns.set(
-							new Set(columns)
+					(foodColumns) => {
+						normalGuestStore.shared.recipe.table.columns.set(
+							new Set(foodColumns)
 						);
-						customerRareStore.shared.recipe.table.columns.set(
-							new Set(columns)
+						specialGuestStore.shared.recipe.table.columns.set(
+							new Set(foodColumns)
 						);
 					}
 				),
 				globalStore.persistence.table.row.onChange((row) => {
 					const rowString = row.toString();
-					customerNormalStore.shared.beverage.table.page.set(1);
-					customerNormalStore.shared.beverage.table.row.set(row);
-					customerNormalStore.shared.beverage.table.rows.set(
+					normalGuestStore.shared.beverage.table.page.set(1);
+					normalGuestStore.shared.beverage.table.row.set(row);
+					normalGuestStore.shared.beverage.table.rows.set(
 						new Set([rowString])
 					);
-					customerNormalStore.shared.recipe.table.page.set(1);
-					customerNormalStore.shared.recipe.table.row.set(row);
-					customerNormalStore.shared.recipe.table.rows.set(
+					normalGuestStore.shared.recipe.table.page.set(1);
+					normalGuestStore.shared.recipe.table.row.set(row);
+					normalGuestStore.shared.recipe.table.rows.set(
 						new Set([rowString])
 					);
-					customerRareStore.shared.beverage.table.page.set(1);
-					customerRareStore.shared.beverage.table.row.set(row);
-					customerRareStore.shared.beverage.table.rows.set(
+					specialGuestStore.shared.beverage.table.page.set(1);
+					specialGuestStore.shared.beverage.table.row.set(row);
+					specialGuestStore.shared.beverage.table.rows.set(
 						new Set([rowString])
 					);
-					customerRareStore.shared.recipe.table.page.set(1);
-					customerRareStore.shared.recipe.table.row.set(row);
-					customerRareStore.shared.recipe.table.rows.set(
+					specialGuestStore.shared.recipe.table.page.set(1);
+					specialGuestStore.shared.recipe.table.row.set(row);
+					specialGuestStore.shared.recipe.table.rows.set(
 						new Set([rowString])
 					);
 				}),
 				globalStore.persistence.table.hiddenItems.beverages.onChange(
 					(beverages) => {
-						const previousHiddenBeverages =
-							customerNormalStore.shared.beverage.table.hiddenBeverages.get();
 						const hiddenBeverages = new Set(beverages);
-						const newlyHiddenBeverages = getNewlyHiddenItems(
-							hiddenBeverages,
-							previousHiddenBeverages
-						);
-						customerNormalStore.shared.beverage.table.hiddenBeverages.set(
-							hiddenBeverages
-						);
-						customerRareStore.shared.beverage.table.hiddenBeverages.set(
+						normalGuestStore.shared.beverage.table.hiddenBeverages.set(
 							new Set(beverages)
 						);
-						clearHiddenBeverageSelections(newlyHiddenBeverages);
+						specialGuestStore.shared.beverage.table.hiddenBeverages.set(
+							new Set(beverages)
+						);
+						clearHiddenBeverageSelections(hiddenBeverages);
 					}
 				),
 				globalStore.persistence.table.hiddenItems.ingredients.onChange(
 					(ingredients) => {
-						const previousHiddenIngredients =
-							customerNormalStore.shared.recipe.table.hiddenIngredients.get();
 						const hiddenIngredients = new Set(ingredients);
-						const newlyHiddenIngredients = getNewlyHiddenItems(
-							hiddenIngredients,
-							previousHiddenIngredients
-						);
-						customerNormalStore.shared.recipe.table.hiddenIngredients.set(
-							hiddenIngredients
-						);
-						customerRareStore.shared.recipe.table.hiddenIngredients.set(
+						normalGuestStore.shared.recipe.table.hiddenIngredients.set(
 							new Set(ingredients)
 						);
-						clearHiddenRecipeSelections(
-							newlyHiddenIngredients,
-							new Set<TRecipeName>()
+						specialGuestStore.shared.recipe.table.hiddenIngredients.set(
+							new Set(ingredients)
+						);
+						clearHiddenFoodSelections(
+							new Set<TFoodId>(),
+							hiddenIngredients
 						);
 					}
 				),
-				globalStore.persistence.table.hiddenItems.recipes.onChange(
-					(recipes) => {
-						const previousHiddenRecipes =
-							customerNormalStore.shared.recipe.table.hiddenRecipes.get();
-						const hiddenRecipes = new Set(recipes);
-						const newlyHiddenRecipes = getNewlyHiddenItems(
-							hiddenRecipes,
-							previousHiddenRecipes
+				globalStore.persistence.table.hiddenItems.foods.onChange(
+					(foods) => {
+						const hiddenFoods = new Set(foods);
+						normalGuestStore.shared.recipe.table.hiddenFoods.set(
+							new Set(foods)
 						);
-						customerNormalStore.shared.recipe.table.hiddenRecipes.set(
-							hiddenRecipes
+						specialGuestStore.shared.recipe.table.hiddenFoods.set(
+							new Set(foods)
 						);
-						customerRareStore.shared.recipe.table.hiddenRecipes.set(
-							new Set(recipes)
-						);
-						clearHiddenRecipeSelections(
-							new Set<TIngredientName>(),
-							newlyHiddenRecipes
+						clearHiddenFoodSelections(
+							hiddenFoods,
+							new Set<TIngredientId>()
 						);
 					}
 				),

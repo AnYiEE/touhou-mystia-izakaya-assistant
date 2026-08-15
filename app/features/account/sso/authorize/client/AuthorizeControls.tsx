@@ -4,11 +4,11 @@ import { useCallback, useRef, useState } from 'react';
 
 import Button from '@/design/ui/components/button';
 
-import { trackEvent } from '@/features/analytics/client/trackEvent';
 import {
 	SSO_AUTHORIZE_MESSAGE_MAP,
 	createSsoAuthorizeRateLimitedMessage,
 } from '@/features/account/sso/authorize/copy';
+import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { fetchServiceApi } from '@/infrastructure/http/client/fetchServiceApi';
@@ -80,7 +80,7 @@ export default function SsoAuthorizeControls({
 				}
 			)
 				.then((result) => {
-					globalThis.location.assign(result.redirect_url);
+					location.assign(result.redirect_url);
 				})
 				.catch((error: unknown) => {
 					trackEvent(
