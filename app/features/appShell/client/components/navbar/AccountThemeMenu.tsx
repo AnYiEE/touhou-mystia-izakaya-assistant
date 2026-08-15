@@ -19,10 +19,11 @@ import Dropdown, {
 	DropdownSection,
 	DropdownTrigger,
 } from '@/design/ui/components/dropdown';
+import { toSelectionKeySet } from '@/design/ui/components/selectionKeys';
 
 import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
-import { NAVBAR_THEME_ITEMS } from './themeItems';
+import { type INavbarPaletteItem, NAVBAR_THEME_ITEMS } from './themeItems';
 
 const ACCOUNT_ACTION_MENU_ITEM_CLASS_NAME =
 	'flex min-w-0 items-center gap-1 py-0.5 text-small';
@@ -45,6 +46,8 @@ interface IProps {
 	isHighAppearance: boolean;
 	onAction: (key: Key) => void;
 	onOpenChange: (isOpen: boolean) => void;
+	paletteItems: ReadonlyArray<INavbarPaletteItem>;
+	selectedPaletteKey: string;
 	selectedThemeKeys: ReadonlyArray<string>;
 }
 
@@ -56,6 +59,8 @@ export default function AccountThemeMenu({
 	isHighAppearance,
 	onAction,
 	onOpenChange,
+	paletteItems,
+	selectedPaletteKey,
 	selectedThemeKeys,
 }: IProps) {
 	const [isOpen, setIsOpen] = useState(false);
@@ -124,6 +129,15 @@ export default function AccountThemeMenu({
 		[accountActionKeyDown]
 	);
 
+	const selectedKeys = useMemo(
+		() =>
+			toSelectionKeySet([
+				...selectedThemeKeys,
+				...(paletteItems.length > 0 ? [selectedPaletteKey] : []),
+			]),
+		[paletteItems.length, selectedPaletteKey, selectedThemeKeys]
+	);
+
 	const dropdownClassNames = useMemo(
 		() => ({
 			content: cn('m-1 min-w-36 max-w-36 p-1', {
@@ -139,60 +153,102 @@ export default function AccountThemeMenu({
 			disabledKeys={accountMenuDisabledKeys}
 			disallowEmptySelection
 			onAction={handleMenuAction}
-			selectedKeys={selectedThemeKeys}
-			selectionMode="single"
+			selectedKeys={selectedKeys}
+			selectionMode="multiple"
 			aria-label="账号和主题"
 			itemClasses={ACCOUNT_THEME_MENU_ITEM_CLASSES}
 		>
-			<DropdownSection
-				title={
-					/* HeroUI intersects its collection title with the DOM title string. */
-					(
-						<span className="inline-flex w-full items-center justify-between gap-2">
-							<span>账号</span>
-							{accountSyncPauseLabel !== null && (
-								<span className="rounded-full bg-warning/15 px-1.5 py-0.5 text-[10px] font-normal leading-none text-warning-700 dark:text-warning">
-									{accountSyncPauseLabel}
-								</span>
-							)}
-						</span>
-					) as unknown as string
-				}
-				hideSelectedIcon
-				showDivider
-				classNames={ACCOUNT_ACTION_MENU_SECTION_CLASS_NAMES}
-			>
-				<DropdownItem
+			{[
+				<DropdownSection
 					key="account"
-					closeOnSelect={false}
-					data-account-action="true"
-					onKeyDown={accountActionKeyDown}
-					textValue={accountActionLabel}
+					title={
+						/* HeroUI intersects its collection title with the DOM title string. */
+						(
+							<span className="inline-flex w-full items-center justify-between gap-2">
+								<span>账号</span>
+								{accountSyncPauseLabel !== null && (
+									<span className="rounded-full bg-warning/15 px-1.5 py-0.5 text-[10px] font-normal leading-none text-warning-700 dark:text-warning">
+										{accountSyncPauseLabel}
+									</span>
+								)}
+							</span>
+						) as unknown as string
+					}
+					hideSelectedIcon
+					showDivider
+					classNames={ACCOUNT_ACTION_MENU_SECTION_CLASS_NAMES}
 				>
-					<div className={ACCOUNT_ACTION_MENU_ITEM_CLASS_NAME}>
-						<FontAwesomeIcon
-							icon={faUser}
-							className="w-4 shrink-0"
-						/>
-						<span className="min-w-0 truncate">
-							{accountActionLabel}
-						</span>
-					</div>
-				</DropdownItem>
-			</DropdownSection>
-			<DropdownSection
-				title="主题"
-				classNames={ACCOUNT_ACTION_MENU_SECTION_CLASS_NAMES}
-			>
-				{NAVBAR_THEME_ITEMS.map(({ icon, key, label }) => (
-					<DropdownItem key={key} textValue={label}>
+					<DropdownItem
+						key="account"
+						closeOnSelect={false}
+						data-account-action="true"
+						onKeyDown={accountActionKeyDown}
+						textValue={accountActionLabel}
+					>
 						<div className={ACCOUNT_ACTION_MENU_ITEM_CLASS_NAME}>
-							<FontAwesomeIcon icon={icon} className="w-4" />
-							{label}
+							<FontAwesomeIcon
+								icon={faUser}
+								className="w-4 shrink-0"
+							/>
+							<span className="min-w-0 truncate">
+								{accountActionLabel}
+							</span>
 						</div>
 					</DropdownItem>
-				))}
-			</DropdownSection>
+				</DropdownSection>,
+				<DropdownSection
+					key="themes"
+					showDivider={paletteItems.length > 0}
+					title="主题"
+					classNames={ACCOUNT_ACTION_MENU_SECTION_CLASS_NAMES}
+				>
+					{NAVBAR_THEME_ITEMS.map(({ icon, key, label }) => (
+						<DropdownItem key={key} textValue={label}>
+							<div
+								className={ACCOUNT_ACTION_MENU_ITEM_CLASS_NAME}
+							>
+								<FontAwesomeIcon icon={icon} className="w-4" />
+								{label}
+							</div>
+						</DropdownItem>
+					))}
+				</DropdownSection>,
+				...(paletteItems.length > 0
+					? [
+							<DropdownSection
+								key="palettes"
+								items={paletteItems}
+								title="主题配色"
+								classNames={
+									ACCOUNT_ACTION_MENU_SECTION_CLASS_NAMES
+								}
+							>
+								{({ key, label, swatchClassName }) => (
+									<DropdownItem
+										key={key}
+										closeOnSelect={false}
+										textValue={label}
+									>
+										<div
+											className={
+												ACCOUNT_ACTION_MENU_ITEM_CLASS_NAME
+											}
+										>
+											<span
+												aria-hidden="true"
+												className={cn(
+													'h-3.5 w-3.5 rounded-full',
+													swatchClassName
+												)}
+											/>
+											{label}
+										</div>
+									</DropdownItem>
+								)}
+							</DropdownSection>,
+						]
+					: []),
+			]}
 		</DropdownMenu>
 	);
 

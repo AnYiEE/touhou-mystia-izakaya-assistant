@@ -6,6 +6,8 @@ import { green } from './constants/green';
 import { orange } from './constants/orange';
 import { pink } from './constants/pink';
 import { purple } from './constants/purple';
+import { softGreen } from './constants/softGreen';
+import { softPink } from './constants/softPink';
 
 const constants = {
 	BLACK: '#000000',
@@ -26,6 +28,8 @@ export const colors = {
 	orange,
 	pink,
 	purple,
+	softGreen,
+	softPink,
 
 	constants,
 	defaultBackgrounds,

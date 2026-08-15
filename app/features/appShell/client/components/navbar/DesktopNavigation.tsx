@@ -34,6 +34,7 @@ import { SITE_METADATA } from '@/shared/site/metadata';
 import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
 import AccountThemeMenu from './AccountThemeMenu';
+import type { INavbarPaletteItem } from './themeItems';
 
 const { baseURL } = PUBLIC_RUNTIME_CONFIG;
 const links = SITE_LINKS;
@@ -83,7 +84,9 @@ interface IProps {
 	onDropdownOpenChange: (isOpen: boolean) => void;
 	onNavigate: (href?: string) => void;
 	onSearchPress: () => void;
+	paletteItems: ReadonlyArray<INavbarPaletteItem>;
 	searchShortcutLabel: string;
+	selectedPaletteKey: string;
 	selectedThemeKeys: ReadonlyArray<string>;
 	shouldShowAccountAction: boolean;
 	shouldShowPreferences: boolean;
@@ -100,7 +103,9 @@ export default function DesktopNavigation({
 	onDropdownOpenChange,
 	onNavigate,
 	onSearchPress,
+	paletteItems,
 	searchShortcutLabel,
+	selectedPaletteKey,
 	selectedThemeKeys,
 	shouldShowAccountAction,
 	shouldShowPreferences,
@@ -318,6 +323,8 @@ export default function DesktopNavigation({
 						isHighAppearance={isHighAppearance}
 						onAction={onAccountThemeAction}
 						onOpenChange={onDropdownOpenChange}
+						paletteItems={paletteItems}
+						selectedPaletteKey={selectedPaletteKey}
 						selectedThemeKeys={selectedThemeKeys}
 					/>
 				) : (

@@ -65,6 +65,10 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		};
 	}, [isResetPopoverOpened]);
 
+	const handleOpenAccountModal = useCallback(() => {
+		accountStore.openAccountModal('preferences');
+	}, []);
+
 	const handleSelectionChange = useCallback(() => {
 		setLocalDataManagerKey((currentKey) => currentKey + 1);
 	}, []);
@@ -91,7 +95,9 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 					{shouldShowLegacyBackupImport && (
 						<Tab key="legacy-backup-import" title="旧备份码导入">
 							<div className="w-full space-y-2 lg:w-1/2">
-								<LegacyBackupImport />
+								<LegacyBackupImport
+									onOpenAccountModal={handleOpenAccountModal}
+								/>
 							</div>
 						</Tab>
 					)}

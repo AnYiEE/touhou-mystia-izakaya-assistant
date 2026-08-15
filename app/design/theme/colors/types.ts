@@ -22,3 +22,11 @@ export type TThemeColors = Record<
 	keyof Omit<ThemeColors, keyof TBaseColors | 'content3' | 'content4'>,
 	TColor
 >;
+export type TThemeAccentColors = Pick<TBaseColors, 'focus'> &
+	Omit<TThemeColors, 'default'>;
+export type TThemeSurfaceColors = Pick<
+	TSemanticBaseColors['light'],
+	'background' | 'content1' | 'content2' | 'divider'
+> &
+	Pick<TThemeColors, 'default'>;
+export type TThemeLightPaletteColors = TThemeAccentColors & TThemeSurfaceColors;
