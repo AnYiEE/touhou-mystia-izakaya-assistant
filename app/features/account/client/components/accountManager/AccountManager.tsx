@@ -241,7 +241,9 @@ export default memo<IProps>(function AccountManager() {
 		registrationNicknameErrorMessage === null ? authErrorMessage : null;
 	const shouldShowAccountSupportLink =
 		authMode === 'login' &&
-		(message === 'user-deleted' || message === 'user-disabled');
+		['invalid-credentials', 'user-deleted', 'user-disabled'].includes(
+			message ?? ''
+		);
 	const accountStatusMessage =
 		messageText !== null && authErrorMessage === null ? messageText : null;
 	const isAccountSyncPaused =
