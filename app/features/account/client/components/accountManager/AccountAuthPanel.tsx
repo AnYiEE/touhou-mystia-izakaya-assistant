@@ -32,27 +32,30 @@ import {
 	AccountPanel,
 	AccountPanelTitle,
 } from './accountPanelLayout';
-import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
+import {
+	ACCOUNT_MANAGER_STATUS_LABEL_MAP,
+	type IAccountLoginSupportMessage,
+} from './copy';
 import { type IUseAccountAuthenticationResult } from './useAccountAuthentication';
 
 const ACCOUNT_AUTH_PASSWORD_FORM_ID = 'account-auth-password-form';
 
 interface IAccountAuthPanelProps extends IUseAccountAuthenticationResult {
+	accountLoginSupportMessage: IAccountLoginSupportMessage | null;
 	authCredentialErrorMessage: string | null;
 	handleOpenLegalModal: () => void;
 	isSubmitting: boolean;
 	passwordDescription: string | undefined;
 	registrationNicknameErrorMessage: string | null;
-	shouldShowAccountSupportLink: boolean;
 }
 
 export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
+	accountLoginSupportMessage,
 	authCredentialErrorMessage,
 	handleOpenLegalModal,
 	isSubmitting,
 	passwordDescription,
 	registrationNicknameErrorMessage,
-	shouldShowAccountSupportLink,
 	...authentication
 }) {
 	const {
@@ -153,6 +156,26 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 			</span>
 		</div>
 	) : null;
+
+	const passwordErrorMessage = isRegistrationPasswordInvalid ? (
+		PASSWORD_RULE_DESCRIPTION
+	) : authCredentialErrorMessage ===
+	  null ? undefined : accountLoginSupportMessage === null ? (
+		authCredentialErrorMessage
+	) : (
+		<>
+			{accountLoginSupportMessage.messagePrefix}
+			<Link
+				isExternal
+				showAnchorIcon
+				href={SITE_LINKS.qqGroup1.href}
+				title={SITE_LINKS.qqGroup1.label}
+				className="inline whitespace-nowrap text-tiny leading-4 [&>svg]:ml-0.5 [&>svg]:mr-0 [&>svg]:inline-block [&>svg]:-translate-y-[0.125em]"
+			>
+				{accountLoginSupportMessage.supportLinkLabel}
+			</Link>
+		</>
+	);
 
 	return (
 		<div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
@@ -379,12 +402,7 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 													: 'new-password'
 											}
 											description={passwordDescription}
-											errorMessage={
-												isRegistrationPasswordInvalid
-													? PASSWORD_RULE_DESCRIPTION
-													: (authCredentialErrorMessage ??
-														undefined)
-											}
+											errorMessage={passwordErrorMessage}
 											isInvalid={
 												isRegistrationPasswordInvalid ||
 												authCredentialErrorMessage !==
@@ -411,29 +429,6 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 												handleAuthPasswordChange
 											}
 										/>
-										<AccountCollapseMotion
-											motionKey="account-status-support"
-											shouldAnimateOpacity={false}
-										>
-											{shouldShowAccountSupportLink ? (
-												<p className="px-1 pt-1 text-tiny leading-5">
-													<Link
-														isExternal
-														showAnchorIcon
-														href={
-															SITE_LINKS.qqGroup1
-																.href
-														}
-														title={
-															SITE_LINKS.qqGroup1
-																.label
-														}
-													>
-														加入QQ交流群联系管理员
-													</Link>
-												</p>
-											) : null}
-										</AccountCollapseMotion>
 									</div>
 								</form>
 							</div>

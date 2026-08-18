@@ -40,6 +40,7 @@ import {
 	ACCOUNT_MANAGER_STATUS_LABEL_MAP,
 	ACCOUNT_MANAGER_SUCCESS_MESSAGE_SET,
 	getAccountBootstrapErrorMessage,
+	getAccountLoginSupportMessage,
 } from './copy';
 import { useAccountAuthentication } from './useAccountAuthentication';
 import { useAccountDestructiveActions } from './useAccountDestructiveActions';
@@ -239,11 +240,8 @@ export default memo<IProps>(function AccountManager() {
 			: null;
 	const authCredentialErrorMessage =
 		registrationNicknameErrorMessage === null ? authErrorMessage : null;
-	const shouldShowAccountSupportLink =
-		authMode === 'login' &&
-		['invalid-credentials', 'user-deleted', 'user-disabled'].includes(
-			message ?? ''
-		);
+	const accountLoginSupportMessage =
+		authMode === 'login' ? getAccountLoginSupportMessage(message) : null;
 	const accountStatusMessage =
 		messageText !== null && authErrorMessage === null ? messageText : null;
 	const isAccountSyncPaused =
@@ -304,6 +302,7 @@ export default memo<IProps>(function AccountManager() {
 			{user === null ? (
 				<AccountAuthPanel
 					{...authentication}
+					accountLoginSupportMessage={accountLoginSupportMessage}
 					authCredentialErrorMessage={authCredentialErrorMessage}
 					handleOpenLegalModal={handleOpenLegalModal}
 					isSubmitting={isSubmitting}
@@ -311,7 +310,6 @@ export default memo<IProps>(function AccountManager() {
 					registrationNicknameErrorMessage={
 						registrationNicknameErrorMessage
 					}
-					shouldShowAccountSupportLink={shouldShowAccountSupportLink}
 				/>
 			) : (
 				<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">

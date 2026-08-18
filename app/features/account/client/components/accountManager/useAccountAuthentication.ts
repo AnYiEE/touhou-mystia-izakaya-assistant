@@ -13,6 +13,7 @@ import {
 	useState,
 } from 'react';
 
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import { publishAccountRuntimeInvalidation } from '@/features/account/client/accountRuntimeInvalidation';
 import {
 	type TAccountApiResult,
@@ -46,7 +47,10 @@ import {
 	type TAccountAuthContext,
 	handleUnauthorizedAccountError,
 } from './controller';
-import { ACCOUNT_MANAGER_MESSAGE_MAP } from './copy';
+import {
+	ACCOUNT_MANAGER_MESSAGE_MAP,
+	checkAccountLoginCredentialError,
+} from './copy';
 import { type IUseAccountPasskeysResult } from './useAccountPasskeys';
 
 type TAuthMode = 'login' | 'register';
@@ -480,7 +484,9 @@ export function useAccountAuthentication({
 		(value: string) => {
 			setUsername(value);
 			setMessage((currentMessage) =>
-				currentMessage === 'invalid-credentials' ? null : currentMessage
+				checkAccountLoginCredentialError(currentMessage)
+					? null
+					: currentMessage
 			);
 		},
 		[setMessage]
@@ -490,7 +496,10 @@ export function useAccountAuthentication({
 		(value: string) => {
 			setPassword(value);
 			setMessage((currentMessage) =>
-				currentMessage === 'invalid-credentials' ? null : currentMessage
+				currentMessage ===
+				ACCOUNT_API_RESPONSE_CODE_MAP.invalidCredentials
+					? null
+					: currentMessage
 			);
 		},
 		[setMessage]

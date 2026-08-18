@@ -190,16 +190,19 @@
 			return;
 		}
 
-		if (pathname.includes('.')) {
-			// Cache all static assets (file has extension).
-			event.respondWith(cacheFirst(event.request, event));
-		} else if (
+		if (
 			pathname.startsWith('/admin') ||
 			pathname.startsWith('/preferences') ||
 			pathname.startsWith('/sso')
 		) {
 			// Never cache protected routes that may contain
 			// user-specific data or session-dependent content.
+			return;
+		}
+
+		if (pathname.includes('.')) {
+			// Cache all static assets (file has extension).
+			event.respondWith(cacheFirst(event.request, event));
 		} else {
 			// Cache public routes (file has no extension).
 			event.waitUntil(

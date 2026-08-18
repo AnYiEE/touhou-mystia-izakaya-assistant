@@ -1,3 +1,5 @@
+import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
+
 export const ACCOUNT_MANAGER_MESSAGE_MAP = {
 	accountDeleteFailed: '删除账号失败',
 	authenticationCredentialsRequired: '请输入用户名和密码',
@@ -44,6 +46,41 @@ export const ACCOUNT_MANAGER_SUCCESS_MESSAGE_SET = new Set<string>([
 	ACCOUNT_MANAGER_MESSAGE_MAP.sessionRevoked,
 	ACCOUNT_MANAGER_MESSAGE_MAP.ssoGrantRevoked,
 ]);
+
+const ACCOUNT_LOGIN_SUPPORT_LINK_LABEL = '联系管理员';
+
+const ACCOUNT_LOGIN_SUPPORT_MESSAGE_PREFIX_MAP = new Map<string, string>([
+	[
+		ACCOUNT_API_RESPONSE_CODE_MAP.invalidCredentials,
+		'用户名或密码不正确。如需帮助，请',
+	],
+	[ACCOUNT_API_RESPONSE_CODE_MAP.userDeleted, '账号已删除。如需恢复，请'],
+	[ACCOUNT_API_RESPONSE_CODE_MAP.userDisabled, '账号已停用。如需启用，请'],
+]);
+
+export interface IAccountLoginSupportMessage {
+	messagePrefix: string;
+	supportLinkLabel: string;
+}
+
+export function checkAccountLoginCredentialError(message: string | null) {
+	return (
+		message !== null &&
+		ACCOUNT_LOGIN_SUPPORT_MESSAGE_PREFIX_MAP.has(message)
+	);
+}
+
+export function getAccountLoginSupportMessage(
+	message: string | null
+): IAccountLoginSupportMessage | null {
+	const messagePrefix =
+		message === null
+			? undefined
+			: ACCOUNT_LOGIN_SUPPORT_MESSAGE_PREFIX_MAP.get(message);
+	return messagePrefix === undefined
+		? null
+		: { messagePrefix, supportLinkLabel: ACCOUNT_LOGIN_SUPPORT_LINK_LABEL };
+}
 
 export const ACCOUNT_MANAGER_STATUS_LABEL_MAP = {
 	awaitingSystemVerification: '正在等待系统验证…',
