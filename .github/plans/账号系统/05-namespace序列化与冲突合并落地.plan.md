@@ -38,7 +38,7 @@ isProject: false
 | `customer_rare.plans`    | `customerRareStore.persistence.plans`     | 同左               | 可靠基线三方合并；虚拟默认不持久化；同组冲突确认   |
 | `customer_rare.settings` | `orderLinkedFilter`、`showTagDescription` | 同左               | 字段级合并，冲突字段后提交服务端胜出               |
 | `global.preferences`     | `globalStore.persistence` 白名单          | 同左               | 字段级合并，未改字段不覆盖云端                     |
-| `theme`                  | `theme` localStorage                      | theme apply helper | 后提交服务端的快照胜出                             |
+| `theme`                  | `theme` localStorage                      | theme apply helper | 可靠 base 下字段级合并；同字段双改由云端胜出       |
 | `tutorial.customer_rare` | legacy `dirver`（历史拼写）映射           | `dirver` 映射      | 只同步完成状态，账号级已完成优先，不同步设备级重置 |
 
 ## 四、global.preferences 白名单
@@ -153,6 +153,7 @@ export type TSyncNamespace =
 
 - `theme` serializer 不直接只写 localStorage，必须调用非 hook 的 `applyTheme` helper，同步更新当前标签 DOM、React 状态和 storage。
 - `theme` 在 localStorage 不可用时只做会话级同步，并在设置页显示降级提示。
+- `theme.mode`、`theme.darkPalette` 和 `theme.lightPalette` 在可靠 base 存在时分别三方合并；正交修改全部保留，同一字段双边改为不同值时继续由云端胜出。缺少可靠 base 时保持整份云端快照优先。
 - `tutorial.customer_rare` 写回时只增删 `customer_rare_tutorial` 对应 key，保留其他 tutorial/driver key。
 - 教程完成状态为账号级；本地“重置教程”只影响当前设备，不上传未完成状态覆盖云端完成。
 
@@ -190,6 +191,7 @@ export interface ISyncConflictItem<T = unknown> {
 - 稀客教程本地完成 + 云端未完成时上传完成状态。
 - 本地重置稀客教程不会把云端完成状态改回未完成。
 - 主题远端写回会更新当前标签 UI，不只写 storage。
+- 两台设备从同一主题 base 分别修改深色和浅色调色板时，合并结果保留双方修改并回传云端；同一主题字段双边改为不同值时采用云端值。
 - 写回远端状态不会触发新的 dirty。
 - 无法自动合并时产生冲突项。
 
@@ -265,7 +267,7 @@ if (localHas === baseHas) return cloudHas;
 - 同一 `suggestMeals` 子字段的双边不同值继续要求确认。
 - 无可靠 base 的普通集合、普通标量和非默认整份差异继续要求确认。
 - 套餐的删除、重排、重复计数，营业预设同组双改和修改对删除，均不在本轮范围内。
-- 主题、教程完成状态、营业预设 `updatedAt`/`activeId` 和已有可靠 base 的套餐纯新增规则保持不变。
+- 本节实施时主题、教程完成状态、营业预设 `updatedAt`/`activeId` 和已有可靠 base 的套餐纯新增规则保持不变；主题在后续增加独立调色板字段后改为按字段三方合并，规则以上方“主题与教程”为准。
 
 ### 11.5 文件与接口边界
 

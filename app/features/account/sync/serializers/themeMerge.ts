@@ -11,6 +11,25 @@ function checkThemeSnapshotsEqual(
 	);
 }
 
+function mergeThemeField<T>({
+	base,
+	cloud,
+	local,
+}: {
+	base: T;
+	cloud: T;
+	local: T;
+}) {
+	if (cloud === local || local === base) {
+		return cloud;
+	}
+	if (cloud === base) {
+		return local;
+	}
+
+	return cloud;
+}
+
 export function mergeThemeSnapshots({
 	base,
 	cloud,
@@ -38,16 +57,30 @@ export function mergeThemeSnapshots({
 			shouldUpload: false,
 		};
 	}
-	if (
-		base !== null &&
-		checkThemeSnapshotsEqual(cloud, base) &&
-		!checkThemeSnapshotsEqual(local, base)
-	) {
+	if (base !== null) {
+		const data = {
+			darkPalette: mergeThemeField({
+				base: base.darkPalette,
+				cloud: cloud.darkPalette,
+				local: local.darkPalette,
+			}),
+			lightPalette: mergeThemeField({
+				base: base.lightPalette,
+				cloud: cloud.lightPalette,
+				local: local.lightPalette,
+			}),
+			mode: mergeThemeField({
+				base: base.mode,
+				cloud: cloud.mode,
+				local: local.mode,
+			}),
+		};
+
 		return {
 			conflict: null,
-			data: local,
+			data,
 			requiresConfirmation: false,
-			shouldUpload: true,
+			shouldUpload: !checkThemeSnapshotsEqual(data, cloud),
 		};
 	}
 

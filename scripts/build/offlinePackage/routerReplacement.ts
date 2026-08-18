@@ -345,25 +345,26 @@ async function moveStaticSsoPages({
 	);
 }
 
-export async function restoreOfflineRouterReplacement(
-	paths: IOfflinePackagePaths
-) {
+async function restoreRouterReplacement(paths: IOfflinePackagePaths) {
 	await restoreRootMiddleware(paths);
 	await restoreOfflineSourceFiles(paths);
 	await restoreRouterFiles(paths.fakeApiPath, paths.apiPath);
 	await restoreAdminPages(paths);
 	await restoreOfflineLegacyRoutes(paths);
+	await restoreStaticSsoPages(paths);
 	await rm(paths.offlinePagesPath, { force: true, recursive: true });
+}
+
+export async function restoreOfflineRouterReplacement(
+	paths: IOfflinePackagePaths
+) {
+	await restoreRouterReplacement(paths);
 }
 
 export async function restoreStaticRouterReplacement(
 	paths: IOfflinePackagePaths
 ) {
-	await restoreRootMiddleware(paths);
-	await restoreRouterFiles(paths.fakeApiPath, paths.apiPath);
-	await restoreAdminPages(paths);
-	await restoreStaticSsoPages(paths);
-	await rm(paths.offlinePagesPath, { force: true, recursive: true });
+	await restoreRouterReplacement(paths);
 }
 
 export async function prepareOfflineRouterReplacement(
