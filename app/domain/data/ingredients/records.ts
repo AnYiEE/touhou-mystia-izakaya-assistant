@@ -202,7 +202,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 10,
 		name: '海苔',
-		description: '不知道从哪里流入的外来食材，较为常见。',
+		description: '不知道从哪里流入的外来食材，还挺常见。',
 		type: 2,
 		tags: [2, 16],
 		dlc: 0,
@@ -308,7 +308,8 @@ export const INGREDIENT_LIST = [
 	{
 		id: 12,
 		name: '八目鳗',
-		description: '一种洄游性海鱼，但却在幻想乡的河流湖泊随处可见。',
+		description:
+			'一种洄游性海鱼，但却在幻想乡的河流湖泊随处可见。较为常见。',
 		type: 1,
 		tags: [1, 16, 19],
 		dlc: 0,
@@ -537,7 +538,7 @@ export const INGREDIENT_LIST = [
 		id: 17,
 		name: '蘑菇',
 		description:
-			'从魔法森林采回来的品相良好的蘑菇，无法人工种植，非常珍贵。',
+			'从魔法之森采回来的品相良好的蘑菇，无法人工种植，非常珍贵。',
 		type: 2,
 		tags: [2, 16, 26],
 		dlc: 0,
@@ -583,7 +584,7 @@ export const INGREDIENT_LIST = [
 		id: 18,
 		name: '松露',
 		description:
-			'从魔法森林采回来的品相良好的松露，无法人工种植，非常珍贵。',
+			'从魔法之森采回来的品相良好的松露，无法人工种植，非常珍贵。',
 		type: 2,
 		tags: [2, 4, 5, 10, 16, 26],
 		dlc: 0,
@@ -1470,7 +1471,7 @@ export const INGREDIENT_LIST = [
 	},
 	{
 		id: 5001,
-		name: '西兰花',
+		name: '西蓝花',
 		description:
 			'魔界土壤培育出来的西蓝花。因为光照不足植株徒长，花球颜色和地上也略微有些不同。',
 		type: 2,
@@ -1489,7 +1490,7 @@ export const INGREDIENT_LIST = [
 	},
 	{
 		id: 5002,
-		name: '噗噗哟果',
+		name: '噗噗呦果',
 		description:
 			'魔界里到处可见的怪异果子。似乎会根据食用者的类型产生不同的食用效果，十分奇特。',
 		type: -1,
@@ -1501,7 +1502,7 @@ export const INGREDIENT_LIST = [
 	},
 	{
 		id: 5003,
-		name: '薜茘',
+		name: '薜荔',
 		description:
 			'一种药食两用植物。将薜荔籽浸泡后搓汁，冷藏后会凝固成晶莹剔透的胶状物，可以用来制作果冻和凉粉等，是消暑神品。',
 		type: -1,
@@ -1521,7 +1522,7 @@ export const INGREDIENT_LIST = [
 		id: 5004,
 		name: '银耳',
 		description:
-			'一种像花儿一样美丽的菌类。据说历代皇家贵族把银耳看作延年益寿之品，但在月都似乎很常见。这种看起来一尘不染的洁白，和月都的感觉很相衬。',
+			'一种像花儿一样美丽的菌类。据说历代皇家贵族把银耳看作延年益寿之品，但在月都似乎很常见。这种看起来一尘不染的洁白，和月都的感觉很相称。',
 		type: -1,
 		tags: [7, 26],
 		dlc: 5,
@@ -1540,7 +1541,7 @@ export const INGREDIENT_LIST = [
 		id: 5005,
 		name: '强效辣椒素',
 		description:
-			'使用了月之科技制作的极·辣品，能让食用者留下恐怖的回忆。是不是真的用辣椒做的就说不清了。',
+			'使用了月之科技制作的极•辣品，能让食用者留下恐怖的回忆。是不是真的用辣椒做的就说不清了…',
 		type: -1,
 		tags: [5000],
 		dlc: 5,

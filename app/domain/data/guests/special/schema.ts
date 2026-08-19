@@ -1,9 +1,8 @@
 import type { IGuestBase } from '@/domain/data/shared/guestSchema';
-import type { TDescription } from '@/domain/data/shared/types';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 
 interface ISpellCard {
-	description: TDescription;
+	description: string;
 	name: string;
 }
 
@@ -27,7 +26,7 @@ export interface ISpecialGuest extends IGuestBase {
 	beverageTagMapping: Partial<Record<TBeverageTagId, string>>;
 	collection: boolean;
 	enduranceLimit: number;
-	evaluation: Record<TSpecialGuestEvaluationKey, TDescription | null>;
+	evaluation: Record<TSpecialGuestEvaluationKey, string | null>;
 	negativeTags: TFoodTagId[];
 	positiveTagMapping: Partial<Record<TFoodTagId, string>>;
 	price: [number, number];

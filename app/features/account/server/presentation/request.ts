@@ -32,5 +32,5 @@ export function createUserAgentSummary(value: string) {
 		normalizedBrowserName === '' ? '浏览器' : normalizedBrowserName;
 	const platform = normalizedOsName === '' ? null : normalizedOsName;
 
-	return platform === null ? browser : `${browser} · ${platform}`;
+	return platform === null ? browser : `${browser} ⦁ ${platform}`;
 }

@@ -205,8 +205,8 @@ export default memo<IAccountSessionsPanelProps>(
 															session.last_seen_at
 														}
 													/>
-													<span className="mx-1 text-default-300">
-														·
+													<span className="mx-1">
+														&nbsp;
 													</span>
 													来源：
 													{session.ip_summary}

@@ -12,6 +12,7 @@ import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import { SUPPORTED_LEGACY_INGREDIENT_NAMES } from '@/domain/catalog/legacy/resolveLegacyIngredientName';
 
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
@@ -48,9 +49,6 @@ const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
 const beverageNames = new Set<string>(BeverageCatalog.getInstance().getNames());
 const beverages = new Set<number>(
 	BeverageCatalog.getInstance().getValuesByProp('id')
-);
-const ingredientNames = new Set<string>(
-	IngredientCatalog.getInstance().getNames()
 );
 const ingredients = new Set<number>(
 	IngredientCatalog.getInstance().getValuesByProp('id')
@@ -277,7 +275,7 @@ function validateGlobalPreferences(data: unknown, schemaVersion: number) {
 				) &&
 				isAllowedStringArray(
 					tableHiddenItems['ingredients'],
-					ingredientNames
+					SUPPORTED_LEGACY_INGREDIENT_NAMES
 				) &&
 				isAllowedStringArray(tableHiddenItems['recipes'], foodNames)
 			: isAllowedNumberArray(tableHiddenItems['beverages'], beverages) &&

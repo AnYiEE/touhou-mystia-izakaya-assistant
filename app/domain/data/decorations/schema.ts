@@ -1,7 +1,6 @@
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TMapLabel } from '@/domain/data/places/types';
 import type { IItemBase } from '@/domain/data/shared/itemSchema';
-import type { TDescription } from '@/domain/data/shared/types';
 
 interface IDecorationBondSource {
 	bond: { level: number; specialGuest: TSpecialGuestId };
@@ -35,6 +34,6 @@ type TDecorationSource =
 	| IDecorationCompletionSource;
 
 export interface IDecoration extends IItemBase {
-	effect: TDescription;
+	effect: string;
 	from: TDecorationSource;
 }

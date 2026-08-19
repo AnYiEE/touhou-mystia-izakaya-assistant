@@ -1,15 +1,18 @@
 import { SYNC_NAMESPACE_MAP } from '@/domain/account/contracts';
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
-import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { NormalGuestCatalog } from '@/domain/catalog/guests/NormalGuestCatalog';
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import {
+	type TLegacyIngredientName,
+	checkLegacyIngredientName,
+	resolveLegacyIngredientNames,
+} from '@/domain/catalog/legacy/resolveLegacyIngredientName';
 import { resolveLegacyRecordName } from '@/domain/catalog/legacy/resolveLegacyRecordName';
 import type { TBeverageId, TBeverageName } from '@/domain/data/beverages/types';
 import type { TFoodId, TFoodName, TRecipeId } from '@/domain/data/foods/types';
 import type { TNormalGuestName } from '@/domain/data/guests/normal/types';
 import type { TSpecialGuestName } from '@/domain/data/guests/special/types';
-import type { TIngredientName } from '@/domain/data/ingredients/types';
 import type {
 	IMealFood,
 	INormalGuestSavedMeal,
@@ -33,13 +36,11 @@ type TMealSyncNamespace =
 
 const beverageCatalog = BeverageCatalog.getInstance();
 const foodCatalog = FoodCatalog.getInstance();
-const ingredientCatalog = IngredientCatalog.getInstance();
 const normalGuestCatalog = NormalGuestCatalog.getInstance();
 const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 const beverageNames = new Set<string>(beverageCatalog.getNames());
 const beverageKeys = new Set(beverageCatalog.data.map(({ id }) => String(id)));
 const foodNames = new Set<string>(foodCatalog.getNames());
-const ingredientNames = new Set<string>(ingredientCatalog.getNames());
 const normalGuestNames = new Set<string>(normalGuestCatalog.getNames());
 const normalGuestKeys = new Set(
 	normalGuestCatalog.data.map(({ id }) => String(id))
@@ -58,7 +59,7 @@ for (const { name, recipes } of foodCatalog.data) {
 export type TMealSnapshot<TMeal> = Record<string, TMeal[]>;
 
 export interface ILegacyMealFoodV1 {
-	extraIngredients: TIngredientName[];
+	extraIngredients: TLegacyIngredientName[];
 	name: TFoodName;
 }
 
@@ -85,10 +86,6 @@ function getLegacyGuestNames(guestType: 'normal' | 'special') {
 
 function checkLegacyFoodName(value: unknown): value is TFoodName {
 	return typeof value === 'string' && foodNames.has(value);
-}
-
-function checkLegacyIngredientName(value: unknown): value is TIngredientName {
-	return typeof value === 'string' && ingredientNames.has(value);
 }
 
 function checkLegacyNormalGuestName(value: unknown): value is TNormalGuestName {
@@ -125,16 +122,6 @@ function sanitizeMealSnapshot<TMeal>(
 			return result;
 		},
 		{}
-	);
-}
-
-function resolveLegacyIngredientNames(names: ReadonlyArray<TIngredientName>) {
-	return names.map((name) =>
-		resolveLegacyRecordName({
-			catalog: ingredientCatalog,
-			category: 'ingredient',
-			name,
-		})
 	);
 }
 

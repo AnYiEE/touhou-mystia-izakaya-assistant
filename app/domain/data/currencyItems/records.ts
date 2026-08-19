@@ -5,35 +5,40 @@ export const CURRENCY_ITEM_RECORDS = [
 	{
 		id: 3,
 		name: '奇怪的石头',
-		description: '兽道散落的奇形怪状的石头，还有点重。',
+		description:
+			'兽道散落的奇形怪状的石头，还有点重。香霖堂的主人似乎对其很有兴趣。',
 		dlc: 0,
 		from: [{ mapSideTask: { map: 'BeastForest' } }],
 	},
 	{
 		id: 4,
 		name: '古朴的铜钱',
-		description: '人间之里散落的有些年代感的铜钱，似乎已经不再流通。',
+		description:
+			'人间之里散落的有些年代感的铜钱，似乎已经不再流通。香霖堂的主人似乎对其很有兴趣。',
 		dlc: 0,
 		from: [{ mapSideTask: { map: 'HumanVillage' } }],
 	},
 	{
 		id: 5,
 		name: '破损的符咒',
-		description: '博丽神社散落的破损的符咒，拼拼凑凑似乎也能得到点信息。',
+		description:
+			'博丽神社散落的破损的符咒，拼拼凑凑似乎也能得到点信息。香霖堂的主人似乎对其很有兴趣。',
 		dlc: 0,
 		from: [{ mapSideTask: { map: 'HakureiShrine' } }],
 	},
 	{
 		id: 6,
 		name: '红色的宝石',
-		description: '红魔馆散落的红色的宝石，在幻想乡宝石和石头也没什么区别。',
+		description:
+			'红魔馆散落的红色的宝石，在幻想乡宝石和石头也没什么区别。香霖堂的主人似乎对其很有兴趣。',
 		dlc: 0,
 		from: [{ mapSideTask: { map: 'ScarletMansion' } }],
 	},
 	{
 		id: 7,
 		name: '发光的竹子',
-		description: '迷途竹林偶尔看到的发光的竹子，不知道里面有什么呢。',
+		description:
+			'迷途竹林偶尔看到的发光的竹子，不知道里面有什么呢。香霖堂的主人似乎对其很有兴趣。',
 		dlc: 0,
 		from: [{ mapSideTask: { map: 'BambooForest' } }],
 	},
@@ -62,7 +67,7 @@ export const CURRENCY_ITEM_RECORDS = [
 		id: 5011,
 		name: '蓬松松糖果',
 		description:
-			'“蓬松松爱莲♡魔法店”发行的糖果型货币，是爱莲分享给大家的甜蜜。可以在“蓬松松爱莲♡魔法店”里换购商品。',
+			'“蓬松松爱莲♡魔法店”发行的糖果形货币，是爱莲分享给大家的甜蜜。可以在“蓬松松爱莲♡魔法店”里换购商品。',
 		dlc: 5,
 		from: [
 			{ spellCardReward: { specialGuest: 5003 } },

@@ -54,9 +54,9 @@ export const AdminPagination = memo<IAdminPaginationProps>(
 			>
 				<span>
 					第{currentPage} / {safeTotalPages}页
-					{pageSize !== undefined && ` · 每页${pageSize}`}
+					{pageSize !== undefined && ` ⦁ 每页${pageSize}`}
 					{totalCount !== undefined &&
-						` · 共${totalCount}${totalLabel}`}
+						` ⦁ 共${totalCount}${totalLabel}`}
 				</span>
 				<div className="flex flex-wrap items-center gap-2">
 					<Button

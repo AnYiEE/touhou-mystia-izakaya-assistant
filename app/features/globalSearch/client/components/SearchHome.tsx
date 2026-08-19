@@ -156,7 +156,7 @@ export function SearchHome({
 														size="sm"
 													/>
 													<span className="min-w-0 truncate">
-														{item.sectionLabel} ·{' '}
+														{item.sectionLabel} ⦁{' '}
 														{item.name}
 													</span>
 												</Button>

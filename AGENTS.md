@@ -127,6 +127,8 @@ Raw game schemas, records and record-derived literal types live under `app/domai
 
 `app/domain/catalog/legacy/legacyNameOwners.ts` remains a sparse declaration for current same-category duplicate-name groups, not a routine record-maintenance list or complete name-to-ID table. Adding a record whose name remains unique requires no entry. If a duplicate name could occur in a supported historical payload, declare the original record's ID as `historicalOwnerId`; if every member of the duplicate group is new and no supported historical payload could contain the name, declare `noHistoricalOwner: true`. Never guess an owner.
 
+Renaming an existing record whose name can appear in a supported name-based payload must preserve old imports through a category-specific sparse legacy-name-to-stable-ID mapping under `app/domain/catalog/legacy/`. Keep client serializers, migration sanitizers, and server validation aligned with that mapping. Rename aliases do not belong in `legacyNameOwners.ts`.
+
 ### Recommendation cache versioning
 
 `app/features/recommendations/client/cache/constants.ts` owns the explicit recommendation cache versions. Any change that can alter recommendation candidates, ratings, ordering, diversity, availability interpretation, or request semantics must increment `RECOMMENDATION_ALGORITHM_VERSION` in the same patch. Equivalent refactors, performance-only optimizations, comments, and formatting do not increment it. Recommendation-relevant game data changes are covered automatically by the normalized data fingerprint and do not require an algorithm version change.

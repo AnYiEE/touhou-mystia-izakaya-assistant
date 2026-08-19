@@ -2,14 +2,17 @@ import { SYNC_NAMESPACE_MAP } from '@/domain/account/contracts';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
-import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import {
+	SUPPORTED_LEGACY_INGREDIENT_NAMES,
+	type TLegacyIngredientName,
+	resolveLegacyIngredientNames,
+} from '@/domain/catalog/legacy/resolveLegacyIngredientName';
 import { resolveLegacyRecordName } from '@/domain/catalog/legacy/resolveLegacyRecordName';
 import { BEVERAGE_LIST } from '@/domain/data/beverages/records';
 import type { TBeverageName } from '@/domain/data/beverages/types';
 import { FOOD_LIST } from '@/domain/data/foods/records';
 import type { TFoodName } from '@/domain/data/foods/types';
 import { INGREDIENT_LIST } from '@/domain/data/ingredients/records';
-import type { TIngredientName } from '@/domain/data/ingredients/types';
 import type { TFoodTagLabel } from '@/domain/data/tags/types';
 
 import { SYNC_SCHEMA_VERSION_MAP } from '@/features/account/sync/constants';
@@ -116,14 +119,12 @@ const dlcKeyOrder = Object.keys(DLC_LABEL_MAP).sort(
 );
 const beverageNameOrder = BEVERAGE_LIST.map((item) => item.name);
 const beverageOrder = BEVERAGE_LIST.map((item) => item.id);
-const ingredientNameOrder = INGREDIENT_LIST.map((item) => item.name);
 const ingredientOrder = INGREDIENT_LIST.map((item) => item.id);
 const foodNameOrder = FOOD_LIST.map((item) => item.name);
 const foodOrder = FOOD_LIST.map((item) => item.id);
 const dlcKeys = new Set(dlcKeyOrder);
 const beverageNames = new Set(beverageNameOrder);
 const beverages: ReadonlySet<number> = new Set(beverageOrder);
-const ingredientNames = new Set(ingredientNameOrder);
 const ingredients: ReadonlySet<number> = new Set(ingredientOrder);
 const foodNames = new Set(foodNameOrder);
 const foods: ReadonlySet<number> = new Set(foodOrder);
@@ -146,7 +147,7 @@ interface ILegacyGlobalPreferencesMigrationInput extends Record<
 		columns: Record<string, unknown> & { recipe: string[] };
 		hiddenItems: {
 			beverages: TBeverageName[];
-			ingredients: TIngredientName[];
+			ingredients: TLegacyIngredientName[];
 			recipes: TFoodName[];
 		};
 	};
@@ -255,11 +256,9 @@ function filterAllowedNumberArray(data: unknown, values: ReadonlySet<number>) {
 
 function isAllowedNameArray<TName extends string>(
 	data: unknown,
-	values: ReadonlySet<TName>
+	values: ReadonlySet<string>
 ): data is TName[] {
-	return (
-		isStringArray(data) && data.every((value) => values.has(value as TName))
-	);
+	return isStringArray(data) && data.every((value) => values.has(value));
 }
 
 function sanitizeGlobalPreferences(data: unknown) {
@@ -369,7 +368,7 @@ function sanitizeLegacyGlobalPreferences(data: unknown) {
 								),
 								ingredients: filterAllowedStringArray(
 									tableHiddenItems['ingredients'],
-									ingredientNames
+									SUPPORTED_LEGACY_INGREDIENT_NAMES
 								),
 								recipes: filterAllowedStringArray(
 									tableHiddenItems['recipes'],
@@ -442,9 +441,9 @@ function checkLegacyGlobalPreferencesMigrationInput(
 			hiddenItems['beverages'],
 			beverageNames
 		) &&
-		isAllowedNameArray<TIngredientName>(
+		isAllowedNameArray<TLegacyIngredientName>(
 			hiddenItems['ingredients'],
-			ingredientNames
+			SUPPORTED_LEGACY_INGREDIENT_NAMES
 		) &&
 		isAllowedNameArray<TFoodName>(hiddenItems['recipes'], foodNames)
 	);
@@ -458,7 +457,6 @@ function migrateLegacyGlobalPreferences(
 	const { columns, hiddenItems } = table;
 	const beverageCatalog = BeverageCatalog.getInstance();
 	const foodCatalog = FoodCatalog.getInstance();
-	const ingredientCatalog = IngredientCatalog.getInstance();
 
 	return {
 		...currentData,
@@ -491,12 +489,8 @@ function migrateLegacyGlobalPreferences(
 						name,
 					})
 				),
-				ingredients: hiddenItems.ingredients.map((name) =>
-					resolveLegacyRecordName({
-						catalog: ingredientCatalog,
-						category: 'ingredient',
-						name,
-					})
+				ingredients: resolveLegacyIngredientNames(
+					hiddenItems.ingredients
 				),
 			},
 		},

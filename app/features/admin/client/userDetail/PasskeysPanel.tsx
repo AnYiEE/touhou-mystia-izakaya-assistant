@@ -54,7 +54,7 @@ export function PasskeysPanel({
 									{passkey.device_type === 'multiDevice'
 										? '多设备'
 										: '单设备'}
-									{passkey.backed_up ? '·已备份' : ''}
+									{passkey.backed_up ? ' ⦁ 已备份' : ''}
 								</AdminTableCell>
 								<AdminTableCell isNowrap>
 									<TimeAgo

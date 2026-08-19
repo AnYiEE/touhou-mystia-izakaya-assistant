@@ -576,7 +576,7 @@ export const COOKER_LIST = [
 	{
 		id: 3000,
 		name: '紫薇天火',
-		description: '集天枢和七星之力做一份烧烤，必然是无上极品啦。',
+		description: '集天枢与七星之力做一份烧烤，必然是无上极品啦。',
 		availableTypes: [2],
 		series: 3000,
 		dlc: 3,

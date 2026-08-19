@@ -2,7 +2,6 @@ import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TMerchantReference } from '@/domain/data/places/types';
 import type { IItemBase } from '@/domain/data/shared/itemSchema';
-import type { TDescription } from '@/domain/data/shared/types';
 
 import type { TCookerSeriesId, TCookerTypeId } from './types';
 
@@ -25,7 +24,7 @@ export type TCookerSource =
 export interface ICooker extends IItemBase {
 	availableTypes: TCookerTypeId[];
 	/** @description If it is an array, the first element represents the effect, and the second element represents whether it is a mystia only effect. */
-	effect: TDescription | [TDescription, boolean] | null;
+	effect: string | [string, boolean] | null;
 	from: TCookerSource[];
 	series: TCookerSeriesId;
 }

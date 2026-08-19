@@ -1,7 +1,7 @@
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TMapLabel } from '@/domain/data/places/types';
 import type { IItemBase } from '@/domain/data/shared/itemSchema';
-import type { TDescription, TSpeed } from '@/domain/data/shared/types';
+import type { TSpeed } from '@/domain/data/shared/types';
 
 type TPartnerDialogueOptionLabel = '重修「第二次试炼」';
 type TPartnerStoryPlaceLabel = '白玉楼';
@@ -30,7 +30,7 @@ export type TPartnerSource =
 	  };
 
 export interface IPartner extends IItemBase {
-	effect: TDescription | null;
+	effect: string | null;
 	from: TPartnerSource;
 	pay: number;
 	specialGuests: TSpecialGuestId[] | null;

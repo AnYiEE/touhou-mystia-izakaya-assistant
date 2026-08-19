@@ -1,9 +1,7 @@
-import type { TDescription, TDlc } from './types';
+import type { TDlc } from './types';
 
 export interface IItemBase {
-	description:
-		| TDescription
-		| [TDescription, TDescription | null, TDescription | null];
+	description: string | [string, string | null, string | null];
 	dlc: TDlc;
 	id: number;
 	name: string;
