@@ -1,7 +1,11 @@
 import { SYNC_NAMESPACE_MAP } from '@/domain/account/contracts';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
-import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import {
+	SUPPORTED_LEGACY_FOOD_NAMES,
+	type TLegacyFoodName,
+	resolveLegacyFoodName,
+} from '@/domain/catalog/legacy/resolveLegacyFoodName';
 import {
 	SUPPORTED_LEGACY_INGREDIENT_NAMES,
 	type TLegacyIngredientName,
@@ -11,7 +15,6 @@ import { resolveLegacyRecordName } from '@/domain/catalog/legacy/resolveLegacyRe
 import { BEVERAGE_LIST } from '@/domain/data/beverages/records';
 import type { TBeverageName } from '@/domain/data/beverages/types';
 import { FOOD_LIST } from '@/domain/data/foods/records';
-import type { TFoodName } from '@/domain/data/foods/types';
 import { INGREDIENT_LIST } from '@/domain/data/ingredients/records';
 import type { TFoodTagLabel } from '@/domain/data/tags/types';
 
@@ -120,13 +123,11 @@ const dlcKeyOrder = Object.keys(DLC_LABEL_MAP).sort(
 const beverageNameOrder = BEVERAGE_LIST.map((item) => item.name);
 const beverageOrder = BEVERAGE_LIST.map((item) => item.id);
 const ingredientOrder = INGREDIENT_LIST.map((item) => item.id);
-const foodNameOrder = FOOD_LIST.map((item) => item.name);
 const foodOrder = FOOD_LIST.map((item) => item.id);
 const dlcKeys = new Set(dlcKeyOrder);
 const beverageNames = new Set(beverageNameOrder);
 const beverages: ReadonlySet<number> = new Set(beverageOrder);
 const ingredients: ReadonlySet<number> = new Set(ingredientOrder);
-const foodNames = new Set(foodNameOrder);
 const foods: ReadonlySet<number> = new Set(foodOrder);
 const globalPreferencesSetValueOrders = {
 	beverageColumns: beverageColumnKeyOrder,
@@ -148,7 +149,7 @@ interface ILegacyGlobalPreferencesMigrationInput extends Record<
 		hiddenItems: {
 			beverages: TBeverageName[];
 			ingredients: TLegacyIngredientName[];
-			recipes: TFoodName[];
+			recipes: TLegacyFoodName[];
 		};
 	};
 }
@@ -372,7 +373,7 @@ function sanitizeLegacyGlobalPreferences(data: unknown) {
 								),
 								recipes: filterAllowedStringArray(
 									tableHiddenItems['recipes'],
-									foodNames
+									SUPPORTED_LEGACY_FOOD_NAMES
 								),
 							}
 						: tableHiddenItems,
@@ -441,11 +442,14 @@ function checkLegacyGlobalPreferencesMigrationInput(
 			hiddenItems['beverages'],
 			beverageNames
 		) &&
+		isAllowedNameArray<TLegacyFoodName>(
+			hiddenItems['recipes'],
+			SUPPORTED_LEGACY_FOOD_NAMES
+		) &&
 		isAllowedNameArray<TLegacyIngredientName>(
 			hiddenItems['ingredients'],
 			SUPPORTED_LEGACY_INGREDIENT_NAMES
-		) &&
-		isAllowedNameArray<TFoodName>(hiddenItems['recipes'], foodNames)
+		)
 	);
 }
 
@@ -456,7 +460,6 @@ function migrateLegacyGlobalPreferences(
 		data;
 	const { columns, hiddenItems } = table;
 	const beverageCatalog = BeverageCatalog.getInstance();
-	const foodCatalog = FoodCatalog.getInstance();
 
 	return {
 		...currentData,
@@ -482,13 +485,7 @@ function migrateLegacyGlobalPreferences(
 						name,
 					})
 				),
-				foods: hiddenItems.recipes.map((name) =>
-					resolveLegacyRecordName({
-						catalog: foodCatalog,
-						category: 'food',
-						name,
-					})
-				),
+				foods: hiddenItems.recipes.map(resolveLegacyFoodName),
 				ingredients: resolveLegacyIngredientNames(
 					hiddenItems.ingredients
 				),

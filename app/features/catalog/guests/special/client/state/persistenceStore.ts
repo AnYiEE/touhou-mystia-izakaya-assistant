@@ -26,6 +26,7 @@ export const specialGuestPersistenceStore = store(specialGuestInitialState, {
 		createStoreSyncMiddleware<typeof specialGuestInitialState>({
 			name: storeName,
 			remoteStateApplicationGuard: accountRemoteStateApplicationGuard,
+			storeVersion: SPECIAL_GUEST_STORE_VERSION.recordIdentity,
 			watch: [
 				'persistence.guest.orderLinkedFilter',
 				'persistence.guest.showTagDescription',

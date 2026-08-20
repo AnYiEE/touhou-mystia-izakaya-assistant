@@ -39,6 +39,7 @@ import { type TPreferenceTargetKey } from '@/features/preferences/client/globalS
 import { createStoreSyncMiddleware } from '@/infrastructure/browser/crossTab/createStoreSyncMiddleware';
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
 
+import { SITE_METADATA } from '@/shared/site/metadata';
 import { generateRange } from '@/shared/utilities/collections/generateRange';
 import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 import {
@@ -217,6 +218,22 @@ const hiddenIngredientSetCache = new WeakMap<
 >();
 const hiddenFoodSetCache = new WeakMap<ReadonlyArray<TFoodId>, Set<TFoodId>>();
 
+function createGlobalAppVersionRemoteState(appVersion: string) {
+	return { persistence: { version: appVersion } } as unknown as Partial<
+		typeof state
+	>;
+}
+
+function readGlobalAppVersionRemoteState(value: unknown) {
+	if (!checkIsRecord(value) || !checkIsRecord(value['persistence'])) {
+		return null;
+	}
+
+	const { version } = value['persistence'];
+
+	return typeof version === 'string' ? version : null;
+}
+
 function createHiddenDlcSet(values: ReadonlyArray<string>) {
 	const hiddenDlcs = new Set(values.map(Number) as TDlc[]);
 	hiddenDlcs.delete(0);
@@ -244,6 +261,8 @@ function normalizeGlobalStoreRemoteState(value: unknown) {
 		string,
 		unknown
 	>;
+	const normalizedPersistence = { ...remotePersistenceRecord };
+	delete normalizedPersistence['version'];
 	const hasDonationModal = Object.hasOwn(
 		remotePersistenceRecord,
 		'donationModal'
@@ -253,12 +272,15 @@ function normalizeGlobalStoreRemoteState(value: unknown) {
 		'customerCardTagsTooltip'
 	);
 	if (!hasDonationModal && !hasLegacyTagsTooltip) {
-		return remoteState;
+		return {
+			...remoteState,
+			persistence: normalizedPersistence,
+		} as Partial<typeof state>;
 	}
 	const {
 		customerCardTagsTooltip: legacyTagsTooltip,
 		...currentPersistence
-	} = remotePersistenceRecord;
+	} = normalizedPersistence;
 
 	return {
 		...remoteState,
@@ -282,9 +304,15 @@ function normalizeGlobalStoreRemoteState(value: unknown) {
 export const globalStore = store(state, {
 	middlewares: [
 		createStoreSyncMiddleware<typeof state>({
+			appVersion: {
+				createRemoteState: createGlobalAppVersionRemoteState,
+				current: SITE_METADATA.version,
+				readRemoteState: readGlobalAppVersionRemoteState,
+			},
 			name: storeName,
 			normalizeRemoteState: normalizeGlobalStoreRemoteState,
 			remoteStateApplicationGuard: accountRemoteStateApplicationGuard,
+			storeVersion: GLOBAL_PERSISTENCE_STORE_VERSION.recordIdentity,
 			watch: ['persistence'],
 		}),
 		createPersistMiddleware<typeof state>({

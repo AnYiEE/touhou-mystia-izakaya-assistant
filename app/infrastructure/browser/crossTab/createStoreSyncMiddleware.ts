@@ -1,4 +1,5 @@
 import { BroadcastChannel } from 'broadcast-channel';
+import { compareVersions } from 'compare-versions';
 import { type StateCreator } from 'zustand';
 
 import { getSafeStorageMode } from '@/infrastructure/browser/storage/safeStorage';
@@ -149,12 +150,101 @@ function assign<T, P extends TNestedKeys<T>>(
 // eslint-disable-next-line unicorn/prefer-global-this
 const isServer = typeof window === 'undefined';
 
-const LOADED_SIGNAL = '__loaded__';
+const STORE_SYNC_MESSAGE_KEY = '__storeSync__';
+const STORE_SYNC_PROTOCOL_VERSION = 1;
+
+interface IStoreSyncLoadedMessage {
+	protocolVersion: typeof STORE_SYNC_PROTOCOL_VERSION;
+	storeVersion: number;
+	type: 'loaded';
+}
+
+interface IStoreSyncStateMessage {
+	protocolVersion: typeof STORE_SYNC_PROTOCOL_VERSION;
+	state: TPlainObject;
+	storeVersion: number;
+	type: 'state';
+}
+
+type TStoreSyncMessage = IStoreSyncLoadedMessage | IStoreSyncStateMessage;
+
+function readStoreSyncMessage(message: unknown): TStoreSyncMessage | null {
+	if (!isObjectTagRecord(message)) {
+		return null;
+	}
+	const envelope = message[STORE_SYNC_MESSAGE_KEY];
+	if (
+		!isObjectTagRecord(envelope) ||
+		envelope['protocolVersion'] !== STORE_SYNC_PROTOCOL_VERSION
+	) {
+		return null;
+	}
+
+	if (
+		(envelope['type'] !== 'loaded' && envelope['type'] !== 'state') ||
+		typeof envelope['storeVersion'] !== 'number' ||
+		!Number.isSafeInteger(envelope['storeVersion']) ||
+		envelope['storeVersion'] < 0
+	) {
+		return null;
+	}
+	if (envelope['type'] === 'loaded') {
+		return envelope as unknown as IStoreSyncLoadedMessage;
+	}
+
+	return isObjectTagRecord(envelope['state'])
+		? (envelope as unknown as IStoreSyncStateMessage)
+		: null;
+}
+
+function createStoreSyncLoadedMessage(storeVersion: number) {
+	return {
+		[STORE_SYNC_MESSAGE_KEY]: {
+			protocolVersion: STORE_SYNC_PROTOCOL_VERSION,
+			storeVersion,
+			type: 'loaded',
+		},
+	};
+}
+
+function createStoreSyncStateMessage(
+	storeVersion: number,
+	state: TPlainObject
+) {
+	return {
+		[STORE_SYNC_MESSAGE_KEY]: {
+			protocolVersion: STORE_SYNC_PROTOCOL_VERSION,
+			state,
+			storeVersion,
+			type: 'state',
+		},
+	};
+}
+
+function checkStoreSyncLoaded(message: unknown, storeVersion: number) {
+	const parsed = readStoreSyncMessage(message);
+	return parsed?.type === 'loaded' && parsed.storeVersion === storeVersion;
+}
+
+function readStoreSyncStateMessage(message: unknown) {
+	const parsed = readStoreSyncMessage(message);
+	return parsed?.type === 'state'
+		? { state: parsed.state, storeVersion: parsed.storeVersion }
+		: null;
+}
+
+interface IAppVersionSyncOptions<T> {
+	current: string;
+	createRemoteState(appVersion: string): Partial<T>;
+	readRemoteState(state: unknown): string | null;
+}
 
 interface ISyncOptions<T> {
+	appVersion?: IAppVersionSyncOptions<T>;
 	name: string;
 	normalizeRemoteState?: (state: unknown) => Partial<T> | null;
 	remoteStateApplicationGuard: IRemoteStateApplicationGuard;
+	storeVersion: number;
 	watch: Array<Extract<TNestedKeys<T>, `persistence${string}`>>;
 }
 
@@ -219,34 +309,83 @@ export function createStoreSyncMiddleware<T>(options: ISyncOptions<T>) {
 
 		return (set, get, api) => {
 			const {
+				appVersion,
 				name,
 				normalizeRemoteState,
 				remoteStateApplicationGuard,
+				storeVersion,
 				watch,
 			} = options;
 			const channel = createStoreBroadcastChannel(name);
 
-			postStoreBroadcastMessage(channel, LOADED_SIGNAL);
+			const handleRemoteAppVersion = (
+				remoteAppVersion: string | null
+			) => {
+				if (appVersion === undefined || remoteAppVersion === null) {
+					return;
+				}
+
+				let comparison: number;
+				try {
+					comparison = compareVersions(
+						remoteAppVersion,
+						appVersion.current
+					);
+				} catch {
+					return;
+				}
+
+				if (comparison > 0) {
+					set((state) =>
+						merge(
+							state,
+							appVersion.createRemoteState(remoteAppVersion)
+						)
+					);
+				}
+			};
+
+			const createWatchedState = () => {
+				const currentState = get();
+				return watch.reduce((acc, path) => {
+					assign(acc, path, getNestedValue(currentState, path));
+
+					return acc;
+				}, {} as T);
+			};
+
+			postStoreBroadcastMessage(
+				channel,
+				createStoreSyncLoadedMessage(storeVersion)
+			);
 			subscribeStoreBroadcastMessage(channel, (data) => {
-				if (data === LOADED_SIGNAL) {
-					if (checkLengthEmpty(watch)) {
+				if (checkStoreSyncLoaded(data, storeVersion)) {
+					if (!checkLengthEmpty(watch)) {
+						postStoreBroadcastMessage(
+							channel,
+							createStoreSyncStateMessage(
+								storeVersion,
+								createWatchedState() as TPlainObject
+							)
+						);
+					}
+					return;
+				}
+
+				const remoteStateMessage = readStoreSyncStateMessage(data);
+				if (remoteStateMessage !== null) {
+					handleRemoteAppVersion(
+						appVersion?.readRemoteState(remoteStateMessage.state) ??
+							null
+					);
+					if (remoteStateMessage.storeVersion !== storeVersion) {
 						return;
 					}
 
-					const currentState = get();
-
-					const watchedState = watch.reduce((acc, path) => {
-						assign(acc, path, getNestedValue(currentState, path));
-
-						return acc;
-					}, {} as T);
-
-					postStoreBroadcastMessage(channel, watchedState);
-				} else {
 					const remoteState =
 						normalizeRemoteState === undefined
-							? (data as Partial<T>)
-							: normalizeRemoteState(data);
+							? (remoteStateMessage.state as Partial<T>)
+							: normalizeRemoteState(remoteStateMessage.state);
 					if (remoteState !== null) {
 						set((state) => merge(state, remoteState));
 					}
@@ -279,7 +418,13 @@ export function createStoreSyncMiddleware<T>(options: ISyncOptions<T>) {
 					hasChanges &&
 					!remoteStateApplicationGuard.checkApplyingRemoteState()
 				) {
-					postStoreBroadcastMessage(channel, watchedState);
+					postStoreBroadcastMessage(
+						channel,
+						createStoreSyncStateMessage(
+							storeVersion,
+							watchedState as TPlainObject
+						)
+					);
 				}
 			};
 

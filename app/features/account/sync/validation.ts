@@ -12,6 +12,7 @@ import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import { SUPPORTED_LEGACY_FOOD_NAMES } from '@/domain/catalog/legacy/resolveLegacyFoodName';
 import { SUPPORTED_LEGACY_INGREDIENT_NAMES } from '@/domain/catalog/legacy/resolveLegacyIngredientName';
 
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
@@ -54,7 +55,6 @@ const ingredients = new Set<number>(
 	IngredientCatalog.getInstance().getValuesByProp('id')
 );
 const foodCatalog = FoodCatalog.getInstance();
-const foodNames = new Set<string>(foodCatalog.getNames());
 const foods = new Set<number>(foodCatalog.getValuesByProp('id'));
 const dlcKeys = new Set<string>(Object.keys(DLC_LABEL_MAP));
 const darkPaletteValues = new Set<string>(Object.values(DARK_PALETTE_MAP));
@@ -274,10 +274,13 @@ function validateGlobalPreferences(data: unknown, schemaVersion: number) {
 					beverageNames
 				) &&
 				isAllowedStringArray(
+					tableHiddenItems['recipes'],
+					SUPPORTED_LEGACY_FOOD_NAMES
+				) &&
+				isAllowedStringArray(
 					tableHiddenItems['ingredients'],
 					SUPPORTED_LEGACY_INGREDIENT_NAMES
-				) &&
-				isAllowedStringArray(tableHiddenItems['recipes'], foodNames)
+				)
 			: isAllowedNumberArray(tableHiddenItems['beverages'], beverages) &&
 				isAllowedNumberArray(tableHiddenItems['foods'], foods) &&
 				isAllowedNumberArray(

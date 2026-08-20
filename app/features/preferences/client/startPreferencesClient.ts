@@ -42,6 +42,7 @@ function handleVersionChange(version: string | null) {
 
 export function startPreferencesClient() {
 	applyHighAppearance(globalStore.persistence.highAppearance.get());
+	handleVersionChange(globalStore.persistence.version.get());
 
 	const stopHighAppearance =
 		globalStore.persistence.highAppearance.onChange(applyHighAppearance);

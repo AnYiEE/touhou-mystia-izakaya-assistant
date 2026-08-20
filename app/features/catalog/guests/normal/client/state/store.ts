@@ -23,6 +23,7 @@ export const normalGuestStore = store(normalGuestInitialState, {
 		createStoreSyncMiddleware<typeof normalGuestInitialState>({
 			name: storeName,
 			remoteStateApplicationGuard: accountRemoteStateApplicationGuard,
+			storeVersion: NORMAL_GUEST_STORE_VERSION.recordIdentity,
 			watch: ['persistence.meals'],
 		}),
 		createPersistMiddleware<typeof normalGuestInitialState>({
