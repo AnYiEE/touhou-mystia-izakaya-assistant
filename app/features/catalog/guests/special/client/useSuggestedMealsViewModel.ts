@@ -25,10 +25,7 @@ import type {
 	TIngredientName,
 } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
-import {
-	DARK_MATTER_META_MAP,
-	DYNAMIC_FOOD_TAG_MAP,
-} from '@/domain/data/tags/tagFacts';
+import { DARK_MATTER_META_MAP } from '@/domain/data/tags/tagFacts';
 import { getRestExtraIngredients } from '@/domain/meals/getRestExtraIngredients';
 import type { IMealFood } from '@/domain/meals/types';
 import type { IGuestOrder } from '@/domain/orders/types';
@@ -301,11 +298,6 @@ export function useSuggestedMealsViewModel() {
 		currentSpecialGuest !== null &&
 		(hasOrderTags || (hasMystiaCooker && hasSelection));
 
-	const hasUnsetPopularOrderTag =
-		(currentGuestOrder.foodTag === DYNAMIC_FOOD_TAG_MAP.popularPositive ||
-			currentGuestOrder.foodTag ===
-				DYNAMIC_FOOD_TAG_MAP.popularNegative) &&
-		currentGuestPopularTrend.tag === null;
 	const suggestParams = useMemo<ISuggestParams | null>(
 		() =>
 			currentSpecialGuest === null
@@ -357,7 +349,7 @@ export function useSuggestedMealsViewModel() {
 		const generation = ++suggestionGenerationRef.current;
 		const controller = new AbortController();
 
-		if (!isActive || hasUnsetPopularOrderTag || suggestParams === null) {
+		if (!isActive || suggestParams === null) {
 			setSuggestionsState({
 				activeRequestKey: suggestionRequestKey,
 				generation,
@@ -461,12 +453,7 @@ export function useSuggestedMealsViewModel() {
 		return () => {
 			controller.abort();
 		};
-	}, [
-		hasUnsetPopularOrderTag,
-		isActive,
-		suggestParams,
-		suggestionRequestKey,
-	]);
+	}, [isActive, suggestParams, suggestionRequestKey]);
 
 	const {
 		activeRequestKey,
@@ -475,14 +462,13 @@ export function useSuggestedMealsViewModel() {
 		status: storedSuggestionStatus,
 		suggestions,
 	} = suggestionsState;
-	const suggestionStatus: TSuggestionStatus =
-		!isActive || hasUnsetPopularOrderTag
-			? 'idle'
-			: activeRequestKey === suggestionRequestKey
-				? storedSuggestionStatus
-				: suggestions === null
-					? 'pending'
-					: 'refreshing';
+	const suggestionStatus: TSuggestionStatus = isActive
+		? activeRequestKey === suggestionRequestKey
+			? storedSuggestionStatus
+			: suggestions === null
+				? 'pending'
+				: 'refreshing'
+		: 'idle';
 	const isVisible = isActive;
 	const displayGuestOrder = resultContext?.guestOrder ?? currentGuestOrder;
 	const alternativesMap =
@@ -760,7 +746,6 @@ export function useSuggestedMealsViewModel() {
 		handleCookerChange,
 		handleMaxExtraChange,
 		handleMaxRatingChange,
-		hasUnsetPopularOrderTag,
 		isActive,
 		isHighAppearance,
 		isVisible,

@@ -21,7 +21,14 @@ import {
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
+const FOOD_TABLE_EMPTY_MESSAGE_MAP = {
+	default: '数据为空',
+	popularTrendRequired: '请您先在设置中指定「流行趋势」',
+	popularTrendUnset: '选定的筛选条件包含流行趋势标签',
+} as const;
+
 interface IProps {
+	hasUnsetPopularTrendFilter: boolean;
 	headerColumns: Array<ITableColumn<TFoodTableColumnKey>>;
 	isHighAppearance: boolean;
 	isReducedMotion: boolean;
@@ -40,6 +47,7 @@ interface IProps {
 }
 
 export default memo<IProps>(function FoodTableShell({
+	hasUnsetPopularTrendFilter,
 	headerColumns,
 	isHighAppearance,
 	isReducedMotion,
@@ -121,7 +129,24 @@ export default memo<IProps>(function FoodTableShell({
 				)}
 			</TableHeader>
 			<TableBody
-				emptyContent={<Placeholder>数据为空</Placeholder>}
+				emptyContent={
+					hasUnsetPopularTrendFilter ? (
+						<Placeholder className="space-y-2">
+							<p>
+								{FOOD_TABLE_EMPTY_MESSAGE_MAP.popularTrendUnset}
+							</p>
+							<p>
+								{
+									FOOD_TABLE_EMPTY_MESSAGE_MAP.popularTrendRequired
+								}
+							</p>
+						</Placeholder>
+					) : (
+						<Placeholder>
+							{FOOD_TABLE_EMPTY_MESSAGE_MAP.default}
+						</Placeholder>
+					)
+				}
 				items={items}
 			>
 				{(item) => (

@@ -1,18 +1,37 @@
+import { DYNAMIC_FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import type { TFoodTagId } from '@/domain/data/tags/types';
+
 type TTagType = 'beverageTag' | 'foodTag';
+
+export const GUEST_POPULAR_TREND_TAG_TOOLTIP =
+	'流行趋势标签不会被顾客点单；如有特殊需要，请在料理表格中筛选';
+
+export function isPopularTrendTag(tag: TFoodTagId) {
+	return (
+		tag === DYNAMIC_FOOD_TAG_MAP.popularNegative ||
+		tag === DYNAMIC_FOOD_TAG_MAP.popularPositive
+	);
+}
 
 function getTagTypeLabel(type: TTagType) {
 	return type === 'beverageTag' ? '酒水' : '料理';
 }
 
 export function buildNormalTagTooltip({
+	isPopularTrend,
 	selectedTags,
 	tag,
 	type,
 }: {
+	isPopularTrend: boolean;
 	selectedTags: Pick<ReadonlySet<string>, 'has'>;
 	tag: string;
 	type: TTagType;
 }) {
+	if (isPopularTrend) {
+		return GUEST_POPULAR_TREND_TAG_TOOLTIP;
+	}
+
 	const tagType = getTagTypeLabel(type);
 	const isTagExisted = selectedTags.has(tag);
 
@@ -24,6 +43,7 @@ export function buildRareTagTooltip({
 	hasMystiaCooker,
 	isDarkMatter,
 	isOrderLinkedFilter,
+	isPopularTrend,
 	tag,
 	type,
 }: {
@@ -31,9 +51,14 @@ export function buildRareTagTooltip({
 	hasMystiaCooker: boolean;
 	isDarkMatter: boolean;
 	isOrderLinkedFilter: boolean;
+	isPopularTrend: boolean;
 	tag: string;
 	type: TTagType;
 }) {
+	if (isPopularTrend) {
+		return GUEST_POPULAR_TREND_TAG_TOOLTIP;
+	}
+
 	const tagType = getTagTypeLabel(type);
 	const isCurrentTag = currentOrderTag === tag;
 	const isNormalMeal = hasMystiaCooker && !isDarkMatter;

@@ -27,7 +27,10 @@ import { GuestCardSiteInfo } from '@/features/catalog/guests/shared/client/compo
 import RatingAvatarShell from '@/features/catalog/guests/shared/client/components/ratingAvatarShell';
 import SlidingSprite from '@/features/catalog/guests/shared/client/components/slidingSprite';
 import TagGroup from '@/features/catalog/guests/shared/client/components/tagGroup';
-import { buildRareTagTooltip } from '@/features/catalog/guests/shared/presentation/buildTagTooltip';
+import {
+	buildRareTagTooltip,
+	isPopularTrendTag,
+} from '@/features/catalog/guests/shared/presentation/buildTagTooltip';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { getSpecialGuestDisplayMeta } from '@/features/catalog/presentation/guestDisplayMeta';
 import { SPECIAL_GUEST_TAG_STYLE } from '@/features/catalog/presentation/tagStyles';
@@ -171,7 +174,11 @@ export default function GuestCard() {
 	);
 
 	const getTagTooltip = useCallback(
-		(type: 'beverageTag' | 'foodTag', tag: string) =>
+		(
+			type: 'beverageTag' | 'foodTag',
+			tag: string,
+			isPopularTrend: boolean
+		) =>
 			buildRareTagTooltip({
 				currentOrderTag:
 					type === 'beverageTag'
@@ -184,6 +191,7 @@ export default function GuestCard() {
 				hasMystiaCooker,
 				isDarkMatter: Boolean(isDarkMatter),
 				isOrderLinkedFilter,
+				isPopularTrend,
 				tag,
 				type,
 			}),
@@ -430,6 +438,8 @@ export default function GuestCard() {
 								)
 								.map((tag) => {
 									const tagLabel = FOOD_TAG_MAP[tag];
+									const isPopularTrend =
+										isPopularTrendTag(tag);
 									const tagDescription = (
 										currentGuestPositiveTagMapping as Partial<
 											Record<TFoodTagId, string>
@@ -441,7 +451,8 @@ export default function GuestCard() {
 											showArrow
 											content={getTagTooltip(
 												'foodTag',
-												tagLabel
+												tagLabel,
+												isPopularTrend
 											)}
 											closeDelay={0}
 											delay={500}
@@ -449,7 +460,7 @@ export default function GuestCard() {
 											size="sm"
 										>
 											<Tags.Tag
-												isButton
+												isButton={!isPopularTrend}
 												tag={
 													isShowTagDescription &&
 													tagDescription !== undefined
@@ -463,17 +474,35 @@ export default function GuestCard() {
 													SPECIAL_GUEST_TAG_STYLE.positive
 												}
 												tagType="positive"
-												onPress={() => {
-													handleFoodTagPress(tag);
-												}}
-												aria-label={`${tagLabel}${currentGuestOrder.foodTag === tag ? '/已选定' : ''}${currentFoodTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
+												onPress={
+													isPopularTrend
+														? undefined
+														: () => {
+																handleFoodTagPress(
+																	tag
+																);
+															}
+												}
+												aria-label={`${tagLabel}${isPopularTrend ? '/不会被顾客点单' : currentGuestOrder.foodTag === tag ? '/已选定' : ''}${currentFoodTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
+												tabIndex={
+													isPopularTrend &&
+													isShowTagsTooltip
+														? 0
+														: undefined
+												}
 												className={cn(
-													'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
+													'p-1 font-semibold leading-none',
 													{
+														[CLASSNAME_FOCUS_VISIBLE_OUTLINE]:
+															isPopularTrend &&
+															isShowTagsTooltip,
 														'cursor-not-allowed':
-															hasMystiaCooker &&
-															!isDarkMatter &&
-															!isOrderLinkedFilter,
+															isPopularTrend ||
+															(hasMystiaCooker &&
+																!isDarkMatter &&
+																!isOrderLinkedFilter),
+														'data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover':
+															!isPopularTrend,
 														'font-normal opacity-50':
 															// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 															isDarkMatter ||
@@ -481,6 +510,7 @@ export default function GuestCard() {
 																tag
 															),
 														'ring-2 ring-current':
+															!isPopularTrend &&
 															currentGuestOrder.foodTag ===
 																tag &&
 															((hasMystiaCooker &&
@@ -541,7 +571,8 @@ export default function GuestCard() {
 											showArrow
 											content={getTagTooltip(
 												'beverageTag',
-												tagLabel
+												tagLabel,
+												false
 											)}
 											closeDelay={0}
 											delay={500}

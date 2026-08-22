@@ -28,7 +28,10 @@ import { GuestCardSiteInfo } from '@/features/catalog/guests/shared/client/compo
 import RatingAvatarShell from '@/features/catalog/guests/shared/client/components/ratingAvatarShell';
 import SlidingSprite from '@/features/catalog/guests/shared/client/components/slidingSprite';
 import TagGroup from '@/features/catalog/guests/shared/client/components/tagGroup';
-import { buildNormalTagTooltip } from '@/features/catalog/guests/shared/presentation/buildTagTooltip';
+import {
+	buildNormalTagTooltip,
+	isPopularTrendTag,
+} from '@/features/catalog/guests/shared/presentation/buildTagTooltip';
 import { getNormalGuestDisplayMeta } from '@/features/catalog/presentation/guestDisplayMeta';
 import { NORMAL_GUEST_TAG_STYLE } from '@/features/catalog/presentation/tagStyles';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
@@ -153,9 +156,11 @@ export default function NormalGuestCard() {
 			type: 'beverageTag' | 'foodTag',
 			selectedTags: SelectionSet,
 			tag: TBeverageTagId | TFoodTagId,
-			tagLabel: string
+			tagLabel: string,
+			isPopularTrend: boolean
 		) =>
 			buildNormalTagTooltip({
+				isPopularTrend,
 				selectedTags: { has: () => selectedTags.has(tag) },
 				tag: tagLabel,
 				type,
@@ -347,6 +352,8 @@ export default function NormalGuestCard() {
 								)
 								.map((tag) => {
 									const tagLabel = FOOD_TAG_MAP[tag];
+									const isPopularTrend =
+										isPopularTrendTag(tag);
 									return (
 										<Tooltip
 											key={tag}
@@ -355,7 +362,8 @@ export default function NormalGuestCard() {
 												'foodTag',
 												selectedNormalGuestFoodTags,
 												tag,
-												tagLabel
+												tagLabel,
+												isPopularTrend
 											)}
 											closeDelay={0}
 											delay={500}
@@ -363,19 +371,38 @@ export default function NormalGuestCard() {
 											size="sm"
 										>
 											<Tags.Tag
-												isButton
+												isButton={!isPopularTrend}
 												tag={tagLabel}
 												tagStyle={
 													NORMAL_GUEST_TAG_STYLE.positive
 												}
 												tagType="positive"
-												onPress={() => {
-													handleFoodTagPress(tag);
-												}}
-												aria-label={`${tagLabel}${currentFoodTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
+												onPress={
+													isPopularTrend
+														? undefined
+														: () => {
+																handleFoodTagPress(
+																	tag
+																);
+															}
+												}
+												aria-label={`${tagLabel}${isPopularTrend ? '/不会被顾客点单' : ''}${currentFoodTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
+												tabIndex={
+													isPopularTrend &&
+													isShowTagsTooltip
+														? 0
+														: undefined
+												}
 												className={cn(
-													'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
+													'p-1 font-semibold leading-none',
 													{
+														[CLASSNAME_FOCUS_VISIBLE_OUTLINE]:
+															isPopularTrend &&
+															isShowTagsTooltip,
+														'cursor-not-allowed':
+															isPopularTrend,
+														'data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover':
+															!isPopularTrend,
 														'font-normal opacity-50':
 															!currentFoodTagsWithTrend.includes(
 																tag
@@ -400,7 +427,8 @@ export default function NormalGuestCard() {
 											'beverageTag',
 											selectedNormalGuestBeverageTags,
 											tag,
-											tagLabel
+											tagLabel,
+											false
 										)}
 										closeDelay={0}
 										delay={500}

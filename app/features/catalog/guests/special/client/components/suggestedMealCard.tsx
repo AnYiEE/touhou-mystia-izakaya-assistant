@@ -88,7 +88,6 @@ export default function SuggestedMealCard() {
 		handleCookerChange,
 		handleMaxExtraChange,
 		handleMaxRatingChange,
-		hasUnsetPopularOrderTag,
 		isHighAppearance,
 		isVisible,
 		selectableMaxExtraIngredients,
@@ -363,20 +362,7 @@ export default function SuggestedMealCard() {
 						)}
 					</AnimatePresence>
 					<Divider className="md:hidden" />
-					{hasUnsetPopularOrderTag ? (
-						<Placeholder className="space-y-2 py-4">
-							<p>
-								{
-									SUGGESTED_MEAL_STATUS_MESSAGE_MAP.popularTrendUnset
-								}
-							</p>
-							<p>
-								{
-									SUGGESTED_MEAL_STATUS_MESSAGE_MAP.popularTrendRequired
-								}
-							</p>
-						</Placeholder>
-					) : suggestionStatus === 'pending' ? (
+					{suggestionStatus === 'pending' ? (
 						<Placeholder className="py-4">
 							{SUGGESTED_MEAL_STATUS_MESSAGE_MAP.loading}
 						</Placeholder>

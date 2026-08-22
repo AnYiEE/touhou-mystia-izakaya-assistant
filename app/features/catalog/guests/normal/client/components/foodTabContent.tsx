@@ -30,7 +30,10 @@ import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
-import { FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import {
+	DYNAMIC_FOOD_TAG_MAP,
+	FOOD_TAG_MAP,
+} from '@/domain/data/tags/tagFacts';
 import type { TFoodTagId } from '@/domain/data/tags/types';
 
 import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
@@ -76,12 +79,22 @@ export default function FoodTabContent() {
 	const vibrate = useVibrate();
 
 	const currentNormalGuest = normalGuestStore.shared.guest.id.use();
+	const currentPopularTrend =
+		normalGuestStore.shared.guest.popularTrend.use();
 	const selectedGuestFoodTags =
 		normalGuestStore.shared.guest.select.foodTag.use();
 	const selectedGuestFoodTagKeys = useMemo(
 		() => foodTagSelectionAdapter.toSelectedKeys(selectedGuestFoodTags),
 		[selectedGuestFoodTags]
 	);
+	const hasUnsetPopularTrendFilter =
+		currentPopularTrend.tag === null &&
+		(selectedGuestFoodTagKeys.has(
+			DYNAMIC_FOOD_TAG_MAP.popularNegative.toString()
+		) ||
+			selectedGuestFoodTagKeys.has(
+				DYNAMIC_FOOD_TAG_MAP.popularPositive.toString()
+			));
 
 	const currentMealFood = normalGuestStore.shared.recipe.data.use();
 	const selectedRecipeId = currentMealFood?.recipeId ?? null;
@@ -409,8 +422,8 @@ export default function FoodTabContent() {
 							onSelectionChange={
 								normalGuestStore.onFoodTableSelectedPositiveTagsChange
 							}
-							aria-label="选择顾客所点单的料理标签"
-							title="选择顾客所点单的料理标签"
+							aria-label="按料理标签筛选料理"
+							title="按料理标签筛选料理"
 							popoverProps={{
 								motionProps: popoverMotionProps,
 								shouldCloseOnScroll: false,
@@ -669,6 +682,7 @@ export default function FoodTabContent() {
 
 	return (
 		<FoodTableShell
+			hasUnsetPopularTrendFilter={hasUnsetPopularTrendFilter}
 			headerColumns={tableHeaderColumns}
 			isHighAppearance={isHighAppearance}
 			isReducedMotion={isReducedMotion}
