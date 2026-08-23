@@ -45,7 +45,7 @@
 - 当前阶段：阶段 0 至阶段 5 均已完成；验证清单仍保留未逐项人工覆盖的场景。
 - 最后更新：2026-07-30（实现 owner 与路径复核）。
 - 运行模式：基础设置项始终进入 Spotlight；账号设置项只在 self-hosted 账号功能客户端追加，静态、offline 与 Vercel 模式不暴露账号入口。
-- 验证：历史 `pnpm exec tsc --noEmit` 与 `pnpm lint` 已通过；2026-07-17 的精确模式断言和 self-hosted/静态双模式 Playwright 复核确认设置项覆盖正确。Turbopack 开发服务受当前 `next/font` 内部模块解析基线错误阻塞，本轮浏览器核验改用 Next.js Webpack 开发模式完成。
+- 验证：历史 `pnpm exec tsc --noEmit` 与 `pnpm lint` 已通过；2026-07-17 的精确模式断言和 self-hosted/静态双模式 Playwright 复核确认设置项覆盖正确。当时 Turbopack 开发服务受 `next/font` 内部模块解析基线错误阻塞，本轮浏览器核验改用 Next.js Webpack 开发模式完成；2026-07-22 字体迁移为源码内本地资源后，Turbopack 已恢复，并完成桌面和 390px 移动视口 Playwright 核验。
 
 ## 当前实现 owner
 
