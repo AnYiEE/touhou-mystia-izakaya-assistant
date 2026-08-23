@@ -177,6 +177,7 @@ export default memo<IProps>(function AnnouncementCarousel({
 			ref={rootRef}
 			aria-label="站点通知"
 			role="region"
+			{...rootHandlers}
 			className={cn(
 				'relative overflow-hidden transition-colors duration-500 motion-reduce:transition-none',
 				levelMeta.rootClassName,
@@ -198,10 +199,7 @@ export default memo<IProps>(function AnnouncementCarousel({
 				<AnnouncementBackgroundLayer item={visualItem} />
 			)}
 			<div className="relative z-10 mx-auto flex max-w-7xl items-center gap-2.5 py-1.5 pl-6 pr-4 sm:pr-6 md:pl-10 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
-				<div
-					className="grid min-w-0 flex-1 overflow-hidden"
-					{...rootHandlers}
-				>
+				<div className="grid min-w-0 flex-1 overflow-hidden">
 					{transition === null ? (
 						<AnnouncementContent
 							key={displayedContentKey}

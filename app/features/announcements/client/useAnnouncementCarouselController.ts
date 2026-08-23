@@ -63,6 +63,7 @@ export function useAnnouncementCarouselController(
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const accountUser = accountStore.shared.user.use();
 	const rootRef = useRef<HTMLElement>(null);
+	const isMouseHoveringRef = useRef(false);
 	const lastPointerInteractionAtRef = useRef(0);
 	const autoRotateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
 		null
@@ -351,6 +352,8 @@ export function useAnnouncementCarouselController(
 
 	useEffect(() => {
 		if (!hasVisibleAnnouncement) {
+			isMouseHoveringRef.current = false;
+			setIsPaused(false);
 			writeAnnouncementBarOffset(null);
 			return;
 		}
@@ -399,6 +402,18 @@ export function useAnnouncementCarouselController(
 			writeAnnouncementBarOffset(null);
 		};
 	}, [hasVisibleAnnouncement, writeAnnouncementBarOffset]);
+
+	useEffect(() => {
+		if (!hasVisibleAnnouncement) {
+			return;
+		}
+
+		const rootElement = rootRef.current;
+		const hasFocusVisible =
+			rootElement !== null &&
+			rootElement.querySelector(':focus-visible') !== null;
+		setIsPaused(isMouseHoveringRef.current || hasFocusVisible);
+	}, [hasVisibleAnnouncement, visualItem?.dismissed_token]);
 
 	useEffect(() => {
 		setDisplayedMarqueeMetrics(null);
@@ -561,7 +576,6 @@ export function useAnnouncementCarouselController(
 		const dismissedItem = visualItem;
 
 		clearAutoRotateTimer();
-		setIsPaused(false);
 		setDisplayedMarqueeMetrics(null);
 		writeDismissedCookie(dismissedItem.dismissed_token);
 
@@ -570,6 +584,11 @@ export function useAnnouncementCarouselController(
 			items: itemsRef.current,
 			pendingRemovalToken: pendingRemovalTokenRef.current,
 		});
+
+		if (selection.nextItem === null) {
+			isMouseHoveringRef.current = false;
+			setIsPaused(false);
+		}
 
 		pendingRemovalTokenRef.current = null;
 		updateItems(() => selection.nextItems);
@@ -628,7 +647,14 @@ export function useAnnouncementCarouselController(
 
 	const rootHandlers = useMemo(
 		() => ({
-			onBlur: () => {
+			onBlur: (event: ReactFocusEvent<HTMLElement>) => {
+				if (
+					event.currentTarget.contains(event.relatedTarget) ||
+					isMouseHoveringRef.current
+				) {
+					return;
+				}
+
 				setIsPaused(false);
 			},
 			onFocus: handleFocus,
@@ -636,11 +662,20 @@ export function useAnnouncementCarouselController(
 			onPointerDown: markPointerInteraction,
 			onPointerEnter: (event: ReactPointerEvent<HTMLElement>) => {
 				if (event.pointerType === 'mouse') {
+					isMouseHoveringRef.current = true;
 					setIsPaused(true);
 				}
 			},
 			onPointerLeave: (event: ReactPointerEvent<HTMLElement>) => {
-				if (event.pointerType === 'mouse') {
+				if (event.pointerType !== 'mouse') {
+					return;
+				}
+
+				isMouseHoveringRef.current = false;
+
+				if (
+					event.currentTarget.querySelector(':focus-visible') === null
+				) {
 					setIsPaused(false);
 				}
 			},
