@@ -3,7 +3,7 @@ import { SITE_METADATA } from '@/shared/site/metadata';
 import { ITEM_SHARE_PARAM_NAME } from './contracts';
 
 const { name: siteName } = SITE_METADATA;
-const ITEM_SHARE_RECORD_ID_PATTERN = /^(?:0|[1-9]\d*)$/u;
+const ITEM_SHARE_RECORD_ID_PATTERN = /^(?:0|[1-9]\d*|-[1-9]\d*)$/u;
 
 export interface ICreateItemShareUrlOptions {
 	origin?: string;

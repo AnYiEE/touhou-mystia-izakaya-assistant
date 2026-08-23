@@ -35,7 +35,7 @@ interface IProps {
 export default memo<IProps>(function IngredientCatalog({ data }) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const { defaultOpenedPopover, getPopoverOpenChangeProps } =
-		useOpenedItemPopover(popoverCardRef);
+		useOpenedItemPopover(popoverCardRef, data);
 	const { checkDefaultOpen, checkShouldEffect, getPopoverKey } =
 		useItemPopoverState(defaultOpenedPopover);
 	const openWindow = useViewInNewWindow();

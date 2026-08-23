@@ -59,7 +59,7 @@ function formatPartnerSource(source: TPartnerSource) {
 export default memo<IProps>(function PartnerCatalog({ data }) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const { defaultOpenedPopover, getPopoverOpenChangeProps } =
-		useOpenedItemPopover(popoverCardRef);
+		useOpenedItemPopover(popoverCardRef, data);
 	const { checkDefaultOpen, checkShouldEffect, getPopoverKey } =
 		useItemPopoverState(defaultOpenedPopover);
 	const { breakpoint: placement } = useBreakpoint(

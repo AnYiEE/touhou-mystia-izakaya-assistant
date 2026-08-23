@@ -20,8 +20,13 @@ export interface IDefaultOpenedPopover {
 	source: 'spotlight' | 'url';
 }
 
+interface IItemRecord {
+	readonly id: number;
+}
+
 export function useOpenedItemPopover(
-	popoverCardRef: RefObject<HTMLElement | null>
+	popoverCardRef: RefObject<HTMLElement | null>,
+	data: ReadonlyArray<IItemRecord>
 ) {
 	const { params, replaceState } = useParams();
 	const { pathname } = usePathname();
@@ -60,10 +65,18 @@ export function useOpenedItemPopover(
 
 		handledParamRef.current = paramKey;
 		const recordId = parseItemShareRecord(param);
-		if (recordId !== null) {
-			openDefaultPopover(recordId, 'url');
+		if (
+			recordId === null ||
+			!data.some((record) => record.id === recordId)
+		) {
+			const newParams = new URLSearchParams(params);
+			newParams.delete(ITEM_SHARE_PARAM_NAME);
+			replaceState(newParams);
+			return;
 		}
-	}, [openDefaultPopover, params, pathname]);
+
+		openDefaultPopover(recordId, 'url');
+	}, [data, openDefaultPopover, params, pathname, replaceState]);
 
 	useEffect(() => {
 		if (defaultOpenedPopover === null) {
