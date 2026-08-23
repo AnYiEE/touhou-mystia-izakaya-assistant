@@ -44,15 +44,14 @@ export default function IngredientRelatedFoods({
 		ingredient,
 		FoodCatalog.getInstance().getPinyinSortedData()
 	);
-	if (checkLengthEmpty(relatedFoods)) {
+	const visibleRelatedFoods = relatedFoods.filter(({ availabilityPaths }) =>
+		isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs)
+	);
+	if (checkLengthEmpty(visibleRelatedFoods)) {
 		return null;
 	}
 	const relatedFoodsGroupByDlcMap = Map.groupBy(
-		relatedFoods
-			.values()
-			.filter(({ availabilityPaths }) =>
-				isAvailableWithHiddenDlcs(availabilityPaths, hiddenDlcs)
-			),
+		visibleRelatedFoods,
 		({ dlc }) => dlc
 	);
 	const relatedFoodsGroupByDlcSorted = [...relatedFoodsGroupByDlcMap].sort(
