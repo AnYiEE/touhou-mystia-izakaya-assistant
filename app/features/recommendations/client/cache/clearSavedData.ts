@@ -1,5 +1,6 @@
 'use client';
 
+import { safeStorage } from '@/infrastructure/browser/storage/safeStorage';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 import { deleteCurrentRecommendationCacheDatabase } from './database';
@@ -16,9 +17,9 @@ function waitForClearDeadline() {
 
 export async function clearSavedLocalDataBeforeReload() {
 	try {
-		localStorage.clear();
+		safeStorage.clear();
 	} catch (error) {
-		console.warn('Local storage clear failed.', {
+		console.warn('Saved storage clear failed.', {
 			errorCode: getLogSafeErrorCode(error),
 		});
 	}

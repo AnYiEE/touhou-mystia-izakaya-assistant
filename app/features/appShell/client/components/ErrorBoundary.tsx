@@ -8,7 +8,10 @@ import {
 	useCallback,
 } from 'react';
 
-import { trackEvent } from '@/features/analytics/client/trackEvent';
+import {
+	trackEvent,
+	trackEventWithoutInteractionCount,
+} from '@/features/analytics/client/trackEvent';
 import { SITE_LINKS } from '@/features/appShell/links';
 import { clearSavedLocalDataBeforeReload } from '@/features/recommendations/client/cache/clearSavedData';
 
@@ -27,8 +30,11 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 		if (shouldClear) {
 			await clearSavedLocalDataBeforeReload();
 		}
-		trackEvent(
-			trackEvent.category.click,
+		const trackRetryEvent = shouldClear
+			? trackEventWithoutInteractionCount
+			: trackEvent;
+		trackRetryEvent(
+			trackRetryEvent.category.click,
 			'Error Button',
 			shouldClear ? 'Retry and clear' : 'Retry'
 		);
