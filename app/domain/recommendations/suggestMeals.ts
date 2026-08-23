@@ -1274,7 +1274,6 @@ interface IBestExtraIngredientsPreparation {
 interface IPrepareBestExtraIngredientsParams {
 	readonly baseFoodTags: ReadonlyArray<TFoodTagId>;
 	readonly baseGameIngredients: TCatalogData<IngredientCatalog>;
-	readonly excludedExtraIngredients: ReadonlyArray<TIngredientId>;
 	readonly execution: ISuggestMealsExecution;
 	readonly extraSlots: number;
 	readonly food: TFoodId;
@@ -1321,7 +1320,6 @@ interface IBestExtraIngredientsResult {
 async function prepareBestExtraIngredients({
 	baseFoodTags,
 	baseGameIngredients,
-	excludedExtraIngredients,
 	execution,
 	extraSlots,
 	food,
@@ -1337,13 +1335,9 @@ async function prepareBestExtraIngredients({
 	specialGuestPositiveTags,
 }: IPrepareBestExtraIngredientsParams): Promise<IBestExtraIngredientsPreparation> {
 	const negativeTagSet = new Set<TFoodTagId>(foodNegativeTags);
-	const fixedIngredientSet = new Set(excludedExtraIngredients);
 	const effectIngredient = getIngredientEasterEggTarget(specialGuest);
 	const candidates = baseGameIngredients.flatMap((ingredient) => {
-		if (
-			fixedIngredientSet.has(ingredient.id) ||
-			ingredient.tags.some((tag) => negativeTagSet.has(tag))
-		) {
+		if (ingredient.tags.some((tag) => negativeTagSet.has(tag))) {
 			return [];
 		}
 		const priority = ingredientPriorityMap.get(ingredient.id);
@@ -1683,7 +1677,6 @@ async function getAutomaticExtraIngredientPreparation({
 	const preparation = await prepareBestExtraIngredients({
 		baseFoodTags: food.positiveTags,
 		baseGameIngredients: relevantIngredients,
-		excludedExtraIngredients: [],
 		execution,
 		extraSlots,
 		food: food.id,
@@ -2004,7 +1997,6 @@ async function suggestIngredients(
 		baseFoodTags: composedBaseFoodTags,
 		baseGameIngredients: relevantIngredients,
 		beverageTags,
-		excludedExtraIngredients: currentFood.extraIngredients,
 		execution,
 		extraSlots,
 		food,
@@ -2156,7 +2148,6 @@ async function suggestForBeverage(
 				baseFoodTags: foodPositiveTags,
 				baseGameIngredients: relevantIngredients,
 				beverageTags,
-				excludedExtraIngredients: [],
 				execution,
 				extraSlots,
 				food,
@@ -2372,7 +2363,6 @@ async function suggestForFood(
 				baseFoodTags: composedFoodTags,
 				baseGameIngredients: relevantIngredients,
 				beverageTags,
-				excludedExtraIngredients: currentFood.extraIngredients,
 				execution,
 				extraSlots,
 				food,

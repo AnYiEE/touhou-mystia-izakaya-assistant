@@ -205,7 +205,7 @@ export async function buildExactIngredientStateTable(
 		[emptyState]
 	);
 
-	for (const [candidateIndex, candidate] of candidates.entries()) {
+	for (const candidate of candidates) {
 		execution.throwIfAborted();
 		const candidateTagIndexes = candidate.tags.flatMap((tag) => {
 			const index = tagIndexMap.get(tag);
@@ -223,9 +223,8 @@ export async function buildExactIngredientStateTable(
 			emptyState.effectMask,
 			candidateEffectIndexes
 		);
-		const maxTargetCount = Math.min(maxCount, candidateIndex + 1);
 
-		for (let count = maxTargetCount; count >= 1; count--) {
+		for (let count = 1; count <= maxCount; count++) {
 			const sourceLayer = layerMaps[count - 1];
 			const targetLayer = layerMaps[count];
 			if (sourceLayer === undefined || targetLayer === undefined) {
