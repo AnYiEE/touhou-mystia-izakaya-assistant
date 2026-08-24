@@ -193,11 +193,11 @@ function checkIntegerInRange(value: unknown, minimum: number, maximum: number) {
 	);
 }
 
-function checkUniqueValues(value: unknown) {
+function checkIdValues(value: unknown, shouldRequireUniqueValues: boolean) {
 	return (
 		Array.isArray(value) &&
 		value.every(checkSafeInteger) &&
-		new Set(value).size === value.length
+		(!shouldRequireUniqueValues || new Set(value).size === value.length)
 	);
 }
 
@@ -253,9 +253,10 @@ function checkFoodAllowed(id: number, guestDlc: number) {
 function validateIdArray<TId extends number>(
 	value: unknown,
 	path: string,
-	checkValue: (id: number) => boolean
+	checkValue: (id: number) => boolean,
+	shouldRequireUniqueValues = true
 ): TRecommendationBridgeValidationResult<ReadonlyArray<TId>> {
-	if (!checkUniqueValues(value)) {
+	if (!checkIdValues(value, shouldRequireUniqueValues)) {
 		return invalid('invalid-value', path);
 	}
 	if (!(value as number[]).every(checkValue)) {
@@ -384,21 +385,11 @@ function validateRequest(
 	const extraResult = validateIdArray<TIngredientId>(
 		extraIngredients,
 		'payload.selection.food.extra_ingredient_ids',
-		(id) => checkIngredientAllowed(id, specialGuest.dlc)
+		(id) => checkIngredientAllowed(id, specialGuest.dlc),
+		false
 	);
 	if (!extraResult.ok) {
 		return extraResult;
-	}
-	if (
-		selectedOwner !== undefined &&
-		extraResult.value.some((id) =>
-			selectedOwner.recipe.ingredients.includes(id)
-		)
-	) {
-		return invalid(
-			'contains-base-ingredient',
-			'payload.selection.food.extra_ingredient_ids'
-		);
 	}
 	if (
 		selectedOwner !== undefined &&

@@ -471,13 +471,11 @@ static bool TryReadResult(JsonElement root, out string requestId)
 			return false;
 		}
 
-		var ingredientIds = new HashSet<long>();
 		foreach (var ingredient in extraIngredientIds.EnumerateArray())
 		{
 			if (!ingredient.TryGetInt64(out var ingredientId)
 				|| ingredientId < -MaxSafeInteger
-				|| ingredientId > MaxSafeInteger
-				|| !ingredientIds.Add(ingredientId))
+				|| ingredientId > MaxSafeInteger)
 			{
 				return false;
 			}

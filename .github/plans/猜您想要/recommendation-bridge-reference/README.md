@@ -37,11 +37,11 @@ dotnet run --project RecommendationBridgeReference.csproj
 
 `options.recommendation_strategy` 只改变已经符合硬约束的推荐结果最终顺序，不改变请求模式、评级、候选资格或响应结构。可用值为 `availability_first`、`low_price`、`high_price`、`material_cost_first`，省略时为 `material_cost_first`。开发阶段使用过的 `balanced`、`save_ingredients` 以及旧字段 `sort_profile` 都不受支持。
 
-固定 Food 直接发送安全整数 `recipe_id`，其所属 Food 由该 Recipe ID 的唯一 owner 确定。每个结果也必须返回算法实际采用的 `recipe_id`；Mod 比较套餐身份时必须包含 Recipe ID、Beverage ID 和按无序集合规范化的额外 Ingredient ID。
+固定 Food 直接发送安全整数 `recipe_id`，其所属 Food 由该 Recipe ID 的唯一 owner 确定。每个结果也必须返回算法实际采用的 `recipe_id`；Mod 比较套餐身份时必须包含 Recipe ID、Beverage ID 和按无序多重集合规范化的额外 Ingredient ID。额外食材的排列顺序不影响套餐身份，但每个 ID 的出现次数必须保留。
 
 案例通过 `options.availability` 的 `beverages/foods/ingredients` 约束对应分类 ID。每类可以提供 `include` 白名单与 `exclude` 黑名单，最终范围为 `include（省略时为当前 SpecialGuest 可用全集）− exclude`。同一 ID 同时出现时以黑名单为准。`foods` 按整份 Food 生效，Recipe 仍由 `recipe_id` 选择；固定 Food 的基础 Ingredient 不受 Ingredient 范围限制，固定和算法新增的额外 Ingredient 仍必须在最终范围内。
 
-[fixtures.v1.json](fixtures.v1.json) 固定 V1 的合法和非法边界，包括字段省略、空集合、白名单减黑名单、重复 ID、未知或不可用 ID、和名称字段拒绝，以及固定项与可用范围冲突。fixture 不由参考程序发送。
+[fixtures.v1.json](fixtures.v1.json) 固定 V1 的合法和非法边界，包括字段省略、空集合、白名单减黑名单、固定额外食材的重复槽位、可用范围数组中的非法重复 ID、未知或不可用 ID、排序方案的四个合法值与严格拒绝边界，以及固定项与可用范围冲突。fixture 不由参考程序发送。
 
 ## BepInEx 移植说明
 

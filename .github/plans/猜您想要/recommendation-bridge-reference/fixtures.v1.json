@@ -87,6 +87,39 @@
 		}
 	},
 	{
+		"name": "fixed food repeated extra ingredient",
+		"valid": true,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-fixed-repeated-extra",
+			"payload": {
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"selection": {
+					"food": {
+						"recipe_id": 39,
+						"extra_ingredient_ids": [24, 24]
+					}
+				}
+			}
+		}
+	},
+	{
+		"name": "fixed food repeats base ingredient in extra slot",
+		"valid": true,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-fixed-extra-repeats-base",
+			"payload": {
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"selection": {
+					"food": { "recipe_id": 39, "extra_ingredient_ids": [21] }
+				}
+			}
+		}
+	},
+	{
 		"name": "null availability",
 		"valid": false,
 		"message": {
