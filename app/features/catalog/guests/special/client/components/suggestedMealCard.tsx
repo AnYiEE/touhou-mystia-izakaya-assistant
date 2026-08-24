@@ -497,8 +497,11 @@ export default function SuggestedMealCard() {
 								{
 									alternativesStatus,
 									beverage,
+									beverageAlternatives,
+									beverageAlternativesStatus,
 									cooker,
 									ensureAlternatives,
+									ensureBeverageAlternatives,
 									extraIngredients,
 									food,
 									getAlternatives,
@@ -513,7 +516,8 @@ export default function SuggestedMealCard() {
 								loopIndex
 							) => {
 								const rating = GUEST_RATING_MAP[ratingKey];
-								const beverageLabel = `点击：在新窗口中查看酒水【${beverage.name}】的详情`;
+								const beverageDetailsLabel = `点击：在新窗口中查看酒水【${beverage.name}】的详情`;
+								const beverageAlternativesLabel = `酒水【${beverage.name}】（点击查看可替换酒水）`;
 								const cookerLabel = `点击：在新窗口中查看厨具【${cooker.name}】的详情`;
 								const foodLabel = `点击：在新窗口中查看料理【${food.displayName}】的详情`;
 								return (
@@ -648,30 +652,249 @@ export default function SuggestedMealCard() {
 														size={0.75}
 														className="mx-2 md:mx-0 lg:mx-2 xl:mx-0"
 													/>
-													<Tooltip
-														showArrow
-														content={beverageLabel}
-														offset={4}
-													>
-														<Sprite
-															target="beverage"
-															recordId={
-																beverage.id
-															}
-															size={2}
-															onPress={() => {
-																openWindow(
-																	'beverages',
-																	beverage.id,
-																	beverage.name
-																);
+													{currentBeverage === null &&
+													suggestionStatus ===
+														'success' ? (
+														<Popover
+															showArrow
+															offset={6}
+															placement="bottom"
+															onOpenChange={(
+																isOpen
+															) => {
+																if (isOpen) {
+																	ensureBeverageAlternatives();
+																}
 															}}
-															aria-label={
-																beverageLabel
+														>
+															<Tooltip
+																showArrow
+																content={
+																	beverageAlternativesLabel
+																}
+																offset={4}
+															>
+																<span className="flex cursor-pointer">
+																	<PopoverTrigger>
+																		<Sprite
+																			target="beverage"
+																			recordId={
+																				beverage.id
+																			}
+																			size={
+																				2
+																			}
+																			aria-label={
+																				beverageAlternativesLabel
+																			}
+																			role="button"
+																		/>
+																	</PopoverTrigger>
+																</span>
+															</Tooltip>
+															<PopoverContent>
+																<div className="flex max-w-64 flex-col gap-1 p-1">
+																	<div className="flex items-center justify-between gap-2">
+																		<span
+																			role="status"
+																			aria-live="polite"
+																			className="text-tiny text-default-700"
+																		>
+																			{beverageAlternativesStatus ===
+																				'pending' ||
+																			beverageAlternativesStatus ===
+																				'idle'
+																				? SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.loading
+																				: beverageAlternativesStatus ===
+																					  'error'
+																					? SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.failed
+																					: checkLengthEmpty(
+																								beverageAlternatives
+																						  )
+																						? SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.empty
+																						: SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.ready}
+																		</span>
+																		<Tooltip
+																			showArrow
+																			content={
+																				beverageDetailsLabel
+																			}
+																			size="sm"
+																		>
+																			<Button
+																				size="sm"
+																				variant="flat"
+																				onPress={() => {
+																					openWindow(
+																						'beverages',
+																						beverage.id,
+																						beverage.name
+																					);
+																				}}
+																				aria-label={
+																					beverageDetailsLabel
+																				}
+																				className="h-6 min-h-6 px-2 text-tiny"
+																			>
+																				原酒水详情
+																			</Button>
+																		</Tooltip>
+																	</div>
+																	{!checkLengthEmpty(
+																		beverageAlternatives
+																	) && (
+																		<div className="flex max-h-48 flex-wrap gap-1 overflow-y-auto">
+																			{beverageAlternatives.map(
+																				({
+																					id: alternativeBeverage,
+																					name: alternativeName,
+																					price: alternativePrice,
+																				}) => {
+																					const priceDifference =
+																						alternativePrice -
+																						price;
+																					const alternativeLabel = `点击：在新窗口中查看酒水【${alternativeName}】\u2005的详情；套餐价格由¥${price}变为¥${alternativePrice}`;
+																					return (
+																						<Tooltip
+																							key={
+																								alternativeBeverage
+																							}
+																							showArrow
+																							content={
+																								<span>
+																									{
+																										'点击：在新窗口中查看酒水【'
+																									}
+																									{
+																										alternativeName
+																									}
+																									{
+																										'】的详情；套餐价格由\u2005¥'
+																									}
+																									<Price
+																										showSymbol={
+																											false
+																										}
+																									>
+																										{
+																											price
+																										}
+																									</Price>
+																									{
+																										'\u2005变为\u2005¥'
+																									}
+																									<Price
+																										showSymbol={
+																											false
+																										}
+																									>
+																										{
+																											alternativePrice
+																										}
+																									</Price>
+																								</span>
+																							}
+																							size="sm"
+																						>
+																							<span className="flex flex-col items-center gap-0.5 rounded p-0.5">
+																								<Sprite
+																									target="beverage"
+																									recordId={
+																										alternativeBeverage
+																									}
+																									size={
+																										2
+																									}
+																									onPress={() => {
+																										openWindow(
+																											'beverages',
+																											alternativeBeverage,
+																											alternativeName
+																										);
+																									}}
+																									aria-label={
+																										alternativeLabel
+																									}
+																									role="button"
+																								/>
+																								<span
+																									className={cn(
+																										'text-tiny leading-none',
+																										{
+																											'text-danger-600':
+																												priceDifference >
+																												0,
+																											'text-default-500':
+																												priceDifference ===
+																												0,
+																											'text-success-600':
+																												priceDifference <
+																												0,
+																										}
+																									)}
+																								>
+																									{priceDifference ===
+																									0 ? (
+																										'不变'
+																									) : (
+																										<>
+																											{priceDifference >
+																											0
+																												? '+'
+																												: '-'}
+																											{
+																												'\u2005¥'
+																											}
+																											<Price
+																												showSymbol={
+																													false
+																												}
+																											>
+																												{Math.abs(
+																													priceDifference
+																												)}
+																											</Price>
+																										</>
+																									)}
+																								</span>
+																							</span>
+																						</Tooltip>
+																					);
+																				}
+																			)}
+																		</div>
+																	)}
+																</div>
+															</PopoverContent>
+														</Popover>
+													) : (
+														<Tooltip
+															showArrow
+															content={
+																beverageDetailsLabel
 															}
-															role="button"
-														/>
-													</Tooltip>
+															offset={4}
+														>
+															<Sprite
+																target="beverage"
+																recordId={
+																	beverage.id
+																}
+																size={2}
+																onPress={() => {
+																	openWindow(
+																		'beverages',
+																		beverage.id,
+																		beverage.name
+																	);
+																}}
+																aria-label={
+																	beverageDetailsLabel
+																}
+																role="button"
+															/>
+														</Tooltip>
+													)}
 												</div>
 												<Plus
 													size={0.75}

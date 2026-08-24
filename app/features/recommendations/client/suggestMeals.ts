@@ -6,10 +6,12 @@ import type {
 import {
 	type IRecommendationCoreMemoryCacheStats,
 	type IScoreBasedAlternativesParams,
+	type IScoreBasedBeverageAlternativesParams,
 	type ISuggestMealsCoreSession,
 	createSuggestMealsCoreSession,
 	getRecommendationCoreMemoryCacheStats,
 	getScoreBasedAlternativesCore,
+	getScoreBasedBeverageAlternativesCore,
 } from '@/domain/recommendations/suggestMeals';
 import type {
 	ISuggestParams,
@@ -65,6 +67,18 @@ export function buildSuggestMealsCacheKey({
 	].join('|');
 }
 
+function cloneSuggestedMeals(meals: ReadonlyArray<ISuggestedMeal>) {
+	return meals.map(({ beverage, food, price, rating }) => ({
+		beverage,
+		food: {
+			extraIngredients: [...food.extraIngredients],
+			recipeId: food.recipeId,
+		},
+		price,
+		rating,
+	}));
+}
+
 export async function getScoreBasedAlternatives(
 	params: IScoreBasedAlternativesParams,
 	options: ISuggestMealsOptions = {}
@@ -73,6 +87,31 @@ export async function getScoreBasedAlternatives(
 		params,
 		createSuggestMealsExecution(options)
 	);
+}
+
+export async function getScoreBasedBeverageAlternatives(
+	params: IScoreBasedBeverageAlternativesParams,
+	options: ISuggestMealsOptions = {}
+) {
+	const paramsSnapshot: IScoreBasedBeverageAlternativesParams = {
+		...params,
+		currentFood: {
+			extraIngredients: [...params.currentFood.extraIngredients],
+			recipeId: params.currentFood.recipeId,
+		},
+		guestOrder: { ...params.guestOrder },
+		hiddenBeverages: new Set(params.hiddenBeverages),
+		hiddenDlcs: new Set(params.hiddenDlcs),
+		hiddenFoods: new Set(params.hiddenFoods),
+		hiddenIngredients: new Set(params.hiddenIngredients),
+		popularTrend: { ...params.popularTrend },
+	};
+	const result = await getScoreBasedBeverageAlternativesCore(
+		paramsSnapshot,
+		createSuggestMealsExecution(options)
+	);
+
+	return cloneSuggestedMeals(result);
 }
 
 const SUGGEST_CACHE_MAX_ENTRIES = 15_000;
@@ -94,18 +133,6 @@ export function getRecommendationMemoryCacheStats(): IRecommendationMemoryCacheS
 		...getRecommendationCoreMemoryCacheStats(),
 		finalResult: suggestCache.getStats(),
 	};
-}
-
-function cloneSuggestedMeals(meals: ReadonlyArray<ISuggestedMeal>) {
-	return meals.map(({ beverage, food, price, rating }) => ({
-		beverage,
-		food: {
-			extraIngredients: [...food.extraIngredients],
-			recipeId: food.recipeId,
-		},
-		price,
-		rating,
-	}));
 }
 
 function createSuggestParamsSnapshot(params: ISuggestParams): ISuggestParams {

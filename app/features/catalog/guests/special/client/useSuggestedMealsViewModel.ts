@@ -51,6 +51,7 @@ import { suggestedMealsUiStore } from '@/features/recommendations/client/state/s
 import {
 	buildSuggestMealsCacheKey,
 	getScoreBasedAlternatives,
+	getScoreBasedBeverageAlternatives,
 	readSuggestedMealsMemoryCache,
 	suggestMeals,
 } from '@/features/recommendations/client/suggestMeals';
@@ -155,8 +156,11 @@ type IIngredientView = IRecordView<TIngredientId, TIngredientName>;
 interface ISuggestedMealRowViewModel {
 	alternativesStatus: TAlternativesStatus;
 	beverage: IBeverageView;
+	beverageAlternatives: ReadonlyArray<IBeverageAlternativeView>;
+	beverageAlternativesStatus: TAlternativesStatus;
 	cooker: ICookerView;
 	ensureAlternatives: () => void;
+	ensureBeverageAlternatives: () => void;
 	extraIngredients: IIngredientView[];
 	food: IFoodView;
 	getAlternatives: (
@@ -225,6 +229,9 @@ export function useSuggestedMealsViewModel() {
 	const alternativeControllersRef = useRef(
 		new Map<string, AbortController>()
 	);
+	const beverageAlternativeControllersRef = useRef(
+		new Map<string, AbortController>()
+	);
 	const [suggestionsState, setSuggestionsState] = useState<ISuggestionsState>(
 		() => ({
 			activeRequestKey: null,
@@ -234,13 +241,21 @@ export function useSuggestedMealsViewModel() {
 			suggestions: null,
 		})
 	);
+
 	const [alternativesState, setAlternativesState] =
 		useState<IAlternativesState>(() => ({ generation: 0, map: new Map() }));
+	const [beverageAlternativesState, setBeverageAlternativesState] =
+		useState<IBeverageAlternativesState>(() => ({
+			generation: 0,
+			map: new Map(),
+		}));
+
 	const availableFoodCookerByKey = useMemo<ReadonlyMap<string, TCookerId>>(
 		() =>
 			new Map(availableFoodCookers.map(({ id }) => [id.toString(), id])),
 		[availableFoodCookers]
 	);
+
 	const selectableMaxExtraIngredientByKey = useMemo<
 		ReadonlyMap<string, number | null>
 	>(
@@ -253,6 +268,7 @@ export function useSuggestedMealsViewModel() {
 			),
 		[selectableMaxExtraIngredients]
 	);
+
 	const selectableMaxRatingByKey = useMemo<ReadonlyMap<string, number>>(
 		() =>
 			new Map(
@@ -578,6 +594,10 @@ export function useSuggestedMealsViewModel() {
 		alternativesState.generation === generation
 			? alternativesState.map
 			: EMPTY_ALTERNATIVES_MAP;
+	const beverageAlternativesMap =
+		beverageAlternativesState.generation === generation
+			? beverageAlternativesState.map
+			: EMPTY_BEVERAGE_ALTERNATIVES_MAP;
 
 	useLayoutEffect(() => {
 		suggestedMealsUiStore.visibility.set(isVisible);
@@ -589,17 +609,27 @@ export function useSuggestedMealsViewModel() {
 
 	useEffect(() => {
 		const controllers = alternativeControllersRef.current;
+		const beverageControllers = beverageAlternativeControllersRef.current;
 		for (const controller of controllers.values()) {
 			controller.abort();
 		}
+		for (const controller of beverageControllers.values()) {
+			controller.abort();
+		}
 		controllers.clear();
+		beverageControllers.clear();
 		setAlternativesState({ generation, map: new Map() });
+		setBeverageAlternativesState({ generation, map: new Map() });
 
 		return () => {
 			for (const controller of controllers.values()) {
 				controller.abort();
 			}
+			for (const controller of beverageControllers.values()) {
+				controller.abort();
+			}
 			controllers.clear();
+			beverageControllers.clear();
 		};
 	}, [generation]);
 
@@ -714,6 +744,116 @@ export function useSuggestedMealsViewModel() {
 		]
 	);
 
+	const loadBeverageAlternatives = useCallback(
+		(
+			mealKey: string,
+			args: Pick<
+				Parameters<typeof getScoreBasedBeverageAlternatives>[0],
+				'baseRating' | 'currentBeverage' | 'currentFood'
+			>
+		) => {
+			const existing = beverageAlternativesMap.get(mealKey);
+			if (
+				suggestionStatus !== 'success' ||
+				resultContext === null ||
+				(existing !== undefined && existing.status !== 'error') ||
+				beverageAlternativeControllersRef.current.has(mealKey)
+			) {
+				return;
+			}
+
+			const controller = new AbortController();
+			beverageAlternativeControllersRef.current.set(mealKey, controller);
+			setBeverageAlternativesState((prev) => {
+				const existing = prev.map.get(mealKey);
+				if (
+					prev.generation !== generation ||
+					(existing !== undefined && existing.status !== 'error')
+				) {
+					return prev;
+				}
+
+				const next = new Map(prev.map);
+				next.set(mealKey, { meals: [], status: 'pending' });
+				return { generation, map: next };
+			});
+
+			const run = async () => {
+				try {
+					const meals = await getScoreBasedBeverageAlternatives(
+						{
+							...args,
+							cooker: resultContext.cooker,
+							guestOrder: resultContext.guestOrder,
+							hasMystiaCooker: resultContext.hasMystiaCooker,
+							hiddenBeverages: resultContext.hiddenBeverages,
+							hiddenDlcs: resultContext.hiddenDlcs,
+							hiddenFoods: resultContext.hiddenFoods,
+							hiddenIngredients: resultContext.hiddenIngredients,
+							isFamousShop: resultContext.isFamousShop,
+							maxRating: resultContext.maxRating,
+							popularTrend: resultContext.popularTrend,
+							sortProfile: resultContext.sortProfile,
+							specialGuest: resultContext.specialGuest,
+						},
+						{
+							signal: controller.signal,
+							taskKey: `suggest-beverage-alternatives:${mealKey}`,
+						}
+					);
+					if (
+						controller.signal.aborted ||
+						suggestionGenerationRef.current !== generation
+					) {
+						return;
+					}
+					setBeverageAlternativesState((prev) => {
+						if (prev.generation !== generation) {
+							return prev;
+						}
+						const next = new Map(prev.map);
+						next.set(mealKey, { meals, status: 'success' });
+						return { generation, map: next };
+					});
+				} catch (error) {
+					if (
+						controller.signal.aborted ||
+						checkSuggestMealsAbortError(error) ||
+						suggestionGenerationRef.current !== generation
+					) {
+						return;
+					}
+
+					console.warn(
+						'Suggested meal beverage alternatives failed.',
+						{ errorCode: getLogSafeErrorCode(error) }
+					);
+					setBeverageAlternativesState((prev) => {
+						if (prev.generation !== generation) {
+							return prev;
+						}
+						const next = new Map(prev.map);
+						next.set(mealKey, { meals: [], status: 'error' });
+						return { generation, map: next };
+					});
+				} finally {
+					if (
+						beverageAlternativeControllersRef.current.get(
+							mealKey
+						) === controller
+					) {
+						beverageAlternativeControllersRef.current.delete(
+							mealKey
+						);
+					}
+				}
+			};
+
+			void run();
+		},
+		[beverageAlternativesMap, generation, resultContext, suggestionStatus]
+	);
+
 	const suggestedMealRows = useMemo<
 		ISuggestedMealRowViewModel[] | null
 	>(() => {
@@ -769,10 +909,26 @@ export function useSuggestedMealsViewModel() {
 			const mealKey = `${food.id}|${mealFood.recipeId}|${beverage}|${mealFood.extraIngredients.join(',')}`;
 			const currentAlternatives = alternativesMap.get(mealKey);
 			const alternativesStatus = currentAlternatives?.status ?? 'idle';
+			const currentBeverageAlternatives =
+				beverageAlternativesMap.get(mealKey);
+			const beverageAlternativesStatus =
+				currentBeverageAlternatives?.status ?? 'idle';
 
 			return {
 				alternativesStatus,
 				beverage: beverageView,
+				beverageAlternatives:
+					currentBeverageAlternatives?.meals.map(
+						({ beverage: alternativeBeverage, price }) => ({
+							id: alternativeBeverage,
+							name: beverageCatalog.getPropsById(
+								alternativeBeverage,
+								'name'
+							),
+							price,
+						})
+					) ?? EMPTY_BEVERAGE_ALTERNATIVES,
+				beverageAlternativesStatus,
 				cooker: cookerView,
 				ensureAlternatives: () => {
 					if (
@@ -803,6 +959,21 @@ export function useSuggestedMealsViewModel() {
 						specialGuestPositiveTags: guest.positiveTags,
 					});
 				},
+				ensureBeverageAlternatives: () => {
+					if (
+						(currentBeverageAlternatives !== undefined &&
+							currentBeverageAlternatives.status !== 'error') ||
+						suggestionStatus !== 'success'
+					) {
+						return;
+					}
+
+					loadBeverageAlternatives(mealKey, {
+						baseRating: ratingKey,
+						currentBeverage: beverage,
+						currentFood: currentMeal,
+					});
+				},
 				extraIngredients,
 				food: {
 					displayName: isDarkMatter
@@ -830,10 +1001,12 @@ export function useSuggestedMealsViewModel() {
 	}, [
 		alternativesMap,
 		beverageCatalog,
+		beverageAlternativesMap,
 		cookerCatalog,
 		foodCatalog,
 		ingredientCatalog,
 		loadAlternatives,
+		loadBeverageAlternatives,
 		resultContext,
 		specialGuestCatalog,
 		suggestionStatus,
