@@ -40,9 +40,15 @@ import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TMapLabel } from '@/domain/data/places/types';
+import { RECOMMENDATION_SORT_PROFILE_LABEL_MAP } from '@/domain/recommendations/labels';
+import {
+	RECOMMENDATION_SORT_PROFILES,
+	type TRecommendationSortProfile,
+} from '@/domain/recommendations/sortProfiles';
 
 import { specialGuestPlanCatalogPort } from '@/features/catalog/guests/special/client/state/specialGuestPlanCatalogPort';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
+import { recommendationPreferencesFacade } from '@/features/preferences/client/recommendationPreferencesFacade';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 import {
 	checkSpecialGuestPlansStateVirtual,
@@ -82,6 +88,22 @@ const SPECIAL_GUEST_PLAN_MEAL_SOURCE_BY_KEY: ReadonlyMap<
 > = new Map([
 	['recommended', 'recommended'],
 	['saved', 'saved'],
+]);
+
+const FOLLOW_SETTINGS_SORT_PROFILE_KEY = 'follow-settings';
+const SPECIAL_GUEST_PLAN_SORT_PROFILE_OPTIONS = [
+	{ label: '跟随全局设置', value: FOLLOW_SETTINGS_SORT_PROFILE_KEY },
+	...RECOMMENDATION_SORT_PROFILES.map((value) => ({
+		label: RECOMMENDATION_SORT_PROFILE_LABEL_MAP[value],
+		value,
+	})),
+];
+const SPECIAL_GUEST_PLAN_SORT_PROFILE_OVERRIDE_BY_KEY: ReadonlyMap<
+	string,
+	TRecommendationSortProfile | null
+> = new Map([
+	[FOLLOW_SETTINGS_SORT_PROFILE_KEY, null],
+	...RECOMMENDATION_SORT_PROFILES.map((value) => [value, value] as const),
 ]);
 
 const SPECIAL_GUEST_PLAN_MODE_BY_KEY: ReadonlyMap<
@@ -135,6 +157,10 @@ export default function SpecialGuestPlanControls({
 	const vibrate = useVibrate();
 	const isControlsCollapsed =
 		specialGuestPlansStore.shared.drawer.isControlsCollapsed.use();
+	const recommendationSortProfileOverride =
+		specialGuestPlansStore.shared.drawer.sortProfileOverride.use();
+	const permanentRecommendationSortProfile =
+		recommendationPreferencesFacade.sortProfile.use();
 	const plans = specialGuestPlansStore.persistence.plans.use();
 	const activePlan = getDisplayedSpecialGuestPlan(plans);
 	const isVirtualPlans = checkSpecialGuestPlansStateVirtual(plans);
@@ -183,6 +209,8 @@ export default function SpecialGuestPlanControls({
 	const activePlanGuestSort = activePlan.guestSort;
 	const activePlanMealSource = activePlan.mealSource;
 	const activePlanMode = activePlan.mode;
+	const effectiveRecommendationSortProfile =
+		recommendationSortProfileOverride ?? permanentRecommendationSortProfile;
 	const isRenameDisabled = normalizedDraftName === activePlan.name;
 	const activePlanGuestSortKeys = useMemo(
 		() => [activePlanGuestSort],
@@ -200,6 +228,14 @@ export default function SpecialGuestPlanControls({
 	const activePlanManualGuestKeys = useMemo(
 		() => toSelectionKeySet(activePlan.manualGuests),
 		[activePlan.manualGuests]
+	);
+	const recommendationSortProfileKeys = useMemo(
+		() =>
+			new Set([
+				recommendationSortProfileOverride ??
+					FOLLOW_SETTINGS_SORT_PROFILE_KEY,
+			]),
+		[recommendationSortProfileOverride]
 	);
 	const planIdByKey = useMemo<ReadonlyMap<string, string>>(
 		() =>
@@ -361,6 +397,21 @@ export default function SpecialGuestPlanControls({
 			specialGuestPlansStore.setGuestSort(guestSort);
 		},
 		[activePlan]
+	);
+
+	const handleRecommendationSortProfileChange = useCallback(
+		(selection: Selection) => {
+			const values = selectionToKnownValues(
+				selection,
+				SPECIAL_GUEST_PLAN_SORT_PROFILE_OVERRIDE_BY_KEY
+			);
+			if (values !== null) {
+				specialGuestPlansStore.shared.drawer.sortProfileOverride.set(
+					values[0] ?? null
+				);
+			}
+		},
+		[]
 	);
 
 	const handleToggleControls = useCallback(() => {
@@ -683,6 +734,38 @@ export default function SpecialGuestPlanControls({
 									<Tab key="saved" title="已保存套餐" />
 									<Tab key="recommended" title="自动推荐" />
 								</Tabs>
+								{activePlanMealSource === 'recommended' && (
+									<Select
+										disallowEmptySelection
+										disableAnimation={isReducedMotion}
+										isVirtualized={false}
+										items={
+											SPECIAL_GUEST_PLAN_SORT_PROFILE_OPTIONS
+										}
+										label="推荐策略"
+										selectedKeys={
+											recommendationSortProfileKeys
+										}
+										selectionMode="single"
+										size="sm"
+										onSelectionChange={
+											handleRecommendationSortProfileChange
+										}
+										aria-label="选择营业预设自动推荐的推荐策略；跟随全局设置时实时使用默认推荐策略"
+										title={`选择营业预设自动推荐的推荐策略；当前生效：${RECOMMENDATION_SORT_PROFILE_LABEL_MAP[effectiveRecommendationSortProfile]}`}
+										popoverProps={selectPopoverProps}
+										classNames={selectClassNames}
+									>
+										{({ label, value }) => (
+											<SelectItem
+												key={value}
+												textValue={label}
+											>
+												{label}
+											</SelectItem>
+										)}
+									</Select>
+								)}
 							</div>
 						</div>
 

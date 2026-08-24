@@ -3,6 +3,7 @@ import type { TFoodId } from '@/domain/data/foods/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
+import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import type { IResolvedSpecialGuestPlanGroup } from '@/features/specialGuestPlans/contracts';
@@ -24,6 +25,7 @@ export interface ISpecialGuestPlanRecommendationCacheKeyParams {
 	readonly maxRating: number;
 	readonly maxResults: number;
 	readonly popularTrend: IPopularTrend;
+	readonly sortProfile: TRecommendationSortProfile;
 	readonly specialGuest: TSpecialGuestId;
 }
 
@@ -56,6 +58,7 @@ export function buildSpecialGuestPlanRecommendationCacheKey({
 	maxRating,
 	maxResults,
 	popularTrend,
+	sortProfile,
 	specialGuest,
 }: ISpecialGuestPlanRecommendationCacheKeyParams) {
 	return JSON.stringify({
@@ -68,6 +71,7 @@ export function buildSpecialGuestPlanRecommendationCacheKey({
 		maxRating,
 		maxResults,
 		popularTrend,
+		sortProfile,
 		specialGuest,
 	});
 }

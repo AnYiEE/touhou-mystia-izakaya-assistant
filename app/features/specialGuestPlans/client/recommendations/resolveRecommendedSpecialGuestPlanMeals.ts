@@ -10,6 +10,7 @@ import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
 import { FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
+import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';
 import type { ISuggestedMeal } from '@/domain/recommendations/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
@@ -52,6 +53,7 @@ interface IResolveRecommendedSpecialGuestPlanMealBatchParams {
 	onProgress?: (progress: IRecommendedSpecialGuestPlanMealProgress) => void;
 	popularTrend: IPopularTrend;
 	session: IRecommendedSpecialGuestPlanMealSession;
+	sortProfile: TRecommendationSortProfile;
 	specialGuest: TSpecialGuestId;
 	startIndex: number;
 }
@@ -111,6 +113,7 @@ export async function resolveRecommendedSpecialGuestPlanMealBatch(
 		onProgress,
 		popularTrend,
 		session,
+		sortProfile,
 		specialGuest,
 		startIndex,
 	}: IResolveRecommendedSpecialGuestPlanMealBatchParams,
@@ -172,6 +175,7 @@ export async function resolveRecommendedSpecialGuestPlanMealBatch(
 			maxRating,
 			maxResults: safeMaxResults,
 			popularTrend,
+			sortProfile,
 			specialGuest,
 		})),
 		{

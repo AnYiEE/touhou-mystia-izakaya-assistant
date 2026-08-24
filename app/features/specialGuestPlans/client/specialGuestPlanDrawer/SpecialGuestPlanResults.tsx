@@ -18,6 +18,7 @@ import type { TIngredientId } from '@/domain/data/ingredients/types';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { specialGuestPlanCatalogPort } from '@/features/catalog/guests/special/client/state/specialGuestPlanCatalogPort';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
+import { recommendationPreferencesFacade } from '@/features/preferences/client/recommendationPreferencesFacade';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 import { getDisplayedSpecialGuestPlan } from '@/features/specialGuestPlans/client/state/planState';
 import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/state/store';
@@ -47,6 +48,12 @@ export default function SpecialGuestPlanResults({
 	const groups = specialGuestPlansStore.resolvedGroups.use();
 	const plans = specialGuestPlansStore.persistence.plans.use();
 	const recommendationSessionKey = getDisplayedSpecialGuestPlan(plans).id;
+	const recommendationSortProfileOverride =
+		specialGuestPlansStore.shared.drawer.sortProfileOverride.use();
+	const permanentRecommendationSortProfile =
+		recommendationPreferencesFacade.sortProfile.use();
+	const recommendationSortProfile =
+		recommendationSortProfileOverride ?? permanentRecommendationSortProfile;
 	const expandedSpecialGuests =
 		specialGuestPlansStore.shared.drawer.expandedSpecialGuests.use();
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -257,6 +264,9 @@ export default function SpecialGuestPlanResults({
 											}
 											recommendationSessionKey={
 												recommendationSessionKey
+											}
+											recommendationSortProfile={
+												recommendationSortProfile
 											}
 										/>
 									</motion.div>

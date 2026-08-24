@@ -29,6 +29,11 @@ import { DARK_MATTER_META_MAP } from '@/domain/data/tags/tagFacts';
 import { getRestExtraIngredients } from '@/domain/meals/getRestExtraIngredients';
 import type { IMealFood } from '@/domain/meals/types';
 import type { IGuestOrder } from '@/domain/orders/types';
+import { RECOMMENDATION_SORT_PROFILE_LABEL_MAP } from '@/domain/recommendations/labels';
+import {
+	RECOMMENDATION_SORT_PROFILES,
+	type TRecommendationSortProfile,
+} from '@/domain/recommendations/sortProfiles';
 import type { ISuggestParams } from '@/domain/recommendations/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
@@ -68,6 +73,26 @@ type TAlternativesStatus = 'error' | 'idle' | 'pending' | 'success';
 
 const EMPTY_ALTERNATIVES: IIngredientView[] = [];
 const EMPTY_ALTERNATIVES_MAP = new Map<string, IAlternativesEntry>();
+const EMPTY_BEVERAGE_ALTERNATIVES: IBeverageAlternativeView[] = [];
+const EMPTY_BEVERAGE_ALTERNATIVES_MAP = new Map<
+	string,
+	IBeverageAlternativesEntry
+>();
+const FOLLOW_SETTINGS_SORT_PROFILE_KEY = 'follow-settings';
+const SUGGESTED_MEAL_SORT_PROFILE_OPTIONS = [
+	{ label: '跟随全局设置', value: FOLLOW_SETTINGS_SORT_PROFILE_KEY },
+	...RECOMMENDATION_SORT_PROFILES.map((value) => ({
+		label: RECOMMENDATION_SORT_PROFILE_LABEL_MAP[value],
+		value,
+	})),
+];
+const SUGGESTED_MEAL_SORT_PROFILE_OVERRIDE_BY_KEY: ReadonlyMap<
+	string,
+	TRecommendationSortProfile | null
+> = new Map([
+	[FOLLOW_SETTINGS_SORT_PROFILE_KEY, null],
+	...RECOMMENDATION_SORT_PROFILES.map((value) => [value, value] as const),
+]);
 
 interface IAlternativesState {
 	generation: number;
@@ -79,6 +104,16 @@ interface IAlternativesEntry {
 	status: Exclude<TAlternativesStatus, 'idle'>;
 }
 
+interface IBeverageAlternativesEntry {
+	meals: ReadonlyArray<TSuggestedMeal>;
+	status: Exclude<TAlternativesStatus, 'idle'>;
+}
+
+interface IBeverageAlternativesState {
+	generation: number;
+	map: Map<string, IBeverageAlternativesEntry>;
+}
+
 interface ISuggestionsState {
 	activeRequestKey: string | null;
 	generation: number;
@@ -88,12 +123,17 @@ interface ISuggestionsState {
 }
 
 interface ISuggestionResultContext {
+	readonly cooker: TCookerId | null;
 	readonly guestOrder: IGuestOrder;
 	readonly hasMystiaCooker: boolean;
+	readonly hiddenBeverages: ReadonlySet<TBeverageId>;
 	readonly hiddenDlcs: ReadonlySet<TDlc>;
+	readonly hiddenFoods: ReadonlySet<TFoodId>;
 	readonly hiddenIngredients: ReadonlySet<TIngredientId>;
 	readonly isFamousShop: boolean;
+	readonly maxRating: number;
 	readonly popularTrend: IPopularTrend;
+	readonly sortProfile: TRecommendationSortProfile;
 	readonly specialGuest: TSpecialGuestId;
 }
 
@@ -103,6 +143,9 @@ interface IRecordView<TId extends number, TName extends string> {
 }
 
 type IBeverageView = IRecordView<TBeverageId, TBeverageName>;
+type IBeverageAlternativeView = IBeverageView & {
+	price: TSuggestedMeal['price'];
+};
 type ICookerView = IRecordView<TCookerId, TCookerName>;
 type IFoodView = IRecordView<TFoodId, TFoodName> & {
 	displayName: TFoodName | typeof DARK_MATTER_META_MAP.name;
@@ -153,16 +196,24 @@ export function useSuggestedMealsViewModel() {
 
 	const isSuggestEnabled = recommendationPreferencesFacade.enabled.use();
 	const selectedSuggestMealsCooker = suggestedMealsUiStore.cooker.use();
+	const selectedSortProfileOverride =
+		suggestedMealsUiStore.sortProfileOverride.use();
 	const suggestMaxExtraIngredients =
 		recommendationPreferencesFacade.maxExtraIngredients.use();
 	const suggestMaxRating = recommendationPreferencesFacade.maxRating.use();
 	const suggestMaxResults = recommendationPreferencesFacade.maxResults.use();
+	const suggestSortProfile =
+		recommendationPreferencesFacade.sortProfile.use();
+	const effectiveSortProfile =
+		selectedSortProfileOverride ?? suggestSortProfile;
 
 	const availableFoodCookers = specialGuestStore.availableFoodCookers.use();
 	const selectableMaxExtraIngredients =
 		globalStore.shared.suggestMeals.selectableMaxExtraIngredients.get();
 	const selectableMaxRatings =
 		globalStore.shared.suggestMeals.selectableMaxRatings.get();
+	const selectableMaxResults =
+		globalStore.shared.suggestMeals.selectableMaxResults.get();
 
 	const beverageCatalog = specialGuestStore.instances.beverage.get();
 	const cookerCatalog = specialGuestStore.instances.cooker.get();
@@ -213,6 +264,17 @@ export function useSuggestedMealsViewModel() {
 		[selectableMaxRatings]
 	);
 
+	const selectableMaxResultByKey = useMemo<ReadonlyMap<string, number>>(
+		() =>
+			new Map(
+				selectableMaxResults.map(({ value }) => [
+					value.toString(),
+					value,
+				])
+			),
+		[selectableMaxResults]
+	);
+
 	const selectedCookerKeys = useMemo<Set<string>>(
 		() =>
 			selectedSuggestMealsCooker === null
@@ -234,6 +296,19 @@ export function useSuggestedMealsViewModel() {
 	const selectedMaxRatingKeys = useMemo<Set<string>>(
 		() => new Set([suggestMaxRating.toString()]),
 		[suggestMaxRating]
+	);
+
+	const selectedMaxResultKeys = useMemo<Set<string>>(
+		() => new Set([suggestMaxResults.toString()]),
+		[suggestMaxResults]
+	);
+
+	const selectedSortProfileKeys = useMemo<Set<string>>(
+		() =>
+			new Set([
+				selectedSortProfileOverride ?? FOLLOW_SETTINGS_SORT_PROFILE_KEY,
+			]),
+		[selectedSortProfileOverride]
 	);
 
 	const handleCookerChange = useCallback(
@@ -274,6 +349,27 @@ export function useSuggestedMealsViewModel() {
 		},
 		[selectableMaxRatingByKey]
 	);
+
+	const handleMaxResultsChange = useCallback(
+		(keys: Selection) => {
+			const [value] =
+				selectionToKnownValues(keys, selectableMaxResultByKey) ?? [];
+			if (value !== undefined) {
+				recommendationPreferencesFacade.maxResults.set(value);
+			}
+		},
+		[selectableMaxResultByKey]
+	);
+
+	const handleSortProfileChange = useCallback((keys: Selection) => {
+		const values = selectionToKnownValues(
+			keys,
+			SUGGESTED_MEAL_SORT_PROFILE_OVERRIDE_BY_KEY
+		);
+		if (values !== null) {
+			suggestedMealsUiStore.sortProfileOverride.set(values[0] ?? null);
+		}
+	}, []);
 
 	useEffect(() => {
 		if (currentFood === null) {
@@ -317,6 +413,7 @@ export function useSuggestedMealsViewModel() {
 						maxRating: suggestMaxRating,
 						maxResults: suggestMaxResults,
 						popularTrend: currentGuestPopularTrend,
+						sortProfile: effectiveSortProfile,
 						specialGuest: currentSpecialGuest,
 					},
 		[
@@ -325,6 +422,7 @@ export function useSuggestedMealsViewModel() {
 			currentGuestOrder,
 			currentGuestPopularTrend,
 			currentFood,
+			effectiveSortProfile,
 			hasMystiaCooker,
 			hiddenBeverages,
 			hiddenDlcs,
@@ -363,12 +461,17 @@ export function useSuggestedMealsViewModel() {
 		}
 
 		const resultContext: ISuggestionResultContext = {
+			cooker: suggestParams.cooker,
 			guestOrder: { ...suggestParams.guestOrder },
 			hasMystiaCooker: suggestParams.hasMystiaCooker,
+			hiddenBeverages: new Set(suggestParams.hiddenBeverages),
 			hiddenDlcs: new Set(suggestParams.hiddenDlcs),
+			hiddenFoods: new Set(suggestParams.hiddenFoods),
 			hiddenIngredients: new Set(suggestParams.hiddenIngredients),
 			isFamousShop: suggestParams.isFamousShop,
+			maxRating: suggestParams.maxRating,
 			popularTrend: { ...suggestParams.popularTrend },
+			sortProfile: suggestParams.sortProfile,
 			specialGuest: suggestParams.specialGuest,
 		};
 		const memorySuggestions = readSuggestedMealsMemoryCache(suggestParams);
@@ -743,17 +846,25 @@ export function useSuggestedMealsViewModel() {
 		currentFood,
 		currentGuestName,
 		currentGuestOrder: displayGuestOrder,
+		effectiveSortProfileLabel:
+			RECOMMENDATION_SORT_PROFILE_LABEL_MAP[effectiveSortProfile],
 		handleCookerChange,
 		handleMaxExtraChange,
 		handleMaxRatingChange,
+		handleMaxResultsChange,
+		handleSortProfileChange,
 		isActive,
 		isHighAppearance,
 		isVisible,
 		selectableMaxExtraIngredients,
 		selectableMaxRatings,
+		selectableMaxResults,
 		selectedCookerKeys,
 		selectedMaxExtraKeys,
 		selectedMaxRatingKeys,
+		selectedMaxResultKeys,
+		selectedSortProfileKeys,
+		sortProfileOptions: SUGGESTED_MEAL_SORT_PROFILE_OPTIONS,
 		suggestedMealRows,
 		suggestionStatus,
 		suggestMaxRating,

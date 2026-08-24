@@ -85,16 +85,23 @@ export default function SuggestedMealCard() {
 		currentFood,
 		currentGuestName,
 		currentGuestOrder,
+		effectiveSortProfileLabel,
 		handleCookerChange,
 		handleMaxExtraChange,
 		handleMaxRatingChange,
+		handleMaxResultsChange,
+		handleSortProfileChange,
 		isHighAppearance,
 		isVisible,
 		selectableMaxExtraIngredients,
 		selectableMaxRatings,
+		selectableMaxResults,
 		selectedCookerKeys,
 		selectedMaxExtraKeys,
 		selectedMaxRatingKeys,
+		selectedMaxResultKeys,
+		selectedSortProfileKeys,
+		sortProfileOptions,
 		suggestMaxRating,
 		suggestedMealRows,
 		suggestionStatus,
@@ -131,6 +138,10 @@ export default function SuggestedMealCard() {
 	);
 	const maxExtraSelectClassNames = useMemo(
 		() => ({ base: 'min-w-20', ...selectClassNames }),
+		[selectClassNames]
+	);
+	const sortProfileSelectClassNames = useMemo(
+		() => ({ base: 'min-w-28', ...selectClassNames }),
 		[selectClassNames]
 	);
 	const cardClassNames = useMemo(
@@ -172,7 +183,7 @@ export default function SuggestedMealCard() {
 				: null;
 
 		const cookerSelect = (
-			<div className="flex flex-col gap-x-2 md:flex-row md:items-center md:justify-between xl:flex-col xl:items-start xl:justify-start 3xl:flex-row 3xl:items-center 3xl:justify-between">
+			<div className="flex items-center justify-between gap-2">
 				<span
 					className={cn(
 						'inline-flex items-center gap-1 whitespace-nowrap text-small font-medium leading-8 text-default-700',
@@ -196,142 +207,256 @@ export default function SuggestedMealCard() {
 						</PopoverTrigger>
 						<PopoverContent>
 							<div className="max-w-80 space-y-1.5 p-1 text-tiny text-default-700">
+								<p className="font-medium">会推荐什么：</p>
+								<Ol className="space-y-0.5">
+									<Ol.Li>
+										什么都没选：搭配料理、酒水和额外食材
+									</Ol.Li>
+									<Ol.Li>
+										只选了料理：补上酒水和额外食材
+									</Ol.Li>
+									<Ol.Li>
+										只选了酒水：补上料理和额外食材
+									</Ol.Li>
+									<Ol.Li>
+										料理和酒水都选了：只补额外食材
+									</Ol.Li>
+								</Ol>
 								<p className="font-medium">
-									根据当前状态自动推荐套餐：
+									当前策略：{effectiveSortProfileLabel}
 								</p>
 								<Ol className="space-y-0.5">
-									<Ol.Li>未选料理和酒水：搜索全部组合</Ol.Li>
-									<Ol.Li>已选料理：推荐酒水和额外食材</Ol.Li>
-									<Ol.Li>已选酒水：推荐料理和额外食材</Ol.Li>
-									<Ol.Li>已选料理和酒水：推荐额外食材</Ol.Li>
+									<Ol.Li>
+										容易获取：评级相同时，优先当前稀客所属内容和更合适的获取路径
+									</Ol.Li>
+									<Ol.Li>
+										低价优先：评级相同时，套餐总价越低越靠前
+									</Ol.Li>
+									<Ol.Li>
+										高价优先：评级相同时，套餐总价越高越靠前
+									</Ol.Li>
+									<Ol.Li>
+										少料易做：评级相同时，料理本身和额外食材的总成本越低越靠前
+									</Ol.Li>
 								</Ol>
-								<p className="font-medium">推荐权重方案：</p>
+								<p className="font-medium">筛选和排序：</p>
 								<Ol className="space-y-0.5">
 									<Ol.Li>
-										仅展示不超过“{maxRatingLabel}
-										”评级的结果，高评分优先
+										结果按评级从高到低排列，最高显示到“
+										{maxRatingLabel}”
 									</Ol.Li>
 									<Ol.Li>
-										同评分下依次比较内容与路径归属、稀客地区、地图阶段、预算和获取便利度；额外食材还会比较资源成本
+										评级相同时，还会参考内容归属、稀客所在地区、地图进度、预算和获取难度；有额外食材时也会计算材料成本
 									</Ol.Li>
 									<Ol.Li>
-										首条为完整排序第一名；后续结果保持评级、内容和路径优先，并尽量展示不同料理和酒水
-									</Ol.Li>
-									<Ol.Li>
-										可限制套餐的额外食材数量，超出上限的套餐将被排除
-									</Ol.Li>
-									<Ol.Li>
-										超出顾客预算偏好的套餐会被降权，超出预算上限的将被排除
+										超过加料上限的套餐不会显示。价格略高于预算偏好时会靠后，超过顾客可接受的预算上限后不会显示
 									</Ol.Li>
 								</Ol>
-								<p>
-									自动推荐会搜索已启用数据集中的非钓鱼候选，并优先当前稀客所属内容；已在“设置”页面中选择隐藏的项目不会出现。
-								</p>
-								<p>
-									结果受“流行趋势”和“明星店”效果影响，点击额外食材图标可查看可替换食材。
-								</p>
+								<p className="font-medium">结果说明：</p>
+								<Ol className="space-y-0.5">
+									<Ol.Li>
+										容易获取会保留完整排序第一名，后续尽量换用不同的料理和酒水
+									</Ol.Li>
+									<Ol.Li>
+										低价、高价和少料易做会按各自的顺序排列，并过滤重复的料理或酒水，因此结果可能少于设置的条数
+									</Ol.Li>
+									<Ol.Li>
+										只使用已启用且未隐藏的非钓鱼项目，并优先选择当前稀客所属内容
+									</Ol.Li>
+									<Ol.Li>
+										推荐结果会受“流行趋势”和“明星店”效果影响
+									</Ol.Li>
+									<Ol.Li>
+										没指定酒水时，点击推荐酒水可查看可替换酒水；点击额外食材可查看可替换食材
+									</Ol.Li>
+								</Ol>
 								<p className="font-medium text-danger-700">
-									此处调整的筛选条件仅在当前页面生效，如需永久保存请前往“设置”页面。
+									厨具和推荐策略只在当前浏览器标签页生效。选择“跟随全局设置”后，这里会使用默认推荐策略；评级、加料上限和推荐条数会保存到全局设置。
 								</p>
 							</div>
 						</PopoverContent>
 					</Popover>
 				</span>
-				<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-small text-default-700 md:flex-nowrap xl:flex-wrap 2xl:flex-nowrap">
-					{currentFood === null && (
-						<label className="flex shrink-0 items-center gap-2">
-							<span className="cursor-auto whitespace-nowrap">
-								厨具
-							</span>
-							<Select
-								disableAnimation={isReducedMotion}
-								isVirtualized={false}
-								items={availableFoodCookers}
-								placeholder="全部"
-								selectedKeys={selectedCookerKeys}
-								size="sm"
-								variant="flat"
-								onSelectionChange={handleCookerChange}
-								aria-label="选择推荐套餐使用的厨具"
-								title="选择推荐套餐使用的厨具"
-								popoverProps={selectPopoverProps}
-								classNames={cookerSelectClassNames}
-							>
-								{({ id, name }) => (
-									<SelectItem
-										key={id.toString()}
-										textValue={name}
+				<Popover
+					shouldBlockScroll
+					placement="bottom-end"
+					shouldCloseOnScroll={false}
+				>
+					<PopoverTrigger>
+						<Button
+							size="sm"
+							variant="flat"
+							aria-label="打开“猜您想要”推荐设置"
+							className="h-6 min-h-6"
+							title="打开“猜您想要”推荐设置"
+						>
+							推荐设置
+						</Button>
+					</PopoverTrigger>
+					<PopoverContent className="max-h-[calc(100dvh-2rem)] w-72 max-w-[calc(100vw-2rem)] overflow-y-auto px-3.5 py-2">
+						<div className="w-full space-y-3 text-default-700">
+							<p className="text-tiny">
+								厨具和推荐策略仅在当前标签页生效；修改评级、加料上限或推荐条数会保存到全局设置。
+							</p>
+							{currentFood === null && (
+								<label className="block space-y-1">
+									<span className="block cursor-auto px-1 text-tiny font-medium">
+										厨具
+									</span>
+									<Select
+										disableAnimation={isReducedMotion}
+										isVirtualized={false}
+										items={availableFoodCookers}
+										placeholder="全部"
+										selectedKeys={selectedCookerKeys}
+										size="sm"
+										variant="flat"
+										onSelectionChange={handleCookerChange}
+										aria-label="选择推荐套餐使用的厨具"
+										title="选择推荐套餐使用的厨具"
+										popoverProps={selectPopoverProps}
+										classNames={cookerSelectClassNames}
 									>
-										<div className="flex items-center">
-											<Sprite
-												target="cooker"
-												recordId={id}
-												size={1}
-											/>
-											<span className="ml-1">{name}</span>
-										</div>
-									</SelectItem>
-								)}
-							</Select>
-						</label>
-					)}
-					<label className="flex shrink-0 items-center gap-2">
-						<span className="cursor-auto whitespace-nowrap">
-							评级上限
-						</span>
-						<Select
-							disallowEmptySelection
-							disableAnimation={isReducedMotion}
-							isVirtualized={false}
-							items={selectableMaxRatings}
-							selectedKeys={selectedMaxRatingKeys}
-							size="sm"
-							variant="flat"
-							onSelectionChange={handleMaxRatingChange}
-							aria-label="选择推荐套餐的最高评级"
-							title="选择推荐套餐的最高评级"
-							popoverProps={selectPopoverProps}
-							classNames={maxRatingSelectClassNames}
-						>
-							{({ label, value }) => (
-								<SelectItem
-									key={value.toString()}
-									textValue={label}
-								>
-									{label}
-								</SelectItem>
+										{({ id, name }) => (
+											<SelectItem
+												key={id.toString()}
+												textValue={name}
+											>
+												<div className="flex items-center">
+													<Sprite
+														target="cooker"
+														recordId={id}
+														size={1}
+													/>
+													<span className="ml-1">
+														{name}
+													</span>
+												</div>
+											</SelectItem>
+										)}
+									</Select>
+								</label>
 							)}
-						</Select>
-					</label>
-					<label className="flex shrink-0 items-center gap-2">
-						<span className="cursor-auto whitespace-nowrap">
-							加料上限
-						</span>
-						<Select
-							disableAnimation={isReducedMotion}
-							isVirtualized={false}
-							items={selectableMaxExtraIngredients}
-							placeholder="不限"
-							selectedKeys={selectedMaxExtraKeys}
-							size="sm"
-							variant="flat"
-							onSelectionChange={handleMaxExtraChange}
-							aria-label="选择推荐套餐的额外食材上限"
-							title="选择推荐套餐的额外食材上限"
-							popoverProps={selectPopoverProps}
-							classNames={maxExtraSelectClassNames}
-						>
-							{({ label, value }) => (
-								<SelectItem
-									key={value === null ? '' : value.toString()}
-									textValue={label}
+							<label className="block space-y-1">
+								<span className="block cursor-auto px-1 text-tiny font-medium">
+									推荐策略
+								</span>
+								<Select
+									disallowEmptySelection
+									disableAnimation={isReducedMotion}
+									isVirtualized={false}
+									items={sortProfileOptions}
+									selectedKeys={selectedSortProfileKeys}
+									selectionMode="single"
+									size="sm"
+									variant="flat"
+									onSelectionChange={handleSortProfileChange}
+									aria-label="选择猜您想要推荐策略；跟随全局设置时实时使用默认推荐策略"
+									title="选择猜您想要推荐策略；跟随全局设置时实时使用默认推荐策略"
+									popoverProps={selectPopoverProps}
+									classNames={sortProfileSelectClassNames}
 								>
-									{label}
-								</SelectItem>
-							)}
-						</Select>
-					</label>
-				</div>
+									{({ label, value }) => (
+										<SelectItem
+											key={value}
+											textValue={label}
+										>
+											{label}
+										</SelectItem>
+									)}
+								</Select>
+							</label>
+							<label className="block space-y-1">
+								<span className="block cursor-auto px-1 text-tiny font-medium">
+									推荐条数
+								</span>
+								<Select
+									disallowEmptySelection
+									disableAnimation={isReducedMotion}
+									isVirtualized={false}
+									items={selectableMaxResults}
+									selectedKeys={selectedMaxResultKeys}
+									size="sm"
+									variant="flat"
+									onSelectionChange={handleMaxResultsChange}
+									aria-label="选择推荐套餐的推荐条数；修改后会保存到全局设置"
+									title="选择推荐套餐的推荐条数；修改后会保存到全局设置"
+									popoverProps={selectPopoverProps}
+									classNames={maxExtraSelectClassNames}
+								>
+									{({ value }) => (
+										<SelectItem
+											key={value.toString()}
+											textValue={value.toString()}
+										>
+											{value}
+										</SelectItem>
+									)}
+								</Select>
+							</label>
+							<label className="block space-y-1">
+								<span className="block cursor-auto px-1 text-tiny font-medium">
+									评级上限
+								</span>
+								<Select
+									disallowEmptySelection
+									disableAnimation={isReducedMotion}
+									isVirtualized={false}
+									items={selectableMaxRatings}
+									selectedKeys={selectedMaxRatingKeys}
+									size="sm"
+									variant="flat"
+									onSelectionChange={handleMaxRatingChange}
+									aria-label="选择推荐套餐的最高评级"
+									title="选择推荐套餐的最高评级"
+									popoverProps={selectPopoverProps}
+									classNames={maxRatingSelectClassNames}
+								>
+									{({ label, value }) => (
+										<SelectItem
+											key={value.toString()}
+											textValue={label}
+										>
+											{label}
+										</SelectItem>
+									)}
+								</Select>
+							</label>
+							<label className="block space-y-1">
+								<span className="block cursor-auto px-1 text-tiny font-medium">
+									加料上限
+								</span>
+								<Select
+									disableAnimation={isReducedMotion}
+									isVirtualized={false}
+									items={selectableMaxExtraIngredients}
+									placeholder="不限"
+									selectedKeys={selectedMaxExtraKeys}
+									size="sm"
+									variant="flat"
+									onSelectionChange={handleMaxExtraChange}
+									aria-label="选择推荐套餐的额外食材上限"
+									title="选择推荐套餐的额外食材上限"
+									popoverProps={selectPopoverProps}
+									classNames={maxExtraSelectClassNames}
+								>
+									{({ label, value }) => (
+										<SelectItem
+											key={
+												value === null
+													? ''
+													: value.toString()
+											}
+											textValue={label}
+										>
+											{label}
+										</SelectItem>
+									)}
+								</Select>
+							</label>
+						</div>
+					</PopoverContent>
+				</Popover>
 			</div>
 		);
 

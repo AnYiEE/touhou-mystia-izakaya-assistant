@@ -29,6 +29,7 @@ import type { TIngredientId } from '@/domain/data/ingredients/types';
 import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
+import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';
 
 import { specialGuestPlanCatalogPort } from '@/features/catalog/guests/special/client/state/specialGuestPlanCatalogPort';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
@@ -80,6 +81,7 @@ export default function GuestGroup({
 	onToggleExpanded,
 	popoverPortalProps,
 	recommendationSessionKey,
+	recommendationSortProfile,
 }: {
 	group: IResolvedSpecialGuestPlanGroup;
 	isExpanded: boolean;
@@ -92,6 +94,7 @@ export default function GuestGroup({
 	onToggleExpanded: (specialGuest: TSpecialGuestId) => void;
 	popoverPortalProps: Pick<IPopoverProps, 'portalContainer'>;
 	recommendationSessionKey: string;
+	recommendationSortProfile: TRecommendationSortProfile;
 }) {
 	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
@@ -127,6 +130,7 @@ export default function GuestGroup({
 			maxResults: recommendedMaxResults,
 			popularTrend,
 			sessionKey: recommendationSessionKey,
+			sortProfile: recommendationSortProfile,
 			specialGuest: group.specialGuest,
 		});
 	const [recommendedRenderCount, setRecommendedRenderCount] = useState(0);

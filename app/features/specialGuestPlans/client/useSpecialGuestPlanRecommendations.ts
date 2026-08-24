@@ -7,6 +7,7 @@ import type { TFoodId } from '@/domain/data/foods/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
+import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import { RECOMMENDATION_CACHE_READ_GRACE_MS } from '@/features/recommendations/client/cache/constants';
@@ -60,6 +61,7 @@ interface IUseSpecialGuestPlanRecommendationsParams {
 	readonly maxResults: number;
 	readonly popularTrend: IPopularTrend;
 	readonly sessionKey: string;
+	readonly sortProfile: TRecommendationSortProfile;
 	readonly specialGuest: TSpecialGuestId;
 }
 
@@ -82,6 +84,7 @@ export function useSpecialGuestPlanRecommendations({
 	maxResults,
 	popularTrend,
 	sessionKey,
+	sortProfile,
 	specialGuest,
 }: IUseSpecialGuestPlanRecommendationsParams) {
 	const cacheKey = useMemo(
@@ -96,6 +99,7 @@ export function useSpecialGuestPlanRecommendations({
 				maxRating,
 				maxResults,
 				popularTrend,
+				sortProfile,
 				specialGuest,
 			}),
 		[
@@ -108,6 +112,7 @@ export function useSpecialGuestPlanRecommendations({
 			maxRating,
 			maxResults,
 			popularTrend,
+			sortProfile,
 			specialGuest,
 		]
 	);
@@ -209,6 +214,7 @@ export function useSpecialGuestPlanRecommendations({
 									},
 									popularTrend,
 									session: recommendationSession,
+									sortProfile,
 									specialGuest,
 									startIndex: initialNextIndex,
 								},
@@ -291,6 +297,7 @@ export function useSpecialGuestPlanRecommendations({
 		popularTrend,
 		recommendationSession,
 		sessionKey,
+		sortProfile,
 		specialGuest,
 	]);
 

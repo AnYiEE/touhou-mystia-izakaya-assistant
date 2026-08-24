@@ -3,6 +3,7 @@ import { cn } from '@heroui/theme';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 
+import { getDisplayedSpecialGuestPlan } from '@/features/specialGuestPlans/client/state/planState';
 import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/state/store';
 
 import {
@@ -26,6 +27,9 @@ export default function SpecialGuestPlanDrawerSkeleton() {
 	const { isHighAppearance } = useDesignPreferences();
 	const isControlsCollapsed =
 		specialGuestPlansStore.shared.drawer.isControlsCollapsed.use();
+	const plans = specialGuestPlansStore.persistence.plans.use();
+	const isRecommendedMealSource =
+		getDisplayedSpecialGuestPlan(plans).mealSource === 'recommended';
 
 	return (
 		<div aria-hidden className={getDrawerLayoutClassName()}>
@@ -142,6 +146,16 @@ export default function SpecialGuestPlanDrawerSkeleton() {
 											DRAWER_SKELETON_BLOCK_CLASSNAME,
 									})}
 								/>
+								{isRecommendedMealSource && (
+									<div
+										className={getDrawerSkeletonClassName({
+											className: 'h-12 rounded-small',
+											isHighAppearance,
+											toneClassName:
+												DRAWER_SKELETON_BLOCK_CLASSNAME,
+										})}
+									/>
+								)}
 							</div>
 						</div>
 

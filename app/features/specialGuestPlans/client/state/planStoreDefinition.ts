@@ -8,6 +8,7 @@ import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
 import type { ISpecialGuestSavedMeal } from '@/domain/meals/types';
+import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
@@ -47,6 +48,7 @@ export const specialGuestPlansStateDefinition = {
 			expandedSpecialGuests: new Set<TSpecialGuestId>(),
 			isControlsCollapsed: false,
 			isOpen: false,
+			sortProfileOverride: null as TRecommendationSortProfile | null,
 		},
 	},
 };

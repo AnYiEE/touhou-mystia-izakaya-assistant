@@ -38,6 +38,7 @@ export function buildSuggestMealsCacheKey({
 	maxRating,
 	maxResults,
 	popularTrend,
+	sortProfile,
 	specialGuest,
 }: ISuggestParams) {
 	return [
@@ -59,6 +60,7 @@ export function buildSuggestMealsCacheKey({
 		maxRating.toString(),
 		popularTrend.tag ?? '',
 		popularTrend.isNegative ? '1' : '0',
+		sortProfile,
 		specialGuest,
 	].join('|');
 }
