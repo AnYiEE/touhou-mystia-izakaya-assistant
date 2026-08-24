@@ -438,28 +438,24 @@ Mod 连续两个周期没有收到对应 pong 时可以用标准 code `1011` 和
 	"type": "recommendation.request",
 	"request_id": "req-01J2Y8G5VA6JZ9M3QAX0NQ8G4B",
 	"payload": {
-		"customer": "比那名居天子",
-		"order": { "recipe_tag": "昂贵", "beverage_tag": "高酒精" },
+		"special_guest_id": 9,
+		"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
 		"selection": {
-			"recipe": {
-				"name": "桃花羹",
-				"recipe_id": 39,
-				"extra_ingredients": ["蜂蜜"]
-			},
-			"beverage": "教父"
+			"food": { "recipe_id": 39, "extra_ingredient_ids": [24] },
+			"beverage_id": 17
 		},
 		"options": {
-			"cooker": null,
+			"cooker_id": null,
 			"mystia_cooker": false,
 			"famous_shop": false,
-			"popular_trend": { "tag": "果味", "negative": false },
 			"max_extra_ingredients": 2,
 			"max_rating": 4,
 			"max_results": 5,
+			"recommendation_strategy": "low_price",
 			"availability": {
-				"recipes": { "include": ["桃花羹"] },
-				"beverages": { "include": ["教父"] },
-				"ingredients": { "include": ["蜂蜜"], "exclude": [] }
+				"foods": { "include": [33] },
+				"beverages": { "include": [17] },
+				"ingredients": { "include": [24], "exclude": [] }
 			}
 		}
 	}
@@ -500,14 +496,10 @@ Mod 连续两个周期没有收到对应 pong 时可以用标准 code `1011` 和
 	"request_id": "req-01J2Y8G5VA6JZ9M3QAX0NQ8G4B",
 	"meals": [
 		{
-			"beverage": "教父",
+			"beverage_id": 17,
 			"price": 235,
 			"rating": "exgood",
-			"recipe": {
-				"name": "桃花羹",
-				"recipe_id": 39,
-				"extra_ingredients": ["蜂蜜"]
-			}
+			"food": { "recipe_id": 39, "extra_ingredient_ids": [24] }
 		}
 	]
 }
@@ -515,16 +507,17 @@ Mod 连续两个周期没有收到对应 pong 时可以用标准 code `1011` 和
 
 示例只说明字段结构，不表示示例请求一定产生该组合。没有合法推荐时返回空 `meals`，不视为错误。
 
-| 字段                               | 类型       | 说明                                             |
-| ---------------------------------- | ---------- | ------------------------------------------------ |
-| `request_id`                       | `string`   | 与请求相同。                                     |
-| `meals`                            | `array`    | 按现有规则稳定选择，第一项是综合权重最高的结果。 |
-| `meals[].beverage`                 | `string`   | 酒水标准名称。                                   |
-| `meals[].price`                    | `integer`  | 非负整数；当前业务语义下料理价格与酒水价格之和。 |
-| `meals[].rating`                   | `string`   | `exbad`、`bad`、`norm`、`good` 或 `exgood`。     |
-| `meals[].recipe.name`              | `string`   | 料理标准名称。                                   |
-| `meals[].recipe.recipe_id`         | `integer`  | 实际采用的游戏食谱稳定 ID。                      |
-| `meals[].recipe.extra_ingredients` | `string[]` | 固定和本次新增额外食材的完整列表。               |
+| 字段                                | 类型        | 说明                                                                 |
+| ----------------------------------- | ----------- | -------------------------------------------------------------------- |
+| `request_id`                        | `string`    | 与请求相同。                                                         |
+| `meals`                             | `array`     | 按请求的排序方案稳定选择，第一项是首选结果。                         |
+| `meals[].beverage_id`               | `integer`   | 实际采用的游戏酒水稳定 ID。                                          |
+| `meals[].price`                     | `integer`   | 非负整数；当前业务语义下料理价格与酒水价格之和。                     |
+| `meals[].rating`                    | `string`    | `exbad`、`bad`、`norm`、`good` 或 `exgood`。                         |
+| `meals[].food.recipe_id`            | `integer`   | 实际采用的游戏食谱稳定 ID。                                          |
+| `meals[].food.extra_ingredient_ids` | `integer[]` | 固定和本次新增额外食材的稳定 ID 完整列表；每次出现表示一个食材槽位。 |
+
+`recommendation_strategy` 只改变通过评级、预算、可用范围等硬约束后的最终结果顺序，不新增候选、不改变评级，也不在响应中新增 `recommendation_strategy` 字段。`meals` 的第一项是当前方案的首选套餐。`availability_first` 的第二项及后续项保持评级优先，在当前评级层内优先增加料理和酒水的多样性；候选不足时按原顺序回退并尽量补足 `max_results`，因此这些结果不能解释为严格的全局第 2～N 名。`low_price`、`high_price` 和 `material_cost_first` 则保持各自专项排序，从前往后过滤重复料理或酒水，不再回退补足，因此结果可能少于 `max_results`。同一道料理的不同 `recipe_id` 是不同食谱候选，但仍属于同一道料理，不能增加料理多样性。同一网页构建、同一输入下顺序保持稳定。
 
 `meals` 的第一项固定为综合权重最高的套餐。第二项及后续项保持评级优先，在当前最高评级层内优先增加料理和酒水的多样性，因此不能解释为严格的全局权重第 2～N 名。同一道料理的不同 `recipe_id` 是不同食谱候选，但仍属于同一道料理，不能增加料理多样性。候选不足时按原权重顺序回退并尽量补足 `max_results`；同一网页构建、同一输入下顺序保持稳定。`extra_ingredients` 在业务上是无重复集合，其数组顺序不表示食材之间的推荐优先级。Mod 比较套餐身份时必须包含 `recipe_id`，但不能依赖额外食材的排列顺序。
 
@@ -572,77 +565,73 @@ Mod 连续两个周期没有收到对应 pong 时可以用标准 code `1011` 和
 
 ## 八、推荐请求参数
 
-`recommendation.request.payload` 是一个 JSON object，顶层只接受 `customer`、`order`、`selection` 和 `options`。
+`recommendation.request.payload` 是一个 JSON object，顶层只接受 `special_guest_id`、`order`、`selection` 和 `options`。
 
-| 字段        | 类型     | 必填 | 说明                                     |
-| ----------- | -------- | ---- | ---------------------------------------- |
-| `customer`  | `string` | 是   | 稀客的简体中文标准名称。                 |
-| `order`     | `object` | 条件 | 本次点单的料理标签和酒水标签。           |
-| `selection` | `object` | 否   | Mod 已经固定的料理、酒水和额外食材。     |
-| `options`   | `object` | 否   | 厨具、趋势、评级上限、结果数和可用范围。 |
+| 字段               | 类型      | 必填 | 说明                                               |
+| ------------------ | --------- | ---- | -------------------------------------------------- |
+| `special_guest_id` | `integer` | 是   | 稀客的游戏稳定 ID。                                |
+| `order`            | `object`  | 条件 | 本次点单的料理标签 ID 和酒水标签 ID。              |
+| `selection`        | `object`  | 否   | Mod 已经固定的料理、酒水和额外食材 ID。            |
+| `options`          | `object`  | 否   | 厨具、趋势、评级上限、结果数、排序方案和可用范围。 |
 
-未知字段和未知标准名称都返回 `invalid-request`，不能静默忽略。
+未知字段和未知或当前不可用的 ID 都返回 `invalid-request`，不能静默忽略。
 
-本协议直接复用游戏数据中的简体中文标准名称和标签，不维护第二份对外数据目录。顾客、料理、酒水、食材、厨具名称以及标签都是大小写敏感、按 UTF-8 字符逐字匹配的协议 token，不是可以独立修改的展示文案；V1 发布后，已经公开的 token 不得改名、复用或改变含义。网页当前内置的游戏数据是合法值和可用范围的校验来源，后续新增游戏内容可以增加新 token；Mod 使用自身游戏数据构造请求，遇到网页尚未收录、生产代码禁用或不符合当前顾客 DLC 范围的内容时处理 `invalid-request`。
+本协议直接复用游戏的 SpecialGuest、Tag、Beverage、Food、Recipe、Ingredient 和 Cooker 稳定 ID，不维护名称 alias 或第二份对外游戏数据目录。网页当前内置的游戏数据是 ID 分类、合法值和可用范围的校验来源；Mod 使用自身游戏数据构造请求，遇到网页尚未收录、生产代码禁用或不符合当前稀客 DLC 范围的 ID 时处理 `invalid-request`。
 
 ### 8.1 `order`
 
 ```json
-{ "recipe_tag": "昂贵", "beverage_tag": "高酒精" }
+{ "food_tag_id": -3, "beverage_tag_id": 2 }
 ```
 
-两项类型都是 `string` 或 `null`。未提供 `order` 时按两项都为 `null` 处理：
+两项类型都是 JSON 安全整数 ID 或 `null`。未提供 `order` 时按两项都为 `null` 处理：
 
 - 普通厨具语义下，两项都必须是有效标签。
 - `mystia_cooker` 为 `true` 且至少固定了一种料理或酒水时，允许其中一项或两项为 `null`。
 - 从零推荐完整套餐时，两项都必须提供，且 `mystia_cooker` 必须为 `false`。
 - 动态流行标签必须同时提供具体 `popular_trend`。
 
-`order` 存在时必须同时包含 `recipe_tag` 和 `beverage_tag`，不能通过省略其中一项表达 `null`。
+`order` 存在时必须同时包含 `food_tag_id` 和 `beverage_tag_id`，不能通过省略其中一项表达 `null`。
 
 ### 8.2 `selection`
 
 ```json
-{
-	"recipe": {
-		"name": "桃花羹",
-		"recipe_id": 39,
-		"extra_ingredients": ["蜂蜜"]
-	},
-	"beverage": "教父"
-}
+{ "food": { "recipe_id": 39, "extra_ingredient_ids": [24] }, "beverage_id": 17 }
 ```
 
-- `recipe.name` 和 `beverage` 使用标准名称。
-- `recipe.recipe_id` 是 JSON 安全整数，在固定料理时必填；它必须属于 `recipe.name` 对应料理。
-- `recipe.extra_ingredients` 默认空数组，不得重复或包含基础食材。
-- 基础食材、厨具和基础烹饪时间都由 `recipe.recipe_id` 指向的具体食谱解析；Mod 不重复传入这些制作属性。
+- `food.recipe_id` 是 JSON 安全整数，在固定料理时必填；它唯一确定具体食谱及其所属 Food。
+- `food.extra_ingredient_ids` 默认空数组；允许同一 ID 多次出现，也允许额外槽位复用基础食材，每次出现都占用一个食材槽位。
+- `beverage_id` 是固定酒水的游戏稳定 ID。
+- 基础食材、厨具和基础烹饪时间都由 `food.recipe_id` 指向的具体食谱解析；Mod 不重复传入这些制作属性。
 - 具体食谱的基础食材与全部额外食材总数不得超过 5。
 - 固定项必须符合稀客 DLC 范围和生产代码中的禁用数据规则。
 - 固定料理和酒水必须位于各自类别的最终可用范围内。
 - 固定料理的基础食材不受 `availability.ingredients` 限制；固定的额外食材必须位于最终食材可用范围内。
 - 固定项不会被算法替换。
 
-显式提供空 `selection` object 与完全省略 `selection` 等价，均表示没有固定料理或酒水。`selection.recipe` 存在时，`recipe_id` 必须提供，`extra_ingredients` 可以省略并按空数组处理。未知 ID、料理与 ID 不匹配、旧 V1 缺少 ID 的形状都返回 `invalid-request`，不得回退到料理的默认食谱。
+显式提供空 `selection` object 与完全省略 `selection` 等价，均表示没有固定料理或酒水。`selection.food` 存在时，`recipe_id` 必须提供，`extra_ingredient_ids` 可以省略并按空数组处理。未知、不可用或分类错误的 ID 都返回 `invalid-request`，不得回退到料理的默认食谱。
 
 ### 8.3 `options`
 
-| 字段                    | 类型                | 默认值  | 说明                                                       |
-| ----------------------- | ------------------- | ------- | ---------------------------------------------------------- |
-| `cooker`                | `string` 或 `null`  | `null`  | 未固定料理时按食谱厨具过滤；`null` 表示不限。              |
-| `mystia_cooker`         | `boolean`           | `false` | 是否按夜雀厨具语义评级。                                   |
-| `famous_shop`           | `boolean`           | `false` | 是否应用名店标签规则。                                     |
-| `popular_trend`         | `object` 或 `null`  | `null`  | `{ "tag": string, "negative": boolean }`。                 |
-| `max_extra_ingredients` | `integer` 或 `null` | `null`  | 额外食材总数上限，合法值为 `0～4` 或 `null`。              |
-| `max_rating`            | `integer`           | `4`     | 评级硬上限，合法值为 `0～4`。                              |
-| `max_results`           | `integer`           | `5`     | 最多返回结果数，合法值为 `1～10`；不限制内部候选扫描范围。 |
-| `availability`          | `object`            | 不限制  | 按料理、酒水和食材声明白名单与黑名单。                     |
+| 字段                      | 类型                | 默认值                | 说明                                                                            |
+| ------------------------- | ------------------- | --------------------- | ------------------------------------------------------------------------------- |
+| `cooker_id`               | `integer` 或 `null` | `null`                | 未固定料理时按食谱厨具 ID 过滤；`null` 表示不限。                               |
+| `mystia_cooker`           | `boolean`           | `false`               | 是否按夜雀厨具语义评级。                                                        |
+| `famous_shop`             | `boolean`           | `false`               | 是否应用名店标签规则。                                                          |
+| `popular_trend`           | `object` 或 `null`  | `null`                | `{ "food_tag_id": integer, "negative": boolean }`。                             |
+| `max_extra_ingredients`   | `integer` 或 `null` | `null`                | 额外食材总数上限，合法值为 `0～4` 或 `null`。                                   |
+| `max_rating`              | `integer`           | `4`                   | 评级硬上限，合法值为 `0～4`。                                                   |
+| `max_results`             | `integer`           | `5`                   | 最多返回结果数，合法值为 `1～10`；不限制内部候选扫描范围。                      |
+| `recommendation_strategy` | `string`            | `material_cost_first` | 只允许 `availability_first`、`low_price`、`high_price`、`material_cost_first`。 |
+| `availability`            | `object`            | 不限制                | 按 Food、Beverage 和 Ingredient ID 声明白名单与黑名单。                         |
 
-已固定料理时，`cooker` 必须省略或为 `null`，厨具由 `recipe_id` 指向的食谱推导。未固定料理时，厨具条件作用于具体食谱候选；同一道料理下不使用该厨具的其他食谱不会进入候选。`max_extra_ingredients` 包含已经固定的额外食材，不是“本次最多再加几个”。
+已固定料理时，`cooker_id` 必须省略或为 `null`，厨具由 `recipe_id` 指向的食谱推导。未固定料理时，厨具条件作用于具体食谱候选；同一道料理下不使用该厨具的其他食谱不会进入候选。`max_extra_ingredients` 包含已经固定的额外食材，不是“本次最多再加几个”。
 
-`availability` 可以包含 `recipes`、`beverages` 和 `ingredients`，每个类别都是只允许 `include`、`exclude` 两个标准名称数组的 object。缺少整个 `availability`、缺少某个类别或显式空类别 object 均表示不限制该类别。类别中缺少 `include` 时以当前顾客 DLC 和生产数据规则允许的全部项目为初始集合；显式 `include: []` 表示该类别没有可用项。缺少 `exclude` 或显式 `exclude: []` 表示不额外排除。
+`recommendation_strategy` 省略时与显式 `material_cost_first` 等价。它只改变最终结果顺序，不读取网页永久偏好或页面临时状态。`null`、非字符串、开发阶段使用过的 `balanced`、`save_ingredients` 和其他字符串都返回 `invalid-request`，诊断路径为 `payload.options.recommendation_strategy`；`recommendationStrategy` 等未知 option 键以及尚未发布的旧 `sort_profile` 都在 `payload.options` 路径返回 `invalid-request`，不提供兼容层。
 
-每个类别的最终可用集合固定为 `include（缺省为全集）− exclude`。同一名称可以同时出现在两个数组中，此时黑名单优先且该名称不可用；单个数组内部不得重复。所有名称仍必须是网页已收录、符合当前顾客 DLC 且未被生产规则禁用的标准名称。
+`availability` 可以包含 `foods`、`beverages` 和 `ingredients`，每个类别都是只允许 `include`、`exclude` 两个同分类稳定 ID 数组的 object。缺少整个 `availability`、缺少某个类别或显式空类别 object 均表示不限制该类别。类别中缺少 `include` 时以当前稀客 DLC 和生产数据规则允许的全部项目为初始集合；显式 `include: []` 表示该类别没有可用项。缺少 `exclude` 或显式 `exclude: []` 表示不额外排除。
+
+每个类别的最终可用集合固定为 `include（缺省为全集）− exclude`。同一 ID 可以同时出现在两个数组中，此时黑名单优先且该 ID 不可用；单个数组内部不得重复。所有 ID 仍必须被网页收录、分类正确、符合当前稀客 DLC 且未被生产规则禁用。
 
 未固定料理时，候选料理本身必须位于最终料理集合内，其全部基础食材和所选额外食材必须位于最终食材集合内；候选酒水必须位于最终酒水集合内。已固定料理时，料理本身仍必须位于最终料理集合内，但其基础食材不受最终食材集合限制，只有固定或算法添加的额外食材受限。已固定酒水必须位于最终酒水集合内。固定项违反这些边界时返回 `invalid-request`；没有固定项时，空最终集合是合法输入并可以正常返回空结果。
 
@@ -1056,61 +1045,66 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 
 ## 十五、验证矩阵
 
-| 场景                   | 断言                                                   |
-| ---------------------- | ------------------------------------------------------ |
-| 无启动 fragment        | 不创建 WebSocket。                                     |
-| fragment 无效          | 清除 fragment，不连接、不持久化。                      |
-| 正式 parser 收到 WS    | 拒绝启动描述，不包含环境分支或降级开关。               |
-| 临时 WS 联调补丁       | 只用于 localhost 验收，完成后还原且不提交。            |
-| 离线包收到 fragment    | 清除并丢弃，不连接且不保留配对信息。                   |
-| 有效 fragment、未登录  | 等待登录，不连接、不自动打开 UI。                      |
-| 登录或注册失败         | 保留内存描述，允许继续尝试。                           |
-| 用户名密码登录或注册   | 成功后当前启动标签页连接且只连接一次。                 |
-| WebAuthn 登录或注册    | 成功后当前启动标签页连接且只连接一次。                 |
-| 强制修改密码           | 修改期间不连接，完成后自动连接。                       |
-| 同源账号整页跳转       | 用 fragment 续接，新页面读取后立即清除。               |
-| 第三方 SSO redirect    | 不附带 endpoint、实例标识或配对密钥。                  |
-| 普通已登录标签页       | 不连接。                                               |
-| 复制启动标签页         | 新标签页没有 fragment，不连接。                        |
-| 普通 Store 跨标签变化  | 不影响 socket 或在途请求快照。                         |
-| Service Worker 激活    | 不新建、接管、保活或恢复 socket。                      |
-| 其他标签页退出         | 启动标签页 Abort 并断开。                              |
-| 跨标签应用版本升级     | 关闭信号按事件去重，延迟 1 秒且最多自动拉起一次。      |
-| 建连前发生版本升级     | 无反向通知；描述丢弃，Mod 保持可取消等待并允许重拉起。 |
-| 同实例第二条已认证连接 | 新连接生效，旧连接停止且不重连。                       |
-| 同实例第二条未认证连接 | 旧连接保持。                                           |
-| 同一启动发生短暂重连   | 继续使用该启动的原 token，不生成新启动身份。           |
-| 同实例重新拉起页面     | 使用新 token；认证成功后才撤销旧连接 token。           |
-| 两个不同实例           | 各自独立请求和取消。                                   |
-| 协商上限内的并发请求   | 公平分片，按 `request_id` 独立返回和取消。             |
-| 超出 `max_in_flight`   | 返回 `busy`，不取消已在途任务。                        |
-| 请求前登录门禁已失效   | 不启动新任务，Abort 全部任务并以 `4000` 关闭。         |
-| 最近请求 ID 重复       | 返回 `duplicate-request-id`，不重复执行。              |
-| 超过 32 KiB 的消息     | 不解析内容，立即以 `4005` 关闭。                       |
-| 握手阶段非法消息       | 不累计三次，立即以 `4005` 关闭。                       |
-| 单个连接级协议错误     | 返回一次 `bridge.error`，连接保持。                    |
-| 连续三个协议错误       | 以 `4005` 关闭；中间合法消息会清零计数。               |
-| 协议错误之间收到心跳   | 合法 `bridge.ping` 清零计数，不误判为连续错误。        |
-| 业务参数错误或繁忙     | 返回请求级错误，不增加协议错误计数。                   |
-| 取消与结果同时到达终态 | 只发送一个终态消息，晚到路径不再发送。                 |
-| 四种推荐模式           | 结果与直接 `suggestMeals` 完全一致。                   |
-| 评级上限 `0～4`        | 结果不超过上限，且是上限内最高可达评级。               |
-| 请求取消               | 停止计算，不发送晚到结果，不写半成品缓存。             |
-| 可恢复异常中断         | Abort 在途任务，按有限退避重连。                       |
-| offline 后恢复 online  | 离线期间暂停，恢复后只有一个连接尝试。                 |
-| 旧 socket 事件晚到     | generation 拦截，不影响当前连接。                      |
-| 连接被替换             | Abort 在途任务，关闭且不重连。                         |
-| LNA 权限待确认         | 由浏览器显示权限提示，不提前触发握手超时。             |
-| LNA 权限被拒绝         | 不连接、不循环重连、不新增项目 UI。                    |
-| 标签页后台或最小化     | 不主动断开，继续处理浏览器实际调度的心跳。             |
-| 浏览器冻结或丢弃页面   | 先允许原页有限重连；未恢复时按需重新拉起。             |
-| 刷新或 BFCache         | Abort 并丢弃描述，普通关闭不自动重拉起。               |
-| endpoint 域名变化      | 只要 URL、DNS、TLS 和 Origin 均合法即可连接。          |
-| 静态导出或离线包       | 不连接，因为账号能力不可用。                           |
-| 预发布 V1 缺少食谱 ID  | 返回 `invalid-request`，不回退默认食谱。               |
-| 修订 V1 固定料理       | 名称和 `recipe_id` 成对校验并解析完整制作属性。        |
-| 修订 V1 自动料理       | 结果包含实际采用的 `recipe_id`。                       |
-| 未来网页支持 V1/V2     | 按启动版本分派，V1 不被静默升级或最新 schema 解释。    |
+| 场景                   | 断言                                                         |
+| ---------------------- | ------------------------------------------------------------ |
+| 无启动 fragment        | 不创建 WebSocket。                                           |
+| fragment 无效          | 清除 fragment，不连接、不持久化。                            |
+| 正式 parser 收到 WS    | 拒绝启动描述，不包含环境分支或降级开关。                     |
+| 临时 WS 联调补丁       | 只用于 localhost 验收，完成后还原且不提交。                  |
+| 离线包收到 fragment    | 清除并丢弃，不连接且不保留配对信息。                         |
+| 有效 fragment、未登录  | 等待登录，不连接、不自动打开 UI。                            |
+| 登录或注册失败         | 保留内存描述，允许继续尝试。                                 |
+| 用户名密码登录或注册   | 成功后当前启动标签页连接且只连接一次。                       |
+| WebAuthn 登录或注册    | 成功后当前启动标签页连接且只连接一次。                       |
+| 强制修改密码           | 修改期间不连接，完成后自动连接。                             |
+| 同源账号整页跳转       | 用 fragment 续接，新页面读取后立即清除。                     |
+| 第三方 SSO redirect    | 不附带 endpoint、实例标识或配对密钥。                        |
+| 普通已登录标签页       | 不连接。                                                     |
+| 复制启动标签页         | 新标签页没有 fragment，不连接。                              |
+| 普通 Store 跨标签变化  | 不影响 socket 或在途请求快照。                               |
+| Service Worker 激活    | 不新建、接管、保活或恢复 socket。                            |
+| 其他标签页退出         | 启动标签页 Abort 并断开。                                    |
+| 跨标签应用版本升级     | 关闭信号按事件去重，延迟 1 秒且最多自动拉起一次。            |
+| 建连前发生版本升级     | 无反向通知；描述丢弃，Mod 保持可取消等待并允许重拉起。       |
+| 同实例第二条已认证连接 | 新连接生效，旧连接停止且不重连。                             |
+| 同实例第二条未认证连接 | 旧连接保持。                                                 |
+| 同一启动发生短暂重连   | 继续使用该启动的原 token，不生成新启动身份。                 |
+| 同实例重新拉起页面     | 使用新 token；认证成功后才撤销旧连接 token。                 |
+| 两个不同实例           | 各自独立请求和取消。                                         |
+| 协商上限内的并发请求   | 公平分片，按 `request_id` 独立返回和取消。                   |
+| 超出 `max_in_flight`   | 返回 `busy`，不取消已在途任务。                              |
+| 请求前登录门禁已失效   | 不启动新任务，Abort 全部任务并以 `4000` 关闭。               |
+| 最近请求 ID 重复       | 返回 `duplicate-request-id`，不重复执行。                    |
+| 超过 32 KiB 的消息     | 不解析内容，立即以 `4005` 关闭。                             |
+| 握手阶段非法消息       | 不累计三次，立即以 `4005` 关闭。                             |
+| 单个连接级协议错误     | 返回一次 `bridge.error`，连接保持。                          |
+| 连续三个协议错误       | 以 `4005` 关闭；中间合法消息会清零计数。                     |
+| 协议错误之间收到心跳   | 合法 `bridge.ping` 清零计数，不误判为连续错误。              |
+| 业务参数错误或繁忙     | 返回请求级错误，不增加协议错误计数。                         |
+| 取消与结果同时到达终态 | 只发送一个终态消息，晚到路径不再发送。                       |
+| 四种推荐模式           | 结果与直接 `suggestMeals` 完全一致。                         |
+| 四个显式排序方案       | V1 token 穷尽映射为内部方案，四种模式均进入相应最终顺序。    |
+| 排序方案省略           | adapter 显式使用 `material_cost_first`，与显式默认结果一致。 |
+| 排序方案值非法         | `null`、错误类型或未知字符串均返回 `invalid-request`。       |
+| 排序方案键非法         | 旧 `sort_profile` 和 camelCase 键均按未知键拒绝。            |
+| 排序响应形状           | 只改变 `meals` 顺序，响应不回显策略字段。                    |
+| 评级上限 `0～4`        | 结果不超过上限，且是上限内最高可达评级。                     |
+| 请求取消               | 停止计算，不发送晚到结果，不写半成品缓存。                   |
+| 可恢复异常中断         | Abort 在途任务，按有限退避重连。                             |
+| offline 后恢复 online  | 离线期间暂停，恢复后只有一个连接尝试。                       |
+| 旧 socket 事件晚到     | generation 拦截，不影响当前连接。                            |
+| 连接被替换             | Abort 在途任务，关闭且不重连。                               |
+| LNA 权限待确认         | 由浏览器显示权限提示，不提前触发握手超时。                   |
+| LNA 权限被拒绝         | 不连接、不循环重连、不新增项目 UI。                          |
+| 标签页后台或最小化     | 不主动断开，继续处理浏览器实际调度的心跳。                   |
+| 浏览器冻结或丢弃页面   | 先允许原页有限重连；未恢复时按需重新拉起。                   |
+| 刷新或 BFCache         | Abort 并丢弃描述，普通关闭不自动重拉起。                     |
+| endpoint 域名变化      | 只要 URL、DNS、TLS 和 Origin 均合法即可连接。                |
+| 静态导出或离线包       | 不连接，因为账号能力不可用。                                 |
+| 预发布 V1 缺少食谱 ID  | 返回 `invalid-request`，不回退默认食谱。                     |
+| 修订 V1 固定料理       | `recipe_id` 解析唯一 Food owner 及完整制作属性。             |
+| 修订 V1 自动料理       | 结果包含实际采用的 `recipe_id`。                             |
+| 未来网页支持 V1/V2     | 按启动版本分派，V1 不被静默升级或最新 schema 解释。          |
 
 ## 十六、进度记录
 
@@ -1179,9 +1173,12 @@ V1 对外发布前必须消除规范部分的“草案”、待定值和相互�
 - 所有合法且当前状态允许的输入都清零连续协议错误；`details` 不承担 Mod 业务分支语义。
 - 自定义 close code 从 `4000` 连续到 `4006`，标准 code、自动重连和 Mod 重拉起语义互不混淆。
 - 已连接升级的消息与 close code 在 Mod 端只触发一次重拉起；建连前升级明确承认无法反向通知。
-- 请求校验完整覆盖四种模式、名称、评级上限、固定项和 `availability` 白名单减黑名单语义。
-- 固定料理请求和全部结果都包含稳定 `recipe_id`；料理名称与 ID 成对校验，食材、厨具和时间从该食谱解析。
-- 游戏简体中文标准名称、标签和游戏食谱 ID 直接作为永久 V1 token，不创建第二份外部游戏数据目录，也不允许已公开 token 改名、复用或改变含义。
+- 请求校验完整覆盖四种模式、分类正确的稳定 ID、评级上限、固定项和 `availability` 白名单减黑名单语义。
+- 固定料理请求和全部结果都包含稳定 `recipe_id`；Food 归属、基础食材、厨具和时间从该食谱 ID 解析。
+- SpecialGuest、Tag、Beverage、Food、Recipe、Ingredient 和 Cooker 的游戏稳定 ID 直接作为 V1 token，不创建名称 alias 或第二份外部游戏数据目录。
+- `options.recommendation_strategy` 只接受四个 snake_case token，省略时 adapter 显式使用 `material_cost_first`；映射为内部连字符方案时不读取网页永久偏好或临时 Store。
+- 未知 strategy 值的诊断路径为 `payload.options.recommendation_strategy`；未知 option 键（包括尚未发布的旧 `sort_profile`）的诊断路径仍为 `payload.options`，不提供兼容层。
+- 排序方案只改变 `meals` 的最终顺序；V1 响应结构、错误 code 和协议版本均不变，不回显 `recommendation_strategy`。
 - V1 validator、adapter、serializer 和 error mapper 独立保留；未来 V2 与其并行，不能用最新 schema 解释或静默升级 V1。
 - `suggestMeals` 和 `evaluateMeal` 仍是唯一生产推荐与评级实现。
 - `suggestMeals` 的缓存键和计算使用同一份不可变调用快照，不读取调用方后续修改。

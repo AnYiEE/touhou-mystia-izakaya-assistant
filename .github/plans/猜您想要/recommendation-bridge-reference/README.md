@@ -28,12 +28,14 @@ dotnet run --project RecommendationBridgeReference.csproj
 
 [cases.v1.json](cases.v1.json) 包含四种推荐模式：
 
-- 完整套餐
-- 固定料理
-- 固定酒水
-- 固定料理和酒水
+- 完整套餐：`low_price`
+- 固定料理：`high_price`
+- 固定酒水：`material_cost_first`
+- 固定料理和酒水：`availability_first`
 
-连接 ready 后，参考程序会发送这四个案例，再演示 `max_rating` 的全部五档取值、取消请求和可修正的业务错误。响应按 `request_id` 关联；`meals[0]` 是首选，其余项目是候选。
+连接 ready 后，参考程序会发送这四个显式排序案例，并额外发送一个省略 `recommendation_strategy` 的完整套餐案例，覆盖缺省为 `material_cost_first` 的语义。这五个 case 按握手协商的 `max_in_flight` 分批；前一批全部返回 `recommendation.result` 后才发送下一批，任何意外 `recommendation.error` 都会使案例序列失败，不会被当作成功推荐。随后程序再演示 `max_rating` 的全部五档取值、取消请求和可修正的业务错误。响应按 `request_id` 关联；`meals[0]` 是首选，其余项目是候选。
+
+`options.recommendation_strategy` 只改变已经符合硬约束的推荐结果最终顺序，不改变请求模式、评级、候选资格或响应结构。可用值为 `availability_first`、`low_price`、`high_price`、`material_cost_first`，省略时为 `material_cost_first`。开发阶段使用过的 `balanced`、`save_ingredients` 以及旧字段 `sort_profile` 都不受支持。
 
 固定 Food 直接发送安全整数 `recipe_id`，其所属 Food 由该 Recipe ID 的唯一 owner 确定。每个结果也必须返回算法实际采用的 `recipe_id`；Mod 比较套餐身份时必须包含 Recipe ID、Beverage ID 和按无序集合规范化的额外 Ingredient ID。
 
@@ -53,7 +55,7 @@ dotnet run --project RecommendationBridgeReference.csproj
 - 只有新连接认证成功后才替换旧连接，未认证连接不能影响当前连接。
 - 限制握手时间、消息字节数和并发请求数；实现心跳、取消和断线清理。
 - Mod 输入严格按 V1 解析；网页输出可递归忽略未知可选字段，但已知字段缺失或类型错误时以 `4005` 关闭。
-- 请求只使用正确分类的 SpecialGuest、Tag、Beverage、Food、Recipe、Ingredient 和 Cooker ID，不接受名称 alias；每个套餐结果都携带 `beverage_id` 和嵌套 `food.recipe_id/extra_ingredient_ids`，不增加 cooker 或 `food_id`。
+- 请求只使用正确分类的 SpecialGuest、Tag、Beverage、Food、Recipe、Ingredient 和 Cooker ID，不接受名称 alias；`options.recommendation_strategy` 只接受四个规定的 snake_case 值并可省略，旧 `sort_profile` 按未知键拒绝；每个套餐结果都携带 `beverage_id` 和嵌套 `food.recipe_id/extra_ingredient_ids`，不增加 cooker 或 `food_id`。
 - `pairing_token`、完整请求和结果不能写日志。
 
 正式集成还需要浏览器信任的 TLS 证书和本地 WSS 域名，并完成主方案中的 HTTPS/WSS、LNA、IPv4/IPv6、Origin 和 CSP 验收。本目录的 localhost WS 联调不能替代这些发布门槛。

@@ -9,7 +9,8 @@
 				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
 				"options": {
 					"availability": { "ingredients": { "exclude": [24] } },
-					"max_results": 3
+					"max_results": 3,
+					"recommendation_strategy": "low_price"
 				}
 			}
 		}
@@ -28,7 +29,8 @@
 						"foods": { "include": [33] },
 						"ingredients": { "exclude": [21] }
 					},
-					"max_results": 3
+					"max_results": 3,
+					"recommendation_strategy": "high_price"
 				}
 			}
 		}
@@ -48,7 +50,8 @@
 						"foods": { "include": [63] }
 					},
 					"cooker_id": 2,
-					"max_results": 3
+					"max_results": 3,
+					"recommendation_strategy": "material_cost_first"
 				}
 			}
 		}
@@ -67,6 +70,22 @@
 						"beverages": { "include": [17] },
 						"foods": { "include": [24] }
 					},
+					"max_results": 3,
+					"recommendation_strategy": "availability_first"
+				}
+			}
+		}
+	},
+	{
+		"name": "完整套餐（缺省排序）",
+		"request": {
+			"type": "recommendation.request",
+			"request_id": "reference-default-recommendation-strategy",
+			"payload": {
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"options": {
+					"availability": { "ingredients": { "exclude": [24] } },
 					"max_results": 3
 				}
 			}

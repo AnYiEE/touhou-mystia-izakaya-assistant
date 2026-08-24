@@ -63,6 +63,16 @@ export interface IV1RecommendationAvailability {
 	readonly ingredients?: IV1RecommendationAvailabilityCategory<TIngredientId>;
 }
 
+export const V1_RECOMMENDATION_STRATEGIES = [
+	'availability_first',
+	'low_price',
+	'high_price',
+	'material_cost_first',
+] as const;
+
+export type TV1RecommendationStrategy =
+	(typeof V1_RECOMMENDATION_STRATEGIES)[number];
+
 export interface IV1RecommendationOptions {
 	readonly availability?: IV1RecommendationAvailability;
 	readonly cooker_id?: TCookerId | null;
@@ -75,6 +85,7 @@ export interface IV1RecommendationOptions {
 		readonly food_tag_id: TPopularFoodTagId;
 		readonly negative: boolean;
 	} | null;
+	readonly recommendation_strategy?: TV1RecommendationStrategy;
 }
 
 export interface IV1RecommendationRequestPayload {
@@ -147,6 +158,9 @@ const popularTags: ReadonlySet<number> = new Set(
 			.getValuesByProp('positiveTags')
 			.filter((tag) => !blockedFoodTags.has(tag)),
 	].filter(checkPopularFoodTagId)
+);
+const v1RecommendationStrategySet: ReadonlySet<unknown> = new Set(
+	V1_RECOMMENDATION_STRATEGIES
 );
 
 function checkExactKeys(
@@ -411,6 +425,7 @@ function validateRequest(
 					'max_results',
 					'mystia_cooker',
 					'popular_trend',
+					'recommendation_strategy',
 				]
 			))
 	) {
@@ -443,6 +458,16 @@ function validateRequest(
 		if (item !== undefined && typeof item !== 'boolean') {
 			return invalid('invalid-value', `payload.options.${key}`);
 		}
+	}
+	const recommendationStrategy = optionsObject?.['recommendation_strategy'];
+	if (
+		recommendationStrategy !== undefined &&
+		!v1RecommendationStrategySet.has(recommendationStrategy)
+	) {
+		return invalid(
+			'invalid-value',
+			'payload.options.recommendation_strategy'
+		);
 	}
 	const maxExtraIngredients = optionsObject?.['max_extra_ingredients'];
 	if (

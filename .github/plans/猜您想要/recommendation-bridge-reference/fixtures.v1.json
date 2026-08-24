@@ -220,5 +220,151 @@
 				}
 			}
 		}
+	},
+	{
+		"name": "recommendation strategy omitted",
+		"valid": true,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-recommendation-strategy-omitted",
+			"payload": {
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"options": { "max_results": 3 }
+			}
+		}
+	},
+	{
+		"name": "recommendation strategy availability first",
+		"valid": true,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-recommendation-strategy-availability-first",
+			"payload": {
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"options": { "recommendation_strategy": "availability_first" }
+			}
+		}
+	},
+	{
+		"name": "recommendation strategy low price",
+		"valid": true,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-recommendation-strategy-low-price",
+			"payload": {
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"options": { "recommendation_strategy": "low_price" }
+			}
+		}
+	},
+	{
+		"name": "recommendation strategy high price",
+		"valid": true,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-recommendation-strategy-high-price",
+			"payload": {
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"options": { "recommendation_strategy": "high_price" }
+			}
+		}
+	},
+	{
+		"name": "recommendation strategy material cost first",
+		"valid": true,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-recommendation-strategy-material-cost-first",
+			"payload": {
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"options": { "recommendation_strategy": "material_cost_first" }
+			}
+		}
+	},
+	{
+		"name": "removed balanced recommendation strategy",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-removed-balanced-recommendation-strategy",
+			"payload": {
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"options": { "recommendation_strategy": "balanced" }
+			}
+		}
+	},
+	{
+		"name": "removed save ingredients recommendation strategy",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-removed-save-ingredients-recommendation-strategy",
+			"payload": {
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"options": { "recommendation_strategy": "save_ingredients" }
+			}
+		}
+	},
+	{
+		"name": "unknown recommendation strategy",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-unknown-recommendation-strategy",
+			"payload": {
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"options": { "recommendation_strategy": "price" }
+			}
+		}
+	},
+	{
+		"name": "invalid recommendation strategy type",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-invalid-recommendation-strategy-type",
+			"payload": {
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"options": { "recommendation_strategy": null }
+			}
+		}
+	},
+	{
+		"name": "legacy sort profile field",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-legacy-sort-profile-field",
+			"payload": {
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"options": { "sort_profile": "availability_first" }
+			}
+		}
+	},
+	{
+		"name": "unknown option key with recommendation strategy",
+		"valid": false,
+		"message": {
+			"type": "recommendation.request",
+			"request_id": "fixture-unknown-option-key-recommendation-strategy",
+			"payload": {
+				"special_guest_id": 9,
+				"order": { "beverage_tag_id": 2, "food_tag_id": -3 },
+				"options": {
+					"recommendation_strategy": "availability_first",
+					"recommendationStrategy": "availability_first"
+				}
+			}
+		}
 	}
 ]

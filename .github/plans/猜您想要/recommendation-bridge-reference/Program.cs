@@ -258,7 +258,7 @@ async Task ReceiveLoopAsync(AuthenticatedConnection connection, CancellationToke
 						return;
 					}
 					ReadResult(root, resultRequestId);
-					connection.CompleteRequest(resultRequestId);
+					connection.CompleteRequest(resultRequestId, ReferenceRequestTerminal.Result);
 					break;
 				case "recommendation.cancelled":
 					if (!TryReadRequestId(root, out var cancelledRequestId))
@@ -267,7 +267,7 @@ async Task ReceiveLoopAsync(AuthenticatedConnection connection, CancellationToke
 						return;
 					}
 					Console.WriteLine($"Request {cancelledRequestId} was cancelled.");
-					connection.CompleteRequest(cancelledRequestId);
+					connection.CompleteRequest(cancelledRequestId, ReferenceRequestTerminal.Cancelled);
 					break;
 				case "recommendation.error":
 					if (!TryReadRecommendationError(root, out var errorRequestId, out var recommendationErrorCode))
@@ -276,7 +276,7 @@ async Task ReceiveLoopAsync(AuthenticatedConnection connection, CancellationToke
 						return;
 					}
 					Console.WriteLine($"Request {errorRequestId} failed with stable code {recommendationErrorCode}.");
-					connection.CompleteRequest(errorRequestId);
+					connection.CompleteRequest(errorRequestId, ReferenceRequestTerminal.Error);
 					break;
 				case "bridge.error":
 					if (!TryReadString(root, "code", out var bridgeErrorCode)
@@ -349,15 +349,20 @@ async Task RunExamplesAsync(AuthenticatedConnection connection, CancellationToke
 		filePath = Path.Combine(Directory.GetCurrentDirectory(), "cases.v1.json");
 	}
 	using var document = JsonDocument.Parse(await File.ReadAllTextAsync(filePath, cancellationToken));
-	var exampleTasks = new List<Task>();
-	foreach (var example in document.RootElement.EnumerateArray())
+	var examples = document.RootElement;
+	for (var batchStart = 0; batchStart < examples.GetArrayLength(); batchStart += connection.MaxInFlight)
 	{
-		Console.WriteLine($"Sending {example.GetProperty("name").GetString()} example.");
-		var request = example.GetProperty("request");
-		exampleTasks.Add(connection.TrackRequest(ReadRequestId(request)));
-		await connection.TrySendAsync(request.GetRawText());
+		var exampleTasks = new List<Task>();
+		for (var index = batchStart; index < Math.Min(batchStart + connection.MaxInFlight, examples.GetArrayLength()); index++)
+		{
+			var example = examples[index];
+			Console.WriteLine($"Sending {example.GetProperty("name").GetString()} example.");
+			var request = example.GetProperty("request");
+			exampleTasks.Add(connection.TrackRequest(ReadRequestId(request)));
+			await connection.TrySendAsync(request.GetRawText());
+		}
+		await Task.WhenAll(exampleTasks).WaitAsync(TimeSpan.FromMinutes(2), cancellationToken);
 	}
-	await Task.WhenAll(exampleTasks).WaitAsync(TimeSpan.FromMinutes(2), cancellationToken);
 
 	for (var batchStart = 0; batchStart <= 4; batchStart += connection.MaxInFlight)
 	{
@@ -381,12 +386,12 @@ async Task RunExamplesAsync(AuthenticatedConnection connection, CancellationToke
 		await Task.WhenAll(ratingTasks).WaitAsync(TimeSpan.FromMinutes(2), cancellationToken);
 	}
 
-	var cancellationTask = connection.TrackRequest("reference-cancel");
+	var cancellationTask = connection.TrackRequest("reference-cancel", ReferenceRequestTerminal.Cancelled);
 	await connection.TrySendAsync("{\"type\":\"recommendation.request\",\"request_id\":\"reference-cancel\",\"payload\":{\"special_guest_id\":9,\"order\":{\"beverage_tag_id\":2,\"food_tag_id\":-3},\"options\":{\"max_results\":10}}}");
 	await connection.TrySendAsync("{\"type\":\"recommendation.cancel\",\"request_id\":\"reference-cancel\"}");
 	await cancellationTask.WaitAsync(TimeSpan.FromMinutes(2), cancellationToken);
 
-	var invalidTask = connection.TrackRequest("reference-invalid");
+	var invalidTask = connection.TrackRequest("reference-invalid", ReferenceRequestTerminal.Error);
 	await connection.TrySendAsync("{\"type\":\"recommendation.request\",\"request_id\":\"reference-invalid\",\"payload\":{\"special_guest_id\":999999}}");
 	await invalidTask.WaitAsync(TimeSpan.FromMinutes(2), cancellationToken);
 }
@@ -706,9 +711,19 @@ enum HelloReadResult
 	Valid,
 }
 
+enum ReferenceRequestTerminal
+{
+	Cancelled,
+	Error,
+	Result,
+}
+
 sealed class AuthenticatedConnection(WebSocket socket, string token, int maxInFlight)
 {
-	private readonly System.Collections.Concurrent.ConcurrentDictionary<string, TaskCompletionSource> requests = new();
+	private readonly System.Collections.Concurrent.ConcurrentDictionary<
+		string,
+		(TaskCompletionSource Completion, ReferenceRequestTerminal ExpectedTerminal)
+	> requests = new();
 	private readonly SemaphoreSlim sendLock = new(1, 1);
 	private long expectedPong = -1;
 	private long acceptedPong = -1;
@@ -737,22 +752,31 @@ sealed class AuthenticatedConnection(WebSocket socket, string token, int maxInFl
 		}
 	}
 
-	public Task TrackRequest(string requestId)
+	public Task TrackRequest(
+		string requestId,
+		ReferenceRequestTerminal expectedTerminal = ReferenceRequestTerminal.Result)
 	{
 		var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		if (!requests.TryAdd(requestId, completion))
+		if (!requests.TryAdd(requestId, (completion, expectedTerminal)))
 		{
 			throw new InvalidOperationException($"Duplicate reference request ID: {requestId}");
 		}
 		return completion.Task;
 	}
 
-	public void CompleteRequest(string requestId)
+	public void CompleteRequest(string requestId, ReferenceRequestTerminal terminal)
 	{
-		if (requests.TryRemove(requestId, out var completion))
+		if (!requests.TryRemove(requestId, out var request))
 		{
-			completion.TrySetResult();
+			return;
 		}
+		if (request.ExpectedTerminal == terminal)
+		{
+			request.Completion.TrySetResult();
+			return;
+		}
+		request.Completion.TrySetException(new InvalidOperationException(
+			$"Request {requestId} ended as {terminal} instead of {request.ExpectedTerminal}."));
 	}
 
 	public void ExpectPong(long timestamp) => Interlocked.Exchange(ref expectedPong, timestamp);

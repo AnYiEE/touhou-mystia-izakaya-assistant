@@ -4,16 +4,27 @@ import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import type { TBeverageId } from '@/domain/data/beverages/types';
 import type { TFoodId } from '@/domain/data/foods/types';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
+import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';
 import type { ISuggestParams } from '@/domain/recommendations/types';
 
 import {
 	type IV1RecommendationAvailabilityCategory,
 	type IV1RecommendationRequestMessage,
+	type TV1RecommendationStrategy,
 } from './protocol';
 
 const beverages = BeverageCatalog.getInstance().getValuesByProp('id');
 const foods = FoodCatalog.getInstance().getValuesByProp('id');
 const ingredients = IngredientCatalog.getInstance().getValuesByProp('id');
+const V1_RECOMMENDATION_STRATEGY_MAP = {
+	availability_first: 'availability-first',
+	high_price: 'high-price',
+	low_price: 'low-price',
+	material_cost_first: 'material-cost-first',
+} as const satisfies Record<
+	TV1RecommendationStrategy,
+	TRecommendationSortProfile
+>;
 
 function createHiddenItems<TId extends number>(
 	allItems: ReadonlyArray<TId>,
@@ -76,6 +87,10 @@ export function adaptV1RecommendationRequest({
 			isNegative: options.popular_trend?.negative ?? false,
 			tag: options.popular_trend?.food_tag_id ?? null,
 		},
+		sortProfile:
+			V1_RECOMMENDATION_STRATEGY_MAP[
+				options.recommendation_strategy ?? 'material_cost_first'
+			],
 		specialGuest,
 	};
 }
