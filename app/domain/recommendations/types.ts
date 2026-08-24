@@ -9,6 +9,8 @@ import type { IMealFood } from '@/domain/meals/types';
 import type { IGuestOrder } from '@/domain/orders/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
+import { type TRecommendationSortProfile } from './sortProfiles';
+
 export interface ISuggestedMeal {
 	beverage: TBeverageId;
 	food: IMealFood;
@@ -31,6 +33,7 @@ export interface ISuggestParams {
 	readonly maxRating: number;
 	readonly maxResults: number;
 	readonly popularTrend: IPopularTrend;
+	readonly sortProfile: TRecommendationSortProfile;
 	readonly specialGuest: TSpecialGuestId;
 }
 

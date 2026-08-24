@@ -42,6 +42,11 @@ import {
 	compareRecommendationStrictMetrics,
 	getRecommendationItemPriority,
 } from './priority';
+import {
+	type IRecommendationSortProfileMetrics,
+	type TRecommendationSortProfile,
+	compareRecommendationSortProfileMetrics,
+} from './sortProfiles';
 import type {
 	ISuggestIngredientPenaltyContext,
 	ISuggestIngredientResourcePenalty,
@@ -59,9 +64,7 @@ interface IFoodRecipeCandidate {
 	readonly recipe: IProcessedRecipe;
 }
 
-interface IPlanWeightMetrics {
-	readonly ingredientPenalty: number;
-	readonly isOverSoftBudget: boolean;
+interface IPlanWeightMetrics extends IRecommendationSortProfileMetrics {
 	readonly priority: IRecommendationPriorityMetrics;
 	readonly score: number;
 }
@@ -219,7 +222,7 @@ function normalizeAcquisitionEase(ease: number, maxEase: number) {
 	return ease / maxEase;
 }
 
-export function getSuggestIngredientAcquisitionPenalty(
+function getSuggestIngredientAcquisitionPenalty(
 	ingredient: TIngredientId,
 	{ ingredientEaseMap, maxIngredientEase }: ISuggestIngredientPenaltyContext
 ) {
@@ -233,7 +236,7 @@ function normalizeResourceMetric(value: number, min: number, max: number) {
 	return max <= min ? 0 : (value - min) / (max - min);
 }
 
-export function getSuggestIngredientResourcePenalty(
+function getSuggestIngredientResourcePenalty(
 	ingredient: TIngredientId,
 	context: ISuggestIngredientPenaltyContext
 ): ISuggestIngredientResourcePenalty {
@@ -261,6 +264,24 @@ export function getSuggestIngredientResourcePenalty(
 			price * SUGGEST_INGREDIENT_RESOURCE_WEIGHTS.price +
 			level * SUGGEST_INGREDIENT_RESOURCE_WEIGHTS.level,
 	};
+}
+
+function getSuggestMealMaterialCost(
+	baseIngredients: ReadonlyArray<TIngredientId>,
+	extraIngredients: ReadonlyArray<TIngredientId>,
+	context: ISuggestIngredientPenaltyContext
+) {
+	let cost = 0;
+	for (const ingredient of baseIngredients) {
+		cost +=
+			1 + getSuggestIngredientResourcePenalty(ingredient, context).total;
+	}
+	for (const ingredient of extraIngredients) {
+		cost +=
+			1 + getSuggestIngredientResourcePenalty(ingredient, context).total;
+	}
+
+	return cost;
 }
 
 function buildSuggestIngredientPenaltyContext(
@@ -934,15 +955,18 @@ function buildBeverageTagGroups(beverages: TCatalogData<BeverageCatalog>) {
 }
 
 function comparePlanWeightMetrics(
+	profile: TRecommendationSortProfile,
 	a: IPlanWeightMetrics,
 	b: IPlanWeightMetrics
 ) {
 	return (
 		b.score - a.score ||
-		compareRecommendationStrictMetrics(a.priority, b.priority) ||
-		Number(a.isOverSoftBudget) - Number(b.isOverSoftBudget) ||
-		b.priority.acquisitionEase - a.priority.acquisitionEase ||
-		a.ingredientPenalty - b.ingredientPenalty
+		compareRecommendationSortProfileMetrics(
+			profile,
+			a,
+			b,
+			compareRecommendationStrictMetrics(a.priority, b.priority)
+		)
 	);
 }
 
@@ -950,12 +974,7 @@ function checkSameDiversityLayer(
 	left: IPlanWeightMetrics,
 	right: IPlanWeightMetrics
 ) {
-	return (
-		left.score === right.score &&
-		left.priority.contentMismatchCount ===
-			right.priority.contentMismatchCount &&
-		left.priority.pathMismatchCount === right.priority.pathMismatchCount
-	);
+	return left.score === right.score;
 }
 
 interface IResultDiversityOptions {
@@ -1022,11 +1041,12 @@ async function selectScoredResults(
 	maxResults: number,
 	keyFn: (meal: ISuggestedMeal) => string,
 	diversityOptions: IResultDiversityOptions,
+	sortProfile: TRecommendationSortProfile,
 	execution: ISuggestMealsExecution
 ) {
 	const sortedResults = await stableSortWithExecution(
 		results,
-		(a, b) => comparePlanWeightMetrics(a.metrics, b.metrics),
+		(a, b) => comparePlanWeightMetrics(sortProfile, a.metrics, b.metrics),
 		execution
 	);
 
@@ -1049,10 +1069,43 @@ async function selectScoredResults(
 		dedupedResults.push(result);
 	}
 
-	const remainingResults = [...dedupedResults];
 	const seenBeverages = new Set<TBeverageId>();
 	const seenFoods = new Set<TFoodId>();
 	const out: ISuggestedMeal[] = [];
+
+	if (sortProfile !== 'availability-first') {
+		for (const { meal } of dedupedResults) {
+			const checkpointPromise = execution.checkpoint();
+			if (checkpointPromise !== undefined) {
+				await checkpointPromise;
+			}
+
+			const food = FoodCatalog.getInstance().getRecipeOwnerById(
+				meal.food.recipeId
+			).food.id;
+			const hasSeenRequiredItem = diversityOptions.isFoodFixed
+				? seenBeverages.has(meal.beverage)
+				: diversityOptions.isBeverageFixed
+					? seenFoods.has(food)
+					: seenBeverages.has(meal.beverage) || seenFoods.has(food);
+
+			if (hasSeenRequiredItem) {
+				continue;
+			}
+
+			out.push(meal);
+			seenBeverages.add(meal.beverage);
+			seenFoods.add(food);
+
+			if (out.length >= maxResults) {
+				break;
+			}
+		}
+
+		return out;
+	}
+
+	const remainingResults = [...dedupedResults];
 
 	while (out.length < maxResults && remainingResults.length > 0) {
 		const checkpointPromise = execution.checkpoint();
@@ -1087,6 +1140,7 @@ async function selectScoredResults(
 
 interface IFoodIngredientSummary {
 	readonly currentIngredients: ReadonlyArray<TIngredientId>;
+	readonly duplicateIngredientCount: number;
 	readonly extraIngredients: ReadonlyArray<TIngredientId>;
 	readonly foodTagsWithTrend: ReadonlyArray<TFoodTagId>;
 	readonly ingredientPenalty: number;
@@ -1251,6 +1305,7 @@ async function getFoodIngredientSummaries({
 					...recipeIngredients,
 					...state.extraIngredients,
 				],
+				duplicateIngredientCount: state.duplicateIngredientCount,
 				extraIngredients: state.extraIngredients,
 				foodTagsWithTrend: [...tagSet],
 				ingredientPenalty: state.ingredientPenalty,
@@ -1423,15 +1478,22 @@ async function selectBestExtraIngredients({
 				continue;
 			}
 			if (score === bestScore && bestSummary !== null) {
+				const duplicateIngredientComparison =
+					summary.duplicateIngredientCount -
+					bestSummary.duplicateIngredientCount;
+				if (duplicateIngredientComparison > 0) {
+					continue;
+				}
 				const priorityComparison = compareRecommendationStrictMetrics(
 					summary.priority,
 					bestSummary.priority
 				);
 				if (
-					priorityComparison > 0 ||
-					(priorityComparison === 0 &&
-						summary.ingredientPenalty >=
-							bestSummary.ingredientPenalty)
+					duplicateIngredientComparison === 0 &&
+					(priorityComparison > 0 ||
+						(priorityComparison === 0 &&
+							summary.ingredientPenalty >=
+								bestSummary.ingredientPenalty))
 				) {
 					continue;
 				}
@@ -1706,6 +1768,7 @@ async function computeSuggestions(
 		maxRating,
 		maxResults,
 		popularTrend,
+		sortProfile,
 		specialGuest,
 	}: ISuggestParams,
 	context: TSuggestContext,
@@ -1715,6 +1778,7 @@ async function computeSuggestions(
 	const {
 		budgetMax,
 		budgetSoftMax,
+		ingredientPenaltyContext,
 		specialGuestBeverageTags,
 		specialGuestNegativeTags,
 		specialGuestPositiveTags,
@@ -1838,6 +1902,11 @@ async function computeSuggestions(
 			}
 
 			if (finalScore <= maxRating) {
+				const materialCost = getSuggestMealMaterialCost(
+					recipeIngredients,
+					finalExtraIngredients,
+					ingredientPenaltyContext
+				);
 				for (const {
 					id: beverage,
 					price: beveragePrice,
@@ -1856,17 +1925,22 @@ async function computeSuggestions(
 						price: totalPrice,
 						rating: finalRating,
 					};
+					const priority = getMealPriority(meal, context, {
+						fixedExtraIngredients: EMPTY_INGREDIENT_SET,
+						isBeverageFixed: false,
+						isFoodFixed: false,
+					});
+					const { acquisitionEase } = priority;
 
 					results.push({
 						meal,
 						metrics: {
-							ingredientPenalty,
+							acquisitionEase,
+							extraIngredientPenalty: ingredientPenalty,
 							isOverSoftBudget: totalPrice > budgetSoftMax,
-							priority: getMealPriority(meal, context, {
-								fixedExtraIngredients: EMPTY_INGREDIENT_SET,
-								isBeverageFixed: false,
-								isFoodFixed: false,
-							}),
+							materialCost,
+							price: totalPrice,
+							priority,
 							score: finalScore,
 						},
 						score: finalScore,
@@ -1882,6 +1956,7 @@ async function computeSuggestions(
 		(m) =>
 			`${m.food.recipeId}|${m.beverage}|${m.food.extraIngredients.join(',')}`,
 		{ isBeverageFixed: false, isFoodFixed: false },
+		sortProfile,
 		execution
 	);
 }
@@ -2056,6 +2131,7 @@ async function suggestForBeverage(
 		maxRating,
 		maxResults,
 		popularTrend,
+		sortProfile,
 		specialGuest,
 	}: ISuggestParams,
 	context: TSuggestContext,
@@ -2190,17 +2266,26 @@ async function suggestForBeverage(
 			if (totalPrice > budgetMax) {
 				continue;
 			}
+			const priority = getMealPriority(bestMeal, context, {
+				fixedExtraIngredients: EMPTY_INGREDIENT_SET,
+				isBeverageFixed: true,
+				isFoodFixed: false,
+			});
+			const { acquisitionEase } = priority;
 
 			results.push({
 				meal: bestMeal,
 				metrics: {
-					ingredientPenalty,
+					acquisitionEase,
+					extraIngredientPenalty: ingredientPenalty,
 					isOverSoftBudget: totalPrice > budgetSoftMax,
-					priority: getMealPriority(bestMeal, context, {
-						fixedExtraIngredients: EMPTY_INGREDIENT_SET,
-						isBeverageFixed: true,
-						isFoodFixed: false,
-					}),
+					materialCost: getSuggestMealMaterialCost(
+						recipeIngredients,
+						bestMeal.food.extraIngredients,
+						ingredientPenaltyContext
+					),
+					price: totalPrice,
+					priority,
 					score,
 				},
 				score,
@@ -2213,6 +2298,7 @@ async function suggestForBeverage(
 		maxResults,
 		(m) => `${m.food.recipeId}|${m.food.extraIngredients.join(',')}`,
 		{ isBeverageFixed: true, isFoodFixed: false },
+		sortProfile,
 		execution
 	);
 }
@@ -2226,6 +2312,7 @@ async function suggestForFood(
 		maxRating,
 		maxResults,
 		popularTrend,
+		sortProfile,
 		specialGuest,
 	}: ISuggestParams,
 	context: TSuggestContext,
@@ -2398,6 +2485,14 @@ async function suggestForFood(
 			const baseFoodPrice = isBaseDarkMatter
 				? DARK_MATTER_META_MAP.price
 				: foodPrice;
+			const materialExtraIngredients = useExtra
+				? [...currentFood.extraIngredients, ...extraIngredients]
+				: currentFood.extraIngredients;
+			const materialCost = getSuggestMealMaterialCost(
+				recipeIngredients,
+				materialExtraIngredients,
+				ingredientPenaltyContext
+			);
 
 			for (const {
 				id: beverage,
@@ -2427,17 +2522,22 @@ async function suggestForFood(
 				if (totalPrice > budgetMax) {
 					continue;
 				}
+				const priority = getMealPriority(bestMeal, context, {
+					fixedExtraIngredients,
+					isBeverageFixed: false,
+					isFoodFixed: true,
+				});
+				const { acquisitionEase } = priority;
 
 				results.push({
 					meal: bestMeal,
 					metrics: {
-						ingredientPenalty,
+						acquisitionEase,
+						extraIngredientPenalty: ingredientPenalty,
 						isOverSoftBudget: totalPrice > budgetSoftMax,
-						priority: getMealPriority(bestMeal, context, {
-							fixedExtraIngredients,
-							isBeverageFixed: false,
-							isFoodFixed: true,
-						}),
+						materialCost,
+						price: totalPrice,
+						priority,
 						score: finalScore,
 					},
 					score: finalScore,
@@ -2452,6 +2552,7 @@ async function suggestForFood(
 		(m) =>
 			`${m.food.recipeId}|${m.beverage}|${m.food.extraIngredients.join(',')}`,
 		{ isBeverageFixed: false, isFoodFixed: true },
+		sortProfile,
 		execution
 	);
 }
@@ -2503,6 +2604,96 @@ export interface IScoreBasedAlternativesParams {
 	specialGuestBeverageTags: ReadonlyArray<TBeverageTagId>;
 	specialGuestNegativeTags: ReadonlyArray<TFoodTagId>;
 	specialGuestPositiveTags: ReadonlyArray<TFoodTagId>;
+}
+
+export interface IScoreBasedBeverageAlternativesParams extends Omit<
+	ISuggestParams,
+	'currentBeverage' | 'currentFood' | 'maxExtraIngredients' | 'maxResults'
+> {
+	readonly baseRating: TRatingKey;
+	readonly currentBeverage: TBeverageId;
+	readonly currentFood: IMealFood;
+}
+
+function getGuestBeverageTagMatchCount(
+	beverageTags: ReadonlyArray<TBeverageTagId>,
+	specialGuestBeverageTags: ReadonlyArray<TBeverageTagId>
+) {
+	let matchCount = 0;
+	for (const tag of beverageTags) {
+		if (specialGuestBeverageTags.includes(tag)) {
+			matchCount++;
+		}
+	}
+
+	return matchCount;
+}
+
+export async function getScoreBasedBeverageAlternativesCore(
+	{
+		baseRating,
+		currentBeverage,
+		currentFood,
+		...suggestParams
+	}: IScoreBasedBeverageAlternativesParams,
+	execution: ISuggestMealsExecution
+) {
+	execution.throwIfAborted();
+
+	const beverageCatalog = BeverageCatalog.getInstance();
+	const specialGuestBeverageTags =
+		SpecialGuestCatalog.getInstance().getPropsById(
+			suggestParams.specialGuest,
+			'beverageTags'
+		);
+	const baseGuestTagMatchCount = getGuestBeverageTagMatchCount(
+		beverageCatalog.getPropsById(currentBeverage, 'tags'),
+		specialGuestBeverageTags
+	);
+	const hiddenBeverages = new Set(suggestParams.hiddenBeverages);
+
+	for (const beverage of beverageCatalog.data) {
+		if (
+			getGuestBeverageTagMatchCount(
+				beverage.tags,
+				specialGuestBeverageTags
+			) !== baseGuestTagMatchCount
+		) {
+			hiddenBeverages.add(beverage.id);
+		}
+	}
+
+	const currentFoodSnapshot: IMealFood = {
+		extraIngredients: [...currentFood.extraIngredients],
+		recipeId: currentFood.recipeId,
+	};
+	const params: ISuggestParams = {
+		...suggestParams,
+		currentBeverage: null,
+		currentFood: currentFoodSnapshot,
+		hiddenBeverages,
+		maxExtraIngredients: currentFoodSnapshot.extraIngredients.length,
+		maxResults: beverageCatalog.data.length,
+	};
+	const context = getSuggestContext(params);
+
+	if (!checkFixedSelectionsAvailable(params, context)) {
+		return [];
+	}
+
+	const candidates = await suggestForFood(
+		params,
+		context,
+		currentFoodSnapshot,
+		execution
+	);
+
+	execution.throwIfAborted();
+
+	return candidates.filter(
+		({ beverage, rating }) =>
+			beverage !== currentBeverage && rating === baseRating
+	);
 }
 
 function cloneScoreBasedAlternatives(

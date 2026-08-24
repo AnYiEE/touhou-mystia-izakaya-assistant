@@ -18,6 +18,7 @@ export interface IExactIngredientCandidate {
 
 export interface IExactIngredientState {
 	readonly count: number;
+	readonly duplicateIngredientCount: number;
 	readonly effectMask: ReadonlyArray<number>;
 	readonly extraIngredients: ReadonlyArray<TIngredientId>;
 	readonly ingredientPenalty: number;
@@ -127,6 +128,7 @@ function compareTerminalStates(
 	right: IExactIngredientState
 ) {
 	return (
+		left.duplicateIngredientCount - right.duplicateIngredientCount ||
 		compareRecommendationStrictMetrics(left.priority, right.priority) ||
 		left.ingredientPenalty - right.ingredientPenalty
 	);
@@ -185,6 +187,7 @@ export async function buildExactIngredientStateTable(
 	);
 	const emptyState: IExactIngredientState = {
 		count: 0,
+		duplicateIngredientCount: 0,
 		effectMask: createEmptyMask(effectKeys.length),
 		extraIngredients: [],
 		ingredientPenalty: 0,
@@ -243,6 +246,11 @@ export async function buildExactIngredientStateTable(
 					);
 					const ingredientPenalty =
 						sourceState.ingredientPenalty + candidate.penalty;
+					const duplicateIngredientCount =
+						sourceState.duplicateIngredientCount +
+						Number(
+							sourceState.extraIngredients.includes(candidate.id)
+						);
 					const acquisitionEase =
 						sourceState.priority.acquisitionEase +
 						candidate.priority.acquisitionEase;
@@ -309,6 +317,8 @@ export async function buildExactIngredientStateTable(
 									totalLateTierDistance &&
 								state.priority.acquisitionEase >=
 									acquisitionEase &&
+								state.duplicateIngredientCount <=
+									duplicateIngredientCount &&
 								state.ingredientPenalty <= ingredientPenalty
 							) {
 								isDominated = true;
@@ -333,6 +343,7 @@ export async function buildExactIngredientStateTable(
 					};
 					const nextState: IExactIngredientState = {
 						count,
+						duplicateIngredientCount,
 						effectMask,
 						extraIngredients: [
 							...sourceState.extraIngredients,
@@ -367,6 +378,8 @@ export async function buildExactIngredientStateTable(
 							totalLateTierDistance >
 								state.priority.totalLateTierDistance ||
 							acquisitionEase < state.priority.acquisitionEase ||
+							duplicateIngredientCount >
+								state.duplicateIngredientCount ||
 							ingredientPenalty > state.ingredientPenalty
 						) {
 							currentStates[writeIndex++] = state;

@@ -3,7 +3,7 @@
  * Formatting, refactors, application releases, and cache implementation changes
  * do not require an algorithm version change.
  */
-export const RECOMMENDATION_ALGORITHM_VERSION = 4;
+export const RECOMMENDATION_ALGORITHM_VERSION = 5;
 
 /**
  * Increment when the persisted record shape or validation contract changes.
