@@ -6,5 +6,6 @@ export const recommendationPreferencesFacade = {
 		globalStore.persistence.suggestMeals.maxExtraIngredients,
 	maxRating: globalStore.persistence.suggestMeals.maxRating,
 	maxResults: globalStore.persistence.suggestMeals.maxResults,
+	sortProfile: globalStore.persistence.suggestMeals.sortProfile,
 	version: globalStore.persistence.version,
 };

@@ -14,6 +14,7 @@ import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { SUPPORTED_LEGACY_FOOD_NAMES } from '@/domain/catalog/legacy/resolveLegacyFoodName';
 import { SUPPORTED_LEGACY_INGREDIENT_NAMES } from '@/domain/catalog/legacy/resolveLegacyIngredientName';
+import { RECOMMENDATION_SORT_PROFILES } from '@/domain/recommendations/sortProfiles';
 
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
@@ -84,6 +85,9 @@ const foodColumnKeys = new Set([
 ]);
 const lightPaletteValues = new Set<string>(Object.values(LIGHT_PALETTE_MAP));
 const themeValues = new Set<string>(Object.values(THEME_MAP));
+const recommendationSortProfiles: ReadonlySet<string> = new Set(
+	RECOMMENDATION_SORT_PROFILES
+);
 
 function validateThemeData(data: unknown, schemaVersion: number) {
 	if (schemaVersion === 1) {
@@ -169,14 +173,14 @@ function isAllowedNumberArray(data: unknown, values: ReadonlySet<number>) {
 function validateGlobalPreferences(data: unknown, schemaVersion: number) {
 	if (
 		!isObjectTagRecord(data) ||
-		(schemaVersion !== 1 && schemaVersion !== 2)
+		(schemaVersion !== 1 && schemaVersion !== 2 && schemaVersion !== 3)
 	) {
 		return false;
 	}
 	const tagsTooltipKey =
-		schemaVersion === 2
-			? 'guestCardTagsTooltip'
-			: 'customerCardTagsTooltip';
+		schemaVersion === 1
+			? 'customerCardTagsTooltip'
+			: 'guestCardTagsTooltip';
 
 	const { donationModal, hiddenItems, popularTrend, suggestMeals, table } =
 		data;
@@ -217,6 +221,7 @@ function validateGlobalPreferences(data: unknown, schemaVersion: number) {
 			'maxExtraIngredients',
 			'maxRating',
 			'maxResults',
+			...(schemaVersion === 3 ? ['sortProfile'] : []),
 		]) &&
 		hasExactKeys(table, ['columns', 'hiddenItems', 'row']) &&
 		isObjectTagRecord(tableColumns) &&
@@ -257,14 +262,21 @@ function validateGlobalPreferences(data: unknown, schemaVersion: number) {
 		(suggestMeals['maxExtraIngredients'] === null ||
 			isIntegerInRange(suggestMeals['maxExtraIngredients'], 0, 4)) &&
 		isIntegerInRange(suggestMeals['maxRating'], 0, 4) &&
-		isIntegerInRange(suggestMeals['maxResults'], 1, 10) &&
+		isIntegerInRange(
+			suggestMeals['maxResults'],
+			schemaVersion === 3 ? 5 : 1,
+			schemaVersion === 3 ? 20 : 10
+		) &&
+		(schemaVersion !== 3 ||
+			(typeof suggestMeals['sortProfile'] === 'string' &&
+				recommendationSortProfiles.has(suggestMeals['sortProfile']))) &&
 		isStringArray(tableColumns['beverage']) &&
 		tableColumns['beverage'].every((item) =>
 			beverageColumnKeys.has(item)
 		) &&
 		isStringArray(tableColumns['recipe']) &&
 		tableColumns['recipe'].every((item) =>
-			(schemaVersion === 2 ? foodColumnKeys : legacyRecipeColumnKeys).has(
+			(schemaVersion === 1 ? legacyRecipeColumnKeys : foodColumnKeys).has(
 				item
 			)
 		) &&

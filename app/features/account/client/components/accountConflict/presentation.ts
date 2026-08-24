@@ -2,6 +2,7 @@ import isNil from 'lodash/isNil.js';
 
 import { type TSyncNamespace } from '@/domain/account/contracts';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
+import { RECOMMENDATION_SORT_PROFILE_LABEL_MAP } from '@/domain/recommendations/labels';
 
 import { type TAccountSyncConflictResolution as TSyncConflictResolution } from '@/features/account/client/sync/conflictResolutionJournal';
 import { createSnapshotHash } from '@/features/account/client/sync/dirtyQueue/snapshotHash';
@@ -41,10 +42,12 @@ const CONFLICT_FIELD_LABEL_MAP: Record<string, string> = {
 	'popularTrend.tag': '流行趋势标签',
 	row: '表格显示行数',
 	showTagDescription: '显示料理标签所对应的关键词',
+	sortProfile: '“猜您想要”的默认推荐策略',
 	suggestMeals: '“猜您想要”推荐',
 	'suggestMeals.maxExtraIngredients': '“猜您想要”的加料上限',
 	'suggestMeals.maxRating': '“猜您想要”的评级上限',
 	'suggestMeals.maxResults': '“猜您想要”的推荐结果上限',
+	'suggestMeals.sortProfile': '“猜您想要”的默认推荐策略',
 	table: '表格设置',
 	'table.columns.beverage': '酒水表格显示列',
 	'table.columns.recipe': '料理表格显示列',
@@ -65,6 +68,7 @@ const CONFLICT_BOOLEAN_VALUE_LABEL_MAP: Record<
 };
 
 const CONFLICT_VALUE_LABEL_MAP: Record<string, string> = {
+	...RECOMMENDATION_SORT_PROFILE_LABEL_MAP,
 	action: '操作',
 	beverage: '酒水',
 	black: '深邃黑',

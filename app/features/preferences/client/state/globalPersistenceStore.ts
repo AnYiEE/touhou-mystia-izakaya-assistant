@@ -18,6 +18,11 @@ import type { TFoodId } from '@/domain/data/foods/types';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
 import { FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import { RECOMMENDATION_SORT_PROFILE_LABEL_MAP } from '@/domain/recommendations/labels';
+import {
+	RECOMMENDATION_SORT_PROFILES,
+	type TRecommendationSortProfile,
+} from '@/domain/recommendations/sortProfiles';
 import { checkPopularFoodTagId } from '@/domain/trends/checkPopularFoodTagId';
 import type { IPopularTrend, TPopularFoodTagId } from '@/domain/trends/types';
 
@@ -105,7 +110,8 @@ const state = {
 			enabled: true,
 			maxExtraIngredients: null as number | null,
 			maxRating: 4,
-			maxResults: 5,
+			maxResults: 10,
+			sortProfile: 'material-cost-first' as TRecommendationSortProfile,
 		},
 		table: {
 			columns: {
@@ -157,8 +163,14 @@ const state = {
 				{ label: '满意', value: 3 },
 				{ label: '完美', value: 4 },
 			] as Array<{ label: string; value: number }>,
-			selectableMaxResults: generateRange(1, 10).map(
+			selectableMaxResults: generateRange(5, 20).map(
 				toGetValueCollection
+			),
+			selectableSortProfiles: RECOMMENDATION_SORT_PROFILES.map(
+				(value) => ({
+					label: RECOMMENDATION_SORT_PROFILE_LABEL_MAP[value],
+					value,
+				})
 			),
 		},
 		table: {
@@ -196,6 +208,9 @@ const maxSuggestMealResultByKey = new Map<string, number>(
 		value.toString(),
 		value,
 	])
+);
+const suggestMealSortProfileByKey = new Map<string, TRecommendationSortProfile>(
+	RECOMMENDATION_SORT_PROFILES.map((value) => [value, value])
 );
 const popularTagByKey = new Map<string, TPopularFoodTagId>(
 	validPopularTags.map(({ tag }) => [tag.toString(), tag])
@@ -312,7 +327,8 @@ export const globalStore = store(state, {
 			name: storeName,
 			normalizeRemoteState: normalizeGlobalStoreRemoteState,
 			remoteStateApplicationGuard: accountRemoteStateApplicationGuard,
-			storeVersion: GLOBAL_PERSISTENCE_STORE_VERSION.recordIdentity,
+			storeVersion:
+				GLOBAL_PERSISTENCE_STORE_VERSION.suggestMealsSortProfile,
 			watch: ['persistence'],
 		}),
 		createPersistMiddleware<typeof state>({
@@ -353,7 +369,7 @@ export const globalStore = store(state, {
 					persistence: currentStore.persistence,
 				} as typeof currentStore;
 			},
-			version: GLOBAL_PERSISTENCE_STORE_VERSION.recordIdentity,
+			version: GLOBAL_PERSISTENCE_STORE_VERSION.suggestMealsSortProfile,
 		}),
 	],
 })
@@ -468,6 +484,24 @@ export const globalStore = store(state, {
 					) ?? [];
 				if (value !== undefined) {
 					currentStore.persistence.suggestMeals.maxResults.set(value);
+				}
+			},
+		},
+		suggestMealSortProfile: {
+			read: () =>
+				new Set([
+					currentStore.persistence.suggestMeals.sortProfile.use(),
+				]),
+			write: (sortProfiles: Selection) => {
+				const [value] =
+					selectionToKnownValues(
+						sortProfiles,
+						suggestMealSortProfileByKey
+					) ?? [];
+				if (value !== undefined) {
+					currentStore.persistence.suggestMeals.sortProfile.set(
+						value
+					);
 				}
 			},
 		},

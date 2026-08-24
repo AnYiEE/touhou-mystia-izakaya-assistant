@@ -17,6 +17,7 @@ const GLOBAL_PREFERENCE_ATOMIC_GROUP_PATHS = [
 	['suggestMeals', 'maxExtraIngredients'],
 	['suggestMeals', 'maxRating'],
 	['suggestMeals', 'maxResults'],
+	['suggestMeals', 'sortProfile'],
 	['table', 'row'],
 	['tachie'],
 	['vibrate'],

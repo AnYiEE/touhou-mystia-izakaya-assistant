@@ -32,12 +32,15 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 		globalStore.maxSuggestMealExtraIngredients.use();
 	const suggestMaxRating = globalStore.maxSuggestMealRating.use();
 	const suggestMaxResults = globalStore.maxSuggestMealResults.use();
+	const suggestSortProfile = globalStore.suggestMealSortProfile.use();
 	const selectableMaxExtraIngredients =
 		globalStore.shared.suggestMeals.selectableMaxExtraIngredients.get();
 	const selectableMaxRatings =
 		globalStore.shared.suggestMeals.selectableMaxRatings.get();
 	const suggestSelectableMaxResults =
 		globalStore.shared.suggestMeals.selectableMaxResults.get();
+	const suggestSelectableSortProfiles =
+		globalStore.shared.suggestMeals.selectableSortProfiles.get();
 
 	const popoverProps = useMemo(
 		() => ({ motionProps: popoverMotionProps }),
@@ -72,6 +75,10 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 		() => ({ base: 'w-28', ...selectClassNames }),
 		[selectClassNames]
 	);
+	const sortProfileSelectClassNames = useMemo(
+		() => ({ base: 'w-28', ...selectClassNames }),
+		[selectClassNames]
+	);
 
 	return (
 		<>
@@ -98,6 +105,34 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 				<p className="text-small text-foreground-500">
 					推荐参数会影响稀客页面套餐推荐卡片和营业预设的自动推荐结果
 				</p>
+				<div className="flex items-center gap-2">
+					<span className="whitespace-nowrap font-medium">
+						默认推荐策略：
+					</span>
+					<Select
+						disallowEmptySelection
+						disableAnimation={isReducedMotion}
+						isVirtualized={false}
+						items={suggestSelectableSortProfiles}
+						selectedKeys={suggestSortProfile}
+						selectionMode="single"
+						size="sm"
+						variant="flat"
+						onSelectionChange={
+							globalStore.suggestMealSortProfile.set
+						}
+						aria-label="选择自动推荐的默认推荐策略"
+						title="选择自动推荐的默认推荐策略"
+						popoverProps={popoverProps}
+						classNames={sortProfileSelectClassNames}
+					>
+						{({ label, value }) => (
+							<SelectItem key={value} textValue={label}>
+								{label}
+							</SelectItem>
+						)}
+					</Select>
+				</div>
 				<div className="flex items-center gap-2">
 					<span className="whitespace-nowrap font-medium">
 						最多推荐：

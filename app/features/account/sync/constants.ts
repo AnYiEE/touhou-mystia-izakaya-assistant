@@ -14,7 +14,7 @@ export const SYNC_SCHEMA_VERSION_MAP = {
 	[SYNC_NAMESPACE_MAP.specialGuestMeals]: 3,
 	[SYNC_NAMESPACE_MAP.specialGuestPlans]: 4,
 	[SYNC_NAMESPACE_MAP.specialGuestSettings]: 1,
-	[SYNC_NAMESPACE_MAP.globalPreferences]: 2,
+	[SYNC_NAMESPACE_MAP.globalPreferences]: 3,
 	[SYNC_NAMESPACE_MAP.theme]: 2,
 	[SYNC_NAMESPACE_MAP.tutorialSpecialGuest]: 1,
 } as const satisfies Record<TSyncNamespace, number>;

@@ -17,6 +17,7 @@ import type { TBeverageName } from '@/domain/data/beverages/types';
 import { FOOD_LIST } from '@/domain/data/foods/records';
 import { INGREDIENT_LIST } from '@/domain/data/ingredients/records';
 import type { TFoodTagLabel } from '@/domain/data/tags/types';
+import { RECOMMENDATION_SORT_PROFILES } from '@/domain/recommendations/sortProfiles';
 
 import { SYNC_SCHEMA_VERSION_MAP } from '@/features/account/sync/constants';
 import type { ISyncNamespaceSerializer } from '@/features/account/sync/types';
@@ -103,12 +104,13 @@ const donationModalKeys = new Set([
 ]);
 const hiddenItemKeys = new Set(['dlcs']);
 const popularTrendKeys = new Set(['isNegative', 'tag']);
-const suggestMealsKeys = new Set([
+const legacySuggestMealsKeys = new Set([
 	'enabled',
 	'maxExtraIngredients',
 	'maxRating',
 	'maxResults',
 ]);
+const suggestMealsKeys = new Set([...legacySuggestMealsKeys, 'sortProfile']);
 const tableKeys = new Set(['columns', 'hiddenItems', 'row']);
 const tableColumnKeys = new Set(['beverage', 'recipe']);
 const tableHiddenItemKeys = new Set(['beverages', 'foods', 'ingredients']);
@@ -129,6 +131,9 @@ const beverageNames = new Set(beverageNameOrder);
 const beverages: ReadonlySet<number> = new Set(beverageOrder);
 const ingredients: ReadonlySet<number> = new Set(ingredientOrder);
 const foods: ReadonlySet<number> = new Set(foodOrder);
+const recommendationSortProfiles: ReadonlySet<string> = new Set(
+	RECOMMENDATION_SORT_PROFILES
+);
 const globalPreferencesSetValueOrders = {
 	beverageColumns: beverageColumnKeyOrder,
 	foodColumns: foodColumnKeyOrder,
@@ -170,7 +175,8 @@ function createDefaultGlobalPreferencesSnapshot(): TGlobalPreferencesSnapshot {
 			enabled: true,
 			maxExtraIngredients: null,
 			maxRating: 4,
-			maxResults: 5,
+			maxResults: 10,
+			sortProfile: 'material-cost-first',
 		},
 		table: {
 			columns: {
@@ -200,7 +206,10 @@ function checkExactKeys(data: Record<string, unknown>, keys: Set<string>) {
 	);
 }
 
-function checkGlobalPreferencesExactKeyShape(data: unknown, version: 1 | 2) {
+function checkGlobalPreferencesExactKeyShape(
+	data: unknown,
+	version: 1 | 2 | 3
+) {
 	if (!isObjectTagRecord(data)) {
 		return false;
 	}
@@ -223,12 +232,15 @@ function checkGlobalPreferencesExactKeyShape(data: unknown, version: 1 | 2) {
 	return (
 		checkExactKeys(
 			data,
-			version === 2 ? currentRootKeys : legacyRootKeys
+			version === 1 ? legacyRootKeys : currentRootKeys
 		) &&
 		checkExactKeys(donationModal, donationModalKeys) &&
 		checkExactKeys(hiddenItems, hiddenItemKeys) &&
 		checkExactKeys(popularTrend, popularTrendKeys) &&
-		checkExactKeys(suggestMeals, suggestMealsKeys) &&
+		checkExactKeys(
+			suggestMeals,
+			version === 3 ? suggestMealsKeys : legacySuggestMealsKeys
+		) &&
 		checkExactKeys(table, tableKeys) &&
 		isObjectTagRecord(tableColumns) &&
 		checkExactKeys(tableColumns, tableColumnKeys) &&
@@ -322,6 +334,19 @@ function sanitizeGlobalPreferences(data: unknown) {
 	};
 }
 
+function resetLegacyRecommendationCount(data: unknown) {
+	if (!isObjectTagRecord(data)) {
+		return data;
+	}
+
+	const { suggestMeals } = data;
+	if (!isObjectTagRecord(suggestMeals)) {
+		return data;
+	}
+
+	return { ...data, suggestMeals: { ...suggestMeals, maxResults: 10 } };
+}
+
 function sanitizeLegacyGlobalPreferences(data: unknown) {
 	if (!isObjectTagRecord(data)) {
 		return data;
@@ -394,8 +419,16 @@ function isAllowedNumberArray(data: unknown, values: ReadonlySet<number>) {
 	);
 }
 
-function getLegacyDefaults() {
+function getSchema2Defaults() {
 	const defaults = createDefaultGlobalPreferencesSnapshot();
+	const { sortProfile: _sortProfile, ...suggestMeals } =
+		defaults.suggestMeals;
+
+	return { ...defaults, suggestMeals };
+}
+
+function getLegacyDefaults() {
+	const defaults = getSchema2Defaults();
 	const { guestCardTagsTooltip, ...legacyDefaults } = defaults;
 	const legacyTable = {
 		...defaults.table,
@@ -573,6 +606,7 @@ export const globalPreferencesSerializer = {
 					maxExtraIngredients: suggestMeals['maxExtraIngredients'],
 					maxRating: suggestMeals['maxRating'],
 					maxResults: suggestMeals['maxResults'],
+					sortProfile: suggestMeals['sortProfile'],
 				},
 				table: {
 					columns: {
@@ -604,15 +638,31 @@ export const globalPreferencesSerializer = {
 		});
 	},
 	migrate(data, version) {
-		if (version !== 1 && version !== 2) {
+		if (version !== 1 && version !== 2 && version !== 3) {
 			throw new Error('unsupported-global-preferences-schema-version');
 		}
 
 		const dataWithDefaults = applyGlobalPreferencesDefaults(
 			data,
-			version === 2 ? this.getDefaultSnapshot() : getLegacyDefaults()
+			version === 1
+				? getLegacyDefaults()
+				: version === 2
+					? getSchema2Defaults()
+					: this.getDefaultSnapshot()
 		);
 		if (!checkGlobalPreferencesExactKeyShape(dataWithDefaults, version)) {
+			throw new Error('invalid-global-preferences');
+		}
+		const { suggestMeals: sourceSuggestMeals } = isObjectTagRecord(
+			dataWithDefaults
+		)
+			? dataWithDefaults
+			: {};
+		if (
+			version < 3 &&
+			(!isObjectTagRecord(sourceSuggestMeals) ||
+				!isIntegerInRange(sourceSuggestMeals['maxResults'], 1, 10))
+		) {
 			throw new Error('invalid-global-preferences');
 		}
 
@@ -626,6 +676,19 @@ export const globalPreferencesSerializer = {
 			migratedData = migrateLegacyGlobalPreferences(legacyData);
 		} else {
 			migratedData = sanitizeGlobalPreferences(dataWithDefaults);
+		}
+		if (version < 3 && isObjectTagRecord(migratedData)) {
+			const { suggestMeals } = migratedData;
+			if (isObjectTagRecord(suggestMeals)) {
+				migratedData = {
+					...migratedData,
+					suggestMeals: {
+						...suggestMeals,
+						sortProfile: 'material-cost-first',
+					},
+				};
+			}
+			migratedData = resetLegacyRecommendationCount(migratedData);
 		}
 		if (!this.validate(migratedData)) {
 			throw new Error('invalid-global-preferences');
@@ -671,7 +734,7 @@ export const globalPreferencesSerializer = {
 		}
 
 		return (
-			checkGlobalPreferencesExactKeyShape(data, 2) &&
+			checkGlobalPreferencesExactKeyShape(data, 3) &&
 			isNonNegativeSafeInteger(donationModal['interactionCount']) &&
 			isNonNegativeSafeInteger(donationModal['lastMilestoneShown']) &&
 			(donationModal['lastShown'] === null ||
@@ -687,7 +750,9 @@ export const globalPreferencesSerializer = {
 			(suggestMeals['maxExtraIngredients'] === null ||
 				isIntegerInRange(suggestMeals['maxExtraIngredients'], 0, 4)) &&
 			isIntegerInRange(suggestMeals['maxRating'], 0, 4) &&
-			isIntegerInRange(suggestMeals['maxResults'], 1, 10) &&
+			isIntegerInRange(suggestMeals['maxResults'], 5, 20) &&
+			typeof suggestMeals['sortProfile'] === 'string' &&
+			recommendationSortProfiles.has(suggestMeals['sortProfile']) &&
 			isBeverageColumnArray(tableColumns['beverage']) &&
 			isFoodColumnArray(tableColumns['recipe']) &&
 			isAllowedNumberArray(tableHiddenItems['beverages'], beverages) &&

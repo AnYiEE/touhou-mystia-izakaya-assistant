@@ -1,6 +1,7 @@
 import type { TBeverageId } from '@/domain/data/beverages/types';
 import type { TFoodId } from '@/domain/data/foods/types';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
+import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import {
@@ -39,6 +40,7 @@ export interface IGlobalPreferencesPersistenceSnapshot {
 		maxExtraIngredients: number | null;
 		maxRating: number;
 		maxResults: number;
+		sortProfile: TRecommendationSortProfile;
 	};
 	table: {
 		columns: {

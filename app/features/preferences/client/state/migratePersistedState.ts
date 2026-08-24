@@ -40,6 +40,7 @@ export const GLOBAL_PERSISTENCE_STORE_VERSION = {
 	suggestMeals: 17,
 	suggestMealsExtra: 18, // eslint-disable-next-line sort-keys
 	recordIdentity: 19,
+	suggestMealsSortProfile: 20,
 } as const;
 
 const storeVersion = GLOBAL_PERSISTENCE_STORE_VERSION;
@@ -48,7 +49,7 @@ export function migrateGlobalPersistedState<T>(
 	persistedState: T,
 	version: number
 ): T {
-	if (version >= storeVersion.recordIdentity) {
+	if (version >= storeVersion.suggestMealsSortProfile) {
 		return persistedState;
 	}
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -198,6 +199,10 @@ export function migrateGlobalPersistedState<T>(
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			columns.recipe
 		);
+	}
+	if (version < storeVersion.suggestMealsSortProfile) {
+		oldState.persistence.suggestMeals.maxResults = 10;
+		oldState.persistence.suggestMeals.sortProfile = 'material-cost-first';
 	}
 	return oldState as T;
 }
