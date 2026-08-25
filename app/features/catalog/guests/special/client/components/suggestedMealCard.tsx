@@ -227,6 +227,9 @@ export default function SuggestedMealCard() {
 								</p>
 								<Ol className="space-y-0.5">
 									<Ol.Li>
+										少料易做：评级相同时，料理本身和额外食材的总成本越低越靠前
+									</Ol.Li>
+									<Ol.Li>
 										容易获取：评级相同时，优先当前稀客所属内容和更合适的获取路径
 									</Ol.Li>
 									<Ol.Li>
@@ -234,9 +237,6 @@ export default function SuggestedMealCard() {
 									</Ol.Li>
 									<Ol.Li>
 										高价优先：评级相同时，套餐总价越高越靠前
-									</Ol.Li>
-									<Ol.Li>
-										少料易做：评级相同时，料理本身和额外食材的总成本越低越靠前
 									</Ol.Li>
 								</Ol>
 								<p className="font-medium">筛选和排序：</p>
@@ -254,15 +254,6 @@ export default function SuggestedMealCard() {
 								</Ol>
 								<p className="font-medium">结果说明：</p>
 								<Ol className="space-y-0.5">
-									<Ol.Li>
-										容易获取会保留完整排序第一名，后续尽量换用不同的料理和酒水
-									</Ol.Li>
-									<Ol.Li>
-										低价、高价和少料易做会按各自的顺序排列，并过滤重复的料理或酒水，因此结果可能少于设置的条数
-									</Ol.Li>
-									<Ol.Li>
-										只使用已启用且未隐藏的非钓鱼项目，并优先选择当前稀客所属内容
-									</Ol.Li>
 									<Ol.Li>
 										推荐结果会受“流行趋势”和“明星店”效果影响
 									</Ol.Li>
@@ -843,7 +834,7 @@ export default function SuggestedMealCard() {
 																												? '+'
 																												: '-'}
 																											{
-																												'\u2005¥'
+																												'¥'
 																											}
 																											<Price
 																												showSymbol={

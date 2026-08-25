@@ -15,14 +15,14 @@ export function buildSelectionTip({
 }) {
 	const target: string[] = [];
 
-	if (!hasSelectedBeverage) {
-		target.push('酒水');
+	if ((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker) {
+		target.push('顾客点单需求');
 	}
 	if (!hasSelectedFood) {
 		target.push('料理');
 	}
-	if ((hasMystiaCooker && isDarkMatter) || !hasMystiaCooker) {
-		target.push('顾客点单需求');
+	if (!hasSelectedBeverage) {
+		target.push('酒水');
 	}
 
 	if (checkLengthEmpty(target)) {
@@ -31,7 +31,7 @@ export function buildSelectionTip({
 
 	let content = target.join('、');
 	if (!isDarkMatter && !hasMystiaCooker) {
-		content += '或标记为使用“夜雀”系列厨具';
+		content += '或点击厨具图标标记为使用“夜雀”系列厨具';
 	}
 
 	return `请选择${content}以${action}`;
