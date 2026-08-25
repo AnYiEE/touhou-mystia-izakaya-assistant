@@ -10,7 +10,8 @@ export const COLLECTION_POINT_REFRESH_FACTS = [
 	{ map: 'HakureiShrine', label: '蘑菇堆（西侧）', refreshTimeHours: 24 },
 	{ map: 'HakureiShrine', label: '蘑菇堆（东侧）', refreshTimeHours: 12 },
 	{ map: 'HakureiShrine', label: '水涡', refreshTimeHours: 24 },
-	{ map: 'HakureiShrine', label: '桃树', refreshTimeHours: 48 },
+	{ map: 'HakureiShrine', label: '桃树（蜂蜜）', refreshTimeHours: 48 },
+	{ map: 'HakureiShrine', label: '桃树（露水）', refreshTimeHours: 24 },
 	{
 		map: 'HakureiShrine',
 		label: '西侧守矢分社（祈愿）',

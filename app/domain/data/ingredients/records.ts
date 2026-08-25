@@ -5,7 +5,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 0,
 		name: '鸡蛋',
-		description: '人里供应的鸡蛋，较为常见。',
+		description: '人里供应的鸡蛋，较为常见',
 		type: -1,
 		tags: [18],
 		dlc: 0,
@@ -27,7 +27,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 1,
 		name: '猪肉',
-		description: '人里圈养的家猪肉，较为常见。',
+		description: '人里圈养的家猪肉，较为常见',
 		type: 0,
 		tags: [0],
 		dlc: 0,
@@ -44,7 +44,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 2,
 		name: '牛肉',
-		description: '人里圈养的肉牛肉，较为常见。',
+		description: '人里圈养的肉牛肉，较为常见',
 		type: 0,
 		tags: [0],
 		dlc: 0,
@@ -62,7 +62,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 3,
 		name: '鹿肉',
-		description: '猎人们在山间猎回来的鹿肉，有点珍贵。',
+		description: '猎人们在山间猎回来的鹿肉，有点珍贵',
 		type: 0,
 		tags: [0],
 		dlc: 0,
@@ -82,7 +82,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 4,
 		name: '野猪肉',
-		description: '猎人们在山间猎回来的野猪肉，充满野性。',
+		description: '猎人们在山间猎回来的野猪肉，充满野性',
 		type: 0,
 		tags: [0],
 		dlc: 0,
@@ -102,7 +102,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 5,
 		name: '豆腐',
-		description: '人里有卖的豆腐，较为常见。',
+		description: '人里有卖的豆腐，较为常见',
 		type: 2,
 		tags: [2, 3, 7],
 		dlc: 0,
@@ -120,7 +120,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 6,
 		name: '土豆',
-		description: '随处可见的那种普通土豆。',
+		description: '随处可见的那种普通土豆',
 		type: 2,
 		tags: [2, 3],
 		dlc: 0,
@@ -141,7 +141,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 7,
 		name: '洋葱',
-		description: '人里农田产的洋葱，较为常见。',
+		description: '人里农田产的洋葱，较为常见',
 		type: 2,
 		tags: [2, 16],
 		dlc: 0,
@@ -159,7 +159,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 8,
 		name: '南瓜',
-		description: '人里农田产的南瓜，较为常见。',
+		description: '人里农田产的南瓜，较为常见',
 		type: 2,
 		tags: [2, 9],
 		dlc: 0,
@@ -177,7 +177,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 9,
 		name: '萝卜',
-		description: '人里农田产的萝卜，较为常见。',
+		description: '人里农田产的萝卜，较为常见',
 		type: 2,
 		tags: [2, 8],
 		dlc: 0,
@@ -202,7 +202,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 10,
 		name: '海苔',
-		description: '不知道从哪里流入的外来食材，还挺常见。',
+		description: '不知道从哪里流入的外来食材，还挺常见',
 		type: 2,
 		tags: [2, 16],
 		dlc: 0,
@@ -248,7 +248,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 11,
 		name: '鳟鱼',
-		description: '栖息于淡水中的冷水鱼，较为常见。',
+		description: '栖息于淡水中的冷水鱼，较为常见',
 		type: 1,
 		tags: [1, 16],
 		dlc: 0,
@@ -308,8 +308,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 12,
 		name: '八目鳗',
-		description:
-			'一种洄游性海鱼，但却在幻想乡的河流湖泊随处可见。较为常见。',
+		description: '一种洄游性海鱼但却在幻想乡的河流湖泊随处可见，较为常见',
 		type: 1,
 		tags: [1, 16, 19],
 		dlc: 0,
@@ -385,7 +384,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 13,
 		name: '三文鱼',
-		description: '一种高度洄游海鱼，但在幻想乡的河流湖泊可见。有点珍贵。',
+		description: '一种高度洄游海鱼但在幻想乡的河流湖泊可见，有点珍贵',
 		type: 1,
 		tags: [1, 4, 16],
 		dlc: 0,
@@ -451,7 +450,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 14,
 		name: '金枪鱼',
-		description: '一种大洋性洄游海鱼，但在幻想乡的河流湖泊可见。有点珍贵。',
+		description: '一种大洋性洄游海鱼但在幻想乡的河流湖泊可见，有点珍贵',
 		type: 1,
 		tags: [1, 4, 16],
 		dlc: 0,
@@ -495,7 +494,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 15,
 		name: '黑毛猪肉',
-		description: '在高海拔深山中圈养的黑毛猪肉，非常高级。',
+		description: '在高海拔深山中圈养的黑毛猪肉，非常高级',
 		type: 0,
 		tags: [0, 5, 10],
 		dlc: 0,
@@ -516,7 +515,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 16,
 		name: '和牛',
-		description: '传闻是超优质的肉牛品种，又称雪花肉，非常高级。',
+		description: '传闻是超优质的肉牛品种，又称雪花肉，非常高级',
 		type: 0,
 		tags: [0, 4, 5],
 		dlc: 0,
@@ -537,8 +536,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 17,
 		name: '蘑菇',
-		description:
-			'从魔法之森采回来的品相良好的蘑菇，无法人工种植，非常珍贵。',
+		description: '从魔法之森采回来的品相良好的蘑菇，无法人工种植，非常珍贵',
 		type: 2,
 		tags: [2, 16, 26],
 		dlc: 0,
@@ -573,7 +571,6 @@ export const INGREDIENT_LIST = [
 				{ label: '蘑菇堆（西侧）', map: 'HakureiShrine' },
 				{ label: '蘑菇堆', map: 'BambooForest' },
 				{ label: '蘑菇堆', map: 'DLC1_MagicForest' },
-				{ label: '喷泉（西侧）', map: 'DLC2_EarthSpiritsPalace' },
 				{ label: '蘑菇堆', map: 'DLC4_GardenOfTheSun' },
 				{ label: '蘑菇堆', map: 'DLC5_Makai' },
 			],
@@ -583,8 +580,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 18,
 		name: '松露',
-		description:
-			'从魔法之森采回来的品相良好的松露，无法人工种植，非常珍贵。',
+		description: '从魔法之森采回来的品相良好的松露，无法人工种植，非常珍贵',
 		type: 2,
 		tags: [2, 4, 5, 10, 16, 26],
 		dlc: 0,
@@ -598,12 +594,8 @@ export const INGREDIENT_LIST = [
 				{ label: '不良少年', map: 'DLC4_ShiningNeedleCastle' },
 			],
 			collect: [
-				[{ label: '蘑菇堆（西侧）', map: 'HakureiShrine' }, true],
+				[{ label: '蘑菇堆（西侧）', map: 'HakureiShrine' }, 30],
 				[{ label: '蘑菇堆', map: 'BambooForest' }, 30],
-				[
-					{ label: '喷泉（西侧）', map: 'DLC2_EarthSpiritsPalace' },
-					true,
-				],
 			],
 			fishingAdvanced: ['ScarletMansion', 'DLC1_MagicForest'],
 			task: [{ task: '阿求小姐的色纸' }],
@@ -612,7 +604,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 19,
 		name: '极上金枪鱼',
-		description: '金枪鱼中的顶级品种，非常珍贵。',
+		description: '金枪鱼中的顶级品种，非常珍贵',
 		type: 1,
 		tags: [1, 4, 5, 11, 16],
 		dlc: 0,
@@ -688,7 +680,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 21,
 		name: '桃子',
-		description: '桃子树的果实，较为常见。',
+		description: '桃子树的果实，较为常见',
 		type: -1,
 		tags: [17, 31],
 		dlc: 0,
@@ -700,7 +692,8 @@ export const INGREDIENT_LIST = [
 				{ label: '月兔', map: 'DLC5_LunarCapital' },
 			],
 			collect: [
-				{ label: '桃树', map: 'HakureiShrine' },
+				{ label: '桃树（蜂蜜）', map: 'HakureiShrine' },
+				{ label: '桃树（露水）', map: 'HakureiShrine' },
 				{ label: '桃子', map: 'DLC1_MagicForest' },
 				{ label: '桃树', map: 'DLC4_GardenOfTheSun' },
 				{ label: '桃树', map: 'DLC5_LunarCapital' },
@@ -714,7 +707,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 22,
 		name: '白果',
-		description: '白果树的果实，较为常见。',
+		description: '白果树的果实，较为常见',
 		type: -1,
 		tags: [20],
 		dlc: 0,
@@ -739,7 +732,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 23,
 		name: '虾',
-		description: '分布在雾之湖和玄武泽的淡水虾，较为常见。',
+		description: '分布在雾之湖和玄武泽的淡水虾，较为常见',
 		type: 1,
 		tags: [1, 16],
 		dlc: 0,
@@ -763,7 +756,6 @@ export const INGREDIENT_LIST = [
 				{ label: '水涡（河流左侧）', map: 'ScarletMansion' },
 				[{ label: '水涡', map: 'BambooForest' }, 30],
 				[{ label: '西北瀑布', map: 'DLC1_YoukaiMountain' }, 40],
-				[{ label: '游乐场', map: 'DLC2_EarthSpiritsPalace' }, 20],
 				{ label: '莲花池（中部右）', map: 'DLC3_MyourenTemple' },
 				{
 					label: '水涡（拱桥上方）',
@@ -788,7 +780,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 24,
 		name: '蜂蜜',
-		description: '能从树上蜂巢采到的野生蜂蜜，较为常见。',
+		description: '能从树上蜂巢采到的野生蜂蜜，较为常见',
 		type: -1,
 		tags: [17],
 		dlc: 0,
@@ -804,9 +796,9 @@ export const INGREDIENT_LIST = [
 			collect: [
 				{ label: '蜂巢', map: 'BeastForest' },
 				[{ label: '银杏树', map: 'HumanVillage' }, 20],
-				[{ label: '桃树', map: 'HakureiShrine' }, 40],
+				[{ label: '桃树（蜂蜜）', map: 'HakureiShrine' }, 40],
 				[{ label: '银杏树', map: 'HakureiShrine' }, 30],
-				[{ label: '露水点', map: 'ScarletMansion' }, true],
+				[{ label: '露水点', map: 'ScarletMansion' }, 50],
 				[{ label: '蜂巢', map: 'DLC1_YoukaiMountain' }, 20],
 				{ label: '蜂巢', map: 'DLC3_MyourenTemple' },
 				{ label: '蜂巢', map: 'DLC4_GardenOfTheSun' },
@@ -817,7 +809,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 25,
 		name: '蝉蜕',
-		description: '在树干上常常可以采集的昆虫外壳，较为常见。',
+		description: '在树干上常常可以采集的昆虫外壳，较为常见',
 		type: -1,
 		tags: [24],
 		dlc: 0,
@@ -849,7 +841,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 26,
 		name: '幻昙华',
-		description: '生长在沼泽中的奇迹之花，非常珍贵。',
+		description: '生长在沼泽中的奇迹之花，非常珍贵',
 		type: -1,
 		tags: [4, 5, 27, 29],
 		dlc: 0,
@@ -863,7 +855,7 @@ export const INGREDIENT_LIST = [
 					16,
 					18,
 				],
-				{ label: '喷泉（西侧）', map: 'DLC2_EarthSpiritsPalace' },
+				{ label: '喷泉（东侧）', map: 'DLC2_EarthSpiritsPalace' },
 				{ label: '游乐场', map: 'DLC2_EarthSpiritsPalace' },
 				{ label: '花丛（西南侧）', map: 'DLC3_MyourenTemple' },
 			],
@@ -878,7 +870,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 27,
 		name: '露水',
-		description: '清晨采回来的露水，有点珍贵。',
+		description: '清晨采回来的露水，有点珍贵',
 		type: -1,
 		tags: [7],
 		dlc: 0,
@@ -914,7 +906,7 @@ export const INGREDIENT_LIST = [
 					17,
 					18,
 				],
-				[{ label: '桃树', map: 'HakureiShrine' }, 20],
+				[{ label: '桃树（露水）', map: 'HakureiShrine' }, 20],
 				{ label: '露水点', map: 'ScarletMansion' },
 				[{ label: '露水点', map: 'DLC1_MagicForest' }, false, 10, 11],
 				{ label: '露水点', map: 'DLC3_DivineSpiritMausoleum' },
@@ -931,7 +923,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 28,
 		name: '竹笋',
-		description: '从野外采回来的竹笋，较为常见。',
+		description: '从野外采回来的竹笋，较为常见',
 		type: 2,
 		tags: [2, 7],
 		dlc: 0,
@@ -949,13 +941,13 @@ export const INGREDIENT_LIST = [
 				{ label: '竹笋堆', map: 'DLC4_ShiningNeedleCastle' },
 				[{ label: '竹子', map: 'DLC4_ShiningNeedleCastle' }, 30],
 			],
-			fishingAdvanced: ['BambooForest', 'DLC3_MyourenTemple'],
+			fishingAdvanced: ['DLC3_MyourenTemple'],
 		},
 	},
 	{
 		id: 29,
 		name: '黄油',
-		description: '西餐常用的食材，可以轻松地给食物增加难以抗拒的香味。',
+		description: '西餐常用的食材，可以轻松地给食物增加难以抗拒的香味',
 		type: -1,
 		tags: [6],
 		dlc: 0,
@@ -971,7 +963,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 30,
 		name: '面粉',
-		description: '有多种用途，较为常见。',
+		description: '有多种用途，较为常见',
 		type: -1,
 		tags: [9],
 		dlc: 0,
@@ -987,7 +979,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 31,
 		name: '竹子',
-		description: '鲜翠欲滴的迷途竹林鲜切竹子，散发着清冽的竹香。',
+		description: '鲜翠欲滴的迷途竹林鲜切竹子，散发着清冽的竹香',
 		type: -1,
 		tags: [20],
 		dlc: 0,
@@ -1009,7 +1001,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 32,
 		name: '糯米',
-		description: '很有粘性的米。制作出来的料理或绵软适口，或鲜嫩弹牙。',
+		description: '很有粘性的米，制作出来的料理或绵软适口，或鲜嫩弹牙',
 		type: -1,
 		tags: [],
 		dlc: 0,
@@ -1026,7 +1018,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 33,
 		name: '月光草',
-		description: '永远亭的特产，由满月之夜的月光凝聚，非常珍贵。',
+		description: '永远亭的特产，由满月之夜的月光凝聚，非常珍贵',
 		type: -1,
 		tags: [7, 25, 27, 29],
 		dlc: 0,
@@ -1070,7 +1062,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 34,
 		name: '冰块',
-		description: '水的固体形态，帮助食材保温，晶莹剔透。',
+		description: '水的固体形态，帮助食材保温，晶莹剔透',
 		type: -1,
 		tags: [21],
 		dlc: 0,
@@ -1088,7 +1080,7 @@ export const INGREDIENT_LIST = [
 	{
 		id: 35,
 		name: '辣椒',
-		description: '用于增加辣味的食材，评价非常两极。',
+		description: '用于增加辣味的食材，评价非常两极',
 		type: -1,
 		tags: [34],
 		dlc: 0,
@@ -1112,14 +1104,17 @@ export const INGREDIENT_LIST = [
 	{
 		id: 36,
 		name: '葡萄',
-		description: '在红魔馆种植的用于酿酒的葡萄。',
+		description: '在红魔馆种植的用于酿酒的葡萄',
 		type: -1,
 		tags: [17, 31],
 		dlc: 0,
 		level: 1,
 		price: 5,
 		from: {
-			buy: [[{ label: '上海人形', map: 'DLC1_MagicForest' }, 60]],
+			buy: [
+				[{ label: '上海人形', map: 'DLC1_MagicForest' }, 60],
+				[{ label: '地狱鸦', map: 'DLC2_EarthSpiritsPalace' }, 40],
+			],
 			collect: [
 				{ label: '葡萄架', map: 'ScarletMansion' },
 				{ label: '葡萄架', map: 'DLC4_GardenOfTheSun' },
@@ -1131,7 +1126,7 @@ export const INGREDIENT_LIST = [
 		id: 1000,
 		name: '黄瓜',
 		description:
-			'河童的嗜好物。虽然用来做菜和普通蔬菜没有区别，但却能让河童无比上瘾。究竟是其中的什么成分在起作用…',
+			'河童的嗜好物。虽然用来做菜和普通蔬菜没有区别，但却能让河童无比上瘾。究竟是其中的什么成分在起作用……',
 		type: 2,
 		tags: [2, 3, 7],
 		dlc: 1,
@@ -1150,7 +1145,7 @@ export const INGREDIENT_LIST = [
 		id: 1001,
 		name: '章鱼',
 		description:
-			'鲜嫩可爱的海洋生物，但幻想乡没有海…它的脚是宝贝，有压倒性的肉质感，而且只要用最简单的火烤，就能享受弹牙的美味！',
+			'鲜嫩可爱的海洋生物，但幻想乡没有海……它的脚是宝贝，有压倒性的肉质感，而且只要用最简单的火烤，就能享受弹牙的美味！',
 		type: 1,
 		tags: [1, 11, 16],
 		dlc: 1,
@@ -1169,7 +1164,7 @@ export const INGREDIENT_LIST = [
 		id: 1002,
 		name: '海胆',
 		description:
-			'据说在外界被称作传说级的食材，只要一小颗就能让人感受到整个海洋的美味，会是真的吗？样子长得倒是挺奇怪的…',
+			'据说在外界被称作传说级的食材，只要一小颗就能让人感受到整个海洋的美味，会是真的吗？样子长得倒是挺奇怪的……',
 		type: 1,
 		tags: [1, 4, 5, 11, 16],
 		dlc: 1,
@@ -1180,7 +1175,10 @@ export const INGREDIENT_LIST = [
 				[{ label: '河童商人', map: 'DLC1_YoukaiMountain' }, 50],
 				[{ label: '不良少年', map: 'DLC4_ShiningNeedleCastle' }, 60],
 			],
-			collect: [{ label: '碗之后', map: 'DLC4_ShiningNeedleCastle' }],
+			collect: [
+				{ label: '碗之后', map: 'DLC4_ShiningNeedleCastle' },
+				[{ label: '河流', map: 'DLC5_Makai' }, 50],
+			],
 			fishingAdvanced: ['DLC1_YoukaiMountain'],
 		},
 	},
@@ -1188,7 +1186,7 @@ export const INGREDIENT_LIST = [
 		id: 1003,
 		name: '黑盐',
 		description:
-			'火山能量，累积上千万年；只为净化，你灵魂的尘埃…广告词这样写着，其实就是普通的火山岩盐。',
+			'火山能量，累积上千万年；只为净化，你灵魂的尘埃……广告词这样写着，其实就是普通的火山岩盐。',
 		type: -1,
 		tags: [15],
 		dlc: 1,
@@ -1196,7 +1194,7 @@ export const INGREDIENT_LIST = [
 		price: 3,
 		from: {
 			buy: [
-				[{ label: '河童商人', map: 'DLC1_YoukaiMountain' }, 50],
+				[{ label: '河童商人', map: 'DLC1_YoukaiMountain' }, 80],
 				{ label: '娜兹玲', map: 'DLC3_MyourenTemple' },
 			],
 			collect: [{ label: '黑盐', map: 'DLC1_YoukaiMountain' }],
@@ -1225,7 +1223,7 @@ export const INGREDIENT_LIST = [
 		id: 1005,
 		name: '螃蟹',
 		description:
-			'以为有了盔甲就可以横行霸道的八脚笨蛋，只需最简单的清蒸就能成为究极美味！不过要小心它的钳子…',
+			'以为有了盔甲就可以横行霸道的八脚笨蛋，只需最简单的清蒸就能成为究极美味！不过要小心它的钳子……',
 		type: 1,
 		tags: [1, 4, 16],
 		dlc: 1,
@@ -1248,7 +1246,7 @@ export const INGREDIENT_LIST = [
 		id: 2000,
 		name: '并蒂莲',
 		description:
-			'根茎生长在桥的附近，花朵成熟后会破水而出，淡红色并有淡香味。高级食材，也是地底人的节日装饰。',
+			'根茎生长在桥的附近，花朵成熟后会破水而出，淡红色并有淡香味，高级食材，也是地底人的节日装饰。',
 		type: -1,
 		tags: [4, 5, 7, 25, 29],
 		dlc: 2,
@@ -1339,7 +1337,7 @@ export const INGREDIENT_LIST = [
 		id: 3002,
 		name: '松子',
 		description:
-			'红松树的种子。据说在外界已经被列为濒危物种，但在幻想乡仍然很常见。传说松子有延年益寿的功能，是古代道士辟谷时的常备之物。',
+			'红松树的种子，据说在外界已经被列为濒危物种，但在幻想乡仍然很常见。传说松子有延年益寿的功能，是古代道士辟谷时的常备之物。',
 		type: -1,
 		tags: [4, 7, 19],
 		dlc: 3,
@@ -1454,7 +1452,7 @@ export const INGREDIENT_LIST = [
 		id: 5000,
 		name: '可可豆',
 		description:
-			'可可树的果实。据说在不同地区有不同的风味，有的会带点果香，有的带有烟熏的风味。可以磨成粉食用，是制作巧克力的基本原料。',
+			'可可树的果实，据说在不同地区有不同的风味，有的会带点果香，有的带有烟熏的风味。可以磨成粉食用，是制作巧克力的基本原料。',
 		type: -1,
 		tags: [17, 27],
 		dlc: 5,
@@ -1473,7 +1471,7 @@ export const INGREDIENT_LIST = [
 		id: 5001,
 		name: '西蓝花',
 		description:
-			'魔界土壤培育出来的西蓝花。因为光照不足植株徒长，花球颜色和地上也略微有些不同。',
+			'魔界土壤培育出来的西蓝花，因为光照不足植株徒长，花球颜色和地上也略微有些不同。',
 		type: 2,
 		tags: [2, 3],
 		dlc: 5,
@@ -1541,7 +1539,7 @@ export const INGREDIENT_LIST = [
 		id: 5005,
 		name: '强效辣椒素',
 		description:
-			'使用了月之科技制作的极•辣品，能让食用者留下恐怖的回忆。是不是真的用辣椒做的就说不清了…',
+			'使用了月之科技制作的极•辣品，能让食用者留下恐怖的回忆。是不是真的用辣椒做的就说不清了……',
 		type: -1,
 		tags: [5000],
 		dlc: 5,
@@ -1568,14 +1566,14 @@ export const INGREDIENT_LIST = [
 		tags: [-3, 4, 20],
 		dlc: 9,
 		level: 4,
-		price: 64,
+		price: 96,
 		from: { buy: [[{ label: '雪', map: 'HumanVillage' }, 60]] },
 	},
 	{
 		id: 11001,
 		name: '椰子',
 		description:
-			'不知道从哪儿流入的外来食材，坚硬的外壳下有美味的果肉和丰富的汁水。',
+			'不知道从哪流入的外来食材，坚硬的外壳下有美味的果肉和丰富的汁水。',
 		type: -1,
 		tags: [17, 31],
 		dlc: 9,
@@ -1603,7 +1601,7 @@ export const INGREDIENT_LIST = [
 		tags: [2, 34],
 		dlc: 9,
 		level: 1,
-		price: 1,
+		price: 4,
 		from: { buy: [{ label: '雪', map: 'HumanVillage' }] },
 	},
 	{
@@ -1614,7 +1612,7 @@ export const INGREDIENT_LIST = [
 		tags: [2, 34],
 		dlc: 9,
 		level: 1,
-		price: 1,
+		price: 4,
 		from: { buy: [{ label: '雪', map: 'HumanVillage' }] },
 	},
 	{
@@ -1626,7 +1624,7 @@ export const INGREDIENT_LIST = [
 		tags: [2, 3, 17],
 		dlc: 9,
 		level: 1,
-		price: 1,
+		price: 4,
 		from: { buy: [{ label: '舞', map: 'HumanVillage' }] },
 	},
 	{

@@ -3,6 +3,7 @@ import isNil from 'lodash/isNil.js';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
 import { ALL_MAP_LABELS_SET, MAP_FACTS } from '@/domain/data/places/placeFacts';
@@ -172,9 +173,11 @@ function formatCookerPrice(value: unknown) {
 			if (!checkIsRecord(part)) {
 				return '';
 			}
-			if (checkIsRecord(part['money'])) {
-				return typeof part['money']['amount'] === 'number'
-					? part['money']['amount'].toString()
+			if (checkIsRecord(part['cooker'])) {
+				const { cooker } = part;
+				return typeof cooker['cooker'] === 'number' &&
+					typeof cooker['amount'] === 'number'
+					? `${CookerCatalog.getInstance().getPropsById(cooker['cooker'] as never, 'name')} ${cooker['amount']}`
 					: '';
 			}
 			if (checkIsRecord(part['currencyItem'])) {
@@ -185,6 +188,11 @@ function formatCookerPrice(value: unknown) {
 				return currencyItemName !== null &&
 					typeof currencyItem['amount'] === 'number'
 					? `${currencyItemName} ${currencyItem['amount']}`
+					: '';
+			}
+			if (checkIsRecord(part['money'])) {
+				return typeof part['money']['amount'] === 'number'
+					? part['money']['amount'].toString()
 					: '';
 			}
 			return '';

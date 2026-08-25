@@ -3,8 +3,10 @@ import { Fragment } from 'react';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import type { ICooker, TCookerSource } from '@/domain/data/cookers/schema';
+import type { TCookerId } from '@/domain/data/cookers/types';
 import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 import type { TMerchantReference } from '@/domain/data/places/types';
 
@@ -31,6 +33,11 @@ type TCookerPricePart = Extract<
 	TCookerSource,
 	{ buy: unknown }
 >['buy']['price'][number];
+
+type TCookerItemPrice = Extract<
+	TCookerPricePart,
+	{ cooker: unknown }
+>['cooker'];
 type TCurrencyItemPrice = Extract<
 	TCookerPricePart,
 	{ currencyItem: unknown }
@@ -85,6 +92,40 @@ function renderCurrencyItemPrice(
 	);
 }
 
+function renderCookerItemPrice(
+	price: TCookerItemPrice,
+	openWindow: IProps['openWindow']
+) {
+	const { amount, cooker } = price;
+	const cookerId = cooker as TCookerId;
+	const cookerName = CookerCatalog.getInstance().getPropsById(
+		cookerId,
+		'name'
+	);
+	return (
+		<span className="inline-flex items-center">
+			<Price showSymbol={false}>{amount}×</Price>
+			<Tooltip
+				showArrow
+				content={`点击：在新窗口中查看厨具【${cookerName}】的详情`}
+				offset={1}
+				size="sm"
+			>
+				<Sprite
+					target="cooker"
+					recordId={cookerId}
+					size={1.25}
+					onPress={() => {
+						openWindow('cookers', cookerId, cookerName);
+					}}
+					aria-label={`点击：在新窗口中查看厨具【${cookerName}】的详情`}
+					role="button"
+				/>
+			</Tooltip>
+		</span>
+	);
+}
+
 function renderCookerSource(
 	item: TCookerSource,
 	fromIndex: number,
@@ -128,6 +169,8 @@ function renderCookerSource(
 						{priceIndex > 0 && <span className="mx-1">+</span>}
 						{'money' in priceItem ? (
 							<Price>{priceItem.money.amount}</Price>
+						) : 'cooker' in priceItem ? (
+							renderCookerItemPrice(priceItem.cooker, openWindow)
 						) : (
 							renderCurrencyItemPrice(
 								priceItem.currencyItem,

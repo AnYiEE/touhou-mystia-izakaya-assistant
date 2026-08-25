@@ -16,7 +16,7 @@ export const CLOTHES_LIST = [
 	{
 		id: -1,
 		name: '夜雀服',
-		description: '米斯蒂娅平常穿的衣服。',
+		description: '米斯蒂娅平常穿的衣服。可以在家里的换衣间进行更换。',
 		dlc: 0,
 		gif: false,
 		izakaya: false,
@@ -25,7 +25,8 @@ export const CLOTHES_LIST = [
 	{
 		id: -2,
 		name: '雀酒屋工作装',
-		description: '米斯蒂娅工作时穿的衣服。一般情况下会在工作时换上。',
+		description:
+			'米斯蒂娅工作时穿的衣服。一般情况下会在工作时换上。可以在家里的换衣间进行更换。',
 		dlc: 0,
 		gif: false,
 		izakaya: false,
@@ -35,7 +36,7 @@ export const CLOTHES_LIST = [
 		id: 23,
 		name: '黑色套装',
 		description:
-			'有着宵暗妖怪风格的服饰套装。但其实只是把原来的衣服染黑了而已，眼罩倒是很有趣。',
+			'有着宵暗妖怪风格的服饰套装。但其实只是把原来的衣服染黑了而已，眼罩倒是很有趣。可以在家里的换衣间进行更换。',
 		dlc: 0,
 		gif: true,
 		izakaya: false,
@@ -45,7 +46,7 @@ export const CLOTHES_LIST = [
 		id: 24,
 		name: '中华风校服',
 		description:
-			'上白泽慧音利用学童们用剩下的布料缝制而成的衣裳。似乎是中国某个时代，女孩子开始读书时候穿的衣服。',
+			'上白泽慧音利用学童们用剩下的布料缝制而成的衣裳。似乎是中国某个时代，女孩子开始读书时候穿的衣服。可以在家里的换衣间进行更换。',
 		dlc: 0,
 		gif: false,
 		izakaya: false,
@@ -55,7 +56,7 @@ export const CLOTHES_LIST = [
 		id: 25,
 		name: '褪色的巫女服',
 		description:
-			'博丽灵梦收拾仓库时找到的有点褪色的旧巫女服。穿上后感觉自己多少能体会到巫女的身份之重，但绝不可以自称巫女。',
+			'博丽灵梦收拾仓库时找到的有点褪色的旧巫女服。穿上后感觉自己多少能体会到巫女的身份之重，但绝不可以自称巫女。可以在家里的换衣间进行更换。',
 		dlc: 0,
 		gif: false,
 		izakaya: false,
@@ -65,7 +66,7 @@ export const CLOTHES_LIST = [
 		id: 26,
 		name: '睡衣',
 		description:
-			'帕秋莉·诺蕾姬送的舒服又保暖的家居服，穿上就不想脱下来了。',
+			'帕秋莉·诺蕾姬送的舒服又保暖的家居服，穿上就不想脱下来了。可以在家里的换衣间进行更换。',
 		dlc: 0,
 		gif: false,
 		izakaya: false,
@@ -74,7 +75,8 @@ export const CLOTHES_LIST = [
 	{
 		id: 27,
 		name: '访问着和服',
-		description: '蓬莱山辉夜送的制式严谨的访问着，穿起来有点费劲。',
+		description:
+			'蓬莱山辉夜送的制式严谨的访问着，穿起来有点费劲。可以在家里的换衣间进行更换。',
 		dlc: 0,
 		gif: false,
 		izakaya: false,
@@ -84,7 +86,7 @@ export const CLOTHES_LIST = [
 		id: 31,
 		name: '水手服',
 		description:
-			'从位于博丽神社的守矢分社中离奇获得的服饰，似乎在外界很流行。',
+			'从位于博丽神社的守矢分社中离奇获得的服饰，似乎在外界很流行。可以在家里的换衣间进行更换。',
 		dlc: 0,
 		gif: false,
 		izakaya: false,
@@ -94,7 +96,7 @@ export const CLOTHES_LIST = [
 		id: 54,
 		name: '万圣节特典晚装',
 		description:
-			'在2021年万圣节期间登录游戏获得的限定晚装，结合万圣节的气氛做了特别的设计，可爱又精怪。更换该服装时，店铺的夜间装潢也会变成万圣节风格。',
+			'在2021年万圣节期间登录游戏获得的限定晚装，结合万圣节的气氛做了特别的设计，可爱又精怪，更换该服装时，店铺的夜间装潢也会变成万圣节风格。',
 		dlc: 0,
 		gif: false,
 		izakaya: true,
@@ -103,7 +105,8 @@ export const CLOTHES_LIST = [
 	{
 		id: 56,
 		name: '偶像服',
-		description: '为了演唱会特意赶制的“鸟兽伎乐”乐队演出服。',
+		description:
+			'为了演唱会特意赶制的“鸟兽伎乐”乐队演出服。可以在家里的换衣间进行更换。',
 		dlc: 0,
 		gif: false,
 		izakaya: false,
@@ -143,7 +146,7 @@ export const CLOTHES_LIST = [
 		id: 60,
 		name: '蛋糕裙',
 		description:
-			'在2023年米斯蒂娅角色日活动期间登陆游戏获得的限定礼服。蓬松可爱的蛋糕裙既纯真又梦幻，寄寓着希冀之情，为庆贺米斯蒂娅角色日及《东方夜雀食堂》Nintendo Switch企划启动，而特意制作的纪念物。',
+			'在2023年米斯蒂娅角色日活动期间登陆游戏获得的限定礼服。蓬松可爱的蛋糕裙既纯真又梦幻，寄寓着希冀之情，为庆贺米斯蒂娅角色日及《东方夜雀食堂》Nintendo Switch企划启动，而特意制作的纪念物。  ',
 		dlc: 0,
 		gif: false,
 		izakaya: false,
@@ -165,7 +168,7 @@ export const CLOTHES_LIST = [
 		id: 1001,
 		name: '冬季水手服',
 		description:
-			'听说是外面世界冬季穿的水手服，为了对抗冬天的冷空气，特意加长了袖子和裙子的长度，以及进行了深色的设计，看起来保暖多了…但是等等，为什么冬季还要穿水手服？！',
+			'听说是外面世界冬季穿的水手服，为了对抗冬天的冷空气，特意加长了袖子和裙子的长度，以及进行了深色的设计，看起来保暖多了……但是等等为什么冬季还要穿水手服！？',
 		dlc: 1,
 		gif: false,
 		izakaya: false,
@@ -205,7 +208,7 @@ export const CLOTHES_LIST = [
 		id: 2500,
 		name: '朋克演出服',
 		description:
-			'充满朋克灵魂的演出装束！是鸟兽伎乐的起点，真希望有机会可以继续尽情地咆哮和歌唱啊！',
+			'充满朋克灵魂的演出装束！是鸟兽伎乐的起点，真希望有机会可以继续尽情的咆哮和歌唱啊！',
 		dlc: 2.5,
 		gif: false,
 		izakaya: false,
@@ -218,7 +221,7 @@ export const CLOTHES_LIST = [
 		id: 3001,
 		name: '海盗服',
 		description:
-			'曾经随着村纱东飘西泊的船长服，是村纱海上生涯的重要见证，同时也是船长荣耀的象征。',
+			'曾经随着村纱东飘西泊的船长服，是村纱海上生涯的重要见证，同时也是船长荣耀的象征。可以在家里的换衣间进行更换。',
 		dlc: 3,
 		gif: false,
 		izakaya: false,
@@ -228,7 +231,7 @@ export const CLOTHES_LIST = [
 		id: 3002,
 		name: '仙女服',
 		description:
-			'散发着缕缕仙气的纱裙。轻盈的丝纱质感，薄如蝉翼，似乎随时将化蝶飞去。',
+			'散发着缕缕仙气的纱裙。轻盈的丝纱质感，薄如蝉翼，似乎随时将化蝶飞去。可以在家里的换衣间进行更换。',
 		dlc: 3,
 		gif: false,
 		izakaya: false,
@@ -248,7 +251,7 @@ export const CLOTHES_LIST = [
 		id: 4004,
 		name: '番长服',
 		description:
-			'正邪为二把手准备的队服。巧妙地融合了不良、夜雀与音乐的元素，穿起来帅气非凡的同时还能彰显自我。可以看出制作者花了不少心思。',
+			'正邪为二把手准备的队服。巧妙地融合了不良与夜雀、音乐的元素，穿起来帅气非凡的同时还能彰显自我。可以看出制作者花了不少心思。',
 		dlc: 4,
 		gif: false,
 		izakaya: false,

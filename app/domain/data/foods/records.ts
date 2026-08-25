@@ -8,7 +8,7 @@ export const FOOD_LIST = [
 		id: 0,
 		name: '海鲜味噌汤',
 		description:
-			'居酒屋常见的快手汤羹。来历不明却随处可见的海带在幻想乡出现之初，有人好奇水煮了一下，结果意外地发现有种异样的鲜味，从此便在幻想乡流行开了。',
+			'居酒屋常见的快手汤羹，来历不明却随处可见的海带在幻想乡出现之初，有人好奇水煮了一下，结果意外地发现有种异样的鲜味，从此便在幻想乡流行开了。',
 		recipes: [{ id: 0, ingredients: [10], cookerType: 1, baseCookTime: 6 }],
 		positiveTags: [2, 3, 32],
 		negativeTags: [6],
@@ -21,7 +21,7 @@ export const FOOD_LIST = [
 		id: 1,
 		name: '豆腐味噌',
 		description:
-			'居酒屋常见的快手汤羹。使用了豆腐来提鲜，最简单又最原始的美味。',
+			'居酒屋常见的快手汤羹，使用了豆腐来提鲜，最简单又最原始的美味。',
 		recipes: [{ id: 1, ingredients: [5], cookerType: 1, baseCookTime: 7 }],
 		positiveTags: [2, 3, 7, 12, 32],
 		negativeTags: [6],
@@ -34,11 +34,11 @@ export const FOOD_LIST = [
 		id: 2,
 		name: '力量汤',
 		description:
-			'荤素搭配的美味汤羹。使用了野猪肉和海带煲煮而成，能最快捷地补充身体所需能量。',
+			'荤素搭配的美味汤羹，使用了野猪肉和海带煲煮而成，能最快捷地补充身体所需能量。',
 		recipes: [
 			{ id: 2, ingredients: [10, 4], cookerType: 1, baseCookTime: 12 },
 		],
-		positiveTags: [0, 10, 22, 23, 32],
+		positiveTags: [0, 2, 10, 22, 23, 32],
 		negativeTags: [21, 28],
 		dlc: 0,
 		level: 3,
@@ -81,7 +81,7 @@ export const FOOD_LIST = [
 		recipes: [
 			{ id: 5, ingredients: [2, 7, 8], cookerType: 2, baseCookTime: 12 },
 		],
-		positiveTags: [0, 9, 33],
+		positiveTags: [0, 2, 9, 33],
 		negativeTags: [],
 		dlc: 0,
 		level: 3,
@@ -121,7 +121,7 @@ export const FOOD_LIST = [
 		id: 8,
 		name: '炙猪肉饭团',
 		description:
-			'常见的平价饭团。在饭团中放入烤制后的猪肉，为其增加了一份香浓的嚼劲。',
+			'常见的平价饭团，在饭团中放入烤制后的猪肉，为其增加了一份香浓的嚼劲。',
 		recipes: [{ id: 7, ingredients: [1], cookerType: 5, baseCookTime: 6 }],
 		positiveTags: [0, 3, 9, 12],
 		negativeTags: [],
@@ -134,7 +134,7 @@ export const FOOD_LIST = [
 		id: 9,
 		name: '温暖饭团',
 		description:
-			'常见的平价饭团。内馅儿加入了鳟鱼和洋葱，融合了海鲜的细腻口感与洋葱的炽热，无论是营养还是口感都属上佳。',
+			'常见的平价饭团，内馅加入了鳟鱼和洋葱，融合了海鲜的细腻口感与洋葱的炽热，无论是营养还是口感都属上佳。',
 		recipes: [
 			{ id: 8, ingredients: [7, 11], cookerType: 5, baseCookTime: 8 },
 		],
@@ -149,7 +149,7 @@ export const FOOD_LIST = [
 		id: 10,
 		name: '樱落雪',
 		description:
-			'高级寿司的一种。粉红色的高级生鱼片盖在白米饭上，就如樱花飘落在白雪上，有着不可思议的美感。',
+			'高级寿司的一种，粉红色的高级生鱼片盖在白米饭上，就如樱花飘落在白雪上，有着不可思议的美感。',
 		recipes: [
 			{ id: 9, ingredients: [19], cookerType: 5, baseCookTime: 12 },
 		],
@@ -205,7 +205,7 @@ export const FOOD_LIST = [
 		id: 14,
 		name: '土豆可乐饼',
 		description:
-			'主要由土豆制成，外表酥脆，内在绵软可口，在油炸类食品中有着较高的人气。',
+			'主要由土豆制成，外表酥脆内在绵软可口，在油炸类食品中有着较高的人气。',
 		recipes: [{ id: 13, ingredients: [6], cookerType: 3, baseCookTime: 6 }],
 		positiveTags: [2, 3, 6],
 		negativeTags: [21],
@@ -218,7 +218,7 @@ export const FOOD_LIST = [
 		id: 15,
 		name: '野味加农',
 		description:
-			'用农家蔬菜佐以优质黑毛猪肉炖煮的烩锅。口感饱满，香浓却不油腻，是农家人最高级的大菜。',
+			'用农家蔬菜佐以优质黑毛猪肉炖煮的烩锅，口感饱满，香浓却不油腻，是农家人最高级的大菜。',
 		recipes: [
 			{ id: 14, ingredients: [6, 8, 15], cookerType: 1, baseCookTime: 8 },
 		],
@@ -233,7 +233,7 @@ export const FOOD_LIST = [
 		id: 16,
 		name: '猪肉盖浇饭',
 		description:
-			'常见的家常菜。看上去颗颗饭粒饱满，淋上的香酱与猪肉的口感融为一体，令人胃口倍增。',
+			'常见的家常菜，看上去颗颗饭粒饱满，淋上的香酱与猪肉的口感融为一体，令人胃口倍增。',
 		recipes: [{ id: 15, ingredients: [1], cookerType: 1, baseCookTime: 7 }],
 		positiveTags: [0, 3, 9],
 		negativeTags: [],
@@ -246,7 +246,7 @@ export const FOOD_LIST = [
 		id: 17,
 		name: '牛肉盖浇饭',
 		description:
-			'常见的家常菜。看上去颗颗饭粒饱满，淋上的香酱与牛肉的口感融为一体，令人胃口倍增。',
+			'常见的家常菜，看上去颗颗饭粒饱满，淋上的香酱与牛肉的口感融为一体，令人胃口倍增。',
 		recipes: [{ id: 16, ingredients: [2], cookerType: 1, baseCookTime: 7 }],
 		positiveTags: [0, 3, 9],
 		negativeTags: [],
@@ -274,7 +274,7 @@ export const FOOD_LIST = [
 		id: 19,
 		name: '蔬菜专辑',
 		description:
-			'用新鲜的蔬菜生拌而成的沙拉。口感清新，可以去除嘴里的油腻，不知为何被年轻的姑娘们奉为减肥圣餐。',
+			'用新鲜的蔬菜生拌而成的沙拉，口感清新，可以去除嘴里的油腻。不知为何被年轻的姑娘们奉为减肥圣餐。',
 		recipes: [
 			{ id: 18, ingredients: [6, 7, 8], cookerType: 5, baseCookTime: 5 },
 		],
@@ -289,7 +289,7 @@ export const FOOD_LIST = [
 		id: 20,
 		name: '白雪',
 		description:
-			'使用鲜美的八目鳗与河豚，再佐以海带炖煮而成的高级烩锅。由于煮的过程中会飘出纯白的泡沫而得名，是非常高级的家庭料理。',
+			'使用鲜美的八目鳗与河豚，再佐以海带炖煮而成的高级烩锅，由于煮的过程中会飘出纯白的泡沫而得名，是非常高级的家庭料理。',
 		recipes: [
 			{
 				id: 19,
@@ -298,7 +298,7 @@ export const FOOD_LIST = [
 				baseCookTime: 12,
 			},
 		],
-		positiveTags: [0, 1, 4, 12, 25],
+		positiveTags: [0, 1, 2, 4, 12, 25],
 		negativeTags: [],
 		dlc: 0,
 		level: 4,
@@ -309,7 +309,7 @@ export const FOOD_LIST = [
 		id: 21,
 		name: '豆腐锅',
 		description:
-			'由豆腐炖煮而成的烩锅。滑嫩的口感再加上其本身具有的较高营养价值，使这道平价料理成为居酒屋最常见的烩锅。',
+			'由豆腐炖煮而成的烩锅，滑嫩的口感再加上其本身具有的较高营养价值，使这道平价料理成为居酒屋最常见的烩锅。',
 		recipes: [{ id: 20, ingredients: [5], cookerType: 1, baseCookTime: 5 }],
 		positiveTags: [2, 7, 12, 22],
 		negativeTags: [],
@@ -322,7 +322,7 @@ export const FOOD_LIST = [
 		id: 22,
 		name: '杂炊',
 		description:
-			'使用一些边角料食材杂烩而成的烩锅。享受美味的同时还能避免浪费，可谓一举两得。',
+			'使用一些边角料食材杂烩而成的烩锅，享受美味的同时还能避免浪费，可谓一举两得。',
 		recipes: [
 			{
 				id: 21,
@@ -331,7 +331,7 @@ export const FOOD_LIST = [
 				baseCookTime: 5,
 			},
 		],
-		positiveTags: [0, 3, 16, 22],
+		positiveTags: [0, 2, 3, 16, 22],
 		negativeTags: [],
 		dlc: 0,
 		level: 2,
@@ -357,7 +357,7 @@ export const FOOD_LIST = [
 		id: 24,
 		name: '大奢宴',
 		description:
-			'奢侈地选用了一系列高级食材炖煮成烩锅。通过火候的精妙控制，将食材之间的特点全部提炼了出来，肉质鲜嫩多汁、香滑入味，令人其味无穷。',
+			'奢侈地选用了一系列高级食材炖煮成烩锅，通过火候的精妙控制，将食材之间的特点全部提炼了出来，肉质鲜嫩多汁，香滑入味，令人其味无穷。',
 		recipes: [
 			{
 				id: 36,
@@ -367,7 +367,7 @@ export const FOOD_LIST = [
 			},
 		],
 		positiveTags: [0, 1, 4, 9, 10],
-		negativeTags: [3],
+		negativeTags: [-2, 3],
 		dlc: 0,
 		level: 3,
 		price: 105,
@@ -381,7 +381,7 @@ export const FOOD_LIST = [
 		recipes: [
 			{ id: 23, ingredients: [1, 0, 10], cookerType: 1, baseCookTime: 8 },
 		],
-		positiveTags: [0, 3, 9, 15],
+		positiveTags: [0, 2, 3, 9, 15],
 		negativeTags: [],
 		dlc: 0,
 		level: 3,
@@ -505,7 +505,7 @@ export const FOOD_LIST = [
 		id: 33,
 		name: '桃花羹',
 		description:
-			'来自天上的配方，采摘新鲜的桃花，配以清晨的甘露水煮而成。不仅芳香清甜，而且具有祛病美容的神奇功效。',
+			'来自天上的配方，采摘新鲜的桃花，配以清晨的甘露水煮而成，不仅芳香清甜，而且具有祛病美容的神奇功效。',
 		recipes: [
 			{
 				id: 39,
@@ -544,7 +544,7 @@ export const FOOD_LIST = [
 	{
 		id: 35,
 		name: '油豆腐',
-		description: '常见的家常菜。传说中是稻荷神的狐狸使者最喜欢的食物。',
+		description: '常见的家常菜，传说中是稻荷神的狐狸使者最喜欢的食物。',
 		recipes: [{ id: 29, ingredients: [5], cookerType: 3, baseCookTime: 7 }],
 		positiveTags: [2, 3, 6, 12],
 		negativeTags: [],
@@ -572,7 +572,7 @@ export const FOOD_LIST = [
 		id: 37,
 		name: '真·海鲜味噌汤',
 		description:
-			'选用新鲜鳟鱼与海带煲煮而成的味噌汤。浓浓的鲜味四处漂荡，鲜而不腥。',
+			'选用新鲜鳟鱼与海带煲煮而成的味噌汤，浓浓的鲜味四处漂荡，鲜而不腥。',
 		recipes: [
 			{ id: 31, ingredients: [13, 11], cookerType: 1, baseCookTime: 8 },
 		],
@@ -587,7 +587,7 @@ export const FOOD_LIST = [
 		id: 38,
 		name: '烤蘑菇',
 		description:
-			'采用蘑菇为原料，将蘑菇用竹签串起来后，刷少量油进行烧烤，撒上粗盐，味道简直不输给直接吃肉！',
+			'采用蘑菇为原料，将蘑菇用竹签串起来后、刷少量油进行烧烤，撒上粗盐，味道简直不输给直接吃肉！',
 		recipes: [
 			{ id: 32, ingredients: [17], cookerType: 2, baseCookTime: 6 },
 		],
@@ -615,7 +615,7 @@ export const FOOD_LIST = [
 		id: 40,
 		name: '炸猪肉排',
 		description:
-			'常见的家常菜。以猪肉为主要材料，裹以面粉一炸，邻居家的孩子都馋哭了。',
+			'常见的家常菜，以猪肉为主要材料，裹以面粉一炸，邻居家的孩子都馋哭了。',
 		recipes: [{ id: 34, ingredients: [1], cookerType: 3, baseCookTime: 7 }],
 		positiveTags: [0, 3, 6, 9],
 		negativeTags: [],
@@ -750,7 +750,7 @@ export const FOOD_LIST = [
 		id: 48,
 		name: '奶油炖菜',
 		description:
-			'家常奶油浓汤。制作方法简单，无论是蘸面包还是当作炖菜来吃都是非常不错的料理。',
+			'家常奶油浓汤，制作方法简单，无论是蘸面包还是当作炖菜来吃都是非常不错的料理。',
 		recipes: [
 			{
 				id: 64,
@@ -788,7 +788,7 @@ export const FOOD_LIST = [
 		recipes: [
 			{ id: 54, ingredients: [22, 9, 1], cookerType: 1, baseCookTime: 6 },
 		],
-		positiveTags: [0, 14, 22, 32],
+		positiveTags: [0, 2, 14, 22, 32],
 		negativeTags: [],
 		dlc: 0,
 		level: 2,
@@ -825,7 +825,7 @@ export const FOOD_LIST = [
 		id: 52,
 		name: '不死鸟',
 		description:
-			'“哈~火鸡的肚子里也就是这些东西了~”——蓬莱山辉夜使用面粉烘培出烤火鸡的形状，在表面刷上蜂蜜，肚子里塞满食材，进行充分的烘烤。出炉的假烤鸡有着香脆的外皮和多汁的内馅儿。',
+			'“哈~火鸡的肚子里也就是这些东西了~”——蓬莱山辉夜使用面粉烘培出烤火鸡的形状，在表面刷上蜂蜜，肚子里塞满食材，进行充分的烘烤。出炉的假烤鸡有着香脆的外皮和多汁的内馅。',
 		recipes: [
 			{
 				id: 44,
@@ -880,7 +880,7 @@ export const FOOD_LIST = [
 		id: 55,
 		name: '白桃生八桥',
 		description:
-			'状似外界古筝的经典和果子，加入白桃内馅儿之后呈现淡粉色，非常诱人。',
+			'状似外界古筝的经典和果子，加入白桃内馅之后呈现淡粉色，非常诱人。',
 		recipes: [
 			{ id: 47, ingredients: [32, 21], cookerType: 5, baseCookTime: 5 },
 		],
@@ -997,7 +997,7 @@ export const FOOD_LIST = [
 		id: 62,
 		name: '臭豆腐',
 		description:
-			'少见的黑色豆腐，散发着令人难以接近的味道…让人不禁怀疑这真的可以吃吗？但是实际吃过的人表示根本停不下来。',
+			'少见的黑色豆腐，散发着令人难以接近的味道……让人不禁怀疑：这真的可以吃吗？但是实际吃过的人表示根本停不下来。',
 		recipes: [
 			{ id: 41, ingredients: [5, 35], cookerType: 3, baseCookTime: 5 },
 		],
@@ -1057,7 +1057,7 @@ export const FOOD_LIST = [
 		id: 66,
 		name: '月饼',
 		description:
-			'原本是内测人员的特殊食谱，三年来一直令全收集强迫症玩家坐卧不宁，这次彻底开放了…',
+			'原本是内测人员的特殊食谱，三年来一直令全收集强迫症玩家坐卧不宁，这次彻底开放了……',
 		recipes: [
 			{ id: 42, ingredients: [33, 30], cookerType: 4, baseCookTime: 10 },
 		],
@@ -1219,7 +1219,7 @@ export const FOOD_LIST = [
 		id: 71,
 		name: '水饺',
 		description:
-			'海的另一边，红美铃小姐家乡的著名食谱。用面粉制作成的筋道面皮，在其中包入任意喜欢的食材，放入沸腾的热水中煮熟，就会成为超级美味的食物。外表看起来朴素无华，内在却包着世间的宝藏。',
+			'海的另一边，红美铃小姐家乡的著名食谱，用面粉制作成的筋道面皮，在其中包入任意喜欢的食材，放入沸腾的热水中煮熟，就会成为超级美味的食物。外表看起来朴素无华，内在却包着世间的宝藏。',
 		recipes: [
 			{ id: 71, ingredients: [30], cookerType: 1, baseCookTime: 5 },
 		],
@@ -1239,7 +1239,7 @@ export const FOOD_LIST = [
 		id: 72,
 		name: '汤圆',
 		description:
-			'海的另一边，红美铃小姐家乡的著名食谱。用弹牙的糯米揉成小团，在其中包入甜品食材，放入沸腾的热水中煮熟，就会成为超级可口的甜品。外表看起来朴素无华，内在却包着世间的甜蜜。',
+			'海的另一边，红美铃小姐家乡的著名食谱，用弹牙的糯米揉成小团，在其中包入甜品食材，放入沸腾的热水中煮熟，就会成为超级可口的甜品。外表看起来朴素无华，内在却包着世间的甜蜜。',
 		recipes: [
 			{ id: 72, ingredients: [32], cookerType: 1, baseCookTime: 5 },
 		],
@@ -1274,7 +1274,7 @@ export const FOOD_LIST = [
 		id: 1001,
 		name: '黄金酥鱼饼',
 		description:
-			'在鱼馅儿内加入适量蜂蜜搅拌后，碾压成鱼饼，投入油锅炸至金黄色，随炸随食。',
+			'在鱼馅内加入适量蜂蜜搅拌后，碾压成鱼饼，投入油锅炸至金黄色，随炸随食。',
 		recipes: [
 			{
 				id: 1001,
@@ -1294,7 +1294,7 @@ export const FOOD_LIST = [
 		id: 1002,
 		name: '全肉盛宴',
 		description:
-			'将各种高级烤肉堆成小山的料理。无论视觉还是分量上都简单暴力，对于嗅觉灵敏的食客是秒杀级的食谱。',
+			'将各种高级烤肉堆成小山的料理，无论视觉还是分量上都简单暴力，对于嗅觉灵敏的食客是秒杀级的食谱。',
 		recipes: [
 			{
 				id: 1002,
@@ -1353,7 +1353,7 @@ export const FOOD_LIST = [
 		id: 1005,
 		name: '拟尻子玉',
 		description:
-			'据说尻子玉是人类进化后残存的尾骨，是河童一族最喜欢的食物。从前用血腥的方式从人类那里夺取，但是随着时代的进步，已经有了料理的方式来替代，只是成本昂贵。',
+			'据说尻子玉是人类进化后残存的尾骨，是河童一族最喜欢的食物。从前用血腥的方式从人类那里夺取，但是随着时代的进步、已经有了料理的方式来替代，只是成本昂贵。',
 		recipes: [
 			{
 				id: 1005,
@@ -1402,7 +1402,7 @@ export const FOOD_LIST = [
 				baseCookTime: 8,
 			},
 		],
-		positiveTags: [1, 9, 19, 20, 28],
+		positiveTags: [1, 8, 9, 19, 20, 28],
 		negativeTags: [],
 		dlc: 1,
 		level: 2,
@@ -1413,7 +1413,7 @@ export const FOOD_LIST = [
 		id: 1008,
 		name: '海胆刺身',
 		description:
-			'制作意外的简单，但获取食材却非常困难。据说是现世流行的超高级料理，是每个人的梦想。',
+			'制作意外的简单，但食材的获取却非常的困难，据说是现世流行的超高级料理，是每个人的梦想。',
 		recipes: [
 			{
 				id: 1008,
@@ -1467,7 +1467,7 @@ export const FOOD_LIST = [
 		id: 1011,
 		name: '蘑女的舞踏烩',
 		description:
-			'蘑菇为主角，佐以各种鲜嫩食材的强力料理。金灿灿的光芒散发着强烈的存在感，香浓的口感可以瞬间蒸发人的灵魂，一发沉沦。',
+			'蘑菇为主角，佐以各种鲜嫩食材的强力料理，金灿灿的光芒散发着强烈的存在感，香浓的口感可以瞬间蒸发人的灵魂，一发沉沦。',
 		recipes: [
 			{
 				id: 1011,
@@ -1487,7 +1487,7 @@ export const FOOD_LIST = [
 		id: 1012,
 		name: '奶香蘑菇汤',
 		description:
-			'浓郁的奶香汤底煮出来的魔性之汤，尝下第一口就无法停下来。制作简单，材料随处可见，还拥有极高的营养价值。',
+			'浓郁的奶香汤底煮出来的魔性之汤，尝下第一口就无法停下来。制作简单、材料随处可见，还拥有极高的营养价值。',
 		recipes: [
 			{
 				id: 1012,
@@ -1507,7 +1507,7 @@ export const FOOD_LIST = [
 		id: 1013,
 		name: '普通小蛋糕',
 		description:
-			'有着惊人热量的小点心，据说能迅速强健体魄。上面写着“吃掉我”，非常诱人。吃多了估计会长胖吧…',
+			'有着惊人热量的小点心，据说能迅速强健体魄。上面写着“吃掉我”，非常诱人。吃多了估计会长胖吧……',
 		recipes: [
 			{
 				id: 1013,
@@ -1527,7 +1527,7 @@ export const FOOD_LIST = [
 		id: 1014,
 		name: '七色羊羹',
 		description:
-			'经典甜食辅以特殊的处理，呈现梦幻的色彩，让人敬畏，只敢远观不敢亵玩。能吃上一次，终生难忘。',
+			'经典甜食辅以特殊的处理，呈现梦幻的色彩，让人敬畏、只敢远观不敢亵玩，能吃上一次，终生难忘。',
 		recipes: [
 			{
 				id: 1014,
@@ -1547,7 +1547,7 @@ export const FOOD_LIST = [
 		id: 1015,
 		name: '手握寿司',
 		description:
-			'日本最传统的料理之一。将鱼切片后盖在手握的饭团上，解饿又鲜美，拥有很长的历史。',
+			'日本最传统的料理之一，将鱼切片后盖在手握的饭团上，解饿又鲜美，拥有很长的历史。',
 		recipes: [
 			{ id: 1015, ingredients: [13, 14], cookerType: 5, baseCookTime: 6 },
 		],
@@ -1582,7 +1582,7 @@ export const FOOD_LIST = [
 		id: 1017,
 		name: '幻想佛跳墙',
 		description:
-			'由东方文明古国最强料理改造而来，据说得道的真佛也会因为它的气味夺墙而走，摒弃斋戒，真的很神奇！',
+			'由东方文明古国最强料理改造而来，据说得道的真佛也会因为它的气味夺墙而走，摒弃斋戒，真的是很神奇！',
 		recipes: [
 			{
 				id: 1017,
@@ -1642,7 +1642,7 @@ export const FOOD_LIST = [
 		id: 2002,
 		name: '绝叫关东煮',
 		description:
-			'旧地狱中最流行的聚会小吃。将各种食材置入后，加上辣椒刺激，让人汗流满面的同时却无法停下，是魔力十足的料理。',
+			'旧地狱中最流行的聚会小吃，将各种食材置入后，加上辣椒刺激，让人汗流满面的同时，却无法停下，是魔力十足的料理。',
 		recipes: [
 			{
 				id: 2002,
@@ -1757,7 +1757,7 @@ export const FOOD_LIST = [
 		id: 2008,
 		name: '大江户船祭',
 		description:
-			'用华丽的祭典船造型。摆满上好的鱼刺身，周围散发着保鲜而制作的冰雾，是真真真正的宴会的焦点！',
+			'用华丽的祭典船造型、摆满上好的鱼刺身、周围散发着保鲜而制作的冰雾，是真真真正的宴会的焦点！',
 		recipes: [
 			{
 				id: 2008,
@@ -1792,7 +1792,7 @@ export const FOOD_LIST = [
 		id: 2010,
 		name: '提神布丁',
 		description:
-			'大大提升了酸度的可怕布丁，改良了提神的效果，只要吃一口，就能让困倦的身体打起精神。但因为其用料过于凶猛，很不利于口腔健康…',
+			'大大提升了酸度的可怕布丁，改良了提神的效果，只要吃一口，就能让困倦的身体打起精神，但因为其用料过于凶猛，很不利于口腔健康……',
 		recipes: [
 			{
 				id: 2010,
@@ -1812,7 +1812,7 @@ export const FOOD_LIST = [
 		id: 2011,
 		name: '燃尽布丁',
 		description:
-			'究极加料、一颗就调动起身上包括多巴胺和肾上腺激素等多种兴奋元素疯狂舞动的禁忌甜食。妖怪食用后可以疯狂舞蹈一整夜，但是兴奋过后会不由地感到“我燃尽了”。',
+			'究极加料、一颗就调动起身上包括多巴胺肾上腺激素等多种兴奋元素疯狂舞动的禁忌甜食，妖怪食用后可以疯狂舞蹈一整夜，但是兴奋过后会不由地感到“我燃尽了”。',
 		recipes: [
 			{
 				id: 2011,
@@ -1832,7 +1832,7 @@ export const FOOD_LIST = [
 		id: 2012,
 		name: '猫饭',
 		description:
-			'据说是阿燐刚刚被觉收养时，觉常做给她的简易盖浇饭。面粉勾芡后淋在鱼肉上，那种温柔的味道一直留在燐的记忆里。',
+			'据说是阿燐刚刚被觉收养时、觉常做给她的简易盖浇饭，面粉勾芡后淋在鱼肉上，那种温柔的味道一直留在燐的记忆里。',
 		recipes: [
 			{
 				id: 2012,
@@ -1892,7 +1892,7 @@ export const FOOD_LIST = [
 		id: 2015,
 		name: '芝士蛋',
 		description:
-			'据说是阿空刚刚被觉收养时，觉常做给她的料理。在蛋饼里混入浓香的芝士，让人无法拒绝的小吃。',
+			'据说是阿空刚刚被觉收养时、觉常做给她的料理，在蛋饼里混入浓香的芝士，让人无法拒绝的小吃。',
 		recipes: [
 			{
 				id: 2015,
@@ -1952,7 +1952,7 @@ export const FOOD_LIST = [
 		id: 3000,
 		name: '烤地瓜',
 		description:
-			'无论什么时候都大受欢迎的民间小吃。尤其在寒冷的冬天，看到热气腾腾的烤炉，想到那红皮黄瓤的颜色，热乎甜软的口感，谁能忍得住呢？但不能贪嘴，吃太多容易导致胃腹不适。',
+			'无论什么时候都大受欢迎的民间小吃。尤其在寒冷的冬天，看到热气腾腾的烤炉，想到那红皮黄瓤的颜色、热乎甜软的口感，谁能忍得住呢？但不能贪嘴，吃太多容易导致胃腹不适。',
 		recipes: [
 			{ id: 3000, ingredients: [3001], cookerType: 2, baseCookTime: 6 },
 		],
@@ -2197,7 +2197,7 @@ export const FOOD_LIST = [
 		id: 3013,
 		name: '天师板栗焖菇',
 		description:
-			'神灵庙位处仙界，所栽种的栗树据说都蕴含仙气。但我是分辨不出啦…将栗子佐以蘑菇焖煮，把看不见摸不着的仙气浓缩成一锅鲜甜味美又解馋的杂烩，岂不是更实在？',
+			'神灵庙位处仙界，所栽种的栗树据说都蕴含仙气。但我是分辨不出啦……将栗子佐以蘑菇焖煮，把看不见摸不着的仙气浓缩成一锅鲜甜味美又解馋的杂烩，岂不是更实在？',
 		recipes: [
 			{
 				id: 3013,
@@ -2297,7 +2297,7 @@ export const FOOD_LIST = [
 		id: 4000,
 		name: '炸番茄条',
 		description:
-			'“为什么炸土豆条和番茄酱永远是标配？我不仅偏要炸番茄条，我还要独独给它淋上土豆酱！”——鬼人正邪把西红柿裹上面粉后放到油锅炸一炸，出锅后淋上自制土豆酱，尝起来也算是别有一番趣味。',
+			'为什么炸土豆条和番茄酱永远是标配？我不仅偏要炸番茄条，我还要独独给它淋上土豆酱！——鬼人正邪把西红柿裹上面粉后放到油锅炸一炸，出锅后淋上自制土豆酱，尝起来也算是别有一番趣味。',
 		recipes: [
 			{
 				id: 4000,
@@ -2357,7 +2357,7 @@ export const FOOD_LIST = [
 		id: 4003,
 		name: '红豆大福',
 		description:
-			'用糯米制成的外皮，里头包着饱满的带皮红小豆馅儿。馅料的量跟饼皮的量一样甚至更多，使得大福的外型圆浑有致。据说大福就因为这样的外型而被称为“大腹饼”，后人取其吉祥的谐音改称“大福”。',
+			'用糯米制成的外皮，里头包着饱满的带皮红小豆馅。馅料的量跟饼皮的量一样甚至更多，使得大福的外型圆浑有致。据说大福就因为这样的外型而被称为“大腹饼”，后人取其吉祥的谐音改称“大福”。',
 		recipes: [
 			{
 				id: 4003,
@@ -2731,7 +2731,7 @@ export const FOOD_LIST = [
 		id: 5004,
 		name: '猫咪披萨',
 		description:
-			'在发酵的圆面饼上面覆盖各种配料烤制而成，完美兼顾了营养和品相，焦糖洋葱的醇香滋味更是为其带来了多重的舌尖享受。可爱的猫咪外形让人有些不忍下嘴呢~',
+			'在发酵的圆面饼上面覆盖各种配料烤制而成，完美兼顾了营养和品相，焦糖洋葱的醇香滋味更是为其带来了多重的舌尖享受。可爱的猫咪外形让人有些不忍下嘴呢～',
 		recipes: [
 			{
 				id: 5004,
@@ -2755,7 +2755,7 @@ export const FOOD_LIST = [
 		recipes: [
 			{
 				id: 5005,
-				ingredients: [21, 5003, 1004, 30, 5000],
+				ingredients: [21, 5003, 1004, 5000, 30],
 				cookerType: 5,
 				baseCookTime: 12,
 			},
@@ -2826,7 +2826,7 @@ export const FOOD_LIST = [
 		id: 5009,
 		name: '桃花琉璃卷',
 		description:
-			'通过胶凝化技术，把粉嫩可爱的桃花制成晶莹剔透的琉璃果冻外皮，裹着糯叽叽的豆沙馅儿，记录季节的浪漫与甜蜜。',
+			'通过胶凝化技术，把粉嫩可爱的桃花制成晶莹剔透的琉璃果冻外皮，裹着糯叽叽的豆沙馅，记录季节的浪漫与甜蜜。',
 		recipes: [
 			{
 				id: 5009,
@@ -2846,7 +2846,7 @@ export const FOOD_LIST = [
 		id: 5010,
 		name: '荷塘月色',
 		description:
-			'清爽细腻的葡萄乌龙冻，白色的是奶油慕斯！奶油的绵密与葡萄的清爽在舌尖碰撞出别样滋味，茶冻间点缀片片青提，馥郁果香充盈唇齿。菏泽上的小露珠也相当有趣~',
+			'清爽细腻的葡萄乌龙冻，白色的是奶油慕斯！奶油的绵密与葡萄的清爽在舌尖碰撞出别样滋味，茶冻间点缀片片青提，馥郁果香充盈唇齿。菏泽上的小露珠也相当有趣～',
 		recipes: [
 			{
 				id: 5010,
@@ -3006,7 +3006,7 @@ export const FOOD_LIST = [
 		id: -1,
 		name: DARK_MATTER_META_MAP.name,
 		description:
-			'烹饪失误、散发着黑色气场的不明物质，不会有人想吃这种东西…吧？',
+			'烹饪失误、散发着黑色气场的不明物质，不会有人想吃这种东西……吧？',
 		recipes: [{ id: -1, ingredients: [], cookerType: 1, baseCookTime: 0 }],
 		positiveTags: [DARK_MATTER_META_MAP.positiveTag],
 		negativeTags: [],
@@ -3073,7 +3073,7 @@ export const FOOD_LIST = [
 				baseCookTime: 5,
 			},
 		],
-		positiveTags: [4, 5, 7, 20, 25, 27],
+		positiveTags: [-3, 4, 5, 7, 20, 25, 27],
 		negativeTags: [-1, 0, 6],
 		dlc: 9,
 		level: 4,
@@ -3133,7 +3133,7 @@ export const FOOD_LIST = [
 				baseCookTime: 5,
 			},
 		],
-		positiveTags: [0, 8, 9, 20, 22, 23, 35],
+		positiveTags: [0, 8, 9, 15, 20, 22, 23, 35],
 		negativeTags: [31],
 		dlc: 9,
 		level: 4,
@@ -3144,7 +3144,7 @@ export const FOOD_LIST = [
 		id: 11006,
 		name: '甜心三明治',
 		description:
-			'超级猎奇口味的三明治，外表做得五颜六色很可爱，然而内里的味道简直令人咋舌。或许有些人会喜欢吧…',
+			'超级猎奇口味的三明治，外表做得五颜六色很可爱，然而内里的味道简直令人咋舌。或许有些人会喜欢吧……',
 		recipes: [
 			{
 				id: 11006,
@@ -3244,7 +3244,7 @@ export const FOOD_LIST = [
 		id: 11011,
 		name: '星月桃子糕',
 		description:
-			'给食欲不振的病人开胃的甜点，使用了幻昙华和月光草模拟星光和月光，而桃子的甜香底味可以很好的刺激病人的胃口，又不至于过于刺激。是非常精致又非常贴心的甜点呢，不愧是月之头脑的作品。',
+			'给食欲不振的病人开胃的甜点，使用了幻昙华和月光草模拟星光和月光，而桃子的甜香底味可以很好地刺激病人的胃口，又不至于过于刺激。是非常精致又非常贴心的甜点呢，不愧是月之头脑的作品。',
 		recipes: [
 			{
 				id: 11011,
@@ -3254,7 +3254,7 @@ export const FOOD_LIST = [
 			},
 		],
 		positiveTags: [12, 17, 20, 25, 27, 28],
-		negativeTags: [],
+		negativeTags: [0],
 		dlc: 9,
 		level: 3,
 		price: 118,
@@ -3325,7 +3325,7 @@ export const FOOD_LIST = [
 		name: '肉汁奶酪薯条',
 		description:
 			// cSpell:ignore Poutine
-			'在外界似乎被称为“Poutine”的高热量西式快餐，最早起源于加拿大魁北克省，是加拿大的国菜。因该省有着大量法国后裔，因此当地人在法式炸薯条的基础上，加上了肉汁、手撕牛肉与奶酪块，构成了这道如同塔一般宏伟的热量炸弹。现代的肉汁奶酪薯条还经常会在此基础上额外加上羊肉粒、墨西哥辣椒、培根条、烧烤酱、牧场沙拉酱以及塔塔酱，真是让人看一眼就会腻到反胃…“多就是好！舞舞绝对会喜欢！”雪如此评价这道料理。',
+			'在外界似乎被称为“Poutine”的高热量西式快餐，最早起源于加拿大魁北克省，是加拿大的国菜。因该省有着大量法国后裔，因此当地人在法式炸薯条的基础上，加上了肉汁、手撕牛肉与奶酪块，构成了这道如同塔一般宏伟的热量炸弹。现代的肉汁奶酪薯条还经常会在此基础上额外加上羊肉粒、墨西哥辣椒、培根条、烧烤酱、牧场沙拉酱以及塔塔酱，真是让人看一眼就会腻到反胃……“多就是好！舞舞绝对会喜欢！”雪如此评价这道料理。',
 		recipes: [
 			{
 				id: 11015,
@@ -3366,7 +3366,7 @@ export const FOOD_LIST = [
 		id: 11017,
 		name: '奶油甜煎饼卷',
 		description:
-			'在外界似乎被称为“Cannoli”的西式甜点，最早起源于意大利巴勒莫，也是魔界最为流行的下午茶点心。奶油甜煎饼卷的制作方式非常奇特：首先用特制的铁棍或者锡箔纸固定住面粉做的酥皮，放入油锅中炸至金黄，然后往里面填入奶油馅料，最后在顶端撒上可可粉、糖霜以及可食用金箔便大功告成了。“这种甜点嘛，对于本魔神而言轻轻松松啦！”作为神绮平时下午茶必备的甜点，其本人使用魔法制作的奶油甜煎饼卷受到魔界人的好评，直到有一天，她灵机一动没有使用魔法而是亲手下厨…',
+			'在外界似乎被称为“Cannoli”的西式甜点，最早起源于意大利巴勒莫，也是魔界最为流行的下午茶点心。奶油甜煎饼卷的制作方式非常奇特：首先用特制的铁棍或者锡箔纸固定住面粉做的酥皮，放入油锅中炸至金黄，然后往里面填入奶油馅料，最后在顶端撒上可可粉、糖霜以及可食用金箔便大功告成了。“这种甜点嘛，对于本魔神而言轻轻松松啦！”作为神绮平时下午茶必备的甜点，其本人使用魔法制作的奶油甜煎饼卷受到魔界人的好评，直到有一天，她灵机一动没有使用魔法而是亲手下厨……',
 		recipes: [
 			{
 				id: 11017,
@@ -3592,7 +3592,7 @@ export const FOOD_LIST = [
 			},
 		],
 		positiveTags: [-3, 1, 4, 11, 12, 20, 30, 32],
-		negativeTags: [6, 8, 21, 31, 34, 2000],
+		negativeTags: [6, 8, 21, 31, 34],
 		dlc: 9,
 		level: 4,
 		price: 157,

@@ -14,7 +14,7 @@ import {
 	resolveLegacyIngredientNames,
 } from '@/domain/catalog/legacy/resolveLegacyIngredientName';
 import { resolveLegacyRecordName } from '@/domain/catalog/legacy/resolveLegacyRecordName';
-import type { TBeverageId, TBeverageName } from '@/domain/data/beverages/types';
+import type { TBeverageId } from '@/domain/data/beverages/types';
 import type { TFoodId, TRecipeId } from '@/domain/data/foods/types';
 import type { TNormalGuestName } from '@/domain/data/guests/normal/types';
 import type { TSpecialGuestName } from '@/domain/data/guests/special/types';
@@ -43,7 +43,6 @@ const beverageCatalog = BeverageCatalog.getInstance();
 const foodCatalog = FoodCatalog.getInstance();
 const normalGuestCatalog = NormalGuestCatalog.getInstance();
 const specialGuestCatalog = SpecialGuestCatalog.getInstance();
-const beverageNames = new Set<string>(beverageCatalog.getNames());
 const beverageKeys = new Set(beverageCatalog.data.map(({ id }) => String(id)));
 const normalGuestNames = new Set<string>(normalGuestCatalog.getNames());
 const normalGuestKeys = new Set(
@@ -342,18 +341,6 @@ export function normalizeMealSnapshot<TMeal, TNormalizedMeal>(
 		},
 		{}
 	);
-}
-
-export function resolveLegacyBeverage(name: TBeverageName): TBeverageId {
-	return resolveLegacyRecordName({
-		catalog: beverageCatalog,
-		category: 'beverage',
-		name,
-	});
-}
-
-export function checkLegacyBeverage(data: unknown): data is TBeverageName {
-	return typeof data === 'string' && beverageNames.has(data);
 }
 
 function getMealSignature(meal: unknown) {

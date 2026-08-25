@@ -16,6 +16,7 @@ import type { IMealFood, IResolvedMealFood } from '@/domain/meals/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+import { numberSort } from '@/shared/utilities/sort/numberSort';
 
 import { IngredientCatalog } from './IngredientCatalog';
 import type { IProcessedRecipe, TFood, TProcessedFood, TRecipe } from './types';
@@ -86,13 +87,16 @@ export class FoodCatalog extends TaggedRecordCatalog<
 		const clonedData = structuredClone(data) as unknown as IFood[];
 
 		clonedData.forEach((food) => {
+			const positiveTagSet = new Set(food.positiveTags);
 			if (food.id !== -1) {
 				if (food.price > 60) {
-					food.positiveTags.push(DYNAMIC_FOOD_TAG_MAP.expensive);
+					positiveTagSet.add(DYNAMIC_FOOD_TAG_MAP.expensive);
 				} else if (food.price < 20) {
-					food.positiveTags.push(DYNAMIC_FOOD_TAG_MAP.economical);
+					positiveTagSet.add(DYNAMIC_FOOD_TAG_MAP.economical);
 				}
 			}
+			FoodCatalog.applyTagCovers(positiveTagSet, null);
+			food.positiveTags = [...positiveTagSet].sort(numberSort);
 
 			const processedRecipes = food.recipes.map(
 				({ baseCookTime, ...recipe }: IRecipe): IProcessedRecipe => ({

@@ -6,6 +6,7 @@ import type { IItemBase } from '@/domain/data/shared/itemSchema';
 import type { TCookerSeriesId, TCookerTypeId } from './types';
 
 type TCookerPricePart =
+	| { cooker: { amount: number; cooker: number } }
 	| { currencyItem: { amount: number; currencyItem: TCurrencyItemId } }
 	| { money: { amount: number } };
 

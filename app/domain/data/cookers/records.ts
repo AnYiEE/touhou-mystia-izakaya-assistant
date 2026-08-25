@@ -180,7 +180,12 @@ export const COOKER_LIST = [
 		series: 2,
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [createKourindouPurchase([{ money: { amount: 2000 } }])],
+		from: [
+			createKourindouPurchase([
+				{ cooker: { amount: 1, cooker: 0 } },
+				{ money: { amount: 2000 } },
+			]),
+		],
 	},
 	{
 		id: 11,
@@ -190,7 +195,12 @@ export const COOKER_LIST = [
 		series: 2,
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [createKourindouPurchase([{ money: { amount: 2000 } }])],
+		from: [
+			createKourindouPurchase([
+				{ cooker: { amount: 1, cooker: 1 } },
+				{ money: { amount: 2000 } },
+			]),
+		],
 	},
 	{
 		id: 12,
@@ -200,7 +210,12 @@ export const COOKER_LIST = [
 		series: 2,
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [createKourindouPurchase([{ money: { amount: 2000 } }])],
+		from: [
+			createKourindouPurchase([
+				{ cooker: { amount: 1, cooker: 2 } },
+				{ money: { amount: 2000 } },
+			]),
+		],
 	},
 	{
 		id: 13,
@@ -210,7 +225,12 @@ export const COOKER_LIST = [
 		series: 2,
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [createKourindouPurchase([{ money: { amount: 2000 } }])],
+		from: [
+			createKourindouPurchase([
+				{ cooker: { amount: 1, cooker: 3 } },
+				{ money: { amount: 2000 } },
+			]),
+		],
 	},
 	{
 		id: 14,
@@ -220,7 +240,12 @@ export const COOKER_LIST = [
 		series: 2,
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [createKourindouPurchase([{ money: { amount: 2000 } }])],
+		from: [
+			createKourindouPurchase([
+				{ cooker: { amount: 1, cooker: 4 } },
+				{ money: { amount: 2000 } },
+			]),
+		],
 	},
 	{
 		id: 15,
@@ -232,6 +257,7 @@ export const COOKER_LIST = [
 		effect: '减少10%料理时间，增加8%续单概率。',
 		from: [
 			createKourindouPurchase([
+				{ cooker: { amount: 1, cooker: 10 } },
 				{ currencyItem: { amount: 7, currencyItem: 4 } },
 				{ money: { amount: 5000 } },
 			]),
@@ -247,6 +273,7 @@ export const COOKER_LIST = [
 		effect: '减少10%料理时间，增加8%续单概率。',
 		from: [
 			createKourindouPurchase([
+				{ cooker: { amount: 1, cooker: 11 } },
 				{ currencyItem: { amount: 7, currencyItem: 4 } },
 				{ money: { amount: 5000 } },
 			]),
@@ -262,6 +289,7 @@ export const COOKER_LIST = [
 		effect: '减少10%料理时间，增加8%续单概率。',
 		from: [
 			createKourindouPurchase([
+				{ cooker: { amount: 1, cooker: 12 } },
 				{ currencyItem: { amount: 7, currencyItem: 4 } },
 				{ money: { amount: 5000 } },
 			]),
@@ -277,6 +305,7 @@ export const COOKER_LIST = [
 		effect: '减少10%料理时间，增加8%续单概率。',
 		from: [
 			createKourindouPurchase([
+				{ cooker: { amount: 1, cooker: 13 } },
 				{ currencyItem: { amount: 7, currencyItem: 4 } },
 				{ money: { amount: 5000 } },
 			]),
@@ -292,6 +321,7 @@ export const COOKER_LIST = [
 		effect: '减少10%料理时间，增加8%续单概率。',
 		from: [
 			createKourindouPurchase([
+				{ cooker: { amount: 1, cooker: 14 } },
 				{ currencyItem: { amount: 7, currencyItem: 4 } },
 				{ money: { amount: 5000 } },
 			]),
@@ -549,7 +579,7 @@ export const COOKER_LIST = [
 	},
 	{
 		id: 1000,
-		name: '星尘鼎沸',
+		name: '「星尘鼎沸」',
 		description: '所罗门啊，我回来了！',
 		availableTypes: [1],
 		series: 1000,
@@ -562,7 +592,7 @@ export const COOKER_LIST = [
 	},
 	{
 		id: 2000,
-		name: '纯粹炼狱',
+		name: '「纯粹炼狱」',
 		description: '纯粹的料理地狱。',
 		availableTypes: [3],
 		series: 2000,
@@ -575,7 +605,7 @@ export const COOKER_LIST = [
 	},
 	{
 		id: 3000,
-		name: '紫薇天火',
+		name: '「紫薇天火」',
 		description: '集天枢与七星之力做一份烧烤，必然是无上极品啦。',
 		availableTypes: [2],
 		series: 3000,
@@ -588,7 +618,7 @@ export const COOKER_LIST = [
 	},
 	{
 		id: 4000,
-		name: '冯风渡御',
+		name: '「冯风渡御」',
 		description: '料理和新闻一样，有时候是需要“添油加醋”的。',
 		availableTypes: [4],
 		series: 4000,
@@ -601,7 +631,7 @@ export const COOKER_LIST = [
 	},
 	{
 		id: 5000,
-		name: '魔人经板',
+		name: '「魔人经板」',
 		description: '魔典的展现是无所谓形式的！',
 		availableTypes: [5],
 		series: 5000,
@@ -624,7 +654,7 @@ export const COOKER_LIST = [
 	},
 	{
 		id: 5001,
-		name: '三位一体',
+		name: '「三位一体」',
 		description: '上面写着“Welcome Hell”的字样，看起来像是什么流行品牌。',
 		availableTypes: [1, 3, 4],
 		series: 5001,

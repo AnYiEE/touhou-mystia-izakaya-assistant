@@ -1,4 +1,8 @@
-import type { TBeverageName } from '@/domain/data/beverages/types';
+import {
+	type TLegacyBeverageName,
+	checkLegacyBeverageName,
+	resolveLegacyBeverageName,
+} from '@/domain/catalog/legacy/resolveLegacyBeverageName';
 import type {
 	TBeverageTagLabel,
 	TFoodTagLabel,
@@ -14,11 +18,9 @@ import {
 	type ILegacyMealFoodV1,
 	type ILegacyMealFoodV2,
 	type TMealSnapshot,
-	checkLegacyBeverage,
 	migrateLegacyMealSnapshot,
 	migrateMealFoodV1ToV2,
 	migrateMealFoodV2,
-	resolveLegacyBeverage,
 	validateLegacyMealFoodV1,
 	validateLegacyMealFoodV2,
 } from './meals';
@@ -31,12 +33,12 @@ import {
 import { hasExactKeys } from './utils';
 
 interface ILegacyNormalGuestSavedMealV1 {
-	beverage: TBeverageName | null;
+	beverage: TLegacyBeverageName | null;
 	recipe: ILegacyMealFoodV1;
 }
 
 interface ILegacyNormalGuestSavedMealV2 {
-	beverage: TBeverageName | null;
+	beverage: TLegacyBeverageName | null;
 	recipe: ILegacyMealFoodV2;
 }
 
@@ -46,14 +48,14 @@ interface ILegacySpecialGuestOrder {
 }
 
 interface ILegacySpecialGuestSavedMealV1 {
-	beverage: TBeverageName;
+	beverage: TLegacyBeverageName;
 	hasMystiaCooker: boolean;
 	order: ILegacySpecialGuestOrder;
 	recipe: ILegacyMealFoodV1;
 }
 
 interface ILegacySpecialGuestSavedMealV2 {
-	beverage: TBeverageName;
+	beverage: TLegacyBeverageName;
 	hasMystiaCooker: boolean;
 	order: ILegacySpecialGuestOrder;
 	recipe: ILegacyMealFoodV2;
@@ -65,7 +67,8 @@ export function validateLegacyNormalGuestSavedMealV1(
 	return (
 		isObjectTagRecord(data) &&
 		hasExactKeys(data, ['beverage', 'recipe']) &&
-		(data['beverage'] === null || checkLegacyBeverage(data['beverage'])) &&
+		(data['beverage'] === null ||
+			checkLegacyBeverageName(data['beverage'])) &&
 		validateLegacyMealFoodV1(data['recipe'])
 	);
 }
@@ -76,7 +79,8 @@ export function validateLegacyNormalGuestSavedMealV2(
 	return (
 		isObjectTagRecord(data) &&
 		hasExactKeys(data, ['beverage', 'recipe']) &&
-		(data['beverage'] === null || checkLegacyBeverage(data['beverage'])) &&
+		(data['beverage'] === null ||
+			checkLegacyBeverageName(data['beverage'])) &&
 		validateLegacyMealFoodV2(data['recipe'])
 	);
 }
@@ -97,7 +101,7 @@ function migrateLegacyNormalGuestSavedMealV2ToV3(
 		beverage:
 			data.beverage === null
 				? null
-				: resolveLegacyBeverage(data.beverage),
+				: resolveLegacyBeverageName(data.beverage),
 		food: migrateMealFoodV2(data.recipe),
 	};
 }
@@ -114,7 +118,7 @@ function validateLegacySpecialGuestSavedMeal(
 			'order',
 			'recipe',
 		]) &&
-		checkLegacyBeverage(data['beverage']) &&
+		checkLegacyBeverageName(data['beverage']) &&
 		typeof data['hasMystiaCooker'] === 'boolean' &&
 		isObjectTagRecord(data['order']) &&
 		hasExactKeys(data['order'], ['beverageTag', 'recipeTag']) &&
@@ -171,7 +175,7 @@ function migrateLegacySpecialGuestSavedMealV2ToV3(
 	data: ILegacySpecialGuestSavedMealV2
 ): ISpecialGuestSavedMeal {
 	return {
-		beverage: resolveLegacyBeverage(data.beverage),
+		beverage: resolveLegacyBeverageName(data.beverage),
 		food: migrateMealFoodV2(data.recipe),
 		hasMystiaCooker: data.hasMystiaCooker,
 		order: migrateLegacySpecialGuestOrder(data.order),

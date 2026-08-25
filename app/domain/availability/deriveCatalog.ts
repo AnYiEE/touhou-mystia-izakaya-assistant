@@ -211,6 +211,18 @@ function projectPrice(price: unknown): unknown {
 	}
 	if (
 		'amount' in price &&
+		'cooker' in price &&
+		typeof price.amount === 'number' &&
+		typeof price.cooker === 'number'
+	) {
+		const cooker = COOKER_LIST.find(({ id }) => id === price.cooker);
+		if (cooker === undefined) {
+			throw new Error(`找不到厨具“${price.cooker}”`);
+		}
+		return { amount: price.amount, cooker: cooker.name };
+	}
+	if (
+		'amount' in price &&
 		'currencyItem' in price &&
 		typeof price.amount === 'number' &&
 		typeof price.currencyItem === 'number'
@@ -222,6 +234,9 @@ function projectPrice(price: unknown): unknown {
 			throw new Error(`找不到货币“${price.currencyItem}”`);
 		}
 		return { amount: price.amount, currencyItem: currencyItem.name };
+	}
+	if ('cooker' in price) {
+		return projectPrice(price.cooker);
 	}
 	if ('currencyItem' in price) {
 		return projectPrice(price.currencyItem);
@@ -279,6 +294,15 @@ function formatPurchaseSource(merchant: TMerchantReference, price: unknown) {
 			typeof projectedValue.currencyItem === 'string'
 		) {
 			return [`${projectedValue.amount}×${projectedValue.currencyItem}`];
+		}
+		if (
+			isObject(projectedValue) &&
+			'amount' in projectedValue &&
+			'cooker' in projectedValue &&
+			typeof projectedValue.amount === 'number' &&
+			typeof projectedValue.cooker === 'string'
+		) {
+			return [`${projectedValue.amount}×${projectedValue.cooker}`];
 		}
 		return [];
 	});

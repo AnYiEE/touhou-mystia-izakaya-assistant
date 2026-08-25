@@ -1,13 +1,15 @@
-import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import {
+	type TLegacyBeverageName,
+	resolveLegacyBeverageName,
+} from '@/domain/catalog/legacy/resolveLegacyBeverageName';
 import {
 	type TLegacyFoodName,
 	resolveLegacyFoodName,
 } from '@/domain/catalog/legacy/resolveLegacyFoodName';
 import { resolveLegacyRecordName } from '@/domain/catalog/legacy/resolveLegacyRecordName';
 import { resolveLegacyTagLabel } from '@/domain/catalog/legacy/resolveLegacyTagLabel';
-import type { TBeverageName } from '@/domain/data/beverages/types';
 import type { TIngredientName } from '@/domain/data/ingredients/types';
 import { FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 
@@ -145,7 +147,6 @@ export function migrateGlobalPersistedState<T>(
 		const { customerCardTagsTooltip, popularTrend, table } = persistence;
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const { hiddenItems } = table;
-		const beverageCatalog = BeverageCatalog.getInstance();
 		const foodCatalog = FoodCatalog.getInstance();
 		const ingredientCatalog = IngredientCatalog.getInstance();
 		const popularTags = new Set([
@@ -158,12 +159,7 @@ export function migrateGlobalPersistedState<T>(
 		]);
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
 		hiddenItems.beverages = hiddenItems.beverages.map(
-			(name: TBeverageName) =>
-				resolveLegacyRecordName({
-					catalog: beverageCatalog,
-					category: 'beverage',
-					name,
-				})
+			(name: TLegacyBeverageName) => resolveLegacyBeverageName(name)
 		);
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
 		hiddenItems.foods = hiddenItems.recipes.map((name: TLegacyFoodName) =>
