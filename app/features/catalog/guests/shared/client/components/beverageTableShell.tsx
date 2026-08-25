@@ -68,13 +68,13 @@ export default memo<IProps>(function BeverageTableShell({
 	const tableClassNames = useMemo(
 		() => ({
 			base: 'gap-2',
-			td: 'before:bg-default-200/70 before:transition-colors-opacity motion-reduce:before:transition-none',
-			th: cn('bg-default-200/70', {
+			td: '!px-1 before:bg-default-200/70 before:transition-colors-opacity motion-reduce:before:transition-none md:!px-3',
+			th: cn('bg-default-200/70 !px-1 md:!px-3', {
 				'backdrop-blur-sm': isHighAppearance,
 			}),
 			thead: '[&>tr[tabindex="-1"]]:invisible',
 			wrapper: cn(
-				'bg-content1/40 xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:p-2',
+				'bg-content1/40 !p-1 md:!p-4 xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:!p-2',
 				{ 'backdrop-blur': isHighAppearance }
 			),
 		}),

@@ -74,13 +74,14 @@ export default memo<IProps>(function FoodTableShell({
 	const tableClassNames = useMemo(
 		() => ({
 			base: 'gap-2',
-			td: 'before:bg-default-200/70 before:transition-colors-opacity motion-reduce:before:transition-none',
-			th: cn('bg-default-200/70', {
-				'backdrop-blur-sm': isHighAppearance,
-			}),
+			td: '!px-1 [&[data-key$=cookerType]]:hidden [&[data-key$=ingredient]]:hidden before:bg-default-200/70 before:transition-colors-opacity md:!px-3 md:[&[data-key$=cookerType]]:table-cell md:[&[data-key$=ingredient]]:table-cell motion-reduce:before:transition-none',
+			th: cn(
+				'bg-default-200/70 !px-1 md:!px-3 [&[data-key$=cookerType]]:hidden md:[&[data-key$=cookerType]]:table-cell [&[data-key$=ingredient]]:hidden md:[&[data-key$=ingredient]]:table-cell',
+				{ 'backdrop-blur-sm': isHighAppearance }
+			),
 			thead: '[&>tr[tabindex="-1"]]:invisible',
 			wrapper: cn(
-				'bg-content1/40 xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:p-2',
+				'bg-content1/40 !p-1 md:!p-4 xl:max-h-[calc(var(--safe-h-dvh)-17.5rem)] xl:!p-2',
 				{ 'backdrop-blur': isHighAppearance }
 			),
 		}),

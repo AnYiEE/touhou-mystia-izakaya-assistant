@@ -210,7 +210,7 @@ export default function FoodTabContent() {
 				case 'food': {
 					const label = `点击：在新窗口中查看料理【${name}】的详情`;
 					return (
-						<div className="flex items-center">
+						<div className="flex min-w-0 items-center">
 							<Tooltip
 								showArrow
 								content={label}
@@ -226,36 +226,119 @@ export default function FoodTabContent() {
 									}}
 									aria-label={label}
 									role="button"
-									className="mr-2"
+									className="mr-1 shrink-0 md:mr-2"
 								/>
 							</Tooltip>
-							<div className="inline-flex flex-1 items-center whitespace-nowrap">
-								<span className="text-small font-medium">
-									{name}
-								</span>
-								<span className="ml-0.5">
-									<Popover showArrow offset={10} size="sm">
-										<Tooltip
+							<div className="min-w-0 flex-1">
+								<div className="flex min-w-0 items-center whitespace-nowrap">
+									<span
+										className={cn(
+											'max-w-[76px] truncate text-small font-medium sm:max-w-max',
+											(!tableVisibleColumns.has(
+												'price'
+											) ||
+												!tableVisibleColumns.has(
+													'suitability'
+												)) &&
+												!tableVisibleColumns.has(
+													'time'
+												) &&
+												'max-w-max'
+										)}
+									>
+										{name}
+									</span>
+									<span className="ml-0.5 shrink-0">
+										<Popover
 											showArrow
-											content={tags}
-											offset={5}
-											placement="right"
+											offset={10}
 											size="sm"
 										>
-											<span className="inline-flex">
-												<PopoverTrigger>
-													<FontAwesomeIconButton
-														icon={faTags}
-														variant="light"
-														aria-label="料理标签"
-														className="inline h-4 w-4 min-w-0 scale-75 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
-													/>
-												</PopoverTrigger>
+											<Tooltip
+												showArrow
+												content={tags}
+												offset={5}
+												placement="right"
+												size="sm"
+											>
+												<span className="inline-flex">
+													<PopoverTrigger>
+														<FontAwesomeIconButton
+															icon={faTags}
+															variant="light"
+															aria-label="料理标签"
+															className="inline h-4 w-4 min-w-0 scale-75 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
+														/>
+													</PopoverTrigger>
+												</span>
+											</Tooltip>
+											<PopoverContent>
+												{tags}
+											</PopoverContent>
+										</Popover>
+									</span>
+								</div>
+								{(tableVisibleColumns.has('cookerType') ||
+									tableVisibleColumns.has('ingredient')) && (
+									<div
+										className={cn(
+											'mt-0.5 flex min-w-0 items-center gap-0.5 overflow-hidden sm:gap-1 md:hidden',
+											((tableVisibleColumns.has(
+												'cookerType'
+											) &&
+												ingredientEntries.length > 4) ||
+												!tableVisibleColumns.has(
+													'ingredient'
+												)) &&
+												'-ml-1 sm:ml-0'
+										)}
+									>
+										{tableVisibleColumns.has(
+											'cookerType'
+										) && (
+											<Sprite
+												target="cooker"
+												recordId={cookerCatalog.getIdByTypeAndSeries(
+													cookerType,
+													0
+												)}
+												size={1}
+												aria-label={cookerTypeLabel}
+											/>
+										)}
+										{tableVisibleColumns.has(
+											'ingredient'
+										) && (
+											<span className="flex shrink-0 items-center">
+												{ingredientEntries.map(
+													(
+														{
+															id,
+															name: ingredient,
+														},
+														index
+													) => (
+														<Sprite
+															key={`${id}-${index}`}
+															target="ingredient"
+															recordId={id}
+															size={1}
+															onPress={() => {
+																openWindow(
+																	'ingredients',
+																	id,
+																	ingredient
+																);
+															}}
+															aria-label={`点击：在新窗口中查看食材【${ingredient}】的详情`}
+															role="button"
+														/>
+													)
+												)}
 											</span>
-										</Tooltip>
-										<PopoverContent>{tags}</PopoverContent>
-									</Popover>
-								</span>
+										)}
+									</div>
+								)}
 							</div>
 						</div>
 					);
@@ -353,7 +436,7 @@ export default function FoodTabContent() {
 					);
 			}
 		},
-		[currentSpecialGuest, openWindow, vibrate]
+		[currentSpecialGuest, openWindow, tableVisibleColumns, vibrate]
 	);
 
 	const tableToolbar = useMemo(

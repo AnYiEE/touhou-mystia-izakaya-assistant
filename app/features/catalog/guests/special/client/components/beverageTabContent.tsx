@@ -165,7 +165,7 @@ export default function BeverageTabContent() {
 				case 'beverage': {
 					const label = `点击：在新窗口中查看酒水【${name}】的详情`;
 					return (
-						<div className="flex items-center gap-2">
+						<div className="flex min-w-0 items-center gap-1 md:gap-2">
 							<Tooltip
 								showArrow
 								content={label}
@@ -183,11 +183,17 @@ export default function BeverageTabContent() {
 									role="button"
 								/>
 							</Tooltip>
-							<div className="inline-flex flex-1 items-center whitespace-nowrap">
-								<span className="text-small font-medium">
+							<div className="inline-flex min-w-0 flex-1 items-center whitespace-nowrap">
+								<span
+									className={cn(
+										'max-w-[76px] truncate text-small font-medium sm:max-w-max',
+										tableVisibleColumns.size < 4 &&
+											'max-w-max'
+									)}
+								>
 									{name}
 								</span>
-								<span className="ml-0.5">
+								<span className="ml-0.5 shrink-0">
 									<Popover showArrow offset={10} size="sm">
 										<Tooltip
 											showArrow
@@ -258,7 +264,7 @@ export default function BeverageTabContent() {
 				}
 			}
 		},
-		[currentSpecialGuest, openWindow, vibrate]
+		[currentSpecialGuest, openWindow, tableVisibleColumns.size, vibrate]
 	);
 
 	const tableToolbar = useMemo(
