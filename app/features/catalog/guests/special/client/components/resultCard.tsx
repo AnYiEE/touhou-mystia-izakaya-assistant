@@ -113,8 +113,6 @@ export default function ResultCard() {
 		}
 	}, [isSaveButtonDisabled, showTooltip, vibrate]);
 
-	const saveButtonTooltip = unsatisfiedSelectionTip.save;
-
 	let content: IFadeMotionDivProps['children'];
 	let contentClassName: IFadeMotionDivProps['className'];
 	let contentTarget: IFadeMotionDivProps['target'];
@@ -295,7 +293,7 @@ export default function ResultCard() {
 					</div>
 					<Tooltip
 						showArrow
-						content={saveButtonTooltip}
+						content={unsatisfiedSelectionTip.save}
 						isOpen={isShowSaveButtonTooltip}
 						placement={placement}
 					>

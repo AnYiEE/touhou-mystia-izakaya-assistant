@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export function useAutoHideTooltip(shouldHide: boolean, delay = 3000) {
+export function useAutoHideTooltip(shouldHide: boolean, delay = 5000) {
 	const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
 		undefined
 	);
