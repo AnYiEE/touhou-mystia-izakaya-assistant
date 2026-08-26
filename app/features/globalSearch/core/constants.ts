@@ -636,7 +636,7 @@ export const GLOBAL_SEARCH_EXAMPLE_QUERIES = [
 	{ description: '按食材类型查找', query: '@食材 @类型 肉类' },
 	{ description: '按采集或购买来源查找', query: '@食材 @来源 博丽神社' },
 	{ description: '查找普客喜好标签', query: '@普客 @喜好 家常' },
-	{ description: '查找稀客符卡文本', query: '@稀客 @符卡 荧光现象' },
+	{ description: '查找稀客符卡文本', query: '@稀客 @符卡 萤光现象' },
 	{ description: '查找并定位设置项', query: '@设置 流行趋势' },
 ] as const satisfies ReadonlyArray<IGlobalSearchExampleQuery>;
 

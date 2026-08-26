@@ -211,6 +211,10 @@ const changelog = [
 			'改善：优化移动端料理和酒水表格的布局和操作体验。',
 		],
 	},
+	{
+		version: 'v2.10',
+		changes: ['新增：道具、唱片、垂钓收藏和徽章查询页面。'],
+	},
 ] as const satisfies Array<{
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
 	version: `v${string}`;
