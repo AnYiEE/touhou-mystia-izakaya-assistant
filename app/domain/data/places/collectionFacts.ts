@@ -870,7 +870,11 @@ export function getCollectionPointReferenceKey(
 		return JSON.stringify(['excludedMaps', reference.excludedMaps]);
 	}
 	if ('labels' in reference) {
-		return JSON.stringify(['labels', reference.map, reference.labels]);
+		return JSON.stringify([
+			'labels',
+			reference.map,
+			reference.labels.toSorted(),
+		]);
 	}
 	return JSON.stringify(['label', reference.map, reference.label]);
 }

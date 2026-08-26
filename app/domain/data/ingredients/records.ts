@@ -566,10 +566,10 @@ export const INGREDIENT_LIST = [
 				},
 				{
 					labels: [
-						'DLC3_DivineSpiritMausoleum_Water_Shrimp_A',
-						'DLC3_DivineSpiritMausoleum_Water_Shrimp_B',
 						'DLC3_DivineSpiritMausoleum_Water_Salmon_A',
 						'DLC3_DivineSpiritMausoleum_Water_Salmon_B',
+						'DLC3_DivineSpiritMausoleum_Water_Shrimp_A',
+						'DLC3_DivineSpiritMausoleum_Water_Shrimp_B',
 					],
 					map: 'DLC3_DivineSpiritMausoleum',
 				},

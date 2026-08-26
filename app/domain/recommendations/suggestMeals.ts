@@ -942,7 +942,7 @@ function buildBeverageTagGroups(beverages: TCatalogData<BeverageCatalog>) {
 	const groups = new Map<string, IBeverageTagGroup>();
 
 	beverages.forEach(({ id, price, tags }) => {
-		const tagKey = [...tags].sort().join(',');
+		const tagKey = tags.toSorted().join(',');
 		let group = groups.get(tagKey);
 		if (group === undefined) {
 			group = { members: [], tags };
