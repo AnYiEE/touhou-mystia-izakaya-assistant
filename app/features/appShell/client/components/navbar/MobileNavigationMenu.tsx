@@ -21,28 +21,18 @@ import {
 	MOBILE_UTILITY_NAV_ITEMS,
 	type TMobileSpriteNavItem,
 } from './navigationItems';
+import {
+	NAVIGATION_CARD_ACTIVE_CLASS_NAME,
+	NAVIGATION_CARD_BASE_CLASS_NAME,
+	NAVIGATION_CARD_INACTIVE_CLASS_NAME,
+	NAVIGATION_ICON_FRAME_ACTIVE_CLASS_NAME,
+	NAVIGATION_ICON_FRAME_CLASS_NAME,
+	NAVIGATION_ICON_FRAME_INACTIVE_CLASS_NAME,
+} from './navigationCardStyles';
 import { type INavbarPaletteItem, NAVBAR_THEME_ITEMS } from './themeItems';
 
 const MOBILE_SECTION_TITLE_CLASS_NAME =
 	'px-1 text-small font-medium text-foreground-500 dark:text-foreground-400';
-
-const MOBILE_CARD_BASE_CLASS_NAME =
-	'rounded-small border bg-content1/45 shadow-[0_1px_0_rgba(0,0,0,0.025)] transition-[background-color,border-color,box-shadow] motion-reduce:transition-none dark:bg-default-50/10 dark:shadow-none';
-
-const MOBILE_CARD_ACTIVE_CLASS_NAME =
-	'border-primary/40 text-primary-700 dark:text-primary';
-
-const MOBILE_CARD_INACTIVE_CLASS_NAME =
-	'border-default-200/75 text-foreground-700 data-[hover=true]:border-default-300 data-[hover=true]:bg-content1/65 dark:border-default-200/60 dark:data-[hover=true]:bg-default-50/15';
-
-const MOBILE_ICON_FRAME_CLASS_NAME =
-	'flex h-9 w-9 shrink-0 items-center justify-center rounded-small transition-colors motion-reduce:transition-none';
-
-const MOBILE_ICON_FRAME_ACTIVE_CLASS_NAME =
-	'bg-primary/10 text-primary-700 dark:bg-primary/15 dark:text-primary';
-
-const MOBILE_ICON_FRAME_INACTIVE_CLASS_NAME =
-	'bg-default-100/70 text-foreground-500 group-data-[hover=true]:bg-default-100 group-data-[hover=true]:text-foreground-700 dark:bg-default-50/20';
 
 interface IProps {
 	accountActionLabel: string;
@@ -101,20 +91,20 @@ export default function MobileNavigationMenu({
 				}}
 				className={cn(
 					'group relative flex h-auto w-full min-w-0 overflow-hidden',
-					MOBILE_CARD_BASE_CLASS_NAME,
+					NAVIGATION_CARD_BASE_CLASS_NAME,
 					'min-h-12 items-center justify-start gap-3 px-3 py-2.5',
 					isActivated
-						? MOBILE_CARD_ACTIVE_CLASS_NAME
-						: MOBILE_CARD_INACTIVE_CLASS_NAME
+						? NAVIGATION_CARD_ACTIVE_CLASS_NAME
+						: NAVIGATION_CARD_INACTIVE_CLASS_NAME
 				)}
 			>
 				<span
 					className={cn(
-						MOBILE_ICON_FRAME_CLASS_NAME,
+						NAVIGATION_ICON_FRAME_CLASS_NAME,
 						'h-8 w-8',
 						isActivated
-							? MOBILE_ICON_FRAME_ACTIVE_CLASS_NAME
-							: MOBILE_ICON_FRAME_INACTIVE_CLASS_NAME
+							? NAVIGATION_ICON_FRAME_ACTIVE_CLASS_NAME
+							: NAVIGATION_ICON_FRAME_INACTIVE_CLASS_NAME
 					)}
 				>
 					<FontAwesomeIcon icon={icon} className="w-4" />
@@ -145,10 +135,10 @@ export default function MobileNavigationMenu({
 				}}
 				className={cn(
 					'group flex h-auto min-h-[4.35rem] w-full min-w-0 flex-col items-center justify-center gap-1.5 px-2 py-2 text-center',
-					MOBILE_CARD_BASE_CLASS_NAME,
+					NAVIGATION_CARD_BASE_CLASS_NAME,
 					isActivated
-						? MOBILE_CARD_ACTIVE_CLASS_NAME
-						: MOBILE_CARD_INACTIVE_CLASS_NAME
+						? NAVIGATION_CARD_ACTIVE_CLASS_NAME
+						: NAVIGATION_CARD_INACTIVE_CLASS_NAME
 				)}
 			>
 				<span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full">
@@ -199,18 +189,18 @@ export default function MobileNavigationMenu({
 				}}
 				className={cn(
 					'group flex h-auto min-h-[4.35rem] w-full min-w-0 flex-col items-center justify-center gap-1.5 px-2 py-2 text-center',
-					MOBILE_CARD_BASE_CLASS_NAME,
+					NAVIGATION_CARD_BASE_CLASS_NAME,
 					isActivated
-						? MOBILE_CARD_ACTIVE_CLASS_NAME
-						: MOBILE_CARD_INACTIVE_CLASS_NAME
+						? NAVIGATION_CARD_ACTIVE_CLASS_NAME
+						: NAVIGATION_CARD_INACTIVE_CLASS_NAME
 				)}
 			>
 				<span
 					className={cn(
-						MOBILE_ICON_FRAME_CLASS_NAME,
+						NAVIGATION_ICON_FRAME_CLASS_NAME,
 						isActivated
-							? MOBILE_ICON_FRAME_ACTIVE_CLASS_NAME
-							: MOBILE_ICON_FRAME_INACTIVE_CLASS_NAME
+							? NAVIGATION_ICON_FRAME_ACTIVE_CLASS_NAME
+							: NAVIGATION_ICON_FRAME_INACTIVE_CLASS_NAME
 					)}
 				>
 					<Sprite
@@ -257,10 +247,10 @@ export default function MobileNavigationMenu({
 				}}
 				className={cn(
 					'flex h-auto min-h-12 w-full min-w-0 flex-col items-center justify-center gap-0.5 px-2 py-1.5 text-center',
-					MOBILE_CARD_BASE_CLASS_NAME,
+					NAVIGATION_CARD_BASE_CLASS_NAME,
 					isSelected
-						? MOBILE_CARD_ACTIVE_CLASS_NAME
-						: MOBILE_CARD_INACTIVE_CLASS_NAME
+						? NAVIGATION_CARD_ACTIVE_CLASS_NAME
+						: NAVIGATION_CARD_INACTIVE_CLASS_NAME
 				)}
 			>
 				<FontAwesomeIcon icon={icon} className="w-3.5" />
@@ -286,10 +276,10 @@ export default function MobileNavigationMenu({
 				}}
 				className={cn(
 					'flex h-auto min-h-12 w-full min-w-0 items-center justify-center gap-2 px-3 py-2 text-center',
-					MOBILE_CARD_BASE_CLASS_NAME,
+					NAVIGATION_CARD_BASE_CLASS_NAME,
 					isSelected
-						? MOBILE_CARD_ACTIVE_CLASS_NAME
-						: MOBILE_CARD_INACTIVE_CLASS_NAME
+						? NAVIGATION_CARD_ACTIVE_CLASS_NAME
+						: NAVIGATION_CARD_INACTIVE_CLASS_NAME
 				)}
 			>
 				<span

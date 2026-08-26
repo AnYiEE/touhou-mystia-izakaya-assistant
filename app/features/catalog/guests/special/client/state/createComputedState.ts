@@ -45,6 +45,7 @@ import {
 	specialGuestCookerCatalog as cookerCatalog,
 	specialGuestDecorationCatalog as decorationCatalog,
 	specialGuestFoodCatalog as foodCatalog,
+	specialGuestGeneralItemCatalog as generalItemCatalog,
 	specialGuestNames as getNames,
 	specialGuestIngredientCatalog as ingredientCatalog,
 	specialGuestPartnerCatalog as partnerCatalog,
@@ -260,6 +261,7 @@ export function createSpecialGuestComputedState(
 				bondCooker: null,
 				bondDecorations: [],
 				bondFoods: [],
+				bondGeneralItems: [],
 				bondPartner: null,
 				collection: false,
 				hasBondRewards: false,
@@ -280,6 +282,10 @@ export function createSpecialGuestComputedState(
 				),
 			getBondFoods: (specialGuest) =>
 				getBondFoods(specialGuest, foodCatalog.data),
+			getBondGeneralItems: (specialGuest) =>
+				generalItemCatalog.getBondGeneralItemsBySpecialGuest(
+					specialGuest
+				),
 			getBondPartner: (specialGuest) =>
 				partnerCatalog.getBondPartnerBySpecialGuest(specialGuest),
 			specialGuest: currentSpecialGuest,
@@ -315,6 +321,11 @@ export function createSpecialGuestComputedState(
 				id,
 				level,
 				name: foodCatalog.getPropsById(id, 'name'),
+			})),
+			bondGeneralItems: rewards.bondGeneralItems.map(({ id, level }) => ({
+				id,
+				level,
+				name: generalItemCatalog.getPropsById(id, 'name'),
 			})),
 			bondPartner:
 				rewards.bondPartner === null

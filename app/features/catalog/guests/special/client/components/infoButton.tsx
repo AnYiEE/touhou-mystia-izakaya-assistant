@@ -120,6 +120,7 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 		bondCooker,
 		bondDecorations,
 		bondFoods,
+		bondGeneralItems,
 		bondPartner,
 		collection: currentSpecialGuestCollection,
 		hasBondRewards,
@@ -255,6 +256,37 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 									>
 										<Sprite
 											target="food"
+											recordId={id}
+											size={1.25}
+											className="mr-0.5"
+										/>
+										{name}
+									</PressElement>
+								</Tooltip>
+							</p>
+						))}
+						{bondGeneralItems.map(({ id, level, name }) => (
+							<p key={id} className="flex items-center">
+								<LevelLabel level={level} />
+								<Tooltip
+									showArrow
+									content={getLabel('道具')}
+									placement="right"
+								>
+									<PressElement
+										onPress={() => {
+											openWindow('items', id, name);
+										}}
+										aria-label={getLabel('道具')}
+										role="button"
+										tabIndex={0}
+										className={cn(
+											'underline-dotted-offset2 inline-flex cursor-pointer items-center',
+											CLASSNAME_FOCUS_VISIBLE_OUTLINE
+										)}
+									>
+										<Sprite
+											target="item"
 											recordId={id}
 											size={1.25}
 											className="mr-0.5"

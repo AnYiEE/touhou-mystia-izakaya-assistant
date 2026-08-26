@@ -1,5 +1,6 @@
 import isObject from 'lodash/isObject.js';
 
+import { BADGE_LIST } from '@/domain/data/badges/records';
 import { BEVERAGE_LIST } from '@/domain/data/beverages/records';
 import { CLOTHES_LIST } from '@/domain/data/clothes/records';
 import { COOKER_LIST } from '@/domain/data/cookers/records';
@@ -7,17 +8,27 @@ import { CURRENCY_ITEM_LIST } from '@/domain/data/currencyItems/records';
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
 import { DECORATION_LIST } from '@/domain/data/decorations/records';
 import { FOOD_LIST } from '@/domain/data/foods/records';
+import { FISHING_COLLECTIBLE_LIST } from '@/domain/data/fishingCollectibles/records';
+import { GENERAL_ITEM_LIST } from '@/domain/data/generalItems/records';
 import { NORMAL_GUEST_LIST } from '@/domain/data/guests/normal/records';
 import { SPECIAL_GUEST_LIST } from '@/domain/data/guests/special/records';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import { INGREDIENT_LIST } from '@/domain/data/ingredients/records';
+import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
+import { PRAYER_LABEL_MAP } from '@/domain/data/labels/prayerFacts';
+import {
+	SCHEDULER_FACTS,
+	formatSchedulerLabels,
+} from '@/domain/data/labels/schedulerFacts';
 import { PARTNER_LIST } from '@/domain/data/partners/records';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+import { getCollectionPointFact } from '@/domain/data/places/collectionFacts';
+import { MAP_FACTS, PLACE_LABEL_MAP } from '@/domain/data/places/placeFacts';
 import type {
 	TCollectionPointReference,
 	TMapLabel,
 	TMerchantReference,
 } from '@/domain/data/places/types';
+import { RECORD_LIST } from '@/domain/data/records/records';
 import type { IFoodBase } from '@/domain/data/shared/foodSchema';
 import type { TDlc } from '@/domain/data/shared/types';
 import { extractMapsFromCollectionPoint } from '@/domain/places/collectionLocations';
@@ -191,12 +202,17 @@ export function formatCollectionPointReference(
 	collectionPoint: TCollectionPointReference
 ) {
 	if ('map' in collectionPoint) {
-		return `【${formatMap(collectionPoint.map)}】${collectionPoint.label}`;
+		const label =
+			getCollectionPointFact(collectionPoint)?.displayLabel ??
+			('labels' in collectionPoint
+				? collectionPoint.labels.join('、')
+				: collectionPoint.label);
+		return `【${formatMap(collectionPoint.map)}】${label}`;
 	}
 	const excludedMaps = collectionPoint.excludedMaps
 		.map((map) => `【${formatMap(map)}】`)
 		.join('、');
-	return `非${excludedMaps}${collectionPoint.label}`;
+	return `非${excludedMaps}${getCollectionPointFact(collectionPoint)?.displayLabel ?? ''}`;
 }
 
 function projectPrice(price: unknown): unknown {
@@ -374,7 +390,7 @@ function formatCurrencyItemSource(
 		return `地区任务：${formatMap(source.mapSideTask.map)}`;
 	}
 	if ('mapPrayer' in source) {
-		return `地区【${formatMap(source.mapPrayer.map)}】${source.mapPrayer.locationLabel}处祈愿`;
+		return `地区【${formatMap(source.mapPrayer.map)}】${PRAYER_LABEL_MAP[source.mapPrayer.label]}处祈愿`;
 	}
 	if ('spellCardReward' in source) {
 		return `【${getSpecialGuest(source.spellCardReward.specialGuest).name}】奖励符卡`;
@@ -547,11 +563,19 @@ function projectFoodFrom(from: IFoodAvailabilityItem['from']) {
 	if (from.fishingAdvanced !== undefined) {
 		projectedFrom['fishingAdvanced'] = from.fishingAdvanced.map(formatMap);
 	}
+	if (from.prayer !== undefined) {
+		projectedFrom['prayer'] = from.prayer.map(
+			(reference) =>
+				`【${formatMap(reference.map)}】${PRAYER_LABEL_MAP[reference.label]}`
+		);
+	}
 	if (from.self !== undefined) {
 		projectedFrom['self'] = from.self;
 	}
 	if (from.task !== undefined) {
-		projectedFrom['task'] = from.task.map(({ task }) => task);
+		projectedFrom['task'] = from.task.map(({ task }) =>
+			formatSchedulerLabels(task)
+		);
 	}
 
 	return projectedFrom;
@@ -634,6 +658,23 @@ function resolveFoodAvailabilityResult(item: IFoodAvailabilityItem) {
 		);
 	});
 
+	item.from.prayer?.forEach((prayer) => {
+		const prayerName = `【${formatMap(prayer.map)}】${PRAYER_LABEL_MAP[prayer.label]}`;
+		results.push(
+			createResult([
+				resolveMapAvailabilityPath(prayer.map, `祈愿：${prayerName}`, [
+					{
+						kind: 'prayer',
+						name: prayerName,
+						place: prayer.map,
+						probability: null,
+						timeWindow: null,
+					},
+				]),
+			])
+		);
+	});
+
 	const fishingMaps = [
 		...(item.from.fishing ?? []),
 		...(item.from.fishingAdvanced ?? []),
@@ -646,7 +687,7 @@ function resolveFoodAvailabilityResult(item: IFoodAvailabilityItem) {
 				combineAvailabilityPaths(
 					createAvailabilityPath(
 						[MAP_FACTS[map].dlc],
-						`钓鱼地点：${mapDisplayLabel}`,
+						`垂钓地点：${mapDisplayLabel}`,
 						{
 							acquisitionSources: [
 								{
@@ -660,16 +701,17 @@ function resolveFoodAvailabilityResult(item: IFoodAvailabilityItem) {
 							isFishingPath: true,
 						}
 					),
-					createDlcPath(4, 'DLC4 钓鱼能力', { isFishingPath: true })
+					createDlcPath(4, 'DLC4垂钓能力', { isFishingPath: true })
 				),
 			])
 		);
 	});
 
 	item.from.task?.forEach((task) => {
+		const taskName = formatSchedulerLabels(task.task);
 		results.push(
 			createResult([
-				resolveFoodTaskAvailabilityPath(task, `任务：${task.task}`),
+				resolveFoodTaskAvailabilityPath(task, `任务：${taskName}`),
 			])
 		);
 	});
@@ -704,11 +746,13 @@ function formatFoodSource({ from, name }: (typeof FOOD_LIST)[number]) {
 		return `地区【${formatMap(from.areaTask.map)}】${from.areaTask.task}${specialGuestSuffix}`;
 	}
 	if ('collaboration' in from) {
+		const collaborationLabel =
+			COLLABORATION_LABEL_MAP[from.collaboration.collaborationLabel];
 		return from.collaboration.merchants
 			.map(({ merchant, platformLabel }, index) => {
 				const merchantName =
 					index === 0 && 'map' in merchant
-						? `【${formatMap(merchant.map)}“${from.collaboration.collaborationLabel}”联动】${merchant.label}`
+						? `【${formatMap(merchant.map)}“${collaborationLabel}”联动】${formatMerchantReference(merchant).replace(/^【[^】]+】/u, '')}`
 						: formatMerchantReference(merchant);
 				return `${merchantName}（${platformLabel}）`;
 			})
@@ -779,7 +823,7 @@ function resolveFoodItemAvailabilityResult(item: (typeof FOOD_LIST)[number]) {
 		const specialGuest = getSpecialGuest(item.from.bond.specialGuest);
 		return resolveSpecialGuestBondAvailabilityResult(
 			item.from.bond.specialGuest,
-			`【${specialGuest.name}】羁绊 Lv.${item.from.bond.level - 1} ➞ Lv.${item.from.bond.level}`
+			`【${specialGuest.name}】羁绊Lv.${item.from.bond.level - 1}➞Lv.${item.from.bond.level}`
 		);
 	}
 	if ('buy' in item.from) {
@@ -799,12 +843,12 @@ function resolveFoodItemAvailabilityResult(item: (typeof FOOD_LIST)[number]) {
 		];
 		return createResult([
 			map === null
-				? createDlcPath(0, `游戏等级 Lv.${level - 1} ➞ Lv.${level}`, {
+				? createDlcPath(0, `游戏等级Lv.${level - 1}➞Lv.${level}`, {
 						acquisitionSources,
 					})
 				: resolveMapAvailabilityPath(
 						map,
-						`游戏等级 Lv.${level - 1} ➞ Lv.${level} 且已解锁地区【${formatMap(map)}】`,
+						`游戏等级Lv.${level - 1}➞Lv.${level}且已解锁地区【${formatMap(map)}】`,
 						acquisitionSources
 					),
 		]);
@@ -819,7 +863,7 @@ function formatCookerSource(
 		return `【DLC${source.dlcSideTask.dlc}】${source.dlcSideTask.task}`;
 	}
 	if ('competitionReward' in source) {
-		return `完成“${source.competitionReward.competitionLabel}”后自动获得`;
+		return `完成“${formatSchedulerLabels(source.competitionReward.competitionLabel)}”后自动获得`;
 	}
 	throw new Error('厨具来源不是文本来源');
 }
@@ -892,13 +936,13 @@ function formatClothesSource(
 		return `持有${source.holdingRequirement.amount}枚“${getCurrencyItem(source.holdingRequirement.currencyItem).name}”时自动获得`;
 	}
 	if ('eventReward' in source) {
-		return `${source.eventReward.eventLabel}时自动获得`;
+		return `${formatSchedulerLabels(source.eventReward.eventLabel)}时自动获得`;
 	}
 	if ('collaborationUnlock' in source) {
-		return `开启联动【${source.collaborationUnlock.collaborationLabel}】后自动获得`;
+		return `开启联动【${COLLABORATION_LABEL_MAP[source.collaborationUnlock.collaborationLabel]}】后自动获得`;
 	}
 	if ('taskReward' in source) {
-		return `完成“${source.taskReward.task}”任务后自动获得`;
+		return `完成“${formatSchedulerLabels(source.taskReward.task)}”任务后自动获得`;
 	}
 	throw new Error('服装来源不是文本来源');
 }
@@ -967,7 +1011,7 @@ function resolveClothesAvailabilityResult(item: (typeof CLOTHES_LIST)[number]) {
 function formatDecorationSource(item: (typeof DECORATION_LIST)[number]) {
 	const { from, name } = item;
 	if ('collaboration' in from) {
-		return `开启联动【${from.collaboration.collaborationLabel}】后自动获得`;
+		return `开启联动【${COLLABORATION_LABEL_MAP[from.collaboration.collaborationLabel]}】后自动获得`;
 	}
 	if ('completion' in from) {
 		const [firstMap, secondMap] = from.completion.maps;
@@ -978,11 +1022,15 @@ function formatDecorationSource(item: (typeof DECORATION_LIST)[number]) {
 
 function projectDecorationSource(item: (typeof DECORATION_LIST)[number]) {
 	if ('bond' in item.from) {
+		const taskFact =
+			'task' in item.from
+				? SCHEDULER_FACTS[item.from.task.startEventLabel]
+				: undefined;
 		return {
 			bond: getSpecialGuest(item.from.bond.specialGuest).name,
 			description:
 				'task' in item.from
-					? `并完成任务【${item.from.task.task}】（前往${formatMap(item.from.task.map)}的${item.from.task.locationLabel}与${item.from.task.dialogueGuestLabel}交谈）。`
+					? `并完成任务【${formatSchedulerLabels(item.from.task.missionLabel)}】（前往${formatMap(item.from.task.map)}的${taskFact?.locationLabel}与${taskFact?.dialogueGuestLabel}交谈）。`
 					: null,
 			level: item.from.bond.level,
 		};
@@ -997,7 +1045,7 @@ function resolveDecorationAvailabilityResult(
 		const specialGuest = getSpecialGuest(item.from.bond.specialGuest);
 		return resolveSpecialGuestBondAvailabilityResult(
 			item.from.bond.specialGuest,
-			`【${specialGuest.name}】羁绊 Lv.${item.from.bond.level - 1} ➞ Lv.${item.from.bond.level}`
+			`【${specialGuest.name}】羁绊Lv.${item.from.bond.level - 1}➞Lv.${item.from.bond.level}`
 		);
 	}
 	return createOpaqueSourceResult(formatDecorationSource(item), item.dlc);
@@ -1012,7 +1060,7 @@ function formatPartnerSource(item: (typeof PARTNER_LIST)[number]) {
 		return `解锁地区【${formatMap(from.datedMapTrial.map)}】后，完成由【${getSpecialGuest(from.datedMapTrial.specialGuest).name}】于${from.datedMapTrial.month}月${from.datedMapTrial.day}日发起的试炼。`;
 	}
 	if ('storyDialogue' in from) {
-		return `${from.storyDialogue.prerequisiteLabel}后，和地区【${from.storyDialogue.placeLabel}】的【${getSpecialGuest(from.storyDialogue.specialGuest).name}】对话，选择“${from.storyDialogue.dialogueOptionLabel}”。`;
+		return `${from.storyDialogue.prerequisiteLabel}后，和地区【${PLACE_LABEL_MAP[from.storyDialogue.placeLabel]}】的【${getSpecialGuest(from.storyDialogue.specialGuest).name}】对话，选择“${from.storyDialogue.dialogueOptionLabel}”。`;
 	}
 	throw new Error(`伙伴“${name}”没有文本来源`);
 }
@@ -1130,9 +1178,59 @@ function resolveGuestAvailabilityResult(
 	return createResult(paths);
 }
 
+function resolveContentAvailabilityResult(item: { dlc: TDlc; name: string }) {
+	return createResult([
+		createDlcPath(item.dlc, `内容存在：${DLC_LABEL_MAP[item.dlc].label}`, {
+			acquisitionSources: [
+				{
+					kind: 'content',
+					name: item.name,
+					place: null,
+					probability: null,
+					timeWindow: null,
+				},
+			],
+		}),
+	]);
+}
+
+function resolveFishingCollectibleAvailabilityResult(
+	item: (typeof FISHING_COLLECTIBLE_LIST)[number]
+) {
+	const mapName = formatMap(item.map);
+	return createResult([
+		createAvailabilityPath(
+			[4, item.requiredContentDlc],
+			`垂钓：${mapName}`,
+			{
+				acquisitionSources: [
+					{
+						kind: 'fishing',
+						name: mapName,
+						place: item.map,
+						probability: null,
+						timeWindow: null,
+					},
+				],
+				isFishingPath: true,
+			}
+		),
+	]);
+}
+
 export function deriveAllAvailabilityEntries() {
 	const entries: IAvailabilityAuditEntry[] = [];
 
+	BADGE_LIST.forEach((item) => {
+		entries.push(
+			createAuditEntry(
+				'badge',
+				item,
+				item.description,
+				resolveContentAvailabilityResult(item)
+			)
+		);
+	});
 	BEVERAGE_LIST.forEach((item) => {
 		entries.push(
 			createAuditEntry(
@@ -1193,6 +1291,26 @@ export function deriveAllAvailabilityEntries() {
 			)
 		);
 	});
+	FISHING_COLLECTIBLE_LIST.forEach((item) => {
+		entries.push(
+			createAuditEntry(
+				'fishingCollectible',
+				item,
+				{ map: formatMap(item.map) },
+				resolveFishingCollectibleAvailabilityResult(item)
+			)
+		);
+	});
+	GENERAL_ITEM_LIST.forEach((item) => {
+		entries.push(
+			createAuditEntry(
+				'generalItem',
+				item,
+				item.from,
+				resolveContentAvailabilityResult(item)
+			)
+		);
+	});
 	INGREDIENT_LIST.forEach((item) => {
 		entries.push(
 			createAuditEntry(
@@ -1220,6 +1338,16 @@ export function deriveAllAvailabilityEntries() {
 				item,
 				projectPartnerSource(item),
 				resolvePartnerAvailabilityResult(item)
+			)
+		);
+	});
+	RECORD_LIST.forEach((item) => {
+		entries.push(
+			createAuditEntry(
+				'record',
+				item,
+				item.buy,
+				resolveContentAvailabilityResult(item)
 			)
 		);
 	});

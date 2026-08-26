@@ -34,6 +34,14 @@ import { SITE_METADATA } from '@/shared/site/metadata';
 import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
 import AccountThemeMenu from './AccountThemeMenu';
+import {
+	NAVIGATION_CARD_ACTIVE_CLASS_NAME,
+	NAVIGATION_CARD_BASE_CLASS_NAME,
+	NAVIGATION_CARD_INACTIVE_CLASS_NAME,
+	NAVIGATION_ICON_FRAME_ACTIVE_CLASS_NAME,
+	NAVIGATION_ICON_FRAME_CLASS_NAME,
+	NAVIGATION_ICON_FRAME_INACTIVE_CLASS_NAME,
+} from './navigationCardStyles';
 import type { INavbarPaletteItem } from './themeItems';
 
 const { baseURL } = PUBLIC_RUNTIME_CONFIG;
@@ -42,7 +50,7 @@ const { name, shortName } = SITE_METADATA;
 const navItems = NAV_ITEMS;
 
 const NAVIGATION_MENU_ITEM_CLASSES = {
-	base: 'my-px p-0 transition-background focus:bg-default/40 data-[hover=true]:bg-default/40 data-[selectable=true]:focus:bg-default/40 motion-reduce:transition-none',
+	base: 'p-0 data-[hover=true]:bg-transparent data-[selectable=true]:focus:bg-transparent',
 } as const;
 
 interface INavbarButtonLinkProps extends Pick<
@@ -224,6 +232,10 @@ export default function DesktopNavigation({
 											items={dropdownItems}
 											onAction={handleMenuAction}
 											aria-label={`${dropdownLabel}列表`}
+											classNames={{
+												base: 'min-w-0 p-1',
+												list: 'grid grid-cols-[repeat(3,6.75rem)] gap-1',
+											}}
 											itemClasses={
 												NAVIGATION_MENU_ITEM_CLASSES
 											}
@@ -233,37 +245,72 @@ export default function DesktopNavigation({
 												label,
 												sprite,
 												spriteRecordId,
-											}) => (
-												<DropdownItem
-													key={href}
-													textValue={label}
-												>
-													<NavbarButtonLink
-														fullWidth
-														isActivated={
-															href ===
-															basePathname
-														}
-														startContent={
-															<Sprite
-																target={sprite}
-																recordId={
-																	spriteRecordId
-																}
-																size={1.25}
-																className={cn({
-																	'rounded-full':
-																		href ===
-																		'/partners',
-																})}
-															/>
-														}
-														className="justify-start gap-1 text-small hover:brightness-100 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
+											}) => {
+												const isActivated =
+													href === basePathname;
+
+												return (
+													<DropdownItem
+														key={href}
+														textValue={label}
 													>
-														{label}
-													</NavbarButtonLink>
-												</DropdownItem>
-											)}
+														<Button
+															fullWidth
+															size="sm"
+															variant="light"
+															onKeyDown={checkA11yConfirmKey()}
+															onPressStart={(
+																event
+															) => {
+																event.continuePropagation();
+															}}
+															aria-current={
+																isActivated
+																	? 'page'
+																	: undefined
+															}
+															role="link"
+															className={cn(
+																'group flex h-10 min-h-0 w-full min-w-0 items-center justify-start gap-1 px-1.5 py-1 text-left',
+																NAVIGATION_CARD_BASE_CLASS_NAME,
+																isActivated
+																	? NAVIGATION_CARD_ACTIVE_CLASS_NAME
+																	: NAVIGATION_CARD_INACTIVE_CLASS_NAME
+															)}
+														>
+															<span
+																className={cn(
+																	NAVIGATION_ICON_FRAME_CLASS_NAME,
+																	'h-7 w-7',
+																	isActivated
+																		? NAVIGATION_ICON_FRAME_ACTIVE_CLASS_NAME
+																		: NAVIGATION_ICON_FRAME_INACTIVE_CLASS_NAME
+																)}
+															>
+																<Sprite
+																	target={
+																		sprite
+																	}
+																	recordId={
+																		spriteRecordId
+																	}
+																	size={1.25}
+																	className={cn(
+																		{
+																			'rounded-full':
+																				href ===
+																				'/partners',
+																		}
+																	)}
+																/>
+															</span>
+															<span className="min-w-0 truncate text-tiny font-medium leading-5">
+																{label}
+															</span>
+														</Button>
+													</DropdownItem>
+												);
+											}}
 										</DropdownMenu>
 									</Dropdown>
 								);

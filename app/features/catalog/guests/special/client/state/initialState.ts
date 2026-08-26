@@ -5,6 +5,7 @@ import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog
 import { ClothesCatalog } from '@/domain/catalog/items/ClothesCatalog';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { DecorationCatalog } from '@/domain/catalog/items/DecorationCatalog';
+import { GeneralItemCatalog } from '@/domain/catalog/items/GeneralItemCatalog';
 import { PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
 import type { TBeverageId } from '@/domain/data/beverages/types';
 import type { TCookerTypeId } from '@/domain/data/cookers/types';
@@ -45,6 +46,7 @@ export const specialGuestClothesCatalog = ClothesCatalog.getInstance();
 export const specialGuestCookerCatalog = CookerCatalog.getInstance();
 export const specialGuestDecorationCatalog = DecorationCatalog.getInstance();
 export const specialGuestFoodCatalog = FoodCatalog.getInstance();
+export const specialGuestGeneralItemCatalog = GeneralItemCatalog.getInstance();
 export const specialGuestIngredientCatalog = IngredientCatalog.getInstance();
 export const specialGuestPartnerCatalog = PartnerCatalog.getInstance();
 export const specialGuestCatalog = SpecialGuestCatalog.getInstance();
@@ -54,6 +56,7 @@ export const specialGuestInitialState = {
 		beverage: specialGuestBeverageCatalog,
 		clothes: specialGuestClothesCatalog,
 		cooker: specialGuestCookerCatalog,
+		generalItem: specialGuestGeneralItemCatalog,
 		guest: specialGuestCatalog,
 		ingredient: specialGuestIngredientCatalog,
 		partner: specialGuestPartnerCatalog,

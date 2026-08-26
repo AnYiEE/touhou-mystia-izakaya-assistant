@@ -56,13 +56,17 @@ type TAction =
 export type TActions = `${TAction} Button` | 'Link';
 
 export type TItem =
+	| 'Badge'
 	| 'Beverage'
 	| 'Clothes'
 	| 'Cooker'
 	| 'Currency'
+	| 'Fishing Collectible'
 	| 'Ingredient'
+	| 'Item'
 	| 'Ornament'
 	| 'Partner'
+	| 'Record'
 	| 'Recipe';
 
 export type TItemAlone = 'Customer' | 'Customer Tag' | 'MystiaCooker';

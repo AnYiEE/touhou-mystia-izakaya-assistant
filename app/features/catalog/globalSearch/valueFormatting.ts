@@ -6,7 +6,20 @@ import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
-import { ALL_MAP_LABELS_SET, MAP_FACTS } from '@/domain/data/places/placeFacts';
+import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
+import { PRAYER_LABEL_MAP } from '@/domain/data/labels/prayerFacts';
+import {
+	SCHEDULER_FACTS,
+	formatSchedulerLabels,
+} from '@/domain/data/labels/schedulerFacts';
+import { SPEED_LABEL_MAP } from '@/domain/data/partners/speedFacts';
+import { COLLECTION_POINT_REFRESH_FACTS } from '@/domain/data/places/collectionFacts';
+import { MERCHANT_LABEL_MAP } from '@/domain/data/places/merchantFacts';
+import {
+	ALL_MAP_LABELS_SET,
+	MAP_FACTS,
+	PLACE_LABEL_MAP,
+} from '@/domain/data/places/placeFacts';
 import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
 import { GUEST_EVALUATION_MAP } from '@/domain/evaluation/labels';
@@ -20,6 +33,7 @@ type TFoodSourceMethodKey =
 	| 'collect'
 	| 'fishing'
 	| 'fishingAdvanced'
+	| 'prayer'
 	| 'task';
 
 function normalizePrimitive(value: unknown): string[] {
@@ -92,6 +106,12 @@ function getMapDisplayLabel(value: unknown) {
 		: null;
 }
 
+function getPlaceDisplayLabel(value: unknown) {
+	return typeof value === 'string' && value in PLACE_LABEL_MAP
+		? PLACE_LABEL_MAP[value as keyof typeof PLACE_LABEL_MAP]
+		: null;
+}
+
 function getSpecialGuestName(value: unknown) {
 	return typeof value === 'number'
 		? SpecialGuestCatalog.getInstance().getPropsById(value as never, 'name')
@@ -105,27 +125,67 @@ function getCurrencyItemName(value: unknown) {
 }
 
 function formatMerchantReference(value: unknown) {
-	if (!checkIsRecord(value) || typeof value['label'] !== 'string') {
+	if (!checkIsRecord(value)) {
 		return '';
 	}
 
-	const ownerLabel =
-		getMapDisplayLabel(value['map']) ??
-		getSpecialGuestName(value['specialGuest']);
+	const mapLabel = getMapDisplayLabel(value['map']);
+	const specialGuestName = getSpecialGuestName(value['specialGuest']);
 
-	return ownerLabel === null
-		? value['label']
-		: `【${ownerLabel}】${value['label']}`;
+	if (specialGuestName !== null) {
+		if (mapLabel !== null) {
+			return `【${mapLabel}】${specialGuestName}`;
+		}
+		return typeof value['label'] === 'string'
+			? `【${specialGuestName}】${value['label']}`
+			: specialGuestName;
+	}
+	if (typeof value['label'] !== 'string') {
+		return '';
+	}
+
+	const merchantLabel =
+		value['label'] in MERCHANT_LABEL_MAP
+			? MERCHANT_LABEL_MAP[
+					value['label'] as keyof typeof MERCHANT_LABEL_MAP
+				]
+			: value['label'];
+
+	return mapLabel === null
+		? merchantLabel
+		: `【${mapLabel}】${merchantLabel}`;
 }
 
 function formatCollectionPointReference(value: unknown) {
-	if (!checkIsRecord(value) || typeof value['label'] !== 'string') {
+	if (!checkIsRecord(value)) {
 		return '';
 	}
 
+	const fact = COLLECTION_POINT_REFRESH_FACTS.find((candidate) => {
+		if ('excludedMaps' in candidate) {
+			return (
+				Array.isArray(value['excludedMaps']) &&
+				JSON.stringify(value['excludedMaps']) ===
+					JSON.stringify(candidate.excludedMaps)
+			);
+		}
+		if (value['map'] !== candidate.map) {
+			return false;
+		}
+		if ('labels' in candidate) {
+			return (
+				Array.isArray(value['labels']) &&
+				JSON.stringify(value['labels']) ===
+					JSON.stringify(candidate.labels)
+			);
+		}
+		return value['label'] === candidate.label;
+	});
+	const displayLabel = fact?.displayLabel ?? null;
+
 	const map = getMapDisplayLabel(value['map']);
-	if (map !== null) {
-		return `【${map}】${value['label']}`;
+	if (map !== null && displayLabel !== null) {
+		return `【${map}】${displayLabel}`;
 	}
 
 	if (Array.isArray(value['excludedMaps'])) {
@@ -133,11 +193,11 @@ function formatCollectionPointReference(value: unknown) {
 			.map(getMapDisplayLabel)
 			.filter((label) => label !== null);
 		if (excludedMaps.length > 0) {
-			return `非【${excludedMaps.join('、')}】${value['label']}`;
+			return `非【${excludedMaps.join('、')}】${displayLabel ?? ''}`;
 		}
 	}
 
-	return value['label'];
+	return displayLabel ?? '';
 }
 
 function formatCurrencyItemPrice(value: unknown) {
@@ -216,7 +276,7 @@ function formatBondSource(value: unknown, levelOverride?: number) {
 
 	return level === null
 		? `【${name}】羁绊`
-		: `【${name}】羁绊 Lv.${level - 1} ➞ Lv.${level}`;
+		: `【${name}】羁绊Lv.${level - 1}➞Lv.${level}`;
 }
 
 function formatLevelupSource(value: unknown) {
@@ -224,10 +284,10 @@ function formatLevelupSource(value: unknown) {
 		return '';
 	}
 
-	const levelText = `游戏等级 Lv.${value['level'] - 1} ➞ Lv.${value['level']}`;
+	const levelText = `游戏等级Lv.${value['level'] - 1}➞Lv.${value['level']}`;
 	const map = getMapDisplayLabel(value['map']);
 
-	return map === null ? levelText : `${levelText} 且已解锁地区【${map}】`;
+	return map === null ? levelText : `${levelText}且已解锁地区【${map}】`;
 }
 
 function formatSourceProbability(value: unknown, label: string) {
@@ -268,26 +328,52 @@ function formatFoodSourceMethod(method: TFoodSourceMethodKey, value: unknown) {
 	const methodLabelMap = {
 		buy: '购买',
 		collect: '采集',
-		fishing: '钓鱼',
-		fishingAdvanced: '高级钓鱼',
+		fishing: '垂钓',
+		fishingAdvanced: '高级垂钓',
+		prayer: '祈愿',
 		task: '任务',
 	} as const;
 	const probabilityLabel = method === 'buy' ? '概率出售' : '概率掉落';
+
 	const formatReference =
 		method === 'buy'
 			? formatMerchantReference
 			: method === 'collect'
 				? formatCollectionPointReference
-				: method === 'task'
-					? (item: unknown) =>
-							checkIsRecord(item) &&
-							typeof item['task'] === 'string'
-								? item['task']
-								: ''
-					: (item: unknown) =>
-							checkIsRecord(item)
-								? formatCollectionPointReference(item)
-								: (getMapDisplayLabel(item) ?? '');
+				: method === 'prayer'
+					? (item: unknown) => {
+							if (
+								!checkIsRecord(item) ||
+								typeof item['label'] !== 'string' ||
+								!(item['label'] in PRAYER_LABEL_MAP)
+							) {
+								return '';
+							}
+							const map = getMapDisplayLabel(item['map']);
+							const label =
+								PRAYER_LABEL_MAP[
+									item[
+										'label'
+									] as keyof typeof PRAYER_LABEL_MAP
+								];
+							return map === null ? label : `【${map}】${label}`;
+						}
+					: method === 'task'
+						? (item: unknown) =>
+								checkIsRecord(item) &&
+								(typeof item['task'] === 'string' ||
+									Array.isArray(item['task']))
+									? formatSchedulerLabels(
+											item['task'] as Parameters<
+												typeof formatSchedulerLabels
+											>[0]
+										)
+									: ''
+						: (item: unknown) =>
+								checkIsRecord(item)
+									? formatCollectionPointReference(item)
+									: (getMapDisplayLabel(item) ?? '');
+
 	const values = (Array.isArray(value) ? value : [value])
 		.map((item) =>
 			formatSourceArrayItem(item, probabilityLabel, formatReference)
@@ -331,12 +417,33 @@ function formatSourceRecord(
 		if (checkIsRecord(value['task'])) {
 			const { task } = value;
 			const map = getMapDisplayLabel(task['map']);
+			const { missionLabel, startEventLabel } = task;
+			const taskFact =
+				typeof startEventLabel === 'string' &&
+				startEventLabel in SCHEDULER_FACTS
+					? SCHEDULER_FACTS[
+							startEventLabel as keyof typeof SCHEDULER_FACTS
+						]
+					: null;
+			const locationLabel =
+				taskFact !== null &&
+				'locationLabel' in taskFact &&
+				typeof taskFact.locationLabel === 'string'
+					? taskFact.locationLabel
+					: null;
+			const dialogueGuestLabel =
+				taskFact !== null &&
+				'dialogueGuestLabel' in taskFact &&
+				typeof taskFact.dialogueGuestLabel === 'string'
+					? taskFact.dialogueGuestLabel
+					: null;
 			return map === null ||
-				typeof task['task'] !== 'string' ||
-				typeof task['locationLabel'] !== 'string' ||
-				typeof task['dialogueGuestLabel'] !== 'string'
+				typeof missionLabel !== 'string' ||
+				!(missionLabel in SCHEDULER_FACTS) ||
+				locationLabel === null ||
+				dialogueGuestLabel === null
 				? bond
-				: `${bond} 并完成任务【${task['task']}】（前往${map}的${task['locationLabel']}与${task['dialogueGuestLabel']}交谈）。`;
+				: `${bond}并完成任务【${formatSchedulerLabels(missionLabel as keyof typeof SCHEDULER_FACTS)}】（前往${map}的${locationLabel}与${dialogueGuestLabel}交谈）。`;
 		}
 		return bond;
 	}
@@ -358,6 +465,15 @@ function formatSourceRecord(
 	}
 	if ('collaboration' in value && checkIsRecord(value['collaboration'])) {
 		const { collaboration } = value;
+		const collaborationLabel =
+			typeof collaboration['collaborationLabel'] === 'string' &&
+			collaboration['collaborationLabel'] in COLLABORATION_LABEL_MAP
+				? COLLABORATION_LABEL_MAP[
+						collaboration[
+							'collaborationLabel'
+						] as keyof typeof COLLABORATION_LABEL_MAP
+					]
+				: null;
 		if (Array.isArray(collaboration['merchants'])) {
 			return collaboration['merchants']
 				.map((item, index) => {
@@ -374,21 +490,22 @@ function formatSourceRecord(
 						index === 0 &&
 						checkIsRecord(merchant) &&
 						typeof merchant['label'] === 'string' &&
-						typeof collaboration['collaborationLabel'] === 'string'
+						collaborationLabel !== null
 					) {
 						const map = getMapDisplayLabel(merchant['map']);
 						return map === null
 							? `${merchantText}${platform}`
-							: `【${map}“${collaboration['collaborationLabel']}”联动】${merchant['label']}${platform}`;
+							: `【${map}“${collaborationLabel}”联动】${merchantText.replace(/^【[^】]+】/u, '')}${platform}`;
 					}
 					return `${merchantText}${platform}`;
 				})
 				.filter(Boolean)
 				.join('、');
 		}
-		return typeof collaboration['collaborationLabel'] === 'string'
-			? `开启联动【${collaboration['collaborationLabel']}】后自动获得`
-			: '';
+		if (collaborationLabel === null) {
+			return '';
+		}
+		return `开启联动【${collaborationLabel}】后自动获得`;
 	}
 	if ('failedCooking' in value && checkIsRecord(value['failedCooking'])) {
 		const { failedCooking } = value;
@@ -417,6 +534,9 @@ function formatSourceRecord(
 			value['fishingAdvanced']
 		).join(' ');
 	}
+	if ('prayer' in value) {
+		return formatFoodSourceMethod('prayer', value['prayer']).join(' ');
+	}
 	if ('task' in value) {
 		return formatFoodSourceMethod('task', value['task']).join(' ');
 	}
@@ -432,7 +552,9 @@ function formatSourceRecord(
 		checkIsRecord(value['competitionReward'])
 	) {
 		const label = value['competitionReward']['competitionLabel'];
-		return typeof label === 'string' ? `完成“${label}”后自动获得` : '';
+		return typeof label === 'string' && label in SCHEDULER_FACTS
+			? `完成“${formatSchedulerLabels(label as keyof typeof SCHEDULER_FACTS)}”后自动获得`
+			: '';
 	}
 	if (
 		'holdingRequirement' in value &&
@@ -449,20 +571,24 @@ function formatSourceRecord(
 	}
 	if ('eventReward' in value && checkIsRecord(value['eventReward'])) {
 		const label = value['eventReward']['eventLabel'];
-		return typeof label === 'string' ? `${label}时自动获得` : '';
+		return typeof label === 'string' && label in SCHEDULER_FACTS
+			? `${formatSchedulerLabels(label as keyof typeof SCHEDULER_FACTS)}时自动获得`
+			: '';
 	}
 	if (
 		'collaborationUnlock' in value &&
 		checkIsRecord(value['collaborationUnlock'])
 	) {
 		const label = value['collaborationUnlock']['collaborationLabel'];
-		return typeof label === 'string'
-			? `开启联动【${label}】后自动获得`
+		return typeof label === 'string' && label in COLLABORATION_LABEL_MAP
+			? `开启联动【${COLLABORATION_LABEL_MAP[label as keyof typeof COLLABORATION_LABEL_MAP]}】后自动获得`
 			: '';
 	}
 	if ('taskReward' in value && checkIsRecord(value['taskReward'])) {
 		const label = value['taskReward']['task'];
-		return typeof label === 'string' ? `完成“${label}”任务后自动获得` : '';
+		return typeof label === 'string' && label in SCHEDULER_FACTS
+			? `完成“${formatSchedulerLabels(label as keyof typeof SCHEDULER_FACTS)}”任务后自动获得`
+			: '';
 	}
 	if ('completion' in value && checkIsRecord(value['completion'])) {
 		const { completion } = value;
@@ -519,12 +645,13 @@ function formatSourceRecord(
 	if ('storyDialogue' in value && checkIsRecord(value['storyDialogue'])) {
 		const source = value['storyDialogue'];
 		const guestName = getSpecialGuestName(source['specialGuest']);
+		const place = getPlaceDisplayLabel(source['placeLabel']);
 		return guestName === null ||
+			place === null ||
 			typeof source['prerequisiteLabel'] !== 'string' ||
-			typeof source['placeLabel'] !== 'string' ||
 			typeof source['dialogueOptionLabel'] !== 'string'
 			? ''
-			: `${source['prerequisiteLabel']}后，和地区【${source['placeLabel']}】的【${guestName}】对话，选择“${source['dialogueOptionLabel']}”。`;
+			: `${source['prerequisiteLabel']}后，和地区【${place}】的【${guestName}】对话，选择“${source['dialogueOptionLabel']}”。`;
 	}
 	if ('mapSideTask' in value && checkIsRecord(value['mapSideTask'])) {
 		const map = getMapDisplayLabel(value['mapSideTask']['map']);
@@ -533,9 +660,12 @@ function formatSourceRecord(
 	if ('mapPrayer' in value && checkIsRecord(value['mapPrayer'])) {
 		const source = value['mapPrayer'];
 		const map = getMapDisplayLabel(source['map']);
-		return map === null || typeof source['locationLabel'] !== 'string'
+		const { label } = source;
+		return map === null ||
+			typeof label !== 'string' ||
+			!(label in PRAYER_LABEL_MAP)
 			? ''
-			: `地区【${map}】${source['locationLabel']}处祈愿`;
+			: `地区【${map}】${PRAYER_LABEL_MAP[label as keyof typeof PRAYER_LABEL_MAP]}处祈愿`;
 	}
 	if ('spellCardReward' in value && checkIsRecord(value['spellCardReward'])) {
 		const guestName = getSpecialGuestName(
@@ -674,6 +804,14 @@ function formatPriceValue(value: unknown): string[] {
 }
 
 function formatSpeedValue(value: unknown): string[] {
+	if (typeof value === 'string' && value in SPEED_LABEL_MAP) {
+		return [SPEED_LABEL_MAP[value as keyof typeof SPEED_LABEL_MAP]].filter(
+			Boolean
+		);
+	}
+	if (checkIsRecord(value)) {
+		return Object.values(value).flatMap(formatSpeedValue);
+	}
 	return flattenValue(value);
 }
 
@@ -872,10 +1010,12 @@ export function joinFieldValue(
 		evaluation: formatEvaluationValue,
 		from: formatSourceValue,
 		ingredient: formatIngredients,
+		'moving-speed': formatSpeedValue,
 		place: formatPlaceValue,
 		price: formatPriceValue,
 		reward: formatRewardValue,
 		speed: formatSpeedValue,
+		'working-speed': formatSpeedValue,
 	};
 	const formatter = formatters[fieldType] ?? flattenValue;
 

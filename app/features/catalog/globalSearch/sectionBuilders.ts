@@ -3,17 +3,23 @@ import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { NormalGuestCatalog } from '@/domain/catalog/guests/NormalGuestCatalog';
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { BadgeCatalog } from '@/domain/catalog/items/BadgeCatalog';
 import { ClothesCatalog } from '@/domain/catalog/items/ClothesCatalog';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import { DecorationCatalog } from '@/domain/catalog/items/DecorationCatalog';
+import { FishingCollectibleCatalog } from '@/domain/catalog/items/FishingCollectibleCatalog';
+import { GeneralItemCatalog } from '@/domain/catalog/items/GeneralItemCatalog';
 import { PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
+import { RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog';
 import { getBondFoods } from '@/domain/catalog/queries/getBondFoods';
 import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
 import { INGREDIENT_TYPE_MAP } from '@/domain/data/ingredients/ingredientFacts';
+import { MERCHANT_LABEL_MAP } from '@/domain/data/places/merchantFacts';
 import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
+import { formatGeneralItemSource } from '@/domain/generalItems/sourceFormatting';
 
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import type { TGlobalSearchSection } from '@/features/globalSearch/contracts';
@@ -70,10 +76,13 @@ function getSpecialGuestBondRewards(
 	];
 	const cookerCatalog = CookerCatalog.getInstance();
 	const clothesCatalog = ClothesCatalog.getInstance();
+	const generalItemCatalog = GeneralItemCatalog.getInstance();
 	const partnerCatalog = PartnerCatalog.getInstance();
 	const bondCooker = cookerCatalog.getBondCookerBySpecialGuest(specialGuest);
 	const bondClothes =
 		clothesCatalog.getBondClothesBySpecialGuest(specialGuest);
+	const bondGeneralItems =
+		generalItemCatalog.getBondGeneralItemsBySpecialGuest(specialGuest);
 	const bondPartner =
 		partnerCatalog.getBondPartnerBySpecialGuest(specialGuest);
 
@@ -105,6 +114,13 @@ function getSpecialGuestBondRewards(
 			type: '伙伴',
 		});
 	}
+	bondRewards.push(
+		...bondGeneralItems.map(({ id, level }) => ({
+			level,
+			name: generalItemCatalog.getPropsById(id, 'name'),
+			type: '道具',
+		}))
+	);
 
 	return bondRewards;
 }
@@ -434,6 +450,132 @@ export function buildSimpleItemSection(
 			name: item.name,
 			recordId: item.id,
 			section,
+		})
+	);
+}
+
+export function buildGeneralItemItems(
+	data = GeneralItemCatalog.getInstance().data
+) {
+	return data.map((item) =>
+		createItem({
+			description: item.description,
+			fields: [
+				...createField(
+					'description',
+					'简介',
+					item.description,
+					CATALOG_SEARCH_FIELD_WEIGHT.text
+				),
+				...createDlcFields(item),
+				...createField(
+					'effect',
+					'效果',
+					item.effects,
+					CATALOG_SEARCH_FIELD_WEIGHT.primary
+				),
+				...createField(
+					'from',
+					'来源',
+					item.from.map(formatGeneralItemSource).join('、'),
+					CATALOG_SEARCH_FIELD_WEIGHT.context
+				),
+			],
+			name: item.name,
+			recordId: item.id,
+			section: 'items',
+		})
+	);
+}
+
+export function buildRecordItems(data = RecordItemCatalog.getInstance().data) {
+	return data.map((item) =>
+		createItem({
+			description: item.description,
+			fields: [
+				...createField(
+					'description',
+					'简介',
+					item.description,
+					CATALOG_SEARCH_FIELD_WEIGHT.text
+				),
+				...createDlcFields(item),
+				...createField(
+					'track-name',
+					'曲名',
+					item.trackName,
+					CATALOG_SEARCH_FIELD_WEIGHT.primary
+				),
+				...createField(
+					'original',
+					'原曲',
+					item.original,
+					CATALOG_SEARCH_FIELD_WEIGHT.primary
+				),
+				...createField(
+					'composer',
+					'编曲',
+					item.composer,
+					CATALOG_SEARCH_FIELD_WEIGHT.primary
+				),
+				...createField(
+					'from',
+					'来源',
+					MERCHANT_LABEL_MAP[item.buy.merchant],
+					CATALOG_SEARCH_FIELD_WEIGHT.context
+				),
+			],
+			name: item.name,
+			recordId: item.id,
+			section: 'records',
+		})
+	);
+}
+
+export function buildFishingCollectibleItems(
+	data = FishingCollectibleCatalog.getInstance().data
+) {
+	return data.map((item) =>
+		createItem({
+			description: item.description,
+			fields: [
+				...createField(
+					'description',
+					'简介',
+					item.description,
+					CATALOG_SEARCH_FIELD_WEIGHT.text
+				),
+				...createDlcFields(item),
+				...createField(
+					'place',
+					'垂钓地区',
+					MAP_FACTS[item.map].label,
+					CATALOG_SEARCH_FIELD_WEIGHT.context
+				),
+			],
+			name: item.name,
+			recordId: item.id,
+			section: 'fishing-collectibles',
+		})
+	);
+}
+
+export function buildBadgeItems(data = BadgeCatalog.getInstance().data) {
+	return data.map((item) =>
+		createItem({
+			description: item.description,
+			fields: [
+				...createField(
+					'description',
+					'获取条件',
+					item.description,
+					CATALOG_SEARCH_FIELD_WEIGHT.text
+				),
+				...createDlcFields(item),
+			],
+			name: item.name,
+			recordId: item.id,
+			section: 'badges',
 		})
 	);
 }

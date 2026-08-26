@@ -12,14 +12,18 @@ import type { TDlc } from '@/domain/data/shared/types';
 import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TFoodTagId } from '@/domain/data/tags/types';
 
+import { badgesStore } from '@/features/catalog/items/badges/client/state/store';
 import { beveragesStore } from '@/features/catalog/items/beverages/client/state/store';
 import { clothesStore } from '@/features/catalog/items/clothes/client/state/store';
 import { cookersStore } from '@/features/catalog/items/cookers/client/state/store';
 import { currencyItemsStore } from '@/features/catalog/items/currencyItems/client/state/store';
 import { decorationsStore } from '@/features/catalog/items/decorations/client/state/store';
 import { foodsStore } from '@/features/catalog/items/foods/client/state/store';
+import { fishingCollectiblesStore } from '@/features/catalog/items/fishingCollectibles/client/state/store';
+import { generalItemsStore } from '@/features/catalog/items/generalItems/client/state/store';
 import { ingredientsStore } from '@/features/catalog/items/ingredients/client/state/store';
 import { partnersStore } from '@/features/catalog/items/partners/client/state/store';
+import { recordsStore } from '@/features/catalog/items/records/client/state/store';
 import type {
 	IGlobalSearchFilterAction,
 	IGlobalSearchQueryAst,
@@ -34,25 +38,33 @@ import { processPinyin } from '@/shared/utilities/pinyin/processPinyin';
 
 type TFilterableGlobalSearchSection = Extract<
 	TGlobalSearchSection,
+	| 'badges'
 	| 'beverages'
 	| 'clothes'
 	| 'cookers'
 	| 'currency-items'
-	| 'ingredients'
 	| 'decorations'
-	| 'partners'
 	| 'foods'
+	| 'fishing-collectibles'
+	| 'ingredients'
+	| 'items'
+	| 'partners'
+	| 'records'
 >;
 
 const GLOBAL_SEARCH_FILTERABLE_SECTIONS = [
+	'badges',
 	'beverages',
 	'clothes',
 	'cookers',
 	'currency-items',
 	'decorations',
 	'foods',
+	'fishing-collectibles',
 	'ingredients',
+	'items',
 	'partners',
+	'records',
 ] as const satisfies ReadonlyArray<TFilterableGlobalSearchSection>;
 
 function getMappableConditions(ast: IGlobalSearchQueryAst) {
@@ -696,17 +708,51 @@ function createDlcOnlyFilterAction(
 	keyword: string
 ): Omit<IGlobalSearchFilterAction, 'label' | 'targetSection'> | null {
 	const storeMap = {
+		badges: badgesStore,
 		clothes: clothesStore,
 		'currency-items': currencyItemsStore,
 		decorations: decorationsStore,
+		'fishing-collectibles': fishingCollectiblesStore,
+		items: generalItemsStore,
 		partners: partnersStore,
+		records: recordsStore,
 	} as const;
 	const dataMap = {
+		badges: badgesStore.instance.get().data,
 		clothes: clothesStore.instance.get().data,
 		'currency-items': currencyItemsStore.instance.get().data,
 		decorations: decorationsStore.instance.get().data,
+		'fishing-collectibles': fishingCollectiblesStore.instance.get().data,
+		items: generalItemsStore.instance.get().data,
 		partners: partnersStore.instance.get().data,
+		records: recordsStore.instance.get().data,
 	} as const;
+	if (
+		fieldType === 'from' ||
+		(targetSection === 'fishing-collectibles' && fieldType === 'place')
+	) {
+		const sourceStore =
+			targetSection === 'fishing-collectibles'
+				? fishingCollectiblesStore
+				: targetSection === 'records'
+					? recordsStore
+					: null;
+		if (sourceStore === null) {
+			return null;
+		}
+		const value = resolveAvailableValue(
+			sourceStore.availableSources.get(),
+			keyword
+		);
+		return value === null
+			? null
+			: createAppendFilterAction({
+					currentValues: sourceStore.persistence.filters.sources.get,
+					description: `筛选${targetSection === 'fishing-collectibles' ? '垂钓地区' : '来源'}：${value}`,
+					setValues: sourceStore.persistence.filters.sources.set,
+					value,
+				});
+	}
 	const targetStore = storeMap[targetSection];
 	const dlcFilterKind = getDlcFilterKind(fieldType, dataMap[targetSection]);
 	if (dlcFilterKind === null) {
@@ -754,14 +800,18 @@ function getFilterTargetSection(
 
 function getFilterTargetLabel(section: TFilterableGlobalSearchSection) {
 	const labelMap = {
+		badges: '徽章',
 		beverages: '酒水',
 		clothes: '衣服',
 		cookers: '厨具',
 		'currency-items': '货币',
 		decorations: '摆件',
+		'fishing-collectibles': '垂钓收藏',
 		foods: '料理',
 		ingredients: '食材',
+		items: '道具',
 		partners: '伙伴',
+		records: '唱片',
 	} as const;
 
 	return labelMap[section];

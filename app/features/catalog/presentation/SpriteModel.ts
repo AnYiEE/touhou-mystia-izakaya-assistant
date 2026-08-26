@@ -2,26 +2,34 @@ import { type CSSProperties } from 'react';
 
 import { RecordCatalog } from '@/domain/catalog/shared/RecordCatalog';
 import type { TItemWithPinyin } from '@/domain/catalog/shared/types';
+import { BADGE_LIST } from '@/domain/data/badges/records';
 import { BEVERAGE_LIST } from '@/domain/data/beverages/records';
 import { CLOTHES_LIST } from '@/domain/data/clothes/records';
 import { COOKER_LIST } from '@/domain/data/cookers/records';
 import { CURRENCY_ITEM_LIST } from '@/domain/data/currencyItems/records';
 import { DECORATION_LIST } from '@/domain/data/decorations/records';
 import { FOOD_LIST } from '@/domain/data/foods/records';
+import { FISHING_COLLECTIBLE_LIST } from '@/domain/data/fishingCollectibles/records';
+import { GENERAL_ITEM_LIST } from '@/domain/data/generalItems/records';
 import { NORMAL_GUEST_LIST } from '@/domain/data/guests/normal/records';
 import { SPECIAL_GUEST_LIST } from '@/domain/data/guests/special/records';
 import { INGREDIENT_LIST } from '@/domain/data/ingredients/records';
 import { PARTNER_LIST } from '@/domain/data/partners/records';
+import { RECORD_LIST } from '@/domain/data/records/records';
 import {
+	BADGE_SPRITE_CONFIG,
 	BEVERAGE_SPRITE_CONFIG,
 	CLOTHES_SPRITE_CONFIG,
 	COOKER_SPRITE_CONFIG,
 	CURRENCY_ITEM_SPRITE_CONFIG,
 	DECORATION_SPRITE_CONFIG,
+	FISHING_COLLECTIBLE_SPRITE_CONFIG,
 	FOOD_SPRITE_CONFIG,
+	GENERAL_ITEM_SPRITE_CONFIG,
 	INGREDIENT_SPRITE_CONFIG,
 	NORMAL_GUEST_SPRITE_CONFIG,
 	PARTNER_SPRITE_CONFIG,
+	RECORD_SPRITE_CONFIG,
 	SPECIAL_GUEST_SPRITE_CONFIG,
 } from '@/domain/data/sprites/configs';
 import type {
@@ -33,6 +41,7 @@ import type {
 import { pxToRem } from '@/shared/utilities/cssUnits/pxToRem';
 
 const SPRITE_CONFIG_MAP = {
+	badge: BADGE_SPRITE_CONFIG,
 	beverage: BEVERAGE_SPRITE_CONFIG,
 	clothes: CLOTHES_SPRITE_CONFIG,
 	cooker: COOKER_SPRITE_CONFIG,
@@ -40,12 +49,16 @@ const SPRITE_CONFIG_MAP = {
 	decoration: DECORATION_SPRITE_CONFIG,
 	food: FOOD_SPRITE_CONFIG,
 	ingredient: INGREDIENT_SPRITE_CONFIG,
+	item: GENERAL_ITEM_SPRITE_CONFIG,
 	normal_guest: NORMAL_GUEST_SPRITE_CONFIG,
 	partner: PARTNER_SPRITE_CONFIG,
+	record: RECORD_SPRITE_CONFIG,
 	special_guest: SPECIAL_GUEST_SPRITE_CONFIG,
+	trophy: FISHING_COLLECTIBLE_SPRITE_CONFIG,
 } as const satisfies Record<TSpriteTarget, ISpriteConfig>;
 
 const SPRITE_DATA_MAP = {
+	badge: BADGE_LIST,
 	beverage: BEVERAGE_LIST,
 	clothes: CLOTHES_LIST,
 	cooker: COOKER_LIST,
@@ -53,9 +66,12 @@ const SPRITE_DATA_MAP = {
 	decoration: DECORATION_LIST,
 	food: FOOD_LIST,
 	ingredient: INGREDIENT_LIST,
+	item: GENERAL_ITEM_LIST,
 	normal_guest: NORMAL_GUEST_LIST,
 	partner: PARTNER_LIST,
+	record: RECORD_LIST,
 	special_guest: SPECIAL_GUEST_LIST,
+	trophy: FISHING_COLLECTIBLE_LIST,
 } as const satisfies Record<TSpriteTarget, TSpriteData>;
 
 export class Sprite<

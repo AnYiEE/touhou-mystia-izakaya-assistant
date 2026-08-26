@@ -8,14 +8,18 @@ import type { IPopularTrend } from '@/domain/trends/types';
 
 import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
+import { badgesStore } from '@/features/catalog/items/badges/client/state/store';
 import { beveragesStore } from '@/features/catalog/items/beverages/client/state/store';
 import { clothesStore } from '@/features/catalog/items/clothes/client/state/store';
 import { cookersStore } from '@/features/catalog/items/cookers/client/state/store';
 import { currencyItemsStore } from '@/features/catalog/items/currencyItems/client/state/store';
 import { decorationsStore } from '@/features/catalog/items/decorations/client/state/store';
 import { foodsStore } from '@/features/catalog/items/foods/client/state/store';
+import { fishingCollectiblesStore } from '@/features/catalog/items/fishingCollectibles/client/state/store';
+import { generalItemsStore } from '@/features/catalog/items/generalItems/client/state/store';
 import { ingredientsStore } from '@/features/catalog/items/ingredients/client/state/store';
 import { partnersStore } from '@/features/catalog/items/partners/client/state/store';
+import { recordsStore } from '@/features/catalog/items/records/client/state/store';
 import type { ICatalogPreferencesProjection } from '@/features/preferences/contracts';
 
 import { globalStore } from './state/globalPersistenceStore';
@@ -109,6 +113,7 @@ function getHiddenDlcs(hiddenDlcValues: ReadonlyArray<string>) {
 
 function applyInitialHiddenDlcs(hiddenDlcValues: ReadonlyArray<string>) {
 	const hiddenDlcs = getHiddenDlcs(hiddenDlcValues);
+	badgesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	beveragesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	clothesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	cookersStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
@@ -117,12 +122,16 @@ function applyInitialHiddenDlcs(hiddenDlcValues: ReadonlyArray<string>) {
 	specialGuestStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	decorationsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	foodsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	fishingCollectiblesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	generalItemsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	ingredientsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	partnersStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	recordsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 }
 
 function applyChangedHiddenDlcs(hiddenDlcValues: ReadonlyArray<string>) {
 	const hiddenDlcs = getHiddenDlcs(hiddenDlcValues);
+	badgesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	beveragesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	clothesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	cookersStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
@@ -131,8 +140,11 @@ function applyChangedHiddenDlcs(hiddenDlcValues: ReadonlyArray<string>) {
 	specialGuestStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	decorationsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	foodsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	fishingCollectiblesStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	generalItemsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	ingredientsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 	partnersStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
+	recordsStore.shared.hiddenItems.dlcs.set(new Set(hiddenDlcs));
 }
 
 function applyFamousShop(famousShop: boolean) {

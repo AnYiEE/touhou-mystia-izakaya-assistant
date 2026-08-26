@@ -41,196 +41,191 @@ interface IItemPopoverCardBase extends RefProps<HTMLDivElement> {
 		price?: number;
 		type?: TCookerTypeLabel | TCookerTypeLabel[] | TIngredientTypeLabel;
 	};
+	descriptionLabel?: string;
 	details?: ReactNodeWithoutBoolean;
 	displayName?: ReactNodeWithoutBoolean;
 	dlc?: number;
 	name: TItemName;
+	summaryDetails?: ReactNodeWithoutBoolean;
 	// For tags.
 	tagColors?: ITagStyle;
 	tags?: { [key in keyof ITagStyle]: TTagLabel[] };
 }
 
-type TItemPopoverIdentity = {
-	[T in TSpriteTarget]: { id: TSpriteId<T>; target: T };
-}[TSpriteTarget];
+type TItemPopoverCardProps<T extends TSpriteTarget> = IItemPopoverCardBase & {
+	id: TSpriteId<T>;
+	target: T;
+};
 
-type TItemPopoverCardProps = IItemPopoverCardBase & TItemPopoverIdentity;
+function ItemPopoverCard<T extends TSpriteTarget>({
+	children,
+	description,
+	descriptionLabel = '简介',
+	details,
+	displayName,
+	dlc,
+	id,
+	name,
+	summaryDetails,
+	tagColors,
+	tags,
+	target,
+	...props
+}: PropsWithChildren<TItemPopoverCardProps<T>>) {
+	const mergedTags = useMemo<Omit<
+		NonNullable<typeof tags>,
+		'beverage'
+	> | null>(() => {
+		if (tags === undefined) {
+			return null;
+		}
 
-const ItemPopoverCard = memo<PropsWithChildren<TItemPopoverCardProps>>(
-	function ItemPopoverCard({
-		children,
-		description,
-		details,
-		displayName,
-		dlc,
-		id,
-		name,
-		tagColors,
-		tags,
-		target,
-		...props
-	}) {
-		const mergedTags = useMemo<Omit<
-			NonNullable<typeof tags>,
-			'beverage'
-		> | null>(() => {
-			if (tags === undefined) {
-				return null;
-			}
+		const mergedTagValues = [
+			...new Set(tags.beverage).union(new Set(tags.positive)),
+		];
+		const { beverage: _beverage, ...rest } = tags;
 
-			const mergedTagValues = [
-				...new Set(tags.beverage).union(new Set(tags.positive)),
-			];
-			const { beverage: _beverage, ...rest } = tags;
+		return { ...rest, positive: mergedTagValues };
+	}, [tags]);
 
-			return { ...rest, positive: mergedTagValues };
-		}, [tags]);
+	const hasTag =
+		(mergedTags?.positive !== undefined &&
+			!checkLengthEmpty(mergedTags.positive)) ||
+		(mergedTags?.negative !== undefined &&
+			!checkLengthEmpty(mergedTags.negative));
 
-		const hasTag =
-			(mergedTags?.positive !== undefined &&
-				!checkLengthEmpty(mergedTags.positive)) ||
-			(mergedTags?.negative !== undefined &&
-				!checkLengthEmpty(mergedTags.negative));
+	const dlcLabel = dlc === undefined ? '' : DLC_LABEL_MAP[dlc as TDlc].label;
+	const dlcShortLabel =
+		dlc === undefined ? '' : DLC_LABEL_MAP[dlc as TDlc].shortLabel;
 
-		const dlcLabel =
-			dlc === undefined ? '' : DLC_LABEL_MAP[dlc as TDlc].label;
-		const dlcShortLabel =
-			dlc === undefined ? '' : DLC_LABEL_MAP[dlc as TDlc].shortLabel;
-
-		return (
-			<div
-				className="z-10 max-w-85 space-y-2 p-2 text-tiny text-default-800"
-				{...props}
-			>
-				<div className="flex items-center gap-2 text-small text-foreground">
-					<Sprite
-						target={target}
-						recordId={id}
-						size={2}
-						className={cn(
-							'transition-transform hover:scale-150 motion-reduce:transition-none',
-							{ 'rounded-full': target === 'partner' }
-						)}
-					/>
-					<p className="font-bold">
-						{dlc !== undefined && (
-							<Popover
+	return (
+		<div
+			className="z-10 max-w-85 space-y-2 p-2 text-tiny text-default-800"
+			{...props}
+		>
+			<div className="flex items-center gap-2 text-small text-foreground">
+				<Sprite
+					target={target}
+					recordId={id}
+					size={2}
+					className={cn(
+						'transition-transform hover:scale-150 motion-reduce:transition-none',
+						{ 'rounded-full': target === 'partner' }
+					)}
+				/>
+				<p className="font-bold">
+					{dlc !== undefined && (
+						<Popover
+							showArrow
+							isTriggerDisabled={!dlcShortLabel}
+							offset={3}
+							size="sm"
+						>
+							<Tooltip
 								showArrow
-								isTriggerDisabled={!dlcShortLabel}
-								offset={3}
+								content={dlcLabel}
+								isDisabled={!dlcShortLabel}
+								offset={1}
 								size="sm"
 							>
-								<Tooltip
-									showArrow
-									content={dlcLabel}
-									isDisabled={!dlcShortLabel}
-									offset={1}
-									size="sm"
+								<span
+									className={cn({
+										'cursor-text': !dlcShortLabel,
+									})}
 								>
-									<span
+									<PopoverTrigger
 										className={cn({
-											'cursor-text': !dlcShortLabel,
+											[CLASSNAME_FOCUS_VISIBLE_OUTLINE]:
+												dlcShortLabel,
 										})}
 									>
-										<PopoverTrigger
-											className={cn({
-												[CLASSNAME_FOCUS_VISIBLE_OUTLINE]:
-													dlcShortLabel,
-											})}
+										<span
+											role={
+												dlcShortLabel
+													? 'button'
+													: undefined
+											}
+											tabIndex={
+												dlcShortLabel ? 0 : undefined
+											}
+											title={dlcLabel}
+											className="opacity-100"
 										>
+											【
 											<span
-												role={
-													dlcShortLabel
-														? 'button'
-														: undefined
-												}
-												tabIndex={
-													dlcShortLabel
-														? 0
-														: undefined
-												}
-												title={dlcLabel}
-												className="opacity-100"
+												className={cn({
+													'underline-dotted-linear':
+														dlcShortLabel,
+												})}
 											>
-												【
-												<span
-													className={cn({
-														'underline-dotted-linear':
-															dlcShortLabel,
-													})}
-												>
-													{dlcShortLabel || dlcLabel}
-												</span>
-												】
+												{dlcShortLabel || dlcLabel}
 											</span>
-										</PopoverTrigger>
-									</span>
-								</Tooltip>
-								<PopoverContent>{dlcLabel}</PopoverContent>
-							</Popover>
-						)}
-						{displayName === undefined ? name : displayName}
-					</p>
-				</div>
-				<div className="flex gap-4">
-					{description.price !== undefined && (
-						<p>
-							<span className="font-semibold">售价：</span>
-							<Price showSymbol={false}>
-								{description.price}
-							</Price>
-						</p>
+											】
+										</span>
+									</PopoverTrigger>
+								</span>
+							</Tooltip>
+							<PopoverContent>{dlcLabel}</PopoverContent>
+						</Popover>
 					)}
-					{description.level !== undefined && (
-						<p>
-							<span className="font-semibold">等级：</span>
-							<Price showSymbol={false}>
-								{description.level}
-							</Price>
-						</p>
-					)}
-					{description.type !== undefined && (
-						<p>
-							<span className="font-semibold">类别：</span>
-							{[description.type].flat().join('、')}
-						</p>
-					)}
-					<p>
-						<span className="font-semibold">
-							{target === 'food' ? '料理' : ''}ID：
-						</span>
-						<Price showSymbol={false}>{id}</Price>
-					</p>
-				</div>
-				{hasTag && (
-					<div className="flex flex-wrap gap-x-2 gap-y-1">
-						<TagsComponent
-							tags={mergedTags.positive}
-							tagStyle={tagColors?.positive}
-							tagType="positive"
-						/>
-						<TagsComponent
-							tags={mergedTags.negative}
-							tagStyle={tagColors?.negative}
-							tagType="negative"
-						/>
-					</div>
-				)}
-				{details}
-				<p
-					className={cn('break-all text-justify', {
-						'!mt-1': mergedTags === null,
-					})}
-				>
-					<span className="font-semibold">简介：</span>
-					{description.description}
+					{displayName === undefined ? name : displayName}
 				</p>
-				{children !== undefined && (
-					<div className="!mt-1 space-y-1">{children}</div>
-				)}
 			</div>
-		);
-	}
-);
+			<div className="flex gap-4">
+				{description.price !== undefined && (
+					<p>
+						<span className="font-semibold">售价：</span>
+						<Price showSymbol={false}>{description.price}</Price>
+					</p>
+				)}
+				{description.level !== undefined && (
+					<p>
+						<span className="font-semibold">等级：</span>
+						<Price showSymbol={false}>{description.level}</Price>
+					</p>
+				)}
+				{description.type !== undefined && (
+					<p>
+						<span className="font-semibold">类别：</span>
+						{[description.type].flat().join('、')}
+					</p>
+				)}
+				<p>
+					<span className="font-semibold">
+						{target === 'food' ? '料理' : ''}ID：
+					</span>
+					<Price showSymbol={false}>{id}</Price>
+				</p>
+				{summaryDetails}
+			</div>
+			{hasTag && (
+				<div className="flex flex-wrap gap-x-2 gap-y-1">
+					<TagsComponent
+						tags={mergedTags.positive}
+						tagStyle={tagColors?.positive}
+						tagType="positive"
+					/>
+					<TagsComponent
+						tags={mergedTags.negative}
+						tagStyle={tagColors?.negative}
+						tagType="negative"
+					/>
+				</div>
+			)}
+			{details}
+			<p
+				className={cn('break-all text-justify', {
+					'!mt-1': mergedTags === null,
+				})}
+			>
+				<span className="font-semibold">{descriptionLabel}：</span>
+				{description.description}
+			</p>
+			{children !== undefined && (
+				<div className="!mt-1 space-y-1">{children}</div>
+			)}
+		</div>
+	);
+}
 
-export default ItemPopoverCard;
+export default memo(ItemPopoverCard) as typeof ItemPopoverCard;

@@ -2,6 +2,7 @@ import type { TClothesId } from '@/domain/data/clothes/types';
 import type { TCookerId } from '@/domain/data/cookers/types';
 import type { TDecorationId } from '@/domain/data/decorations/types';
 import type { TFoodId } from '@/domain/data/foods/types';
+import type { TGeneralItemId } from '@/domain/data/generalItems/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TPartnerId } from '@/domain/data/partners/types';
 
@@ -17,6 +18,7 @@ interface IBondRewardsResult {
 	bondCooker: TCookerId | null;
 	bondDecorations: Array<ILevelRewardEntry<TDecorationId>>;
 	bondFoods: Array<ILevelRewardEntry<TFoodId>>;
+	bondGeneralItems: Array<ILevelRewardEntry<TGeneralItemId>>;
 	bondPartner: TPartnerId | null;
 	collection: boolean;
 	hasBondRewards: boolean;
@@ -28,6 +30,7 @@ export function getBondRewards({
 	getBondCooker,
 	getBondDecorations,
 	getBondFoods,
+	getBondGeneralItems,
 	getBondPartner,
 	specialGuest,
 }: {
@@ -40,6 +43,9 @@ export function getBondRewards({
 	getBondFoods: (
 		specialGuest: TSpecialGuestId
 	) => Array<ILevelRewardEntry<TFoodId>>;
+	getBondGeneralItems: (
+		specialGuest: TSpecialGuestId
+	) => Array<ILevelRewardEntry<TGeneralItemId>>;
 	getBondPartner: (specialGuest: TSpecialGuestId) => TPartnerId | null;
 	specialGuest: TSpecialGuestId;
 }): IBondRewardsResult {
@@ -47,6 +53,7 @@ export function getBondRewards({
 	const bondCooker = getBondCooker(specialGuest);
 	const bondDecorations = getBondDecorations(specialGuest);
 	const bondFoods = getBondFoods(specialGuest);
+	const bondGeneralItems = getBondGeneralItems(specialGuest);
 	const bondPartner = getBondPartner(specialGuest);
 
 	return {
@@ -54,6 +61,7 @@ export function getBondRewards({
 		bondCooker,
 		bondDecorations,
 		bondFoods,
+		bondGeneralItems,
 		bondPartner,
 		collection,
 		hasBondRewards:
@@ -62,6 +70,7 @@ export function getBondRewards({
 			bondCooker !== null ||
 			bondPartner !== null ||
 			!checkLengthEmpty(bondDecorations) ||
-			!checkLengthEmpty(bondFoods),
+			!checkLengthEmpty(bondFoods) ||
+			!checkLengthEmpty(bondGeneralItems),
 	};
 }

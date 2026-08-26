@@ -10,11 +10,15 @@ import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import type { TFood } from '@/domain/catalog/food/types';
 import { NormalGuestCatalog } from '@/domain/catalog/guests/NormalGuestCatalog';
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { BadgeCatalog } from '@/domain/catalog/items/BadgeCatalog';
 import { ClothesCatalog } from '@/domain/catalog/items/ClothesCatalog';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import { DecorationCatalog } from '@/domain/catalog/items/DecorationCatalog';
+import { FishingCollectibleCatalog } from '@/domain/catalog/items/FishingCollectibleCatalog';
+import { GeneralItemCatalog } from '@/domain/catalog/items/GeneralItemCatalog';
 import { PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
+import { RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import { ALL_MAP_LABELS, MAP_FACTS } from '@/domain/data/places/placeFacts';
 import type { TDlc } from '@/domain/data/shared/types';
@@ -22,14 +26,18 @@ import type { TDlc } from '@/domain/data/shared/types';
 import { buildCatalogSearchIndex } from '@/features/catalog/globalSearch/buildCatalogSearchIndex';
 import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
+import { badgesStore } from '@/features/catalog/items/badges/client/state/store';
 import { beveragesStore } from '@/features/catalog/items/beverages/client/state/store';
 import { clothesStore } from '@/features/catalog/items/clothes/client/state/store';
 import { cookersStore } from '@/features/catalog/items/cookers/client/state/store';
 import { currencyItemsStore } from '@/features/catalog/items/currencyItems/client/state/store';
 import { decorationsStore } from '@/features/catalog/items/decorations/client/state/store';
 import { foodsStore } from '@/features/catalog/items/foods/client/state/store';
+import { fishingCollectiblesStore } from '@/features/catalog/items/fishingCollectibles/client/state/store';
+import { generalItemsStore } from '@/features/catalog/items/generalItems/client/state/store';
 import { ingredientsStore } from '@/features/catalog/items/ingredients/client/state/store';
 import { partnersStore } from '@/features/catalog/items/partners/client/state/store';
+import { recordsStore } from '@/features/catalog/items/records/client/state/store';
 
 function filterRecipesByHiddenIngredients(
 	recipes: TFood['recipes'],
@@ -48,6 +56,7 @@ function filterRecipesByHiddenIngredients(
 }
 
 export function useCatalogSearchContributor() {
+	const badgeHiddenDlcs = badgesStore.shared.hiddenItems.dlcs.use();
 	const beverageHiddenDlcs = beveragesStore.shared.hiddenItems.dlcs.use();
 	const clothesHiddenDlcs = clothesStore.shared.hiddenItems.dlcs.use();
 	const cookerHiddenDlcs = cookersStore.shared.hiddenItems.dlcs.use();
@@ -55,10 +64,15 @@ export function useCatalogSearchContributor() {
 		currencyItemsStore.shared.hiddenItems.dlcs.use();
 	const decorationHiddenDlcs = decorationsStore.shared.hiddenItems.dlcs.use();
 	const foodHiddenDlcs = foodsStore.shared.hiddenItems.dlcs.use();
+	const fishingCollectibleHiddenDlcs =
+		fishingCollectiblesStore.shared.hiddenItems.dlcs.use();
+	const generalItemHiddenDlcs =
+		generalItemsStore.shared.hiddenItems.dlcs.use();
 	const ingredientHiddenDlcs = ingredientsStore.shared.hiddenItems.dlcs.use();
 	const normalGuestHiddenDlcs =
 		normalGuestStore.shared.hiddenItems.dlcs.use();
 	const partnerHiddenDlcs = partnersStore.shared.hiddenItems.dlcs.use();
+	const recordHiddenDlcs = recordsStore.shared.hiddenItems.dlcs.use();
 	const specialGuestHiddenDlcs =
 		specialGuestStore.shared.hiddenItems.dlcs.use();
 
@@ -142,6 +156,9 @@ export function useCatalogSearchContributor() {
 			}));
 
 		return buildCatalogSearchIndex({
+			badges: BadgeCatalog.getInstance().data.filter(
+				filterByHiddenDlcs(badgeHiddenDlcs)
+			),
 			beverages: BeverageCatalog.getInstance().data.filter(
 				({ availabilityPaths, id }) =>
 					isAvailableWithHiddenDlcs(
@@ -161,7 +178,14 @@ export function useCatalogSearchContributor() {
 			decorations: DecorationCatalog.getInstance().data.filter(
 				filterByHiddenDlcs(decorationHiddenDlcs)
 			),
+			fishingCollectibles:
+				FishingCollectibleCatalog.getInstance().data.filter(
+					filterByHiddenDlcs(fishingCollectibleHiddenDlcs)
+				),
 			foods,
+			generalItems: GeneralItemCatalog.getInstance().data.filter(
+				filterByHiddenDlcs(generalItemHiddenDlcs)
+			),
 			ingredients:
 				ingredients as unknown as typeof ingredientInstance.data,
 			normalGuests: NormalGuestCatalog.getInstance().data.filter(
@@ -170,11 +194,15 @@ export function useCatalogSearchContributor() {
 			partners: PartnerCatalog.getInstance().data.filter(
 				filterByHiddenDlcs(partnerHiddenDlcs)
 			),
+			records: RecordItemCatalog.getInstance().data.filter(
+				filterByHiddenDlcs(recordHiddenDlcs)
+			),
 			specialGuests: SpecialGuestCatalog.getInstance().data.filter(
 				filterByHiddenDlcs(specialGuestHiddenDlcs)
 			),
 		});
 	}, [
+		badgeHiddenDlcs,
 		beverageHiddenDlcs,
 		clothesHiddenDlcs,
 		cookerHiddenDlcs,
@@ -183,6 +211,8 @@ export function useCatalogSearchContributor() {
 		foodHiddenDlcs,
 		foodIsFamousShop,
 		foodPopularTrend,
+		fishingCollectibleHiddenDlcs,
+		generalItemHiddenDlcs,
 		hiddenBeverages,
 		hiddenFoods,
 		hiddenIngredients,
@@ -191,6 +221,7 @@ export function useCatalogSearchContributor() {
 		ingredientPopularTrend,
 		normalGuestHiddenDlcs,
 		partnerHiddenDlcs,
+		recordHiddenDlcs,
 		specialGuestHiddenDlcs,
 	]);
 

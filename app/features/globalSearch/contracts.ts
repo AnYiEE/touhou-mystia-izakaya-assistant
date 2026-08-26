@@ -4,17 +4,21 @@ import type {
 } from '@/domain/data/sprites/types';
 
 export type TGlobalSearchSection =
+	| 'badges'
 	| 'beverages'
 	| 'clothes'
 	| 'cookers'
 	| 'currency-items'
 	| 'decorations'
 	| 'foods'
+	| 'fishing-collectibles'
 	| 'guests'
 	| 'ingredients'
+	| 'items'
 	| 'normal-guests'
 	| 'partners'
 	| 'preferences'
+	| 'records'
 	| 'special-guests';
 
 export type TGlobalSearchIndexSection = Exclude<TGlobalSearchSection, 'guests'>;
@@ -25,6 +29,7 @@ export type TGlobalSearchFieldType =
 	| 'category'
 	| 'chat'
 	| 'content-dlc'
+	| 'composer'
 	| 'cooker-type'
 	| 'description'
 	| 'effect'
@@ -37,6 +42,7 @@ export type TGlobalSearchFieldType =
 	| 'name'
 	| 'negative-spell-card'
 	| 'negative-tag'
+	| 'original'
 	| 'place'
 	| 'positive-spell-card'
 	| 'positive-tag'
@@ -45,6 +51,7 @@ export type TGlobalSearchFieldType =
 	| 'speed'
 	| 'spell-card'
 	| 'tag'
+	| 'track-name'
 	| 'type'
 	| 'working-speed';
 
@@ -150,13 +157,17 @@ export interface IGlobalSearchFilterAction {
 	run(): void;
 	targetSection: Extract<
 		TGlobalSearchSection,
+		| 'badges'
 		| 'beverages'
 		| 'clothes'
 		| 'cookers'
 		| 'currency-items'
-		| 'ingredients'
 		| 'decorations'
-		| 'partners'
 		| 'foods'
+		| 'fishing-collectibles'
+		| 'ingredients'
+		| 'items'
+		| 'partners'
+		| 'records'
 	>;
 }
