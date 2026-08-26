@@ -2,13 +2,13 @@ import { Fragment } from 'react';
 
 import Tooltip from '@/design/ui/components/tooltip';
 
+import { formatMerchantReference } from '@/domain/availability/sourceResolvers';
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import type { ICooker, TCookerSource } from '@/domain/data/cookers/schema';
 import type { TCookerId } from '@/domain/data/cookers/types';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
-import type { TMerchantReference } from '@/domain/data/places/types';
+import { formatSchedulerLabels } from '@/domain/data/labels/schedulerFacts';
 
 import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
@@ -42,18 +42,6 @@ type TCurrencyItemPrice = Extract<
 	TCookerPricePart,
 	{ currencyItem: unknown }
 >['currencyItem'];
-
-function getMerchantDisplayName(merchant: TMerchantReference) {
-	if (merchant.map !== undefined) {
-		return `【${MAP_FACTS[merchant.map].label}】${merchant.label}`;
-	}
-
-	const specialGuestName = SpecialGuestCatalog.getInstance().getPropsById(
-		merchant.specialGuest,
-		'name'
-	);
-	return `【${specialGuestName}】${merchant.label}`;
-}
 
 function renderCurrencyItemPrice(
 	price: TCurrencyItemPrice,
@@ -163,7 +151,7 @@ function renderCookerSource(
 	if ('buy' in item) {
 		return (
 			<>
-				{getMerchantDisplayName(item.buy.merchant)}（
+				{formatMerchantReference(item.buy.merchant)}（
 				{item.buy.price.map((priceItem, priceIndex) => (
 					<Fragment key={`${fromIndex}-0-${priceIndex}`}>
 						{priceIndex > 0 && <span className="mx-1">+</span>}
@@ -188,7 +176,7 @@ function renderCookerSource(
 		return `【DLC${item.dlcSideTask.dlc}】${item.dlcSideTask.task}`;
 	}
 
-	return `完成“${item.competitionReward.competitionLabel}”后自动获得`;
+	return `完成“${formatSchedulerLabels(item.competitionReward.competitionLabel)}”后自动获得`;
 }
 
 export default function CookerSourceDetails({ from, openWindow }: IProps) {

@@ -6,7 +6,7 @@ type TClothesBuySource = Extract<TClothesSource, { buy: unknown }>;
 function createKourindouPurchase(amount: number): TClothesBuySource {
 	return {
 		buy: {
-			merchant: { label: '香霖堂', map: 'HumanVillage' },
+			merchant: { label: 'Rinnosuke', map: 'HumanVillage' },
 			price: { currencyItem: { amount, currencyItem: 29 } },
 		},
 	};
@@ -110,7 +110,9 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [{ eventReward: { eventLabel: '首次举办演唱会' } }],
+		from: [
+			{ eventReward: { eventLabel: 'Main_5_BambooForest_Concert_Post' } },
+		],
 	},
 	{
 		id: 57,
@@ -160,9 +162,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: true,
-		from: [
-			{ collaborationUnlock: { collaborationLabel: '东方妖精武踏会' } },
-		],
+		from: [{ collaborationUnlock: { collaborationLabel: 'THYG' } }],
 	},
 	{
 		id: 1001,
@@ -214,7 +214,7 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [
 			createKourindouPurchase(10),
-			{ taskReward: { task: '爱乐者的挑战赛' } },
+			{ taskReward: { task: 'DLCMusic_Main_AllPass_Event' } },
 		],
 	},
 	{

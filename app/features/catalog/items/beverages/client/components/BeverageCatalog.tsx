@@ -102,7 +102,7 @@ export default memo<IProps>(function BeverageCatalog({ data }) {
 						tagColors={BEVERAGE_TAG_STYLE}
 						ref={popoverCardRef}
 					>
-						<BeverageSourceDetails from={from} />
+						<BeverageSourceDetails from={from} id={id} />
 					</ItemPopoverCard>
 				</ItemPopoverContent>
 			</ItemPopover>

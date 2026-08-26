@@ -1,4 +1,5 @@
 import type { TCollectionPointReference } from '@/domain/data/places/types';
+import { getCollectionPointReferenceKey } from '@/domain/data/places/collectionFacts';
 
 import type { IAvailabilityAcquisitionSource } from './types';
 
@@ -21,14 +22,6 @@ function getAcquisitionSourceSignature(source: IAvailabilityAcquisitionSource) {
 	]);
 }
 
-function getCollectionPointReferenceSignature(
-	collectionPoint: TCollectionPointReference
-) {
-	return 'map' in collectionPoint
-		? JSON.stringify([collectionPoint.map, collectionPoint.label])
-		: JSON.stringify([collectionPoint.excludedMaps, collectionPoint.label]);
-}
-
 export function attachAvailabilityCollectionPointReference(
 	source: IAvailabilityAcquisitionSource,
 	collectionPoint: TCollectionPointReference
@@ -39,8 +32,8 @@ export function attachAvailabilityCollectionPointReference(
 
 	if (
 		registeredCollectionPoint !== undefined &&
-		getCollectionPointReferenceSignature(registeredCollectionPoint) !==
-			getCollectionPointReferenceSignature(collectionPoint)
+		getCollectionPointReferenceKey(registeredCollectionPoint) !==
+			getCollectionPointReferenceKey(collectionPoint)
 	) {
 		throw new Error('可获取来源签名对应多个采集点');
 	}

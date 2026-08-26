@@ -1,6 +1,7 @@
 import type { TCookerTypeId } from '@/domain/data/cookers/types';
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import type { TCollaborationLabel } from '@/domain/data/labels/collaborationFacts';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TMapLabel, TMerchantReference } from '@/domain/data/places/types';
 import type { IFoodBase } from '@/domain/data/shared/foodSchema';
@@ -28,7 +29,10 @@ type TFoodAreaTaskSource =
 
 interface IFoodCollaborationSource {
 	collaboration: {
-		collaborationLabel: 'MC幻想乡' | '三妖精的蹦蹦跳跳讨伐大作战';
+		collaborationLabel: Extract<
+			TCollaborationLabel,
+			'3FARIES_Collab' | 'MC_Gensokyo'
+		>;
 		merchants: [
 			{ merchant: TMerchantReference; platformLabel: 'PC' },
 			{ merchant: TMerchantReference; platformLabel: 'Switch' },

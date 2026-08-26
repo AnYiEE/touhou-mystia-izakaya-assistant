@@ -12,7 +12,7 @@ export const ADMIN_MESSAGE_MAP = {
 	adminStateReadFailed: '读取管理员状态失败',
 	auditLogReadFailed: '读取审计日志失败',
 	auditLogReading: '正在读取审计日志',
-	auditQueryTooShort: '搜索关键字至少需要 2 个字符',
+	auditQueryTooShort: '搜索关键字至少需要2个字符',
 	operationFailed: '操作失败',
 	ssoClientDisabled: 'SSO客户端已禁用',
 	ssoGrantEmpty: '暂无SSO授权',

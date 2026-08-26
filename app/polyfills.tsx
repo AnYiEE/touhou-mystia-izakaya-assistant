@@ -64,7 +64,7 @@ const script = () => {
 		}
 
 		alert(
-			`错误：${message}\n文件：${filename}\n行号：${lineno}    列号：${colno}${errorStack ? `\n\n${errorStack}` : ''}`
+			`错误：${message}\n文件：${filename}\n行号：${lineno}，列号：${colno}${errorStack ? `\n\n${errorStack}` : ''}`
 		);
 	});
 

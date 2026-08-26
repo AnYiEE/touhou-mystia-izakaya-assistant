@@ -5,26 +5,18 @@ import type {
 	IAvailabilityAcquisitionSource,
 	IAvailabilityPath,
 } from '@/domain/availability/types';
-import { COLLECTION_POINT_REFRESH_FACTS } from '@/domain/data/places/collectionFacts';
+import {
+	COLLECTION_POINT_REFRESH_FACTS,
+	getCollectionPointReferenceKey,
+} from '@/domain/data/places/collectionFacts';
 import { MAP_FACTS } from '@/domain/data/places/placeFacts';
-import type {
-	TCollectionPointReference,
-	TMapLabel,
-} from '@/domain/data/places/types';
+import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
 
 const GAME_DAY_START_HOUR = 10;
 const GAME_DAY_END_HOUR = 18;
 const GAME_DAY_HOURS = GAME_DAY_END_HOUR - GAME_DAY_START_HOUR;
 const COLLECT_CHANNEL_BONUS = 1.2;
-
-function getCollectionPointReferenceKey(
-	collectionPoint: TCollectionPointReference
-) {
-	return 'map' in collectionPoint
-		? JSON.stringify([collectionPoint.map, collectionPoint.label])
-		: JSON.stringify([collectionPoint.excludedMaps, collectionPoint.label]);
-}
 
 const COLLECTION_POINT_REFRESH_TIME_MAP = new Map(
 	COLLECTION_POINT_REFRESH_FACTS.map((collectionPoint) => [

@@ -1,5 +1,6 @@
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import type { TSchedulerLabel } from '@/domain/data/labels/schedulerFacts';
 import type { TMerchantReference } from '@/domain/data/places/types';
 import type { IItemBase } from '@/domain/data/shared/itemSchema';
 
@@ -20,7 +21,14 @@ export type TCookerSource =
 			};
 	  }
 	| { dlcSideTask: { dlc: 1; task: '支线任务' } }
-	| { competitionReward: { competitionLabel: '怪诞料理大赛' } };
+	| {
+			competitionReward: {
+				competitionLabel: Extract<
+					TSchedulerLabel,
+					'DLC2_Main_FormerHell_WeirdCooking_FirstChallengeSuccess_Event'
+				>;
+			};
+	  };
 
 export interface ICooker extends IItemBase {
 	availableTypes: TCookerTypeId[];

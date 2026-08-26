@@ -1,11 +1,15 @@
 import { SPECIAL_GUEST_LIST } from '@/domain/data/guests/special/records';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import {
+	SCHEDULER_FACTS,
+	formatSchedulerLabels,
+} from '@/domain/data/labels/schedulerFacts';
+import { MERCHANT_LABEL_MAP } from '@/domain/data/places/merchantFacts';
 import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 import type {
 	ITaskReference,
 	TMapLabel,
 	TMerchantReference,
-	TTaskLabel,
 } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
 
@@ -16,18 +20,6 @@ import type {
 	IAvailabilityPath,
 	IAvailabilityResult,
 } from './types';
-
-const FOOD_TASK_DLC_MAP = new Map<TTaskLabel, TDlc>([
-	['阿求小姐的色纸', 0],
-	['女仆长的采购委托', 0],
-	['月都试炼', 5],
-	['最终收网行动', 5],
-]);
-
-const SPECIAL_MERCHANT_DLC_MAP = new Map<TMerchantReference['label'], TDlc>([
-	['舞', 9],
-	['雪', 9],
-]);
 
 function createDlcPath(
 	dlc: TDlc,
@@ -56,15 +48,23 @@ export function resolveFoodTaskAvailabilityPath(
 	task: ITaskReference,
 	source: string
 ) {
-	const dlc = FOOD_TASK_DLC_MAP.get(task.task);
-	if (dlc === undefined) {
-		throw new Error(`未配置食材任务“${task.task}”的可获取DLC`);
+	const labels = typeof task.task === 'string' ? [task.task] : task.task;
+	const firstLabel = typeof task.task === 'string' ? task.task : task.task[0];
+
+	const dlcs = new Set(labels.map((label) => SCHEDULER_FACTS[label].dlc));
+	if (dlcs.size !== 1) {
+		throw new Error(
+			`食材任务“${formatSchedulerLabels(task.task)}”跨越多个DLC`
+		);
 	}
+
+	const { dlc } = SCHEDULER_FACTS[firstLabel];
+	const taskName = formatSchedulerLabels(task.task);
 
 	return createDlcPath(dlc, source, [
 		{
 			kind: 'task',
-			name: task.task,
+			name: taskName,
 			place: null,
 			probability: null,
 			timeWindow: null,
@@ -73,18 +73,19 @@ export function resolveFoodTaskAvailabilityPath(
 }
 
 export function formatMerchantReference(merchant: TMerchantReference) {
-	if ('map' in merchant) {
-		return `【${MAP_FACTS[merchant.map].label}】${merchant.label}`;
+	if ('specialGuest' in merchant) {
+		const specialGuest = SPECIAL_GUEST_LIST.find(
+			({ id }) => id === merchant.specialGuest
+		);
+		if (specialGuest === undefined) {
+			throw new Error(`找不到商人关联的稀客“${merchant.specialGuest}”`);
+		}
+		return 'map' in merchant
+			? `【${MAP_FACTS[merchant.map].label}】${specialGuest.name}`
+			: `【${specialGuest.name}】${merchant.label}`;
 	}
 
-	const specialGuest = SPECIAL_GUEST_LIST.find(
-		({ id }) => id === merchant.specialGuest
-	);
-	if (specialGuest === undefined) {
-		throw new Error(`找不到商人关联的稀客“${merchant.specialGuest}”`);
-	}
-
-	return `【${specialGuest.name}】${merchant.label}`;
+	return `【${MAP_FACTS[merchant.map].label}】${MERCHANT_LABEL_MAP[merchant.label]}`;
 }
 
 export function resolveMerchantAvailabilityResult(
@@ -104,25 +105,20 @@ export function resolveMerchantAvailabilityResult(
 			timeWindow: null,
 		},
 	];
-	const specialDlc = SPECIAL_MERCHANT_DLC_MAP.get(merchant.label);
-	if (specialDlc !== undefined) {
+
+	const specialGuest =
+		'specialGuest' in merchant
+			? SPECIAL_GUEST_LIST.find(({ id }) => id === merchant.specialGuest)
+			: undefined;
+	if (specialGuest !== undefined) {
 		return createResult([
-			createDlcPath(specialDlc, source, acquisitionSources),
+			createDlcPath(specialGuest.dlc, source, acquisitionSources),
 		]);
 	}
 
 	if (map !== null) {
 		return createResult([
 			resolveMapAvailabilityPath(map, source, acquisitionSources),
-		]);
-	}
-
-	const specialGuest = SPECIAL_GUEST_LIST.find(
-		({ id }) => id === merchant.specialGuest
-	);
-	if (specialGuest !== undefined) {
-		return createResult([
-			createDlcPath(specialGuest.dlc, source, acquisitionSources),
 		]);
 	}
 

@@ -1398,7 +1398,7 @@ async function prepareBestExtraIngredients({
 		const priority = ingredientPriorityMap.get(ingredient.id);
 		if (priority === undefined) {
 			throw new Error(
-				`推荐食材 ID “${ingredient.id}”缺少已选择的可获取路径`
+				`推荐食材ID“${ingredient.id}”缺少已选择的可获取路径`
 			);
 		}
 
@@ -2947,7 +2947,7 @@ export async function getScoreBasedAlternativesCore(
 				const priority = candidatePriorityMap.get(item.id);
 				if (priority === undefined) {
 					throw new Error(
-						`替代食材 ID “${item.id}”缺少已选择的可获取路径`
+						`替代食材ID“${item.id}”缺少已选择的可获取路径`
 					);
 				}
 				candidates.push({

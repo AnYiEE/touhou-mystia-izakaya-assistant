@@ -565,7 +565,7 @@ export default memo<IProps>(function AccountConflictModal() {
 					<div className="rounded-medium border border-warning/30 bg-warning/10 px-4 py-3 text-small leading-6 text-warning-800 dark:text-warning-500">
 						选择前不会上传任何候选。选择后，系统会先保存选择结果，再继续与云端版本比较。
 						{localCollision.invalidEvidenceCount > 0 &&
-							` 另有 ${localCollision.invalidEvidenceCount} 份无法解析的旧证据仍会保留。`}
+							`另有${localCollision.invalidEvidenceCount}份无法解析的旧证据仍会保留。`}
 					</div>
 					{readinessMessage !== null && (
 						<p

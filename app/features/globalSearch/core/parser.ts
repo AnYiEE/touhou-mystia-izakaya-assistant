@@ -164,7 +164,7 @@ export function parseGlobalSearchQuery(raw: string): IGlobalSearchQueryAst {
 				return;
 			}
 
-			diagnostics.push(`未识别前缀 ${token.value}`);
+			diagnostics.push(`未识别前缀${token.value}`);
 			currentField = null;
 			return;
 		}
@@ -207,7 +207,7 @@ export function parseGlobalSearchQuery(raw: string): IGlobalSearchQueryAst {
 		}
 	});
 	emptyFieldPrefixes.forEach((prefix) => {
-		diagnostics.push(`${prefix} 后还需要输入关键词`);
+		diagnostics.push(`${prefix}后还需要输入关键词`);
 	});
 
 	return { diagnostics, fieldConditions, freeKeywords, raw, resultSection };

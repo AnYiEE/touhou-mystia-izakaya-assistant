@@ -1,5 +1,7 @@
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import type { TCollaborationLabel } from '@/domain/data/labels/collaborationFacts';
+import type { TSchedulerLabel } from '@/domain/data/labels/schedulerFacts';
 import type { TMerchantReference } from '@/domain/data/places/types';
 import type { IItemBase } from '@/domain/data/shared/itemSchema';
 
@@ -18,9 +20,24 @@ export type TClothesSource =
 			};
 	  }
 	| { holdingRequirement: { amount: 100; currencyItem: TCurrencyItemId } }
-	| { eventReward: { eventLabel: '首次举办演唱会' } }
-	| { collaborationUnlock: { collaborationLabel: '东方妖精武踏会' } }
-	| { taskReward: { task: '爱乐者的挑战赛' } };
+	| {
+			eventReward: {
+				eventLabel: Extract<
+					TSchedulerLabel,
+					'Main_5_BambooForest_Concert_Post'
+				>;
+			};
+	  }
+	| {
+			collaborationUnlock: {
+				collaborationLabel: Extract<TCollaborationLabel, 'THYG'>;
+			};
+	  }
+	| {
+			taskReward: {
+				task: Extract<TSchedulerLabel, 'DLCMusic_Main_AllPass_Event'>;
+			};
+	  };
 
 export interface IClothes extends IItemBase {
 	from: TClothesSource[];

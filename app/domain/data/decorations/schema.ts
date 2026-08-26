@@ -1,4 +1,6 @@
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import type { TCollaborationLabel } from '@/domain/data/labels/collaborationFacts';
+import type { TSchedulerLabel } from '@/domain/data/labels/schedulerFacts';
 import type { TMapLabel } from '@/domain/data/places/types';
 import type { IItemBase } from '@/domain/data/shared/itemSchema';
 
@@ -8,15 +10,22 @@ interface IDecorationBondSource {
 
 interface IDecorationBondTaskSource extends IDecorationBondSource {
 	task: {
-		dialogueGuestLabel: '若鹭姬';
-		locationLabel: '雾之湖';
 		map: 'ScarletMansion';
-		task: '内向的人鱼';
+		missionLabel: Extract<
+			TSchedulerLabel,
+			'DLC4_Kizuna_ImaizumiKagerou_LV4_Upgrade_Mission'
+		>;
+		startEventLabel: Extract<
+			TSchedulerLabel,
+			'DLC4_Kizuna_ImaizumiKagerou_LV4_Upgrade_TalkWakasagihime_Event'
+		>;
 	};
 }
 
 interface IDecorationCollaborationSource {
-	collaboration: { collaborationLabel: '东方华心传' };
+	collaboration: {
+		collaborationLabel: Extract<TCollaborationLabel, 'TBS_Kokoro'>;
+	};
 }
 
 interface IDecorationCompletionSource {

@@ -2,11 +2,12 @@ import { Fragment } from 'react';
 
 import Tooltip from '@/design/ui/components/tooltip';
 
+import { formatMerchantReference } from '@/domain/availability/sourceResolvers';
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import type { IClothes, TClothesSource } from '@/domain/data/clothes/schema';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
-import type { TMerchantReference } from '@/domain/data/places/types';
+import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
+import { formatSchedulerLabels } from '@/domain/data/labels/schedulerFacts';
 
 import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
@@ -25,18 +26,6 @@ interface IProps {
 		recordId: TShareableItemId,
 		name: TShareableItemName
 	) => void;
-}
-
-function getMerchantDisplayName(merchant: TMerchantReference) {
-	if (merchant.map !== undefined) {
-		return `【${MAP_FACTS[merchant.map].label}】${merchant.label}`;
-	}
-
-	const specialGuestName = SpecialGuestCatalog.getInstance().getPropsById(
-		merchant.specialGuest,
-		'name'
-	);
-	return `【${specialGuestName}】${merchant.label}`;
 }
 
 function renderClothesSource(
@@ -80,7 +69,7 @@ function renderClothesSource(
 		);
 		return (
 			<>
-				{getMerchantDisplayName(item.buy.merchant)}（
+				{formatMerchantReference(item.buy.merchant)}（
 				<span className="inline-flex items-center">
 					<Price showSymbol={false}>{amount}×</Price>
 					<Tooltip
@@ -120,14 +109,14 @@ function renderClothesSource(
 	}
 
 	if ('eventReward' in item) {
-		return `${item.eventReward.eventLabel}时自动获得`;
+		return `${formatSchedulerLabels(item.eventReward.eventLabel)}时自动获得`;
 	}
 
 	if ('collaborationUnlock' in item) {
-		return `开启联动【${item.collaborationUnlock.collaborationLabel}】后自动获得`;
+		return `开启联动【${COLLABORATION_LABEL_MAP[item.collaborationUnlock.collaborationLabel]}】后自动获得`;
 	}
 
-	return `完成“${item.taskReward.task}”任务后自动获得`;
+	return `完成“${formatSchedulerLabels(item.taskReward.task)}”任务后自动获得`;
 }
 
 export default function ClothesSourceDetails({ from, openWindow }: IProps) {

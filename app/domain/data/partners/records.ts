@@ -17,7 +17,7 @@ export const PARTNER_LIST = [
 		effect: null,
 		from: { self: true },
 		pay: 5,
-		speed: { moving: '中等', working: '中等' },
+		speed: { moving: 'Medium', working: 'Medium' },
 	},
 	{
 		id: 18,
@@ -29,7 +29,7 @@ export const PARTNER_LIST = [
 		effect: null,
 		from: { mapMainTask: { map: 'HumanVillage' } },
 		pay: 5,
-		speed: { moving: '慢', working: '快' },
+		speed: { moving: 'Slow', working: 'Fast' },
 	},
 	{
 		id: 19,
@@ -43,7 +43,7 @@ export const PARTNER_LIST = [
 			unlockedMapDialogue: { map: 'ScarletMansion', specialGuest: 7 },
 		},
 		pay: 5,
-		speed: { moving: '快', working: '慢' },
+		speed: { moving: 'Fast', working: 'Slow' },
 	},
 	{
 		id: 20,
@@ -62,7 +62,7 @@ export const PARTNER_LIST = [
 			},
 		},
 		pay: 10,
-		speed: { moving: '瞬间移动', working: '快' },
+		speed: { moving: 'None', working: 'Fast' },
 	},
 	{
 		id: 21,
@@ -74,7 +74,7 @@ export const PARTNER_LIST = [
 		effect: '顾客小费增加20%。作为伙伴上场时，可使稀客【铃仙】惩罚符卡的持续时间降至10秒。',
 		from: { mapMainTask: { map: 'BambooForest' } },
 		pay: 10,
-		speed: { moving: '快', working: '中等' },
+		speed: { moving: 'Fast', working: 'Medium' },
 	},
 	{
 		id: 39,
@@ -87,13 +87,13 @@ export const PARTNER_LIST = [
 		from: {
 			storyDialogue: {
 				dialogueOptionLabel: '重修「第二次试炼」',
-				placeLabel: '白玉楼',
+				placeLabel: 'Hakugyokurou',
 				prerequisiteLabel: '完成主线剧情',
 				specialGuest: 39,
 			},
 		},
 		pay: 10,
-		speed: { moving: '快', working: '快' },
+		speed: { moving: 'Fast', working: 'Fast' },
 	},
 	{
 		id: 1006,
@@ -105,7 +105,7 @@ export const PARTNER_LIST = [
 		effect: `瞬间完成料理，但有15%的概率制作出${DARK_MATTER_META_MAP.name}。可以将【苏我屠自古】惩罚符卡的击晕效果转移至其他伙伴。`,
 		from: { allMapSpecialGuestBondsMaxed: { map: 'DLC1_YoukaiMountain' } },
 		pay: 0,
-		speed: { moving: '慢', working: '中等' },
+		speed: { moving: 'Slow', working: 'Medium' },
 	},
 	{
 		id: 1007,
@@ -117,7 +117,7 @@ export const PARTNER_LIST = [
 		effect: '使用飞刀投掷上菜（包括酒水）。',
 		from: { allMapSpecialGuestBondsMaxed: { map: 'DLC1_MagicForest' } },
 		pay: 5,
-		speed: { moving: '中等', working: '快' },
+		speed: { moving: 'Medium', working: 'Fast' },
 	},
 	{
 		id: 2007,
@@ -129,7 +129,7 @@ export const PARTNER_LIST = [
 		effect: '【钓瓶落之怪】驱赶普通顾客时不会受到不良影响，但会收不到钱。',
 		from: { allMapSpecialGuestBondsMaxed: { map: 'DLC2_FormerHell' } },
 		pay: 5,
-		speed: { moving: '中等', working: '中等' },
+		speed: { moving: 'Medium', working: 'Medium' },
 	},
 	{
 		id: 2008,
@@ -143,7 +143,7 @@ export const PARTNER_LIST = [
 			allMapSpecialGuestBondsMaxed: { map: 'DLC2_EarthSpiritsPalace' },
 		},
 		pay: 0,
-		speed: { moving: '慢', working: '慢' },
+		speed: { moving: 'Slow', working: 'Slow' },
 	},
 	{
 		id: 3006,
@@ -155,7 +155,7 @@ export const PARTNER_LIST = [
 		effect: '【双人成行】召唤云山和自己一起工作。',
 		from: { allMapSpecialGuestBondsMaxed: { map: 'DLC3_MyourenTemple' } },
 		pay: 5,
-		speed: { moving: '中等', working: '快' },
+		speed: { moving: 'Medium', working: 'Fast' },
 	},
 	{
 		id: 3008,
@@ -169,7 +169,7 @@ export const PARTNER_LIST = [
 			allMapSpecialGuestBondsMaxed: { map: 'DLC3_DivineSpiritMausoleum' },
 		},
 		pay: 0,
-		speed: { moving: '慢', working: '慢' },
+		speed: { moving: 'Slow', working: 'Slow' },
 	},
 	{
 		id: 4009,
@@ -181,7 +181,7 @@ export const PARTNER_LIST = [
 		effect: `【鳞粉乃梦泉】每隔30秒，拉尔瓦会在场上播撒一次持续15秒的催眠粉。期间稀有顾客在用餐时会忘掉自己的点单，普通顾客会爱上“${DYNAMIC_TAG_MAP.expensive}”标签并在用餐时返还当次消耗掉的料理预算。`,
 		from: { allMapSpecialGuestBondsMaxed: { map: 'DLC4_GardenOfTheSun' } },
 		pay: 5,
-		speed: { moving: '快', working: '中等' },
+		speed: { moving: 'Fast', working: 'Medium' },
 	},
 	{
 		id: 4010,
@@ -195,7 +195,7 @@ export const PARTNER_LIST = [
 			allMapSpecialGuestBondsMaxed: { map: 'DLC4_ShiningNeedleCastle' },
 		},
 		pay: 7,
-		speed: { moving: '中等', working: '中等' },
+		speed: { moving: 'Medium', working: 'Medium' },
 	},
 	{
 		id: 5006,
@@ -207,7 +207,7 @@ export const PARTNER_LIST = [
 		effect: '【捕梦之网】依照顾客评价生成梦境能量，哆来咪吸收这些能量以提升自身制作料理的速度和返还食材的概率。',
 		from: { allMapSpecialGuestBondsMaxed: { map: 'DLC5_LunarCapital' } },
 		pay: 10,
-		speed: { moving: '慢', working: '慢' },
+		speed: { moving: 'Slow', working: 'Slow' },
 	},
 	{
 		id: 5007,
@@ -219,6 +219,6 @@ export const PARTNER_LIST = [
 		effect: '【时盛运旺】处于“热火朝天”状态时，萨拉将阻止普通顾客来店，并每隔一段时间从整个幻想乡随机邀请稀有顾客来店。',
 		from: { allMapSpecialGuestBondsMaxed: { map: 'DLC5_Makai' } },
 		pay: 7,
-		speed: { moving: '快', working: '中等' },
+		speed: { moving: 'Fast', working: 'Medium' },
 	},
 ] as const satisfies IPartner[];

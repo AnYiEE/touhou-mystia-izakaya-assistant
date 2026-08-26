@@ -1,4 +1,5 @@
 import type { IGuestBase } from '@/domain/data/shared/guestSchema';
+import type { TCollaborationLabel } from '@/domain/data/labels/collaborationFacts';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 
 interface ISpellCard {
@@ -25,6 +26,7 @@ export type TSpecialGuestEvaluationKey =
 export interface ISpecialGuest extends IGuestBase {
 	beverageTagMapping: Partial<Record<TBeverageTagId, string>>;
 	collection: boolean;
+	collaboration?: TCollaborationLabel;
 	enduranceLimit: number;
 	evaluation: Record<TSpecialGuestEvaluationKey, string | null>;
 	negativeTags: TFoodTagId[];

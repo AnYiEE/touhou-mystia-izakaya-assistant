@@ -2783,6 +2783,7 @@ export const SPECIAL_GUEST_LIST = [
 			null,
 		],
 		dlc: 0,
+		collaboration: 'MC_Gensokyo',
 		maps: [
 			'BeastForest',
 			'HumanVillage',
@@ -2833,6 +2834,7 @@ export const SPECIAL_GUEST_LIST = [
 			null,
 		],
 		dlc: 0,
+		collaboration: '3FARIES_Collab',
 		maps: [
 			'BeastForest',
 			'HumanVillage',
@@ -2879,6 +2881,7 @@ export const SPECIAL_GUEST_LIST = [
 			null,
 		],
 		dlc: 0,
+		collaboration: 'TBC2_Collab',
 		maps: [
 			'BeastForest',
 			'HumanVillage',
@@ -2938,6 +2941,7 @@ export const SPECIAL_GUEST_LIST = [
 			null,
 		],
 		dlc: 0,
+		collaboration: 'TBC2_Collab',
 		maps: [
 			'BeastForest',
 			'HakureiShrine',
@@ -2997,6 +3001,7 @@ export const SPECIAL_GUEST_LIST = [
 			null,
 		],
 		dlc: 0,
+		collaboration: 'TBC2_Collab',
 		maps: ['HumanVillage', 'HakureiShrine'],
 		price: [1300, 1800],
 		enduranceLimit: 1.3,
@@ -3050,6 +3055,7 @@ export const SPECIAL_GUEST_LIST = [
 			null,
 		],
 		dlc: 0,
+		collaboration: 'TBS_Kokoro',
 		maps: [
 			'HumanVillage',
 			'HakureiShrine',

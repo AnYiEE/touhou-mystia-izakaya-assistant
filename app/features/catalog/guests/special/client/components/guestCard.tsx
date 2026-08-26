@@ -17,6 +17,7 @@ import Tooltip from '@/design/ui/components/tooltip';
 
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import type { TSpecialGuestName } from '@/domain/data/guests/special/types';
+import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
 import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import { GUEST_RATING_MAP } from '@/domain/evaluation/labels';
@@ -213,6 +214,14 @@ export default function GuestCard() {
 		positiveTags: currentGuestPositiveTags,
 		price: currentGuestPrice,
 	} = specialGuestCatalog.getPropsById(currentSpecialGuest);
+	const currentGuestRecord = specialGuestCatalog.data.find(
+		({ id }) => id === currentSpecialGuest
+	);
+	const currentGuestCollaboration =
+		currentGuestRecord !== undefined &&
+		'collaboration' in currentGuestRecord
+			? currentGuestRecord.collaboration
+			: undefined;
 	const {
 		averagePrice: currentGuestAveragePrice,
 		enduranceLimitPercent: currentGuestEnduranceLimitPercent,
@@ -225,6 +234,12 @@ export default function GuestCard() {
 
 	const { label: dlcLabel, shortLabel: dlcShortLabel } =
 		DLC_LABEL_MAP[currentGuestDlc];
+	const sourceLabel =
+		currentGuestCollaboration === undefined
+			? dlcLabel
+			: COLLABORATION_LABEL_MAP[currentGuestCollaboration];
+	const sourceShortLabel =
+		currentGuestCollaboration === undefined ? dlcShortLabel : '联动';
 
 	const enduranceLimitContent = (
 		<div>
@@ -320,46 +335,47 @@ export default function GuestCard() {
 						<p className="flex justify-between gap-10">
 							<Popover
 								showArrow
-								isTriggerDisabled={!dlcShortLabel}
+								isTriggerDisabled={!sourceShortLabel}
 								offset={4}
 							>
 								<Tooltip
 									showArrow
-									content={dlcLabel}
-									isDisabled={!dlcShortLabel}
+									content={sourceLabel}
+									isDisabled={!sourceShortLabel}
 									offset={0}
 								>
 									<span
 										className={cn({
-											'cursor-text': !dlcShortLabel,
+											'cursor-text': !sourceShortLabel,
 										})}
 									>
 										<PopoverTrigger>
 											<span
 												role={
-													dlcShortLabel
+													sourceShortLabel
 														? 'button'
 														: undefined
 												}
 												tabIndex={
-													dlcShortLabel
+													sourceShortLabel
 														? 0
 														: undefined
 												}
-												title={dlcLabel}
+												title={sourceLabel}
 												className={cn('opacity-100', {
 													[CLASSNAME_FOCUS_VISIBLE_OUTLINE]:
-														dlcShortLabel,
+														sourceShortLabel,
 													'underline-dotted-linear':
-														dlcShortLabel,
+														sourceShortLabel,
 												})}
 											>
-												{dlcShortLabel || dlcLabel}
+												{sourceShortLabel ||
+													sourceLabel}
 											</span>
 										</PopoverTrigger>
 									</span>
 								</Tooltip>
-								<PopoverContent>{dlcLabel}</PopoverContent>
+								<PopoverContent>{sourceLabel}</PopoverContent>
 							</Popover>
 							<Popover showArrow offset={hasOtherPlaces ? 6 : 4}>
 								<Tooltip

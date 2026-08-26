@@ -13,14 +13,22 @@ export const INGREDIENT_LIST = [
 		price: 4,
 		from: {
 			buy: [
-				{ label: '杂货商人', map: 'BeastForest' },
-				{ label: '农户', map: 'HumanVillage' },
-				{ label: '上海人形', map: 'DLC1_MagicForest' },
-				{ label: '小丑', map: 'DLC5_Makai' },
+				{ label: 'Merchant_BeastForest', map: 'BeastForest' },
+				{ label: 'Merchant_HumanVillage', map: 'HumanVillage' },
+				{
+					label: 'Merchant_MagicForest_Shanghai',
+					map: 'DLC1_MagicForest',
+				},
+				{ label: 'Merchant_Makai_Clown', map: 'DLC5_Makai' },
 			],
 			collect: [
-				[{ label: '鸡窝', map: 'HumanVillage' }, false, 10, 17],
-				{ label: '鸡窝', map: 'DLC2_FormerHell' },
+				[
+					{ label: 'HumanVillage_Chicken', map: 'HumanVillage' },
+					false,
+					10,
+					17,
+				],
+				{ label: 'DLC2_FormerHell_Item_Egg', map: 'DLC2_FormerHell' },
 			],
 		},
 	},
@@ -35,10 +43,18 @@ export const INGREDIENT_LIST = [
 		price: 10,
 		from: {
 			buy: [
-				{ label: '杂货商人', map: 'BeastForest' },
-				{ label: '农户', map: 'HumanVillage' },
+				{ label: 'Merchant_BeastForest', map: 'BeastForest' },
+				{ label: 'Merchant_HumanVillage', map: 'HumanVillage' },
 			],
-			collect: [[{ label: '捕兽夹', map: 'DLC1_YoukaiMountain' }, 50]],
+			collect: [
+				[
+					{
+						label: 'DLC1_YoukaiMountain_Trap',
+						map: 'DLC1_YoukaiMountain',
+					},
+					50,
+				],
+			],
 		},
 	},
 	{
@@ -52,10 +68,13 @@ export const INGREDIENT_LIST = [
 		price: 15,
 		from: {
 			buy: [
-				{ label: '杂货商人', map: 'BeastForest' },
-				{ label: '农户', map: 'HumanVillage' },
-				{ label: '上海人形', map: 'DLC1_MagicForest' },
-				{ label: '鬼商', map: 'DLC2_FormerHell' },
+				{ label: 'Merchant_BeastForest', map: 'BeastForest' },
+				{ label: 'Merchant_HumanVillage', map: 'HumanVillage' },
+				{
+					label: 'Merchant_MagicForest_Shanghai',
+					map: 'DLC1_MagicForest',
+				},
+				{ label: 'Merchant_FormerHell_Ghost', map: 'DLC2_FormerHell' },
 			],
 		},
 	},
@@ -70,12 +89,27 @@ export const INGREDIENT_LIST = [
 		price: 20,
 		from: {
 			buy: [
-				{ label: '美食妖怪兔', map: 'BambooForest' },
-				{ label: '道士', map: 'DLC3_DivineSpiritMausoleum' },
+				{ label: 'Merchant_YokaiRabbitDelicacy', map: 'BambooForest' },
+				{
+					label: 'Merchant_DivineSpiritMausoleum_Taoist',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
 			],
 			collect: [
-				[{ label: '捕兽夹', map: 'BeastForest' }, 50],
-				[{ label: '捕兽夹', map: 'DLC1_YoukaiMountain' }, 50],
+				[
+					{
+						labels: ['BeastForest_Trap', 'BeastForest_Trap2'],
+						map: 'BeastForest',
+					},
+					50,
+				],
+				[
+					{
+						label: 'DLC1_YoukaiMountain_Trap',
+						map: 'DLC1_YoukaiMountain',
+					},
+					50,
+				],
 			],
 		},
 	},
@@ -90,12 +124,21 @@ export const INGREDIENT_LIST = [
 		price: 25,
 		from: {
 			buy: [
-				{ label: '妖精女仆', map: 'HakureiShrine' },
-				{ label: '不良少年', map: 'DLC4_ShiningNeedleCastle' },
+				{ label: 'Merchant_Maid', map: 'HakureiShrine' },
+				{
+					label: 'Merchant_ShiningNeedleCastle_FuRyouShounenn',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
 			],
 			collect: [
-				{ label: '捕兽夹', map: 'BeastForest' },
-				{ label: '捕兽夹', map: 'DLC1_YoukaiMountain' },
+				{
+					labels: ['BeastForest_Trap', 'BeastForest_Trap2'],
+					map: 'BeastForest',
+				},
+				{
+					label: 'DLC1_YoukaiMountain_Trap',
+					map: 'DLC1_YoukaiMountain',
+				},
 			],
 		},
 	},
@@ -110,10 +153,13 @@ export const INGREDIENT_LIST = [
 		price: 8,
 		from: {
 			buy: [
-				{ label: '杂货商人', map: 'BeastForest' },
-				{ label: '农户', map: 'HumanVillage' },
-				[{ label: '香霖堂', map: 'HumanVillage' }, 30],
-				{ label: '地狱鸦', map: 'DLC2_EarthSpiritsPalace' },
+				{ label: 'Merchant_BeastForest', map: 'BeastForest' },
+				{ label: 'Merchant_HumanVillage', map: 'HumanVillage' },
+				[{ label: 'Rinnosuke', map: 'HumanVillage' }, 30],
+				{
+					label: 'Merchant_EarthSpiritsPalace_HellCrow',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
 			],
 		},
 	},
@@ -128,13 +174,17 @@ export const INGREDIENT_LIST = [
 		price: 10,
 		from: {
 			buy: [
-				{ label: '杂货商人', map: 'BeastForest' },
-				{ label: '农户', map: 'HumanVillage' },
+				{ label: 'Merchant_BeastForest', map: 'BeastForest' },
+				{ label: 'Merchant_HumanVillage', map: 'HumanVillage' },
 			],
 			collect: [
-				{ label: '花丛', map: 'BeastForest' },
-				{ label: '花丛', map: 'HakureiShrine' },
-				{ label: '花丛', map: 'DLC1_YoukaiMountain' },
+				{ label: 'BeastForest_Plant_B', map: 'BeastForest' },
+				{ label: 'BeastForest_Plant_B2', map: 'BeastForest' },
+				{ label: 'HakureiShrine_Potato', map: 'HakureiShrine' },
+				{
+					label: 'DLC1_YoukaiMountain_Plant_Potato',
+					map: 'DLC1_YoukaiMountain',
+				},
 			],
 		},
 	},
@@ -149,10 +199,19 @@ export const INGREDIENT_LIST = [
 		price: 12,
 		from: {
 			buy: [
-				{ label: '杂货商人', map: 'BeastForest' },
-				{ label: '农户', map: 'HumanVillage' },
+				{ label: 'Merchant_BeastForest', map: 'BeastForest' },
+				{ label: 'Merchant_HumanVillage', map: 'HumanVillage' },
 			],
-			collect: [{ label: '农田', map: 'HumanVillage' }],
+			collect: [
+				{
+					labels: [
+						'HumanVillage_Farmland_A',
+						'HumanVillage_Farmland_B',
+						'HumanVillage_Farmland_C',
+					],
+					map: 'HumanVillage',
+				},
+			],
 			fishingAdvanced: ['HakureiShrine'],
 		},
 	},
@@ -167,11 +226,23 @@ export const INGREDIENT_LIST = [
 		price: 14,
 		from: {
 			buy: [
-				{ label: '杂货商人', map: 'BeastForest' },
-				{ label: '农户', map: 'HumanVillage' },
-				{ label: '上海人形', map: 'DLC1_MagicForest' },
+				{ label: 'Merchant_BeastForest', map: 'BeastForest' },
+				{ label: 'Merchant_HumanVillage', map: 'HumanVillage' },
+				{
+					label: 'Merchant_MagicForest_Shanghai',
+					map: 'DLC1_MagicForest',
+				},
 			],
-			collect: [{ label: '农田', map: 'HumanVillage' }],
+			collect: [
+				{
+					labels: [
+						'HumanVillage_Farmland_A',
+						'HumanVillage_Farmland_B',
+						'HumanVillage_Farmland_C',
+					],
+					map: 'HumanVillage',
+				},
+			],
 		},
 	},
 	{
@@ -185,17 +256,37 @@ export const INGREDIENT_LIST = [
 		price: 16,
 		from: {
 			buy: [
-				{ label: '杂货商人', map: 'BeastForest' },
-				{ label: '农户', map: 'HumanVillage' },
-				{ label: '鬼商', map: 'DLC2_FormerHell' },
+				{ label: 'Merchant_BeastForest', map: 'BeastForest' },
+				{ label: 'Merchant_HumanVillage', map: 'HumanVillage' },
+				{ label: 'Merchant_FormerHell_Ghost', map: 'DLC2_FormerHell' },
 			],
 			collect: [
-				[{ label: '花丛', map: 'BeastForest' }, 30],
-				{ label: '农田', map: 'HumanVillage' },
-				[{ label: '花丛', map: 'HakureiShrine' }, 50],
-				{ label: '萝卜', map: 'DLC1_MagicForest' },
-				[{ label: '花丛', map: 'DLC1_YoukaiMountain' }, 30],
-				{ label: '温室', map: 'DLC4_GardenOfTheSun' },
+				[{ label: 'BeastForest_Plant_B', map: 'BeastForest' }, 30],
+				[{ label: 'BeastForest_Plant_B2', map: 'BeastForest' }, 30],
+				{
+					labels: [
+						'HumanVillage_Farmland_A',
+						'HumanVillage_Farmland_B',
+						'HumanVillage_Farmland_C',
+					],
+					map: 'HumanVillage',
+				},
+				[{ label: 'HakureiShrine_Potato', map: 'HakureiShrine' }, 50],
+				{
+					label: 'DLC1_MagicForest_Plant_Radish',
+					map: 'DLC1_MagicForest',
+				},
+				[
+					{
+						label: 'DLC1_YoukaiMountain_Plant_Potato',
+						map: 'DLC1_YoukaiMountain',
+					},
+					30,
+				],
+				{
+					label: 'DLC4_GardenOfTheSun_Plant_Radish',
+					map: 'DLC4_GardenOfTheSun',
+				},
 			],
 		},
 	},
@@ -210,36 +301,36 @@ export const INGREDIENT_LIST = [
 		price: 3,
 		from: {
 			buy: [
-				{ label: '杂货商人', map: 'BeastForest' },
-				{ label: '农户', map: 'HumanVillage' },
+				{ label: 'Merchant_BeastForest', map: 'BeastForest' },
+				{ label: 'Merchant_HumanVillage', map: 'HumanVillage' },
 			],
 			collect: [
 				[
-					{ label: '水涡（码头左下）', map: 'BeastForest' },
+					{ label: 'BeastForest_Stream_A2', map: 'BeastForest' },
 					false,
 					10,
 					14,
 				],
 				[
-					{ label: '水涡（木桥上方左侧）', map: 'BeastForest' },
+					{ label: 'BeastForest_Stream_A', map: 'BeastForest' },
 					false,
 					10,
 					14,
 				],
 				[
-					{ label: '水涡（木桥上方右侧四）', map: 'BeastForest' },
+					{ label: 'BeastForest_Stream_A3', map: 'BeastForest' },
 					false,
 					10,
 					14,
 				],
-				{ label: '水涡（湖泊左下）', map: 'HumanVillage' },
+				{ label: 'HumanVillage_Stream_A', map: 'HumanVillage' },
 				[
-					{ label: '水涡（湖泊右下）', map: 'HumanVillage' },
+					{ label: 'HumanVillage_Stream_B', map: 'HumanVillage' },
 					false,
 					16,
 					18,
 				],
-				{ label: '河流', excludedMaps: ['BambooForest'] },
+				{ excludedMaps: ['BambooForest'] },
 			],
 			fishing: ['HumanVillage', 'HakureiShrine'],
 			fishingAdvanced: ['BeastForest'],
@@ -255,40 +346,56 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 8,
 		from: {
-			buy: [{ label: '鬼商', map: 'DLC2_FormerHell' }],
+			buy: [
+				{ label: 'Merchant_FormerHell_Ghost', map: 'DLC2_FormerHell' },
+			],
 			collect: [
-				[{ label: '水涡（码头左上）', map: 'BeastForest' }, 30, 14, 18],
 				[
-					{ label: '水涡（木桥上方右侧一）', map: 'BeastForest' },
-					false,
-					14,
-					18,
-				],
-				[
-					{ label: '水涡（木桥上方右侧二）', map: 'BeastForest' },
+					{ label: 'BeastForest_Stream_C', map: 'BeastForest' },
 					30,
 					14,
 					18,
 				],
 				[
-					{ label: '水涡（木桥上方右侧三）', map: 'BeastForest' },
+					{ label: 'BeastForest_Stream_B2', map: 'BeastForest' },
 					false,
 					14,
 					18,
 				],
 				[
-					{ label: '水涡（码头左侧）', map: 'HumanVillage' },
+					{ label: 'BeastForest_Stream_C2', map: 'BeastForest' },
+					30,
+					14,
+					18,
+				],
+				[
+					{ label: 'BeastForest_Stream_B', map: 'BeastForest' },
+					false,
+					14,
+					18,
+				],
+				[
+					{ label: 'HumanVillage_Stream_C', map: 'HumanVillage' },
 					40,
 					10,
 					15,
 				],
 				[
-					{ label: '中心瀑布', map: 'DLC1_YoukaiMountain' },
+					{
+						label: 'DLC1_YoukaiMountain_Water_Trout',
+						map: 'DLC1_YoukaiMountain',
+					},
 					false,
 					14,
 					18,
 				],
-				[{ label: '碗之后', map: 'DLC4_ShiningNeedleCastle' }, 30],
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_Bowl_SeaUrchin',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					30,
+				],
 			],
 			fishing: [
 				'BeastForest',
@@ -316,60 +423,91 @@ export const INGREDIENT_LIST = [
 		price: 14,
 		from: {
 			buy: [
-				[{ label: '香霖堂', map: 'HumanVillage' }, 30],
-				{ label: '不良少年', map: 'DLC4_ShiningNeedleCastle' },
+				[{ label: 'Rinnosuke', map: 'HumanVillage' }, 30],
+				{
+					label: 'Merchant_ShiningNeedleCastle_FuRyouShounenn',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
 			],
 			collect: [
 				[
-					{ label: '水涡（码头左上）', map: 'BeastForest' },
-					false,
-					14,
-					18,
-				],
-				[{ label: '水涡（码头左下）', map: 'BeastForest' }, 20, 10, 14],
-				[
-					{ label: '水涡（木桥上方左侧）', map: 'BeastForest' },
-					20,
-					10,
-					14,
-				],
-				[
-					{ label: '水涡（木桥上方右侧一）', map: 'BeastForest' },
-					20,
-					14,
-					18,
-				],
-				[
-					{ label: '水涡（木桥上方右侧二）', map: 'BeastForest' },
+					{ label: 'BeastForest_Stream_C', map: 'BeastForest' },
 					false,
 					14,
 					18,
 				],
 				[
-					{ label: '水涡（木桥上方右侧三）', map: 'BeastForest' },
+					{ label: 'BeastForest_Stream_A2', map: 'BeastForest' },
+					20,
+					10,
+					14,
+				],
+				[
+					{ label: 'BeastForest_Stream_A', map: 'BeastForest' },
+					20,
+					10,
+					14,
+				],
+				[
+					{ label: 'BeastForest_Stream_B2', map: 'BeastForest' },
 					20,
 					14,
 					18,
 				],
 				[
-					{ label: '水涡（木桥上方右侧四）', map: 'BeastForest' },
+					{ label: 'BeastForest_Stream_C2', map: 'BeastForest' },
+					false,
+					14,
+					18,
+				],
+				[
+					{ label: 'BeastForest_Stream_B', map: 'BeastForest' },
+					20,
+					14,
+					18,
+				],
+				[
+					{ label: 'BeastForest_Stream_A3', map: 'BeastForest' },
 					20,
 					10,
 					14,
 				],
-				[{ label: '中心瀑布', map: 'DLC1_YoukaiMountain' }, 20, 14, 18],
+				[
+					{
+						label: 'DLC1_YoukaiMountain_Water_Trout',
+						map: 'DLC1_YoukaiMountain',
+					},
+					20,
+					14,
+					18,
+				],
 				{
-					label: '水涡（入口楼梯上方）',
+					label: 'DLC3_DivineSpiritMausoleum_Water_Eel',
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
-				{ label: '水涡（上方）', map: 'DLC4_ShiningNeedleCastle' },
+				{
+					label: 'DLC4_ShiningNeedleCastle_Water_RandomFish_A',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
 				[
-					{ label: '水涡（下方）', map: 'DLC4_ShiningNeedleCastle' },
+					{
+						label: 'DLC4_ShiningNeedleCastle_Water_RandomFish_B',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
 					50,
 				],
-				[{ label: '碗之后', map: 'DLC4_ShiningNeedleCastle' }, 30],
-				{ label: '月虹池（左下）', map: 'DLC5_LunarCapital' },
-				{ label: '河流', map: 'DLC5_Makai' },
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_Bowl_SeaUrchin',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					30,
+				],
+				{
+					label: 'DLC5_LunarCapital_Water_FishAndMeat',
+					map: 'DLC5_LunarCapital',
+				},
+				{ label: 'DLC5_Makai_Water_Fish', map: 'DLC5_Makai' },
 			],
 			fishing: [
 				'BeastForest',
@@ -392,45 +530,82 @@ export const INGREDIENT_LIST = [
 		price: 24,
 		from: {
 			buy: [
-				[{ label: '杂货商人', map: 'BeastForest' }, 50],
-				{ label: '鬼商', map: 'DLC2_FormerHell' },
-				{ label: '道士', map: 'DLC3_DivineSpiritMausoleum' },
+				[{ label: 'Merchant_BeastForest', map: 'BeastForest' }, 50],
+				{ label: 'Merchant_FormerHell_Ghost', map: 'DLC2_FormerHell' },
+				{
+					label: 'Merchant_DivineSpiritMausoleum_Taoist',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
 			],
 			collect: [
-				[{ label: '水涡（湖泊左下）', map: 'HumanVillage' }, 30],
+				[{ label: 'HumanVillage_Stream_A', map: 'HumanVillage' }, 30],
 				[
-					{ label: '水涡（湖泊右下）', map: 'HumanVillage' },
+					{ label: 'HumanVillage_Stream_B', map: 'HumanVillage' },
 					30,
 					16,
 					18,
 				],
 				[
-					{ label: '水涡（码头左侧）', map: 'HumanVillage' },
+					{ label: 'HumanVillage_Stream_C', map: 'HumanVillage' },
 					30,
 					10,
 					15,
 				],
-				{ label: '水涡', map: 'HakureiShrine' },
-				[{ label: '水涡', map: 'BambooForest' }, 30],
-				{ label: '南侧瀑布', map: 'DLC1_YoukaiMountain' },
-				{ label: '拱桥（上方）', map: 'DLC2_FormerHell' },
-				{ label: '喷泉（西南侧）', map: 'DLC2_EarthSpiritsPalace' },
+				[{ label: 'BambooForest_Pond', map: 'BambooForest' }, 30],
 				{
-					label: '水涡（河流上方）',
+					label: 'DLC1_YoukaiMountain_Water_Salmon',
+					map: 'DLC1_YoukaiMountain',
+				},
+				{
+					label: 'DLC2_FormerHell_Water_Salmon',
+					map: 'DLC2_FormerHell',
+				},
+				{
+					label: 'DLC2_EarthSpiritsPalace_Water_Salmon',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
+				{
+					labels: [
+						'DLC3_DivineSpiritMausoleum_Water_Shrimp_A',
+						'DLC3_DivineSpiritMausoleum_Water_Shrimp_B',
+						'DLC3_DivineSpiritMausoleum_Water_Salmon_A',
+						'DLC3_DivineSpiritMausoleum_Water_Salmon_B',
+					],
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
 				{
-					label: '水涡（木桥西侧）',
+					labels: [
+						'DLC3_DivineSpiritMausoleum_Water_Salmon_A',
+						'DLC3_DivineSpiritMausoleum_Water_Salmon_B',
+					],
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
 				[
-					{ label: '水涡（上方）', map: 'DLC4_ShiningNeedleCastle' },
+					{
+						label: 'DLC4_ShiningNeedleCastle_Water_RandomFish_A',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
 					50,
 				],
-				{ label: '水涡（下方）', map: 'DLC4_ShiningNeedleCastle' },
-				[{ label: '碗之后', map: 'DLC4_ShiningNeedleCastle' }, 30],
-				[{ label: '月虹池（左下）', map: 'DLC5_LunarCapital' }, 60],
-				[{ label: '河流', excludedMaps: ['BeastForest'] }, true],
+				{
+					label: 'DLC4_ShiningNeedleCastle_Water_RandomFish_B',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_Bowl_SeaUrchin',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					30,
+				],
+				[
+					{
+						label: 'DLC5_LunarCapital_Water_FishAndMeat',
+						map: 'DLC5_LunarCapital',
+					},
+					60,
+				],
+				[{ excludedMaps: ['BeastForest'] }, true],
 			],
 			fishing: [
 				'BeastForest',
@@ -457,29 +632,51 @@ export const INGREDIENT_LIST = [
 		level: 3,
 		price: 30,
 		from: {
-			buy: [{ label: '道士', map: 'DLC3_DivineSpiritMausoleum' }],
+			buy: [
+				{
+					label: 'Merchant_DivineSpiritMausoleum_Taoist',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
+			],
 			collect: [
 				[
-					{ label: '水涡（码头左侧）', map: 'HumanVillage' },
+					{ label: 'HumanVillage_Stream_C', map: 'HumanVillage' },
 					false,
 					10,
 					15,
 				],
-				[{ label: '水涡', map: 'HakureiShrine' }, 50],
-				{ label: '水涡（河流右侧）', map: 'ScarletMansion' },
-				[{ label: '水涡', map: 'BambooForest' }, 30],
-				[{ label: '南侧瀑布', map: 'DLC1_YoukaiMountain' }, 50],
+				{ label: 'ScarletMansion_Tuna', map: 'ScarletMansion' },
+				[{ label: 'BambooForest_Pond', map: 'BambooForest' }, 30],
 				[
-					{ label: '喷泉（西南侧）', map: 'DLC2_EarthSpiritsPalace' },
+					{
+						label: 'DLC1_YoukaiMountain_Water_Salmon',
+						map: 'DLC1_YoukaiMountain',
+					},
+					50,
+				],
+				[
+					{
+						label: 'DLC2_EarthSpiritsPalace_Water_Salmon',
+						map: 'DLC2_EarthSpiritsPalace',
+					},
 					60,
 				],
-				{ label: '水涡（东侧）', map: 'DLC3_DivineSpiritMausoleum' },
 				{
-					label: '水涡（入口楼梯下方）',
+					label: 'DLC3_DivineSpiritMausoleum_Water_Tunas_B',
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
-				[{ label: '碗之后', map: 'DLC4_ShiningNeedleCastle' }, 30],
-				[{ label: '河流', excludedMaps: ['BeastForest'] }, true],
+				{
+					label: 'DLC3_DivineSpiritMausoleum_Water_Tunas_A',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_Bowl_SeaUrchin',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					30,
+				],
+				[{ excludedMaps: ['BeastForest'] }, true],
 			],
 			fishing: [
 				'BambooForest',
@@ -502,13 +699,28 @@ export const INGREDIENT_LIST = [
 		price: 35,
 		from: {
 			buy: [
-				[{ label: '妖精女仆', map: 'HakureiShrine' }, 80],
-				{ label: '鬼商', map: 'DLC2_FormerHell' },
+				[{ label: 'Merchant_Maid', map: 'HakureiShrine' }, 80],
+				{ label: 'Merchant_FormerHell_Ghost', map: 'DLC2_FormerHell' },
 			],
 			collect: [
-				[{ label: '捕兽夹', map: 'BeastForest' }, 50],
-				[{ label: '捕兽夹', map: 'DLC1_YoukaiMountain' }, 50],
-				{ label: '捕兽夹（东侧）', map: 'DLC2_FormerHell' },
+				[
+					{
+						labels: ['BeastForest_Trap', 'BeastForest_Trap2'],
+						map: 'BeastForest',
+					},
+					50,
+				],
+				[
+					{
+						label: 'DLC1_YoukaiMountain_Trap',
+						map: 'DLC1_YoukaiMountain',
+					},
+					50,
+				],
+				{
+					label: 'DLC2_FormerHell_Item_BlackHairPork',
+					map: 'DLC2_FormerHell',
+				},
 			],
 		},
 	},
@@ -523,14 +735,31 @@ export const INGREDIENT_LIST = [
 		price: 40,
 		from: {
 			buy: [
-				{ label: '妖精女仆', map: 'HakureiShrine' },
-				{ label: '地精商人', map: 'ScarletMansion' },
-				{ label: '美食妖怪兔', map: 'BambooForest' },
-				{ label: '道士', map: 'DLC3_DivineSpiritMausoleum' },
+				{ label: 'Merchant_Maid', map: 'HakureiShrine' },
+				{ label: 'Merchant_Goblin', map: 'ScarletMansion' },
+				{ label: 'Merchant_YokaiRabbitDelicacy', map: 'BambooForest' },
+				{
+					label: 'Merchant_DivineSpiritMausoleum_Taoist',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
 			],
-			collect: [{ label: '捕兽夹（中部）', map: 'DLC2_FormerHell' }],
+			collect: [
+				{
+					label: 'DLC2_FormerHell_Item_WagyuBeef',
+					map: 'DLC2_FormerHell',
+				},
+			],
 			fishingAdvanced: ['DLC2_EarthSpiritsPalace', 'DLC5_LunarCapital'],
-			task: [{ task: '阿求小姐的色纸' }],
+			task: [
+				{
+					task: [
+						'Side_HumanVillage_Loop_Mission_A',
+						'Side_HumanVillage_Loop_Mission_B',
+						'Side_HumanVillage_Loop_Mission_C',
+						'Side_HumanVillage_Loop_Mission_D',
+					],
+				},
+			],
 		},
 	},
 	{
@@ -544,35 +773,71 @@ export const INGREDIENT_LIST = [
 		price: 18,
 		from: {
 			buy: [
-				[{ label: '香霖堂', map: 'HumanVillage' }, 30],
-				{ label: '上海人形', map: 'DLC1_MagicForest' },
-				{ label: '道士', map: 'DLC3_DivineSpiritMausoleum' },
+				[{ label: 'Rinnosuke', map: 'HumanVillage' }, 30],
+				{
+					label: 'Merchant_MagicForest_Shanghai',
+					map: 'DLC1_MagicForest',
+				},
+				{
+					label: 'Merchant_DivineSpiritMausoleum_Taoist',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
 			],
 			collect: [
 				[
-					{ label: '露水点（南侧亭子）', map: 'BeastForest' },
+					{ label: 'BeastForest_Plant_A2', map: 'BeastForest' },
 					20,
 					10,
 					11,
 				],
 				[
-					{ label: '露水点（小屋前方）', map: 'BeastForest' },
+					{ label: 'BeastForest_Plant_A', map: 'BeastForest' },
 					20,
 					10,
 					11,
 				],
 				[
-					{ label: '露水点（小屋后方）', map: 'BeastForest' },
+					{ label: 'BeastForest_Plant_A3', map: 'BeastForest' },
 					20,
 					10,
 					11,
 				],
-				[{ label: '蘑菇堆（东侧）', map: 'HakureiShrine' }, 50],
-				{ label: '蘑菇堆（西侧）', map: 'HakureiShrine' },
-				{ label: '蘑菇堆', map: 'BambooForest' },
-				{ label: '蘑菇堆', map: 'DLC1_MagicForest' },
-				{ label: '蘑菇堆', map: 'DLC4_GardenOfTheSun' },
-				{ label: '蘑菇堆', map: 'DLC5_Makai' },
+				[
+					{
+						label: 'HakureiShrine_TreeMushroom',
+						map: 'HakureiShrine',
+					},
+					50,
+				],
+				{ label: 'HakureiShrine_Mushroom', map: 'HakureiShrine' },
+				{ label: 'BamBooForest_Mushroom_A', map: 'BambooForest' },
+				{ label: 'BamBooForest_Mushroom_B', map: 'BambooForest' },
+				{
+					labels: [
+						'DLC1_MagicForest_Plant_Mushroom_A',
+						'DLC1_MagicForest_Plant_Mushroom_B',
+						'DLC1_MagicForest_Plant_Mushroom_C',
+					],
+					map: 'DLC1_MagicForest',
+				},
+				{
+					label: 'DLC2_EarthSpiritsPalace_Plant_Truffle',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
+				{
+					label: 'DLC4_GardenOfTheSun_Plant_Mushroom',
+					map: 'DLC4_GardenOfTheSun',
+				},
+				{
+					labels: [
+						'DLC5_Makai_Plant_Mushroom_A',
+						'DLC5_Makai_Plant_Mushroom_B',
+						'DLC5_Makai_Plant_Mushroom_C',
+						'DLC5_Makai_Plant_Mushroom_D',
+						'DLC5_Makai_Plant_Mushroom_E',
+					],
+					map: 'DLC5_Makai',
+				},
 			],
 			fishingAdvanced: ['DLC1_MagicForest'],
 		},
@@ -588,17 +853,40 @@ export const INGREDIENT_LIST = [
 		price: 50,
 		from: {
 			buy: [
-				[{ label: '妖精女仆', map: 'HakureiShrine' }, 80],
-				{ label: '上海人形', map: 'DLC1_MagicForest' },
-				{ label: '道士', map: 'DLC3_DivineSpiritMausoleum' },
-				{ label: '不良少年', map: 'DLC4_ShiningNeedleCastle' },
+				[{ label: 'Merchant_Maid', map: 'HakureiShrine' }, 80],
+				{
+					label: 'Merchant_MagicForest_Shanghai',
+					map: 'DLC1_MagicForest',
+				},
+				{
+					label: 'Merchant_DivineSpiritMausoleum_Taoist',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
+				{
+					label: 'Merchant_ShiningNeedleCastle_FuRyouShounenn',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
 			],
 			collect: [
-				[{ label: '蘑菇堆（西侧）', map: 'HakureiShrine' }, 30],
-				[{ label: '蘑菇堆', map: 'BambooForest' }, 30],
+				[{ label: 'HakureiShrine_Mushroom', map: 'HakureiShrine' }, 5],
+				[{ label: 'BamBooForest_Mushroom_A', map: 'BambooForest' }, 30],
+				[{ label: 'BamBooForest_Mushroom_B', map: 'BambooForest' }, 30],
+				{
+					label: 'DLC2_EarthSpiritsPalace_Plant_Truffle',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
 			],
 			fishingAdvanced: ['ScarletMansion', 'DLC1_MagicForest'],
-			task: [{ task: '阿求小姐的色纸' }],
+			task: [
+				{
+					task: [
+						'Side_HumanVillage_Loop_Mission_A',
+						'Side_HumanVillage_Loop_Mission_B',
+						'Side_HumanVillage_Loop_Mission_C',
+						'Side_HumanVillage_Loop_Mission_D',
+					],
+				},
+			],
 		},
 	},
 	{
@@ -612,26 +900,49 @@ export const INGREDIENT_LIST = [
 		price: 34,
 		from: {
 			buy: [
-				[{ label: '妖精女仆', map: 'HakureiShrine' }, 80],
-				{ label: '地精商人', map: 'ScarletMansion' },
-				{ label: '美食妖怪兔', map: 'BambooForest' },
+				[{ label: 'Merchant_Maid', map: 'HakureiShrine' }, 80],
+				{ label: 'Merchant_Goblin', map: 'ScarletMansion' },
+				{ label: 'Merchant_YokaiRabbitDelicacy', map: 'BambooForest' },
 			],
 			collect: [
-				[{ label: '水涡', map: 'HakureiShrine' }, 15],
-				[{ label: '水涡（河流右侧）', map: 'ScarletMansion' }, 40],
-				{ label: '水涡', map: 'BambooForest' },
-				[{ label: '南侧瀑布', map: 'DLC1_YoukaiMountain' }, 15],
+				[{ label: 'ScarletMansion_Tuna', map: 'ScarletMansion' }, 40],
+				{ label: 'BambooForest_Pond', map: 'BambooForest' },
 				[
-					{ label: '水涡（上方）', map: 'DLC4_ShiningNeedleCastle' },
+					{
+						label: 'DLC1_YoukaiMountain_Water_Salmon',
+						map: 'DLC1_YoukaiMountain',
+					},
+					15,
+				],
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_Water_RandomFish_A',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
 					10,
 				],
 				[
-					{ label: '水涡（下方）', map: 'DLC4_ShiningNeedleCastle' },
+					{
+						label: 'DLC4_ShiningNeedleCastle_Water_RandomFish_B',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
 					10,
 				],
-				[{ label: '碗之后', map: 'DLC4_ShiningNeedleCastle' }, 30],
-				[{ label: '月虹池（左下）', map: 'DLC5_LunarCapital' }, 10],
-				[{ label: '河流', map: 'DLC5_Makai' }, 30],
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_Bowl_SeaUrchin',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					30,
+				],
+				[
+					{
+						label: 'DLC5_LunarCapital_Water_FishAndMeat',
+						map: 'DLC5_LunarCapital',
+					},
+					10,
+				],
+				[{ label: 'DLC5_Makai_Water_Fish', map: 'DLC5_Makai' }, 30],
 			],
 			fishing: [
 				'ScarletMansion',
@@ -643,7 +954,16 @@ export const INGREDIENT_LIST = [
 				'DLC5_LunarCapital',
 				'DLC5_Makai',
 			],
-			task: [{ task: '阿求小姐的色纸' }],
+			task: [
+				{
+					task: [
+						'Side_HumanVillage_Loop_Mission_A',
+						'Side_HumanVillage_Loop_Mission_B',
+						'Side_HumanVillage_Loop_Mission_C',
+						'Side_HumanVillage_Loop_Mission_D',
+					],
+				},
+			],
 		},
 	},
 	{
@@ -657,14 +977,20 @@ export const INGREDIENT_LIST = [
 		price: 42,
 		from: {
 			buy: [
-				[{ label: '妖精女仆', map: 'HakureiShrine' }, 80],
-				{ label: '地精商人', map: 'ScarletMansion' },
-				{ label: '美食妖怪兔', map: 'BambooForest' },
-				{ label: '道士', map: 'DLC3_DivineSpiritMausoleum' },
+				[{ label: 'Merchant_Maid', map: 'HakureiShrine' }, 80],
+				{ label: 'Merchant_Goblin', map: 'ScarletMansion' },
+				{ label: 'Merchant_YokaiRabbitDelicacy', map: 'BambooForest' },
+				{
+					label: 'Merchant_DivineSpiritMausoleum_Taoist',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
 			],
 			collect: [
-				[{ label: '水涡（河流左侧）', map: 'ScarletMansion' }, 40],
-				{ label: '喷泉（东南侧）', map: 'DLC2_EarthSpiritsPalace' },
+				[{ label: 'ScarletMansion_Shrimp', map: 'ScarletMansion' }, 40],
+				{
+					label: 'DLC2_EarthSpiritsPalace_Water_Puffer',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
 			],
 			fishing: [
 				'HumanVillage',
@@ -674,7 +1000,16 @@ export const INGREDIENT_LIST = [
 				'DLC2_EarthSpiritsPalace',
 				'DLC5_Makai',
 			],
-			task: [{ task: '阿求小姐的色纸' }],
+			task: [
+				{
+					task: [
+						'Side_HumanVillage_Loop_Mission_A',
+						'Side_HumanVillage_Loop_Mission_B',
+						'Side_HumanVillage_Loop_Mission_C',
+						'Side_HumanVillage_Loop_Mission_D',
+					],
+				},
+			],
 		},
 	},
 	{
@@ -688,15 +1023,26 @@ export const INGREDIENT_LIST = [
 		price: 10,
 		from: {
 			buy: [
-				[{ label: '香霖堂', map: 'HumanVillage' }, 30],
-				{ label: '月兔', map: 'DLC5_LunarCapital' },
+				[{ label: 'Rinnosuke', map: 'HumanVillage' }, 30],
+				{
+					label: 'Merchant_LunarCapital_MoonRabbit',
+					map: 'DLC5_LunarCapital',
+				},
 			],
 			collect: [
-				{ label: '桃树（蜂蜜）', map: 'HakureiShrine' },
-				{ label: '桃树（露水）', map: 'HakureiShrine' },
-				{ label: '桃子', map: 'DLC1_MagicForest' },
-				{ label: '桃树', map: 'DLC4_GardenOfTheSun' },
-				{ label: '桃树', map: 'DLC5_LunarCapital' },
+				{ label: 'HakureiShrine_Tree_A', map: 'HakureiShrine' },
+				{
+					label: 'DLC1_MagicForest_Plant_Peach',
+					map: 'DLC1_MagicForest',
+				},
+				{
+					label: 'DLC4_GardenOfTheSun_Tree_Peach',
+					map: 'DLC4_GardenOfTheSun',
+				},
+				{
+					label: 'DLC5_LunarCapital_Tree_Peach',
+					map: 'DLC5_LunarCapital',
+				},
 			],
 			fishingAdvanced: [
 				'DLC2_EarthSpiritsPalace',
@@ -715,16 +1061,31 @@ export const INGREDIENT_LIST = [
 		price: 7,
 		from: {
 			buy: [
-				{ label: '上海人形', map: 'DLC1_MagicForest' },
-				{ label: '地狱鸦', map: 'DLC2_EarthSpiritsPalace' },
+				{
+					label: 'Merchant_MagicForest_Shanghai',
+					map: 'DLC1_MagicForest',
+				},
+				{
+					label: 'Merchant_EarthSpiritsPalace_HellCrow',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
 			],
 			collect: [
-				{ label: '银杏树', map: 'HumanVillage' },
-				{ label: '蘑菇堆（东侧）', map: 'HakureiShrine' },
-				{ label: '银杏树', map: 'DLC1_MagicForest' },
-				{ label: '蜂巢', map: 'DLC1_YoukaiMountain' },
-				{ label: '喷泉（东北侧）', map: 'DLC2_EarthSpiritsPalace' },
-				{ label: '银杏树', map: 'DLC4_GardenOfTheSun' },
+				{ label: 'HumanVillage_Tree', map: 'HumanVillage' },
+				{ label: 'HakureiShrine_TreeMushroom', map: 'HakureiShrine' },
+				{ label: 'DLC1_MagicForest_Tree', map: 'DLC1_MagicForest' },
+				{
+					label: 'DLC1_YoukaiMountain_Tree',
+					map: 'DLC1_YoukaiMountain',
+				},
+				{
+					label: 'DLC2_EarthSpiritsPalace_Plant_Ginkgo',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
+				{
+					label: 'DLC4_GardenOfTheSun_Tree_Ginkgo',
+					map: 'DLC4_GardenOfTheSun',
+				},
 			],
 			fishingAdvanced: ['DLC3_DivineSpiritMausoleum'],
 		},
@@ -740,33 +1101,50 @@ export const INGREDIENT_LIST = [
 		price: 30,
 		from: {
 			collect: [
-				[{ label: '水涡（湖泊左下）', map: 'HumanVillage' }, 15],
+				[{ label: 'HumanVillage_Stream_A', map: 'HumanVillage' }, 15],
 				[
-					{ label: '水涡（湖泊右下）', map: 'HumanVillage' },
+					{ label: 'HumanVillage_Stream_B', map: 'HumanVillage' },
 					10,
 					16,
 					18,
 				],
 				[
-					{ label: '水涡（码头左侧）', map: 'HumanVillage' },
+					{ label: 'HumanVillage_Stream_C', map: 'HumanVillage' },
 					20,
 					10,
 					15,
 				],
-				{ label: '水涡（河流左侧）', map: 'ScarletMansion' },
-				[{ label: '水涡', map: 'BambooForest' }, 30],
-				[{ label: '西北瀑布', map: 'DLC1_YoukaiMountain' }, 40],
-				{ label: '莲花池（中部右）', map: 'DLC3_MyourenTemple' },
+				{ label: 'ScarletMansion_Shrimp', map: 'ScarletMansion' },
+				[{ label: 'BambooForest_Pond', map: 'BambooForest' }, 30],
+				[
+					{
+						label: 'DLC1_YoukaiMountain_Water_Crab',
+						map: 'DLC1_YoukaiMountain',
+					},
+					40,
+				],
 				{
-					label: '水涡（拱桥上方）',
+					label: 'DLC3_MyourenTemple_Water_Shrimp',
+					map: 'DLC3_MyourenTemple',
+				},
+				{
+					labels: [
+						'DLC3_DivineSpiritMausoleum_Water_Shrimp_A',
+						'DLC3_DivineSpiritMausoleum_Water_Shrimp_B',
+					],
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
 				{
-					label: '水涡（河流上方）',
+					labels: [
+						'DLC3_DivineSpiritMausoleum_Water_Shrimp_A',
+						'DLC3_DivineSpiritMausoleum_Water_Shrimp_B',
+						'DLC3_DivineSpiritMausoleum_Water_Salmon_A',
+						'DLC3_DivineSpiritMausoleum_Water_Salmon_B',
+					],
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
-				[{ label: '河流', map: 'DLC5_Makai' }, 50],
-				[{ label: '河流', excludedMaps: ['BeastForest'] }, true],
+				[{ label: 'DLC5_Makai_Water_Fish', map: 'DLC5_Makai' }, 50],
+				[{ excludedMaps: ['BeastForest'] }, true],
 			],
 			fishing: [
 				'BeastForest',
@@ -788,21 +1166,51 @@ export const INGREDIENT_LIST = [
 		price: 15,
 		from: {
 			buy: [
-				[{ label: '香霖堂', map: 'HumanVillage' }, 30],
-				{ label: '上海人形', map: 'DLC1_MagicForest' },
-				{ label: '娜兹玲', map: 'DLC3_MyourenTemple' },
-				{ label: '太阳花精', map: 'DLC4_GardenOfTheSun' },
+				[{ label: 'Rinnosuke', map: 'HumanVillage' }, 30],
+				{
+					label: 'Merchant_MagicForest_Shanghai',
+					map: 'DLC1_MagicForest',
+				},
+				{
+					label: 'Merchant_MyourenTemple_Nazrin',
+					map: 'DLC3_MyourenTemple',
+				},
+				{
+					label: 'Merchant_GardenOfTheSun_SunFairy',
+					map: 'DLC4_GardenOfTheSun',
+				},
 			],
 			collect: [
-				{ label: '蜂巢', map: 'BeastForest' },
-				[{ label: '银杏树', map: 'HumanVillage' }, 20],
-				[{ label: '桃树（蜂蜜）', map: 'HakureiShrine' }, 40],
-				[{ label: '银杏树', map: 'HakureiShrine' }, 30],
-				[{ label: '露水点', map: 'ScarletMansion' }, 50],
-				[{ label: '蜂巢', map: 'DLC1_YoukaiMountain' }, 20],
-				{ label: '蜂巢', map: 'DLC3_MyourenTemple' },
-				{ label: '蜂巢', map: 'DLC4_GardenOfTheSun' },
-				{ label: '蜂巢', map: 'DLC5_Makai' },
+				{ label: 'BeastForest_Plant_C', map: 'BeastForest' },
+				{ label: 'BeastForest_Plant_C2', map: 'BeastForest' },
+				{ label: 'BeastForest_Plant_C3', map: 'BeastForest' },
+				{ label: 'BeastForest_Plant_C4', map: 'BeastForest' },
+				[{ label: 'HumanVillage_Tree', map: 'HumanVillage' }, 20],
+				[{ label: 'HakureiShrine_Tree_A', map: 'HakureiShrine' }, 40],
+				[{ label: 'HakureiShrine_Tree_B', map: 'HakureiShrine' }, 30],
+				[{ label: 'ScarletMansion_Plant', map: 'ScarletMansion' }, 50],
+				[
+					{
+						label: 'DLC1_YoukaiMountain_Tree',
+						map: 'DLC1_YoukaiMountain',
+					},
+					20,
+				],
+				{
+					labels: [
+						'DLC3_MyourenTemple_Plant_Honey_A',
+						'DLC3_MyourenTemple_Plant_Honey_B',
+					],
+					map: 'DLC3_MyourenTemple',
+				},
+				{
+					labels: [
+						'DLC4_GardenOfTheSun_Tree_Honey_A',
+						'DLC4_GardenOfTheSun_Tree_Honey_B',
+					],
+					map: 'DLC4_GardenOfTheSun',
+				},
+				{ label: 'DLC5_Makai_Tree_Honey', map: 'DLC5_Makai' },
 			],
 		},
 	},
@@ -817,23 +1225,46 @@ export const INGREDIENT_LIST = [
 		price: 5,
 		from: {
 			collect: [
-				[{ label: '蜂巢', map: 'BeastForest' }, 85],
+				[{ label: 'BeastForest_Plant_C', map: 'BeastForest' }, 85],
+				[{ label: 'BeastForest_Plant_C2', map: 'BeastForest' }, 85],
+				[{ label: 'BeastForest_Plant_C3', map: 'BeastForest' }, 85],
+				[{ label: 'BeastForest_Plant_C4', map: 'BeastForest' }, 85],
 				[
-					{ label: '露水点（南侧亭子）', map: 'BeastForest' },
+					{ label: 'BeastForest_Plant_A2', map: 'BeastForest' },
 					10,
 					10,
 					11,
 				],
 				[
-					{ label: '露水点（小屋后方）', map: 'BeastForest' },
+					{ label: 'BeastForest_Plant_A3', map: 'BeastForest' },
 					10,
 					10,
 					11,
 				],
-				{ label: '银杏树', map: 'HakureiShrine' },
-				{ label: '银杏树', map: 'DLC2_FormerHell' },
-				[{ label: '露水点', map: 'DLC4_GardenOfTheSun' }, 50, 10, 11],
-				{ label: '银杏树', map: 'DLC5_Makai' },
+				{ label: 'HakureiShrine_Tree_B', map: 'HakureiShrine' },
+				{
+					labels: [
+						'DLC2_FormerHell_FreeOneself_A',
+						'DLC2_FormerHell_FreeOneself_B',
+					],
+					map: 'DLC2_FormerHell',
+				},
+				[
+					{
+						label: 'DLC4_GardenOfTheSun_Tree_Dew',
+						map: 'DLC4_GardenOfTheSun',
+					},
+					50,
+					10,
+					11,
+				],
+				{
+					labels: [
+						'DLC5_Makai_Tree_CicadaSlough_A',
+						'DLC5_Makai_Tree_CicadaSlough_B',
+					],
+					map: 'DLC5_Makai',
+				},
 			],
 			fishingAdvanced: ['HakureiShrine'],
 		},
@@ -850,21 +1281,42 @@ export const INGREDIENT_LIST = [
 		from: {
 			collect: [
 				[
-					{ label: '东侧山丘（需借道博丽神社）', map: 'BeastForest' },
+					{ label: 'BeastForest_Plant_Gendonka', map: 'BeastForest' },
 					false,
 					16,
 					18,
 				],
-				{ label: '喷泉（东侧）', map: 'DLC2_EarthSpiritsPalace' },
-				{ label: '游乐场', map: 'DLC2_EarthSpiritsPalace' },
-				{ label: '花丛（西南侧）', map: 'DLC3_MyourenTemple' },
+				{
+					label: 'DLC2_EarthSpiritsPalace_Plant_Gendonka_B',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
+				{
+					labels: [
+						'DLC2_EarthSpiritsPalace_Plant_Gendonka',
+						'DLC2_EarthSpiritsPalace_Plant_Gendonka_B',
+					],
+					map: 'DLC2_EarthSpiritsPalace',
+				},
+				{
+					label: 'DLC3_MyourenTemple_Plant_Gendonka',
+					map: 'DLC3_MyourenTemple',
+				},
 			],
 			fishingAdvanced: [
 				'DLC2_FormerHell',
 				'DLC4_GardenOfTheSun',
 				'DLC5_Makai',
 			],
-			task: [{ task: '阿求小姐的色纸' }],
+			task: [
+				{
+					task: [
+						'Side_HumanVillage_Loop_Mission_A',
+						'Side_HumanVillage_Loop_Mission_B',
+						'Side_HumanVillage_Loop_Mission_C',
+						'Side_HumanVillage_Loop_Mission_D',
+					],
+				},
+			],
 		},
 	},
 	{
@@ -878,45 +1330,82 @@ export const INGREDIENT_LIST = [
 		price: 10,
 		from: {
 			buy: [
-				{ label: '道士', map: 'DLC3_DivineSpiritMausoleum' },
-				{ label: '太阳花精', map: 'DLC4_GardenOfTheSun' },
+				{
+					label: 'Merchant_DivineSpiritMausoleum_Taoist',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
+				{
+					label: 'Merchant_GardenOfTheSun_SunFairy',
+					map: 'DLC4_GardenOfTheSun',
+				},
 			],
 			collect: [
 				[
-					{ label: '露水点（南侧亭子）', map: 'BeastForest' },
+					{ label: 'BeastForest_Plant_A2', map: 'BeastForest' },
 					false,
 					10,
 					11,
 				],
 				[
-					{ label: '露水点（小屋前方）', map: 'BeastForest' },
+					{ label: 'BeastForest_Plant_A', map: 'BeastForest' },
 					false,
 					10,
 					11,
 				],
 				[
-					{ label: '露水点（小屋后方）', map: 'BeastForest' },
+					{ label: 'BeastForest_Plant_A3', map: 'BeastForest' },
 					false,
 					10,
 					11,
 				],
 				[
-					{ label: '南侧亭子（需借道迷途竹林）', map: 'BeastForest' },
+					{ label: 'BamBooForest_MoonLightHerb', map: 'BeastForest' },
 					60,
 					17,
 					18,
 				],
-				[{ label: '桃树（露水）', map: 'HakureiShrine' }, 20],
-				{ label: '露水点', map: 'ScarletMansion' },
-				[{ label: '露水点', map: 'DLC1_MagicForest' }, false, 10, 11],
-				{ label: '露水点', map: 'DLC3_DivineSpiritMausoleum' },
+				{ label: 'ScarletMansion_Plant', map: 'ScarletMansion' },
 				[
-					{ label: '露水点', map: 'DLC4_GardenOfTheSun' },
+					{
+						labels: [
+							'DLC1_MagicForest_Item_Dew_A',
+							'DLC1_MagicForest_Item_Dew_B',
+							'DLC1_MagicForest_Item_Dew_C',
+						],
+						map: 'DLC1_MagicForest',
+					},
 					false,
 					10,
 					11,
 				],
-				[{ label: '露水点', map: 'DLC5_Makai' }, false, 10, 11],
+				{
+					labels: [
+						'DLC3_DivineSpiritMausoleum_Dew_A',
+						'DLC3_DivineSpiritMausoleum_Dew_B',
+					],
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
+				[
+					{
+						label: 'DLC4_GardenOfTheSun_Tree_Dew',
+						map: 'DLC4_GardenOfTheSun',
+					},
+					false,
+					10,
+					11,
+				],
+				[
+					{
+						labels: [
+							'DLC5_Makai_Item_Dew_A',
+							'DLC5_Makai_Item_Dew_B',
+						],
+						map: 'DLC5_Makai',
+					},
+					false,
+					10,
+					11,
+				],
 			],
 		},
 	},
@@ -931,15 +1420,24 @@ export const INGREDIENT_LIST = [
 		price: 40,
 		from: {
 			buy: [
-				[{ label: '杂货商人', map: 'BeastForest' }, 50],
-				[{ label: '香霖堂', map: 'HumanVillage' }, 30],
-				{ label: '鬼商', map: 'DLC2_FormerHell' },
+				[{ label: 'Merchant_BeastForest', map: 'BeastForest' }, 50],
+				[{ label: 'Rinnosuke', map: 'HumanVillage' }, 30],
+				{ label: 'Merchant_FormerHell_Ghost', map: 'DLC2_FormerHell' },
 			],
 			collect: [
-				{ label: '竹笋堆', map: 'BambooForest' },
-				[{ label: '竹子', map: 'BambooForest' }, 30],
-				{ label: '竹笋堆', map: 'DLC4_ShiningNeedleCastle' },
-				[{ label: '竹子', map: 'DLC4_ShiningNeedleCastle' }, 30],
+				{ label: 'BamBooForest_BambooRoot', map: 'BambooForest' },
+				[{ label: 'BamBooForest_Bamboo', map: 'BambooForest' }, 30],
+				{
+					label: 'DLC4_ShiningNeedleCastle_Plant_BambooShoot',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_Plant_Bamboo',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					30,
+				],
 			],
 			fishingAdvanced: ['DLC3_MyourenTemple'],
 		},
@@ -955,8 +1453,11 @@ export const INGREDIENT_LIST = [
 		price: 8,
 		from: {
 			buy: [
-				{ label: '地精商人', map: 'ScarletMansion' },
-				{ label: '地狱鸦', map: 'DLC2_EarthSpiritsPalace' },
+				{ label: 'Merchant_Goblin', map: 'ScarletMansion' },
+				{
+					label: 'Merchant_EarthSpiritsPalace_HellCrow',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
 			],
 		},
 	},
@@ -971,8 +1472,11 @@ export const INGREDIENT_LIST = [
 		price: 10,
 		from: {
 			buy: [
-				{ label: '地精商人', map: 'ScarletMansion' },
-				{ label: '上海人形', map: 'DLC1_MagicForest' },
+				{ label: 'Merchant_Goblin', map: 'ScarletMansion' },
+				{
+					label: 'Merchant_MagicForest_Shanghai',
+					map: 'DLC1_MagicForest',
+				},
 			],
 		},
 	},
@@ -987,13 +1491,19 @@ export const INGREDIENT_LIST = [
 		price: 15,
 		from: {
 			buy: [
-				[{ label: '香霖堂', map: 'HumanVillage' }, 30],
-				{ label: '月兔', map: 'DLC5_LunarCapital' },
+				[{ label: 'Rinnosuke', map: 'HumanVillage' }, 30],
+				{
+					label: 'Merchant_LunarCapital_MoonRabbit',
+					map: 'DLC5_LunarCapital',
+				},
 			],
 			collect: [
-				[{ label: '竹笋堆', map: 'BambooForest' }, 50],
-				{ label: '竹子', map: 'BambooForest' },
-				{ label: '竹子', map: 'DLC4_ShiningNeedleCastle' },
+				[{ label: 'BamBooForest_BambooRoot', map: 'BambooForest' }, 50],
+				{ label: 'BamBooForest_Bamboo', map: 'BambooForest' },
+				{
+					label: 'DLC4_ShiningNeedleCastle_Plant_Bamboo',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
 			],
 			fishingAdvanced: ['BambooForest'],
 		},
@@ -1009,9 +1519,12 @@ export const INGREDIENT_LIST = [
 		price: 15,
 		from: {
 			buy: [
-				[{ label: '香霖堂', map: 'HumanVillage' }, 30],
-				{ label: '美食妖怪兔', map: 'BambooForest' },
-				{ label: '上海人形', map: 'DLC1_MagicForest' },
+				[{ label: 'Rinnosuke', map: 'HumanVillage' }, 30],
+				{ label: 'Merchant_YokaiRabbitDelicacy', map: 'BambooForest' },
+				{
+					label: 'Merchant_MagicForest_Shanghai',
+					map: 'DLC1_MagicForest',
+				},
 			],
 		},
 	},
@@ -1026,26 +1539,56 @@ export const INGREDIENT_LIST = [
 		price: 70,
 		from: {
 			buy: [
-				[{ label: '美食妖怪兔', map: 'BambooForest' }, 50],
-				{ label: '地狱鸦', map: 'DLC2_EarthSpiritsPalace' },
+				[
+					{
+						label: 'Merchant_YokaiRabbitDelicacy',
+						map: 'BambooForest',
+					},
+					50,
+				],
+				{
+					label: 'Merchant_EarthSpiritsPalace_HellCrow',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
 			],
 			collect: [
 				[
-					{ label: '南侧亭子（需借道迷途竹林）', map: 'BeastForest' },
-					false,
-					17,
-					18,
-				],
-				[{ label: '喷泉（东侧）', map: 'DLC2_EarthSpiritsPalace' }, 20],
-				[{ label: '游乐场', map: 'DLC2_EarthSpiritsPalace' }, 20],
-				[
-					{ label: '月光草', map: 'DLC4_GardenOfTheSun' },
+					{ label: 'BamBooForest_MoonLightHerb', map: 'BeastForest' },
 					false,
 					17,
 					18,
 				],
 				[
-					{ label: '月光草', map: 'DLC4_ShiningNeedleCastle' },
+					{
+						label: 'DLC2_EarthSpiritsPalace_Plant_Gendonka_B',
+						map: 'DLC2_EarthSpiritsPalace',
+					},
+					20,
+				],
+				[
+					{
+						labels: [
+							'DLC2_EarthSpiritsPalace_Plant_Gendonka',
+							'DLC2_EarthSpiritsPalace_Plant_Gendonka_B',
+						],
+						map: 'DLC2_EarthSpiritsPalace',
+					},
+					20,
+				],
+				[
+					{
+						label: 'DLC4_GardenOfTheSun_Plant_MoonLightHerb',
+						map: 'DLC4_GardenOfTheSun',
+					},
+					false,
+					17,
+					18,
+				],
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_Plant_MoonLightHerb',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
 					false,
 					17,
 					18,
@@ -1056,7 +1599,16 @@ export const INGREDIENT_LIST = [
 				'BambooForest',
 				'DLC2_EarthSpiritsPalace',
 			],
-			task: [{ task: '阿求小姐的色纸' }],
+			task: [
+				{
+					task: [
+						'Side_HumanVillage_Loop_Mission_A',
+						'Side_HumanVillage_Loop_Mission_B',
+						'Side_HumanVillage_Loop_Mission_C',
+						'Side_HumanVillage_Loop_Mission_D',
+					],
+				},
+			],
 		},
 	},
 	{
@@ -1069,10 +1621,13 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 2,
 		from: {
-			buy: [[{ label: '香霖堂', map: 'HumanVillage' }, 30]],
+			buy: [[{ label: 'Rinnosuke', map: 'HumanVillage' }, 30]],
 			collect: [
-				{ label: '冰块堆', map: 'ScarletMansion' },
-				{ label: '冰块堆', map: 'DLC3_DivineSpiritMausoleum' },
+				{ label: 'ScarletMansion_Ice', map: 'ScarletMansion' },
+				{
+					label: 'DLC3_DivineSpiritMausoleum_Water_Ice',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
 			],
 			fishingAdvanced: ['ScarletMansion', 'DLC5_Makai'],
 		},
@@ -1088,16 +1643,26 @@ export const INGREDIENT_LIST = [
 		price: 2,
 		from: {
 			buy: [
-				{ label: '杂货商人', map: 'BeastForest' },
-				{ label: '农户', map: 'HumanVillage' },
-				{ label: '鬼商', map: 'DLC2_FormerHell' },
-				{ label: '娜兹玲', map: 'DLC3_MyourenTemple' },
-				{ label: '小丑', map: 'DLC5_Makai' },
+				{ label: 'Merchant_BeastForest', map: 'BeastForest' },
+				{ label: 'Merchant_HumanVillage', map: 'HumanVillage' },
+				{ label: 'Merchant_FormerHell_Ghost', map: 'DLC2_FormerHell' },
+				{
+					label: 'Merchant_MyourenTemple_Nazrin',
+					map: 'DLC3_MyourenTemple',
+				},
+				{ label: 'Merchant_Makai_Clown', map: 'DLC5_Makai' },
 			],
 			collect: [
-				[{ label: '花丛', map: 'BeastForest' }, 10],
-				[{ label: '花丛', map: 'DLC1_YoukaiMountain' }, 10],
-				{ label: '辣椒丛', map: 'DLC5_Makai' },
+				[{ label: 'BeastForest_Plant_B', map: 'BeastForest' }, 10],
+				[{ label: 'BeastForest_Plant_B2', map: 'BeastForest' }, 10],
+				[
+					{
+						label: 'DLC1_YoukaiMountain_Plant_Potato',
+						map: 'DLC1_YoukaiMountain',
+					},
+					10,
+				],
+				{ label: 'DLC5_Makai_Plant_Pepper', map: 'DLC5_Makai' },
 			],
 		},
 	},
@@ -1112,12 +1677,30 @@ export const INGREDIENT_LIST = [
 		price: 5,
 		from: {
 			buy: [
-				[{ label: '上海人形', map: 'DLC1_MagicForest' }, 60],
-				[{ label: '地狱鸦', map: 'DLC2_EarthSpiritsPalace' }, 40],
+				[
+					{
+						label: 'Merchant_MagicForest_Shanghai',
+						map: 'DLC1_MagicForest',
+					},
+					60,
+				],
+				[
+					{
+						label: 'Merchant_EarthSpiritsPalace_HellCrow',
+						map: 'DLC2_EarthSpiritsPalace',
+					},
+					40,
+				],
 			],
 			collect: [
-				{ label: '葡萄架', map: 'ScarletMansion' },
-				{ label: '葡萄架', map: 'DLC4_GardenOfTheSun' },
+				{
+					labels: ['ScarletMansion_Grape', 'ScarletMansion_Grape_B'],
+					map: 'ScarletMansion',
+				},
+				{
+					label: 'DLC4_GardenOfTheSun_Plant_Grape',
+					map: 'DLC4_GardenOfTheSun',
+				},
 			],
 			fishingAdvanced: ['DLC3_MyourenTemple'],
 		},
@@ -1134,10 +1717,24 @@ export const INGREDIENT_LIST = [
 		price: 7,
 		from: {
 			buy: [
-				{ label: '河童商人', map: 'DLC1_YoukaiMountain' },
-				[{ label: '太阳花精', map: 'DLC4_GardenOfTheSun' }, 70],
+				{
+					label: 'Merchant_YoukaiMountain_Kappa',
+					map: 'DLC1_YoukaiMountain',
+				},
+				[
+					{
+						label: 'Merchant_GardenOfTheSun_SunFairy',
+						map: 'DLC4_GardenOfTheSun',
+					},
+					70,
+				],
 			],
-			collect: [{ label: '黄瓜堆', map: 'DLC1_YoukaiMountain' }],
+			collect: [
+				{
+					label: 'DLC1_YoukaiMountain_Plant_Cucumber',
+					map: 'DLC1_YoukaiMountain',
+				},
+			],
 			fishingAdvanced: ['DLC1_YoukaiMountain'],
 		},
 	},
@@ -1152,10 +1749,21 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 12,
 		from: {
-			buy: [{ label: '河童商人', map: 'DLC1_YoukaiMountain' }],
+			buy: [
+				{
+					label: 'Merchant_YoukaiMountain_Kappa',
+					map: 'DLC1_YoukaiMountain',
+				},
+			],
 			collect: [
-				[{ label: '碗之后', map: 'DLC4_ShiningNeedleCastle' }, 30],
-				[{ label: '河流', map: 'DLC5_Makai' }, 50],
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_Bowl_SeaUrchin',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					30,
+				],
+				[{ label: 'DLC5_Makai_Water_Fish', map: 'DLC5_Makai' }, 50],
 			],
 			fishing: ['DLC1_YoukaiMountain'],
 		},
@@ -1172,12 +1780,27 @@ export const INGREDIENT_LIST = [
 		price: 18,
 		from: {
 			buy: [
-				[{ label: '河童商人', map: 'DLC1_YoukaiMountain' }, 50],
-				[{ label: '不良少年', map: 'DLC4_ShiningNeedleCastle' }, 60],
+				[
+					{
+						label: 'Merchant_YoukaiMountain_Kappa',
+						map: 'DLC1_YoukaiMountain',
+					},
+					50,
+				],
+				[
+					{
+						label: 'Merchant_ShiningNeedleCastle_FuRyouShounenn',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					60,
+				],
 			],
 			collect: [
-				{ label: '碗之后', map: 'DLC4_ShiningNeedleCastle' },
-				[{ label: '河流', map: 'DLC5_Makai' }, 50],
+				{
+					label: 'DLC4_ShiningNeedleCastle_Bowl_SeaUrchin',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
+				[{ label: 'DLC5_Makai_Water_Fish', map: 'DLC5_Makai' }, 50],
 			],
 			fishingAdvanced: ['DLC1_YoukaiMountain'],
 		},
@@ -1194,10 +1817,24 @@ export const INGREDIENT_LIST = [
 		price: 3,
 		from: {
 			buy: [
-				[{ label: '河童商人', map: 'DLC1_YoukaiMountain' }, 80],
-				{ label: '娜兹玲', map: 'DLC3_MyourenTemple' },
+				[
+					{
+						label: 'Merchant_YoukaiMountain_Kappa',
+						map: 'DLC1_YoukaiMountain',
+					},
+					80,
+				],
+				{
+					label: 'Merchant_MyourenTemple_Nazrin',
+					map: 'DLC3_MyourenTemple',
+				},
 			],
-			collect: [{ label: '黑盐', map: 'DLC1_YoukaiMountain' }],
+			collect: [
+				{
+					label: 'DLC1_YoukaiMountain_Item_Salt',
+					map: 'DLC1_YoukaiMountain',
+				},
+			],
 		},
 	},
 	{
@@ -1212,10 +1849,22 @@ export const INGREDIENT_LIST = [
 		price: 9,
 		from: {
 			buy: [
-				[{ label: '上海人形', map: 'DLC1_MagicForest' }, 75],
-				{ label: '娜兹玲', map: 'DLC3_MyourenTemple' },
-				{ label: '太阳花精', map: 'DLC4_GardenOfTheSun' },
-				{ label: '小丑', map: 'DLC5_Makai' },
+				[
+					{
+						label: 'Merchant_MagicForest_Shanghai',
+						map: 'DLC1_MagicForest',
+					},
+					75,
+				],
+				{
+					label: 'Merchant_MyourenTemple_Nazrin',
+					map: 'DLC3_MyourenTemple',
+				},
+				{
+					label: 'Merchant_GardenOfTheSun_SunFairy',
+					map: 'DLC4_GardenOfTheSun',
+				},
+				{ label: 'Merchant_Makai_Clown', map: 'DLC5_Makai' },
 			],
 		},
 	},
@@ -1231,13 +1880,34 @@ export const INGREDIENT_LIST = [
 		price: 10,
 		from: {
 			buy: [
-				[{ label: '河童商人', map: 'DLC1_YoukaiMountain' }, 50],
-				[{ label: '不良少年', map: 'DLC4_ShiningNeedleCastle' }, 70],
+				[
+					{
+						label: 'Merchant_YoukaiMountain_Kappa',
+						map: 'DLC1_YoukaiMountain',
+					},
+					50,
+				],
+				[
+					{
+						label: 'Merchant_ShiningNeedleCastle_FuRyouShounenn',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					70,
+				],
 			],
 			collect: [
-				{ label: '西北瀑布', map: 'DLC1_YoukaiMountain' },
-				[{ label: '碗之后', map: 'DLC4_ShiningNeedleCastle' }, 30],
-				[{ label: '河流', map: 'DLC5_Makai' }, 50],
+				{
+					label: 'DLC1_YoukaiMountain_Water_Crab',
+					map: 'DLC1_YoukaiMountain',
+				},
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_Bowl_SeaUrchin',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					30,
+				],
+				[{ label: 'DLC5_Makai_Water_Fish', map: 'DLC5_Makai' }, 50],
 			],
 			fishing: ['DLC1_YoukaiMountain'],
 		},
@@ -1254,10 +1924,22 @@ export const INGREDIENT_LIST = [
 		price: 36,
 		from: {
 			collect: [
-				{ label: '拱桥（下方）', map: 'DLC2_FormerHell' },
-				{ label: '莲花池（左侧）', map: 'DLC3_MyourenTemple' },
-				{ label: '拱桥（下方）', map: 'DLC3_DivineSpiritMausoleum' },
-				{ label: '月虹池（右下）', map: 'DLC5_LunarCapital' },
+				{
+					label: 'DLC2_FormerHell_Water_Lotus',
+					map: 'DLC2_FormerHell',
+				},
+				{
+					label: 'DLC3_MyourenTemple_Water_Lotus',
+					map: 'DLC3_MyourenTemple',
+				},
+				{
+					label: 'DLC3_DivineSpiritMausoleum_Water_Lotus',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
+				{
+					label: 'DLC5_LunarCapital_Water_Lotus',
+					map: 'DLC5_LunarCapital',
+				},
 			],
 			fishingAdvanced: [
 				'DLC3_MyourenTemple',
@@ -1276,8 +1958,15 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 8,
 		from: {
-			buy: [{ label: '地狱鸦', map: 'DLC2_EarthSpiritsPalace' }],
-			collect: [{ label: '柠檬树', map: 'DLC2_FormerHell' }],
+			buy: [
+				{
+					label: 'Merchant_EarthSpiritsPalace_HellCrow',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
+			],
+			collect: [
+				{ label: 'DLC2_FormerHell_Tree_Lemon', map: 'DLC2_FormerHell' },
+			],
 			fishingAdvanced: ['DLC2_FormerHell'],
 		},
 	},
@@ -1293,10 +1982,24 @@ export const INGREDIENT_LIST = [
 		price: 18,
 		from: {
 			buy: [
-				{ label: '地狱鸦', map: 'DLC2_EarthSpiritsPalace' },
-				{ label: '娜兹玲', map: 'DLC3_MyourenTemple' },
+				{
+					label: 'Merchant_EarthSpiritsPalace_HellCrow',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
+				{
+					label: 'Merchant_MyourenTemple_Nazrin',
+					map: 'DLC3_MyourenTemple',
+				},
 			],
-			collect: [{ label: '仓库', map: 'DLC2_EarthSpiritsPalace' }],
+			collect: [
+				{
+					labels: [
+						'DLC2_EarthSpiritsPalace_Item_Cheese_A',
+						'DLC2_EarthSpiritsPalace_Item_Cheese_B',
+					],
+					map: 'DLC2_EarthSpiritsPalace',
+				},
+			],
 		},
 	},
 	{
@@ -1311,10 +2014,22 @@ export const INGREDIENT_LIST = [
 		price: 22,
 		from: {
 			collect: [
-				{ label: '莲花池（右侧）', map: 'DLC3_MyourenTemple' },
-				{ label: '莲花池（中部左）', map: 'DLC3_MyourenTemple' },
-				{ label: '西南侧莲花', map: 'DLC3_DivineSpiritMausoleum' },
-				{ label: '月虹池（右下）', map: 'DLC5_LunarCapital' },
+				{
+					label: 'DLC3_MyourenTemple_Water_LotusSeed_A',
+					map: 'DLC3_MyourenTemple',
+				},
+				{
+					label: 'DLC3_MyourenTemple_Water_LotusSeed_B',
+					map: 'DLC3_MyourenTemple',
+				},
+				{
+					label: 'DLC3_DivineSpiritMausoleum_Water_LotusSeed',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
+				{
+					label: 'DLC5_LunarCapital_Water_Lotus',
+					map: 'DLC5_LunarCapital',
+				},
 			],
 		},
 	},
@@ -1329,8 +2044,18 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 8,
 		from: {
-			buy: [{ label: '娜兹玲', map: 'DLC3_MyourenTemple' }],
-			collect: [{ label: '花丛（西北侧）', map: 'DLC3_MyourenTemple' }],
+			buy: [
+				{
+					label: 'Merchant_MyourenTemple_Nazrin',
+					map: 'DLC3_MyourenTemple',
+				},
+			],
+			collect: [
+				{
+					label: 'DLC3_MyourenTemple_SweetPotato',
+					map: 'DLC3_MyourenTemple',
+				},
+			],
 		},
 	},
 	{
@@ -1344,8 +2069,18 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 15,
 		from: {
-			buy: [{ label: '道士', map: 'DLC3_DivineSpiritMausoleum' }],
-			collect: [{ label: '中部松树', map: 'DLC3_DivineSpiritMausoleum' }],
+			buy: [
+				{
+					label: 'Merchant_DivineSpiritMausoleum_Taoist',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
+			],
+			collect: [
+				{
+					label: 'DLC3_DivineSpiritMausoleum_Tree_Pinecone',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
+			],
 		},
 	},
 	{
@@ -1359,8 +2094,18 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 10,
 		from: {
-			buy: [{ label: '道士', map: 'DLC3_DivineSpiritMausoleum' }],
-			collect: [{ label: '中部栗树', map: 'DLC3_DivineSpiritMausoleum' }],
+			buy: [
+				{
+					label: 'Merchant_DivineSpiritMausoleum_Taoist',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
+			],
+			collect: [
+				{
+					label: 'DLC3_DivineSpiritMausoleum_Tree_Chestnut',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
+			],
 		},
 	},
 	{
@@ -1374,9 +2119,20 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 12,
 		from: {
-			buy: [{ label: '不良少年', map: 'DLC4_ShiningNeedleCastle' }],
+			buy: [
+				{
+					label: 'Merchant_ShiningNeedleCastle_FuRyouShounenn',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
+			],
 			collect: [
-				[{ label: '红豆树', map: 'DLC4_ShiningNeedleCastle' }, 60],
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_Tree_RedBean',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					60,
+				],
 			],
 			fishingAdvanced: ['DLC4_ShiningNeedleCastle'],
 		},
@@ -1393,10 +2149,21 @@ export const INGREDIENT_LIST = [
 		price: 18,
 		from: {
 			buy: [
-				{ label: '不良少年', map: 'DLC4_ShiningNeedleCastle' },
-				{ label: '月兔', map: 'DLC5_LunarCapital' },
+				{
+					label: 'Merchant_ShiningNeedleCastle_FuRyouShounenn',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
+				{
+					label: 'Merchant_LunarCapital_MoonRabbit',
+					map: 'DLC5_LunarCapital',
+				},
 			],
-			collect: [{ label: '红豆树', map: 'DLC4_ShiningNeedleCastle' }],
+			collect: [
+				{
+					label: 'DLC4_ShiningNeedleCastle_Tree_RedBean',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
+			],
 		},
 	},
 	{
@@ -1411,9 +2178,15 @@ export const INGREDIENT_LIST = [
 		price: 45,
 		from: {
 			collect: [
-				{ label: '花丛（西侧）', map: 'DLC4_GardenOfTheSun' },
-				{ label: '花丛（中部）', map: 'DLC4_GardenOfTheSun' },
-				{ label: '东南侧花丛', map: 'DLC5_Makai' },
+				{
+					label: 'DLC4_GardenOfTheSun_Plant_Flower_A',
+					map: 'DLC4_GardenOfTheSun',
+				},
+				{
+					label: 'DLC4_GardenOfTheSun_Plant_Flower_B',
+					map: 'DLC4_GardenOfTheSun',
+				},
+				{ label: 'DLC5_Makai_Plant_Flower', map: 'DLC5_Makai' },
 			],
 			fishingAdvanced: ['DLC4_GardenOfTheSun'],
 		},
@@ -1429,8 +2202,18 @@ export const INGREDIENT_LIST = [
 		level: 2,
 		price: 20,
 		from: {
-			buy: [{ label: '太阳花精', map: 'DLC4_GardenOfTheSun' }],
-			collect: [{ label: '西北香椿树', map: 'DLC4_GardenOfTheSun' }],
+			buy: [
+				{
+					label: 'Merchant_GardenOfTheSun_SunFairy',
+					map: 'DLC4_GardenOfTheSun',
+				},
+			],
+			collect: [
+				{
+					label: 'DLC4_GardenOfTheSun_Plant_ToonaSinensis',
+					map: 'DLC4_GardenOfTheSun',
+				},
+			],
 		},
 	},
 	{
@@ -1444,7 +2227,12 @@ export const INGREDIENT_LIST = [
 		level: 1,
 		price: 8,
 		from: {
-			collect: [{ label: '中部温室', map: 'DLC4_GardenOfTheSun' }],
+			collect: [
+				{
+					label: 'DLC4_GardenOfTheSun_Plant_Tomato',
+					map: 'DLC4_GardenOfTheSun',
+				},
+			],
 			fishingAdvanced: ['DLC4_GardenOfTheSun'],
 		},
 	},
@@ -1460,10 +2248,18 @@ export const INGREDIENT_LIST = [
 		price: 22,
 		from: {
 			buy: [
-				[{ label: '蓬松松爱莲♡魔法店', map: 'DLC5_Makai' }, true],
-				[{ label: '小丑', map: 'DLC5_Makai' }, 75],
+				[
+					{
+						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+						map: 'DLC5_Makai',
+					},
+					true,
+				],
+				[{ label: 'Merchant_Makai_Clown', map: 'DLC5_Makai' }, 75],
 			],
-			collect: [{ label: '东侧', map: 'DLC5_Makai' }],
+			collect: [
+				{ label: 'DLC5_Makai_Tree_CocoaBean', map: 'DLC5_Makai' },
+			],
 			fishing: ['DLC5_Makai'],
 		},
 	},
@@ -1479,10 +2275,18 @@ export const INGREDIENT_LIST = [
 		price: 18,
 		from: {
 			buy: [
-				[{ label: '蓬松松爱莲♡魔法店', map: 'DLC5_Makai' }, true],
-				[{ label: '小丑', map: 'DLC5_Makai' }, 75],
+				[
+					{
+						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+						map: 'DLC5_Makai',
+					},
+					true,
+				],
+				[{ label: 'Merchant_Makai_Clown', map: 'DLC5_Makai' }, 75],
 			],
-			collect: [{ label: '西南侧迷宫', map: 'DLC5_Makai' }],
+			collect: [
+				{ label: 'DLC5_Makai_Plant_Broccoli', map: 'DLC5_Makai' },
+			],
 			fishing: ['DLC5_Makai'],
 		},
 	},
@@ -1496,7 +2300,9 @@ export const INGREDIENT_LIST = [
 		dlc: 5,
 		level: 5,
 		price: 10,
-		from: { task: [{ task: '最终收网行动' }] },
+		from: {
+			task: [{ task: 'DLC5_Challenge_ArrestMizuchi_Finished_Event' }],
+		},
 	},
 	{
 		id: 5003,
@@ -1510,10 +2316,27 @@ export const INGREDIENT_LIST = [
 		price: 21,
 		from: {
 			buy: [
-				[{ label: '月兔', map: 'DLC5_LunarCapital' }, 75],
-				[{ label: '蓬松松爱莲♡魔法店', map: 'DLC5_Makai' }, true],
+				[
+					{
+						label: 'Merchant_LunarCapital_MoonRabbit',
+						map: 'DLC5_LunarCapital',
+					},
+					75,
+				],
+				[
+					{
+						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+						map: 'DLC5_Makai',
+					},
+					true,
+				],
 			],
-			collect: [{ label: '月虹池（左上）', map: 'DLC5_LunarCapital' }],
+			collect: [
+				{
+					label: 'DLC5_LunarCapital_Water_FicusPumila',
+					map: 'DLC5_LunarCapital',
+				},
+			],
 		},
 	},
 	{
@@ -1528,10 +2351,27 @@ export const INGREDIENT_LIST = [
 		price: 14,
 		from: {
 			buy: [
-				[{ label: '月兔', map: 'DLC5_LunarCapital' }, 75],
-				[{ label: '蓬松松爱莲♡魔法店', map: 'DLC5_Makai' }, true],
+				[
+					{
+						label: 'Merchant_LunarCapital_MoonRabbit',
+						map: 'DLC5_LunarCapital',
+					},
+					75,
+				],
+				[
+					{
+						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+						map: 'DLC5_Makai',
+					},
+					true,
+				],
 			],
-			collect: [{ label: '月虹池（左上）', map: 'DLC5_LunarCapital' }],
+			collect: [
+				{
+					label: 'DLC5_LunarCapital_Water_FicusPumila',
+					map: 'DLC5_LunarCapital',
+				},
+			],
 			fishing: ['DLC5_LunarCapital'],
 		},
 	},
@@ -1545,7 +2385,17 @@ export const INGREDIENT_LIST = [
 		dlc: 5,
 		level: 5,
 		price: 0,
-		from: { task: [{ task: '月都试炼' }] },
+		from: {
+			task: [
+				{
+					task: [
+						'DLC5_Challenge_PracticeA_Finished_Event',
+						'DLC5_Challenge_PracticeB_Finished_Event',
+						'DLC5_Challenge_PracticeC_Finished_Event',
+					],
+				},
+			],
+		},
 	},
 	{
 		id: -1,
@@ -1567,7 +2417,7 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 4,
 		price: 96,
-		from: { buy: [[{ label: '雪', map: 'HumanVillage' }, 60]] },
+		from: { buy: [[{ specialGuest: 11000, map: 'HumanVillage' }, 60]] },
 	},
 	{
 		id: 11001,
@@ -1579,7 +2429,7 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 8,
-		from: { buy: [[{ label: '雪', map: 'HumanVillage' }, 90]] },
+		from: { buy: [[{ specialGuest: 11000, map: 'HumanVillage' }, 90]] },
 	},
 	{
 		id: 11002,
@@ -1590,7 +2440,7 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 4,
-		from: { buy: [[{ label: '雪', map: 'HumanVillage' }, 80]] },
+		from: { buy: [[{ specialGuest: 11000, map: 'HumanVillage' }, 80]] },
 	},
 	{
 		id: 11003,
@@ -1602,7 +2452,7 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 1,
 		price: 4,
-		from: { buy: [{ label: '雪', map: 'HumanVillage' }] },
+		from: { buy: [{ specialGuest: 11000, map: 'HumanVillage' }] },
 	},
 	{
 		id: 11004,
@@ -1613,7 +2463,7 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 1,
 		price: 4,
-		from: { buy: [{ label: '雪', map: 'HumanVillage' }] },
+		from: { buy: [{ specialGuest: 11000, map: 'HumanVillage' }] },
 	},
 	{
 		id: 11005,
@@ -1625,7 +2475,7 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 1,
 		price: 4,
-		from: { buy: [{ label: '舞', map: 'HumanVillage' }] },
+		from: { buy: [{ specialGuest: 11001, map: 'HumanVillage' }] },
 	},
 	{
 		id: 11006,
@@ -1636,7 +2486,7 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 3,
 		price: 35,
-		from: { buy: [[{ label: '舞', map: 'HumanVillage' }, 90]] },
+		from: { buy: [[{ specialGuest: 11001, map: 'HumanVillage' }, 90]] },
 	},
 	{
 		id: 11007,
@@ -1648,6 +2498,6 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 15,
-		from: { buy: [[{ label: '舞', map: 'HumanVillage' }, 90]] },
+		from: { buy: [[{ specialGuest: 11001, map: 'HumanVillage' }, 90]] },
 	},
 ] as const satisfies IIngredient[];

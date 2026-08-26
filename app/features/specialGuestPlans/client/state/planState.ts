@@ -72,7 +72,7 @@ export function copySpecialGuestPlan(
 		manualGuests: [...plan.manualGuests],
 		maps: [...plan.maps],
 		mealSource: plan.mealSource,
-		name: normalizeSpecialGuestPlanName(`${plan.name} 副本`),
+		name: normalizeSpecialGuestPlanName(`${plan.name}副本`),
 		updatedAt: now,
 	};
 }

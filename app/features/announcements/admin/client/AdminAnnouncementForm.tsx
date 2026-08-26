@@ -1458,7 +1458,7 @@ export default function AdminAnnouncementForm({
 											</span>
 											<Button
 												isIconOnly
-												aria-label={`移除 ${user.username ?? user.id}`}
+												aria-label={`移除${user.username ?? user.id}`}
 												className="h-6 min-h-6 w-6 min-w-6 shrink-0"
 												isDisabled={isSaving}
 												radius="sm"

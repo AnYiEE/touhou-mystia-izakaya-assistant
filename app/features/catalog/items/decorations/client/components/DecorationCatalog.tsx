@@ -3,6 +3,11 @@ import { memo, useMemo, useRef } from 'react';
 
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import { type DecorationCatalog as DecorationCatalogModel } from '@/domain/catalog/items/DecorationCatalog';
+import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
+import {
+	SCHEDULER_FACTS,
+	formatSchedulerLabels,
+} from '@/domain/data/labels/schedulerFacts';
 import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
@@ -37,6 +42,10 @@ function DecorationSource({
 			specialGuest,
 			'name'
 		);
+		const taskFact =
+			'task' in from
+				? SCHEDULER_FACTS[from.task.startEventLabel]
+				: undefined;
 
 		return (
 			<>
@@ -54,10 +63,11 @@ function DecorationSource({
 				<span className="mx-0.5">➞</span>Lv.{level}
 				{'task' in from && (
 					<>
-						，并完成任务【{from.task.task}】（前往
+						，并完成任务【
+						{formatSchedulerLabels(from.task.missionLabel)}】（前往
 						{MAP_FACTS[from.task.map].label}的
-						{from.task.locationLabel}与
-						{from.task.dialogueGuestLabel}交谈）。
+						{taskFact?.locationLabel}与
+						{taskFact?.dialogueGuestLabel}交谈）。
 					</>
 				)}
 			</>
@@ -66,7 +76,11 @@ function DecorationSource({
 
 	if ('collaboration' in from) {
 		return (
-			<>开启联动【{from.collaboration.collaborationLabel}】后自动获得</>
+			<>
+				开启联动【
+				{COLLABORATION_LABEL_MAP[from.collaboration.collaborationLabel]}
+				】后自动获得
+			</>
 		);
 	}
 

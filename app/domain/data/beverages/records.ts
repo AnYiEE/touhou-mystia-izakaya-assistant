@@ -22,7 +22,7 @@ export const BEVERAGE_LIST = [
 		level: 1,
 		price: 12,
 		from: {
-			buy: [{ label: '杂货商人', map: 'BeastForest' }],
+			buy: [{ label: 'Merchant_BeastForest', map: 'BeastForest' }],
 			fishingAdvanced: ['BeastForest'],
 		},
 	},
@@ -36,7 +36,7 @@ export const BEVERAGE_LIST = [
 		level: 1,
 		price: 12,
 		from: {
-			buy: [{ label: '杂货商人', map: 'BeastForest' }],
+			buy: [{ label: 'Merchant_BeastForest', map: 'BeastForest' }],
 			fishingAdvanced: ['BeastForest'],
 		},
 	},
@@ -51,8 +51,8 @@ export const BEVERAGE_LIST = [
 		price: 18,
 		from: {
 			buy: [
-				{ label: '杂货商人', map: 'BeastForest' },
-				{ label: '酒商', map: 'HumanVillage' },
+				{ label: 'Merchant_BeastForest', map: 'BeastForest' },
+				{ label: 'WineMerchant_HumanVillage', map: 'HumanVillage' },
 			],
 			fishingAdvanced: ['BeastForest'],
 		},
@@ -66,7 +66,9 @@ export const BEVERAGE_LIST = [
 		dlc: 0,
 		level: 1,
 		price: 18,
-		from: { buy: [{ label: '酒商', map: 'HumanVillage' }] },
+		from: {
+			buy: [{ label: 'WineMerchant_HumanVillage', map: 'HumanVillage' }],
+		},
 	},
 	{
 		id: 5,
@@ -78,7 +80,7 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 34,
 		from: {
-			buy: [{ label: '酒商', map: 'HumanVillage' }],
+			buy: [{ label: 'WineMerchant_HumanVillage', map: 'HumanVillage' }],
 			fishingAdvanced: ['HumanVillage'],
 		},
 	},
@@ -92,7 +94,7 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 32,
 		from: {
-			buy: [{ label: '酒商', map: 'HumanVillage' }],
+			buy: [{ label: 'WineMerchant_HumanVillage', map: 'HumanVillage' }],
 			fishingAdvanced: ['BambooForest', 'DLC4_ShiningNeedleCastle'],
 		},
 	},
@@ -107,8 +109,8 @@ export const BEVERAGE_LIST = [
 		price: 70,
 		from: {
 			buy: [
-				{ label: '河童商人', map: 'HakureiShrine' },
-				{ label: '鬼商', map: 'DLC2_FormerHell' },
+				{ label: 'WineMerchant_HakureiShrine', map: 'HakureiShrine' },
+				{ label: 'Merchant_FormerHell_Ghost', map: 'DLC2_FormerHell' },
 			],
 			fishingAdvanced: [
 				'DLC1_YoukaiMountain',
@@ -125,7 +127,7 @@ export const BEVERAGE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 45,
-		from: { buy: [[{ label: '妖精女仆', map: 'HakureiShrine' }, 80]] },
+		from: { buy: [[{ label: 'Merchant_Maid', map: 'HakureiShrine' }, 80]] },
 	},
 	{
 		id: 9,
@@ -138,8 +140,11 @@ export const BEVERAGE_LIST = [
 		price: 45,
 		from: {
 			buy: [
-				{ label: '河童商人', map: 'HakureiShrine' },
-				{ label: '道士', map: 'DLC3_DivineSpiritMausoleum' },
+				{ label: 'WineMerchant_HakureiShrine', map: 'HakureiShrine' },
+				{
+					label: 'Merchant_DivineSpiritMausoleum_Taoist',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
 			],
 			fishingAdvanced: ['DLC2_FormerHell', 'DLC3_MyourenTemple'],
 		},
@@ -155,25 +160,54 @@ export const BEVERAGE_LIST = [
 		price: 130,
 		from: {
 			buy: [
-				{ label: '鬼商', map: 'DLC2_FormerHell' },
-				{ label: '娜兹玲', map: 'DLC3_MyourenTemple' },
+				{ label: 'Merchant_FormerHell_Ghost', map: 'DLC2_FormerHell' },
+				{
+					label: 'Merchant_MyourenTemple_Nazrin',
+					map: 'DLC3_MyourenTemple',
+				},
 			],
 			collect: [
-				[{ label: '码头', map: 'BeastForest' }, false, 15, 18],
+				[
+					{ label: 'BeastForest_OtterFestival', map: 'BeastForest' },
+					false,
+					15,
+					18,
+				],
 				[
 					{
-						label: '东侧向日葵丛（水獭祭）',
+						label: 'DLC4_GardenOfTheSun_Beverage_OtterFestival',
 						map: 'DLC4_GardenOfTheSun',
 					},
 					false,
 					15,
 					18,
 				],
-				[{ label: '酒窖', map: 'DLC4_ShiningNeedleCastle' }, 40],
-				[{ label: '月虹池（右上）', map: 'DLC5_LunarCapital' }, 40],
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_RandomBeverage',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					40,
+				],
+				[
+					{
+						label: 'DLC5_LunarCapital_Water_Beverage',
+						map: 'DLC5_LunarCapital',
+					},
+					40,
+				],
 			],
 			fishingAdvanced: ['BeastForest', 'DLC4_ShiningNeedleCastle'],
-			task: [{ task: '阿求小姐的色纸' }],
+			task: [
+				{
+					task: [
+						'Side_HumanVillage_Loop_Mission_A',
+						'Side_HumanVillage_Loop_Mission_B',
+						'Side_HumanVillage_Loop_Mission_C',
+						'Side_HumanVillage_Loop_Mission_D',
+					],
+				},
+			],
 		},
 	},
 	{
@@ -186,18 +220,49 @@ export const BEVERAGE_LIST = [
 		level: 4,
 		price: 400,
 		from: {
-			buy: [[{ label: '妖精女仆', map: 'HakureiShrine' }, 20]],
+			buy: [[{ label: 'Merchant_Maid', map: 'HakureiShrine' }, 20]],
 			collect: [
-				{ label: '酒水架（北侧）', map: 'DLC2_EarthSpiritsPalace' },
-				[{ label: '酒窖', map: 'DLC4_ShiningNeedleCastle' }, 40],
-				[{ label: '月虹池（右上）', map: 'DLC5_LunarCapital' }, 40],
-				[{ label: '魅魔房顶', map: 'DLC5_Makai' }, 10],
+				{
+					label: 'DLC2_EarthSpiritsPalace_Beverage_A',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_RandomBeverage',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					40,
+				],
+				[
+					{
+						label: 'DLC5_LunarCapital_Water_Beverage',
+						map: 'DLC5_LunarCapital',
+					},
+					40,
+				],
+				[{ label: 'DLC5_Makai_Roof_Beverage', map: 'DLC5_Makai' }, 10],
 			],
 			fishingAdvanced: [
 				'DLC3_DivineSpiritMausoleum',
 				'DLC5_LunarCapital',
 			],
-			task: [{ task: '阿求小姐的色纸' }, { task: '女仆长的采购委托' }],
+			task: [
+				{
+					task: [
+						'Side_HumanVillage_Loop_Mission_A',
+						'Side_HumanVillage_Loop_Mission_B',
+						'Side_HumanVillage_Loop_Mission_C',
+						'Side_HumanVillage_Loop_Mission_D',
+					],
+				},
+				{
+					task: [
+						'Main_4_ScarletMansion_Loop_Mission_A',
+						'Main_4_ScarletMansion_Loop_Mission_B',
+						'Main_4_ScarletMansion_Loop_Mission_C',
+					],
+				},
+			],
 		},
 	},
 	{
@@ -211,8 +276,21 @@ export const BEVERAGE_LIST = [
 		price: 50,
 		from: {
 			collect: [
-				[{ label: '东南侧雀酒', map: 'BeastForest' }, false, 10, 15],
-				[{ label: '树桩', map: 'DLC4_GardenOfTheSun' }, false, 10, 15],
+				[
+					{ label: 'BeastForest_Bamboo', map: 'BeastForest' },
+					false,
+					10,
+					15,
+				],
+				[
+					{
+						label: 'DLC4_GardenOfTheSun_Beverage_Bamboo',
+						map: 'DLC4_GardenOfTheSun',
+					},
+					false,
+					10,
+					15,
+				],
 			],
 			fishingAdvanced: ['BeastForest', 'DLC1_YoukaiMountain'],
 		},
@@ -227,7 +305,7 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 25,
 		from: {
-			buy: [{ label: '小恶魔', map: 'ScarletMansion' }],
+			buy: [{ label: 'Koakuma', map: 'ScarletMansion' }],
 			fishingAdvanced: ['ScarletMansion'],
 		},
 	},
@@ -241,7 +319,7 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 35,
 		from: {
-			buy: [{ label: '小恶魔', map: 'ScarletMansion' }],
+			buy: [{ label: 'Koakuma', map: 'ScarletMansion' }],
 			fishingAdvanced: ['DLC2_EarthSpiritsPalace'],
 		},
 	},
@@ -256,8 +334,11 @@ export const BEVERAGE_LIST = [
 		price: 75,
 		from: {
 			buy: [
-				{ label: '小恶魔', map: 'ScarletMansion' },
-				{ label: '不良少年', map: 'DLC4_ShiningNeedleCastle' },
+				{ label: 'Koakuma', map: 'ScarletMansion' },
+				{
+					label: 'Merchant_ShiningNeedleCastle_FuRyouShounenn',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
 			],
 			fishingAdvanced: ['ScarletMansion'],
 		},
@@ -272,15 +353,33 @@ export const BEVERAGE_LIST = [
 		level: 3,
 		price: 100,
 		from: {
-			buy: [{ label: '匿名妖精女仆', map: 'ScarletMansion' }],
+			buy: [{ label: 'Yousei_Tired', map: 'ScarletMansion' }],
 			collect: [
-				{ label: '酒水架（西北侧）', map: 'DLC2_EarthSpiritsPalace' },
 				{
-					label: '东侧向日葵丛（风祝/尼格罗尼）',
+					label: 'DLC2_EarthSpiritsPalace_Beverage_B',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
+				{
+					labels: [
+						'DLC4_GardenOfTheSun_Beverage_A',
+						'DLC4_GardenOfTheSun_Beverage_B',
+					],
 					map: 'DLC4_GardenOfTheSun',
 				},
-				[{ label: '酒窖', map: 'DLC4_ShiningNeedleCastle' }, 40],
-				[{ label: '月虹池（右上）', map: 'DLC5_LunarCapital' }, 40],
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_RandomBeverage',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					40,
+				],
+				[
+					{
+						label: 'DLC5_LunarCapital_Water_Beverage',
+						map: 'DLC5_LunarCapital',
+					},
+					40,
+				],
 			],
 			fishingAdvanced: ['ScarletMansion', 'DLC2_FormerHell'],
 		},
@@ -296,22 +395,46 @@ export const BEVERAGE_LIST = [
 		price: 180,
 		from: {
 			buy: [
-				{ label: '匿名妖精女仆', map: 'ScarletMansion' },
-				{ label: '不良少年', map: 'DLC4_ShiningNeedleCastle' },
+				{ label: 'Yousei_Tired', map: 'ScarletMansion' },
+				{
+					label: 'Merchant_ShiningNeedleCastle_FuRyouShounenn',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
 			],
 			collect: [
 				[
 					{
-						label: '酒水架（西北侧）',
+						label: 'DLC2_EarthSpiritsPalace_Beverage_B',
 						map: 'DLC2_EarthSpiritsPalace',
 					},
 					50,
 				],
-				[{ label: '酒窖', map: 'DLC4_ShiningNeedleCastle' }, 40],
-				[{ label: '月虹池（右上）', map: 'DLC5_LunarCapital' }, 40],
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_RandomBeverage',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					40,
+				],
+				[
+					{
+						label: 'DLC5_LunarCapital_Water_Beverage',
+						map: 'DLC5_LunarCapital',
+					},
+					40,
+				],
 			],
 			fishingAdvanced: ['DLC4_ShiningNeedleCastle'],
-			task: [{ task: '阿求小姐的色纸' }],
+			task: [
+				{
+					task: [
+						'Side_HumanVillage_Loop_Mission_A',
+						'Side_HumanVillage_Loop_Mission_B',
+						'Side_HumanVillage_Loop_Mission_C',
+						'Side_HumanVillage_Loop_Mission_D',
+					],
+				},
+			],
 		},
 	},
 	{
@@ -324,17 +447,37 @@ export const BEVERAGE_LIST = [
 		level: 3,
 		price: 130,
 		from: {
-			buy: [{ label: '太阳花精', map: 'DLC4_GardenOfTheSun' }],
-			collect: [
-				[{ label: '西侧守矢分社（祈愿）', map: 'HakureiShrine' }, true],
+			buy: [
 				{
-					label: '东侧向日葵丛（风祝/尼格罗尼）',
+					label: 'Merchant_GardenOfTheSun_SunFairy',
 					map: 'DLC4_GardenOfTheSun',
 				},
-				[{ label: '酒窖', map: 'DLC4_ShiningNeedleCastle' }, 40],
-				[{ label: '月虹池（右上）', map: 'DLC5_LunarCapital' }, 40],
+			],
+			collect: [
+				{
+					labels: [
+						'DLC4_GardenOfTheSun_Beverage_A',
+						'DLC4_GardenOfTheSun_Beverage_B',
+					],
+					map: 'DLC4_GardenOfTheSun',
+				},
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_RandomBeverage',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					40,
+				],
+				[
+					{
+						label: 'DLC5_LunarCapital_Water_Beverage',
+						map: 'DLC5_LunarCapital',
+					},
+					40,
+				],
 			],
 			fishingAdvanced: ['DLC1_MagicForest', 'DLC5_Makai'],
+			prayer: [{ label: 'MoriyaShrine', map: 'HakureiShrine' }],
 		},
 	},
 	{
@@ -348,11 +491,17 @@ export const BEVERAGE_LIST = [
 		price: 60,
 		from: {
 			buy: [
-				[{ label: '香霖堂', map: 'HumanVillage' }, 30],
-				{ label: '美食妖怪兔', map: 'BambooForest' },
-				{ label: '鬼商', map: 'DLC2_FormerHell' },
-				{ label: '道士', map: 'DLC3_DivineSpiritMausoleum' },
-				{ label: '太阳花精', map: 'DLC4_GardenOfTheSun' },
+				[{ label: 'Rinnosuke', map: 'HumanVillage' }, 30],
+				{ label: 'Merchant_YokaiRabbitDelicacy', map: 'BambooForest' },
+				{ label: 'Merchant_FormerHell_Ghost', map: 'DLC2_FormerHell' },
+				{
+					label: 'Merchant_DivineSpiritMausoleum_Taoist',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
+				{
+					label: 'Merchant_GardenOfTheSun_SunFairy',
+					map: 'DLC4_GardenOfTheSun',
+				},
 			],
 			fishingAdvanced: [
 				'HumanVillage',
@@ -373,14 +522,44 @@ export const BEVERAGE_LIST = [
 		level: 4,
 		price: 440,
 		from: {
-			buy: [{ label: '美食妖怪兔', map: 'BambooForest' }],
+			buy: [
+				{ label: 'Merchant_YokaiRabbitDelicacy', map: 'BambooForest' },
+			],
 			collect: [
-				[{ label: '酒窖', map: 'DLC4_ShiningNeedleCastle' }, 40],
-				[{ label: '月虹池（右上）', map: 'DLC5_LunarCapital' }, 40],
-				[{ label: '魅魔房顶', map: 'DLC5_Makai' }, 10],
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_RandomBeverage',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					40,
+				],
+				[
+					{
+						label: 'DLC5_LunarCapital_Water_Beverage',
+						map: 'DLC5_LunarCapital',
+					},
+					40,
+				],
+				[{ label: 'DLC5_Makai_Roof_Beverage', map: 'DLC5_Makai' }, 10],
 			],
 			fishingAdvanced: ['DLC3_MyourenTemple', 'DLC5_Makai'],
-			task: [{ task: '阿求小姐的色纸' }, { task: '女仆长的采购委托' }],
+			task: [
+				{
+					task: [
+						'Side_HumanVillage_Loop_Mission_A',
+						'Side_HumanVillage_Loop_Mission_B',
+						'Side_HumanVillage_Loop_Mission_C',
+						'Side_HumanVillage_Loop_Mission_D',
+					],
+				},
+				{
+					task: [
+						'Main_4_ScarletMansion_Loop_Mission_A',
+						'Main_4_ScarletMansion_Loop_Mission_B',
+						'Main_4_ScarletMansion_Loop_Mission_C',
+					],
+				},
+			],
 		},
 	},
 	{
@@ -393,14 +572,44 @@ export const BEVERAGE_LIST = [
 		level: 4,
 		price: 420,
 		from: {
-			buy: [{ label: '鬼商', map: 'DLC2_FormerHell' }],
+			buy: [
+				{ label: 'Merchant_FormerHell_Ghost', map: 'DLC2_FormerHell' },
+			],
 			collect: [
-				[{ label: '酒窖', map: 'DLC4_ShiningNeedleCastle' }, 40],
-				[{ label: '月虹池（右上）', map: 'DLC5_LunarCapital' }, 40],
-				[{ label: '魅魔房顶', map: 'DLC5_Makai' }, 10],
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_RandomBeverage',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					40,
+				],
+				[
+					{
+						label: 'DLC5_LunarCapital_Water_Beverage',
+						map: 'DLC5_LunarCapital',
+					},
+					40,
+				],
+				[{ label: 'DLC5_Makai_Roof_Beverage', map: 'DLC5_Makai' }, 10],
 			],
 			fishingAdvanced: ['DLC2_EarthSpiritsPalace'],
-			task: [{ task: '阿求小姐的色纸' }, { task: '女仆长的采购委托' }],
+			task: [
+				{
+					task: [
+						'Side_HumanVillage_Loop_Mission_A',
+						'Side_HumanVillage_Loop_Mission_B',
+						'Side_HumanVillage_Loop_Mission_C',
+						'Side_HumanVillage_Loop_Mission_D',
+					],
+				},
+				{
+					task: [
+						'Main_4_ScarletMansion_Loop_Mission_A',
+						'Main_4_ScarletMansion_Loop_Mission_B',
+						'Main_4_ScarletMansion_Loop_Mission_C',
+					],
+				},
+			],
 		},
 	},
 	{
@@ -413,12 +622,32 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 50,
 		from: {
-			buy: [[{ label: '河童商人', map: 'HakureiShrine' }, 10]],
+			buy: [
+				[
+					{
+						label: 'WineMerchant_HakureiShrine',
+						map: 'HakureiShrine',
+					},
+					10,
+				],
+			],
 			collect: [
-				{ label: '酒水架（南侧）', map: 'DLC2_EarthSpiritsPalace' },
+				{
+					label: 'DLC2_EarthSpiritsPalace_Beverage_C',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
 			],
 			fishingAdvanced: ['HumanVillage', 'HakureiShrine'],
-			task: [{ task: '阿求小姐的色纸' }],
+			task: [
+				{
+					task: [
+						'Side_HumanVillage_Loop_Mission_A',
+						'Side_HumanVillage_Loop_Mission_B',
+						'Side_HumanVillage_Loop_Mission_C',
+						'Side_HumanVillage_Loop_Mission_D',
+					],
+				},
+			],
 		},
 	},
 	{
@@ -432,8 +661,17 @@ export const BEVERAGE_LIST = [
 		price: 45,
 		from: {
 			collect: [
-				{ label: '西侧泉水', map: 'BambooForest' },
-				[{ label: '游乐场', map: 'DLC2_EarthSpiritsPalace' }, 20],
+				{ label: 'BambooForest_Rocket', map: 'BambooForest' },
+				[
+					{
+						labels: [
+							'DLC2_EarthSpiritsPalace_Plant_Gendonka',
+							'DLC2_EarthSpiritsPalace_Plant_Gendonka_B',
+						],
+						map: 'DLC2_EarthSpiritsPalace',
+					},
+					20,
+				],
 			],
 			fishingAdvanced: [
 				'BambooForest',
@@ -451,7 +689,7 @@ export const BEVERAGE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 16,
-		from: { buy: [{ label: '清兰', map: 'HumanVillage' }] },
+		from: { buy: [{ label: 'Merchant_Seiran', map: 'HumanVillage' }] },
 	},
 	{
 		id: 25,
@@ -462,7 +700,7 @@ export const BEVERAGE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 24,
-		from: { buy: [{ label: '清兰', map: 'HumanVillage' }] },
+		from: { buy: [{ label: 'Merchant_Seiran', map: 'HumanVillage' }] },
 	},
 	{
 		id: 26,
@@ -474,9 +712,18 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 30,
 		from: {
-			buy: [{ label: '铃瑚', map: 'HumanVillage' }],
+			buy: [{ label: 'Merchant_Ringo', map: 'HumanVillage' }],
 			collect: [
-				[{ label: '游乐场', map: 'DLC2_EarthSpiritsPalace' }, 20],
+				[
+					{
+						labels: [
+							'DLC2_EarthSpiritsPalace_Plant_Gendonka',
+							'DLC2_EarthSpiritsPalace_Plant_Gendonka_B',
+						],
+						map: 'DLC2_EarthSpiritsPalace',
+					},
+					20,
+				],
 			],
 			fishingAdvanced: ['DLC1_MagicForest'],
 		},
@@ -490,7 +737,7 @@ export const BEVERAGE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 45,
-		from: { buy: [{ label: '萌澄果', map: 'BeastForest' }] },
+		from: { buy: [{ label: 'MengChengGuo', map: 'BeastForest' }] },
 	},
 	{
 		id: 28,
@@ -501,7 +748,7 @@ export const BEVERAGE_LIST = [
 		dlc: 0,
 		level: 2,
 		price: 35,
-		from: { buy: [{ label: '蹦蹦跳跳的三妖精', map: 'BeastForest' }] },
+		from: { buy: [{ label: 'ThreeFairies', map: 'BeastForest' }] },
 	},
 	{
 		id: 1000,
@@ -512,7 +759,14 @@ export const BEVERAGE_LIST = [
 		dlc: 1,
 		level: 3,
 		price: 210,
-		from: { buy: [{ label: '河童商人', map: 'DLC1_YoukaiMountain' }] },
+		from: {
+			buy: [
+				{
+					label: 'Merchant_YoukaiMountain_Kappa',
+					map: 'DLC1_YoukaiMountain',
+				},
+			],
+		},
 	},
 	{
 		id: 1001,
@@ -523,7 +777,14 @@ export const BEVERAGE_LIST = [
 		dlc: 1,
 		level: 2,
 		price: 62,
-		from: { buy: [{ label: '上海人形', map: 'DLC1_MagicForest' }] },
+		from: {
+			buy: [
+				{
+					label: 'Merchant_MagicForest_Shanghai',
+					map: 'DLC1_MagicForest',
+				},
+			],
+		},
 	},
 	{
 		id: 1002,
@@ -536,8 +797,11 @@ export const BEVERAGE_LIST = [
 		price: 80,
 		from: {
 			collect: [
-				{ label: '中部树根', map: 'DLC1_MagicForest' },
-				{ label: '西北侧', map: 'DLC5_Makai' },
+				{
+					label: 'DLC1_MagicForest_Item_GoblinRain',
+					map: 'DLC1_MagicForest',
+				},
+				{ label: 'DLC5_Makai_Item_GoblinRain', map: 'DLC5_Makai' },
 			],
 			fishingAdvanced: ['DLC1_MagicForest', 'DLC4_GardenOfTheSun'],
 		},
@@ -551,7 +815,14 @@ export const BEVERAGE_LIST = [
 		dlc: 1,
 		level: 1,
 		price: 42,
-		from: { buy: [{ label: '上海人形', map: 'DLC1_MagicForest' }] },
+		from: {
+			buy: [
+				{
+					label: 'Merchant_MagicForest_Shanghai',
+					map: 'DLC1_MagicForest',
+				},
+			],
+		},
 	},
 	{
 		id: 1004,
@@ -562,7 +833,14 @@ export const BEVERAGE_LIST = [
 		dlc: 1,
 		level: 2,
 		price: 32,
-		from: { buy: [{ label: '上海人形', map: 'DLC1_MagicForest' }] },
+		from: {
+			buy: [
+				{
+					label: 'Merchant_MagicForest_Shanghai',
+					map: 'DLC1_MagicForest',
+				},
+			],
+		},
 	},
 	{
 		id: 2000,
@@ -574,8 +852,12 @@ export const BEVERAGE_LIST = [
 		level: 4,
 		price: 320,
 		from: {
-			buy: [{ label: '鬼商', map: 'DLC2_FormerHell' }],
-			collect: [[{ label: '魅魔房顶', map: 'DLC5_Makai' }, 10]],
+			buy: [
+				{ label: 'Merchant_FormerHell_Ghost', map: 'DLC2_FormerHell' },
+			],
+			collect: [
+				[{ label: 'DLC5_Makai_Roof_Beverage', map: 'DLC5_Makai' }, 10],
+			],
 			fishingAdvanced: ['DLC2_FormerHell'],
 		},
 	},
@@ -588,7 +870,14 @@ export const BEVERAGE_LIST = [
 		dlc: 2,
 		level: 2,
 		price: 45,
-		from: { buy: [{ label: '地狱鸦', map: 'DLC2_EarthSpiritsPalace' }] },
+		from: {
+			buy: [
+				{
+					label: 'Merchant_EarthSpiritsPalace_HellCrow',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
+			],
+		},
 	},
 	{
 		id: 2002,
@@ -600,7 +889,12 @@ export const BEVERAGE_LIST = [
 		level: 2,
 		price: 35,
 		from: {
-			buy: [{ label: '地狱鸦', map: 'DLC2_EarthSpiritsPalace' }],
+			buy: [
+				{
+					label: 'Merchant_EarthSpiritsPalace_HellCrow',
+					map: 'DLC2_EarthSpiritsPalace',
+				},
+			],
 			fishingAdvanced: ['DLC2_EarthSpiritsPalace'],
 		},
 	},
@@ -613,7 +907,14 @@ export const BEVERAGE_LIST = [
 		dlc: 3,
 		level: 2,
 		price: 50,
-		from: { buy: [{ label: '娜兹玲', map: 'DLC3_MyourenTemple' }] },
+		from: {
+			buy: [
+				{
+					label: 'Merchant_MyourenTemple_Nazrin',
+					map: 'DLC3_MyourenTemple',
+				},
+			],
+		},
 	},
 	{
 		id: 3001,
@@ -625,7 +926,12 @@ export const BEVERAGE_LIST = [
 		level: 3,
 		price: 180,
 		from: {
-			buy: [{ label: '道士', map: 'DLC3_DivineSpiritMausoleum' }],
+			buy: [
+				{
+					label: 'Merchant_DivineSpiritMausoleum_Taoist',
+					map: 'DLC3_DivineSpiritMausoleum',
+				},
+			],
 			fishingAdvanced: ['DLC3_DivineSpiritMausoleum'],
 		},
 	},
@@ -639,10 +945,21 @@ export const BEVERAGE_LIST = [
 		level: 3,
 		price: 150,
 		from: {
-			buy: [{ label: '不良少年', map: 'DLC4_ShiningNeedleCastle' }],
+			buy: [
+				{
+					label: 'Merchant_ShiningNeedleCastle_FuRyouShounenn',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
+			],
 			collect: [
-				{ label: '酒窖', map: 'DLC4_ShiningNeedleCastle' },
-				{ label: '月虹池（右上）', map: 'DLC5_LunarCapital' },
+				{
+					label: 'DLC4_ShiningNeedleCastle_RandomBeverage',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
+				{
+					label: 'DLC5_LunarCapital_Water_Beverage',
+					map: 'DLC5_LunarCapital',
+				},
 			],
 		},
 	},
@@ -656,10 +973,21 @@ export const BEVERAGE_LIST = [
 		level: 3,
 		price: 100,
 		from: {
-			buy: [{ label: '太阳花精', map: 'DLC4_GardenOfTheSun' }],
+			buy: [
+				{
+					label: 'Merchant_GardenOfTheSun_SunFairy',
+					map: 'DLC4_GardenOfTheSun',
+				},
+			],
 			collect: [
-				{ label: '酒窖', map: 'DLC4_ShiningNeedleCastle' },
-				{ label: '月虹池（右上）', map: 'DLC5_LunarCapital' },
+				{
+					label: 'DLC4_ShiningNeedleCastle_RandomBeverage',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
+				{
+					label: 'DLC5_LunarCapital_Water_Beverage',
+					map: 'DLC5_LunarCapital',
+				},
 			],
 			fishingAdvanced: ['DLC4_GardenOfTheSun'],
 		},
@@ -675,8 +1003,14 @@ export const BEVERAGE_LIST = [
 		price: 80,
 		from: {
 			buy: [
-				[{ label: '蓬松松爱莲♡魔法店', map: 'DLC5_Makai' }, true],
-				{ label: '小丑', map: 'DLC5_Makai' },
+				[
+					{
+						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+						map: 'DLC5_Makai',
+					},
+					true,
+				],
+				{ label: 'Merchant_Makai_Clown', map: 'DLC5_Makai' },
 			],
 		},
 	},
@@ -691,10 +1025,16 @@ export const BEVERAGE_LIST = [
 		price: 210,
 		from: {
 			buy: [
-				[{ label: '蓬松松爱莲♡魔法店', map: 'DLC5_Makai' }, true],
-				{ label: '小丑', map: 'DLC5_Makai' },
+				[
+					{
+						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+						map: 'DLC5_Makai',
+					},
+					true,
+				],
+				{ label: 'Merchant_Makai_Clown', map: 'DLC5_Makai' },
 			],
-			collect: [{ label: '魅魔房顶', map: 'DLC5_Makai' }],
+			collect: [{ label: 'DLC5_Makai_Roof_Beverage', map: 'DLC5_Makai' }],
 			fishingAdvanced: ['DLC5_Makai'],
 		},
 	},
@@ -709,10 +1049,21 @@ export const BEVERAGE_LIST = [
 		price: 300,
 		from: {
 			buy: [
-				{ label: '月兔', map: 'DLC5_LunarCapital' },
-				[{ label: '蓬松松爱莲♡魔法店', map: 'DLC5_Makai' }, true],
+				{
+					label: 'Merchant_LunarCapital_MoonRabbit',
+					map: 'DLC5_LunarCapital',
+				},
+				[
+					{
+						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+						map: 'DLC5_Makai',
+					},
+					true,
+				],
 			],
-			collect: [[{ label: '魅魔房顶', map: 'DLC5_Makai' }, 10]],
+			collect: [
+				[{ label: 'DLC5_Makai_Roof_Beverage', map: 'DLC5_Makai' }, 10],
+			],
 			fishingAdvanced: ['DLC5_LunarCapital'],
 		},
 	},
@@ -727,8 +1078,17 @@ export const BEVERAGE_LIST = [
 		price: 42,
 		from: {
 			buy: [
-				{ label: '月兔', map: 'DLC5_LunarCapital' },
-				[{ label: '蓬松松爱莲♡魔法店', map: 'DLC5_Makai' }, true],
+				{
+					label: 'Merchant_LunarCapital_MoonRabbit',
+					map: 'DLC5_LunarCapital',
+				},
+				[
+					{
+						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+						map: 'DLC5_Makai',
+					},
+					true,
+				],
 			],
 			fishingAdvanced: ['DLC5_LunarCapital'],
 		},
@@ -744,8 +1104,17 @@ export const BEVERAGE_LIST = [
 		price: 96,
 		from: {
 			buy: [
-				{ label: '月兔', map: 'DLC5_LunarCapital' },
-				[{ label: '蓬松松爱莲♡魔法店', map: 'DLC5_Makai' }, true],
+				{
+					label: 'Merchant_LunarCapital_MoonRabbit',
+					map: 'DLC5_LunarCapital',
+				},
+				[
+					{
+						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+						map: 'DLC5_Makai',
+					},
+					true,
+				],
 			],
 		},
 	},
@@ -758,7 +1127,7 @@ export const BEVERAGE_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 40,
-		from: { buy: [{ label: '舞', map: 'HumanVillage' }] },
+		from: { buy: [{ specialGuest: 11001, map: 'HumanVillage' }] },
 	},
 	{
 		id: 11001,
@@ -769,7 +1138,7 @@ export const BEVERAGE_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 65,
-		from: { buy: [{ label: '舞', map: 'HumanVillage' }] },
+		from: { buy: [{ specialGuest: 11001, map: 'HumanVillage' }] },
 	},
 	{
 		id: 11002,
@@ -780,7 +1149,7 @@ export const BEVERAGE_LIST = [
 		dlc: 9,
 		level: 3,
 		price: 136,
-		from: { buy: [{ label: '舞', map: 'HumanVillage' }] },
+		from: { buy: [{ specialGuest: 11001, map: 'HumanVillage' }] },
 	},
 	{
 		id: 11003,
@@ -791,6 +1160,6 @@ export const BEVERAGE_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 52,
-		from: { buy: [{ label: '舞', map: 'HumanVillage' }] },
+		from: { buy: [{ specialGuest: 11001, map: 'HumanVillage' }] },
 	},
 ] as const satisfies IBeverage[];

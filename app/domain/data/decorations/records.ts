@@ -51,7 +51,7 @@ export const DECORATION_LIST = [
 		description: '《东方华心传》的联动礼物，代表“喜”情绪的面具。',
 		dlc: 0,
 		effect: '摆放在店铺中时，客人的预算提高20%。受到【秦心】的符卡效果强化后，效果提升至200%。情绪面具摆件只能选择一个进行摆放。',
-		from: { collaboration: { collaborationLabel: '东方华心传' } },
+		from: { collaboration: { collaborationLabel: 'TBS_Kokoro' } },
 	},
 	{
 		id: 63,
@@ -59,7 +59,7 @@ export const DECORATION_LIST = [
 		description: '《东方华心传》的联动礼物，代表“怒”情绪的面具。',
 		dlc: 0,
 		effect: '摆放在店铺中时，减少10%料理时间。受到【秦心】的符卡效果强化后，效果提升至75%。情绪面具摆件只能选择一个进行摆放。',
-		from: { collaboration: { collaborationLabel: '东方华心传' } },
+		from: { collaboration: { collaborationLabel: 'TBS_Kokoro' } },
 	},
 	{
 		id: 64,
@@ -67,7 +67,7 @@ export const DECORATION_LIST = [
 		description: '《东方华心传》的联动礼物，代表“哀”情绪的面具。',
 		dlc: 0,
 		effect: '摆放在店铺中时，客人的续单概率提高5%。受到【秦心】的符卡效果强化后，效果提升至50%。情绪面具摆件只能选择一个进行摆放。',
-		from: { collaboration: { collaborationLabel: '东方华心传' } },
+		from: { collaboration: { collaborationLabel: 'TBS_Kokoro' } },
 	},
 	{
 		id: 65,
@@ -75,7 +75,7 @@ export const DECORATION_LIST = [
 		description: '《东方华心传》的联动礼物，代表“乐”情绪的面具。',
 		dlc: 0,
 		effect: '摆放在店铺中时，稀有客人首次给出评价时，评价等级至少为普通。受到【秦心】的符卡效果强化后，效果改为至少为完美。情绪面具摆件只能选择一个进行摆放。',
-		from: { collaboration: { collaborationLabel: '东方华心传' } },
+		from: { collaboration: { collaborationLabel: 'TBS_Kokoro' } },
 	},
 	{
 		id: 1003,
@@ -138,10 +138,10 @@ export const DECORATION_LIST = [
 		from: {
 			bond: { level: 5, specialGuest: 4005 },
 			task: {
-				dialogueGuestLabel: '若鹭姬',
-				locationLabel: '雾之湖',
 				map: 'ScarletMansion',
-				task: '内向的人鱼',
+				missionLabel: 'DLC4_Kizuna_ImaizumiKagerou_LV4_Upgrade_Mission',
+				startEventLabel:
+					'DLC4_Kizuna_ImaizumiKagerou_LV4_Upgrade_TalkWakasagihime_Event',
 			},
 		},
 	},

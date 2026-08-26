@@ -3,13 +3,14 @@ import { Fragment, memo, useMemo, useRef } from 'react';
 
 import Tooltip from '@/design/ui/components/tooltip';
 
+import { formatMerchantReference } from '@/domain/availability/sourceResolvers';
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import {
 	CurrencyItemCatalog,
 	type CurrencyItemCatalog as CurrencyItemCatalogModel,
 } from '@/domain/catalog/items/CurrencyItemCatalog';
+import { PRAYER_LABEL_MAP } from '@/domain/data/labels/prayerFacts';
 import { MAP_FACTS } from '@/domain/data/places/placeFacts';
-import type { TMerchantReference } from '@/domain/data/places/types';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import ItemCard from '@/features/catalog/shared/client/components/ItemCard';
@@ -34,12 +35,6 @@ interface IProps {
 
 const currencyItemCatalog = CurrencyItemCatalog.getInstance();
 const specialGuestCatalog = SpecialGuestCatalog.getInstance();
-
-function formatMerchantReference(merchant: TMerchantReference) {
-	return 'map' in merchant
-		? `【${MAP_FACTS[merchant.map].label}】${merchant.label}`
-		: `【${specialGuestCatalog.getPropsById(merchant.specialGuest, 'name')}】${merchant.label}`;
-}
 
 export default memo<IProps>(function CurrencyItemsCatalog({ data }) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
@@ -127,7 +122,12 @@ export default memo<IProps>(function CurrencyItemsCatalog({ data }) {
 												MAP_FACTS[source.mapPrayer.map]
 													.label
 											}
-											】{source.mapPrayer.locationLabel}
+											】
+											{
+												PRAYER_LABEL_MAP[
+													source.mapPrayer.label
+												]
+											}
 											处祈愿
 										</Fragment>
 									);

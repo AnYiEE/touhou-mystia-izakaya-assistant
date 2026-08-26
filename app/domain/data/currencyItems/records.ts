@@ -49,15 +49,13 @@ export const CURRENCY_ITEM_RECORDS = [
 			'从守矢小神社中摇出的银色青蛙硬币。也许集齐一定数量会有什么好事发生？（持有一百枚时将自动获得衣服【水手服】和物品【金色的青蛙硬币】）',
 		dlc: 0,
 		from: [
-			{
-				mapPrayer: {
-					locationLabel: '西侧守矢分社',
-					map: 'HakureiShrine',
-				},
-			},
+			{ mapPrayer: { label: 'MoriyaShrine', map: 'HakureiShrine' } },
 			{
 				buy: {
-					merchant: { label: '蓬松松爱莲♡魔法店', map: 'DLC5_Makai' },
+					merchant: {
+						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+						map: 'DLC5_Makai',
+					},
 					price: { amount: 4, currencyItem: 5011 },
 				},
 			},
@@ -73,7 +71,10 @@ export const CURRENCY_ITEM_RECORDS = [
 			{ spellCardReward: { specialGuest: 5003 } },
 			{
 				buy: {
-					merchant: { label: '蓬松松爱莲♡魔法店', map: 'DLC5_Makai' },
+					merchant: {
+						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+						map: 'DLC5_Makai',
+					},
 					price: { amount: 4, currencyItem: 29 },
 				},
 			},

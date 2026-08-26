@@ -1068,7 +1068,7 @@ export const FOOD_LIST = [
 		price: 35,
 		from: {
 			buy: {
-				merchant: { label: '香霖堂', map: 'HumanVillage' },
+				merchant: { label: 'Rinnosuke', map: 'HumanVillage' },
 				price: { amount: 5, currencyItem: 29 },
 			},
 		},
@@ -1093,14 +1093,17 @@ export const FOOD_LIST = [
 		price: 75,
 		from: {
 			collaboration: {
-				collaborationLabel: 'MC幻想乡',
+				collaborationLabel: 'MC_Gensokyo',
 				merchants: [
 					{
-						merchant: { label: '萌澄果', map: 'BeastForest' },
+						merchant: { label: 'MengChengGuo', map: 'BeastForest' },
 						platformLabel: 'PC',
 					},
 					{
-						merchant: { label: '杂货商人', map: 'BeastForest' },
+						merchant: {
+							label: 'Merchant_BeastForest',
+							map: 'BeastForest',
+						},
 						platformLabel: 'Switch',
 					},
 				],
@@ -1127,14 +1130,17 @@ export const FOOD_LIST = [
 		price: 85,
 		from: {
 			collaboration: {
-				collaborationLabel: 'MC幻想乡',
+				collaborationLabel: 'MC_Gensokyo',
 				merchants: [
 					{
-						merchant: { label: '萌澄果', map: 'BeastForest' },
+						merchant: { label: 'MengChengGuo', map: 'BeastForest' },
 						platformLabel: 'PC',
 					},
 					{
-						merchant: { label: '杂货商人', map: 'BeastForest' },
+						merchant: {
+							label: 'Merchant_BeastForest',
+							map: 'BeastForest',
+						},
 						platformLabel: 'Switch',
 					},
 				],
@@ -1161,17 +1167,14 @@ export const FOOD_LIST = [
 		price: 60,
 		from: {
 			collaboration: {
-				collaborationLabel: '三妖精的蹦蹦跳跳讨伐大作战',
+				collaborationLabel: '3FARIES_Collab',
 				merchants: [
 					{
-						merchant: {
-							label: '蹦蹦跳跳的三妖精',
-							map: 'BeastForest',
-						},
+						merchant: { label: 'ThreeFairies', map: 'BeastForest' },
 						platformLabel: 'PC',
 					},
 					{
-						merchant: { label: '香霖堂', map: 'HumanVillage' },
+						merchant: { label: 'Rinnosuke', map: 'HumanVillage' },
 						platformLabel: 'Switch',
 					},
 				],
@@ -1198,17 +1201,14 @@ export const FOOD_LIST = [
 		price: 60,
 		from: {
 			collaboration: {
-				collaborationLabel: '三妖精的蹦蹦跳跳讨伐大作战',
+				collaborationLabel: '3FARIES_Collab',
 				merchants: [
 					{
-						merchant: {
-							label: '蹦蹦跳跳的三妖精',
-							map: 'BeastForest',
-						},
+						merchant: { label: 'ThreeFairies', map: 'BeastForest' },
 						platformLabel: 'PC',
 					},
 					{
-						merchant: { label: '香霖堂', map: 'HumanVillage' },
+						merchant: { label: 'Rinnosuke', map: 'HumanVillage' },
 						platformLabel: 'Switch',
 					},
 				],
@@ -1230,7 +1230,7 @@ export const FOOD_LIST = [
 		price: 35,
 		from: {
 			buy: {
-				merchant: { label: '香霖堂', map: 'HumanVillage' },
+				merchant: { label: 'Rinnosuke', map: 'HumanVillage' },
 				price: { amount: 5, currencyItem: 29 },
 			},
 		},
@@ -1250,7 +1250,7 @@ export const FOOD_LIST = [
 		price: 35,
 		from: {
 			buy: {
-				merchant: { label: '香霖堂', map: 'HumanVillage' },
+				merchant: { label: 'Rinnosuke', map: 'HumanVillage' },
 				price: { amount: 5, currencyItem: 29 },
 			},
 		},
@@ -3638,7 +3638,7 @@ export const FOOD_LIST = [
 		price: 36,
 		from: {
 			buy: {
-				merchant: { label: '雪', map: 'HumanVillage' },
+				merchant: { specialGuest: 11000, map: 'HumanVillage' },
 				price: null,
 			},
 		},
@@ -3663,7 +3663,7 @@ export const FOOD_LIST = [
 		price: 80,
 		from: {
 			buy: {
-				merchant: { label: '雪', map: 'HumanVillage' },
+				merchant: { specialGuest: 11000, map: 'HumanVillage' },
 				price: null,
 			},
 		},
@@ -3688,7 +3688,7 @@ export const FOOD_LIST = [
 		price: 120,
 		from: {
 			buy: {
-				merchant: { label: '雪', map: 'HumanVillage' },
+				merchant: { specialGuest: 11000, map: 'HumanVillage' },
 				price: null,
 			},
 		},
@@ -3713,7 +3713,7 @@ export const FOOD_LIST = [
 		price: 35,
 		from: {
 			buy: {
-				merchant: { label: '雪', map: 'HumanVillage' },
+				merchant: { specialGuest: 11000, map: 'HumanVillage' },
 				price: null,
 			},
 		},
@@ -3738,7 +3738,7 @@ export const FOOD_LIST = [
 		price: 95,
 		from: {
 			buy: {
-				merchant: { label: '雪', map: 'HumanVillage' },
+				merchant: { specialGuest: 11000, map: 'HumanVillage' },
 				price: null,
 			},
 		},

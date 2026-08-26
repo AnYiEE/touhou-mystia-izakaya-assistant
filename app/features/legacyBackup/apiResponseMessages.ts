@@ -12,7 +12,7 @@ export const LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP = {
 	fileSaveFailed: '保存备份文件失败',
 	invalidCode: '备份码无效',
 	invalidContentType: '请求内容类型无效',
-	invalidIpAddress: 'IP 地址无效',
+	invalidIpAddress: 'IP地址无效',
 	invalidObjectStructure: '请求数据结构无效',
 	invalidSecret: '备份密钥无效',
 	invalidUserAgent: '浏览器标识无效',

@@ -11,8 +11,14 @@ import ScrollShadow from '@/design/ui/components/scrollShadow';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import type { IBeverage } from '@/domain/data/beverages/schema';
+import type {
+	IPrayerReference,
+	TCollectionPointReference,
+} from '@/domain/data/places/types';
 
 import {
+	formatCollectionPointYield,
+	formatPrayerYield,
 	formatSourceReference,
 	getCollectionPointRefreshTimeHours,
 } from '@/features/catalog/items/shared/sourceReferenceFormatting';
@@ -21,9 +27,10 @@ import { checkObjectOrStringEmpty } from '@/shared/utilities/collections/check';
 
 interface IProps {
 	from: IBeverage['from'];
+	id: IBeverage['id'];
 }
 
-export default function BeverageSourceDetails({ from }: IProps) {
+export default function BeverageSourceDetails({ from, id }: IProps) {
 	if (checkObjectOrStringEmpty(from)) {
 		return null;
 	}
@@ -39,15 +46,18 @@ export default function BeverageSourceDetails({ from }: IProps) {
 				const isBuy = method === 'buy';
 				const isCollect = method === 'collect';
 				const isFishingAdvanced = method === 'fishingAdvanced';
+				const isPrayer = method === 'prayer';
 				const isTask = method === 'task';
 				const probability = `概率${isBuy ? '出售' : '掉落'}`;
 				const way = isBuy
 					? '购买'
 					: isFishingAdvanced
-						? '高级钓鱼'
-						: isTask
-							? '任务'
-							: '采集';
+						? '高级垂钓'
+						: isPrayer
+							? '祈愿'
+							: isTask
+								? '任务'
+								: '采集';
 				const label = `${probability}，使用摆件【超级钓鱼竿】`;
 				return (
 					<Fragment key={fromIndex}>
@@ -88,18 +98,25 @@ export default function BeverageSourceDetails({ from }: IProps) {
 							{Array.isArray(target) ? (
 								target.map((item, targetIndex) => (
 									<Ol.Li key={targetIndex}>
-										{isCollect || Array.isArray(item)
+										{isCollect ||
+										isPrayer ||
+										Array.isArray(item)
 											? (() => {
 													const isArray =
 														Array.isArray(item);
+													const reference = isArray
+														? item[0]
+														: item;
 													const itemProbability =
 														isArray
-															? typeof item[1] ===
-																'number'
-																? `${item[1]}%${probability}`
-																: item[1]
-																	? probability
-																	: null
+															? isCollect
+																? null
+																: typeof item[1] ===
+																	  'number'
+																	? `${item[1]}%${probability}`
+																	: item[1]
+																		? probability
+																		: null
 															: null;
 													const collectableTimeRange =
 														isCollect &&
@@ -115,74 +132,62 @@ export default function BeverageSourceDetails({ from }: IProps) {
 															: null;
 													const collectableTimeRangeContent =
 														collectableTimeRange ===
-														null ? null : (
-															<>
-																{itemProbability ===
-																null
-																	? ''
-																	: '；'}
-																采集点出现时间：
-																{
-																	collectableTimeRange[0]
-																}
-																<span className="mx-0.5">
-																	-
-																</span>
-																{
-																	collectableTimeRange[1]
-																}
-																点
-															</>
-														);
+														null
+															? null
+															: `采集点出现时间：${collectableTimeRange[0]}-${collectableTimeRange[1]}点`;
 													const refreshTime =
 														isCollect
 															? getCollectionPointRefreshTimeHours(
-																	isArray
-																		? item[0]
-																		: item
+																	reference
 																)
 															: null;
 													const refreshTimeContent =
-														refreshTime ===
-														null ? null : (
-															<>
-																{collectableTimeRange ===
-																null
-																	? itemProbability ===
-																		null
-																		? ''
-																		: '；'
-																	: '，'}
-																采集点刷新周期：
-																{refreshTime}
-																小时
-															</>
-														);
+														refreshTime === null
+															? null
+															: `采集点刷新周期：${refreshTime}小时`;
+													const timingContent =
+														collectableTimeRangeContent !==
+															null &&
+														refreshTimeContent !==
+															null
+															? `${collectableTimeRangeContent}，${refreshTimeContent}`
+															: (collectableTimeRangeContent ??
+																refreshTimeContent);
+													const yieldContent =
+														isCollect
+															? formatCollectionPointYield(
+																	reference as TCollectionPointReference,
+																	2,
+																	id
+																)
+															: isPrayer
+																? formatPrayerYield(
+																		reference as IPrayerReference,
+																		2,
+																		id
+																	)
+																: null;
 													const itemContent =
 														formatSourceReference(
-															isArray
-																? item[0]
-																: item
+															reference
 														);
+													const tooltipText = [
+														itemProbability,
+														timingContent,
+														yieldContent,
+													]
+														.filter(
+															(
+																content
+															): content is string =>
+																content !== null
+														)
+														.join('；');
 													const tooltipContent =
-														itemProbability !==
-															null ||
-														collectableTimeRangeContent !==
-															null ||
-														refreshTimeContent !==
-															null ? (
-															<p>
-																{
-																	itemProbability
-																}
-																{
-																	collectableTimeRangeContent
-																}
-																{
-																	refreshTimeContent
-																}
-															</p>
-														) : null;
+														tooltipText ===
+														'' ? null : (
+															<p>{tooltipText}</p>
+														);
 													return tooltipContent ===
 														null ? (
 														itemContent

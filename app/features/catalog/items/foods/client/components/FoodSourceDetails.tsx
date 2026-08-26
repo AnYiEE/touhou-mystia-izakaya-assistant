@@ -7,6 +7,7 @@ import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
 import type { IFood } from '@/domain/data/foods/schema';
+import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
 import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 
 import { formatSourceReference } from '@/features/catalog/items/shared/sourceReferenceFormatting';
@@ -140,11 +141,13 @@ export default function FoodSourceDetails({ from, openWindow }: IProps) {
 				: '';
 		details = `地区【${MAP_FACTS[areaTask.map].label}】${areaTask.task}${specialGuestSuffix}`;
 	} else if ('collaboration' in from) {
+		const collaborationLabel =
+			COLLABORATION_LABEL_MAP[from.collaboration.collaborationLabel];
 		details = from.collaboration.merchants
 			.map(({ merchant, platformLabel }, index) => {
 				const merchantName =
 					index === 0 && 'map' in merchant
-						? `【${MAP_FACTS[merchant.map].label}“${from.collaboration.collaborationLabel}”联动】${merchant.label}`
+						? `【${MAP_FACTS[merchant.map].label}“${collaborationLabel}”联动】${formatSourceReference(merchant).replace(/^【[^】]+】/u, '')}`
 						: formatSourceReference(merchant);
 				return `${merchantName}（${platformLabel}）`;
 			})

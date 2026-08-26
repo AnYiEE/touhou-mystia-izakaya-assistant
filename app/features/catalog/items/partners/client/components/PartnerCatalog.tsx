@@ -11,7 +11,8 @@ import Popover, {
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import { type PartnerCatalog as PartnerCatalogModel } from '@/domain/catalog/items/PartnerCatalog';
 import type { TPartnerSource } from '@/domain/data/partners/schema';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+import { MAP_FACTS, PLACE_LABEL_MAP } from '@/domain/data/places/placeFacts';
+import { SPEED_LABEL_MAP } from '@/domain/data/partners/speedFacts';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { getPartnerTachiePath } from '@/features/catalog/presentation/tachiePaths';
@@ -53,7 +54,7 @@ function formatPartnerSource(source: TPartnerSource) {
 		return `解锁地区【${MAP_FACTS[source.datedMapTrial.map].label}】后，完成由【${specialGuestCatalog.getPropsById(source.datedMapTrial.specialGuest, 'name')}】于${source.datedMapTrial.month}月${source.datedMapTrial.day}日发起的试炼。`;
 	}
 
-	return `${source.storyDialogue.prerequisiteLabel}后，和地区【${source.storyDialogue.placeLabel}】的【${specialGuestCatalog.getPropsById(source.storyDialogue.specialGuest, 'name')}】对话，选择“${source.storyDialogue.dialogueOptionLabel}”。`;
+	return `${source.storyDialogue.prerequisiteLabel}后，和地区【${PLACE_LABEL_MAP[source.storyDialogue.placeLabel]}】的【${specialGuestCatalog.getPropsById(source.storyDialogue.specialGuest, 'name')}】对话，选择“${source.storyDialogue.dialogueOptionLabel}”。`;
 }
 
 export default memo<IProps>(function PartnerCatalog({ data }) {
@@ -142,11 +143,11 @@ export default memo<IProps>(function PartnerCatalog({ data }) {
 						</p>
 						<p>
 							<span className="font-semibold">移动速度：</span>
-							{speed.moving}
+							{SPEED_LABEL_MAP[speed.moving]}
 						</p>
 						<p>
 							<span className="font-semibold">工作速度：</span>
-							{speed.working}
+							{SPEED_LABEL_MAP[speed.working]}
 						</p>
 						{effect !== null && (
 							<p className="break-all text-justify">

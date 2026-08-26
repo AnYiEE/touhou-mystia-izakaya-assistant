@@ -113,7 +113,7 @@ export default memo<IProps>(function IngredientCatalog({ data }) {
 							ingredient={id}
 							openWindow={openWindow}
 						/>
-						<IngredientSourceDetails from={from} />
+						<IngredientSourceDetails from={from} id={id} />
 					</ItemPopoverCard>
 				</ItemPopoverContent>
 			</ItemPopover>

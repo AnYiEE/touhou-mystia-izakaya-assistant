@@ -12,7 +12,7 @@ function createKourindouPurchase(
 	price: TCookerBuySource['buy']['price']
 ): TCookerBuySource {
 	return {
-		buy: { merchant: { label: '香霖堂', map: 'HumanVillage' }, price },
+		buy: { merchant: { label: 'Rinnosuke', map: 'HumanVillage' }, price },
 	};
 }
 
@@ -601,7 +601,14 @@ export const COOKER_LIST = [
 			'减少20%料理时间。烹饪结束后，此厨具会自动开始制作上一次制作的料理（包含额外添加的食材），自动制作不消耗食材且可以随时打断。',
 			true,
 		],
-		from: [{ competitionReward: { competitionLabel: '怪诞料理大赛' } }],
+		from: [
+			{
+				competitionReward: {
+					competitionLabel:
+						'DLC2_Main_FormerHell_WeirdCooking_FirstChallengeSuccess_Event',
+				},
+			},
+		],
 	},
 	{
 		id: 3000,
@@ -643,7 +650,10 @@ export const COOKER_LIST = [
 		from: [
 			{
 				buy: {
-					merchant: { label: '蓬松松爱莲♡魔法店', map: 'DLC5_Makai' },
+					merchant: {
+						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+						map: 'DLC5_Makai',
+					},
 					price: [
 						{ currencyItem: { amount: 160, currencyItem: 5011 } },
 						{ money: { amount: 40000 } },
@@ -663,7 +673,10 @@ export const COOKER_LIST = [
 		from: [
 			{
 				buy: {
-					merchant: { label: '蓬松松爱莲♡魔法店', map: 'DLC5_Makai' },
+					merchant: {
+						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+						map: 'DLC5_Makai',
+					},
 					price: [
 						{ currencyItem: { amount: 33, currencyItem: 5011 } },
 						{ money: { amount: 33333 } },

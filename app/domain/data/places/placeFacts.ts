@@ -1,6 +1,11 @@
 import type { TDlc } from '@/domain/data/shared/types';
 
-import type { TMapDisplayLabel, TMapLabel } from './types';
+import type {
+	TMapDisplayLabel,
+	TMapLabel,
+	TPlaceDisplayLabel,
+	TPlaceLabel,
+} from './types';
 
 interface IMapFact {
 	dlc: TDlc;
@@ -31,3 +36,24 @@ export const MAP_FACTS = {
 export const ALL_MAP_LABELS = Object.keys(MAP_FACTS) as TMapLabel[];
 
 export const ALL_MAP_LABELS_SET = new Set<string>(ALL_MAP_LABELS);
+
+/* eslint-disable sort-keys -- PLACE_LABEL_MAP insertion order defines canonical map and UI ordering. */
+export const PLACE_LABEL_MAP = {
+	BeastForest: MAP_FACTS.BeastForest.label,
+	HumanVillage: MAP_FACTS.HumanVillage.label,
+	HakureiShrine: MAP_FACTS.HakureiShrine.label,
+	ScarletMansion: MAP_FACTS.ScarletMansion.label,
+	BambooForest: MAP_FACTS.BambooForest.label,
+	DLC1_MagicForest: MAP_FACTS.DLC1_MagicForest.label,
+	DLC1_YoukaiMountain: MAP_FACTS.DLC1_YoukaiMountain.label,
+	DLC2_FormerHell: MAP_FACTS.DLC2_FormerHell.label,
+	DLC2_EarthSpiritsPalace: MAP_FACTS.DLC2_EarthSpiritsPalace.label,
+	DLC3_MyourenTemple: MAP_FACTS.DLC3_MyourenTemple.label,
+	DLC3_DivineSpiritMausoleum: MAP_FACTS.DLC3_DivineSpiritMausoleum.label,
+	DLC4_GardenOfTheSun: MAP_FACTS.DLC4_GardenOfTheSun.label,
+	DLC4_ShiningNeedleCastle: MAP_FACTS.DLC4_ShiningNeedleCastle.label,
+	DLC5_LunarCapital: MAP_FACTS.DLC5_LunarCapital.label,
+	DLC5_Makai: MAP_FACTS.DLC5_Makai.label,
+	Hakugyokurou: '白玉楼',
+} as const satisfies Record<TPlaceLabel, TPlaceDisplayLabel>;
+/* eslint-enable sort-keys */

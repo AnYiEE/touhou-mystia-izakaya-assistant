@@ -1,4 +1,5 @@
 import type {
+	IPrayerReference,
 	ITaskReference,
 	TCollectionPointReference,
 	TMapLabel,
@@ -19,6 +20,7 @@ export interface IFoodFrom {
 	>;
 	fishing: TMapLabel[];
 	fishingAdvanced: TMapLabel[];
+	prayer: IPrayerReference[];
 	task: ITaskReference[];
 }
 
