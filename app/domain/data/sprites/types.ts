@@ -1,3 +1,4 @@
+import type { TBadgeId, TBadges } from '@/domain/data/badges/types';
 import type { TBeverageId, TBeverages } from '@/domain/data/beverages/types';
 import type { TClothes, TClothesId } from '@/domain/data/clothes/types';
 import type { TCookerId, TCookers } from '@/domain/data/cookers/types';
@@ -11,6 +12,14 @@ import type {
 } from '@/domain/data/decorations/types';
 import type { TFoodId, TFoods } from '@/domain/data/foods/types';
 import type {
+	TFishingCollectibleId,
+	TFishingCollectibles,
+} from '@/domain/data/fishingCollectibles/types';
+import type {
+	TGeneralItemId,
+	TGeneralItems,
+} from '@/domain/data/generalItems/types';
+import type {
 	TNormalGuestId,
 	TNormalGuests,
 } from '@/domain/data/guests/normal/types';
@@ -23,8 +32,10 @@ import type {
 	TIngredients,
 } from '@/domain/data/ingredients/types';
 import type { TPartnerId, TPartners } from '@/domain/data/partners/types';
+import type { TRecordId, TRecords } from '@/domain/data/records/types';
 
 export type TSpriteTarget =
+	| 'badge'
 	| 'beverage'
 	| 'clothes'
 	| 'cooker'
@@ -32,55 +43,52 @@ export type TSpriteTarget =
 	| 'decoration'
 	| 'food'
 	| 'ingredient'
+	| 'item'
 	| 'normal_guest'
 	| 'partner'
-	| 'special_guest';
+	| 'record'
+	| 'special_guest'
+	| 'trophy';
+
+interface ISpriteDataMap {
+	badge: TBadges;
+	beverage: TBeverages;
+	clothes: TClothes;
+	cooker: TCookers;
+	currency_item: TCurrencyItems;
+	decoration: TDecorations;
+	food: TFoods;
+	ingredient: TIngredients;
+	item: TGeneralItems;
+	normal_guest: TNormalGuests;
+	partner: TPartners;
+	record: TRecords;
+	special_guest: TSpecialGuests;
+	trophy: TFishingCollectibles;
+}
+
+interface ISpriteIdMap {
+	badge: TBadgeId;
+	beverage: TBeverageId;
+	clothes: TClothesId;
+	cooker: TCookerId;
+	currency_item: TCurrencyItemId;
+	decoration: TDecorationId;
+	food: TFoodId;
+	ingredient: TIngredientId;
+	item: TGeneralItemId;
+	normal_guest: TNormalGuestId;
+	partner: TPartnerId;
+	record: TRecordId;
+	special_guest: TSpecialGuestId;
+	trophy: TFishingCollectibleId;
+}
 
 export type TSpriteData<T extends TSpriteTarget = TSpriteTarget> =
-	T extends 'beverage'
-		? TBeverages
-		: T extends 'clothes'
-			? TClothes
-			: T extends 'cooker'
-				? TCookers
-				: T extends 'currency_item'
-					? TCurrencyItems
-					: T extends 'decoration'
-						? TDecorations
-						: T extends 'food'
-							? TFoods
-							: T extends 'ingredient'
-								? TIngredients
-								: T extends 'normal_guest'
-									? TNormalGuests
-									: T extends 'partner'
-										? TPartners
-										: T extends 'special_guest'
-											? TSpecialGuests
-											: never;
+	ISpriteDataMap[T];
 
 export type TSpriteId<T extends TSpriteTarget = TSpriteTarget> =
-	T extends 'beverage'
-		? TBeverageId
-		: T extends 'clothes'
-			? TClothesId
-			: T extends 'cooker'
-				? TCookerId
-				: T extends 'currency_item'
-					? TCurrencyItemId
-					: T extends 'decoration'
-						? TDecorationId
-						: T extends 'food'
-							? TFoodId
-							: T extends 'ingredient'
-								? TIngredientId
-								: T extends 'normal_guest'
-									? TNormalGuestId
-									: T extends 'partner'
-										? TPartnerId
-										: T extends 'special_guest'
-											? TSpecialGuestId
-											: never;
+	ISpriteIdMap[T];
 
 export type TSpriteRecordIdentity<T extends TSpriteTarget = TSpriteTarget> = {
 	[TTarget in T]: { recordId: TSpriteId<TTarget>; spriteTarget: TTarget };

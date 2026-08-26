@@ -4,26 +4,34 @@ import { access, readFile } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
 import sharp from 'sharp';
 
+import { BADGE_LIST } from '@/domain/data/badges/records';
 import { BEVERAGE_LIST } from '@/domain/data/beverages/records';
 import { CLOTHES_LIST } from '@/domain/data/clothes/records';
 import { COOKER_LIST } from '@/domain/data/cookers/records';
 import { CURRENCY_ITEM_LIST } from '@/domain/data/currencyItems/records';
 import { DECORATION_LIST } from '@/domain/data/decorations/records';
 import { FOOD_LIST } from '@/domain/data/foods/records';
+import { FISHING_COLLECTIBLE_LIST } from '@/domain/data/fishingCollectibles/records';
+import { GENERAL_ITEM_LIST } from '@/domain/data/generalItems/records';
 import { NORMAL_GUEST_LIST } from '@/domain/data/guests/normal/records';
 import { SPECIAL_GUEST_LIST } from '@/domain/data/guests/special/records';
 import { INGREDIENT_LIST } from '@/domain/data/ingredients/records';
 import { PARTNER_LIST } from '@/domain/data/partners/records';
+import { RECORD_LIST } from '@/domain/data/records/records';
 import {
+	BADGE_SPRITE_CONFIG,
 	BEVERAGE_SPRITE_CONFIG,
 	CLOTHES_SPRITE_CONFIG,
 	COOKER_SPRITE_CONFIG,
 	CURRENCY_ITEM_SPRITE_CONFIG,
 	DECORATION_SPRITE_CONFIG,
+	FISHING_COLLECTIBLE_SPRITE_CONFIG,
 	FOOD_SPRITE_CONFIG,
+	GENERAL_ITEM_SPRITE_CONFIG,
 	INGREDIENT_SPRITE_CONFIG,
 	NORMAL_GUEST_SPRITE_CONFIG,
 	PARTNER_SPRITE_CONFIG,
+	RECORD_SPRITE_CONFIG,
 	SPECIAL_GUEST_SPRITE_CONFIG,
 } from '@/domain/data/sprites/configs';
 import type { ISpriteConfig, TSpriteTarget } from '@/domain/data/sprites/types';
@@ -40,6 +48,7 @@ interface ISpriteCategory {
 	list: Array<{ id: number }>;
 	name: string;
 	outputName: `${TSpriteTarget}.png`;
+	preserveOriginalSize?: boolean;
 }
 
 interface ISpriteItem {
@@ -57,7 +66,8 @@ interface IGenerationStats {
 async function compositeSprites(
 	sprites: ISpriteItem[],
 	config: ISpriteConfig,
-	outputPath: string
+	outputPath: string,
+	preserveOriginalSize = false
 ) {
 	const {
 		col,
@@ -89,13 +99,42 @@ async function compositeSprites(
 
 				const image = sharp(buffer);
 				const metadata = await image.metadata();
+				const sourceHeight = metadata.height;
+				const sourceWidth = metadata.width;
+
+				if (
+					preserveOriginalSize &&
+					(sourceHeight > height || sourceWidth > width)
+				) {
+					throw new Error(
+						`Sprite ${sprite.id} has invalid dimensions ${sourceWidth}×${sourceHeight} for its ${width}×${height} cell.`
+					);
+				}
 
 				const needsResize =
 					metadata.width !== width || metadata.height !== height;
 				const processedBuffer = needsResize
-					? await image
-							.resize({ height, kernel: 'nearest', width })
-							.toBuffer()
+					? preserveOriginalSize
+						? await image
+								.extend({
+									background: { alpha: 0, b: 0, g: 0, r: 0 },
+									bottom:
+										height -
+										sourceHeight -
+										Math.floor((height - sourceHeight) / 2),
+									left: Math.floor((width - sourceWidth) / 2),
+									right:
+										width -
+										sourceWidth -
+										Math.floor((width - sourceWidth) / 2),
+									top: Math.floor(
+										(height - sourceHeight) / 2
+									),
+								})
+								.toBuffer()
+						: await image
+								.resize({ height, kernel: 'nearest', width })
+								.toBuffer()
 					: buffer;
 
 				return {
@@ -150,7 +189,8 @@ async function generateSingleCategory(
 		const result = await compositeSprites(
 			spriteData,
 			category.config,
-			outputPath
+			outputPath,
+			category.preserveOriginalSize ?? false
 		);
 
 		return {
@@ -174,6 +214,13 @@ export async function generateSprites(
 	isDryRun = false
 ) {
 	const allCategories: ISpriteCategory[] = [
+		{
+			config: BADGE_SPRITE_CONFIG,
+			list: BADGE_LIST,
+			name: 'badges',
+			outputName: 'badge.png',
+			preserveOriginalSize: true,
+		},
 		{
 			config: BEVERAGE_SPRITE_CONFIG,
 			list: BEVERAGE_LIST,
@@ -217,6 +264,12 @@ export async function generateSprites(
 			outputName: 'ingredient.png',
 		},
 		{
+			config: GENERAL_ITEM_SPRITE_CONFIG,
+			list: GENERAL_ITEM_LIST,
+			name: 'items',
+			outputName: 'item.png',
+		},
+		{
 			config: NORMAL_GUEST_SPRITE_CONFIG,
 			list: NORMAL_GUEST_LIST,
 			name: 'normal_guests',
@@ -229,10 +282,22 @@ export async function generateSprites(
 			outputName: 'partner.png',
 		},
 		{
+			config: RECORD_SPRITE_CONFIG,
+			list: RECORD_LIST,
+			name: 'records',
+			outputName: 'record.png',
+		},
+		{
 			config: SPECIAL_GUEST_SPRITE_CONFIG,
 			list: SPECIAL_GUEST_LIST,
 			name: 'special_guests',
 			outputName: 'special_guest.png',
+		},
+		{
+			config: FISHING_COLLECTIBLE_SPRITE_CONFIG,
+			list: FISHING_COLLECTIBLE_LIST,
+			name: 'trophies',
+			outputName: 'trophy.png',
 		},
 	];
 
@@ -330,9 +395,10 @@ if (argv.help) {
 
 选项:
   --categories <名称>  仅生成指定的类别（逗号或空格分隔）
-                       可用类别: beverages, clothes, cookers, currency_items,
-                                 decorations, foods, ingredients, normal_guests,
-                                 partners, special_guests
+                       可用类别: badges, beverages, clothes, cookers,
+                                 currency_items, decorations, foods, ingredients,
+                                 items, normal_guests, partners, records,
+                                 special_guests, trophies
   --dry-run            仅验证并显示输入/输出路径，不写入精灵图
   --help               显示此帮助信息
 

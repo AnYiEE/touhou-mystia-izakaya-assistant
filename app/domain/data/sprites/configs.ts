@@ -1,16 +1,24 @@
+import { BADGE_LIST } from '@/domain/data/badges/records';
 import { BEVERAGE_LIST } from '@/domain/data/beverages/records';
 import { CLOTHES_LIST } from '@/domain/data/clothes/records';
 import { COOKER_LIST } from '@/domain/data/cookers/records';
 import { CURRENCY_ITEM_LIST } from '@/domain/data/currencyItems/records';
 import { DECORATION_LIST } from '@/domain/data/decorations/records';
 import { FOOD_LIST } from '@/domain/data/foods/records';
+import { FISHING_COLLECTIBLE_LIST } from '@/domain/data/fishingCollectibles/records';
+import { GENERAL_ITEM_LIST } from '@/domain/data/generalItems/records';
 import { NORMAL_GUEST_LIST } from '@/domain/data/guests/normal/records';
 import { SPECIAL_GUEST_LIST } from '@/domain/data/guests/special/records';
 import { INGREDIENT_LIST } from '@/domain/data/ingredients/records';
 import { PARTNER_LIST } from '@/domain/data/partners/records';
+import { RECORD_LIST } from '@/domain/data/records/records';
 
 import { createSpriteConfig } from './createSpriteConfig';
 
+export const BADGE_SPRITE_CONFIG = createSpriteConfig(BADGE_LIST.length, {
+	height: 66,
+	width: 66,
+});
 export const BEVERAGE_SPRITE_CONFIG = createSpriteConfig(BEVERAGE_LIST.length, {
 	height: 26,
 	width: 26,
@@ -35,6 +43,14 @@ export const FOOD_SPRITE_CONFIG = createSpriteConfig(FOOD_LIST.length, {
 	height: 26,
 	width: 26,
 });
+export const FISHING_COLLECTIBLE_SPRITE_CONFIG = createSpriteConfig(
+	FISHING_COLLECTIBLE_LIST.length,
+	{ height: 26, width: 26 }
+);
+export const GENERAL_ITEM_SPRITE_CONFIG = createSpriteConfig(
+	GENERAL_ITEM_LIST.length,
+	{ height: 26, width: 26 }
+);
 export const INGREDIENT_SPRITE_CONFIG = createSpriteConfig(
 	INGREDIENT_LIST.length,
 	{ height: 26, width: 26 }
@@ -46,6 +62,10 @@ export const NORMAL_GUEST_SPRITE_CONFIG = createSpriteConfig(
 export const PARTNER_SPRITE_CONFIG = createSpriteConfig(PARTNER_LIST.length, {
 	height: 184,
 	width: 184,
+});
+export const RECORD_SPRITE_CONFIG = createSpriteConfig(RECORD_LIST.length, {
+	height: 26,
+	width: 26,
 });
 export const SPECIAL_GUEST_SPRITE_CONFIG = createSpriteConfig(
 	SPECIAL_GUEST_LIST.length,

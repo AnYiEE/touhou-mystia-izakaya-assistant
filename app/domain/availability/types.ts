@@ -2,15 +2,19 @@ import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
 
 export type TAvailabilityCategory =
+	| 'badge'
 	| 'beverage'
 	| 'clothes'
 	| 'cooker'
 	| 'currencyItem'
 	| 'decoration'
 	| 'food'
+	| 'fishingCollectible'
+	| 'generalItem'
 	| 'ingredient'
 	| 'normalGuest'
 	| 'partner'
+	| 'record'
 	| 'specialGuest';
 
 export type TAvailabilityAcquisitionSourceKind =
@@ -20,6 +24,7 @@ export type TAvailabilityAcquisitionSourceKind =
 	| 'content'
 	| 'fishing'
 	| 'levelup'
+	| 'prayer'
 	| 'self'
 	| 'task'
 	| 'unknown';
