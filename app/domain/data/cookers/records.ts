@@ -21,7 +21,7 @@ export const COOKER_LIST = [
 		id: 0,
 		name: '煮锅',
 		description:
-			'普通的煮锅。用了古老的中国陶土制作工艺，能够很好地聚集热量，甚至给锅内增加压力，使食材高效地炖煮，是料理人都用顺手的厨具。',
+			'普通的煮锅，用了古老的中国陶土制作工艺，能够很好的聚集热量，甚至给锅内增加压力，使食材高效的炖煮，是料理人都用顺手的厨具。',
 		availableTypes: [1],
 		series: 0,
 		dlc: 0,
@@ -35,7 +35,7 @@ export const COOKER_LIST = [
 		id: 1,
 		name: '烧烤架',
 		description:
-			'普通的铁炉。在炉内放入炭火，通过上方的网状设计可以有效地让热量传递给食材，烤出属于大自然的野性味道，粗犷的人们最爱它制作的料理。',
+			'普通的铁炉，在炉内放入炭火，通过上方的网状设计可以有效的让热量传递给食材，烤出属于大自然的野性味道，粗犷的人们最爱它制作的料理。',
 		availableTypes: [2],
 		series: 0,
 		dlc: 0,
@@ -49,7 +49,7 @@ export const COOKER_LIST = [
 		id: 2,
 		name: '油锅',
 		description:
-			'在其中放入油，高温下不管什么东西丢进去炸一下，都可以变成可口的料理，实在是魔鬼的技术！…但这样的料理并不健康。',
+			'在其中放入油，高温下不管什么东西丢进去炸一下，都可以变成可口的料理，实在是魔鬼的技术！……但这样的料理并不健康。',
 		availableTypes: [3],
 		series: 0,
 		dlc: 0,
@@ -63,7 +63,7 @@ export const COOKER_LIST = [
 		id: 3,
 		name: '蒸锅',
 		description:
-			'蒸是划时代的料理技巧，能够快速、批量地使料理熟透，是极其高效的方法，而且营养不易流失！是养生人士的最爱！',
+			'蒸是划时代的料理技巧，能够快速、批量的使料理熟透，是极其高效的方法，而且营养不易流失！是养生人士的最爱！',
 		availableTypes: [4],
 		series: 0,
 		dlc: 0,
@@ -77,7 +77,7 @@ export const COOKER_LIST = [
 		id: 4,
 		name: '料理台',
 		description:
-			'制作生冷原味食材的必备厨具！无论是处理生肉、生鱼或是处理凉菜沙拉，都是非常方便的厨具。原生的，就是最美味的！',
+			'制作生冷原味食材的必备厨具！无论是处理生肉生鱼、或是处理凉菜沙拉，都是非常方便的厨具，原生的，就是最美味的！',
 		availableTypes: [5],
 		series: 0,
 		dlc: 0,
@@ -90,12 +90,12 @@ export const COOKER_LIST = [
 	{
 		id: 5,
 		name: '夜雀煮锅',
-		description: '迷失在夜雀的歌声里吧！',
+		description: '“迷失在夜雀的歌声里吧！”',
 		availableTypes: [1],
 		series: 1,
 		dlc: 0,
 		effect: [
-			'额外消耗25%料理时间。在完美完成“夜雀之歌”或在“热火朝天”状态下制作出的料理，可以无视稀有顾客本轮点单需求，只通过喜好标签评级。',
+			'额外消耗25%料理时间。在完美完成「夜雀之歌」或在「热火朝天」下制作出的料理，可无视稀有客人本轮点单，只通过喜好标签评价。',
 			true,
 		],
 		from: [
@@ -107,12 +107,12 @@ export const COOKER_LIST = [
 	{
 		id: 6,
 		name: '夜雀烧烤架',
-		description: '迷失在夜雀的歌声里吧！',
+		description: '“迷失在夜雀的歌声里吧！”',
 		availableTypes: [2],
 		series: 1,
 		dlc: 0,
 		effect: [
-			'额外消耗25%料理时间。在完美完成“夜雀之歌”或在“热火朝天”状态下制作出的料理，可以无视稀有顾客本轮点单需求，只通过喜好标签评级。',
+			'额外消耗25%料理时间。在完美完成「夜雀之歌」或在「热火朝天」下制作出的料理，可无视稀有客人本轮点单，只通过喜好标签评价。',
 			true,
 		],
 		from: [
@@ -124,12 +124,12 @@ export const COOKER_LIST = [
 	{
 		id: 7,
 		name: '夜雀油锅',
-		description: '迷失在夜雀的歌声里吧！',
+		description: '“迷失在夜雀的歌声里吧！”',
 		availableTypes: [3],
 		series: 1,
 		dlc: 0,
 		effect: [
-			'额外消耗25%料理时间。在完美完成“夜雀之歌”或在“热火朝天”状态下制作出的料理，可以无视稀有顾客本轮点单需求，只通过喜好标签评级。',
+			'额外消耗25%料理时间。在完美完成「夜雀之歌」或在「热火朝天」下制作出的料理，可无视稀有客人本轮点单，只通过喜好标签评价。',
 			true,
 		],
 		from: [
@@ -141,12 +141,12 @@ export const COOKER_LIST = [
 	{
 		id: 8,
 		name: '夜雀蒸锅',
-		description: '迷失在夜雀的歌声里吧！',
+		description: '“迷失在夜雀的歌声里吧！”',
 		availableTypes: [4],
 		series: 1,
 		dlc: 0,
 		effect: [
-			'额外消耗25%料理时间。在完美完成“夜雀之歌”或在“热火朝天”状态下制作出的料理，可以无视稀有顾客本轮点单需求，只通过喜好标签评级。',
+			'额外消耗25%料理时间。在完美完成「夜雀之歌」或在「热火朝天」下制作出的料理，可无视稀有客人本轮点单，只通过喜好标签评价。',
 			true,
 		],
 		from: [
@@ -158,12 +158,12 @@ export const COOKER_LIST = [
 	{
 		id: 9,
 		name: '夜雀料理台',
-		description: '迷失在夜雀的歌声里吧！',
+		description: '“迷失在夜雀的歌声里吧！”',
 		availableTypes: [5],
 		series: 1,
 		dlc: 0,
 		effect: [
-			'额外消耗25%料理时间。在完美完成“夜雀之歌”或在“热火朝天”状态下制作出的料理，可以无视稀有顾客本轮点单需求，只通过喜好标签评级。',
+			'额外消耗25%料理时间。在完美完成「夜雀之歌」或在「热火朝天」下制作出的料理，可无视稀有客人本轮点单，只通过喜好标签评价。',
 			true,
 		],
 		from: [
@@ -330,7 +330,8 @@ export const COOKER_LIST = [
 	{
 		id: 20,
 		name: '核能煮锅',
-		description: '最新的“危险”技术，做菜像光一样快！…但，代价是什么呢？',
+		description:
+			'“最新的「危险」技术，做菜像光一样快！……但，代价是什么呢？”',
 		availableTypes: [1],
 		series: 4,
 		dlc: 0,
@@ -347,7 +348,8 @@ export const COOKER_LIST = [
 	{
 		id: 21,
 		name: '核能烧烤架',
-		description: '最新的“危险”技术，做菜像光一样快！…但，代价是什么呢？',
+		description:
+			'“最新的「危险」技术，做菜像光一样快！……但，代价是什么呢？”',
 		availableTypes: [2],
 		series: 4,
 		dlc: 0,
@@ -364,7 +366,8 @@ export const COOKER_LIST = [
 	{
 		id: 22,
 		name: '核能油锅',
-		description: '最新的“危险”技术，做菜像光一样快！…但，代价是什么呢？',
+		description:
+			'“最新的「危险」技术，做菜像光一样快！……但，代价是什么呢？”',
 		availableTypes: [3],
 		series: 4,
 		dlc: 0,
@@ -381,7 +384,8 @@ export const COOKER_LIST = [
 	{
 		id: 23,
 		name: '核能蒸锅',
-		description: '最新的“危险”技术，做菜像光一样快！…但，代价是什么呢？',
+		description:
+			'“最新的「危险」技术，做菜像光一样快！……但，代价是什么呢？”',
 		availableTypes: [4],
 		series: 4,
 		dlc: 0,
@@ -398,7 +402,8 @@ export const COOKER_LIST = [
 	{
 		id: 24,
 		name: '核能料理台',
-		description: '最新的“危险”技术，做菜像光一样快！…但，代价是什么呢？',
+		description:
+			'“最新的「危险」技术，做菜像光一样快！……但，代价是什么呢？”',
 		availableTypes: [5],
 		series: 4,
 		dlc: 0,
@@ -416,7 +421,7 @@ export const COOKER_LIST = [
 		id: 25,
 		name: '可疑煮锅',
 		description:
-			'加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
+			'加入了「可疑的」技术，让吃了料理的客人非常开心！“虽然不明白，但生意太火爆了！”',
 		availableTypes: [1],
 		series: 5,
 		dlc: 0,
@@ -431,7 +436,7 @@ export const COOKER_LIST = [
 		id: 26,
 		name: '可疑烧烤架',
 		description:
-			'加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
+			'加入了「可疑的」技术，让吃了料理的客人非常开心！“虽然不明白，但生意太火爆了！”',
 		availableTypes: [2],
 		series: 5,
 		dlc: 0,
@@ -446,7 +451,7 @@ export const COOKER_LIST = [
 		id: 27,
 		name: '可疑油锅',
 		description:
-			'加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
+			'加入了「可疑的」技术，让吃了料理的客人非常开心！“虽然不明白，但生意太火爆了！”',
 		availableTypes: [3],
 		series: 5,
 		dlc: 0,
@@ -461,7 +466,7 @@ export const COOKER_LIST = [
 		id: 28,
 		name: '可疑蒸锅',
 		description:
-			'加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
+			'加入了「可疑的」技术，让吃了料理的客人非常开心！“虽然不明白，但生意太火爆了！”',
 		availableTypes: [4],
 		series: 5,
 		dlc: 0,
@@ -476,7 +481,7 @@ export const COOKER_LIST = [
 		id: 29,
 		name: '可疑料理台',
 		description:
-			'加入了“可疑的”技术，让吃了料理的客人非常开心！虽然不明白，但生意太火爆了！',
+			'加入了「可疑的」技术，让吃了料理的客人非常开心！“虽然不明白，但生意太火爆了！”',
 		availableTypes: [5],
 		series: 5,
 		dlc: 0,
@@ -491,12 +496,12 @@ export const COOKER_LIST = [
 		id: 30,
 		name: '月见煮锅',
 		description:
-			'和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
+			'“和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢！？”',
 		availableTypes: [1],
 		series: 6,
 		dlc: 0,
 		effect: [
-			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。',
+			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续时间20秒后离开。',
 			true,
 		],
 		from: [
@@ -509,12 +514,12 @@ export const COOKER_LIST = [
 		id: 31,
 		name: '月见烧烤架',
 		description:
-			'和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
+			'“和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢！？”',
 		availableTypes: [2],
 		series: 6,
 		dlc: 0,
 		effect: [
-			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。',
+			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续时间20秒后离开。',
 			true,
 		],
 		from: [
@@ -527,12 +532,12 @@ export const COOKER_LIST = [
 		id: 32,
 		name: '月见油锅',
 		description:
-			'和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
+			'“和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢！？”',
 		availableTypes: [3],
 		series: 6,
 		dlc: 0,
 		effect: [
-			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。',
+			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续时间20秒后离开。',
 			true,
 		],
 		from: [
@@ -545,12 +550,12 @@ export const COOKER_LIST = [
 		id: 33,
 		name: '月见蒸锅',
 		description:
-			'和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
+			'“和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢！？”',
 		availableTypes: [4],
 		series: 6,
 		dlc: 0,
 		effect: [
-			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。',
+			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续时间20秒后离开。',
 			true,
 		],
 		from: [
@@ -563,12 +568,12 @@ export const COOKER_LIST = [
 		id: 34,
 		name: '月见料理台',
 		description:
-			'和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢？！',
+			'“和因幡用来吸引游客的纪念品一样徒有其表。但谁能拒绝小兔子呢！？”',
 		availableTypes: [5],
 		series: 6,
 		dlc: 0,
 		effect: [
-			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续20秒。',
+			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续时间20秒后离开。',
 			true,
 		],
 		from: [
@@ -580,12 +585,12 @@ export const COOKER_LIST = [
 	{
 		id: 1000,
 		name: '「星尘鼎沸」',
-		description: '所罗门啊，我回来了！',
+		description: '“所罗门啊，我回来了！”',
 		availableTypes: [1],
 		series: 1000,
 		dlc: 1,
 		effect: [
-			'额外消耗40%料理时间。米斯蒂娅使用此厨具累计60秒后，改为减少80%料理时间，同时料理后可以生成一个以下食材：最贵的、最便宜的、最多的、最少的、蘑菇或松露。',
+			'额外消耗40%料理时间。米斯蒂娅使用此厨具累计60秒后，改为减少80%料理时间，同时料理后可以生成1个以下食材之一：最贵的、最便宜的、最多的、最少的、蘑菇、松露。',
 			true,
 		],
 		from: [{ dlcSideTask: { dlc: 1, task: '支线任务' } }],
@@ -593,7 +598,7 @@ export const COOKER_LIST = [
 	{
 		id: 2000,
 		name: '「纯粹炼狱」',
-		description: '纯粹的料理地狱。',
+		description: '“纯粹的料理地狱”',
 		availableTypes: [3],
 		series: 2000,
 		dlc: 2,
@@ -618,7 +623,7 @@ export const COOKER_LIST = [
 		series: 3000,
 		dlc: 3,
 		effect: [
-			'减少15%料理时间，瞬间完成带有“肉”标签的料理，有30%的概率返还料理食材。',
+			'减少15%料理时间。瞬间完成带有「肉」Tag的料理，30%返还料理素材。',
 			true,
 		],
 		from: [{ bond: { level: 5, specialGuest: 3003 } }],
@@ -626,12 +631,12 @@ export const COOKER_LIST = [
 	{
 		id: 4000,
 		name: '「冯风渡御」',
-		description: '料理和新闻一样，有时候是需要“添油加醋”的。',
+		description: '“料理和新闻一样，有时候是需要‘添油加醋’的。”',
 		availableTypes: [4],
 		series: 4000,
 		dlc: 4,
 		effect: [
-			`减少20%料理时间；如果没有添加任何额外食材，则减少70%料理时间，否则增加30%续单率。如果料理带有“${DYNAMIC_TAG_MAP.popularPositive}”标签则二者同时触发。`,
+			`减少20%料理时间。烹饪时若没有添加任何额外素材则减少时间效果提高到70%，否则提高30%续单率。若料理带有「${DYNAMIC_TAG_MAP.popularPositive}」标签则两者同时触发。`,
 			true,
 		],
 		from: [{ bond: { level: 5, specialGuest: 4000 } }],
@@ -639,12 +644,12 @@ export const COOKER_LIST = [
 	{
 		id: 5000,
 		name: '「魔人经板」',
-		description: '魔典的展现是无所谓形式的！',
+		description: '“魔典的展现是无所谓形式的！”',
 		availableTypes: [5],
 		series: 5000,
 		dlc: 5,
 		effect: [
-			'如果制作的料理不带有“肉”标签，则减少50%料理时间，否则增加30%料理时间。此厨具制作出的料理被顾客食用并给出评价后，接下来给任何顾客由此厨具制作的相同料理必然会得到相同评价。',
+			'若制作的料理不带有「肉」标签，减少50%料理时间，否则增加30%料理时间。「魔神复诵」此厨具制作的料理被客人食用并给出评价后，接下来给任何客人该厨具制作的同样料理也必然得到该评价。',
 			true,
 		],
 		from: [
@@ -669,7 +674,7 @@ export const COOKER_LIST = [
 		availableTypes: [1, 3, 4],
 		series: 5001,
 		dlc: 5,
-		effect: '减少33%料理时间。可以同时作为煮锅、油锅和蒸锅使用。',
+		effect: '减少33%料理时间。可同时作为蒸锅、油锅与煮锅类型的厨具使用。',
 		from: [
 			{
 				buy: {

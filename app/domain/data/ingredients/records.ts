@@ -306,13 +306,13 @@ export const INGREDIENT_LIST = [
 			],
 			collect: [
 				[
-					{ label: 'BeastForest_Stream_A2', map: 'BeastForest' },
+					{ label: 'BeastForest_Stream_A', map: 'BeastForest' },
 					false,
 					10,
 					14,
 				],
 				[
-					{ label: 'BeastForest_Stream_A', map: 'BeastForest' },
+					{ label: 'BeastForest_Stream_A2', map: 'BeastForest' },
 					false,
 					10,
 					14,
@@ -351,8 +351,8 @@ export const INGREDIENT_LIST = [
 			],
 			collect: [
 				[
-					{ label: 'BeastForest_Stream_C', map: 'BeastForest' },
-					30,
+					{ label: 'BeastForest_Stream_B', map: 'BeastForest' },
+					false,
 					14,
 					18,
 				],
@@ -363,14 +363,14 @@ export const INGREDIENT_LIST = [
 					18,
 				],
 				[
-					{ label: 'BeastForest_Stream_C2', map: 'BeastForest' },
+					{ label: 'BeastForest_Stream_C', map: 'BeastForest' },
 					30,
 					14,
 					18,
 				],
 				[
-					{ label: 'BeastForest_Stream_B', map: 'BeastForest' },
-					false,
+					{ label: 'BeastForest_Stream_C2', map: 'BeastForest' },
+					30,
 					14,
 					18,
 				],
@@ -431,10 +431,10 @@ export const INGREDIENT_LIST = [
 			],
 			collect: [
 				[
-					{ label: 'BeastForest_Stream_C', map: 'BeastForest' },
-					false,
+					{ label: 'BeastForest_Stream_A', map: 'BeastForest' },
+					20,
+					10,
 					14,
-					18,
 				],
 				[
 					{ label: 'BeastForest_Stream_A2', map: 'BeastForest' },
@@ -443,22 +443,10 @@ export const INGREDIENT_LIST = [
 					14,
 				],
 				[
-					{ label: 'BeastForest_Stream_A', map: 'BeastForest' },
+					{ label: 'BeastForest_Stream_A3', map: 'BeastForest' },
 					20,
 					10,
 					14,
-				],
-				[
-					{ label: 'BeastForest_Stream_B2', map: 'BeastForest' },
-					20,
-					14,
-					18,
-				],
-				[
-					{ label: 'BeastForest_Stream_C2', map: 'BeastForest' },
-					false,
-					14,
-					18,
 				],
 				[
 					{ label: 'BeastForest_Stream_B', map: 'BeastForest' },
@@ -467,10 +455,22 @@ export const INGREDIENT_LIST = [
 					18,
 				],
 				[
-					{ label: 'BeastForest_Stream_A3', map: 'BeastForest' },
+					{ label: 'BeastForest_Stream_B2', map: 'BeastForest' },
 					20,
-					10,
 					14,
+					18,
+				],
+				[
+					{ label: 'BeastForest_Stream_C', map: 'BeastForest' },
+					false,
+					14,
+					18,
+				],
+				[
+					{ label: 'BeastForest_Stream_C2', map: 'BeastForest' },
+					false,
+					14,
+					18,
 				],
 				[
 					{
@@ -485,6 +485,13 @@ export const INGREDIENT_LIST = [
 					label: 'DLC3_DivineSpiritMausoleum_Water_Eel',
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_Bowl_SeaUrchin',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					30,
+				],
 				{
 					label: 'DLC4_ShiningNeedleCastle_Water_RandomFish_A',
 					map: 'DLC4_ShiningNeedleCastle',
@@ -495,13 +502,6 @@ export const INGREDIENT_LIST = [
 						map: 'DLC4_ShiningNeedleCastle',
 					},
 					50,
-				],
-				[
-					{
-						label: 'DLC4_ShiningNeedleCastle_Bowl_SeaUrchin',
-						map: 'DLC4_ShiningNeedleCastle',
-					},
-					30,
 				],
 				{
 					label: 'DLC5_LunarCapital_Water_FishAndMeat',
@@ -568,8 +568,6 @@ export const INGREDIENT_LIST = [
 					labels: [
 						'DLC3_DivineSpiritMausoleum_Water_Salmon_A',
 						'DLC3_DivineSpiritMausoleum_Water_Salmon_B',
-						'DLC3_DivineSpiritMausoleum_Water_Shrimp_A',
-						'DLC3_DivineSpiritMausoleum_Water_Shrimp_B',
 					],
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
@@ -577,9 +575,18 @@ export const INGREDIENT_LIST = [
 					labels: [
 						'DLC3_DivineSpiritMausoleum_Water_Salmon_A',
 						'DLC3_DivineSpiritMausoleum_Water_Salmon_B',
+						'DLC3_DivineSpiritMausoleum_Water_Shrimp_A',
+						'DLC3_DivineSpiritMausoleum_Water_Shrimp_B',
 					],
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_Bowl_SeaUrchin',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					30,
+				],
 				[
 					{
 						label: 'DLC4_ShiningNeedleCastle_Water_RandomFish_A',
@@ -591,13 +598,6 @@ export const INGREDIENT_LIST = [
 					label: 'DLC4_ShiningNeedleCastle_Water_RandomFish_B',
 					map: 'DLC4_ShiningNeedleCastle',
 				},
-				[
-					{
-						label: 'DLC4_ShiningNeedleCastle_Bowl_SeaUrchin',
-						map: 'DLC4_ShiningNeedleCastle',
-					},
-					30,
-				],
 				[
 					{
 						label: 'DLC5_LunarCapital_Water_FishAndMeat',
@@ -662,11 +662,11 @@ export const INGREDIENT_LIST = [
 					60,
 				],
 				{
-					label: 'DLC3_DivineSpiritMausoleum_Water_Tunas_B',
+					label: 'DLC3_DivineSpiritMausoleum_Water_Tunas_A',
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
 				{
-					label: 'DLC3_DivineSpiritMausoleum_Water_Tunas_A',
+					label: 'DLC3_DivineSpiritMausoleum_Water_Tunas_B',
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
 				[
@@ -742,6 +742,7 @@ export const INGREDIENT_LIST = [
 					label: 'Merchant_DivineSpiritMausoleum_Taoist',
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
+				[{ label: '“强买强卖”商店', specialGuest: 29 }, 15],
 			],
 			collect: [
 				{
@@ -785,13 +786,13 @@ export const INGREDIENT_LIST = [
 			],
 			collect: [
 				[
-					{ label: 'BeastForest_Plant_A2', map: 'BeastForest' },
+					{ label: 'BeastForest_Plant_A', map: 'BeastForest' },
 					20,
 					10,
 					11,
 				],
 				[
-					{ label: 'BeastForest_Plant_A', map: 'BeastForest' },
+					{ label: 'BeastForest_Plant_A2', map: 'BeastForest' },
 					20,
 					10,
 					11,
@@ -802,6 +803,7 @@ export const INGREDIENT_LIST = [
 					10,
 					11,
 				],
+				{ label: 'HakureiShrine_Mushroom', map: 'HakureiShrine' },
 				[
 					{
 						label: 'HakureiShrine_TreeMushroom',
@@ -809,7 +811,6 @@ export const INGREDIENT_LIST = [
 					},
 					50,
 				],
-				{ label: 'HakureiShrine_Mushroom', map: 'HakureiShrine' },
 				{ label: 'BamBooForest_Mushroom_A', map: 'BambooForest' },
 				{ label: 'BamBooForest_Mushroom_B', map: 'BambooForest' },
 				{
@@ -866,6 +867,7 @@ export const INGREDIENT_LIST = [
 					label: 'Merchant_ShiningNeedleCastle_FuRyouShounenn',
 					map: 'DLC4_ShiningNeedleCastle',
 				},
+				[{ label: '“强买强卖”商店', specialGuest: 29 }, 15],
 			],
 			collect: [
 				[{ label: 'HakureiShrine_Mushroom', map: 'HakureiShrine' }, 5],
@@ -903,6 +905,7 @@ export const INGREDIENT_LIST = [
 				[{ label: 'Merchant_Maid', map: 'HakureiShrine' }, 80],
 				{ label: 'Merchant_Goblin', map: 'ScarletMansion' },
 				{ label: 'Merchant_YokaiRabbitDelicacy', map: 'BambooForest' },
+				[{ label: '“强买强卖”商店', specialGuest: 29 }, 15],
 			],
 			collect: [
 				[{ label: 'ScarletMansion_Tuna', map: 'ScarletMansion' }, 40],
@@ -913,6 +916,13 @@ export const INGREDIENT_LIST = [
 						map: 'DLC1_YoukaiMountain',
 					},
 					15,
+				],
+				[
+					{
+						label: 'DLC4_ShiningNeedleCastle_Bowl_SeaUrchin',
+						map: 'DLC4_ShiningNeedleCastle',
+					},
+					30,
 				],
 				[
 					{
@@ -927,13 +937,6 @@ export const INGREDIENT_LIST = [
 						map: 'DLC4_ShiningNeedleCastle',
 					},
 					10,
-				],
-				[
-					{
-						label: 'DLC4_ShiningNeedleCastle_Bowl_SeaUrchin',
-						map: 'DLC4_ShiningNeedleCastle',
-					},
-					30,
 				],
 				[
 					{
@@ -984,6 +987,7 @@ export const INGREDIENT_LIST = [
 					label: 'Merchant_DivineSpiritMausoleum_Taoist',
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
+				[{ label: '“强买强卖”商店', specialGuest: 29 }, 15],
 			],
 			collect: [
 				[{ label: 'ScarletMansion_Shrimp', map: 'ScarletMansion' }, 40],
@@ -1129,6 +1133,8 @@ export const INGREDIENT_LIST = [
 				},
 				{
 					labels: [
+						'DLC3_DivineSpiritMausoleum_Water_Salmon_A',
+						'DLC3_DivineSpiritMausoleum_Water_Salmon_B',
 						'DLC3_DivineSpiritMausoleum_Water_Shrimp_A',
 						'DLC3_DivineSpiritMausoleum_Water_Shrimp_B',
 					],
@@ -1138,8 +1144,6 @@ export const INGREDIENT_LIST = [
 					labels: [
 						'DLC3_DivineSpiritMausoleum_Water_Shrimp_A',
 						'DLC3_DivineSpiritMausoleum_Water_Shrimp_B',
-						'DLC3_DivineSpiritMausoleum_Water_Salmon_A',
-						'DLC3_DivineSpiritMausoleum_Water_Salmon_B',
 					],
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
@@ -1225,10 +1229,6 @@ export const INGREDIENT_LIST = [
 		price: 5,
 		from: {
 			collect: [
-				[{ label: 'BeastForest_Plant_C', map: 'BeastForest' }, 85],
-				[{ label: 'BeastForest_Plant_C2', map: 'BeastForest' }, 85],
-				[{ label: 'BeastForest_Plant_C3', map: 'BeastForest' }, 85],
-				[{ label: 'BeastForest_Plant_C4', map: 'BeastForest' }, 85],
 				[
 					{ label: 'BeastForest_Plant_A2', map: 'BeastForest' },
 					10,
@@ -1241,6 +1241,10 @@ export const INGREDIENT_LIST = [
 					10,
 					11,
 				],
+				[{ label: 'BeastForest_Plant_C', map: 'BeastForest' }, 85],
+				[{ label: 'BeastForest_Plant_C2', map: 'BeastForest' }, 85],
+				[{ label: 'BeastForest_Plant_C3', map: 'BeastForest' }, 85],
+				[{ label: 'BeastForest_Plant_C4', map: 'BeastForest' }, 85],
 				{ label: 'HakureiShrine_Tree_B', map: 'HakureiShrine' },
 				{
 					labels: [
@@ -1279,6 +1283,7 @@ export const INGREDIENT_LIST = [
 		level: 5,
 		price: 70,
 		from: {
+			buy: [[{ label: '“强买强卖”商店', specialGuest: 29 }, 15]],
 			collect: [
 				[
 					{ label: 'BeastForest_Plant_Gendonka', map: 'BeastForest' },
@@ -1287,14 +1292,14 @@ export const INGREDIENT_LIST = [
 					18,
 				],
 				{
-					label: 'DLC2_EarthSpiritsPalace_Plant_Gendonka_B',
-					map: 'DLC2_EarthSpiritsPalace',
-				},
-				{
 					labels: [
 						'DLC2_EarthSpiritsPalace_Plant_Gendonka',
 						'DLC2_EarthSpiritsPalace_Plant_Gendonka_B',
 					],
+					map: 'DLC2_EarthSpiritsPalace',
+				},
+				{
+					label: 'DLC2_EarthSpiritsPalace_Plant_Gendonka_B',
 					map: 'DLC2_EarthSpiritsPalace',
 				},
 				{
@@ -1341,13 +1346,19 @@ export const INGREDIENT_LIST = [
 			],
 			collect: [
 				[
-					{ label: 'BeastForest_Plant_A2', map: 'BeastForest' },
+					{ label: 'BamBooForest_MoonLightHerb', map: 'BeastForest' },
+					60,
+					17,
+					18,
+				],
+				[
+					{ label: 'BeastForest_Plant_A', map: 'BeastForest' },
 					false,
 					10,
 					11,
 				],
 				[
-					{ label: 'BeastForest_Plant_A', map: 'BeastForest' },
+					{ label: 'BeastForest_Plant_A2', map: 'BeastForest' },
 					false,
 					10,
 					11,
@@ -1357,12 +1368,6 @@ export const INGREDIENT_LIST = [
 					false,
 					10,
 					11,
-				],
-				[
-					{ label: 'BamBooForest_MoonLightHerb', map: 'BeastForest' },
-					60,
-					17,
-					18,
 				],
 				{ label: 'ScarletMansion_Plant', map: 'ScarletMansion' },
 				[
@@ -1425,12 +1430,8 @@ export const INGREDIENT_LIST = [
 				{ label: 'Merchant_FormerHell_Ghost', map: 'DLC2_FormerHell' },
 			],
 			collect: [
-				{ label: 'BamBooForest_BambooRoot', map: 'BambooForest' },
 				[{ label: 'BamBooForest_Bamboo', map: 'BambooForest' }, 30],
-				{
-					label: 'DLC4_ShiningNeedleCastle_Plant_BambooShoot',
-					map: 'DLC4_ShiningNeedleCastle',
-				},
+				{ label: 'BamBooForest_BambooRoot', map: 'BambooForest' },
 				[
 					{
 						label: 'DLC4_ShiningNeedleCastle_Plant_Bamboo',
@@ -1438,6 +1439,10 @@ export const INGREDIENT_LIST = [
 					},
 					30,
 				],
+				{
+					label: 'DLC4_ShiningNeedleCastle_Plant_BambooShoot',
+					map: 'DLC4_ShiningNeedleCastle',
+				},
 			],
 			fishingAdvanced: ['DLC3_MyourenTemple'],
 		},
@@ -1498,8 +1503,8 @@ export const INGREDIENT_LIST = [
 				},
 			],
 			collect: [
-				[{ label: 'BamBooForest_BambooRoot', map: 'BambooForest' }, 50],
 				{ label: 'BamBooForest_Bamboo', map: 'BambooForest' },
+				[{ label: 'BamBooForest_BambooRoot', map: 'BambooForest' }, 50],
 				{
 					label: 'DLC4_ShiningNeedleCastle_Plant_Bamboo',
 					map: 'DLC4_ShiningNeedleCastle',
@@ -1550,6 +1555,7 @@ export const INGREDIENT_LIST = [
 					label: 'Merchant_EarthSpiritsPalace_HellCrow',
 					map: 'DLC2_EarthSpiritsPalace',
 				},
+				[{ label: '“强买强卖”商店', specialGuest: 29 }, 15],
 			],
 			collect: [
 				[
@@ -1560,17 +1566,17 @@ export const INGREDIENT_LIST = [
 				],
 				[
 					{
-						label: 'DLC2_EarthSpiritsPalace_Plant_Gendonka_B',
+						labels: [
+							'DLC2_EarthSpiritsPalace_Plant_Gendonka',
+							'DLC2_EarthSpiritsPalace_Plant_Gendonka_B',
+						],
 						map: 'DLC2_EarthSpiritsPalace',
 					},
 					20,
 				],
 				[
 					{
-						labels: [
-							'DLC2_EarthSpiritsPalace_Plant_Gendonka',
-							'DLC2_EarthSpiritsPalace_Plant_Gendonka_B',
-						],
+						label: 'DLC2_EarthSpiritsPalace_Plant_Gendonka_B',
 						map: 'DLC2_EarthSpiritsPalace',
 					},
 					20,

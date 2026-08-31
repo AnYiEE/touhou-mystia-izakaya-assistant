@@ -749,13 +749,13 @@ export const RECORD_RECORDS = [
 	},
 	{
 		id: 4011,
-		name: '唱片「抓鬼比赛」 ~ 其一 ',
+		name: '唱片「抓鬼比赛」 ~ 其一',
 		description:
 			'收录了抓鬼比赛营业之歌的的唱片，一共三首，此为第一首。可以随时放在留声机里播放。',
 		dlc: 4,
 		musicLabel: 'Flandre_1',
 		trackName: '抓鬼比赛-吾令徐徐春风!吹散无尽幽暗!其一',
-		original: ' U.N.オーエンは彼女なのか？&魔法少女達の百年祭',
+		original: 'U.N.オーエンは彼女なのか？&魔法少女達の百年祭',
 		composer: 'Hannari',
 		buy: {
 			merchant: 'Rinnosuke',
@@ -764,13 +764,13 @@ export const RECORD_RECORDS = [
 	},
 	{
 		id: 4012,
-		name: '唱片「抓鬼比赛」 ~ 其二 ',
+		name: '唱片「抓鬼比赛」 ~ 其二',
 		description:
 			'收录了抓鬼比赛营业之歌的的唱片，一共三首，此为第二首。可以随时放在留声机里播放。',
 		dlc: 4,
 		musicLabel: 'Flandre_2',
 		trackName: '抓鬼比赛-吾令徐徐春风!吹散无尽幽暗!其二',
-		original: ' U.N.オーエンは彼女なのか？&魔法少女達の百年祭',
+		original: 'U.N.オーエンは彼女なのか？&魔法少女達の百年祭',
 		composer: 'Hannari',
 		buy: {
 			merchant: 'Rinnosuke',
@@ -779,13 +779,13 @@ export const RECORD_RECORDS = [
 	},
 	{
 		id: 4013,
-		name: '唱片「抓鬼比赛」 ~ 其三 ',
+		name: '唱片「抓鬼比赛」 ~ 其三',
 		description:
 			'收录了抓鬼比赛营业之歌的的唱片，一共三首，此为第三首。可以随时放在留声机里播放。',
 		dlc: 4,
 		musicLabel: 'Flandre_3',
 		trackName: '抓鬼比赛-吾令徐徐春风!吹散无尽幽暗!其三',
-		original: ' U.N.オーエンは彼女なのか？&魔法少女達の百年祭',
+		original: 'U.N.オーエンは彼女なのか？&魔法少女達の百年祭',
 		composer: 'Hannari',
 		buy: {
 			merchant: 'Rinnosuke',

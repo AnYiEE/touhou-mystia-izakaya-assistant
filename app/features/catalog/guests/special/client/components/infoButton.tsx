@@ -107,14 +107,23 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 		return null;
 	}
 
+	const currentSpecialGuestData =
+		specialGuestCatalog.getPropsById(currentSpecialGuest);
 	const {
 		chat: currentSpecialGuestChat,
-		description: currentSpecialGuestDescription,
-		evaluation: currentSpecialGuestEvaluation,
+		description: currentSpecialGuestDescriptionSeed,
+		evaluation: currentSpecialGuestEvaluationSeed,
 		maps: currentSpecialGuestMaps,
 		name: currentSpecialGuestName,
 		spellCards: currentSpecialGuestSpellCards,
-	} = specialGuestCatalog.getPropsById(currentSpecialGuest);
+	} = currentSpecialGuestData;
+	const currentSpecialGuestDescription = Array.isArray(
+		currentSpecialGuestDescriptionSeed
+	)
+		? currentSpecialGuestDescriptionSeed
+		: [currentSpecialGuestDescriptionSeed, null, null];
+	const currentSpecialGuestEvaluation: Record<string, string | null> =
+		currentSpecialGuestEvaluationSeed;
 	const {
 		bondClothes,
 		bondCooker,

@@ -327,7 +327,7 @@ export const FISHING_COLLECTIBLE_RECORDS = [
 	},
 	{
 		id: 4138,
-		name: '万宝槌（赝品）',
+		name: '万宝槌(赝品)',
 		description:
 			'正邪批量生产的万宝槌，虽然没有小人族的魔力，但是打架时对着对方脑袋上来一槌可比魔法好使多了！',
 		dlc: 4,
