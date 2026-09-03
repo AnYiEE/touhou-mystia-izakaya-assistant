@@ -12,6 +12,7 @@
 
 - [最佳辅助 | 东方夜雀食堂小助手来啦 🎉](https://www.xiaoheihe.cn/app/bbs/link/44a57086a91b)
 - [《东方夜雀食堂》最好用的小助手！料理-食材-收集-图鉴！](https://www.xiaoheihe.cn/app/bbs/link/afe2705d4db7)
+- [关于东方夜雀食堂小助手衍生项目的说明](https://www.xiaoheihe.cn/app/bbs/link/616672043f05)
 
 ## 许可证
 
