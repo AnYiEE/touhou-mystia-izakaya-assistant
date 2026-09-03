@@ -11,14 +11,14 @@ import {
 
 interface ISerializedSyncStateEntry {
 	data: string;
-	namespace: TSyncNamespace;
+	namespace: string;
 }
 
 interface IAccountSyncCapacityTotals {
 	candidateBytes: number;
-	candidateNamespaceBytes: Record<TSyncNamespace, number>;
+	candidateNamespaceBytes: Record<string, number>;
 	currentBytes: number;
-	currentNamespaceBytes: Record<TSyncNamespace, number>;
+	currentNamespaceBytes: Record<string, number>;
 }
 
 interface IAccountSyncCapacityErrorDetails {
@@ -39,14 +39,12 @@ export class AccountSyncCapacityExceededError extends Error {
 }
 
 function createEmptyNamespaceByteMap() {
-	return Object.values(SYNC_NAMESPACE_MAP).reduce<
-		Record<TSyncNamespace, number>
-	>(
+	return Object.values(SYNC_NAMESPACE_MAP).reduce<Record<string, number>>(
 		(result, namespace) => {
 			result[namespace] = 0;
 			return result;
 		},
-		{} as Record<TSyncNamespace, number>
+		{}
 	);
 }
 

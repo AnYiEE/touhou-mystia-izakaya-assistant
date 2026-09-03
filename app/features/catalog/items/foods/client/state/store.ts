@@ -20,11 +20,12 @@ import {
 	type TFoodSourceFilter,
 	getFoodSourceFilterLabel,
 } from '@/features/catalog/items/foods/sourceFilter';
-import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
 import {
-	PINYIN_SORT_STATE_MAP,
-	type TPinyinSortState,
-} from '@/features/catalog/shared/state/pinyinSort';
+	createCatalogPersistenceShape,
+	toAllowedValueSet,
+} from '@/features/catalog/shared/state/catalogPersistenceShape';
+import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
+import { PINYIN_SORT_STATE_MAP } from '@/features/catalog/shared/state/pinyinSort';
 
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
 
@@ -44,26 +45,103 @@ const instance = FoodCatalog.getInstance();
 const cookerCatalog = CookerCatalog.getInstance();
 const ingredientCatalog = IngredientCatalog.getInstance();
 
+const foodsPersistenceShape = createCatalogPersistenceShape({
+	allowedValues: {
+		availabilityDlcs: toAllowedValueSet(
+			instance.getValuesByProp('availabilityDlcs')
+		),
+		contentDlcs: toAllowedValueSet(instance.getValuesByProp('dlc')),
+		cookerTypes: toAllowedValueSet(
+			instance.data.flatMap((food) =>
+				food.recipes.map((recipe) => recipe.cookerType)
+			)
+		),
+		ingredients: toAllowedValueSet(
+			instance.data.flatMap((food) =>
+				food.recipes.flatMap((recipe) => recipe.ingredients)
+			)
+		),
+		levels: toAllowedValueSet(instance.getValuesByProp('level')),
+		negativeTags: toAllowedValueSet(
+			instance.getValuesByProp('negativeTags')
+		),
+		noIngredients: toAllowedValueSet(
+			instance.data.flatMap((food) =>
+				food.recipes.flatMap((recipe) => recipe.ingredients)
+			)
+		),
+		noNegativeTags: toAllowedValueSet(
+			instance.getValuesByProp('negativeTags')
+		),
+		noPlaces: toAllowedValueSet([
+			...instance.getValuesByProp('maps'),
+			FOOD_COLLABORATION_SOURCE_FILTER,
+		]),
+		noPositiveTags: toAllowedValueSet([
+			...instance.getValuesByProp('positiveTags'),
+			DYNAMIC_FOOD_TAG_MAP.popularNegative,
+			DYNAMIC_FOOD_TAG_MAP.popularPositive,
+		]),
+		places: toAllowedValueSet([
+			...instance.getValuesByProp('maps'),
+			FOOD_COLLABORATION_SOURCE_FILTER,
+		]),
+		positiveTags: toAllowedValueSet([
+			...instance.getValuesByProp('positiveTags'),
+			DYNAMIC_FOOD_TAG_MAP.popularNegative,
+			DYNAMIC_FOOD_TAG_MAP.popularPositive,
+		]),
+	},
+	createDefaultFilters(): {
+		availabilityDlcs: string[];
+		contentDlcs: string[];
+		cookerTypes: TCookerTypeId[];
+		ingredients: TIngredientId[];
+		levels: string[];
+		negativeTags: TFoodTagId[];
+		noIngredients: TIngredientId[];
+		noNegativeTags: TFoodTagId[];
+		noPlaces: TFoodSourceFilter[];
+		noPositiveTags: TFoodTagId[];
+		places: TFoodSourceFilter[];
+		positiveTags: TFoodTagId[];
+	} {
+		return {
+			availabilityDlcs: [],
+			contentDlcs: [],
+			cookerTypes: [],
+			ingredients: [],
+			levels: [],
+			negativeTags: [],
+			noIngredients: [],
+			noNegativeTags: [],
+			noPlaces: [],
+			noPositiveTags: [],
+			places: [],
+			positiveTags: [],
+		};
+	},
+	filterKinds: {
+		availabilityDlcs: 'string',
+		contentDlcs: 'string',
+		cookerTypes: 'number',
+		ingredients: 'number',
+		levels: 'string',
+		negativeTags: 'number',
+		noIngredients: 'number',
+		noNegativeTags: 'number',
+		noPlaces: 'string',
+		noPositiveTags: 'number',
+		places: 'string',
+		positiveTags: 'number',
+	},
+	pinyinSortState: PINYIN_SORT_STATE_MAP.none,
+});
+
 const state = {
 	instance,
 
-	persistence: {
-		filters: {
-			availabilityDlcs: [] as string[],
-			contentDlcs: [] as string[],
-			cookerTypes: [] as TCookerTypeId[],
-			ingredients: [] as TIngredientId[],
-			levels: [] as string[],
-			negativeTags: [] as TFoodTagId[],
-			noIngredients: [] as TIngredientId[],
-			noNegativeTags: [] as TFoodTagId[],
-			noPlaces: [] as TFoodSourceFilter[],
-			noPositiveTags: [] as TFoodTagId[],
-			places: [] as TFoodSourceFilter[],
-			positiveTags: [] as TFoodTagId[],
-		},
-		pinyinSortState: PINYIN_SORT_STATE_MAP.none as TPinyinSortState,
-	},
+	persistence: foodsPersistenceShape.createDefault(),
 	shared: {
 		hiddenItems: { dlcs: new Set<TDlc>() },
 
@@ -89,6 +167,7 @@ export const foodsStore = store(state, {
 					version
 				) as typeof state,
 			name: 'page-recipes-storage',
+			normalize: foodsPersistenceShape.normalize,
 			partialize: (currentStore) =>
 				({
 					persistence: currentStore.persistence,
@@ -221,18 +300,7 @@ export const foodsStore = store(state, {
 }));
 
 foodsStore.shared.hiddenItems.dlcs.onChange(() => {
-	foodsStore.persistence.filters.set({
-		availabilityDlcs: [],
-		contentDlcs: [],
-		cookerTypes: [],
-		ingredients: [],
-		levels: [],
-		negativeTags: [],
-		noIngredients: [],
-		noNegativeTags: [],
-		noPlaces: [],
-		noPositiveTags: [],
-		places: [],
-		positiveTags: [],
-	});
+	foodsStore.persistence.filters.set(
+		foodsPersistenceShape.createDefault().filters
+	);
 });

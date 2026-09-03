@@ -27,11 +27,13 @@ import { checkSyncRevision } from './dirtyQueue/validation';
 import { captureAccountSyncResetGeneration } from './resetGeneration';
 import { checkApplyingRemoteState } from './stateGuards';
 
-const TERMINAL_SYNC_ERROR_SET = new Set([
+export const TERMINAL_SYNC_ERROR_PRECEDENCE = [
+	'sync-schema-update-required',
 	'sync-account-capacity-exceeded',
 	'sync-request-too-large',
-	'sync-schema-update-required',
-]);
+] as const;
+
+const TERMINAL_SYNC_ERROR_SET = new Set<string>(TERMINAL_SYNC_ERROR_PRECEDENCE);
 
 function mergeDirtyQueueEntry(
 	userId: string,

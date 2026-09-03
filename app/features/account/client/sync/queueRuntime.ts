@@ -1,5 +1,6 @@
 import { accountStore } from '@/features/account/client/state/accountStore';
 import { SYNC_SCHEMA_VERSION_MAP } from '@/features/account/sync/constants';
+import { normalizeSyncStateData } from '@/features/account/sync/normalizeSyncStateData';
 import type { IDirtyQueueEntry } from '@/features/account/sync/types';
 
 import {
@@ -8,21 +9,21 @@ import {
 	readIsolatedDirtyQueueNamespaces,
 } from './dirtyQueue/collisionEvidence';
 import { migrateDirtyQueueEntrySchema } from './dirtyQueue/migrateEntrySchema';
-import { checkSnapshotHashesEquivalent } from './dirtyQueue/snapshotHash';
+import {
+	checkSnapshotHashesEquivalent,
+	createSnapshotHash,
+} from './dirtyQueue/snapshotHash';
 import { writeDirtyQueueEntryIfCurrent } from './dirtyQueue/storageTransition';
-import { checkDirtyQueueEntryTerminalError } from './queue';
+import {
+	TERMINAL_SYNC_ERROR_PRECEDENCE,
+	checkDirtyQueueEntryTerminalError,
+} from './queue';
 import {
 	captureAccountSyncResetGeneration,
 	checkAccountSyncResetPrepared,
 } from './resetGeneration';
 import { checkCurrentAccountUser } from './sessionBoundary';
 import { getAccountSyncSerializer } from './snapshot';
-
-export const TERMINAL_SYNC_ERROR_PRECEDENCE = [
-	'sync-schema-update-required',
-	'sync-account-capacity-exceeded',
-	'sync-request-too-large',
-] as const;
 
 export function updatePendingCount(entries?: IDirtyQueueEntry[]) {
 	const user = accountStore.shared.user.get();
@@ -45,40 +46,31 @@ export function updatePendingCount(entries?: IDirtyQueueEntry[]) {
 	);
 }
 
-function migrateDirtyQueueEntryToCurrentSchema({
+function createMigratedDirtyQueueEntry({
 	entry,
-	generationToken,
-	userId,
 }: {
 	entry: IDirtyQueueEntry;
-	generationToken: string | null;
-	userId: string;
-}): IDirtyQueueEntry | null {
+}): IDirtyQueueEntry {
 	const schemaVersion = SYNC_SCHEMA_VERSION_MAP[entry.namespace];
 	if (entry.schema_version >= schemaVersion) {
 		return entry;
 	}
 
-	const serializer = getAccountSyncSerializer(entry.namespace);
-	const migratedEntry = {
-		...migrateDirtyQueueEntrySchema({
-			entry,
-			serializer,
-			targetSchemaVersion: schemaVersion,
-		}),
-		...(entry.lastError === 'sync-schema-update-required'
-			? { attempts: 0, lastError: null }
-			: {}),
-	} satisfies IDirtyQueueEntry;
-
-	return writeDirtyQueueEntryIfCurrent({
-		expectedEntry: entry,
-		generationToken,
-		nextEntry: migratedEntry,
-		userId,
-	})
-		? migratedEntry
-		: readDirtyQueueEntry(userId, entry.namespace);
+	try {
+		const serializer = getAccountSyncSerializer(entry.namespace);
+		return {
+			...migrateDirtyQueueEntrySchema({
+				entry,
+				serializer,
+				targetSchemaVersion: schemaVersion,
+			}),
+			...(entry.lastError === 'sync-schema-update-required'
+				? { attempts: 0, lastError: null }
+				: {}),
+		} satisfies IDirtyQueueEntry;
+	} catch {
+		return entry;
+	}
 }
 
 export function readMigratedDirtyQueueEntries(
@@ -86,13 +78,54 @@ export function readMigratedDirtyQueueEntries(
 	generationToken: string | null
 ) {
 	return readDirtyQueueEntries(userId)
-		.map((entry) =>
-			migrateDirtyQueueEntryToCurrentSchema({
-				entry,
-				generationToken,
-				userId,
-			})
-		)
+		.map((entry) => {
+			const normalized = normalizeSyncStateData({
+				data: entry.data,
+				namespace: entry.namespace,
+				revision: entry.baseRevision,
+				schema_version: entry.schema_version,
+			});
+
+			if (normalized.status !== 'accepted') {
+				return entry;
+			}
+
+			const migratedEntry = createMigratedDirtyQueueEntry({ entry });
+
+			const migratedNormalized = normalizeSyncStateData({
+				data: migratedEntry.data,
+				namespace: migratedEntry.namespace,
+				revision: migratedEntry.baseRevision,
+				schema_version: migratedEntry.schema_version,
+			});
+
+			if (migratedNormalized.status === 'accepted') {
+				const nextEntry = {
+					...migratedEntry,
+					data: migratedNormalized.data,
+					schema_version: migratedNormalized.schema_version,
+					snapshotHash: createSnapshotHash(migratedNormalized.data),
+				} satisfies IDirtyQueueEntry;
+				if (
+					migratedEntry === entry &&
+					createSnapshotHash(nextEntry.data) ===
+						createSnapshotHash(migratedEntry.data) &&
+					nextEntry.schema_version === migratedEntry.schema_version
+				) {
+					return migratedEntry;
+				}
+				return writeDirtyQueueEntryIfCurrent({
+					expectedEntry: entry,
+					generationToken,
+					nextEntry,
+					userId,
+				})
+					? nextEntry
+					: readDirtyQueueEntry(userId, entry.namespace);
+			}
+
+			return migratedEntry;
+		})
 		.filter((entry): entry is IDirtyQueueEntry => entry !== null);
 }
 
@@ -137,17 +170,24 @@ export function recordAccountSyncRefreshSuccess({
 	const hasCurrentUserConflict = accountStore.shared.sync.conflicts
 		.get()
 		.some((conflict) => conflict.userId === userId);
+	const hasIsolatedState =
+		durableTerminalError === 'sync-schema-update-required' ||
+		readIsolatedDirtyQueueNamespaces(userId).length > 0;
 	const effectiveError = hasCurrentUserConflict
 		? 'conflict'
 		: (durableTerminalError ?? unresolvedReason);
 	const hasPartialResult =
-		effectiveError !== null || hasPendingUploads || hasCurrentUserConflict;
+		effectiveError !== null ||
+		hasPendingUploads ||
+		hasCurrentUserConflict ||
+		hasIsolatedState;
 
 	accountStore.shared.sync.canRetry.set(false);
 	accountStore.shared.sync.failedAttempts.set(0);
+	accountStore.shared.sync.hasIsolatedState.set(hasIsolatedState);
 	accountStore.shared.sync.lastError.set(effectiveError);
 	accountStore.shared.sync.lastResult.set(
-		hasPartialResult ? 'partial' : 'success'
+		hasIsolatedState ? 'failed' : hasPartialResult ? 'partial' : 'success'
 	);
 	accountStore.shared.sync.lastSyncedAt.set(Date.now());
 

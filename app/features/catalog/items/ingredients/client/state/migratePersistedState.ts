@@ -15,7 +15,6 @@ export const INGREDIENTS_STORE_VERSION = {
 	recordIdentity: 6,
 } as const;
 
-const storeVersion = INGREDIENTS_STORE_VERSION;
 const LEGACY_INGREDIENT_TYPE_MAP = new Map<string, TIngredientTypeId>(
 	Object.entries(INGREDIENT_TYPE_MAP).map(([type, label]) => [
 		label,
@@ -27,17 +26,17 @@ export function migrateIngredientsPersistedState<T>(
 	persistedState: T,
 	version: number
 ): T {
-	if (version >= storeVersion.recordIdentity) {
+	if (version >= INGREDIENTS_STORE_VERSION.recordIdentity) {
 		return persistedState;
 	}
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
 	const oldState = structuredClone(persistedState) as any;
-	if (version < storeVersion.popular) {
+	if (version < INGREDIENTS_STORE_VERSION.popular) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		oldState.persistence = oldState.page;
 		delete oldState.page;
 	}
-	if (version < storeVersion.filterTypes) {
+	if (version < INGREDIENTS_STORE_VERSION.filterTypes) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: { filters },
@@ -45,7 +44,7 @@ export function migrateIngredientsPersistedState<T>(
 		filters.types = [];
 		filters.noTypes = [];
 	}
-	if (version < storeVersion.filterPlaces) {
+	if (version < INGREDIENTS_STORE_VERSION.filterPlaces) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: { filters },
@@ -53,17 +52,17 @@ export function migrateIngredientsPersistedState<T>(
 		filters.places = [];
 		filters.noPlaces = [];
 	}
-	if (version < storeVersion.removeSearchValue) {
+	if (version < INGREDIENTS_STORE_VERSION.removeSearchValue) {
 		delete oldState.persistence.searchValue;
 	}
-	if (version < storeVersion.availabilityDlcFilter) {
+	if (version < INGREDIENTS_STORE_VERSION.availabilityDlcFilter) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		oldState.persistence.filters.contentDlcs =
 			oldState.persistence.filters.dlcs;
 		oldState.persistence.filters.availabilityDlcs = [];
 		delete oldState.persistence.filters.dlcs;
 	}
-	if (version < storeVersion.recordIdentity) {
+	if (version < INGREDIENTS_STORE_VERSION.recordIdentity) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const { filters } = oldState.persistence;
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment

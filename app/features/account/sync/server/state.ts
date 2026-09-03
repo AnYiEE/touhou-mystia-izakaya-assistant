@@ -2,6 +2,7 @@
 import { type TSyncNamespace } from '@/domain/account/contracts';
 
 import { checkSupportedSyncSchemaVersion } from '@/features/account/sync/constants';
+import { checkKnownSyncNamespace } from '@/features/account/sync/normalizeSyncStateData';
 import type {
 	ISyncStateChange,
 	ISyncStateItemConflict,
@@ -9,10 +10,6 @@ import type {
 	ISyncStateRecord,
 	TSyncStatePutResult,
 } from '@/features/account/sync/types';
-import {
-	checkSyncNamespace,
-	validateSyncStateData,
-} from '@/features/account/sync/validation';
 
 import type {
 	TSession,
@@ -63,7 +60,7 @@ export function parseUserStateData(
 	record: Pick<TUserState, 'data' | 'namespace' | 'schema_version'>
 ) {
 	if (
-		!checkSyncNamespace(record.namespace) ||
+		!checkKnownSyncNamespace(record.namespace) ||
 		!checkSupportedSyncSchemaVersion(
 			record.namespace,
 			record.schema_version
@@ -73,16 +70,6 @@ export function parseUserStateData(
 	}
 
 	const data: unknown = JSON.parse(record.data);
-	const change = {
-		data,
-		namespace: record.namespace,
-		revision: 0,
-		schema_version: record.schema_version,
-	} satisfies ISyncStateChange;
-	if (!validateSyncStateData(change)) {
-		throw new Error('invalid-user-state-data');
-	}
-
 	return data;
 }
 
@@ -95,9 +82,11 @@ export function parseUserStateRecord(record: TUserState): ISyncStateRecord {
 		throw new Error('invalid-user-state-data');
 	}
 
+	const data = parseUserStateData(record);
+	const namespace = record.namespace as TSyncNamespace;
 	return {
-		data: parseUserStateData(record),
-		namespace: record.namespace,
+		data,
+		namespace,
 		revision: record.revision,
 		schema_version: record.schema_version,
 		updated_at: record.updated_at,
@@ -214,7 +203,7 @@ export async function putSyncStateChanges({
 				limit_bytes: result.limit_bytes,
 				message: 'sync-account-capacity-exceeded',
 				namespace: preparedChange.change.namespace,
-				namespaces: result.namespaces,
+				namespaces: result.namespaces as TSyncNamespace[],
 				status: 'error',
 			});
 			continue;
@@ -262,8 +251,4 @@ export async function putSyncStateChanges({
 	}
 
 	return { results, status: 'ok' };
-}
-
-export function isSyncStateNamespace(value: unknown): value is TSyncNamespace {
-	return checkSyncNamespace(value);
 }

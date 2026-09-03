@@ -34,7 +34,7 @@ import { removeDirtyQueueEntryIfCurrent } from './dirtyQueue/storageTransition';
 import { scheduleAccountSyncFlush } from './flush';
 import { markAccountSyncDirty } from './queue';
 import { recordAccountSyncRefreshSuccess } from './queueRuntime';
-import { getRecordMap } from './remoteProtocol';
+import { getRecordMap, readRemoteSyncData } from './remoteProtocol';
 import {
 	checkRemoteStateCleared,
 	checkRemoteStateFresh,
@@ -292,10 +292,7 @@ export async function takeOverLocalAccountData(
 						const currentCloud =
 							record === undefined
 								? serializer.getDefaultSnapshot()
-								: serializer.migrate(
-										record.data,
-										record.schema_version
-									);
+								: readRemoteSyncData(record);
 						const storedCloud = serializer.deserialize(
 							storedConflict.cloud
 						);
@@ -324,12 +321,7 @@ export async function takeOverLocalAccountData(
 				);
 				const record = recordMap[namespace];
 				const cloud =
-					record === undefined
-						? null
-						: serializer.migrate(
-								record.data,
-								record.schema_version
-							);
+					record === undefined ? null : readRemoteSyncData(record);
 				const cloudSnapshot = cloud ?? serializer.getDefaultSnapshot();
 				if (checkSnapshotEqual(local, cloudSnapshot)) {
 					if (
@@ -564,13 +556,7 @@ export async function takeOverLocalAccountData(
 					) {
 						return false;
 					}
-					const serializer = getAccountSyncSerializer(
-						record.namespace
-					);
-					const data = serializer.migrate(
-						record.data,
-						record.schema_version
-					);
+					const data = readRemoteSyncData(record);
 					meta.lastAppliedRemoteHash[record.namespace] =
 						createSnapshotHash(data);
 					meta.revisions[record.namespace] = record.revision;

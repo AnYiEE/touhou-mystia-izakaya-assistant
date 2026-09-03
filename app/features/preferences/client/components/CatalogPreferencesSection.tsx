@@ -3,7 +3,7 @@ import { memo } from 'react';
 import Heading from '@/design/ui/components/heading';
 
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
-import { type TPreferenceTargetKey } from '@/features/preferences/client/globalSearch/searchItems';
+import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
 
 import HiddenItems from './HiddenItems';
 import SwitchItem from './PreferenceSwitchItem';

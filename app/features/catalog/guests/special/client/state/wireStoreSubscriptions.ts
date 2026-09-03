@@ -2,6 +2,8 @@ import { type State } from '@davstack/store';
 
 import { type FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
 
+import { specialGuestPersistenceShape } from '@/features/catalog/guests/shared/state/guestPersistenceShape';
+
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 import { type createSpecialGuestStoreActions } from './createStoreActions';
@@ -66,27 +68,21 @@ export function wireSpecialGuestStoreSubscriptions(
 	});
 
 	specialGuestPersistenceStore.shared.hiddenItems.dlcs.onChange(() => {
+		const defaults = specialGuestPersistenceShape.createDefault();
 		specialGuestPersistenceStore.persistence.beverage.table.availabilityDlcs.set(
-			[]
+			defaults.beverage.table.availabilityDlcs
 		);
-		specialGuestPersistenceStore.persistence.guest.filters.set({
-			availabilityDlcs: [],
-			excludes: [],
-			includes: [],
-			noPlaces: [],
-			places: [],
-		});
-		specialGuestPersistenceStore.persistence.ingredient.filters.set({
-			availabilityDlcs: [],
-			levels: [],
-			noTags: [],
-			tags: [],
-		});
+		specialGuestPersistenceStore.persistence.guest.filters.set(
+			defaults.guest.filters
+		);
+		specialGuestPersistenceStore.persistence.ingredient.filters.set(
+			defaults.ingredient.filters
+		);
 		specialGuestPersistenceStore.persistence.recipe.table.availabilityDlcs.set(
-			[]
+			defaults.recipe.table.availabilityDlcs
 		);
 		specialGuestPersistenceStore.persistence.recipe.table.cookerTypes.set(
-			[]
+			defaults.recipe.table.cookerTypes
 		);
 		specialGuestPersistenceStore.shared.guest.id.set(null);
 	});

@@ -1,5 +1,4 @@
 import {
-	SYNC_NAMESPACE_MAP,
 	type TSyncNamespace,
 	checkAccountSyncStatus,
 } from '@/domain/account/contracts';
@@ -8,6 +7,10 @@ import {
 	SYNC_SCHEMA_VERSION_MAP,
 	checkSupportedSyncSchemaVersion,
 } from '@/features/account/sync/constants';
+import {
+	checkKnownSyncNamespace,
+	normalizeSyncStateData,
+} from '@/features/account/sync/normalizeSyncStateData';
 import type {
 	ISyncStateGetResponse,
 	ISyncStatePutResponse,
@@ -18,19 +21,8 @@ import type {
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
-const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
-	Object.values(SYNC_NAMESPACE_MAP)
-);
-
 export function checkRemoteRevision(value: unknown): value is number {
 	return isNonNegativeSafeInteger(value) && value < Number.MAX_SAFE_INTEGER;
-}
-
-function checkSyncNamespace(value: unknown): value is TSyncNamespace {
-	return (
-		typeof value === 'string' &&
-		SYNC_NAMESPACE_SET.has(value as TSyncNamespace)
-	);
 }
 
 function checkRemoteSyncSchemaVersion(
@@ -60,7 +52,7 @@ function validateRemoteSyncRecord(record: unknown): ISyncStateRecord {
 	} = record;
 
 	if (
-		!checkSyncNamespace(namespace) ||
+		!checkKnownSyncNamespace(namespace) ||
 		!checkRemoteRevision(revision) ||
 		!isNonNegativeSafeInteger(updatedAt)
 	) {
@@ -121,7 +113,7 @@ function validateSyncPutResult(result: unknown): TSyncStatePutResult {
 	}
 	const { namespace, status } = result;
 
-	if (!checkSyncNamespace(namespace)) {
+	if (!checkKnownSyncNamespace(namespace)) {
 		throw new TypeError('invalid-sync-result');
 	}
 
@@ -147,7 +139,7 @@ function validateSyncPutResult(result: unknown): TSyncStatePutResult {
 				!isNonNegativeSafeInteger(limitBytes) ||
 				limitBytes === 0 ||
 				!Array.isArray(namespaces) ||
-				!namespaces.every(checkSyncNamespace)
+				!namespaces.every(checkKnownSyncNamespace)
 			) {
 				throw new TypeError('invalid-sync-result');
 			}
@@ -168,7 +160,7 @@ function validateSyncPutResult(result: unknown): TSyncStatePutResult {
 			const { current_schema_version: currentSchemaVersion } = result;
 			if (
 				!isNonNegativeSafeInteger(currentSchemaVersion) ||
-				currentSchemaVersion <= SYNC_SCHEMA_VERSION_MAP[namespace]
+				currentSchemaVersion < SYNC_SCHEMA_VERSION_MAP[namespace]
 			) {
 				throw new TypeError('invalid-sync-result');
 			}
@@ -258,4 +250,17 @@ export function getRecordMap(records: ISyncStateRecord[]) {
 		},
 		{}
 	);
+}
+
+export function readRemoteSyncData(record: ISyncStateRecord) {
+	const normalized = normalizeSyncStateData({
+		data: record.data,
+		namespace: record.namespace,
+		revision: record.revision,
+		schema_version: record.schema_version,
+	});
+	if (normalized.status !== 'accepted') {
+		throw new TypeError('invalid-sync-record');
+	}
+	return normalized.data;
 }

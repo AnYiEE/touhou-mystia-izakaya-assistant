@@ -7,6 +7,9 @@ import {
 	persist as persistMiddleware,
 } from 'zustand/middleware';
 
+import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
+
+import { createVersionGuardedStateStorage } from './futurePersistenceGuard';
 import { safeStorage } from './safeStorage';
 
 const COMPRESS_PREFIX = '__LZ__';
@@ -34,16 +37,79 @@ const lZLocalStorage = {
 const isServer = typeof window === 'undefined';
 
 export function createPersistMiddleware<T, TPersistedState = T>(
-	options: Omit<PersistOptions<T, TPersistedState>, 'storage'>
+	options: Omit<PersistOptions<T, TPersistedState>, 'storage'> & {
+		normalize?: (value: unknown) => unknown;
+	}
 ) {
+	const {
+		merge: mergeOption,
+		migrate,
+		normalize,
+		...persistOptions
+	} = options;
+	const currentVersion = persistOptions.version ?? 0;
+	const normalizeState =
+		normalize === undefined
+			? undefined
+			: (value: unknown) => {
+					const record = isObjectTagRecord(value) ? value : {};
+					const persistence = isObjectTagRecord(record['persistence'])
+						? record['persistence']
+						: {};
+					return { ...record, persistence: normalize(persistence) };
+				};
+	const migrateState:
+		| ((
+				value: unknown,
+				version: number
+		  ) => TPersistedState | Promise<TPersistedState>)
+		| undefined =
+		migrate === undefined
+			? undefined
+			: (value: unknown, version: number) => {
+					try {
+						return migrate(value, version);
+					} catch {
+						try {
+							return (normalizeState?.(value) ??
+								value) as TPersistedState;
+						} catch {
+							return value as TPersistedState;
+						}
+					}
+				};
+
 	return (initializer: StateCreator<T>) => {
 		if (isServer) {
 			return initializer;
 		}
 
+		const storage = createJSONStorage<TPersistedState>(() =>
+			createVersionGuardedStateStorage({
+				currentVersion,
+				storage: lZLocalStorage,
+			})
+		);
+
 		return persistMiddleware<T, [], [], TPersistedState>(initializer, {
-			storage: createJSONStorage(() => lZLocalStorage),
-			...options,
+			storage,
+			...persistOptions,
+			merge(persistedState, currentState) {
+				const normalizedState =
+					persistedState === undefined
+						? persistedState
+						: (normalizeState?.(persistedState) ?? persistedState);
+				return (
+					mergeOption ??
+					((pendingState: unknown, state: T): T => {
+						if (isObjectTagRecord(pendingState)) {
+							return { ...state, ...pendingState };
+						}
+						return state;
+					})
+				)(normalizedState, currentState);
+			},
+			...(migrateState === undefined ? {} : { migrate: migrateState }),
 		});
 	};
 }

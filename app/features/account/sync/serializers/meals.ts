@@ -58,7 +58,6 @@ for (const { id: food, recipes } of foodCatalog.data) {
 		recipeFoods.set(id, food);
 	}
 }
-
 export type TMealSnapshot<TMeal> = Record<string, TMeal[]>;
 
 export interface ILegacyMealFoodV1 {
@@ -161,7 +160,9 @@ export function migrateMealFoodV1ToV2(
 }
 
 export function migrateMealFoodV2(data: ILegacyMealFoodV2): IMealFood {
+	const { name: _legacyFoodName, ...legacyData } = data;
 	return {
+		...legacyData,
 		extraIngredients: resolveLegacyIngredientNames(data.extraIngredients),
 		recipeId: data.recipeId,
 	};
@@ -239,6 +240,7 @@ export function validateSpecialGuestSavedMeal(
 
 export function normalizeMealFood(data: IMealFood): IMealFood {
 	return {
+		...data,
 		extraIngredients: [...data.extraIngredients],
 		recipeId: data.recipeId,
 	};
@@ -284,8 +286,20 @@ export function migrateLegacyMealSnapshot<TMeal, TNormalizedMeal>(
 				return result;
 			}
 			const guestKey = String(guest);
-			const migratedMeals = meals.map(migrateMeal);
-			result[guestKey] = [...(result[guestKey] ?? []), ...migratedMeals];
+			const migratedMeals: TNormalizedMeal[] = [];
+			for (const meal of meals) {
+				try {
+					migratedMeals.push(migrateMeal(meal));
+				} catch {
+					/* Invalid legacy meals are dropped individually. */
+				}
+			}
+			if (migratedMeals.length > 0) {
+				result[guestKey] = [
+					...(result[guestKey] ?? []),
+					...migratedMeals,
+				];
+			}
 
 			return result;
 		},
@@ -314,33 +328,47 @@ export function validateMealSnapshot<TMeal>(
 	);
 }
 
-export function normalizeMealSnapshot<TMeal, TNormalizedMeal>(
-	data: TMealSnapshot<TMeal>,
-	normalizeMeal: (meal: TMeal) => TNormalizedMeal,
-	guestType?: 'normal' | 'special'
-) {
+export function normalizeMealSnapshot<TNormalizedMeal>(
+	data: unknown,
+	normalizeMeal: (meal: unknown) => TNormalizedMeal,
+	guestType?: 'normal' | 'special',
+	validateMeal?: (meal: unknown) => boolean
+): TMealSnapshot<TNormalizedMeal> {
 	if (!isObjectTagRecord(data)) {
 		return {};
 	}
-	const snapshot =
-		guestType === undefined
-			? data
-			: sanitizeMealSnapshot(data, getGuestKeys(guestType));
+	const snapshot = data;
 
-	return Object.entries(snapshot).reduce<TMealSnapshot<TNormalizedMeal>>(
-		(result, [guestKey, meals]) => {
-			if (!Array.isArray(meals)) {
-				return result;
-			}
+	const allowedGuestKeys =
+		guestType === undefined ? null : getGuestKeys(guestType);
+	const result: TMealSnapshot<TNormalizedMeal> = {};
+	for (const [guestKey, meals] of Object.entries(snapshot)) {
+		if (allowedGuestKeys !== null && !allowedGuestKeys.has(guestKey)) {
+			continue;
+		}
+		if (!Array.isArray(meals)) {
+			continue;
+		}
 
-			const normalizedMeals = meals.map(normalizeMeal);
-			if (normalizedMeals.length > 0) {
-				result[guestKey] = normalizedMeals;
+		const normalizedMeals: TNormalizedMeal[] = [];
+		for (const meal of meals) {
+			try {
+				const normalizedMeal = normalizeMeal(meal);
+				if (
+					validateMeal === undefined ||
+					validateMeal(normalizedMeal)
+				) {
+					normalizedMeals.push(normalizedMeal);
+				}
+			} catch {
+				/* Invalid meal entries are dropped silently. */
 			}
-			return result;
-		},
-		{}
-	);
+		}
+		if (normalizedMeals.length > 0) {
+			result[guestKey] = normalizedMeals;
+		}
+	}
+	return result;
 }
 
 function getMealSignature(meal: unknown) {

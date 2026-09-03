@@ -5,24 +5,22 @@ export const CURRENCY_ITEMS_STORE_VERSION = {
 	availabilityDlcFilter: 3,
 } as const;
 
-const storeVersion = CURRENCY_ITEMS_STORE_VERSION;
-
 export function migrateCurrencyItemsPersistedState<T>(
 	persistedState: T,
 	version: number
 ): T {
-	if (version >= storeVersion.availabilityDlcFilter) {
+	if (version >= CURRENCY_ITEMS_STORE_VERSION.availabilityDlcFilter) {
 		return persistedState;
 	}
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
 	const oldState = structuredClone(persistedState) as any;
-	if (version < storeVersion.filterDlcs) {
+	if (version < CURRENCY_ITEMS_STORE_VERSION.filterDlcs) {
 		oldState.persistence.filters = { dlcs: [] };
 	}
-	if (version < storeVersion.removeSearchValue) {
+	if (version < CURRENCY_ITEMS_STORE_VERSION.removeSearchValue) {
 		delete oldState.persistence.searchValue;
 	}
-	if (version < storeVersion.availabilityDlcFilter) {
+	if (version < CURRENCY_ITEMS_STORE_VERSION.availabilityDlcFilter) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		oldState.persistence.filters.contentDlcs =
 			oldState.persistence.filters.dlcs;

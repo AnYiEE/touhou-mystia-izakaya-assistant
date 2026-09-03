@@ -14,53 +14,21 @@ import {
 	migrateLegacySpecialGuestPlansSnapshotV2ToV3,
 	migrateLegacySpecialGuestPlansSnapshotV3ToV4,
 } from '@/features/account/sync/serializers/specialGuestPlansMerge';
+import { SPECIAL_GUEST_STORE_VERSION } from '@/features/catalog/guests/shared/state/guestStoreVersions';
 import { migrateLegacyFoodTableSortDescriptor } from '@/features/catalog/guests/shared/state/migrateLegacyFoodTableKeys';
 
 import { type specialGuestInitialState as state } from './initialState';
-
-export const SPECIAL_GUEST_STORE_VERSION = {
-	initial: 0,
-	rating: 1, // eslint-disable-next-line sort-keys
-	popular: 2,
-	popularTypo: 3,
-	price: 4, // eslint-disable-next-line sort-keys
-	cooker: 5,
-	ingredientLevel: 6,
-	tagDescription: 7, // eslint-disable-next-line sort-keys
-	extraGuest: 8,
-	linkedFilter: 9,
-	mystiaCooker: 10, // eslint-disable-next-line sort-keys
-	dynamicMeal: 11,
-	tachie: 12, // eslint-disable-next-line sort-keys
-	moveTachie: 13,
-	showCooker: 14,
-	tableRows: 15, // eslint-disable-next-line sort-keys
-	ingredientTag: 16,
-	tablePersist: 17, // eslint-disable-next-line sort-keys
-	mealData: 18,
-	tableShare: 19, // eslint-disable-next-line sort-keys
-	deleteMealIndex: 20,
-	removeGuestSearchValue: 21, // eslint-disable-next-line sort-keys
-	plans: 22, // eslint-disable-next-line sort-keys
-	planGuestSort: 23,
-	virtualPlans: 24, // eslint-disable-next-line sort-keys
-	availabilityDlcFilter: 25,
-	mealRecipeId: 26,
-	recordIdentity: 27,
-} as const;
-
-const storeVersion = SPECIAL_GUEST_STORE_VERSION;
 
 export function migrateSpecialGuestPersistedState(
 	persistedState: unknown,
 	version: number
 ) {
-	if (version >= storeVersion.recordIdentity) {
+	if (version >= SPECIAL_GUEST_STORE_VERSION.recordIdentity) {
 		return persistedState as typeof state;
 	}
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
 	const oldState = structuredClone(persistedState) as any;
-	if (version < storeVersion.rating) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.rating) {
 		for (const meals of Object.values(
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			oldState.page.selected
@@ -71,7 +39,7 @@ export function migrateSpecialGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.popular) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.popular) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		oldState.persistence = oldState.page;
 		for (const meals of Object.values(
@@ -90,7 +58,7 @@ export function migrateSpecialGuestPersistedState(
 		delete oldState.persistence.selected;
 		delete oldState.page;
 	}
-	if (version < storeVersion.popularTypo) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.popularTypo) {
 		for (const meals of Object.values(
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			oldState.persistence.meals
@@ -104,7 +72,7 @@ export function migrateSpecialGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.price) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.price) {
 		for (const meals of Object.values(
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			oldState.persistence.meals
@@ -115,7 +83,7 @@ export function migrateSpecialGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.cooker) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.cooker) {
 		for (const meals of Object.values(
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			oldState.persistence.meals
@@ -128,7 +96,7 @@ export function migrateSpecialGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.ingredientLevel) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.ingredientLevel) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: {
@@ -137,14 +105,14 @@ export function migrateSpecialGuestPersistedState(
 		} = oldState;
 		filters.levels = [];
 	}
-	if (version < storeVersion.tagDescription) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.tagDescription) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: { customer: guest },
 		} = oldState;
 		guest.showTagDescription = true;
 	}
-	if (version < storeVersion.extraGuest) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.extraGuest) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: {
@@ -154,14 +122,14 @@ export function migrateSpecialGuestPersistedState(
 		filters.includes = [];
 		filters.excludes = [];
 	}
-	if (version < storeVersion.linkedFilter) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.linkedFilter) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: { customer: guest },
 		} = oldState;
 		guest.orderLinkedFilter = true;
 	}
-	if (version < storeVersion.mystiaCooker) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.mystiaCooker) {
 		for (const meals of Object.values(
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			oldState.persistence.meals
@@ -175,7 +143,7 @@ export function migrateSpecialGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.dynamicMeal) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.dynamicMeal) {
 		for (const meals of Object.values(
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			oldState.persistence.meals
@@ -188,21 +156,21 @@ export function migrateSpecialGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.tachie) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.tachie) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: { customer: guest },
 		} = oldState;
 		guest.showTachie = true;
 	}
-	if (version < storeVersion.moveTachie) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.moveTachie) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: { customer: guest },
 		} = oldState;
 		delete guest.showTachie;
 	}
-	if (version < storeVersion.showCooker) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.showCooker) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: {
@@ -217,7 +185,7 @@ export function migrateSpecialGuestPersistedState(
 			visibleColumns.push('cooker');
 		}
 	}
-	if (version < storeVersion.tableRows) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.tableRows) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: {
@@ -232,7 +200,7 @@ export function migrateSpecialGuestPersistedState(
 			foodTable.rows = 8;
 		}
 	}
-	if (version < storeVersion.ingredientTag) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.ingredientTag) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: {
@@ -242,7 +210,7 @@ export function migrateSpecialGuestPersistedState(
 		filters.tags = [];
 		filters.noTags = [];
 	}
-	if (version < storeVersion.tablePersist) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.tablePersist) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: {
@@ -256,7 +224,7 @@ export function migrateSpecialGuestPersistedState(
 		foodTable.dlcs = [];
 		foodTable.sortDescriptor = {};
 	}
-	if (version < storeVersion.mealData) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.mealData) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const { persistence } = oldState;
 		for (const meals of Object.values(
@@ -276,7 +244,7 @@ export function migrateSpecialGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.tableShare) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.tableShare) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: {
@@ -289,7 +257,7 @@ export function migrateSpecialGuestPersistedState(
 		delete foodTable.rows;
 		delete foodTable.visibleColumns;
 	}
-	if (version < storeVersion.deleteMealIndex) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.deleteMealIndex) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const { persistence } = oldState;
 		for (const meals of Object.values(
@@ -302,27 +270,27 @@ export function migrateSpecialGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.removeGuestSearchValue) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.removeGuestSearchValue) {
 		delete oldState.persistence.customer.searchValue;
 	}
-	if (version < storeVersion.plans) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.plans) {
 		oldState.persistence.plans = { activeId: null, items: [] };
 	}
-	if (version < storeVersion.planGuestSort) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.planGuestSort) {
 		oldState.persistence.plans =
 			migrateLegacySpecialGuestPlansSnapshotV1ToV2(
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 				oldState.persistence.plans
 			);
 	}
-	if (version < storeVersion.virtualPlans) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.virtualPlans) {
 		oldState.persistence.plans =
 			migrateLegacySpecialGuestPlansSnapshotV2ToV3(
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 				oldState.persistence.plans
 			);
 	}
-	if (version < storeVersion.availabilityDlcFilter) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.availabilityDlcFilter) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		oldState.persistence.beverage.table.availabilityDlcs =
 			oldState.persistence.beverage.table.dlcs;
@@ -340,7 +308,7 @@ export function migrateSpecialGuestPersistedState(
 			oldState.persistence.recipe.table.dlcs;
 		delete oldState.persistence.recipe.table.dlcs;
 	}
-	if (version < storeVersion.mealRecipeId) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.mealRecipeId) {
 		for (const meals of Object.values(
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			oldState.persistence.meals
@@ -352,7 +320,7 @@ export function migrateSpecialGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.recordIdentity) {
+	if (version < SPECIAL_GUEST_STORE_VERSION.recordIdentity) {
 		oldState.persistence.meals =
 			migrateLegacySpecialGuestMealsSnapshotV2ToV3(
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument

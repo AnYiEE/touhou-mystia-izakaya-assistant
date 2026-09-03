@@ -3,7 +3,7 @@ import {
 	migrateUnversionedSpecialGuestMealsSnapshot,
 } from '@/features/account/sync/serializers/savedMealsMigration';
 import { specialGuestPlansSerializer } from '@/features/account/sync/serializers/specialGuestPlans';
-import { validateSpecialGuestPlansData } from '@/features/account/sync/validation';
+import { validateSpecialGuestPlansData } from '@/features/account/sync/serializers/specialGuestPlansMerge';
 import { type TNormalGuestMealsPersistenceSnapshot } from '@/features/catalog/guests/normal/client/state/accountSync';
 import { type TSpecialGuestMealsPersistenceSnapshot } from '@/features/catalog/guests/special/client/state/accountSync';
 import {

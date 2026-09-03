@@ -11,6 +11,7 @@ import type { ISpecialGuestSavedMeal } from '@/domain/meals/types';
 import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';
 import type { IPopularTrend } from '@/domain/trends/types';
 
+import { specialGuestPlansShape } from '@/features/account/sync/shapes/specialGuestPlans';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import {
 	requestOverlayClose,
@@ -40,9 +41,7 @@ import {
 } from './planState';
 
 export const specialGuestPlansStateDefinition = {
-	persistence: {
-		plans: { activeId: null, items: [] } as ISpecialGuestPlansState,
-	},
+	persistence: { plans: specialGuestPlansShape.createDefault() },
 	shared: {
 		drawer: {
 			expandedSpecialGuests: new Set<TSpecialGuestId>(),

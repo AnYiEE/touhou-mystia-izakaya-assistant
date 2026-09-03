@@ -188,7 +188,17 @@ function migrateLegacyMealSnapshotV1ToV2<TMealV1, TMealV2>(
 ) {
 	return Object.entries(data).reduce<TMealSnapshot<TMealV2>>(
 		(result, [guestName, meals]) => {
-			result[guestName] = meals.map(migrateMeal);
+			const migratedMeals: TMealV2[] = [];
+			for (const meal of meals) {
+				try {
+					migratedMeals.push(migrateMeal(meal));
+				} catch {
+					/* Invalid legacy meals are dropped individually. */
+				}
+			}
+			if (migratedMeals.length > 0) {
+				result[guestName] = migratedMeals;
+			}
 			return result;
 		},
 		{}

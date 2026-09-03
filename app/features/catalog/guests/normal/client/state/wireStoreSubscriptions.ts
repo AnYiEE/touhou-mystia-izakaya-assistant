@@ -1,3 +1,5 @@
+import { normalGuestPersistenceShape } from '@/features/catalog/guests/shared/state/guestPersistenceShape';
+
 import { type TNormalGuestStore } from './createStoreActions';
 
 export function wireNormalGuestStoreSubscriptions(
@@ -27,22 +29,20 @@ export function wireNormalGuestStoreSubscriptions(
 	});
 
 	normalGuestStore.shared.hiddenItems.dlcs.onChange(() => {
-		normalGuestStore.persistence.beverage.table.availabilityDlcs.set([]);
-		normalGuestStore.persistence.guest.filters.set({
-			availabilityDlcs: [],
-			excludes: [],
-			includes: [],
-			noPlaces: [],
-			places: [],
-		});
-		normalGuestStore.persistence.ingredient.filters.set({
-			availabilityDlcs: [],
-			levels: [],
-			noTags: [],
-			tags: [],
-		});
-		normalGuestStore.persistence.recipe.table.availabilityDlcs.set([]);
-		normalGuestStore.persistence.recipe.table.cookerTypes.set([]);
+		const defaults = normalGuestPersistenceShape.createDefault();
+		normalGuestStore.persistence.beverage.table.availabilityDlcs.set(
+			defaults.beverage.table.availabilityDlcs
+		);
+		normalGuestStore.persistence.guest.filters.set(defaults.guest.filters);
+		normalGuestStore.persistence.ingredient.filters.set(
+			defaults.ingredient.filters
+		);
+		normalGuestStore.persistence.recipe.table.availabilityDlcs.set(
+			defaults.recipe.table.availabilityDlcs
+		);
+		normalGuestStore.persistence.recipe.table.cookerTypes.set(
+			defaults.recipe.table.cookerTypes
+		);
 		normalGuestStore.shared.guest.id.set(null);
 	});
 }

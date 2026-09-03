@@ -18,6 +18,7 @@ import {
 	THEME_CLASS_MAP,
 	THEME_MAP,
 } from './constants';
+import { themeShape } from './themeShape';
 import type {
 	IThemePreferences,
 	IThemeRuntimeState,
@@ -34,26 +35,16 @@ const persistenceListeners = new Set<
 	(preferences: IThemePreferences) => void
 >();
 const runtimeListeners = new Set<(state: IThemeRuntimeState) => void>();
-const darkPaletteValues = new Set<string>(Object.values(DARK_PALETTE_MAP));
-const lightPaletteValues = new Set<string>(Object.values(LIGHT_PALETTE_MAP));
-const themeValues = new Set<string>(Object.values(THEME_MAP));
-
 export function parseDarkPalette(value: unknown): TDarkPalette {
-	return typeof value === 'string' && darkPaletteValues.has(value)
-		? (value as TDarkPalette)
-		: DARK_PALETTE_MAP.IZAKAYA;
+	return themeShape.normalize({ darkPalette: value }).darkPalette;
 }
 
 export function parseLightPalette(value: unknown): TLightPalette {
-	return typeof value === 'string' && lightPaletteValues.has(value)
-		? (value as TLightPalette)
-		: LIGHT_PALETTE_MAP.IZAKAYA;
+	return themeShape.normalize({ lightPalette: value }).lightPalette;
 }
 
 export function parseTheme(value: unknown): TTheme {
-	return typeof value === 'string' && themeValues.has(value)
-		? (value as TTheme)
-		: THEME_MAP.SYSTEM;
+	return themeShape.normalize({ mode: value }).mode;
 }
 
 function getSystemTheme(
@@ -99,11 +90,11 @@ export function getStoredTheme() {
 }
 
 export function readThemePreferences(): IThemePreferences {
-	return {
+	return themeShape.normalize({
 		darkPalette: getStoredDarkPalette() ?? DARK_PALETTE_MAP.IZAKAYA,
 		lightPalette: getStoredLightPalette() ?? LIGHT_PALETTE_MAP.IZAKAYA,
 		mode: getStoredTheme() ?? THEME_MAP.SYSTEM,
-	};
+	});
 }
 
 function createThemeRuntimeState(
@@ -130,7 +121,11 @@ export function applyThemePreferences(
 		return;
 	}
 
-	const state = createThemeRuntimeState(preferences, mediaQueryList);
+	const normalizedPreferences = themeShape.normalize(preferences);
+	const state = createThemeRuntimeState(
+		normalizedPreferences,
+		mediaQueryList
+	);
 	const heroUIThemeClass =
 		state.resolvedMode === THEME_MAP.DARK
 			? DARK_PALETTE_THEME_CLASS_MAP[state.darkPalette]
@@ -162,11 +157,17 @@ export function applyThemePreferences(
 	document.head.append(metaElement);
 
 	if (!isFromEvent) {
-		safeStorage.setItem(DARK_PALETTE_STORAGE_KEY, state.darkPalette);
-		safeStorage.setItem(LIGHT_PALETTE_STORAGE_KEY, state.lightPalette);
-		safeStorage.setItem(STORAGE_KEY, state.mode);
+		safeStorage.setItem(
+			DARK_PALETTE_STORAGE_KEY,
+			normalizedPreferences.darkPalette
+		);
+		safeStorage.setItem(
+			LIGHT_PALETTE_STORAGE_KEY,
+			normalizedPreferences.lightPalette
+		);
+		safeStorage.setItem(STORAGE_KEY, normalizedPreferences.mode);
 		persistenceListeners.forEach((listener) => {
-			listener(state);
+			listener(normalizedPreferences);
 		});
 	}
 

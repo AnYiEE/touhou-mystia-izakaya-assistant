@@ -15,6 +15,10 @@ import type { INormalGuestSavedMeal } from '@/domain/meals/types';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import type { TTab } from '@/features/catalog/guests/shared/contracts';
 import { applyTableSortChange } from '@/features/catalog/guests/shared/state/applyTableSortChange';
+import type {
+	TBeverageTableSortDescriptor,
+	TFoodTableSortDescriptor,
+} from '@/features/catalog/guests/shared/state/guestPersistenceShape';
 import { keepLastTag } from '@/features/catalog/guests/shared/state/keepLastTag';
 import { reverseVisibilityState } from '@/features/catalog/guests/shared/state/tabVisibility';
 import {
@@ -30,8 +34,6 @@ import {
 	type TNormalGuestComputedStore,
 } from './createComputedState';
 import {
-	type TBeverageTableSortDescriptor,
-	type TFoodTableSortDescriptor,
 	normalGuestBeverageCatalog as beverageCatalog,
 	normalGuestFoodCatalog as foodCatalog,
 	normalGuestIngredientCatalog as ingredientCatalog,

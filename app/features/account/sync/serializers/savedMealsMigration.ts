@@ -3,18 +3,20 @@ import type {
 	ISpecialGuestSavedMeal,
 } from '@/domain/meals/types';
 
+import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
+import { createVersionedMigrator } from '@/shared/utilities/state/versionedMigration';
+
 import {
 	migrateLegacyNormalGuestMealsSnapshotV1ToV2,
 	migrateLegacyNormalGuestMealsSnapshotV2ToV3,
 	migrateLegacySpecialGuestMealsSnapshotV1ToV2,
 	migrateLegacySpecialGuestMealsSnapshotV2ToV3,
-	validateLegacyNormalGuestSavedMealV1,
 	validateLegacyNormalGuestSavedMealV2,
-	validateLegacySpecialGuestSavedMealV1,
 	validateLegacySpecialGuestSavedMealV2,
 } from './legacySavedMeals';
 import {
 	type TMealSnapshot,
+	checkBeverage,
 	normalizeMealFood,
 	normalizeMealSnapshot,
 	validateLegacyMealSnapshot,
@@ -22,20 +24,56 @@ import {
 	validateNormalGuestSavedMeal,
 	validateSpecialGuestSavedMeal,
 } from './meals';
+import { checkBeverageTag, checkFoodTag } from './tags';
+import { hasExactKeys } from './utils';
+
+function normalizeSavedMealBeverage(value: unknown, allowNull: boolean) {
+	if (value === null && allowNull) {
+		return null;
+	}
+	const numericValue =
+		typeof value === 'string' && /^\d+$/u.test(value)
+			? Number(value)
+			: value;
+	return typeof numericValue === 'number' && checkBeverage(numericValue)
+		? numericValue
+		: null;
+}
 
 function normalizeNormalGuestSavedMeal(
 	data: INormalGuestSavedMeal
 ): INormalGuestSavedMeal {
-	return { beverage: data.beverage, food: normalizeMealFood(data.food) };
+	const beverage = normalizeSavedMealBeverage(data.beverage, true);
+	if (beverage === null && data.beverage !== null) {
+		return data;
+	}
+	return { ...data, beverage, food: normalizeMealFood(data.food) };
 }
 
 function normalizeSpecialGuestSavedMeal(
 	data: ISpecialGuestSavedMeal
 ): ISpecialGuestSavedMeal {
+	const beverage = normalizeSavedMealBeverage(data.beverage, false);
+	if (beverage === null) {
+		return data;
+	}
+	if (
+		!isObjectTagRecord(data.order) ||
+		!hasExactKeys(data.order, ['beverageTag', 'foodTag']) ||
+		(data.order.beverageTag !== null &&
+			!checkBeverageTag(data.order.beverageTag)) ||
+		(data.order.foodTag !== null && !checkFoodTag(data.order.foodTag))
+	) {
+		return data;
+	}
 	return {
-		beverage: data.beverage,
+		...data,
+		beverage,
 		food: normalizeMealFood(data.food),
-		hasMystiaCooker: data.hasMystiaCooker,
+		hasMystiaCooker:
+			typeof data.hasMystiaCooker === 'boolean'
+				? data.hasMystiaCooker
+				: false,
 		order: {
 			beverageTag: data.order.beverageTag,
 			foodTag: data.order.foodTag,
@@ -43,19 +81,22 @@ function normalizeSpecialGuestSavedMeal(
 	};
 }
 
-export function normalizeNormalGuestMealsSnapshot(
-	data: TMealSnapshot<INormalGuestSavedMeal>
-) {
-	return normalizeMealSnapshot(data, normalizeNormalGuestSavedMeal, 'normal');
-}
-
-export function normalizeSpecialGuestMealsSnapshot(
-	data: TMealSnapshot<ISpecialGuestSavedMeal>
-) {
+export function normalizeNormalGuestMealsSnapshot(data: unknown) {
 	return normalizeMealSnapshot(
 		data,
-		normalizeSpecialGuestSavedMeal,
-		'special'
+		(meal) => normalizeNormalGuestSavedMeal(meal as INormalGuestSavedMeal),
+		'normal',
+		(meal) => validateNormalGuestSavedMeal(meal)
+	);
+}
+
+export function normalizeSpecialGuestMealsSnapshot(data: unknown) {
+	return normalizeMealSnapshot(
+		data,
+		(meal) =>
+			normalizeSpecialGuestSavedMeal(meal as ISpecialGuestSavedMeal),
+		'special',
+		(meal) => validateSpecialGuestSavedMeal(meal)
 	);
 }
 
@@ -77,45 +118,50 @@ export function validateSpecialGuestMealsSnapshot(
 	});
 }
 
+const normalGuestMealsMigrator = createVersionedMigrator({
+	currentVersion: 3,
+	migrations: {
+		1: (value) =>
+			migrateLegacyNormalGuestMealsSnapshotV1ToV2(
+				value as Parameters<
+					typeof migrateLegacyNormalGuestMealsSnapshotV1ToV2
+				>[0]
+			),
+		2: (value) =>
+			migrateLegacyNormalGuestMealsSnapshotV2ToV3(
+				value as Parameters<
+					typeof migrateLegacyNormalGuestMealsSnapshotV2ToV3
+				>[0]
+			),
+	},
+	minVersion: 1,
+});
+
+const specialGuestMealsMigrator = createVersionedMigrator({
+	currentVersion: 3,
+	migrations: {
+		1: (value) =>
+			migrateLegacySpecialGuestMealsSnapshotV1ToV2(
+				value as Parameters<
+					typeof migrateLegacySpecialGuestMealsSnapshotV1ToV2
+				>[0]
+			),
+		2: (value) =>
+			migrateLegacySpecialGuestMealsSnapshotV2ToV3(
+				value as Parameters<
+					typeof migrateLegacySpecialGuestMealsSnapshotV2ToV3
+				>[0]
+			),
+	},
+	minVersion: 1,
+});
+
 export function migrateNormalGuestMealsSnapshot(
 	data: unknown,
 	version: number
 ) {
-	let migratedData = data;
-	let schemaVersion = version;
-	if (schemaVersion === 1) {
-		if (
-			!validateLegacyMealSnapshot(migratedData, {
-				guestType: 'normal',
-				validateMeal: validateLegacyNormalGuestSavedMealV1,
-			})
-		) {
-			throw new Error('invalid-normal-guest-meals');
-		}
-		migratedData =
-			migrateLegacyNormalGuestMealsSnapshotV1ToV2(migratedData);
-		schemaVersion = 2;
-	}
-	if (schemaVersion === 2) {
-		if (
-			!validateLegacyMealSnapshot(migratedData, {
-				guestType: 'normal',
-				validateMeal: validateLegacyNormalGuestSavedMealV2,
-			})
-		) {
-			throw new Error('invalid-normal-guest-meals');
-		}
-		migratedData =
-			migrateLegacyNormalGuestMealsSnapshotV2ToV3(migratedData);
-		schemaVersion = 3;
-	}
-	if (schemaVersion !== 3) {
-		throw new Error('unsupported-normal-guest-meals-schema-version');
-	}
-	if (!validateNormalGuestMealsSnapshot(migratedData)) {
-		throw new Error('invalid-normal-guest-meals');
-	}
-
+	const migratedData =
+		version === 3 ? data : normalGuestMealsMigrator(data, version);
 	return normalizeNormalGuestMealsSnapshot(migratedData);
 }
 
@@ -139,41 +185,8 @@ export function migrateSpecialGuestMealsSnapshot(
 	data: unknown,
 	version: number
 ) {
-	let migratedData = data;
-	let schemaVersion = version;
-	if (schemaVersion === 1) {
-		if (
-			!validateLegacyMealSnapshot(migratedData, {
-				guestType: 'special',
-				validateMeal: validateLegacySpecialGuestSavedMealV1,
-			})
-		) {
-			throw new Error('invalid-special-guest-meals');
-		}
-		migratedData =
-			migrateLegacySpecialGuestMealsSnapshotV1ToV2(migratedData);
-		schemaVersion = 2;
-	}
-	if (schemaVersion === 2) {
-		if (
-			!validateLegacyMealSnapshot(migratedData, {
-				guestType: 'special',
-				validateMeal: validateLegacySpecialGuestSavedMealV2,
-			})
-		) {
-			throw new Error('invalid-special-guest-meals');
-		}
-		migratedData =
-			migrateLegacySpecialGuestMealsSnapshotV2ToV3(migratedData);
-		schemaVersion = 3;
-	}
-	if (schemaVersion !== 3) {
-		throw new Error('unsupported-special-guest-meals-schema-version');
-	}
-	if (!validateSpecialGuestMealsSnapshot(migratedData)) {
-		throw new Error('invalid-special-guest-meals');
-	}
-
+	const migratedData =
+		version === 3 ? data : specialGuestMealsMigrator(data, version);
 	return normalizeSpecialGuestMealsSnapshot(migratedData);
 }
 

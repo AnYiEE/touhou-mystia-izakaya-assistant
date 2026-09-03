@@ -104,7 +104,7 @@ import {
 } from './snapshot';
 import { getAccountSyncLifecyclePort } from './syncLifecyclePort';
 import { checkAccountSyncOperationActive } from './syncOperationLease';
-import { setAccountSyncFutureStateIsolated } from './syncRuntimeState';
+import { markAccountSyncUpdateRequired } from './syncRuntimeState';
 
 const DIRTY_COUNT_FLUSH_THRESHOLD = 10;
 
@@ -753,8 +753,10 @@ export async function flushAccountSyncQueue() {
 					continue;
 				}
 				if (result.message === 'sync-schema-update-required') {
-					setAccountSyncFutureStateIsolated(context.user.id, true);
-					accountStore.shared.sync.canRetry.set(false);
+					markAccountSyncUpdateRequired(
+						context.user.id,
+						'sync-schema-update-required'
+					);
 				}
 
 				setDirtyQueueEntryError({
@@ -800,9 +802,20 @@ export async function flushAccountSyncQueue() {
 				error.message === 'sync-client-update-required' &&
 				checkCurrentSyncRun(generation, context.user.id)
 			) {
-				setAccountSyncFutureStateIsolated(context.user.id, true);
-				accountStore.shared.sync.canRetry.set(false);
-				accountStore.shared.sync.lastResult.set('failed');
+				markAccountSyncUpdateRequired(context.user.id);
+				return false;
+			}
+			if (
+				error instanceof AccountApiError &&
+				error.status === 409 &&
+				error.message === 'sync-schema-update-required'
+			) {
+				if (checkCurrentSyncRun(generation, context.user.id)) {
+					markAccountSyncUpdateRequired(
+						context.user.id,
+						'sync-schema-update-required'
+					);
+				}
 				return false;
 			}
 			if (error instanceof AccountApiError && error.status === 429) {

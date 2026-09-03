@@ -6,8 +6,8 @@ import { useDesignPreferences } from '@/design/preferences/DesignPreferencesCont
 import Heading from '@/design/ui/components/heading';
 import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
 
-import { type TPreferenceTargetKey } from '@/features/preferences/client/globalSearch/searchItems';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
+import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
 
 import SwitchItem from './PreferenceSwitchItem';
 import {

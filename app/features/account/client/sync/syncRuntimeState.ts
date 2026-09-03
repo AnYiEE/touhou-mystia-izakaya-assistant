@@ -368,6 +368,24 @@ export function setAccountSyncFutureStateIsolated(
 	return true;
 }
 
+export function markAccountSyncUpdateRequired(
+	userId: string,
+	message:
+		| 'sync-client-update-required'
+		| 'sync-schema-update-required' = 'sync-client-update-required'
+) {
+	if (!checkCurrentSyncUser(userId)) {
+		return false;
+	}
+
+	setAccountSyncFutureStateIsolated(userId, true);
+	accountStore.shared.sync.canRetry.set(false);
+	accountStore.shared.sync.lastError.set(message);
+	accountStore.shared.sync.lastResult.set('failed');
+
+	return true;
+}
+
 export function replaceAccountSyncConflicts(
 	userId: string,
 	conflicts: ReadonlyArray<ISyncConflictItem>

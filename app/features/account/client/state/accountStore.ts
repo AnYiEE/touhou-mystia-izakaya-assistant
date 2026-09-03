@@ -37,7 +37,7 @@ export type TAccountSyncConflictResolutionReadiness =
 	| 'storage-unavailable'
 	| 'unsupported';
 
-const storeVersion = { initial: 0 } as const;
+const ACCOUNT_STORE_VERSION = { initial: 0 } as const;
 
 const state = {
 	persistence: {},
@@ -84,7 +84,7 @@ export const accountStore = store(state, {
 			partialize: (currentStore): TAccountPersistedState => ({
 				persistence: currentStore.persistence,
 			}),
-			version: storeVersion.initial,
+			version: ACCOUNT_STORE_VERSION.initial,
 		}),
 	],
 }).actions((currentStore) => ({

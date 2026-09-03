@@ -8,11 +8,12 @@ import type { RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog
 import type { TDlc } from '@/domain/data/shared/types';
 
 import type { TItemDataItem } from '@/features/catalog/shared/contracts';
-import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
 import {
-	PINYIN_SORT_STATE_MAP,
-	type TPinyinSortState,
-} from '@/features/catalog/shared/state/pinyinSort';
+	createCatalogPersistenceShape,
+	toAllowedValueSet,
+} from '@/features/catalog/shared/state/catalogPersistenceShape';
+import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
+import { PINYIN_SORT_STATE_MAP } from '@/features/catalog/shared/state/pinyinSort';
 
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
 
@@ -37,16 +38,36 @@ export function createCollectibleStore<TCatalog extends TCollectibleCatalog>({
 	instance: TCatalog;
 	storageName: string;
 }) {
+	const persistenceShape = createCatalogPersistenceShape({
+		allowedValues: {
+			availabilityDlcs: toAllowedValueSet(
+				instance.data.flatMap((item) => item.availabilityDlcs)
+			),
+			contentDlcs: toAllowedValueSet(
+				instance.data.map((item) => item.dlc)
+			),
+			sources: toAllowedValueSet(
+				instance.data.flatMap((item) => getSources(item))
+			),
+		},
+		createDefaultFilters(): {
+			availabilityDlcs: string[];
+			contentDlcs: string[];
+			sources: string[];
+		} {
+			return { availabilityDlcs: [], contentDlcs: [], sources: [] };
+		},
+		filterKinds: {
+			availabilityDlcs: 'string',
+			contentDlcs: 'string',
+			sources: 'string',
+		},
+		pinyinSortState: PINYIN_SORT_STATE_MAP.none,
+	});
+
 	const state = {
 		instance,
-		persistence: {
-			filters: {
-				availabilityDlcs: [] as string[],
-				contentDlcs: [] as string[],
-				sources: [] as string[],
-			},
-			pinyinSortState: PINYIN_SORT_STATE_MAP.none as TPinyinSortState,
-		},
+		persistence: persistenceShape.createDefault(),
 		shared: { hiddenItems: { dlcs: new Set<TDlc>() } },
 	};
 	const getNames = createNamesCache(instance);
@@ -60,6 +81,7 @@ export function createCollectibleStore<TCatalog extends TCollectibleCatalog>({
 		middlewares: [
 			createPersistMiddleware<typeof state>({
 				name: storageName,
+				normalize: persistenceShape.normalize,
 				partialize: (currentStore) =>
 					({
 						persistence: currentStore.persistence,
@@ -116,11 +138,9 @@ export function createCollectibleStore<TCatalog extends TCollectibleCatalog>({
 	}));
 
 	collectibleStore.shared.hiddenItems.dlcs.onChange(() => {
-		collectibleStore.persistence.filters.set({
-			availabilityDlcs: [],
-			contentDlcs: [],
-			sources: [],
-		});
+		collectibleStore.persistence.filters.set(
+			persistenceShape.createDefault().filters
+		);
 	});
 
 	return { getSources, store: collectibleStore };

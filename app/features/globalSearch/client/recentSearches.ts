@@ -1,6 +1,10 @@
 import isObject from 'lodash/isObject.js';
 
 import { GLOBAL_SEARCH_RECENT_STORAGE_KEY } from '@/features/globalSearch/core/constants';
+import {
+	type IGlobalSearchRecentState,
+	recentSearchShape,
+} from '@/features/globalSearch/shapes/recentSearchShape';
 
 import { safeStorage } from '@/infrastructure/browser/storage/safeStorage';
 
@@ -12,14 +16,8 @@ import {
 const MAX_RECENT_ITEMS = 8;
 const MAX_RECENT_QUERIES = 8;
 
-export interface IGlobalSearchRecentState {
-	items: string[];
-	queries: string[];
-}
-
 export const EMPTY_GLOBAL_SEARCH_RECENT_STATE: IGlobalSearchRecentState = {
-	items: [],
-	queries: [],
+	...recentSearchShape.createDefault(),
 };
 
 export function writeGlobalSearchRecentState(state: IGlobalSearchRecentState) {
@@ -39,21 +37,12 @@ export function readGlobalSearchRecentState(
 
 	try {
 		const parsed: unknown = JSON.parse(value);
-		if (
-			isObject(parsed) &&
-			Array.isArray(
-				(parsed as Partial<IGlobalSearchRecentState>).items
-			) &&
-			Array.isArray((parsed as Partial<IGlobalSearchRecentState>).queries)
-		) {
-			const recentState = parsed as IGlobalSearchRecentState;
+		if (isObject(parsed)) {
+			const recentState = recentSearchShape.normalize(parsed);
 			const normalizedState = {
-				items: recentState.items
-					.filter((item): item is string => typeof item === 'string')
-					.slice(0, MAX_RECENT_ITEMS),
-				queries: recentState.queries
-					.filter((item): item is string => typeof item === 'string')
-					.slice(0, MAX_RECENT_QUERIES),
+				...recentState,
+				items: recentState.items.slice(0, MAX_RECENT_ITEMS),
+				queries: recentState.queries.slice(0, MAX_RECENT_QUERIES),
 			};
 			const migratedState = migrateGlobalSearchRecentState(
 				normalizedState,
@@ -82,6 +71,7 @@ export function addGlobalSearchRecentEntry({
 }): IGlobalSearchRecentState {
 	const trimmedQuery = query.trim();
 	return {
+		...(state.extra === undefined ? {} : { extra: state.extra }),
 		items: [
 			itemId,
 			...state.items.filter((recentItemId) => recentItemId !== itemId),
@@ -99,7 +89,7 @@ export function addGlobalSearchRecentEntry({
 }
 
 export function clearGlobalSearchRecentItems(state: IGlobalSearchRecentState) {
-	return { ...state, items: [] };
+	return { ...state, items: [], queries: [...state.queries] };
 }
 
 export function clearGlobalSearchRecentQueries(

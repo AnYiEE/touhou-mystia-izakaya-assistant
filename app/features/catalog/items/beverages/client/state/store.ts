@@ -7,11 +7,12 @@ import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
 import type { TBeverageTagId } from '@/domain/data/tags/types';
 
-import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
 import {
-	PINYIN_SORT_STATE_MAP,
-	type TPinyinSortState,
-} from '@/features/catalog/shared/state/pinyinSort';
+	createCatalogPersistenceShape,
+	toAllowedValueSet,
+} from '@/features/catalog/shared/state/catalogPersistenceShape';
+import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
+import { PINYIN_SORT_STATE_MAP } from '@/features/catalog/shared/state/pinyinSort';
 
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
 
@@ -29,21 +30,53 @@ import '@/infrastructure/state/enableImmerMapSet';
 
 const instance = BeverageCatalog.getInstance();
 
+const persistenceShape = createCatalogPersistenceShape({
+	allowedValues: {
+		availabilityDlcs: toAllowedValueSet(
+			instance.getValuesByProp('availabilityDlcs')
+		),
+		contentDlcs: toAllowedValueSet(instance.getValuesByProp('dlc')),
+		levels: toAllowedValueSet(instance.getValuesByProp('level')),
+		noPlaces: toAllowedValueSet(instance.getValuesByProp('maps').flat()),
+		noTags: toAllowedValueSet(instance.getValuesByProp('tags').flat()),
+		places: toAllowedValueSet(instance.getValuesByProp('maps').flat()),
+		tags: toAllowedValueSet(instance.getValuesByProp('tags').flat()),
+	},
+	createDefaultFilters(): {
+		availabilityDlcs: string[];
+		contentDlcs: string[];
+		levels: string[];
+		noPlaces: TMapLabel[];
+		noTags: TBeverageTagId[];
+		places: TMapLabel[];
+		tags: TBeverageTagId[];
+	} {
+		return {
+			availabilityDlcs: [],
+			contentDlcs: [],
+			levels: [],
+			noPlaces: [],
+			noTags: [],
+			places: [],
+			tags: [],
+		};
+	},
+	filterKinds: {
+		availabilityDlcs: 'string',
+		contentDlcs: 'string',
+		levels: 'string',
+		noPlaces: 'string',
+		noTags: 'number',
+		places: 'string',
+		tags: 'number',
+	},
+	pinyinSortState: PINYIN_SORT_STATE_MAP.none,
+});
+
 const state = {
 	instance,
 
-	persistence: {
-		filters: {
-			availabilityDlcs: [] as string[],
-			contentDlcs: [] as string[],
-			levels: [] as string[],
-			noPlaces: [] as TMapLabel[],
-			noTags: [] as TBeverageTagId[],
-			places: [] as TMapLabel[],
-			tags: [] as TBeverageTagId[],
-		},
-		pinyinSortState: PINYIN_SORT_STATE_MAP.none as TPinyinSortState,
-	},
+	persistence: persistenceShape.createDefault(),
 	shared: { hiddenItems: { dlcs: new Set<TDlc>() } },
 };
 
@@ -58,6 +91,7 @@ export const beveragesStore = store(state, {
 					version
 				) as typeof state,
 			name: 'page-beverages-storage',
+			normalize: persistenceShape.normalize,
 			partialize: (currentStore) =>
 				({
 					persistence: currentStore.persistence,
@@ -135,13 +169,7 @@ export const beveragesStore = store(state, {
 }));
 
 beveragesStore.shared.hiddenItems.dlcs.onChange(() => {
-	beveragesStore.persistence.filters.set({
-		availabilityDlcs: [],
-		contentDlcs: [],
-		levels: [],
-		noPlaces: [],
-		noTags: [],
-		places: [],
-		tags: [],
-	});
+	beveragesStore.persistence.filters.set(
+		persistenceShape.createDefault().filters
+	);
 });

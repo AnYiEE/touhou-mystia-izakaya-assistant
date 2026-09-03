@@ -26,7 +26,6 @@ import type {
 } from '@/features/account/sync/types';
 import {
 	checkSyncStateRebuildChanges,
-	findUnsupportedSyncSchemaVersion,
 	parseSyncStatePutBody,
 } from '@/features/account/sync/validation';
 
@@ -115,16 +114,22 @@ export async function POST(request: NextRequest) {
 	if (bodyResult.status === 'ok' && !checkSyncProtocolRequestBody(rawBody)) {
 		return createSyncClientUpdateRequiredResponse();
 	}
-	const body = parseSyncStatePutBody(rawBody, ['protocol_version']);
-	if (body === null || !checkSyncStateRebuildChanges(body.changes)) {
-		const unsupportedSchema = findUnsupportedSyncSchemaVersion(rawBody);
-		if (unsupportedSchema !== null) {
-			return createNoStoreErrorResponse(
-				ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.schemaUpdateRequired,
-				409,
-				unsupportedSchema
-			);
-		}
+	const parsedResult = parseSyncStatePutBody(rawBody, ['protocol_version']);
+	if (parsedResult.status === 'invalid-structure') {
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
+			400
+		);
+	}
+	if (parsedResult.status === 'update-required') {
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.schemaUpdateRequired,
+			409,
+			parsedResult
+		);
+	}
+	const { body } = parsedResult;
+	if (!checkSyncStateRebuildChanges(body.changes)) {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
 			400

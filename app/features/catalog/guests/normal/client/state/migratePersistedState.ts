@@ -9,45 +9,21 @@ import type { TFoodTagId } from '@/domain/data/tags/types';
 
 import { migrateLegacyNormalGuestMealsSnapshotV2ToV3 } from '@/features/account/sync/serializers/legacySavedMeals';
 import { migrateMealFoodV1ToV2 } from '@/features/account/sync/serializers/meals';
+import { NORMAL_GUEST_STORE_VERSION } from '@/features/catalog/guests/shared/state/guestStoreVersions';
 import { migrateLegacyFoodTableSortDescriptor } from '@/features/catalog/guests/shared/state/migrateLegacyFoodTableKeys';
 
 import { type normalGuestInitialState as state } from './initialState';
-
-export const NORMAL_GUEST_STORE_VERSION = {
-	initial: 0,
-	popular: 1,
-	popularFull: 2, // eslint-disable-next-line sort-keys
-	ingredientLevel: 3,
-	rating: 4, // eslint-disable-next-line sort-keys
-	extraGuest: 5, // eslint-disable-next-line sort-keys
-	dynamicMeal: 6,
-	showCooker: 7,
-	tableRows: 8, // eslint-disable-next-line sort-keys
-	ingredientTag: 9,
-	removeBeverage: 10, // eslint-disable-next-line sort-keys
-	addBackBeverage: 11,
-	tablePersist: 12, // eslint-disable-next-line sort-keys
-	mealData: 13,
-	tableShare: 14, // eslint-disable-next-line sort-keys
-	deleteMealIndex: 15,
-	removeGuestSearchValue: 16, // eslint-disable-next-line sort-keys
-	availabilityDlcFilter: 17,
-	mealRecipeId: 18,
-	recordIdentity: 19,
-} as const;
-
-const storeVersion = NORMAL_GUEST_STORE_VERSION;
 
 export function migrateNormalGuestPersistedState(
 	persistedState: unknown,
 	version: number
 ): typeof state {
-	if (version >= storeVersion.recordIdentity) {
+	if (version >= NORMAL_GUEST_STORE_VERSION.recordIdentity) {
 		return persistedState as typeof state;
 	}
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
 	const oldState = structuredClone(persistedState) as any;
-	if (version < storeVersion.popular) {
+	if (version < NORMAL_GUEST_STORE_VERSION.popular) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		oldState.persistence = oldState.page;
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -55,7 +31,7 @@ export function migrateNormalGuestPersistedState(
 		delete oldState.persistence.selected;
 		delete oldState.page;
 	}
-	if (version < storeVersion.popularFull) {
+	if (version < NORMAL_GUEST_STORE_VERSION.popularFull) {
 		for (const meals of Object.values(
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			oldState.persistence.meals
@@ -66,7 +42,7 @@ export function migrateNormalGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.ingredientLevel) {
+	if (version < NORMAL_GUEST_STORE_VERSION.ingredientLevel) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: {
@@ -75,7 +51,7 @@ export function migrateNormalGuestPersistedState(
 		} = oldState;
 		filters.levels = [];
 	}
-	if (version < storeVersion.rating) {
+	if (version < NORMAL_GUEST_STORE_VERSION.rating) {
 		for (const meals of Object.values(
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			oldState.persistence.meals
@@ -86,7 +62,7 @@ export function migrateNormalGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.extraGuest) {
+	if (version < NORMAL_GUEST_STORE_VERSION.extraGuest) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: {
@@ -96,7 +72,7 @@ export function migrateNormalGuestPersistedState(
 		filters.includes = [];
 		filters.excludes = [];
 	}
-	if (version < storeVersion.dynamicMeal) {
+	if (version < NORMAL_GUEST_STORE_VERSION.dynamicMeal) {
 		for (const meals of Object.values(
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			oldState.persistence.meals
@@ -108,7 +84,7 @@ export function migrateNormalGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.showCooker) {
+	if (version < NORMAL_GUEST_STORE_VERSION.showCooker) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: {
@@ -123,7 +99,7 @@ export function migrateNormalGuestPersistedState(
 			visibleColumns.push('cooker');
 		}
 	}
-	if (version < storeVersion.tableRows) {
+	if (version < NORMAL_GUEST_STORE_VERSION.tableRows) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: {
@@ -138,7 +114,7 @@ export function migrateNormalGuestPersistedState(
 			foodTable.rows = 8;
 		}
 	}
-	if (version < storeVersion.ingredientTag) {
+	if (version < NORMAL_GUEST_STORE_VERSION.ingredientTag) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: {
@@ -148,7 +124,7 @@ export function migrateNormalGuestPersistedState(
 		filters.tags = [];
 		filters.noTags = [];
 	}
-	if (version < storeVersion.removeBeverage) {
+	if (version < NORMAL_GUEST_STORE_VERSION.removeBeverage) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const { persistence } = oldState;
 		delete persistence.beverage;
@@ -162,7 +138,7 @@ export function migrateNormalGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.addBackBeverage) {
+	if (version < NORMAL_GUEST_STORE_VERSION.addBackBeverage) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const { persistence } = oldState;
 		persistence.beverage = {
@@ -181,7 +157,7 @@ export function migrateNormalGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.tablePersist) {
+	if (version < NORMAL_GUEST_STORE_VERSION.tablePersist) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: {
@@ -195,7 +171,7 @@ export function migrateNormalGuestPersistedState(
 		foodTable.dlcs = [];
 		foodTable.sortDescriptor = {};
 	}
-	if (version < storeVersion.mealData) {
+	if (version < NORMAL_GUEST_STORE_VERSION.mealData) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const { persistence } = oldState;
 		for (const meals of Object.values(
@@ -215,7 +191,7 @@ export function migrateNormalGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.tableShare) {
+	if (version < NORMAL_GUEST_STORE_VERSION.tableShare) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: {
@@ -228,7 +204,7 @@ export function migrateNormalGuestPersistedState(
 		delete foodTable.rows;
 		delete foodTable.visibleColumns;
 	}
-	if (version < storeVersion.deleteMealIndex) {
+	if (version < NORMAL_GUEST_STORE_VERSION.deleteMealIndex) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const { persistence } = oldState;
 		for (const meals of Object.values(
@@ -241,10 +217,10 @@ export function migrateNormalGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.removeGuestSearchValue) {
+	if (version < NORMAL_GUEST_STORE_VERSION.removeGuestSearchValue) {
 		delete oldState.persistence.customer.searchValue;
 	}
-	if (version < storeVersion.availabilityDlcFilter) {
+	if (version < NORMAL_GUEST_STORE_VERSION.availabilityDlcFilter) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		oldState.persistence.beverage.table.availabilityDlcs =
 			oldState.persistence.beverage.table.dlcs;
@@ -262,7 +238,7 @@ export function migrateNormalGuestPersistedState(
 			oldState.persistence.recipe.table.dlcs;
 		delete oldState.persistence.recipe.table.dlcs;
 	}
-	if (version < storeVersion.mealRecipeId) {
+	if (version < NORMAL_GUEST_STORE_VERSION.mealRecipeId) {
 		for (const meals of Object.values(
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			oldState.persistence.meals
@@ -274,7 +250,7 @@ export function migrateNormalGuestPersistedState(
 			}
 		}
 	}
-	if (version < storeVersion.recordIdentity) {
+	if (version < NORMAL_GUEST_STORE_VERSION.recordIdentity) {
 		oldState.persistence.meals =
 			migrateLegacyNormalGuestMealsSnapshotV2ToV3(
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-argument

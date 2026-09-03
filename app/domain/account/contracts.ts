@@ -37,6 +37,10 @@ export const SYNC_NAMESPACE_MAP = {
 export type TSyncNamespace =
 	(typeof SYNC_NAMESPACE_MAP)[keyof typeof SYNC_NAMESPACE_MAP];
 
+export const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
+	Object.values(SYNC_NAMESPACE_MAP)
+);
+
 export const SSO_CALLBACK_EVENT_LIST = [
 	'client_deleted',
 	'client_disabled',

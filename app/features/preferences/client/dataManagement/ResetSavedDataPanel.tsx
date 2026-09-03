@@ -151,7 +151,7 @@ export default memo<IProps>(function ResetSavedDataPanel({
 					showProgress(startProgress);
 					specialGuestStore.persistence.guest.filters.set((prev) => {
 						Object.keys(prev).forEach((key) => {
-							prev[key as keyof typeof prev] = [];
+							prev[key] = [];
 						});
 					});
 					specialGuestStore.persistence.guest.orderLinkedFilter.set(
@@ -175,7 +175,7 @@ export default memo<IProps>(function ResetSavedDataPanel({
 					specialGuestStore.persistence.ingredient.filters.set(
 						(prev) => {
 							Object.keys(prev).forEach((key) => {
-								prev[key as keyof typeof prev] = [];
+								prev[key] = [];
 							});
 						}
 					);

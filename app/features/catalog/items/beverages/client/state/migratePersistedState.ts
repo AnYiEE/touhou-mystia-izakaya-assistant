@@ -12,23 +12,21 @@ export const BEVERAGES_STORE_VERSION = {
 	recordIdentity: 5,
 } as const;
 
-const storeVersion = BEVERAGES_STORE_VERSION;
-
 export function migrateBeveragesPersistedState<T>(
 	persistedState: T,
 	version: number
 ): T {
-	if (version >= storeVersion.recordIdentity) {
+	if (version >= BEVERAGES_STORE_VERSION.recordIdentity) {
 		return persistedState;
 	}
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
 	const oldState = structuredClone(persistedState) as any;
-	if (version < storeVersion.popular) {
+	if (version < BEVERAGES_STORE_VERSION.popular) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		oldState.persistence = oldState.page;
 		delete oldState.page;
 	}
-	if (version < storeVersion.filterPlaces) {
+	if (version < BEVERAGES_STORE_VERSION.filterPlaces) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const {
 			persistence: { filters },
@@ -36,17 +34,17 @@ export function migrateBeveragesPersistedState<T>(
 		filters.places = [];
 		filters.noPlaces = [];
 	}
-	if (version < storeVersion.removeSearchValue) {
+	if (version < BEVERAGES_STORE_VERSION.removeSearchValue) {
 		delete oldState.persistence.searchValue;
 	}
-	if (version < storeVersion.availabilityDlcFilter) {
+	if (version < BEVERAGES_STORE_VERSION.availabilityDlcFilter) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		oldState.persistence.filters.contentDlcs =
 			oldState.persistence.filters.dlcs;
 		oldState.persistence.filters.availabilityDlcs = [];
 		delete oldState.persistence.filters.dlcs;
 	}
-	if (version < storeVersion.recordIdentity) {
+	if (version < BEVERAGES_STORE_VERSION.recordIdentity) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const { filters } = oldState.persistence;
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment

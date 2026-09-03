@@ -109,16 +109,24 @@ export async function POST(request: NextRequest) {
 		return createSyncClientUpdateRequiredResponse();
 	}
 
-	const parsedBody = parseSyncStatePutBody(body, [
+	const parsedResult = parseSyncStatePutBody(body, [
 		'csrf_token',
 		'protocol_version',
 	]);
-	if (parsedBody === null) {
+	if (parsedResult.status === 'invalid-structure') {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
 			400
 		);
 	}
+	if (parsedResult.status === 'update-required') {
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.schemaUpdateRequired,
+			409,
+			parsedResult
+		);
+	}
+	const { body: parsedBody } = parsedResult;
 	if (auth.data.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
 		return createNoStoreErrorResponse(
 			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.paused,

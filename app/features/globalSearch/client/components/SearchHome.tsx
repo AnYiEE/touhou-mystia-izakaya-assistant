@@ -5,9 +5,9 @@ import { AnimatePresence } from 'framer-motion';
 import Button from '@/design/ui/components/button';
 import Tooltip from '@/design/ui/components/tooltip';
 
-import { type IGlobalSearchRecentState } from '@/features/globalSearch/client/recentSearches';
 import type { IGlobalSearchIndexItem } from '@/features/globalSearch/contracts';
 import { GLOBAL_SEARCH_EXAMPLE_QUERIES } from '@/features/globalSearch/core/constants';
+import { type IGlobalSearchRecentState } from '@/features/globalSearch/shapes/recentSearchShape';
 
 import { SearchItemVisual } from './SearchItemVisual';
 import { SearchSyntaxToken, renderSearchSyntax } from './SearchSyntax';

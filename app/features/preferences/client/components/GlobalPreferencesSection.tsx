@@ -13,9 +13,9 @@ import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import { DYNAMIC_TAG_MAP } from '@/domain/data/tags/tagFacts';
 
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
-import { type TPreferenceTargetKey } from '@/features/preferences/client/globalSearch/searchItems';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
+import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
 
 import SwitchItem from './PreferenceSwitchItem';
 import {

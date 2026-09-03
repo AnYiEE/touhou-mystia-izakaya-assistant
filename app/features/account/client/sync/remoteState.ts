@@ -71,13 +71,16 @@ import {
 	replaceDirtyQueueCollisionIfCurrent,
 	writeDirtyQueueEntryIfCurrent,
 } from './dirtyQueue/storageTransition';
-import { markAccountSyncDirty } from './queue';
+import { TERMINAL_SYNC_ERROR_PRECEDENCE, markAccountSyncDirty } from './queue';
 import {
-	TERMINAL_SYNC_ERROR_PRECEDENCE,
 	readMigratedDirtyQueueEntries,
 	updatePendingCount,
 } from './queueRuntime';
-import { getRecordMap, validateRemoteSyncState } from './remoteProtocol';
+import {
+	getRecordMap,
+	readRemoteSyncData,
+	validateRemoteSyncState,
+} from './remoteProtocol';
 import {
 	captureAccountSyncResetGeneration,
 	checkAccountSyncResetWriteAllowed,
@@ -106,6 +109,7 @@ import {
 import { getAccountSyncLifecyclePort } from './syncLifecyclePort';
 import {
 	clearAccountSyncRuntimeConflicts,
+	markAccountSyncUpdateRequired,
 	removeAccountSyncConflict,
 	replaceAccountSyncConflicts,
 	setAccountSyncConflictResolutionReadinesses,
@@ -159,9 +163,7 @@ export async function fetchSyncStateForCurrentUser(
 			error.message === 'sync-client-update-required' &&
 			checkCurrentSyncRun(generation, userId)
 		) {
-			setAccountSyncFutureStateIsolated(userId, true);
-			accountStore.shared.sync.canRetry.set(false);
-			accountStore.shared.sync.lastResult.set('failed');
+			markAccountSyncUpdateRequired(userId);
 		}
 
 		throw error;
@@ -276,7 +278,7 @@ function applyRemoteStatePreservingDirtyUnlocked({
 			const currentCloud =
 				record === undefined
 					? serializer.getDefaultSnapshot()
-					: serializer.migrate(record.data, record.schema_version);
+					: readRemoteSyncData(record);
 			const storedCloud = serializer.deserialize(storedConflict.cloud);
 			if (
 				storedConflict.revision === (record?.revision ?? 0) &&
@@ -296,10 +298,7 @@ function applyRemoteStatePreservingDirtyUnlocked({
 
 		const serializer = getAccountSyncSerializer(entry.namespace);
 		const record = recordMap[entry.namespace];
-		const cloud =
-			record === undefined
-				? null
-				: serializer.migrate(record.data, record.schema_version);
+		const cloud = record === undefined ? null : readRemoteSyncData(record);
 		const local = serializer.migrate(entry.data, entry.schema_version);
 		const cloudSnapshot = cloud ?? serializer.getDefaultSnapshot();
 		if (checkSnapshotEqual(local, cloudSnapshot)) {
@@ -410,8 +409,7 @@ function applyRemoteStatePreservingDirtyUnlocked({
 			return;
 		}
 
-		const serializer = getAccountSyncSerializer(record.namespace);
-		const data = serializer.migrate(record.data, record.schema_version);
+		const data = readRemoteSyncData(record);
 		writeDirtyQueueEntryIfCurrent({
 			expectedEntry: null,
 			generationToken,

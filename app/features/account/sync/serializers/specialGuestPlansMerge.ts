@@ -20,6 +20,7 @@ import type {
 } from '@/features/specialGuestPlans/contracts';
 
 import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+import { createVersionedMigrator } from '@/shared/utilities/state/versionedMigration';
 
 import { isAllowedStringArray, isStringArray } from './utils';
 
@@ -333,12 +334,25 @@ function resolveLegacyPlanSpecialGuests(
 	});
 }
 
+function migrateLegacySpecialGuestPlanV1ToV2(
+	item: ILegacySpecialGuestPlanV1
+): ILegacySpecialGuestPlanV2 {
+	return { ...item, customerSort: 'default' };
+}
+
 export function migrateLegacySpecialGuestPlansSnapshotV1ToV2(
 	data: ILegacySpecialGuestPlansSnapshot<ILegacySpecialGuestPlanV1>
 ): ILegacySpecialGuestPlansSnapshot<ILegacySpecialGuestPlanV2> {
 	return {
 		...data,
-		items: data.items.map((item) => ({ ...item, customerSort: 'default' })),
+		items: data.items.flatMap((item) => {
+			try {
+				return [migrateLegacySpecialGuestPlanV1ToV2(item)];
+			} catch {
+				/* Invalid legacy plans are dropped individually. */
+				return [];
+			}
+		}),
 	};
 }
 
@@ -361,62 +375,64 @@ export function migrateLegacySpecialGuestPlansSnapshotV2ToV3(
 export function migrateLegacySpecialGuestPlansSnapshotV3ToV4(
 	data: ILegacySpecialGuestPlansSnapshot<ILegacySpecialGuestPlanV2>
 ): ISpecialGuestPlansState {
-	const items = data.items.map((item) => {
-		const {
-			customerSort: guestSort,
-			manualCustomers: manualGuests,
-			places,
-			...plan
-		} = item;
+	const items = data.items.flatMap((item) => {
+		try {
+			const {
+				customerSort: guestSort,
+				manualCustomers: manualGuests,
+				places,
+				...plan
+			} = item;
 
-		return {
-			...plan,
-			excludes: resolveLegacyPlanSpecialGuests(item.excludes),
-			guestSort,
-			includes: resolveLegacyPlanSpecialGuests(item.includes),
-			manualGuests: resolveLegacyPlanSpecialGuests(manualGuests),
-			maps: resolveLegacyPlanMaps(places),
-		};
+			return [
+				{
+					...plan,
+					excludes: resolveLegacyPlanSpecialGuests(item.excludes),
+					guestSort,
+					includes: resolveLegacyPlanSpecialGuests(item.includes),
+					manualGuests: resolveLegacyPlanSpecialGuests(manualGuests),
+					maps: resolveLegacyPlanMaps(places),
+				},
+			];
+		} catch {
+			/* Invalid legacy plans are dropped individually. */
+			return [];
+		}
 	});
 
 	return { activeId: data.activeId, items };
 }
 
+const specialGuestPlansMigrator = createVersionedMigrator({
+	currentVersion: 4,
+	migrations: {
+		1: (value) =>
+			migrateLegacySpecialGuestPlansSnapshotV1ToV2(
+				value as Parameters<
+					typeof migrateLegacySpecialGuestPlansSnapshotV1ToV2
+				>[0]
+			),
+		2: (value) =>
+			migrateLegacySpecialGuestPlansSnapshotV2ToV3(
+				value as Parameters<
+					typeof migrateLegacySpecialGuestPlansSnapshotV2ToV3
+				>[0]
+			),
+		3: (value) =>
+			migrateLegacySpecialGuestPlansSnapshotV3ToV4(
+				value as Parameters<
+					typeof migrateLegacySpecialGuestPlansSnapshotV3ToV4
+				>[0]
+			),
+	},
+	minVersion: 1,
+});
+
 export function migrateSpecialGuestPlansSnapshot(
 	data: unknown,
 	version: number
 ) {
-	let migratedData = data;
-	let schemaVersion = version;
-	if (schemaVersion === 1) {
-		if (!checkSpecialGuestPlansData(migratedData, 1, false, false)) {
-			return data;
-		}
-		migratedData =
-			migrateLegacySpecialGuestPlansSnapshotV1ToV2(migratedData);
-		schemaVersion = 2;
-	}
-	if (schemaVersion === 2) {
-		if (!checkSpecialGuestPlansData(migratedData, 2, false, false)) {
-			return data;
-		}
-		migratedData =
-			migrateLegacySpecialGuestPlansSnapshotV2ToV3(migratedData);
-		schemaVersion = 3;
-	}
-	if (schemaVersion === 3) {
-		if (!checkSpecialGuestPlansData(migratedData, 3, false, true)) {
-			return data;
-		}
-		migratedData =
-			migrateLegacySpecialGuestPlansSnapshotV3ToV4(migratedData);
-		schemaVersion = 4;
-	}
-	if (schemaVersion !== 4) {
-		throw new Error('unsupported-special-guest-plans-schema-version');
-	}
-
-	return migratedData;
+	return specialGuestPlansMigrator(data, version);
 }
 
 const SPECIAL_GUEST_PLAN_ATOMIC_GROUPS = [

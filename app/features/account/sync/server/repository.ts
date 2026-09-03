@@ -3,14 +3,14 @@ import { type Transaction, sql } from 'kysely';
 
 import {
 	ACCOUNT_SYNC_STATUS_MAP,
-	SYNC_NAMESPACE_MAP,
-	type TSyncNamespace,
+	SYNC_NAMESPACE_SET,
 	USER_STATUS_MAP,
 } from '@/domain/account/contracts';
 
 import type { TAuthenticatedSessionIdentity } from '@/features/account/server/persistence/contracts';
 import { getAccountDatabase } from '@/features/account/server/persistence/database';
 import { lockActiveUserSessionInTransaction } from '@/features/account/server/persistence/repositories/sessions';
+import { checkKnownSyncNamespace } from '@/features/account/sync/normalizeSyncStateData';
 import { maskBackupCode } from '@/features/legacyBackup/server/logging';
 
 import type {
@@ -44,16 +44,6 @@ const USER_CREDENTIAL_TABLE_NAME = TABLE_NAME_MAP.userCredential;
 const SESSION_TABLE_NAME = TABLE_NAME_MAP.session;
 const BACKUP_IMPORT_TABLE_NAME = TABLE_NAME_MAP.backupImportRecord;
 const SQLITE_WRITE_RETRY_DELAYS_MS = [10, 50, 200] as const;
-const SYNC_NAMESPACE_SET = new Set<TSyncNamespace>(
-	Object.values(SYNC_NAMESPACE_MAP)
-);
-
-function checkSyncNamespace(value: unknown): value is TSyncNamespace {
-	return (
-		typeof value === 'string' &&
-		SYNC_NAMESPACE_SET.has(value as TSyncNamespace)
-	);
-}
 
 interface IPutUserStateEntryIfRevisionChange {
 	entry: TUserStateNew;
@@ -80,7 +70,7 @@ function parseBackupImportResults(value: TBackupImportRecord['results']) {
 		const { namespace, revision, status } = record;
 		if (
 			status !== 'ok' ||
-			!checkSyncNamespace(namespace) ||
+			!checkKnownSyncNamespace(namespace) ||
 			!canIncrementNonNegativeSafeInteger(revision)
 		) {
 			return [];
@@ -482,12 +472,12 @@ export async function putUserStateEntriesIfRevision(
 								candidate_namespace_bytes:
 									capacity.candidateNamespaceBytes[
 										change.entry.namespace
-									],
+									] ?? 0,
 								current_bytes: capacity.currentBytes,
 								current_namespace_bytes:
 									capacity.currentNamespaceBytes[
 										change.entry.namespace
-									],
+									] ?? 0,
 								entry: change.entry,
 								limit_bytes: configuration.stateTotalMaxBytes,
 								namespaces,
@@ -721,7 +711,7 @@ export async function rebuildUserStateIfPausedWithAudit(
 		entries.some(
 			(entry) =>
 				entry.user_id !== userId ||
-				!checkSyncNamespace(entry.namespace) ||
+				!checkKnownSyncNamespace(entry.namespace) ||
 				entry.revision !== 1 ||
 				!checkNewUserStateEntryCounters(entry)
 		) ||

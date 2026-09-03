@@ -3,8 +3,8 @@ import { SYNC_NAMESPACE_MAP } from '@/domain/account/contracts';
 import { createAccountClientId } from '@/features/account/client/clientId';
 import { accountStore } from '@/features/account/client/state/accountStore';
 import { globalPreferencesSerializer } from '@/features/account/sync/serializers/globalPreferences';
-import type { TGlobalPreferencesSnapshot } from '@/features/account/sync/serializers/globalPreferencesContracts';
 import { getSyncMergeAutomaticResolution } from '@/features/account/sync/serializers/utils';
+import type { TGlobalPreferencesSnapshot } from '@/features/account/sync/shapes/globalPreferencesTypes';
 import type {
 	IAccountSyncBroadcastMessage,
 	IDirtyQueueEntry,
@@ -26,6 +26,7 @@ import {
 } from './dirtyQueue/snapshotHash';
 import { writeDirtyQueueEntryIfCurrent } from './dirtyQueue/storageTransition';
 import { updatePausedConflictEntryIfCurrent } from './queue';
+import { readRemoteSyncData } from './remoteProtocol';
 import { captureAccountSyncResetGeneration } from './resetGeneration';
 import { checkCurrentAccountUser } from './sessionBoundary';
 import { getAccountSyncSerializer } from './snapshot';
@@ -337,10 +338,7 @@ export function mergeConflictFromDirtyEntry({
 	userId: string;
 }) {
 	const serializer = getAccountSyncSerializer(entry.namespace);
-	const cloud =
-		record === null
-			? null
-			: serializer.migrate(record.data, record.schema_version);
+	const cloud = record === null ? null : readRemoteSyncData(record);
 	const local = serializer.migrate(entry.data, entry.schema_version);
 	const storedBase = readAccountSyncBaseSnapshot(
 		userId,

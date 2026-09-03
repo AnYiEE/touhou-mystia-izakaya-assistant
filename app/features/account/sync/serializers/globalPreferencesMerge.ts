@@ -5,7 +5,8 @@ import { type TSyncNamespace } from '@/domain/account/contracts';
 import type {
 	IGlobalPreferencesSetValueOrders,
 	TGlobalPreferencesSnapshot,
-} from './globalPreferencesContracts';
+} from '@/features/account/sync/shapes/globalPreferencesTypes';
+
 import { checkSnapshotEqual, createMergeResult, mergeFieldMap } from './utils';
 
 const GLOBAL_PREFERENCE_ATOMIC_GROUP_PATHS = [

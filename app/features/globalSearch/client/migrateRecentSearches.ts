@@ -4,6 +4,7 @@ import type {
 } from '@/features/globalSearch/contracts';
 
 interface IRecentSearchState {
+	extra?: Record<string, unknown>;
 	items: string[];
 	queries: string[];
 }
@@ -105,5 +106,11 @@ export function migrateGlobalSearchRecentState(
 		items.push(migratedItemId);
 	}
 
-	return isChanged ? { ...state, items } : state;
+	return isChanged
+		? {
+				...(state.extra === undefined ? {} : { extra: state.extra }),
+				items,
+				queries: state.queries,
+			}
+		: state;
 }

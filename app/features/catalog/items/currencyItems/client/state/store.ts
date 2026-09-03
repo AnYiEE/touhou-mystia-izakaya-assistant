@@ -4,11 +4,12 @@ import { filterAvailableItemsByHiddenDlcs } from '@/domain/availability';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import type { TDlc } from '@/domain/data/shared/types';
 
-import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
 import {
-	PINYIN_SORT_STATE_MAP,
-	type TPinyinSortState,
-} from '@/features/catalog/shared/state/pinyinSort';
+	createCatalogPersistenceShape,
+	toAllowedValueSet,
+} from '@/features/catalog/shared/state/catalogPersistenceShape';
+import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
+import { PINYIN_SORT_STATE_MAP } from '@/features/catalog/shared/state/pinyinSort';
 
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
 
@@ -25,16 +26,27 @@ import '@/infrastructure/state/enableImmerMapSet';
 
 const instance = CurrencyItemCatalog.getInstance();
 
+const persistenceShape = createCatalogPersistenceShape({
+	allowedValues: {
+		availabilityDlcs: toAllowedValueSet(
+			instance.getValuesByProp('availabilityDlcs')
+		),
+		contentDlcs: toAllowedValueSet(instance.getValuesByProp('dlc')),
+	},
+	createDefaultFilters(): {
+		availabilityDlcs: string[];
+		contentDlcs: string[];
+	} {
+		return { availabilityDlcs: [], contentDlcs: [] };
+	},
+	filterKinds: { availabilityDlcs: 'string', contentDlcs: 'string' },
+	pinyinSortState: PINYIN_SORT_STATE_MAP.none,
+});
+
 const state = {
 	instance,
 
-	persistence: {
-		filters: {
-			availabilityDlcs: [] as string[],
-			contentDlcs: [] as string[],
-		},
-		pinyinSortState: PINYIN_SORT_STATE_MAP.none as TPinyinSortState,
-	},
+	persistence: persistenceShape.createDefault(),
 	shared: { hiddenItems: { dlcs: new Set<TDlc>() } },
 };
 
@@ -49,6 +61,7 @@ export const currencyItemsStore = store(state, {
 					version
 				) as typeof state,
 			name: 'page-currencies-storage',
+			normalize: persistenceShape.normalize,
 			partialize: (currentStore) =>
 				({
 					persistence: currentStore.persistence,
@@ -91,8 +104,7 @@ export const currencyItemsStore = store(state, {
 }));
 
 currencyItemsStore.shared.hiddenItems.dlcs.onChange(() => {
-	currencyItemsStore.persistence.filters.set({
-		availabilityDlcs: [],
-		contentDlcs: [],
-	});
+	currencyItemsStore.persistence.filters.set(
+		persistenceShape.createDefault().filters
+	);
 });

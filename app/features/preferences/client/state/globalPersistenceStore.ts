@@ -3,28 +3,15 @@ import { type Selection } from '@heroui/table';
 
 import { selectionToKnownValues } from '@/design/ui/components/selectionKeys';
 
-import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
-import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
-import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
-import { NormalGuestCatalog } from '@/domain/catalog/guests/NormalGuestCatalog';
-import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
-import { ClothesCatalog } from '@/domain/catalog/items/ClothesCatalog';
-import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
-import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
-import { DecorationCatalog } from '@/domain/catalog/items/DecorationCatalog';
-import { PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
 import type { TBeverageId } from '@/domain/data/beverages/types';
 import type { TFoodId } from '@/domain/data/foods/types';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
-import { FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
-import { RECOMMENDATION_SORT_PROFILE_LABEL_MAP } from '@/domain/recommendations/labels';
 import {
 	RECOMMENDATION_SORT_PROFILES,
 	type TRecommendationSortProfile,
 } from '@/domain/recommendations/sortProfiles';
-import { checkPopularFoodTagId } from '@/domain/trends/checkPopularFoodTagId';
-import type { IPopularTrend, TPopularFoodTagId } from '@/domain/trends/types';
+import type { TPopularFoodTagId } from '@/domain/trends/types';
 
 import { accountRemoteStateApplicationGuard } from '@/features/account/client/sync/stateGuards';
 import {
@@ -39,150 +26,34 @@ import {
 	requestOverlayOpen,
 } from '@/features/overlays/client';
 import type { TOverlayId } from '@/features/overlays/contracts';
-import { type TPreferenceTargetKey } from '@/features/preferences/client/globalSearch/searchItems';
+import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
+import {
+	createDefaultGlobalStorePersistence,
+	createDefaultGlobalStoreSharedState,
+	createDefaultGlobalStoreStaticState,
+	normalizeGlobalStorePersistence,
+} from '@/features/preferences/shapes/globalPreferencesStateDefinition';
 
 import { createStoreSyncMiddleware } from '@/infrastructure/browser/crossTab/createStoreSyncMiddleware';
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
 
 import { SITE_METADATA } from '@/shared/site/metadata';
-import { generateRange } from '@/shared/utilities/collections/generateRange';
 import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
-import {
-	toGetItemWithKey,
-	toGetValueCollection,
-} from '@/shared/utilities/objects/convertCollection';
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
-import { numberSort } from '@/shared/utilities/sort/numberSort';
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import {
 	GLOBAL_PERSISTENCE_STORE_VERSION,
 	migrateGlobalPersistedState,
 } from './migratePersistedState';
-import { normalizeDonationModalPersistence } from './normalizeDonationModalPersistence';
 
 import '@/infrastructure/state/enableImmerMapSet';
 
-const allDlcs = [
-	...new Set(
-		[
-			BeverageCatalog.getInstance().getValuesByProp('dlc'),
-			ClothesCatalog.getInstance().getValuesByProp('dlc'),
-			CookerCatalog.getInstance().getValuesByProp('dlc'),
-			CurrencyItemCatalog.getInstance().getValuesByProp('dlc'),
-			IngredientCatalog.getInstance().getValuesByProp('dlc'),
-			NormalGuestCatalog.getInstance().getValuesByProp('dlc'),
-			SpecialGuestCatalog.getInstance().getValuesByProp('dlc'),
-			DecorationCatalog.getInstance().getValuesByProp('dlc'),
-			PartnerCatalog.getInstance().getValuesByProp('dlc'),
-			FoodCatalog.getInstance().getValuesByProp('dlc'),
-		].flat()
-	),
-].sort(numberSort) as TDlc[];
-
-const ingredientCatalog = IngredientCatalog.getInstance();
-const foodCatalog = FoodCatalog.getInstance();
-
-const ingredientTags = ingredientCatalog
-	.getValuesByProp('tags')
-	.filter((tag) => !ingredientCatalog.blockedTags.has(tag));
-
-const foodPositiveTags = foodCatalog
-	.getValuesByProp('positiveTags')
-	.filter((tag) => !foodCatalog.blockedTags.has(tag));
-
-const validPopularTags = [
-	...new Set(ingredientTags).union(new Set(foodPositiveTags)),
-]
-	.filter(checkPopularFoodTagId)
-	.sort((a, b) => pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b]))
-	.map((tag) => ({ tag, value: FOOD_TAG_MAP[tag] }));
 const storeName = 'global-storage';
 
 const state = {
-	dlcs: allDlcs.map(toGetValueCollection),
-	popularTags: validPopularTags,
-
-	persistence: {
-		guestCardTagsTooltip: true,
-		hiddenItems: { dlcs: [] as string[] },
-		suggestMeals: {
-			enabled: true,
-			maxExtraIngredients: null as number | null,
-			maxRating: 4,
-			maxResults: 10,
-			sortProfile: 'material-cost-first' as TRecommendationSortProfile,
-		},
-		table: {
-			columns: {
-				beverage: beverageTableColumns.map(toGetItemWithKey('key')),
-				recipe: foodTableColumns
-					.filter(({ key }) => key !== 'time')
-					.map(toGetItemWithKey('key')),
-			},
-			hiddenItems: {
-				beverages: [] as TBeverageId[],
-				foods: [] as TFoodId[],
-				ingredients: [] as TIngredientId[],
-			},
-			row: 8,
-		},
-
-		famousShop: false,
-		popularTrend: { isNegative: false, tag: null } as IPopularTrend,
-
-		cloudCode: null as string | null,
-		dirver: [] as string[],
-		highAppearance: true,
-		tachie: true,
-		vibrate: true,
-
-		userId: null as string | null,
-		version: null as string | null,
-
-		donationModal: {
-			interactionCount: 0,
-			lastMilestoneShown: 0,
-			lastShown: null as number | null,
-		},
-	},
-
-	shared: {
-		suggestMeals: {
-			selectableMaxExtraIngredients: [
-				{ label: '不限', value: null },
-				...generateRange(0, 4).map((n) => ({
-					label: n.toString(),
-					value: n,
-				})),
-			] as Array<{ label: string; value: number | null }>,
-			selectableMaxRatings: [
-				{ label: '极度不满', value: 0 },
-				{ label: '不满', value: 1 },
-				{ label: '普通', value: 2 },
-				{ label: '满意', value: 3 },
-				{ label: '完美', value: 4 },
-			] as Array<{ label: string; value: number }>,
-			selectableMaxResults: generateRange(5, 20).map(
-				toGetValueCollection
-			),
-			selectableSortProfiles: RECOMMENDATION_SORT_PROFILES.map(
-				(value) => ({
-					label: RECOMMENDATION_SORT_PROFILE_LABEL_MAP[value],
-					value,
-				})
-			),
-		},
-		table: {
-			selectableRows: generateRange(5, 20).map(toGetValueCollection),
-		},
-
-		preferencesModal: {
-			isOpen: false,
-			openSource: null as null | 'sideButton' | 'spotlight',
-			targetKey: null as null | TPreferenceTargetKey,
-		},
-	},
+	...createDefaultGlobalStoreStaticState(),
+	persistence: createDefaultGlobalStorePersistence(),
+	shared: createDefaultGlobalStoreSharedState(),
 };
 
 const beverageTableColumnByKey = new Map<string, TBeverageTableColumnKey>(
@@ -213,7 +84,7 @@ const suggestMealSortProfileByKey = new Map<string, TRecommendationSortProfile>(
 	RECOMMENDATION_SORT_PROFILES.map((value) => [value, value])
 );
 const popularTagByKey = new Map<string, TPopularFoodTagId>(
-	validPopularTags.map(({ tag }) => [tag.toString(), tag])
+	state.popularTags.map(({ tag }) => [tag.toString(), tag])
 );
 const tableRowByKey = new Map<string, number>(
 	state.shared.table.selectableRows.map(({ value }) => [
@@ -276,44 +147,23 @@ function normalizeGlobalStoreRemoteState(value: unknown) {
 		string,
 		unknown
 	>;
-	const normalizedPersistence = { ...remotePersistenceRecord };
-	delete normalizedPersistence['version'];
-	const hasDonationModal = Object.hasOwn(
-		remotePersistenceRecord,
-		'donationModal'
-	);
-	const hasLegacyTagsTooltip = Object.hasOwn(
-		remotePersistenceRecord,
-		'customerCardTagsTooltip'
-	);
-	if (!hasDonationModal && !hasLegacyTagsTooltip) {
-		return {
-			...remoteState,
-			persistence: normalizedPersistence,
-		} as Partial<typeof state>;
-	}
 	const {
 		customerCardTagsTooltip: legacyTagsTooltip,
 		...currentPersistence
-	} = normalizedPersistence;
+	} = remotePersistenceRecord;
+	const normalizedPersistence = normalizeGlobalStorePersistence({
+		...currentPersistence,
+		...(legacyTagsTooltip !== undefined &&
+		!Object.hasOwn(currentPersistence, 'guestCardTagsTooltip')
+			? { guestCardTagsTooltip: legacyTagsTooltip }
+			: {}),
+	}) as unknown as Record<string, unknown>;
+	delete normalizedPersistence['version'];
 
 	return {
 		...remoteState,
-		persistence: {
-			...currentPersistence,
-			...(hasLegacyTagsTooltip &&
-			!Object.hasOwn(remotePersistenceRecord, 'guestCardTagsTooltip')
-				? { guestCardTagsTooltip: legacyTagsTooltip }
-				: {}),
-			...(hasDonationModal
-				? {
-						donationModal: normalizeDonationModalPersistence(
-							remotePersistenceRecord['donationModal']
-						),
-					}
-				: {}),
-		},
-	} as Partial<typeof state>;
+		persistence: normalizedPersistence,
+	} as unknown as Partial<typeof state>;
 }
 
 export const globalStore = store(state, {
@@ -352,9 +202,6 @@ export const globalStore = store(state, {
 					persistence: {
 						...currentState.persistence,
 						...persistedPersistence,
-						donationModal: normalizeDonationModalPersistence(
-							persistedPersistence.donationModal
-						),
 					},
 				};
 			},
@@ -364,6 +211,7 @@ export const globalStore = store(state, {
 					version
 				) as typeof state,
 			name: storeName,
+			normalize: normalizeGlobalStorePersistence,
 			partialize(currentStore) {
 				return {
 					persistence: currentStore.persistence,

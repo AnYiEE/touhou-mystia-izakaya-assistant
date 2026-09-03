@@ -34,6 +34,7 @@ import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 import { writeAccountSyncBaseSnapshot } from './baseSnapshot';
 import { createSnapshotHash } from './dirtyQueue/snapshotHash';
+import { readRemoteSyncData } from './remoteProtocol';
 import { checkAccountSyncResetWriteAllowed } from './resetGeneration';
 import { withApplyingRemoteState as runWithApplyingRemoteState } from './stateGuards';
 
@@ -324,7 +325,7 @@ export function applyRemoteAccountRecords({
 		}
 
 		const serializer = getAccountSyncSerializer(record.namespace);
-		const data = serializer.migrate(record.data, record.schema_version);
+		const data = readRemoteSyncData(record);
 
 		return {
 			data,

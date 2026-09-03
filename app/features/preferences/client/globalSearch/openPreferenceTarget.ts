@@ -1,9 +1,7 @@
 import { openPreferencesModal } from '@/features/preferences/client/overlayCommands';
+import type { TPreferenceTargetKey } from '@/features/preferences/contracts';
 
-import {
-	PREFERENCE_SEARCH_ITEMS,
-	type TPreferenceTargetKey,
-} from './searchItems';
+import { PREFERENCE_SEARCH_ITEMS } from './searchItems';
 
 function checkIsPreferenceTargetKey(
 	targetKey: string

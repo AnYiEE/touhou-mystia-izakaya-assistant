@@ -14,11 +14,12 @@ import {
 import type { TFoodTagId } from '@/domain/data/tags/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
-import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
 import {
-	PINYIN_SORT_STATE_MAP,
-	type TPinyinSortState,
-} from '@/features/catalog/shared/state/pinyinSort';
+	createCatalogPersistenceShape,
+	toAllowedValueSet,
+} from '@/features/catalog/shared/state/catalogPersistenceShape';
+import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
+import { PINYIN_SORT_STATE_MAP } from '@/features/catalog/shared/state/pinyinSort';
 
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
 
@@ -38,23 +39,69 @@ const instance = IngredientCatalog.getInstance();
 
 const getNames = createNamesCache(instance);
 
+const persistenceShape = createCatalogPersistenceShape({
+	allowedValues: {
+		availabilityDlcs: toAllowedValueSet(
+			instance.getValuesByProp('availabilityDlcs')
+		),
+		contentDlcs: toAllowedValueSet(instance.getValuesByProp('dlc')),
+		levels: toAllowedValueSet(instance.getValuesByProp('level')),
+		noPlaces: toAllowedValueSet(instance.getValuesByProp('maps').flat()),
+		noTags: toAllowedValueSet([
+			...instance.getValuesByProp('tags').flat(),
+			DYNAMIC_FOOD_TAG_MAP.popularNegative,
+			DYNAMIC_FOOD_TAG_MAP.popularPositive,
+		]),
+		noTypes: toAllowedValueSet(instance.getValuesByProp('type')),
+		places: toAllowedValueSet(instance.getValuesByProp('maps').flat()),
+		tags: toAllowedValueSet([
+			...instance.getValuesByProp('tags').flat(),
+			DYNAMIC_FOOD_TAG_MAP.popularNegative,
+			DYNAMIC_FOOD_TAG_MAP.popularPositive,
+		]),
+		types: toAllowedValueSet(instance.getValuesByProp('type')),
+	},
+	createDefaultFilters(): {
+		availabilityDlcs: string[];
+		contentDlcs: string[];
+		levels: string[];
+		noPlaces: TMapLabel[];
+		noTags: TFoodTagId[];
+		noTypes: TIngredientTypeId[];
+		places: TMapLabel[];
+		tags: TFoodTagId[];
+		types: TIngredientTypeId[];
+	} {
+		return {
+			availabilityDlcs: [],
+			contentDlcs: [],
+			levels: [],
+			noPlaces: [],
+			noTags: [],
+			noTypes: [],
+			places: [],
+			tags: [],
+			types: [],
+		};
+	},
+	filterKinds: {
+		availabilityDlcs: 'string',
+		contentDlcs: 'string',
+		levels: 'string',
+		noPlaces: 'string',
+		noTags: 'number',
+		noTypes: 'number',
+		places: 'string',
+		tags: 'number',
+		types: 'number',
+	},
+	pinyinSortState: PINYIN_SORT_STATE_MAP.none,
+});
+
 const state = {
 	instance,
 
-	persistence: {
-		filters: {
-			availabilityDlcs: [] as string[],
-			contentDlcs: [] as string[],
-			levels: [] as string[],
-			noPlaces: [] as TMapLabel[],
-			noTags: [] as TFoodTagId[],
-			noTypes: [] as TIngredientTypeId[],
-			places: [] as TMapLabel[],
-			tags: [] as TFoodTagId[],
-			types: [] as TIngredientTypeId[],
-		},
-		pinyinSortState: PINYIN_SORT_STATE_MAP.none as TPinyinSortState,
-	},
+	persistence: persistenceShape.createDefault(),
 	shared: {
 		hiddenItems: { dlcs: new Set<TDlc>() },
 
@@ -72,6 +119,7 @@ export const ingredientsStore = store(state, {
 					version
 				) as typeof state,
 			name: 'page-ingredients-storage',
+			normalize: persistenceShape.normalize,
 			partialize: (currentStore) =>
 				({
 					persistence: currentStore.persistence,
@@ -166,15 +214,7 @@ export const ingredientsStore = store(state, {
 }));
 
 ingredientsStore.shared.hiddenItems.dlcs.onChange(() => {
-	ingredientsStore.persistence.filters.set({
-		availabilityDlcs: [],
-		contentDlcs: [],
-		levels: [],
-		noPlaces: [],
-		noTags: [],
-		noTypes: [],
-		places: [],
-		tags: [],
-		types: [],
-	});
+	ingredientsStore.persistence.filters.set(
+		persistenceShape.createDefault().filters
+	);
 });

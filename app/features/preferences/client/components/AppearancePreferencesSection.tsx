@@ -3,8 +3,8 @@ import { memo, useCallback } from 'react';
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Heading from '@/design/ui/components/heading';
 
-import { type TPreferenceTargetKey } from '@/features/preferences/client/globalSearch/searchItems';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
+import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
 
 import SwitchItem from './PreferenceSwitchItem';
 import {

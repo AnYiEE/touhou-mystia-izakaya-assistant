@@ -45,56 +45,54 @@ export const GLOBAL_PERSISTENCE_STORE_VERSION = {
 	suggestMealsSortProfile: 20,
 } as const;
 
-const storeVersion = GLOBAL_PERSISTENCE_STORE_VERSION;
-
 export function migrateGlobalPersistedState<T>(
 	persistedState: T,
 	version: number
 ): T {
-	if (version >= storeVersion.suggestMealsSortProfile) {
+	if (version >= GLOBAL_PERSISTENCE_STORE_VERSION.suggestMealsSortProfile) {
 		return persistedState;
 	}
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
 	const oldState = structuredClone(persistedState) as any;
-	if (version < storeVersion.dirver) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.dirver) {
 		oldState.persistence.dirver = [];
 	}
-	if (version < storeVersion.tagsTooltip) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.tagsTooltip) {
 		oldState.persistence.customerCardTagsTooltip = true;
 	}
-	if (version < storeVersion.version) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.version) {
 		oldState.persistence.version = null;
 	}
-	if (version < storeVersion.backgroundImage) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.backgroundImage) {
 		oldState.persistence.backgroundImage = true;
 	}
-	if (version < storeVersion.tachie) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.tachie) {
 		oldState.persistence.tachie = true;
 	}
-	if (version < storeVersion.vibrate) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.vibrate) {
 		oldState.persistence.vibrate = true;
 	}
-	if (version < storeVersion.renameBg) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.renameBg) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const { persistence } = oldState;
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		persistence.highAppearance = persistence.backgroundImage;
 		delete persistence.backgroundImage;
 	}
-	if (version < storeVersion.famousShop) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.famousShop) {
 		oldState.persistence.famousShop = false;
 	}
-	if (version < storeVersion.popularTrend) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.popularTrend) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const { persistence } = oldState;
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		persistence.popularTrend = persistence.popular;
 		delete persistence.popular;
 	}
-	if (version < storeVersion.cloud) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.cloud) {
 		oldState.persistence.cloudCode = null;
 	}
-	if (version < storeVersion.tableShare) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.tableShare) {
 		oldState.persistence.table = {
 			columns: {
 				beverage: beverageTableColumns.map(toGetItemWithKey('key')),
@@ -105,20 +103,20 @@ export function migrateGlobalPersistedState<T>(
 			row: 8,
 		};
 	}
-	if (version < storeVersion.userId) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.userId) {
 		oldState.persistence.userId = null;
 	}
-	if (version < storeVersion.hiddenItems) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.hiddenItems) {
 		oldState.persistence.table.hiddenItems = {
 			beverages: [],
 			ingredients: [],
 			recipes: [],
 		};
 	}
-	if (version < storeVersion.hiddenDlcs) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.hiddenDlcs) {
 		oldState.persistence.hiddenItems = { dlcs: [] };
 	}
-	if (version < storeVersion.donationModal) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.donationModal) {
 		oldState.persistence.donationModal = {
 			interactionCount: 0,
 			isDismiss: false,
@@ -126,21 +124,21 @@ export function migrateGlobalPersistedState<T>(
 			lastShown: null,
 		};
 	}
-	if (version < storeVersion.donationModalRmDismiss) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.donationModalRmDismiss) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const { persistence } = oldState;
 		delete persistence.donationModal.isDismiss;
 	}
-	if (version < storeVersion.suggestMeals) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.suggestMeals) {
 		oldState.persistence.suggestMeals = { enabled: true, maxResults: 5 };
 	}
-	if (version < storeVersion.suggestMealsExtra) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.suggestMealsExtra) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const { persistence } = oldState;
 		persistence.suggestMeals.maxExtraIngredients = null;
 		persistence.suggestMeals.maxRating = 4;
 	}
-	if (version < storeVersion.recordIdentity) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.recordIdentity) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const { persistence } = oldState;
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -196,7 +194,7 @@ export function migrateGlobalPersistedState<T>(
 			columns.recipe
 		);
 	}
-	if (version < storeVersion.suggestMealsSortProfile) {
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.suggestMealsSortProfile) {
 		oldState.persistence.suggestMeals.maxResults = 10;
 		oldState.persistence.suggestMeals.sortProfile = 'material-cost-first';
 	}

@@ -4,35 +4,18 @@ import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { NormalGuestCatalog } from '@/domain/catalog/guests/NormalGuestCatalog';
 import { ClothesCatalog } from '@/domain/catalog/items/ClothesCatalog';
 import type { TBeverageId } from '@/domain/data/beverages/types';
-import type { TCookerTypeId } from '@/domain/data/cookers/types';
 import type { TFoodId } from '@/domain/data/foods/types';
 import type { TNormalGuestId } from '@/domain/data/guests/normal/types';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
-import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
 import type { TFoodTagId } from '@/domain/data/tags/types';
 import type { TRatingKey } from '@/domain/evaluation/types';
-import type { IMealFood, INormalGuestSavedMeal } from '@/domain/meals/types';
+import type { IMealFood } from '@/domain/meals/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import type { TTab } from '@/features/catalog/guests/shared/contracts';
-import {
-	type ITableSortDescriptor,
-	type TBeverageTableSortKey,
-	type TFoodTableSortKey,
-} from '@/features/catalog/guests/shared/state/tableDescriptors';
-import {
-	type TTabVisibilityState,
-	tabVisibilityStateMap,
-} from '@/features/catalog/guests/shared/state/tabVisibility';
-import {
-	PINYIN_SORT_STATE_MAP,
-	type TPinyinSortState,
-} from '@/features/catalog/shared/state/pinyinSort';
 
-export type TBeverageTableSortDescriptor =
-	ITableSortDescriptor<TBeverageTableSortKey>;
-export type TFoodTableSortDescriptor = ITableSortDescriptor<TFoodTableSortKey>;
+import { normalGuestPersistenceShape } from '@/features/catalog/guests/shared/state/guestPersistenceShape';
 
 export const normalGuestBeverageCatalog = BeverageCatalog.getInstance();
 const normalGuestClothesCatalog = ClothesCatalog.getInstance();
@@ -49,46 +32,7 @@ export const normalGuestInitialState = {
 		recipe: normalGuestFoodCatalog,
 	},
 
-	persistence: {
-		beverage: {
-			table: {
-				availabilityDlcs: [] as string[],
-				sortDescriptor: {} as TBeverageTableSortDescriptor,
-			},
-		},
-		guest: {
-			filters: {
-				availabilityDlcs: [] as string[],
-				excludes: [] as TNormalGuestId[],
-				includes: [] as TNormalGuestId[],
-				noPlaces: [] as TMapLabel[],
-				places: [] as TMapLabel[],
-			},
-			pinyinSortState: PINYIN_SORT_STATE_MAP.none as TPinyinSortState,
-			tabVisibility:
-				tabVisibilityStateMap.collapse as TTabVisibilityState,
-		},
-		ingredient: {
-			filters: {
-				availabilityDlcs: [] as string[],
-				levels: [] as string[],
-				noTags: [] as TFoodTagId[],
-				tags: [] as TFoodTagId[],
-			},
-			pinyinSortState: PINYIN_SORT_STATE_MAP.none as TPinyinSortState,
-			tabVisibility:
-				tabVisibilityStateMap.collapse as TTabVisibilityState,
-		},
-		recipe: {
-			table: {
-				availabilityDlcs: [] as string[],
-				cookerTypes: [] as TCookerTypeId[],
-				sortDescriptor: {} as TFoodTableSortDescriptor,
-			},
-		},
-
-		meals: {} as Partial<Record<TNormalGuestId, INormalGuestSavedMeal[]>>,
-	},
+	persistence: normalGuestPersistenceShape.createDefault(),
 	shared: {
 		beverage: {
 			id: null as TBeverageId | null,

@@ -14,6 +14,7 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 import { ACCOUNT_SYNC_API_RESPONSE_CODE_MAP } from '@/features/account/sync/apiResponseCodes';
+import { checkKnownSyncNamespace } from '@/features/account/sync/normalizeSyncStateData';
 import {
 	checkSyncProtocolRequestBody,
 	checkSyncProtocolSearchParams,
@@ -28,10 +29,7 @@ import type {
 	ISyncProtocolRequest,
 	ISyncStatePutBody,
 } from '@/features/account/sync/types';
-import {
-	checkSyncNamespace,
-	parseSyncStatePutBody,
-} from '@/features/account/sync/validation';
+import { parseSyncStatePutBody } from '@/features/account/sync/validation';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
@@ -98,7 +96,7 @@ export async function GET(request: NextRequest) {
 
 			const namespaceParams =
 				request.nextUrl.searchParams.getAll('namespace');
-			const namespaces = namespaceParams.filter(checkSyncNamespace);
+			const namespaces = namespaceParams.filter(checkKnownSyncNamespace);
 			if (namespaces.length !== namespaceParams.length) {
 				return { status: 'unknown-namespace' as const };
 			}
@@ -224,16 +222,24 @@ export async function PUT(request: NextRequest) {
 		return createSyncClientUpdateRequiredResponse();
 	}
 
-	const body = parseSyncStatePutBody(
+	const parsedBody = parseSyncStatePutBody(
 		bodyResult.status === 'ok' ? bodyResult.data : null,
 		['protocol_version']
 	);
-	if (body === null) {
+	if (parsedBody.status === 'invalid-structure') {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
 			400
 		);
 	}
+	if (parsedBody.status === 'update-required') {
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.schemaUpdateRequired,
+			409,
+			{ ...parsedBody }
+		);
+	}
+	const { body } = parsedBody;
 	if (auth.data.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
 		return createNoStoreErrorResponse(
 			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.paused,
@@ -314,6 +320,19 @@ export async function PUT(request: NextRequest) {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
 			401
+		);
+	}
+
+	const schemaUpdateResult = writeResult.results.find(
+		(result) =>
+			result.status === 'error' &&
+			result.message === 'sync-schema-update-required'
+	);
+	if (schemaUpdateResult !== undefined) {
+		return createNoStoreErrorResponse(
+			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.schemaUpdateRequired,
+			409,
+			schemaUpdateResult
 		);
 	}
 

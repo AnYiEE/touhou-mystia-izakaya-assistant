@@ -15,6 +15,11 @@ import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord'
 import type { IRemoteStateApplicationGuard } from './contracts';
 
 type TPlainObject = Record<string, unknown>;
+type TRemoteState<T> = Partial<Omit<T, 'persistence'>> & {
+	persistence?: T extends { persistence: infer TPersisted }
+		? Partial<TPersisted>
+		: never;
+};
 
 type TNestedKeys<T> = T extends TPlainObject
 	? {
@@ -102,7 +107,7 @@ function setNestedValue<T, P extends TNestedKeys<T>>(
 	target[lastKey] = value;
 }
 
-function merge<T>(target: T, source: Partial<T>) {
+function merge<T>(target: T, source: Partial<T> | TRemoteState<T>) {
 	if (target === source) {
 		return target;
 	}
@@ -242,7 +247,7 @@ interface IAppVersionSyncOptions<T> {
 interface ISyncOptions<T> {
 	appVersion?: IAppVersionSyncOptions<T>;
 	name: string;
-	normalizeRemoteState?: (state: unknown) => Partial<T> | null;
+	normalizeRemoteState?: (state: unknown) => TRemoteState<T> | null;
 	remoteStateApplicationGuard: IRemoteStateApplicationGuard;
 	storeVersion: number;
 	watch: Array<Extract<TNestedKeys<T>, `persistence${string}`>>;
@@ -384,7 +389,7 @@ export function createStoreSyncMiddleware<T>(options: ISyncOptions<T>) {
 
 					const remoteState =
 						normalizeRemoteState === undefined
-							? (remoteStateMessage.state as Partial<T>)
+							? (remoteStateMessage.state as TRemoteState<T>)
 							: normalizeRemoteState(remoteStateMessage.state);
 					if (remoteState !== null) {
 						set((state) => merge(state, remoteState));

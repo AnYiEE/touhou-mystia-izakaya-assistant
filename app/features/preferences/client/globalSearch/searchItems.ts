@@ -1,4 +1,5 @@
 import type { IGlobalSearchIndexItem } from '@/features/globalSearch/contracts';
+import type { TPreferenceTargetKey } from '@/features/preferences/contracts';
 
 interface IPreferenceSearchIndexOptions {
 	includeAccountItems?: boolean;
@@ -177,10 +178,7 @@ const ACCOUNT_PREFERENCE_SEARCH_ITEMS = [
 export const PREFERENCE_SEARCH_ITEMS = [
 	...BASE_PREFERENCE_SEARCH_ITEMS,
 	...ACCOUNT_PREFERENCE_SEARCH_ITEMS,
-] as const;
-
-export type TPreferenceTargetKey =
-	(typeof PREFERENCE_SEARCH_ITEMS)[number]['key'];
+] as const satisfies ReadonlyArray<{ key: TPreferenceTargetKey }>;
 
 function getPreferenceSearchItems({
 	includeAccountItems = true,

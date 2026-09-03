@@ -1,5 +1,6 @@
 import {
 	SYNC_NAMESPACE_MAP,
+	SYNC_NAMESPACE_SET,
 	type TSyncNamespace,
 } from '@/domain/account/contracts';
 
@@ -98,7 +99,6 @@ export type TAccountSyncConflictResolutionRecoveryAction =
 const JOURNAL_VERSION = 2;
 const MAX_JOURNAL_STRING_LENGTH = 256;
 const MAX_GENERATION_TOKEN_LENGTH = 1024;
-const NAMESPACE_SET = new Set<string>(Object.values(SYNC_NAMESPACE_MAP));
 const RESOLUTION_SET = new Set<TAccountSyncConflictResolution>([
 	'cloud',
 	'local',
@@ -250,7 +250,7 @@ export function parseAccountSyncConflictResolutionJournalValue({
 		version !== JOURNAL_VERSION ||
 		storedNamespace !== namespace ||
 		storedUserId !== userId ||
-		!NAMESPACE_SET.has(storedNamespace as string) ||
+		!SYNC_NAMESPACE_SET.has(storedNamespace as TSyncNamespace) ||
 		!checkBoundedString(clientMutationId) ||
 		!checkBoundedString(cloudHash) ||
 		!checkBoundedString(localHash) ||

@@ -11,7 +11,6 @@ import {
 	type TSsoActorType,
 	type TSsoCallbackDeliveryStatus,
 	type TSsoGrantEvent,
-	type TSyncNamespace,
 	type TUserStatus,
 } from '@/domain/account/contracts';
 import {
@@ -232,7 +231,7 @@ interface ITableSsoUserClientGrant {
 
 interface ITableUserState {
 	data: string;
-	namespace: TSyncNamespace;
+	namespace: string;
 	revision: number;
 	schema_version: number;
 	updated_at: number;

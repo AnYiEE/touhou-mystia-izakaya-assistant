@@ -19,10 +19,12 @@ import {
 	SYNC_SCHEMA_VERSION_MAP,
 	checkSupportedSyncSchemaVersion,
 } from '@/features/account/sync/constants';
+import {
+	checkKnownSyncNamespace,
+	normalizeSyncStateData,
+} from '@/features/account/sync/normalizeSyncStateData';
 import { type TMealSnapshot } from '@/features/account/sync/serializers/meals';
 import {
-	migrateNormalGuestMealsSnapshot,
-	migrateSpecialGuestMealsSnapshot,
 	migrateUnversionedNormalGuestMealsSnapshot,
 	migrateUnversionedSpecialGuestMealsSnapshot,
 } from '@/features/account/sync/serializers/savedMealsMigration';
@@ -88,17 +90,6 @@ interface IImportBackupResult {
 type TBackupLockModule =
 	typeof import('@/features/legacyBackup/server/backupCodeLock');
 
-const syncNamespaceSet = new Set<TSyncNamespace>(
-	Object.values(SYNC_NAMESPACE_MAP)
-);
-
-function checkSyncNamespaceValue(value: unknown): value is TSyncNamespace {
-	return (
-		typeof value === 'string' &&
-		syncNamespaceSet.has(value as TSyncNamespace)
-	);
-}
-
 function canIncrementSyncRevision(value: unknown): value is number {
 	return canAddNonNegativeSafeIntegers(value, 2);
 }
@@ -117,7 +108,7 @@ function parseImportBackupResults(data: string) {
 			(item): item is IImportBackupResult =>
 				isObjectTagRecord(item) &&
 				item['status'] === 'ok' &&
-				checkSyncNamespaceValue(item['namespace']) &&
+				checkKnownSyncNamespace(item['namespace']) &&
 				canIncrementNonNegativeSafeInteger(item['revision'])
 		)
 	) {
@@ -292,13 +283,16 @@ function normalizeCloudMealRecordForImport(
 	} catch {
 		throw new Error('server-misconfigured');
 	}
-	try {
-		return namespace === SYNC_NAMESPACE_MAP.normalGuestMeals
-			? migrateNormalGuestMealsSnapshot(data, record.schema_version)
-			: migrateSpecialGuestMealsSnapshot(data, record.schema_version);
-	} catch {
+	const normalized = normalizeSyncStateData({
+		data,
+		namespace,
+		revision: 0,
+		schema_version: record.schema_version,
+	});
+	if (normalized.status !== 'accepted') {
 		throw new Error('server-misconfigured');
 	}
+	return normalized.data as TImportMealSnapshot;
 }
 
 async function checkImportBackupDataPreconditions(

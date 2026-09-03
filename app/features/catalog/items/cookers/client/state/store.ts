@@ -8,11 +8,12 @@ import type {
 } from '@/domain/data/cookers/types';
 import type { TDlc } from '@/domain/data/shared/types';
 
-import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
 import {
-	PINYIN_SORT_STATE_MAP,
-	type TPinyinSortState,
-} from '@/features/catalog/shared/state/pinyinSort';
+	createCatalogPersistenceShape,
+	toAllowedValueSet,
+} from '@/features/catalog/shared/state/catalogPersistenceShape';
+import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
+import { PINYIN_SORT_STATE_MAP } from '@/features/catalog/shared/state/pinyinSort';
 
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
 
@@ -29,20 +30,49 @@ import '@/infrastructure/state/enableImmerMapSet';
 
 const instance = CookerCatalog.getInstance();
 
+const persistenceShape = createCatalogPersistenceShape({
+	allowedValues: {
+		availabilityDlcs: toAllowedValueSet(
+			instance.getValuesByProp('availabilityDlcs')
+		),
+		contentDlcs: toAllowedValueSet(instance.getValuesByProp('dlc')),
+		noSeries: toAllowedValueSet(instance.getValuesByProp('series')),
+		noTypes: toAllowedValueSet(instance.getValuesByProp('availableTypes')),
+		series: toAllowedValueSet(instance.getValuesByProp('series')),
+		types: toAllowedValueSet(instance.getValuesByProp('availableTypes')),
+	},
+	createDefaultFilters(): {
+		availabilityDlcs: string[];
+		contentDlcs: string[];
+		noSeries: TCookerSeriesId[];
+		noTypes: TCookerTypeId[];
+		series: TCookerSeriesId[];
+		types: TCookerTypeId[];
+	} {
+		return {
+			availabilityDlcs: [],
+			contentDlcs: [],
+			noSeries: [],
+			noTypes: [],
+			series: [],
+			types: [],
+		};
+	},
+	filterKinds: {
+		availabilityDlcs: 'string',
+		contentDlcs: 'string',
+		noSeries: 'number',
+		noTypes: 'number',
+		series: 'number',
+		types: 'number',
+	},
+	pinyinSortState: PINYIN_SORT_STATE_MAP.none,
+});
+
 const state = {
 	instance,
 
-	persistence: {
-		filters: {
-			availabilityDlcs: [] as string[],
-			contentDlcs: [] as string[],
-			noSeries: [] as TCookerSeriesId[],
-			noTypes: [] as TCookerTypeId[],
-			series: [] as TCookerSeriesId[],
-			types: [] as TCookerTypeId[],
-		},
-		pinyinSortState: PINYIN_SORT_STATE_MAP.none as TPinyinSortState,
-	},
+	persistence: persistenceShape.createDefault(),
 	shared: { hiddenItems: { dlcs: new Set<TDlc>() } },
 };
 
@@ -57,6 +87,7 @@ export const cookersStore = store(state, {
 					version
 				) as typeof state,
 			name: 'page-cookers-storage',
+			normalize: persistenceShape.normalize,
 			partialize: (currentStore) =>
 				({
 					persistence: currentStore.persistence,
@@ -117,12 +148,7 @@ export const cookersStore = store(state, {
 }));
 
 cookersStore.shared.hiddenItems.dlcs.onChange(() => {
-	cookersStore.persistence.filters.set({
-		availabilityDlcs: [],
-		contentDlcs: [],
-		noSeries: [],
-		noTypes: [],
-		series: [],
-		types: [],
-	});
+	cookersStore.persistence.filters.set(
+		persistenceShape.createDefault().filters
+	);
 });

@@ -28,7 +28,11 @@ import {
 import { scheduleAccountSyncFlush } from './flush';
 import { takeOverLocalAccountData } from './localTakeover';
 import { recordAccountSyncRefreshSuccess } from './queueRuntime';
-import { getRecordMap, validateRemoteSyncState } from './remoteProtocol';
+import {
+	getRecordMap,
+	readRemoteSyncData,
+	validateRemoteSyncState,
+} from './remoteProtocol';
 import {
 	postRemoteAppliedBroadcast,
 	restoreAccountSyncRuntimeState,
@@ -98,10 +102,7 @@ async function applySuccessfulAccountSyncRebuild({
 					return false;
 				}
 				const serializer = getAccountSyncSerializer(namespace);
-				const cloud = serializer.migrate(
-					record.data,
-					record.schema_version
-				);
+				const cloud = readRemoteSyncData(record);
 				if (
 					createSnapshotHash(cloud) !== capture.localSnapshotHash ||
 					!writeAccountSyncBaseSnapshot({
