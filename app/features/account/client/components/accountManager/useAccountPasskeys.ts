@@ -4,6 +4,7 @@ import {
 	browserSupportsWebAuthn,
 	browserSupportsWebAuthnAutofill,
 	bufferToBase64URLString,
+	getBrowserCapabilities,
 } from '@simplewebauthn/browser';
 import {
 	useCallback,
@@ -207,7 +208,16 @@ export function useAccountPasskeys({
 
 		let isCanceled = false;
 
-		void browserSupportsWebAuthnAutofill()
+		void getBrowserCapabilities()
+			.then((capabilities) => {
+				if (capabilities.conditionalGet === 'supported') {
+					return true;
+				}
+				if (capabilities.conditionalGet === 'unsupported') {
+					return false;
+				}
+				return browserSupportsWebAuthnAutofill();
+			})
 			.then((isAutofillSupported) => {
 				if (!isCanceled) {
 					setIsWebauthnAutofillSupported(isAutofillSupported);

@@ -232,6 +232,7 @@ export default defineConfig(
 				{ ignoreIIFE: true },
 			],
 			'@typescript-eslint/no-loop-func': 'error',
+			'@typescript-eslint/no-meaningless-void-operator': 'off',
 			'@typescript-eslint/no-shadow': 'off',
 			'@typescript-eslint/no-unsafe-argument': 'warn',
 			'@typescript-eslint/no-unsafe-assignment': 'warn',

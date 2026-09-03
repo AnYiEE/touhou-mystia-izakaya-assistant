@@ -1,6 +1,5 @@
 import {
 	type AuthenticationResponseJSON,
-	type AuthenticatorTransportFuture,
 	type RegistrationResponseJSON,
 	type WebAuthnCredential,
 	generateAuthenticationOptions,
@@ -113,22 +112,17 @@ export function encodePublicKey(publicKey: Uint8Array<ArrayBuffer>) {
 	return isoBase64URL.fromBuffer(publicKey);
 }
 
-export function parseTransports(
-	value: TUserWebauthnCredential['transports']
-): AuthenticatorTransportFuture[] {
+export function parseTransports(value: TUserWebauthnCredential['transports']) {
 	try {
 		const parsed: unknown = JSON.parse(value);
-
-		return Array.isArray(parsed)
-			? (parsed as AuthenticatorTransportFuture[])
-			: [];
+		return Array.isArray(parsed) ? (parsed as string[]) : [];
 	} catch {
 		return [];
 	}
 }
 
 export function serializeTransports(
-	transports: AuthenticatorTransportFuture[] | undefined
+	transports: ReadonlyArray<string> | undefined
 ) {
 	return JSON.stringify(transports ?? []);
 }
