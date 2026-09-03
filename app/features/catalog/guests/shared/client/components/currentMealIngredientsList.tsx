@@ -45,12 +45,7 @@ export default memo<IProps>(function CurrentMealIngredientsList({
 					: (ingredientName ?? '空食材');
 
 				return (
-					<Tooltip
-						key={`${ingredient ?? 'empty'}-${index}`}
-						showArrow
-						content={label}
-						offset={3}
-					>
+					<Tooltip key={index} showArrow content={label} offset={3}>
 						<span
 							onKeyDown={
 								isExtraIngredient
