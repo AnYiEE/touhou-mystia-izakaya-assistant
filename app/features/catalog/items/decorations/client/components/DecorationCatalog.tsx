@@ -77,9 +77,9 @@ function DecorationSource({
 	if ('collaboration' in from) {
 		return (
 			<>
-				开启联动【
+				通过联动终端【
 				{COLLABORATION_LABEL_MAP[from.collaboration.collaborationLabel]}
-				】后自动获得
+				】选项领取
 			</>
 		);
 	}

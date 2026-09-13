@@ -113,7 +113,7 @@ function renderClothesSource(
 	}
 
 	if ('collaborationUnlock' in item) {
-		return `开启联动【${COLLABORATION_LABEL_MAP[item.collaborationUnlock.collaborationLabel]}】后自动获得`;
+		return `通过联动终端【${COLLABORATION_LABEL_MAP[item.collaborationUnlock.collaborationLabel]}】选项领取`;
 	}
 
 	return `完成“${formatSchedulerLabels(item.taskReward.task)}”任务后自动获得`;

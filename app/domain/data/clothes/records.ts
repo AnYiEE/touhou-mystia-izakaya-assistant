@@ -287,4 +287,20 @@ export const CLOTHES_LIST = [
 		izakaya: false,
 		from: [{ bond: { level: 5, specialGuest: 9001 } }],
 	},
+	{
+		id: 9003,
+		name: '花嫁',
+		description:
+			'MetaMystia制作组特别制作的花嫁礼服。层叠的白色裙摆缀着蓝紫与粉色的玫瑰，搭配轻薄的头纱和同色捧花。无论从哪个角度看，都是一套值得好好珍藏的衣服。',
+		dlc: 9,
+		gif: false,
+		izakaya: false,
+		from: [
+			{
+				collaborationUnlock: {
+					collaborationLabel: 'ResourceEx_GiftMailbox',
+				},
+			},
+		],
+	},
 ] as const satisfies IClothes[];

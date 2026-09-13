@@ -939,7 +939,7 @@ function formatClothesSource(
 		return `${formatSchedulerLabels(source.eventReward.eventLabel)}时自动获得`;
 	}
 	if ('collaborationUnlock' in source) {
-		return `开启联动【${COLLABORATION_LABEL_MAP[source.collaborationUnlock.collaborationLabel]}】后自动获得`;
+		return `通过联动终端【${COLLABORATION_LABEL_MAP[source.collaborationUnlock.collaborationLabel]}】选项领取`;
 	}
 	if ('taskReward' in source) {
 		return `完成“${formatSchedulerLabels(source.taskReward.task)}”任务后自动获得`;
@@ -1011,7 +1011,7 @@ function resolveClothesAvailabilityResult(item: (typeof CLOTHES_LIST)[number]) {
 function formatDecorationSource(item: (typeof DECORATION_LIST)[number]) {
 	const { from, name } = item;
 	if ('collaboration' in from) {
-		return `开启联动【${COLLABORATION_LABEL_MAP[from.collaboration.collaborationLabel]}】后自动获得`;
+		return `通过联动终端【${COLLABORATION_LABEL_MAP[from.collaboration.collaborationLabel]}】选项领取`;
 	}
 	if ('completion' in from) {
 		const [firstMap, secondMap] = from.completion.maps;

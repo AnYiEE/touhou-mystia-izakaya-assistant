@@ -30,7 +30,10 @@ export type TClothesSource =
 	  }
 	| {
 			collaborationUnlock: {
-				collaborationLabel: Extract<TCollaborationLabel, 'THYG'>;
+				collaborationLabel: Extract<
+					TCollaborationLabel,
+					'ResourceEx_GiftMailbox' | 'THYG'
+				>;
 			};
 	  }
 	| {

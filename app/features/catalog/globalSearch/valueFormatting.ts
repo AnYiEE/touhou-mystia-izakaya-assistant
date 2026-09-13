@@ -505,7 +505,7 @@ function formatSourceRecord(
 		if (collaborationLabel === null) {
 			return '';
 		}
-		return `开启联动【${collaborationLabel}】后自动获得`;
+		return `通过联动终端【${collaborationLabel}】选项领取`;
 	}
 	if ('failedCooking' in value && checkIsRecord(value['failedCooking'])) {
 		const { failedCooking } = value;
@@ -581,7 +581,7 @@ function formatSourceRecord(
 	) {
 		const label = value['collaborationUnlock']['collaborationLabel'];
 		return typeof label === 'string' && label in COLLABORATION_LABEL_MAP
-			? `开启联动【${COLLABORATION_LABEL_MAP[label as keyof typeof COLLABORATION_LABEL_MAP]}】后自动获得`
+			? `通过联动终端【${COLLABORATION_LABEL_MAP[label as keyof typeof COLLABORATION_LABEL_MAP]}】选项领取`
 			: '';
 	}
 	if ('taskReward' in value && checkIsRecord(value['taskReward'])) {
