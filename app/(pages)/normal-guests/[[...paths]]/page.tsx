@@ -1,12 +1,17 @@
 import { NormalGuestCatalog } from '@/domain/catalog/guests/NormalGuestCatalog';
 
-import { createOptionalRecordRouteStaticParams } from '@/features/appShell/navigation/recordRouteStaticParams';
+import {
+	createOptionalRecordRouteStaticParams,
+	shouldPrerenderRecordRoutes,
+} from '@/features/appShell/navigation/recordRouteStaticParams';
 import NormalGuestPageContent from '@/features/catalog/guests/normal/client/components/content';
 
 export function generateStaticParams() {
-	return createOptionalRecordRouteStaticParams(
-		NormalGuestCatalog.getInstance().data
-	);
+	const normalGuestCatalog = NormalGuestCatalog.getInstance();
+
+	return shouldPrerenderRecordRoutes()
+		? createOptionalRecordRouteStaticParams(normalGuestCatalog.data)
+		: [{ paths: [] }];
 }
 
 export default function NormalGuests() {

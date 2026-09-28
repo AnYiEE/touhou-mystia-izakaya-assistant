@@ -92,8 +92,23 @@ const nextConfig: NextConfig = {
 	eslint: { ignoreDuringBuilds: IS_SKIP_LINT },
 	typescript: { ignoreBuildErrors: IS_SKIP_LINT },
 
+	modularizeImports: {
+		'@fortawesome/free-brands-svg-icons': {
+			skipDefaultConversion: true,
+			transform: '@fortawesome/free-brands-svg-icons/{{member}}',
+		},
+		'@fortawesome/free-solid-svg-icons': {
+			skipDefaultConversion: true,
+			transform: '@fortawesome/free-solid-svg-icons/{{member}}',
+		},
+	},
+	serverExternalPackages: ['kysely'],
+
 	experimental: {
+		optimizePackageImports: ['framer-motion'],
+		parallelServerBuildTraces: true,
 		serverActions: { bodySizeLimit: serverActionBodySizeLimit },
+		webpackBuildWorker: true,
 		webpackMemoryOptimizations: IS_SKIP_LINT,
 	},
 

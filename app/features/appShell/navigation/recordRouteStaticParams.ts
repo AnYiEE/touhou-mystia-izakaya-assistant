@@ -1,3 +1,5 @@
+import { checkEnvironmentFlag } from '@/infrastructure/environment/flags';
+
 interface IRecordRouteIdentity {
 	readonly id: number;
 }
@@ -12,4 +14,11 @@ export function createOptionalRecordRouteStaticParams(
 	records: ReadonlyArray<IRecordRouteIdentity>
 ) {
 	return [{ paths: [] }, ...createRecordRouteStaticParams(records)];
+}
+
+export function shouldPrerenderRecordRoutes() {
+	return (
+		checkEnvironmentFlag(process.env.OFFLINE) ||
+		!checkEnvironmentFlag(process.env.SELF_HOSTED)
+	);
 }

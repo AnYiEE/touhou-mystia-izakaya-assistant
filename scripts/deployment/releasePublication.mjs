@@ -83,6 +83,71 @@ async function copyDirectoryContents(sourceDirectory, targetDirectory) {
 	}
 }
 
+/** @param {unknown} error */
+function checkCrossDeviceRenameError(error) {
+	return (
+		typeof error === 'object' &&
+		error !== null &&
+		'code' in error &&
+		error.code === 'EXDEV'
+	);
+}
+
+/** @param {string} directory */
+async function removeExcludedStandaloneRootEntries(directory) {
+	for (const entry of await readdir(directory)) {
+		if (checkExcludedStandaloneRootEntry(entry)) {
+			await removeDeploymentPath(join(directory, entry));
+		}
+	}
+}
+
+/**
+ * @param {string} sourceDirectory
+ * @param {string} targetDirectory
+ * @returns {Promise<boolean>}
+ */
+async function moveStandaloneDirectory(sourceDirectory, targetDirectory) {
+	try {
+		await retryTransientFileSystemOperation(
+			async () => await rename(sourceDirectory, targetDirectory)
+		);
+		await removeExcludedStandaloneRootEntries(targetDirectory);
+		return true;
+	} catch (error) {
+		if (!checkCrossDeviceRenameError(error)) {
+			throw error;
+		}
+		await mkdir(targetDirectory);
+		await copyDirectoryContents(sourceDirectory, targetDirectory);
+		return false;
+	}
+}
+
+/**
+ * @param {string} stagingRelease
+ * @param {string} standaloneDirectory
+ * @param {boolean} standaloneMoved
+ */
+async function restoreStandaloneDirectory(
+	stagingRelease,
+	standaloneDirectory,
+	standaloneMoved
+) {
+	if (!standaloneMoved) {
+		await removeDeploymentPath(stagingRelease).catch(() => {});
+		return;
+	}
+
+	try {
+		await retryTransientFileSystemOperation(
+			async () => await rename(stagingRelease, standaloneDirectory)
+		);
+	} catch {
+		await removeDeploymentPath(stagingRelease).catch(() => {});
+	}
+}
+
 /** @param {string} tempFile @param {string} currentFile */
 async function replaceCurrentFile(tempFile, currentFile) {
 	await retryTransientFileSystemOperation(
@@ -150,10 +215,13 @@ export async function publishRelease({
 	const stagingRelease = join(paths.stagingDirectory, release);
 	const finalRelease = resolveReleaseDirectory(paths.projectRoot, release);
 	let stagingCreated = false;
+	let standaloneMoved = false;
 	try {
-		await mkdir(stagingRelease);
+		standaloneMoved = await moveStandaloneDirectory(
+			standaloneDirectory,
+			stagingRelease
+		);
 		stagingCreated = true;
-		await copyDirectoryContents(standaloneDirectory, stagingRelease);
 		await retryTransientFileSystemOperation(
 			async () =>
 				await cp(
@@ -205,7 +273,11 @@ export async function publishRelease({
 		return current;
 	} finally {
 		if (stagingCreated) {
-			await removeDeploymentPath(stagingRelease).catch(() => {});
+			await restoreStandaloneDirectory(
+				stagingRelease,
+				standaloneDirectory,
+				standaloneMoved
+			);
 		}
 	}
 }

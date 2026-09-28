@@ -4,10 +4,16 @@ import { NormalGuestCatalog } from '@/domain/catalog/guests/NormalGuestCatalog';
 import { resolveLegacyRecordName } from '@/domain/catalog/legacy/resolveLegacyRecordName';
 
 import LegacyRouteRedirect from '@/features/appShell/client/navigation/LegacyRouteRedirect';
+import { shouldPrerenderRecordRoutes } from '@/features/appShell/navigation/recordRouteStaticParams';
 
 const normalGuestCatalog = NormalGuestCatalog.getInstance();
 
 export function generateStaticParams() {
+	if (!shouldPrerenderRecordRoutes()) {
+		const [firstName] = normalGuestCatalog.getNames();
+		return firstName === undefined ? [] : [{ paths: [firstName] }];
+	}
+
 	return normalGuestCatalog.getNames().map((name) => ({ paths: [name] }));
 }
 
