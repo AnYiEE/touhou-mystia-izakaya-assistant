@@ -117,10 +117,12 @@ const AnnouncementBackgroundLayer = memo<IAnnouncementBackgroundLayerProps>(
 
 interface IProps {
 	serverAnnouncements: IAnnouncementPublicItem[];
+	serverViewerSignature: string | null;
 }
 
 export default memo<IProps>(function AnnouncementCarousel({
 	serverAnnouncements,
+	serverViewerSignature,
 }) {
 	const { isHighAppearance } = useDesignPreferences();
 	const {
@@ -142,7 +144,10 @@ export default memo<IProps>(function AnnouncementCarousel({
 		transition,
 		visualIndex,
 		visualItem,
-	} = useAnnouncementCarouselController(serverAnnouncements);
+	} = useAnnouncementCarouselController(
+		serverAnnouncements,
+		serverViewerSignature
+	);
 	const levelMeta =
 		visualItem === null
 			? null

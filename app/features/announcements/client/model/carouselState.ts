@@ -276,3 +276,38 @@ export function reconcileServerAnnouncements({
 		transitionTargetInvalid,
 	};
 }
+
+export function createAnnouncementContentSignature(
+	item: IAnnouncementPublicItem
+) {
+	return JSON.stringify([
+		item.dismissed_token,
+		item.dismissible,
+		item.html,
+		item.level,
+		item.revision,
+	]);
+}
+
+export function reuseUnchangedAnnouncementItems(
+	currentItems: IAnnouncementPublicItem[],
+	nextItems: IAnnouncementPublicItem[]
+) {
+	if (currentItems.length === 0 || nextItems.length === 0) {
+		return nextItems;
+	}
+
+	const currentItemsByToken = new Map(
+		currentItems.map((item) => [item.dismissed_token, item] as const)
+	);
+
+	return nextItems.map((item) => {
+		const currentItem = currentItemsByToken.get(item.dismissed_token);
+
+		return currentItem !== undefined &&
+			createAnnouncementContentSignature(currentItem) ===
+				createAnnouncementContentSignature(item)
+			? currentItem
+			: item;
+	});
+}

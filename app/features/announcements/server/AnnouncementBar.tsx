@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { unstable_rethrow } from 'next/navigation';
 
 import type { TAccountFeatureViewer } from '@/features/account/contracts';
+import { createAccountViewerSignatureFromFeatureViewer } from '@/features/account/viewerSignature';
 import { type IAnnouncementPublicItem } from '@/features/announcements/contracts';
 import {
 	ANNOUNCEMENT_DISMISSED_COOKIE_NAME,
@@ -39,6 +40,7 @@ export default async function AnnouncementBar({ viewer = null }: IProps) {
 	}
 
 	let announcements: IAnnouncementPublicItem[] = [];
+	let serverViewerSignature: string | null = null;
 
 	try {
 		const featureStatusModule =
@@ -53,6 +55,8 @@ export default async function AnnouncementBar({ viewer = null }: IProps) {
 			);
 			const requestViewer =
 				viewer ?? (await readAnnouncementViewerFallback());
+			serverViewerSignature =
+				createAccountViewerSignatureFromFeatureViewer(requestViewer);
 			const visible =
 				await serviceModule.getVisibleAnnouncementsForRequestContext({
 					...requestViewer,
@@ -72,5 +76,10 @@ export default async function AnnouncementBar({ viewer = null }: IProps) {
 	const { default: AnnouncementCarousel } =
 		await import('@/features/announcements/client/components/AnnouncementCarousel');
 
-	return <AnnouncementCarousel serverAnnouncements={announcements} />;
+	return (
+		<AnnouncementCarousel
+			serverAnnouncements={announcements}
+			serverViewerSignature={serverViewerSignature}
+		/>
+	);
 }

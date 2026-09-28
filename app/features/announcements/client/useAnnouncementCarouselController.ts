@@ -26,6 +26,7 @@ import { type IAnnouncementMarqueeMetrics } from './components/AnnouncementHtml'
 import {
 	type IAnnouncementTransition,
 	type TAnnouncementTransitionDirection,
+	createAnnouncementContentSignature,
 	createAnnouncementDismissedCookieAssignment,
 	createMaintenanceAnnouncement,
 	findAnnouncementByToken,
@@ -33,9 +34,11 @@ import {
 	prepareMaintenanceAnnouncementItems,
 	reconcileServerAnnouncements,
 	removePendingAnnouncement,
+	reuseUnchangedAnnouncementItems,
 	selectAnnouncementAfterDismissal,
 	selectAnnouncementForDirection,
 } from './model/carouselState';
+import { useAnnouncementViewerSync } from './useAnnouncementViewerSync';
 
 export const ANNOUNCEMENT_ROTATE_INTERVAL = 5000;
 export const ANNOUNCEMENT_SWITCH_MS = 620;
@@ -56,7 +59,8 @@ interface IDisplayedMarqueeMetrics extends IAnnouncementMarqueeMetrics {
 }
 
 export function useAnnouncementCarouselController(
-	serverAnnouncements: IAnnouncementPublicItem[]
+	serverAnnouncements: IAnnouncementPublicItem[],
+	serverViewerSignature: string | null
 ) {
 	const isReducedMotion = useReducedMotion();
 	const maintenance = useSiteMaintenance();
@@ -76,6 +80,8 @@ export function useAnnouncementCarouselController(
 	const [displayedMarqueeMetrics, setDisplayedMarqueeMetrics] =
 		useState<IDisplayedMarqueeMetrics | null>(null);
 	const [items, setItems] = useState(serverAnnouncements);
+	const [announcementSource, setAnnouncementSource] =
+		useState(serverAnnouncements);
 	const [isPaused, setIsPaused] = useState(false);
 	const [transitionDirection, setTransitionDirection] =
 		useState<TAnnouncementTransitionDirection>('next');
@@ -87,13 +93,22 @@ export function useAnnouncementCarouselController(
 	const transitionRef = useRef(transition);
 	const maintenanceTokenRef = useRef<string | null>(null);
 	const pendingRemovalTokenRef = useRef<string | null>(null);
-	const serverAnnouncementTokensRef = useRef(
-		serverAnnouncements.map((item) => item.dismissed_token)
+	const serverAnnouncementSignaturesRef = useRef(
+		announcementSource.map(createAnnouncementContentSignature)
 	);
 	itemsRef.current = items;
 	activeTokenRef.current = activeToken;
 	displayTokenRef.current = displayToken;
 	transitionRef.current = transition;
+
+	useEffect(() => {
+		setAnnouncementSource(serverAnnouncements);
+	}, [serverAnnouncements]);
+
+	useAnnouncementViewerSync({
+		onAnnouncements: setAnnouncementSource,
+		serverViewerSignature,
+	});
 
 	const itemCount = items.length;
 	const displayedItem =
@@ -223,23 +238,26 @@ export function useAnnouncementCarouselController(
 	}, [updateItems]);
 
 	useEffect(() => {
-		const nextTokens = serverAnnouncements.map(
-			(item) => item.dismissed_token
+		const nextSignatures = announcementSource.map(
+			createAnnouncementContentSignature
 		);
-		const previousTokens = serverAnnouncementTokensRef.current;
+		const previousSignatures = serverAnnouncementSignaturesRef.current;
 
-		if (checkOrderedArrayEqual(nextTokens, previousTokens)) {
+		if (checkOrderedArrayEqual(nextSignatures, previousSignatures)) {
 			return;
 		}
 
-		serverAnnouncementTokensRef.current = nextTokens;
+		serverAnnouncementSignaturesRef.current = nextSignatures;
 
 		const reconciliation = reconcileServerAnnouncements({
 			activeToken: activeTokenRef.current,
 			currentItems: itemsRef.current,
 			displayToken: displayTokenRef.current,
 			pendingRemovalToken: pendingRemovalTokenRef.current,
-			serverAnnouncements,
+			serverAnnouncements: reuseUnchangedAnnouncementItems(
+				itemsRef.current,
+				announcementSource
+			),
 			transition: transitionRef.current,
 		});
 
@@ -268,7 +286,7 @@ export function useAnnouncementCarouselController(
 		) {
 			setDisplayToken(reconciliation.fallbackToken);
 		}
-	}, [clearAutoRotateTimer, serverAnnouncements, updateItems]);
+	}, [announcementSource, clearAutoRotateTimer, updateItems]);
 
 	useEffect(() => {
 		const nextMaintenanceToken = maintenanceItem?.dismissed_token ?? null;

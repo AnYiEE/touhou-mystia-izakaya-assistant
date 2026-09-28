@@ -2,6 +2,7 @@ import AccountInitialStateHydrator from '@/features/account/client/components/Ac
 import AccountSsoGrantInitialDataHydrator from '@/features/account/client/components/AccountSsoGrantInitialDataHydrator';
 import type { TAccountMeResponse } from '@/features/account/contracts';
 import {
+	SsoAuthorizeAccountContextRefresh,
 	SsoAuthorizeAccountGate,
 	SsoAuthorizeAccountGateButton,
 	SsoAuthorizeControls,
@@ -118,6 +119,9 @@ export default async function SsoAuthorizePageContent({
 		<div className="min-h-main-content text-foreground">
 			<AccountInitialStateHydrator data={initialData.account} />
 			<AccountSsoGrantInitialDataHydrator data={initialData.ssoGrants} />
+			<SsoAuthorizeAccountContextRefresh
+				initialUser={initialData.account.user}
+			/>
 			<SsoAuthorizePanel subtitle="确认后将返回发起登录的外部服务">
 				<SsoAuthorizeNotice>
 					{initialData.clientName}

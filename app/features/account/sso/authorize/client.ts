@@ -1,3 +1,4 @@
+export { default as SsoAuthorizeAccountContextRefresh } from './client/AccountContextRefresh';
 export {
 	default as SsoAuthorizeAccountGate,
 	SsoAuthorizeAccountGateButton,

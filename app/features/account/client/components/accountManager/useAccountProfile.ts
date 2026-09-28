@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { type SyntheticEvent, useCallback, useEffect, useState } from 'react';
 
 import { publishAccountRuntimeInvalidation } from '@/features/account/client/accountRuntimeInvalidation';
@@ -85,8 +84,6 @@ export function useAccountProfile({
 	user,
 	vibrate,
 }: IUseAccountProfileOptions): IUseAccountProfileResult {
-	const router = useRouter();
-
 	const [currentPassword, setCurrentPassword] = useState('');
 
 	const [newPassword, setNewPassword] = useState('');
@@ -496,7 +493,6 @@ export function useAccountProfile({
 					type: 'profile-updated',
 					userId: data.user.id,
 				});
-				router.refresh();
 			})
 			.catch((error: unknown) => {
 				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
@@ -527,7 +523,6 @@ export function useAccountProfile({
 		isProfileUsernameUnchanged,
 		isProfileUsernameChangeBlockedByMissingPassword,
 		normalizedProfileNickname,
-		router,
 		setIsSubmitting,
 		setMessage,
 		signalCurrentWebAuthnUserDetails,
