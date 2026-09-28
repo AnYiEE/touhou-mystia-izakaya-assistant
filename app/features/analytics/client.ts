@@ -10,7 +10,9 @@ export { trackEvent } from './client/trackEvent';
 
 export function startAnalyticsClient() {
 	return startAnonymousVisitorIdentityClient(async () => {
-		const fingerprintAgent = await FingerprintJS.load();
+		const fingerprintAgent = await FingerprintJS.load({
+			monitoring: false,
+		});
 		const fingerprint = await fingerprintAgent.get();
 
 		return fingerprint.visitorId;
