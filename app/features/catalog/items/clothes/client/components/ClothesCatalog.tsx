@@ -1,12 +1,12 @@
 import { cn } from '@heroui/theme';
 import { memo, useMemo, useRef } from 'react';
-import useBreakpoint from 'use-breakpoint';
 
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
 import Popover, {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/design/ui/components/popover';
+import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 
 import { type ClothesCatalog as ClothesCatalogModel } from '@/domain/catalog/items/ClothesCatalog';
 

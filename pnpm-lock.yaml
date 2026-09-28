@@ -232,9 +232,6 @@ importers:
       ua-parser-js:
         specifier: ^2.0.10
         version: 2.0.10
-      use-breakpoint:
-        specifier: ^4.0.10
-        version: 4.0.10(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       uuid:
         specifier: ^14.0.2
         version: 14.0.2
@@ -5594,13 +5591,6 @@ packages:
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
-
-  use-breakpoint@4.0.10:
-    resolution: {integrity: sha512-rnUpZwCQCTtexbpM8S5aiJrfIx6NTvt0WwATiH4hCBN6gQNgkYPFoFt6g/3pAuyqU9D9tLKwXfsVqEWMBnwo6A==}
-    deprecated: This package is no longer maintained and will not be updated on registry.npmjs.com. You can copy the source directly into your own code to keep using it.
-    peerDependencies:
-      react: '>=18'
-      react-dom: ^19.3.0
 
   use-composed-ref@1.4.0:
     resolution: {integrity: sha512-djviaxuOOh7wkj0paeO1Q/4wMZ8Zrnag5H6yBvzN7AKKe8beOaED9SF5/ByLqsku8NP4zQqsvM2u3ew/tJK8/w==}
@@ -12038,11 +12028,6 @@ snapshots:
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
-
-  use-breakpoint@4.0.10(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
-    dependencies:
-      react: 19.3.0
-      react-dom: 19.3.0(react@19.3.0)
 
   use-composed-ref@1.4.0(@types/react@19.3.0)(react@19.3.0):
     dependencies:

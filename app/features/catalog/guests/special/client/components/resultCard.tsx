@@ -1,6 +1,5 @@
 import { cn } from '@heroui/theme';
 import { useCallback, useMemo } from 'react';
-import useBreakpoint from 'use-breakpoint';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Button from '@/design/ui/components/button';
@@ -11,6 +10,7 @@ import FadeMotionDiv, {
 import Placeholder from '@/design/ui/components/placeholder';
 import Tooltip from '@/design/ui/components/tooltip';
 import { useAutoHideTooltip } from '@/design/ui/hooks/useAutoHideTooltip';
+import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import { DARK_MATTER_META_MAP } from '@/domain/data/tags/tagFacts';

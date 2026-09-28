@@ -1,6 +1,7 @@
 import { faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { type Config } from 'use-breakpoint';
+
+import { type TBreakpointConfig } from '@/design/ui/hooks/useBreakpoint';
 
 import type {
 	TGuestTabStyleMap,
@@ -66,4 +67,4 @@ export const ingredientTabStyleMap = {
 export const tachieBreakPointMap = {
 	noTachie: -1,
 	tachie: 1460,
-} as const satisfies Config;
+} as const satisfies TBreakpointConfig;

@@ -1,7 +1,6 @@
 import { AccordionItem } from '@heroui/accordion';
 import { cn } from '@heroui/theme';
 import { memo, useCallback } from 'react';
-import useBreakpoint from 'use-breakpoint';
 
 import Avatar from '@/design/ui/components/avatar';
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
@@ -12,6 +11,7 @@ import Popover, {
 } from '@/design/ui/components/popover';
 import PressElement from '@/design/ui/components/pressElement';
 import Tooltip from '@/design/ui/components/tooltip';
+import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 
 import { LABEL_MAP } from '@/domain/data/guests/special/formatTokens';
 import { MAP_FACTS } from '@/domain/data/places/placeFacts';

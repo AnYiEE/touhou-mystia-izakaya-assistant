@@ -4,12 +4,12 @@ import { Tab, Tabs } from '@heroui/tabs';
 import { cn } from '@heroui/theme';
 import { useRouter } from 'next/navigation';
 import { type Key, memo, useCallback, useEffect, useMemo, useRef } from 'react';
-import useBreakpoint from 'use-breakpoint';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import FadeMotionDiv from '@/design/ui/components/fadeMotionDiv';
 import Loading from '@/design/ui/components/loading';
 import Placeholder from '@/design/ui/components/placeholder';
+import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
