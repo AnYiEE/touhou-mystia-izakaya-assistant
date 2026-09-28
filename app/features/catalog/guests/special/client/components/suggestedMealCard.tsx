@@ -21,6 +21,7 @@ import Popover, {
 import Tooltip from '@/design/ui/components/tooltip';
 import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import { GUEST_RATING_MAP } from '@/domain/evaluation/labels';
@@ -48,7 +49,6 @@ import {
 } from './suggestedMealCopy';
 
 const REFRESHING_NOTICE_DELAY_MS = 160;
-const STATUS_NOTICE_TRANSITION_DURATION_SECONDS = 0.14;
 const STATUS_NOTICE_ANIMATE = { height: 'auto', opacity: 1 } as const;
 const STATUS_NOTICE_HIDDEN = { height: 0, opacity: 0 } as const;
 const RATING_AVATAR_CLASS_NAMES = { base: 'h-5 w-44 ring-offset-0' } as const;
@@ -76,7 +76,7 @@ function useDeferredRefreshingNotice(isRefreshing: boolean) {
 
 export default function SuggestedMealCard() {
 	const isReducedMotion = useReducedMotion();
-	const popoverMotionProps = useMotionProps('popover');
+	const selectMotionProps = useMotionProps('select');
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
 	const {
@@ -109,6 +109,10 @@ export default function SuggestedMealCard() {
 	const isRefreshingNoticeVisible = useDeferredRefreshingNotice(
 		suggestionStatus === 'refreshing'
 	);
+	const selectPopoverProps = useMemo(
+		() => ({ motionProps: selectMotionProps, shouldCloseOnScroll: false }),
+		[selectMotionProps]
+	);
 	const selectClassNames = useMemo(
 		() => ({
 			listboxWrapper:
@@ -123,10 +127,6 @@ export default function SuggestedMealCard() {
 			value: '!text-default-700',
 		}),
 		[isHighAppearance]
-	);
-	const selectPopoverProps = useMemo(
-		() => ({ motionProps: popoverMotionProps, shouldCloseOnScroll: false }),
-		[popoverMotionProps]
 	);
 	const cookerSelectClassNames = useMemo(
 		() => ({ base: 'min-w-[116px]', ...selectClassNames }),
@@ -152,10 +152,8 @@ export default function SuggestedMealCard() {
 	);
 	const statusNoticeTransition = useMemo(
 		() => ({
-			duration: isReducedMotion
-				? 0
-				: STATUS_NOTICE_TRANSITION_DURATION_SECONDS,
-			ease: 'easeInOut' as const,
+			duration: isReducedMotion ? 0 : MOTION_DURATION_S.fast,
+			ease: MOTION_EASE.standard,
 		}),
 		[isReducedMotion]
 	);

@@ -26,6 +26,7 @@ import Button from '@/design/ui/components/button';
 import FadeMotionDiv from '@/design/ui/components/fadeMotionDiv';
 import Heading from '@/design/ui/components/heading';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
 import { accountStore } from '@/features/account/client/state/accountStore';
@@ -63,25 +64,9 @@ import {
 	getConflictResolutionTrackName,
 } from './presentation';
 
-const CONFLICT_MODAL_MOTION_PROPS = {
-	variants: {
-		enter: {
-			opacity: 1,
-			scale: 1,
-			transition: { duration: 0.16, ease: 'easeOut' },
-		},
-		exit: {
-			opacity: 0,
-			scale: 0.985,
-			transition: { duration: 0.12, ease: 'easeIn' },
-		},
-		initial: { opacity: 0, scale: 0.985 },
-	},
-} as const;
-
 const CONFLICT_COLLAPSE_MOTION_TRANSITION = {
-	duration: 0.14,
-	ease: 'easeInOut',
+	duration: MOTION_DURATION_S.base,
+	ease: MOTION_EASE.standard,
 } as const;
 const CONFLICT_COLLAPSE_REDUCED_MOTION_TRANSITION = { duration: 0 } as const;
 const CONFLICT_HEADING_CLASS_NAMES = { subTitle: 'mb-0' } as const;
@@ -549,7 +534,6 @@ export default memo<IProps>(function AccountConflictModal() {
 				isDismissable={false}
 				isKeyboardDismissDisabled
 				isOpen={isModalOpen}
-				motionProps={CONFLICT_MODAL_MOTION_PROPS}
 				scrollMode="mask"
 				size="5xl"
 			>
@@ -633,7 +617,6 @@ export default memo<IProps>(function AccountConflictModal() {
 			isDismissable={false}
 			isKeyboardDismissDisabled
 			isOpen={isModalOpen}
-			motionProps={CONFLICT_MODAL_MOTION_PROPS}
 			scrollMode="mask"
 			size="5xl"
 		>

@@ -4,7 +4,6 @@ export { default as OverlayCoordinatorHost } from './client/OverlayCoordinatorHo
 export {
 	SPECIAL_GUEST_PLAN_DRAWER_EXIT_DURATION_MS,
 	MOBILE_NAV_MENU_EXIT_DELAY_MS,
-	SPOTLIGHT_EXIT_DURATION_MS,
 } from './client/constants';
 export {
 	getActiveOverlayTaskId,

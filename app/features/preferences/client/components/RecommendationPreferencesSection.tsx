@@ -25,7 +25,7 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 	isReducedMotion,
 }) {
 	const { isHighAppearance } = useDesignPreferences();
-	const popoverMotionProps = useMotionProps('popover');
+	const selectMotionProps = useMotionProps('select');
 
 	const isSuggestEnabled = globalStore.persistence.suggestMeals.enabled.use();
 	const suggestMaxExtraIngredients =
@@ -43,8 +43,8 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 		globalStore.shared.suggestMeals.selectableSortProfiles.get();
 
 	const popoverProps = useMemo(
-		() => ({ motionProps: popoverMotionProps }),
-		[popoverMotionProps]
+		() => ({ motionProps: selectMotionProps }),
+		[selectMotionProps]
 	);
 	const selectClassNames = useMemo(
 		() => ({

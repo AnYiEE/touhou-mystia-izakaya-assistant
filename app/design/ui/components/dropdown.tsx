@@ -8,8 +8,7 @@ import { cn } from '@heroui/theme';
 import { type JSX, memo, useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
-import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
-import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import { useMotionState } from '@/design/ui/hooks/useMotionProps';
 
 interface IProps extends DropdownProps {}
 
@@ -22,8 +21,8 @@ export default memo<IProps>(function Dropdown({
 	...props
 }) {
 	const { isHighAppearance } = useDesignPreferences();
-	const motionProps = useMotionProps('popover');
-	const isReducedMotion = useReducedMotion();
+	const { disableAnimation: motionDisableAnimation, motionProps } =
+		useMotionState('popover');
 
 	const mergedClassNames = useMemo(
 		() => ({
@@ -42,7 +41,7 @@ export default memo<IProps>(function Dropdown({
 
 	return (
 		<HeroUIDropdown
-			disableAnimation={disableAnimation ?? isReducedMotion}
+			disableAnimation={disableAnimation ?? motionDisableAnimation}
 			motionProps={motionProps}
 			shouldBlockScroll={Boolean(shouldBlockScroll)}
 			shouldCloseOnScroll={Boolean(shouldCloseOnScroll)}

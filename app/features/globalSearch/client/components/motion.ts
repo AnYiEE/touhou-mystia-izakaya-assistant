@@ -1,35 +1,24 @@
-import { SPOTLIGHT_EXIT_DURATION_MS } from '@/features/overlays/client';
-
-export const SPOTLIGHT_MODAL_MOTION_PROPS = {
-	variants: {
-		enter: {
-			opacity: 1,
-			scale: 1,
-			transition: { duration: 0.16, ease: 'easeOut' },
-		},
-		exit: {
-			opacity: 0,
-			scale: 0.985,
-			transition: {
-				duration: SPOTLIGHT_EXIT_DURATION_MS / 1000,
-				ease: 'easeIn',
-			},
-		},
-		initial: { opacity: 0, scale: 0.985 },
-	},
-} as const;
+import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 export const SPOTLIGHT_CONTENT_TRANSITION = {
-	duration: 0.22,
-	ease: 'easeInOut',
-	layout: { duration: 0.22, ease: 'easeInOut', type: 'tween' },
+	duration: MOTION_DURATION_S.base,
+	ease: MOTION_EASE.standard,
+	layout: {
+		duration: MOTION_DURATION_S.base,
+		ease: MOTION_EASE.standard,
+		type: 'tween',
+	},
 	type: 'tween',
 } as const;
 
 export const SPOTLIGHT_LIST_TRANSITION = {
-	duration: 0.22,
-	ease: 'easeInOut',
-	layout: { duration: 0.22, ease: 'easeInOut', type: 'tween' },
+	duration: MOTION_DURATION_S.base,
+	ease: MOTION_EASE.standard,
+	layout: {
+		duration: MOTION_DURATION_S.base,
+		ease: MOTION_EASE.standard,
+		type: 'tween',
+	},
 	type: 'tween',
 } as const;
 

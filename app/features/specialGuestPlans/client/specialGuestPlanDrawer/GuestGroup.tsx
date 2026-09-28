@@ -19,6 +19,7 @@ import { type IPopoverProps } from '@/design/ui/components/popover';
 import { selectionToKnownValues } from '@/design/ui/components/selectionKeys';
 import Tooltip from '@/design/ui/components/tooltip';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import type { TBeverageId } from '@/domain/data/beverages/types';
@@ -49,7 +50,6 @@ import {
 import MealRow from './MealRow';
 
 const DRAWER_RECOMMENDED_MEAL_RENDER_BATCH_SIZE = 12;
-const DRAWER_STATUS_NOTICE_TRANSITION_DURATION_SECONDS = 0.14;
 const RECOMMENDED_FILTER_ALL_KEY = '__all__';
 const COLLAPSE_ANIMATE = {
 	height: 'auto',
@@ -284,15 +284,13 @@ export default function GuestGroup({
 		[isHighAppearance]
 	);
 	const collapseTransition = useMemo(
-		() => ({ duration: isReducedMotion ? 0 : 0.18 }),
+		() => ({ duration: isReducedMotion ? 0 : MOTION_DURATION_S.base }),
 		[isReducedMotion]
 	);
 	const recommendedStatusNoticeTransition = useMemo(
 		() => ({
-			duration: isReducedMotion
-				? 0
-				: DRAWER_STATUS_NOTICE_TRANSITION_DURATION_SECONDS,
-			ease: 'easeInOut' as const,
+			duration: isReducedMotion ? 0 : MOTION_DURATION_S.fast,
+			ease: MOTION_EASE.standard,
 		}),
 		[isReducedMotion]
 	);
@@ -590,7 +588,7 @@ export default function GuestGroup({
 						>
 							<FontAwesomeIcon
 								className={cn(
-									'transition-transform duration-150 ease-linear motion-reduce:transition-none',
+									'transition-transform duration-100 ease-linear motion-reduce:transition-none',
 									isExpanded && 'rotate-180'
 								)}
 								icon={faChevronDown}

@@ -13,6 +13,7 @@ import {
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
 import PressElement from '@/design/ui/components/pressElement';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 import type { TSpriteId, TSpriteTarget } from '@/domain/data/sprites/types';
 
@@ -31,7 +32,10 @@ interface ISpriteState {
 const PREVIOUS_SPRITE_ANIMATE = { x: '-100%' } as const;
 const PREVIOUS_SPRITE_INITIAL = { x: 0 } as const;
 const CURRENT_SPRITE_INITIAL = { x: '100%' } as const;
-const SPRITE_SLIDE_TRANSITION = { duration: 0.5, ease: 'easeOut' } as const;
+const SPRITE_SLIDE_TRANSITION = {
+	duration: MOTION_DURATION_S.slow,
+	ease: MOTION_EASE.enter,
+} as const;
 const REDUCED_MOTION_TRANSITION = { duration: 0 } as const;
 
 type IProps<T extends TSpriteTarget = TSpriteTarget> = Omit<

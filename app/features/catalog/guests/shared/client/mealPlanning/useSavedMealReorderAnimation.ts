@@ -2,9 +2,7 @@ import { animate } from 'framer-motion';
 import { useCallback, useLayoutEffect, useRef } from 'react';
 
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
-
-const ANIMATION_DURATION = 0.2;
-const ANIMATION_EASING = [0.2, 1, 0.3, 1] as const;
+import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 interface IPendingAnimation {
 	fromRect: DOMRect;
@@ -108,7 +106,7 @@ export function useSavedMealReorderAnimation() {
 				await animate(
 					rowElement,
 					{ opacity: [1, 0], scale: [1, 0.99], y: [0, -4] },
-					{ duration: 0.14, ease: 'easeIn' }
+					{ duration: MOTION_DURATION_S.fast, ease: MOTION_EASE.exit }
 				);
 				return;
 			}
@@ -126,7 +124,7 @@ export function useSavedMealReorderAnimation() {
 					scale: [1, 0.99],
 					y: [0, -4],
 				},
-				{ duration: ANIMATION_DURATION, ease: ANIMATION_EASING }
+				{ duration: MOTION_DURATION_S.base, ease: MOTION_EASE.standard }
 			);
 
 			const dividerRowElement =
@@ -151,7 +149,10 @@ export function useSavedMealReorderAnimation() {
 						marginTop: [dividerMetrics.marginTop, '0px'],
 						opacity: [1, 0],
 					},
-					{ duration: ANIMATION_DURATION, ease: ANIMATION_EASING }
+					{
+						duration: MOTION_DURATION_S.base,
+						ease: MOTION_EASE.standard,
+					}
 				);
 			})();
 
@@ -172,7 +173,10 @@ export function useSavedMealReorderAnimation() {
 				return animate(
 					nextRowElement,
 					{ marginTop: [marginTop, '0px'] },
-					{ duration: ANIMATION_DURATION, ease: ANIMATION_EASING }
+					{
+						duration: MOTION_DURATION_S.base,
+						ease: MOTION_EASE.standard,
+					}
 				);
 			})();
 
@@ -220,7 +224,7 @@ export function useSavedMealReorderAnimation() {
 			animate(
 				element,
 				{ y: [translateY, 0] },
-				{ duration: ANIMATION_DURATION, ease: ANIMATION_EASING }
+				{ duration: MOTION_DURATION_S.base, ease: MOTION_EASE.standard }
 			);
 		}
 	});

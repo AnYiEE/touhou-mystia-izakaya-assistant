@@ -20,7 +20,6 @@ import {
 	SPOTLIGHT_CONTENT_TRANSITION,
 	SPOTLIGHT_LIST_TRANSITION,
 	SPOTLIGHT_MAIN_CONTENT_VARIANTS,
-	SPOTLIGHT_MODAL_MOTION_PROPS,
 } from './motion';
 import { SearchHome } from './SearchHome';
 import { SearchInput } from './SearchInput';
@@ -123,7 +122,6 @@ export default function GlobalSpotlightSearch() {
 		<CoordinatedModal
 			coordination={coordination}
 			isOpen={isOpen}
-			motionProps={SPOTLIGHT_MODAL_MOTION_PROPS}
 			onClose={handleCloseRequest}
 			size="5xl"
 			scrollShadow={false}

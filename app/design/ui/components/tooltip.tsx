@@ -10,8 +10,7 @@ import { type ComponentProps, memo, useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import { createRatingVariants } from '@/design/theme/styles/rating/createRatingVariants';
-import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
-import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import { useMotionState } from '@/design/ui/hooks/useMotionProps';
 
 import { getStyleBlur } from './popover';
 
@@ -34,8 +33,8 @@ export default memo<IProps>(function Tooltip({
 	...props
 }) {
 	const { isHighAppearance } = useDesignPreferences();
-	const motionProps = useMotionProps('tooltip');
-	const isReducedMotion = useReducedMotion();
+	const { disableAnimation: motionDisableAnimation, motionProps } =
+		useMotionState('tooltip');
 
 	const styleBlur = useMemo(
 		() => getStyleBlur(color, disableBlur, isHighAppearance),
@@ -49,7 +48,7 @@ export default memo<IProps>(function Tooltip({
 	return (
 		<CustomHeroUITooltip
 			color={color}
-			disableAnimation={disableAnimation ?? isReducedMotion}
+			disableAnimation={disableAnimation ?? motionDisableAnimation}
 			motionProps={motionProps}
 			// The same radius as `Popover`.
 			radius={radius ?? 'lg'}

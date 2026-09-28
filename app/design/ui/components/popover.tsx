@@ -10,8 +10,7 @@ import { type ComponentProps, memo, useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import { createRatingVariants } from '@/design/theme/styles/rating/createRatingVariants';
-import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
-import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import { useMotionState } from '@/design/ui/hooks/useMotionProps';
 
 export function getStyleBlur(
 	color: IProps['color'],
@@ -73,8 +72,8 @@ export default memo<IProps>(function Popover({
 	...props
 }) {
 	const { isHighAppearance } = useDesignPreferences();
-	const motionProps = useMotionProps('popover');
-	const isReducedMotion = useReducedMotion();
+	const { disableAnimation: motionDisableAnimation, motionProps } =
+		useMotionState('popover');
 
 	const styleBlur = useMemo(
 		() => getStyleBlur(color, disableBlur, isHighAppearance),
@@ -88,7 +87,7 @@ export default memo<IProps>(function Popover({
 	return (
 		<CustomHeroUIPopover
 			color={color}
-			disableAnimation={disableAnimation ?? isReducedMotion}
+			disableAnimation={disableAnimation ?? motionDisableAnimation}
 			motionProps={motionProps}
 			// The same offset position as `Tooltip`.
 			offset={

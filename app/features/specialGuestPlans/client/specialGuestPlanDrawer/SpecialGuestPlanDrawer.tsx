@@ -12,6 +12,7 @@ import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton'
 import Link from '@/design/ui/components/link';
 import SiteInfo from '@/design/ui/components/siteInfo';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 import { SITE_LINKS } from '@/features/appShell/links';
 import {
@@ -33,16 +34,17 @@ import SpecialGuestPlanDrawerSkeleton from './SpecialGuestPlanDrawerSkeleton';
 import SpecialGuestPlanHelpPopover from './SpecialGuestPlanHelpPopover';
 import SpecialGuestPlanResults from './SpecialGuestPlanResults';
 
-const DRAWER_CONTENT_READY_DELAY = 360;
+const DRAWER_CONTENT_READY_DELAY =
+	SPECIAL_GUEST_PLAN_DRAWER_EXIT_DURATION_MS + 20;
 const BACKDROP_VISIBLE = { opacity: 1 } as const;
 const BACKDROP_HIDDEN = { opacity: 0 } as const;
-const BACKDROP_TRANSITION = { duration: 0.22 } as const;
+const BACKDROP_TRANSITION = { duration: MOTION_DURATION_S.base } as const;
 const DRAWER_PANEL_VISIBLE = { x: 0 } as const;
 const DRAWER_PANEL_HIDDEN = { x: '-100%' } as const;
 const REDUCED_MOTION_TRANSITION = { duration: 0 } as const;
 const DRAWER_PANEL_TRANSITION = {
 	duration: SPECIAL_GUEST_PLAN_DRAWER_EXIT_DURATION_MS / 1000,
-	ease: [0.22, 1, 0.36, 1],
+	ease: MOTION_EASE.standard,
 	type: 'tween',
 } as const;
 

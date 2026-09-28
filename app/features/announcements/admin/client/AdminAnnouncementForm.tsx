@@ -155,7 +155,7 @@ function AdminAnnouncementUserPreview({
 				aria-label="站点通知预览"
 				role="region"
 				className={cn(
-					'relative overflow-hidden transition-colors duration-500 motion-reduce:transition-none',
+					'relative overflow-hidden transition-colors duration-300 motion-reduce:transition-none',
 					levelMeta.rootClassName,
 					isHighAppearance && 'backdrop-saturate-125 backdrop-blur-sm'
 				)}

@@ -11,15 +11,16 @@ import { type PropsWithChildren, memo, useMemo } from 'react';
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Card from '@/design/ui/components/card';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 const ACCOUNT_COLLAPSE_MOTION_TRANSITION = {
-	duration: 0.18,
-	ease: 'easeInOut',
+	duration: MOTION_DURATION_S.base,
+	ease: MOTION_EASE.standard,
 } as const;
 
 const ACCOUNT_AUTH_ENTRY_MOTION_TRANSITION = {
-	duration: 0.26,
-	ease: 'linear',
+	duration: MOTION_DURATION_S.slow,
+	ease: MOTION_EASE.linear,
 } as const;
 const ACCOUNT_COLLAPSE_MOTION_ANIMATE = { height: 'auto', opacity: 1 } as const;
 const ACCOUNT_COLLAPSE_MOTION_HIDDEN = { height: 0, opacity: 0 } as const;

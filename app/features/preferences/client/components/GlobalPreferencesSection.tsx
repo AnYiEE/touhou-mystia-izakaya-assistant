@@ -43,7 +43,7 @@ export default memo<IProps>(function GlobalPreferencesSection({
 	onModalClose,
 }) {
 	const { isHighAppearance } = useDesignPreferences();
-	const popoverMotionProps = useMotionProps('popover');
+	const selectMotionProps = useMotionProps('select');
 	const vibrate = useVibrate();
 
 	const allDlcs = globalStore.dlcs.get();
@@ -56,8 +56,8 @@ export default memo<IProps>(function GlobalPreferencesSection({
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
 
 	const popularTagPopoverProps = useMemo(
-		() => ({ motionProps: popoverMotionProps }),
-		[popoverMotionProps]
+		() => ({ motionProps: selectMotionProps }),
+		[selectMotionProps]
 	);
 	const popularTagSelectClassNames = useMemo(
 		() => ({

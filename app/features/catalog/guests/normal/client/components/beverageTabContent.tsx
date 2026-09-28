@@ -65,7 +65,7 @@ const TABLE_DROPDOWN_ITEM_CLASSES = {
 export default function BeverageTabContent() {
 	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
-	const popoverMotionProps = useMotionProps('popover');
+	const selectMotionProps = useMotionProps('select');
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
 
@@ -296,12 +296,12 @@ export default function BeverageTabContent() {
 							aria-label="选择或输入酒水名称"
 							title="选择或输入酒水名称"
 							popoverProps={{
-								motionProps: popoverMotionProps,
+								motionProps: selectMotionProps,
 								shouldCloseOnScroll: false,
 							}}
 							classNames={{
 								base: cn(
-									'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:opacity-hover data-[slot="input-wrapper"]:[&_div]:transition-opacity data-[slot="input-wrapper"]:[&_div]:!duration-250 motion-reduce:data-[slot="input-wrapper"]:[&_div]:transition-none',
+									'data-[slot="input-wrapper"]:[&_div]:!bg-default/40 data-[slot="input-wrapper"]:data-[hover=true]:[&_div]:opacity-hover data-[slot="input-wrapper"]:[&_div]:transition-opacity data-[slot="input-wrapper"]:[&_div]:!duration-200 motion-reduce:data-[slot="input-wrapper"]:[&_div]:transition-none',
 									{ 'backdrop-blur': isHighAppearance }
 								),
 								listboxWrapper:
@@ -346,7 +346,7 @@ export default function BeverageTabContent() {
 							aria-label="选择顾客所点单的酒水标签"
 							title="选择顾客所点单的酒水标签"
 							popoverProps={{
-								motionProps: popoverMotionProps,
+								motionProps: selectMotionProps,
 								shouldCloseOnScroll: false,
 							}}
 							classNames={{
@@ -483,7 +483,7 @@ export default function BeverageTabContent() {
 							aria-label="选择表格每页最大行数"
 							title="选择表格每页最大行数"
 							popoverProps={{
-								motionProps: popoverMotionProps,
+								motionProps: selectMotionProps,
 								shouldCloseOnScroll: false,
 							}}
 							classNames={{
@@ -520,7 +520,7 @@ export default function BeverageTabContent() {
 			availableBeverageTags,
 			isHighAppearance,
 			isReducedMotion,
-			popoverMotionProps,
+			selectMotionProps,
 			searchValue,
 			selectedAvailabilityDlcs,
 			selectedGuestBeverageTagKeys,

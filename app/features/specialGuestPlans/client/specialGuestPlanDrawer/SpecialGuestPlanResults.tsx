@@ -4,6 +4,7 @@ import { useCallback, useMemo, useRef } from 'react';
 import Placeholder from '@/design/ui/components/placeholder';
 import { type IPopoverProps } from '@/design/ui/components/popover';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
@@ -69,7 +70,7 @@ export default function SpecialGuestPlanResults({
 		[isReducedMotion]
 	);
 	const emptyTransition = useMemo(
-		() => ({ duration: isReducedMotion ? 0 : 0.16 }),
+		() => ({ duration: isReducedMotion ? 0 : MOTION_DURATION_S.base }),
 		[isReducedMotion]
 	);
 	const groupExit = useMemo(
@@ -82,8 +83,8 @@ export default function SpecialGuestPlanResults({
 	);
 	const groupTransition = useMemo(
 		() => ({
-			duration: isReducedMotion ? 0 : 0.14,
-			ease: 'easeOut' as const,
+			duration: isReducedMotion ? 0 : MOTION_DURATION_S.base,
+			ease: MOTION_EASE.enter,
 		}),
 		[isReducedMotion]
 	);

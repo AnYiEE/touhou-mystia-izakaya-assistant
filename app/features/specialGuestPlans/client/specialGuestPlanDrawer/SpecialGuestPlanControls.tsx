@@ -37,6 +37,7 @@ import {
 } from '@/design/ui/components/selectionKeys';
 import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TMapLabel } from '@/domain/data/places/types';
@@ -460,8 +461,8 @@ export default function SpecialGuestPlanControls({
 	);
 	const controlsMotionTransition = useMemo(
 		() => ({
-			duration: isReducedMotion ? 0 : 0.2,
-			ease: 'linear' as const,
+			duration: isReducedMotion ? 0 : MOTION_DURATION_S.base,
+			ease: MOTION_EASE.linear,
 			type: 'tween' as const,
 		}),
 		[isReducedMotion]
@@ -472,8 +473,8 @@ export default function SpecialGuestPlanControls({
 	);
 	const modePanelMotionTransition = useMemo(
 		() => ({
-			duration: isReducedMotion ? 0 : 0.18,
-			ease: 'linear' as const,
+			duration: isReducedMotion ? 0 : MOTION_DURATION_S.base,
+			ease: MOTION_EASE.linear,
 			type: 'tween' as const,
 		}),
 		[isReducedMotion]
@@ -814,7 +815,7 @@ export default function SpecialGuestPlanControls({
 										: true
 								}
 								className={cn(
-									'transition-opacity duration-150 ease-linear motion-reduce:transition-none',
+									'transition-opacity duration-100 ease-linear motion-reduce:transition-none',
 									activePlanMode === 'manual'
 										? 'relative z-10 opacity-100'
 										: 'pointer-events-none absolute inset-x-0 top-0 z-0 opacity-0'
@@ -855,7 +856,7 @@ export default function SpecialGuestPlanControls({
 										: true
 								}
 								className={cn(
-									'space-y-3 transition-opacity duration-150 ease-linear motion-reduce:transition-none',
+									'space-y-3 transition-opacity duration-100 ease-linear motion-reduce:transition-none',
 									activePlanMode === 'region'
 										? 'relative z-10 opacity-100'
 										: 'pointer-events-none absolute inset-x-0 top-0 z-0 opacity-0'

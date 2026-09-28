@@ -16,6 +16,7 @@ import {
 } from 'react';
 
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 import type { TTab } from '@/features/catalog/guests/shared/contracts';
 
@@ -23,8 +24,15 @@ import { checkCompatibility } from '@/infrastructure/browser/compatibility/check
 
 const tabOrder = ['guest', 'food', 'beverage', 'ingredient'] as const;
 const REDUCED_MOTION_TRANSITION = { duration: 0 } as const;
-const TAB_TRANSITION = { bounce: 0.15, duration: 0.5, type: 'spring' } as const;
-const TAB_HEIGHT_TRANSITION = { duration: 0.3, ease: 'easeInOut' } as const;
+const TAB_TRANSITION = {
+	bounce: 0.15,
+	duration: MOTION_DURATION_S.slow,
+	type: 'spring',
+} as const;
+const TAB_HEIGHT_TRANSITION = {
+	duration: MOTION_DURATION_S.slow,
+	ease: MOTION_EASE.standard,
+} as const;
 const EMPTY_ANIMATION = {} as const;
 const TAB_SLIDER_STYLE = { width: `${tabOrder.length * 100}%` } as const;
 const TAB_PANEL_STYLE = { flex: `0 0 ${100 / tabOrder.length}%` } as const;

@@ -77,7 +77,7 @@ export function SearchInput({
 		() => ({
 			base: 'min-w-0 flex-1',
 			clearButton: cn(
-				'bg-transparent text-foreground-500 transition duration-150 ease-out data-[hover=true]:bg-default/30 data-[pressed=true]:bg-default/40 data-[hover=true]:text-foreground-700 motion-reduce:transition-none',
+				'bg-transparent text-foreground-500 transition duration-100 ease-out data-[hover=true]:bg-default/30 data-[pressed=true]:bg-default/40 data-[hover=true]:text-foreground-700 motion-reduce:transition-none',
 				isInputFocused && query.length > 0
 					? '!scale-100 !opacity-100'
 					: '!pointer-events-none !scale-85 !opacity-0'

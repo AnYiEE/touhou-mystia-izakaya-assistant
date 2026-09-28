@@ -5,6 +5,7 @@ import isNil from 'lodash/isNil.js';
 import { type HTMLAttributes, type PropsWithChildren, memo } from 'react';
 
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 type TVariant = 'content' | 'placeholder';
 
@@ -22,9 +23,9 @@ const variants = {
 } as const satisfies Record<TVariant, Variants>;
 
 const transition = {
-	duration: 0.15,
-	ease: 'easeInOut',
-	layout: { ease: 'linear' },
+	duration: MOTION_DURATION_S.base,
+	ease: MOTION_EASE.standard,
+	layout: { ease: MOTION_EASE.linear },
 } as const;
 
 interface IProps extends HTMLAttributes<HTMLDivElement> {
