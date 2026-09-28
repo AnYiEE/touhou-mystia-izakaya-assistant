@@ -124,7 +124,7 @@
 		"compare-versions": "^6.1.1",
 		"core-js": "^3.50.0",
 		"driver.js": "1.5.0",
-		"framer-motion": "12.17.2",
+		"framer-motion": "^13.4.4",
 		"idb": "^8.0.3",
 		"js-sha1": "^0.7.0",
 		"kysely": "^0.29.6",
@@ -234,7 +234,6 @@
 		},
 		"updateConfig": {
 			"ignoreDependencies": [
-				"framer-motion",
 				"@heroui/*",
 				"@react-aria/*",
 				"@react-stately/*",

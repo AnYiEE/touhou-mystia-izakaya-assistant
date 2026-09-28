@@ -13,7 +13,7 @@ const MOTION_POPOVER = {
 		exit: {
 			opacity: 0,
 			transform: 'scale(0.96)',
-			transition: { bounce: 0, duration: 0.15, type: 'easeOut' },
+			transition: { duration: 0.15, ease: 'easeOut' },
 		},
 		initial: { transform: 'scale(0.8)' },
 	},
@@ -23,12 +23,12 @@ const MOTION_SELECT = {
 	variants: {
 		enter: {
 			transform: 'scale(1)',
-			transition: { bounce: 0, duration: 0.15, type: 'easeIn' },
+			transition: { duration: 0.15, ease: 'easeIn' },
 		},
 		exit: {
 			opacity: 0,
 			transform: 'scale(0.96, 1)',
-			transition: { bounce: 0, duration: 0.3, type: 'easeOut' },
+			transition: { duration: 0.3, ease: 'easeOut' },
 		},
 		initial: { transform: 'scale(0.96, 1)' },
 	},
@@ -42,7 +42,7 @@ const MOTION_TOOLTIP = {
 		},
 		exit: {
 			transform: 'scale(0)',
-			transition: { bounce: 0, duration: 0.1, type: 'easeOut' },
+			transition: { duration: 0.1, ease: 'easeOut' },
 		},
 		initial: { transform: 'scale(0.8)' },
 	},
