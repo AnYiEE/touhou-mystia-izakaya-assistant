@@ -3471,22 +3471,7 @@ export const SPECIAL_GUEST_LIST = [
 			repell: '好不容易找到机会来一次来着……',
 			seenRepell: '诶诶？不至于吧！',
 		},
-		spellCards: {
-			// positive: [
-			// 	{
-			// 		name: '灵符「遗失典籍的回响」',
-			// 		description:
-			// 			'小恶魔从图书馆搬来一本百科全书，接下来3次稀客点单会告诉你具体标签。',
-			// 	},
-			// ],
-			// negative: [
-			// 	{
-			// 		name: '幻符「献给巴瓦鲁的镇魂曲」',
-			// 		description:
-			// 			'料理面板里的食材顺序被打乱，酒水柜里的酒水顺序被打乱，过滤功能不可用，交互的厨具变成随机厨具，持续30秒。',
-			// 	},
-			// ],
-		},
+		spellCards: {},
 		beverageTagMapping: { 2: '最烈的酒' },
 		positiveTagMapping: { 5: '最珍贵的料理', 13: '外国风味' },
 		collection: false,
@@ -3825,7 +3810,22 @@ export const SPECIAL_GUEST_LIST = [
 			seenRepell:
 				'原来还能用这种方式来激怒他人，我似乎想到了新的捉弄雪的点子呢~',
 		},
-		spellCards: {},
+		spellCards: {
+			positive: [
+				{
+					name: '舞符「冰晶特调」',
+					description:
+						'接下来30秒，持续使用冰系魔法制作饮料，为在场普通订单提供对应的酒水',
+				},
+			],
+			negative: [
+				{
+					name: '舞符「冰封酒宴」',
+					description:
+						'接下来30秒，所有顾客的点单料理必须额外包含「凉爽」tag，否则评价至多为「普通」',
+				},
+			],
+		},
 		beverageTagMapping: { [-1]: '反应会下降', 17: '一点点怀念' },
 		positiveTagMapping: {
 			2: '鸽子爱吃玉米',
