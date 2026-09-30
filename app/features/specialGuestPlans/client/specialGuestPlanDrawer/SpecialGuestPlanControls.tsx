@@ -41,6 +41,7 @@ import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TMapLabel } from '@/domain/data/places/types';
+import { compareMapCanonicalOrder } from '@/domain/places/mapOrdering';
 import { RECOMMENDATION_SORT_PROFILE_LABEL_MAP } from '@/domain/recommendations/labels';
 import {
 	RECOMMENDATION_SORT_PROFILES,
@@ -169,6 +170,13 @@ export default function SpecialGuestPlanControls({
 		specialGuestPlanCatalogPort.availableGuestMaps.use();
 	const availableSpecialGuests =
 		specialGuestPlanCatalogPort.availableSpecialGuests.use();
+	const canonicalAvailableGuestMaps = useMemo(
+		() =>
+			[...availableGuestMaps].sort((left, right) =>
+				compareMapCanonicalOrder(left.value, right.value)
+			),
+		[availableGuestMaps]
+	);
 	const availableGuestMapByKey = useMemo<ReadonlyMap<string, TMapLabel>>(
 		() =>
 			new Map(
@@ -229,6 +237,13 @@ export default function SpecialGuestPlanControls({
 	const activePlanManualGuestKeys = useMemo(
 		() => toSelectionKeySet(activePlan.manualGuests),
 		[activePlan.manualGuests]
+	);
+	const activePlanMapKeys = useMemo(
+		() =>
+			toSelectionKeySet(
+				[...activePlan.maps].sort(compareMapCanonicalOrder)
+			),
+		[activePlan.maps]
 	);
 	const recommendationSortProfileKeys = useMemo(
 		() =>
@@ -865,9 +880,9 @@ export default function SpecialGuestPlanControls({
 								<Select
 									disableAnimation={isReducedMotion}
 									isVirtualized={false}
-									items={availableGuestMaps}
+									items={canonicalAvailableGuestMaps}
 									label="出没地区"
-									selectedKeys={activePlan.maps}
+									selectedKeys={activePlanMapKeys}
 									selectionMode="multiple"
 									size="sm"
 									onSelectionChange={(selection) => {

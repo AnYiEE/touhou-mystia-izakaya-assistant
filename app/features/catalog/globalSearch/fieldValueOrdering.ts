@@ -1,6 +1,7 @@
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
+import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
 import {
 	INGREDIENT_TYPE_MAP,
 	compareIngredientTypes,
@@ -57,6 +58,11 @@ export function getCatalogSearchFieldValueOrderMap({
 				.getValuesByProp('type')
 				.sort(compareIngredientTypes)
 				.map((type) => INGREDIENT_TYPE_MAP[type])
+		);
+	}
+	if (fieldType === 'type' && contextSection === 'cookers') {
+		return getCachedFieldValueOrderMap('type:cookers', () =>
+			Object.values(COOKER_TYPE_LABEL_MAP)
 		);
 	}
 	if (fieldType === 'category') {

@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from 'react';
 
 import { hasEquivalentDlcFilters } from '@/domain/availability';
+import { compareMapCanonicalOrder } from '@/domain/places/mapOrdering';
 
 import { filterBeverageData } from '@/features/catalog/items/beverages/client/queries/filterBeverageData';
 import { beveragesStore } from '@/features/catalog/items/beverages/client/state/store';
@@ -32,6 +33,14 @@ export default function BeveragesCatalogPage() {
 	const availableLevels = beveragesStore.availableLevels.use();
 	const availableMaps = beveragesStore.availableMaps.use();
 	const availableTags = beveragesStore.availableTags.use();
+
+	const canonicalAvailableMaps = useMemo(
+		() =>
+			[...availableMaps].sort((left, right) =>
+				compareMapCanonicalOrder(left.value, right.value)
+			),
+		[availableMaps]
+	);
 
 	const pinyinSortState = beveragesStore.persistence.pinyinSortState.use();
 
@@ -128,14 +137,14 @@ export default function BeveragesCatalogPage() {
 				setSelectedKeys: beveragesStore.persistence.filters.levels.set,
 			},
 			{
-				items: availableMaps,
+				items: canonicalAvailableMaps,
 				label: '地区（包含）',
 				selectedKeys: filterPlaces,
 				setSelectedKeys: beveragesStore.persistence.filters.places.set,
 				valueType: 'map',
 			},
 			{
-				items: availableMaps,
+				items: canonicalAvailableMaps,
 				label: '地区（排除）',
 				selectedKeys: filterNoPlaces,
 				setSelectedKeys:
@@ -147,8 +156,8 @@ export default function BeveragesCatalogPage() {
 			availableAvailabilityDlcs,
 			availableContentDlcs,
 			availableLevels,
-			availableMaps,
 			availableTags,
+			canonicalAvailableMaps,
 			filterAvailabilityDlcs,
 			filterContentDlcs,
 			filterLevels,

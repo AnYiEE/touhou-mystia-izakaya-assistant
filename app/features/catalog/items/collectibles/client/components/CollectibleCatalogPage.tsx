@@ -25,10 +25,12 @@ type TCollectibleStoreConfig<TCatalog extends TCollectibleCatalog> = ReturnType<
 export default function CollectibleCatalogPage<
 	TCatalog extends TCollectibleCatalog,
 >({
+	compareSources,
 	config,
 	renderCatalog,
 	sourceFilterLabel,
 }: {
+	compareSources?: (left: string, right: string) => number;
 	config: TCollectibleStoreConfig<TCatalog>;
 	renderCatalog: (data: TItemData<TCatalog>) => ReactNode;
 	sourceFilterLabel?: string;
@@ -42,6 +44,15 @@ export default function CollectibleCatalogPage<
 	const availableAvailabilityDlcs = store.availableAvailabilityDlcs.use();
 	const availableContentDlcs = store.availableContentDlcs.use();
 	const availableSources = store.availableSources.use();
+	const sourceOptions = useMemo(() => {
+		if (compareSources === undefined) {
+			return availableSources;
+		}
+
+		return [...availableSources].sort((left, right) =>
+			compareSources(left.value, right.value)
+		);
+	}, [availableSources, compareSources]);
 	const pinyinSortState = store.persistence.pinyinSortState.use();
 	const filterAvailabilityDlcs =
 		store.persistence.filters.availabilityDlcs.use();
@@ -102,10 +113,10 @@ export default function CollectibleCatalogPage<
 							valueType: 'dlc',
 						} satisfies TSelectConfig[number],
 					]),
-			...(sourceFilterLabel !== undefined && availableSources.length > 1
+			...(sourceFilterLabel !== undefined && sourceOptions.length > 1
 				? [
 						{
-							items: availableSources,
+							items: sourceOptions,
 							label: sourceFilterLabel,
 							selectedKeys: filterSources,
 							setSelectedKeys:
@@ -117,12 +128,12 @@ export default function CollectibleCatalogPage<
 		[
 			availableAvailabilityDlcs,
 			availableContentDlcs,
-			availableSources,
 			filterAvailabilityDlcs,
 			filterContentDlcs,
 			filterSources,
 			isAvailabilityDlcFilterRedundant,
 			sourceFilterLabel,
+			sourceOptions,
 			store.persistence.filters.availabilityDlcs.set,
 			store.persistence.filters.contentDlcs.set,
 			store.persistence.filters.sources.set,

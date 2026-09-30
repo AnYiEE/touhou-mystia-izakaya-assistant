@@ -9,6 +9,7 @@ import {
 } from '@/domain/data/ingredients/ingredientFacts';
 import type { TIngredientTypeId } from '@/domain/data/ingredients/types';
 import { FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import { compareMapCanonicalOrder } from '@/domain/places/mapOrdering';
 
 import { filterIngredientData } from '@/features/catalog/items/ingredients/client/queries/filterIngredientData';
 import { ingredientsStore } from '@/features/catalog/items/ingredients/client/state/store';
@@ -51,6 +52,13 @@ export default function IngredientsCatalogPage() {
 	const availableMaps = ingredientsStore.availableMaps.use();
 	const availableTags = ingredientsStore.availableTags.use();
 	const availableTypes = ingredientsStore.availableTypes.use();
+	const canonicalAvailableMaps = useMemo(
+		() =>
+			[...availableMaps].sort((left, right) =>
+				compareMapCanonicalOrder(left.value, right.value)
+			),
+		[availableMaps]
+	);
 	const availableTypeOptions = useMemo(
 		() => availableTypes.map(({ value }) => ({ value: value.toString() })),
 		[availableTypes]
@@ -209,7 +217,7 @@ export default function IngredientsCatalogPage() {
 					ingredientsStore.persistence.filters.levels.set,
 			},
 			{
-				items: availableMaps,
+				items: canonicalAvailableMaps,
 				label: '地区（包含）',
 				selectedKeys: filterPlaces,
 				setSelectedKeys:
@@ -217,7 +225,7 @@ export default function IngredientsCatalogPage() {
 				valueType: 'map',
 			},
 			{
-				items: availableMaps,
+				items: canonicalAvailableMaps,
 				label: '地区（排除）',
 				selectedKeys: filterNoPlaces,
 				setSelectedKeys:
@@ -229,9 +237,9 @@ export default function IngredientsCatalogPage() {
 			availableAvailabilityDlcs,
 			availableContentDlcs,
 			availableLevels,
-			availableMaps,
 			availableTags,
 			availableTypeOptions,
+			canonicalAvailableMaps,
 			filterAvailabilityDlcs,
 			filterContentDlcs,
 			filterLevels,

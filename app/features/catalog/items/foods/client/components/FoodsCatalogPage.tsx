@@ -4,6 +4,7 @@ import { useCallback, useMemo } from 'react';
 
 import { hasEquivalentDlcFilters } from '@/domain/availability';
 import { FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import { compareMapCanonicalOrder } from '@/domain/places/mapOrdering';
 
 import { filterFoodData } from '@/features/catalog/items/foods/client/queries/filterFoodData';
 import { foodsStore } from '@/features/catalog/items/foods/client/state/store';
@@ -40,6 +41,14 @@ export default function FoodsCatalogPage() {
 	const availableNegativeTags = foodsStore.availableNegativeTags.use();
 	const availablePositiveTags = foodsStore.availablePositiveTags.use();
 	const availableSources = foodsStore.availableSources.use();
+
+	const canonicalAvailableSources = useMemo(
+		() =>
+			[...availableSources].sort((left, right) =>
+				compareMapCanonicalOrder(left.value, right.value)
+			),
+		[availableSources]
+	);
 
 	const pinyinSortState = foodsStore.persistence.pinyinSortState.use();
 
@@ -237,13 +246,13 @@ export default function FoodsCatalogPage() {
 				setSelectedKeys: foodsStore.persistence.filters.levels.set,
 			},
 			{
-				items: availableSources,
+				items: canonicalAvailableSources,
 				label: '地区（包含）',
 				selectedKeys: filterSources,
 				setSelectedKeys: foodsStore.persistence.filters.places.set,
 			},
 			{
-				items: availableSources,
+				items: canonicalAvailableSources,
 				label: '地区（排除）',
 				selectedKeys: filterNoSources,
 				setSelectedKeys: foodsStore.persistence.filters.noPlaces.set,
@@ -257,7 +266,7 @@ export default function FoodsCatalogPage() {
 			availableLevels,
 			availableNegativeTags,
 			availablePositiveTags,
-			availableSources,
+			canonicalAvailableSources,
 			filterAvailabilityDlcs,
 			filterCookerTypes,
 			filterContentDlcs,

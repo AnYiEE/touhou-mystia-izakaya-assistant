@@ -12,6 +12,8 @@ import Placeholder from '@/design/ui/components/placeholder';
 import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
+import { compareMapCanonicalOrder } from '@/domain/places/mapOrdering';
+
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
 import GuestTabSlider from '@/features/catalog/guests/shared/client/components/guestTabSlider';
@@ -188,6 +190,14 @@ export default function Content() {
 	const availableSpecialGuests =
 		specialGuestStore.availableSpecialGuests.use();
 
+	const canonicalAvailableGuestMaps = useMemo(
+		() =>
+			[...availableGuestMaps].sort((left, right) =>
+				compareMapCanonicalOrder(left.value, right.value)
+			),
+		[availableGuestMaps]
+	);
+
 	const guestPinyinSortState =
 		specialGuestStore.persistence.guest.pinyinSortState.use();
 
@@ -223,7 +233,7 @@ export default function Content() {
 				valueType: 'dlc',
 			},
 			{
-				items: availableGuestMaps,
+				items: canonicalAvailableGuestMaps,
 				label: '出没地区（包含）',
 				selectedKeys: guestFilterMaps,
 				setSelectedKeys:
@@ -231,7 +241,7 @@ export default function Content() {
 				valueType: 'map',
 			},
 			{
-				items: availableGuestMaps,
+				items: canonicalAvailableGuestMaps,
 				label: '出没地区（排除）',
 				selectedKeys: guestFilterNoMaps,
 				setSelectedKeys:
@@ -265,8 +275,8 @@ export default function Content() {
 		],
 		[
 			availableGuestAvailabilityDlcs,
-			availableGuestMaps,
 			availableSpecialGuests,
+			canonicalAvailableGuestMaps,
 			guestFilterAvailabilityDlcs,
 			guestFilterExcludes,
 			guestFilterIncludes,

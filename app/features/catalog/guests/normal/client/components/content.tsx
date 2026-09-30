@@ -12,6 +12,8 @@ import Placeholder from '@/design/ui/components/placeholder';
 import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
+import { compareMapCanonicalOrder } from '@/domain/places/mapOrdering';
+
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
 import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
@@ -172,6 +174,14 @@ export default function Content() {
 	const availableGuestMaps = normalGuestStore.availableGuestMaps.use();
 	const availableNormalGuests = normalGuestStore.availableNormalGuests.use();
 
+	const canonicalAvailableGuestMaps = useMemo(
+		() =>
+			[...availableGuestMaps].sort((left, right) =>
+				compareMapCanonicalOrder(left.value, right.value)
+			),
+		[availableGuestMaps]
+	);
+
 	const guestPinyinSortState =
 		normalGuestStore.persistence.guest.pinyinSortState.use();
 
@@ -207,7 +217,7 @@ export default function Content() {
 				valueType: 'dlc',
 			},
 			{
-				items: availableGuestMaps,
+				items: canonicalAvailableGuestMaps,
 				label: '出没地区（包含）',
 				selectedKeys: guestFilterMaps,
 				setSelectedKeys:
@@ -215,7 +225,7 @@ export default function Content() {
 				valueType: 'map',
 			},
 			{
-				items: availableGuestMaps,
+				items: canonicalAvailableGuestMaps,
 				label: '出没地区（排除）',
 				selectedKeys: guestFilterNoMaps,
 				setSelectedKeys:
@@ -249,8 +259,8 @@ export default function Content() {
 		],
 		[
 			availableGuestAvailabilityDlcs,
-			availableGuestMaps,
 			availableNormalGuests,
+			canonicalAvailableGuestMaps,
 			guestFilterAvailabilityDlcs,
 			guestFilterExcludes,
 			guestFilterIncludes,

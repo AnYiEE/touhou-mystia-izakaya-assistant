@@ -41,7 +41,6 @@ import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import Sprite from './Sprite';
 
@@ -106,6 +105,24 @@ function writeSelectedKeys(
 		selectedKeys: number[] | string[]
 	) => void;
 	write(values);
+}
+
+function sortValuesByConfigItems<T extends number | string>(
+	config: ISelectConfigItem,
+	values: ReadonlyArray<T>
+): T[] {
+	const orderByValue = new Map(
+		config.items.map(({ value }, index) => [String(value), index])
+	);
+
+	return [...values].sort((left, right) => {
+		const leftOrder =
+			orderByValue.get(String(left)) ?? Number.POSITIVE_INFINITY;
+		const rightOrder =
+			orderByValue.get(String(right)) ?? Number.POSITIVE_INFINITY;
+
+		return leftOrder === rightOrder ? 0 : leftOrder - rightOrder;
+	});
 }
 
 export type TSelectConfig = ISelectConfigItem[];
@@ -257,16 +274,9 @@ export default memo<IProps>(function SideFilterIconButton({
 				if (values === null) {
 					return;
 				}
-				const order = new Map(
-					config.items.map(({ value }, index) => [value, index])
-				);
 				writeSelectedKeys(
 					config,
-					values.sort(
-						(a, b) =>
-							(order.get(a) ?? Infinity) -
-							(order.get(b) ?? Infinity)
-					)
+					sortValuesByConfigItems(config, values)
 				);
 				return;
 			}
@@ -285,7 +295,7 @@ export default memo<IProps>(function SideFilterIconButton({
 				}
 				writeSelectedKeys(
 					config,
-					values.sort((a, b) => a - b)
+					sortValuesByConfigItems(config, values)
 				);
 				return;
 			}
@@ -299,7 +309,10 @@ export default memo<IProps>(function SideFilterIconButton({
 				)
 			);
 			if (values !== null) {
-				writeSelectedKeys(config, values.sort(pinyinSort));
+				writeSelectedKeys(
+					config,
+					sortValuesByConfigItems(config, values)
+				);
 			}
 		},
 		[]
@@ -310,7 +323,12 @@ export default memo<IProps>(function SideFilterIconButton({
 			filteredSelectConfig.map((config) => ({
 				config,
 				onSelectionChange: handleSelectionChange(config),
-				selectedKeys: toSelectionKeySet(config.selectedKeys),
+				selectedKeys: toSelectionKeySet(
+					sortValuesByConfigItems<number | string>(
+						config,
+						config.selectedKeys
+					)
+				),
 			})),
 		[filteredSelectConfig, handleSelectionChange]
 	);
