@@ -85,3 +85,64 @@ index 8c5b7d7de4fb173d5acb65d8de6433f13e9ea225..25a293bc27b2c9e799c640b0b1713ad8
    ] });
  });
  Tooltip.displayName = "HeroUI.Tooltip";
+diff --git a/dist/chunk-JXI6O2DW.mjs b/dist/chunk-JXI6O2DW.mjs
+index 9816e23f81f0bed9ec66bf70dd370adb6146e235..a38a4ad15b9134e1194dbd0be174ee50549adc2b 100644
+--- a/dist/chunk-JXI6O2DW.mjs
++++ b/dist/chunk-JXI6O2DW.mjs
+@@ -12,7 +12,7 @@ import { clsx, dataAttr, objectToDeps } from "@heroui/shared-utils";
+ import { mergeRefs } from "@heroui/react-utils";
+ import { createDOMRef } from "@heroui/react-utils";
+ import { useMemo, useRef, useCallback } from "react";
+-import { toReactAriaPlacement, getArrowPlacement } from "@heroui/aria-utils";
++import { toReactAriaPlacement, getArrowPlacement, getShouldUseAxisPlacement } from "@heroui/aria-utils";
+ import { useSafeLayoutEffect } from "@heroui/use-safe-layout-effect";
+ function useTooltip(originalProps) {
+   var _a, _b;
+@@ -190,7 +190,7 @@ function useTooltip(originalProps) {
+     triggerRef,
+     showArrow,
+     portalContainer,
+-    placement: placementProp,
++    placement: placement && getShouldUseAxisPlacement(placement, placementProp) ? placement : placementProp,
+     disableAnimation,
+     isDisabled,
+     motionProps,
+diff --git a/dist/index.js b/dist/index.js
+index f3aae2b1984bf8bec86c9e9691b22b53f0e7054a..fd0b6869f5e640e66759b9171ab1a46857c812d5 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -232,7 +232,7 @@ function useTooltip(originalProps) {
+     triggerRef,
+     showArrow,
+     portalContainer,
+-    placement: placementProp,
++    placement: placement && (0, import_aria_utils.getShouldUseAxisPlacement)(placement, placementProp) ? placement : placementProp,
+     disableAnimation,
+     isDisabled,
+     motionProps,
+diff --git a/dist/tooltip.js b/dist/tooltip.js
+index 8c5b7d7de4fb173d5acb65d8de6433f13e9ea225..f6d08cce8532c364985cb3988752a4f43de4f65 100644
+--- a/dist/tooltip.js
++++ b/dist/tooltip.js
+@@ -229,7 +229,7 @@ function useTooltip(originalProps) {
+     triggerRef,
+     showArrow,
+     portalContainer,
+-    placement: placementProp,
++    placement: placement && (0, import_aria_utils.getShouldUseAxisPlacement)(placement, placementProp) ? placement : placementProp,
+     disableAnimation,
+     isDisabled,
+     motionProps,
+diff --git a/dist/use-tooltip.js b/dist/use-tooltip.js
+index 083d1df5fdf46ebc724e17304a74958f0c3331c8..3a65972f48da356d2757490f7d9612fb1301b8b5 100644
+--- a/dist/use-tooltip.js
++++ b/dist/use-tooltip.js
+@@ -213,7 +213,7 @@ function useTooltip(originalProps) {
+     triggerRef,
+     showArrow,
+     portalContainer,
+-    placement: placementProp,
++    placement: placement && (0, import_aria_utils.getShouldUseAxisPlacement)(placement, placementProp) ? placement : placementProp,
+     disableAnimation,
+     isDisabled,
+     motionProps,
