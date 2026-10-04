@@ -340,9 +340,12 @@ export default function Navbar() {
 	);
 
 	// Support parallel routing pages.
-	const shouldShowPreferences = !['/', '/about', '/preferences'].includes(
-		basePathname
-	);
+	const shouldShowPreferences = ![
+		'/',
+		'/about',
+		'/pages',
+		'/preferences',
+	].includes(basePathname);
 
 	const mobileActionSectionTitle = shouldShowAccountAction
 		? '账号和主题'
