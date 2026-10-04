@@ -1,5 +1,3 @@
-import { type Transaction } from 'kysely';
-
 import type { IAuditLogWriteInput } from '@/features/account/server/audit/contracts';
 import { type IAdminAnnouncementCleanupData } from '@/features/announcements/contracts';
 import type { TAnnouncementServiceResult } from '@/features/announcements/server/contracts';
@@ -8,8 +6,13 @@ import {
 	cleanupAnnouncementRecords,
 } from '@/features/announcements/server/persistence/repository';
 
-import type { TDatabase } from '@/infrastructure/database/schema';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
+
+import {
+	ANNOUNCEMENT_AUDIT_RECORDS_TARGET_TYPE,
+	ANNOUNCEMENT_AUDIT_SCOPE,
+	type TWriteAnnouncementAudit,
+} from './audit';
 
 const ANNOUNCEMENT_DISMISSAL_RETENTION_MS = 180 * 24 * 60 * 60 * 1000;
 const ANNOUNCEMENT_VERSION_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
@@ -23,12 +26,6 @@ export interface ICleanupAdminAnnouncementRecordsOptions {
 	ipAddress?: string | null;
 	userAgent?: string | null;
 }
-
-export type TWriteAnnouncementCleanupAudit = (
-	database: Transaction<TDatabase>,
-	input: IAuditLogWriteInput,
-	now: number
-) => Promise<void>;
 
 function createAnnouncementRecordCleanupOptions(now: number) {
 	return {
@@ -53,9 +50,9 @@ function createCleanupAuditInput(
 			version_keep_latest: ANNOUNCEMENT_VERSION_KEEP_LATEST,
 			version_retention_ms: ANNOUNCEMENT_VERSION_RETENTION_MS,
 		},
-		scope: 'account',
+		scope: ANNOUNCEMENT_AUDIT_SCOPE,
 		targetId: null,
-		targetType: 'announcement_records',
+		targetType: ANNOUNCEMENT_AUDIT_RECORDS_TARGET_TYPE,
 	};
 	if (ipAddress !== undefined) {
 		auditInput.ipAddress = ipAddress;
@@ -89,7 +86,7 @@ export async function cleanupAnnouncementRecordsBestEffort(now = Date.now()) {
 
 export async function cleanupAdminAnnouncementRecords(
 	options: ICleanupAdminAnnouncementRecordsOptions,
-	writeAnnouncementCleanupAudit: TWriteAnnouncementCleanupAudit
+	writeAnnouncementCleanupAudit: TWriteAnnouncementAudit
 ): Promise<TAnnouncementServiceResult<IAdminAnnouncementCleanupData>> {
 	const now = Date.now();
 	const result = await cleanupAnnouncementRecords(

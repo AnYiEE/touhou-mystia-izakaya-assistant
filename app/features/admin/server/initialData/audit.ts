@@ -17,7 +17,7 @@ import {
 
 type TAdminAuditActorType =
 	IAdminAuditLogListData['logs'][number]['actor_type'];
-type TAdminAuditScope = 'account' | 'sso';
+type TAdminAuditScope = 'account' | 'announcement' | 'sso';
 
 interface IAdminAuditLogInitialOptions {
 	action?: string;
@@ -39,6 +39,7 @@ function getAdminAuditScopeFromSearchValue(
 	const searchValue = getAdminSingleSearchValue(value);
 	switch (searchValue) {
 		case 'account':
+		case 'announcement':
 		case 'sso':
 			return searchValue;
 		default:

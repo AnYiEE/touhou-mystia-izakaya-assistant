@@ -3,7 +3,7 @@ import type { IAdminAuditLogListData } from '@/features/account/contracts';
 export type TActorTypeFilter =
 	'' | IAdminAuditLogListData['logs'][number]['actor_type'];
 
-export type TScopeFilter = '' | 'account' | 'sso';
+export type TScopeFilter = '' | 'account' | 'announcement' | 'sso';
 
 export const actorTypeOptions = [
 	{ label: '全部操作者', value: '' },
@@ -16,10 +16,15 @@ export const actorTypeOptions = [
 export const scopeOptions = [
 	{ label: '全部范围', value: '' },
 	{ label: '账号', value: 'account' },
+	{ label: '通知', value: 'announcement' },
 	{ label: 'SSO', value: 'sso' },
 ] as const;
 
-const auditScopeLabelMap = { account: '账号', sso: 'SSO' } as const;
+const auditScopeLabelMap = {
+	account: '账号',
+	announcement: '通知',
+	sso: 'SSO',
+} as const;
 
 const auditActorTypeLabelMap = {
 	admin: '管理员',
@@ -29,6 +34,7 @@ const auditActorTypeLabelMap = {
 } as const;
 
 const auditTargetTypeLabelMap: Record<string, string> = {
+	announcement: '站点通知',
 	announcement_records: '通知维护记录',
 	sso_callback_queue: 'SSO Callback队列',
 	sso_client: 'SSO客户端',
@@ -40,19 +46,24 @@ const auditTargetTypeLabelMap: Record<string, string> = {
 
 const auditActionLabelMap: Record<string, string> = {
 	'account-sync-rebuilt': '用户重建云端同步数据',
+	'admin-archive-announcement': '管理员归档站点通知',
 	'admin-cleanup-announcement-records': '管理员清理通知历史',
 	'admin-cleanup-expired-sso-tickets': '管理员清理过期SSO Ticket',
 	'admin-cleanup-sso-callback-deliveries': '管理员清理SSO Callback历史',
 	'admin-clear-user-data': '管理员清空用户云端数据',
+	'admin-create-announcement': '管理员创建站点通知',
 	'admin-create-sso-client': '管理员创建SSO客户端',
 	'admin-create-sso-client-secret': '管理员生成SSO客户端密钥',
 	'admin-delete-sso-client': '管理员删除SSO客户端',
 	'admin-delete-user-sessions': '管理员踢出用户登录设备',
+	'admin-disable-announcement': '管理员停用站点通知',
 	'admin-disable-user': '管理员禁用用户',
 	'admin-discard-sso-callback': '管理员丢弃SSO Callback队列项',
 	'admin-dispatch-sso-callbacks': '管理员立即投递SSO Callback',
+	'admin-enable-announcement': '管理员启用站点通知',
 	'admin-enable-user': '管理员启用用户',
 	'admin-reset-user-password': '管理员重置用户密码',
+	'admin-restore-announcement': '管理员恢复站点通知',
 	'admin-restore-user': '管理员恢复用户',
 	'admin-retry-sso-callback': '管理员重试SSO Callback队列项',
 	'admin-revoke-sso-client-grants': '管理员撤销客户端全部授权',
@@ -61,6 +72,7 @@ const auditActionLabelMap: Record<string, string> = {
 	'admin-revoke-sso-grant': '管理员撤销单个SSO授权',
 	'admin-revoke-user-sso-grants': '管理员撤销用户全部SSO授权',
 	'admin-revoke-user-sso-tickets': '管理员撤销用户SSO Ticket',
+	'admin-update-announcement': '管理员更新站点通知',
 	'admin-update-sso-client': '管理员更新SSO客户端',
 	'admin-update-sso-client-secret': '管理员更新SSO客户端密钥',
 	'user-authorize-sso-client': '用户授权SSO客户端',

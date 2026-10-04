@@ -6,6 +6,7 @@ import { checkAdminAnnouncementRequest } from '@/features/announcements/server/a
 import { ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP } from '@/features/announcements/server/http/serviceErrorStatus';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
+import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -75,13 +76,15 @@ export async function PUT(
 		);
 	}
 
-	const announcementModule =
-		await import('@/features/announcements/server/admin/service');
-	const result = await announcementModule.updateAdminAnnouncement(
-		id,
-		body,
-		check.actorId
-	);
+	const [announcementModule, auditModule] = await Promise.all([
+		import('@/features/announcements/server/admin/service'),
+		import('@/features/account/admin/server/audit/service'),
+	]);
+	const result = await announcementModule.updateAdminAnnouncement(id, body, {
+		changedBy: check.actorId,
+		...getRequestAuditContext(request),
+		writeAuditLog: auditModule.writeAdminAuditLogInTransaction,
+	});
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
@@ -106,12 +109,15 @@ export async function DELETE(
 	}
 
 	const { id } = await params;
-	const announcementModule =
-		await import('@/features/announcements/server/admin/service');
-	const result = await announcementModule.archiveAdminAnnouncement(
-		id,
-		check.actorId
-	);
+	const [announcementModule, auditModule] = await Promise.all([
+		import('@/features/announcements/server/admin/service'),
+		import('@/features/account/admin/server/audit/service'),
+	]);
+	const result = await announcementModule.archiveAdminAnnouncement(id, {
+		changedBy: check.actorId,
+		...getRequestAuditContext(request),
+		writeAuditLog: auditModule.writeAdminAuditLogInTransaction,
+	});
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,
@@ -136,12 +142,15 @@ export async function PATCH(
 	}
 
 	const { id } = await params;
-	const announcementModule =
-		await import('@/features/announcements/server/admin/service');
-	const result = await announcementModule.restoreAdminAnnouncement(
-		id,
-		check.actorId
-	);
+	const [announcementModule, auditModule] = await Promise.all([
+		import('@/features/announcements/server/admin/service'),
+		import('@/features/account/admin/server/audit/service'),
+	]);
+	const result = await announcementModule.restoreAdminAnnouncement(id, {
+		changedBy: check.actorId,
+		...getRequestAuditContext(request),
+		writeAuditLog: auditModule.writeAdminAuditLogInTransaction,
+	});
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,

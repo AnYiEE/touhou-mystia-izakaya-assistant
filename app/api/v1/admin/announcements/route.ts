@@ -12,6 +12,7 @@ import {
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import { parsePositiveIntegerParam } from '@/infrastructure/http/queryParameters';
+import { getRequestAuditContext } from '@/infrastructure/http/server/requestContext';
 import {
 	createNoStoreErrorResponse,
 	createNoStoreJsonResponse,
@@ -120,12 +121,15 @@ export async function POST(request: NextRequest) {
 		);
 	}
 
-	const announcementModule =
-		await import('@/features/announcements/server/admin/service');
-	const result = await announcementModule.createAdminAnnouncement(
-		body,
-		check.actorId
-	);
+	const [announcementModule, auditModule] = await Promise.all([
+		import('@/features/announcements/server/admin/service'),
+		import('@/features/account/admin/server/audit/service'),
+	]);
+	const result = await announcementModule.createAdminAnnouncement(body, {
+		changedBy: check.actorId,
+		...getRequestAuditContext(request),
+		writeAuditLog: auditModule.writeAdminAuditLogInTransaction,
+	});
 	if (result.status === 'error') {
 		return createNoStoreErrorResponse(
 			result.error,

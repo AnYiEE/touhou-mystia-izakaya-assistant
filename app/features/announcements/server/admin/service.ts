@@ -1,3 +1,4 @@
+import { type Transaction } from 'kysely';
 import { randomUUID } from 'node:crypto';
 
 import {
@@ -13,6 +14,7 @@ import {
 	type IAdminAnnouncementPreviewData,
 	type IAdminAnnouncementProfile,
 	type IAdminAnnouncementVersionListData,
+	type IAnnouncementChangedField,
 	type TAnnouncementComputedStatus,
 } from '@/features/announcements/contracts';
 import type { TAnnouncementServiceResult } from '@/features/announcements/server/contracts';
@@ -39,11 +41,18 @@ import { invalidateActiveAnnouncementCandidateCache } from '@/features/announcem
 import type {
 	TAnnouncementNew,
 	TAnnouncementVersionNew,
+	TDatabase,
 } from '@/infrastructure/database/schema';
 import { checkSqlitePrimaryKeyOrUniqueConstraintError } from '@/infrastructure/database/sqlite/constraintErrors';
 
 import { canIncrementNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 
+import {
+	type IAdminAnnouncementMutationContext,
+	type TAnnouncementMutationAuditAction,
+	createAnnouncementMutationAuditInput,
+	createAnnouncementUpdateAuditAction,
+} from './audit';
 import { cleanupAnnouncementRecordsBestEffort } from './cleanup';
 import {
 	createAnnouncementChangedFields,
@@ -95,24 +104,54 @@ function createVersionRecord({
 	action,
 	announcement,
 	changedBy,
-	previous,
+	changedFields,
 }: {
 	action: TAnnouncementVersionAction;
 	announcement: IAdminAnnouncementProfile;
 	changedBy: string | null;
-	previous: IAdminAnnouncementProfile | null;
+	changedFields: IAnnouncementChangedField[];
 }) {
 	return {
 		action,
 		announcement_id: announcement.id,
 		changed_at: announcement.updated_at,
 		changed_by: changedBy,
-		changed_fields_json: JSON.stringify(
-			createAnnouncementChangedFields(previous, announcement)
-		),
+		changed_fields_json: JSON.stringify(changedFields),
 		revision: announcement.revision,
 		snapshot_json: JSON.stringify(announcement),
 	} satisfies TAnnouncementVersionNew;
+}
+
+async function writeAnnouncementMutationAudit(
+	database: Transaction<TDatabase>,
+	context: IAdminAnnouncementMutationContext,
+	{
+		action,
+		announcement,
+		changedFields,
+	}: {
+		action: TAnnouncementMutationAuditAction;
+		announcement: IAdminAnnouncementProfile;
+		changedFields: IAnnouncementChangedField[];
+	}
+) {
+	await context.writeAuditLog(
+		database,
+		createAnnouncementMutationAuditInput({
+			action,
+			actorId: context.changedBy,
+			announcementId: announcement.id,
+			changedFields: changedFields.map((field) => field.field),
+			...(context.ipAddress === undefined
+				? {}
+				: { ipAddress: context.ipAddress }),
+			revision: announcement.revision,
+			...(context.userAgent === undefined
+				? {}
+				: { userAgent: context.userAgent }),
+		}),
+		announcement.updated_at
+	);
 }
 
 function createPreviewProfile(body: IAdminAnnouncementBody) {
@@ -217,7 +256,7 @@ export function previewAnnouncement(
 
 export async function createAdminAnnouncement(
 	body: IAdminAnnouncementBody,
-	changedBy: string | null
+	context: IAdminAnnouncementMutationContext
 ): Promise<TAnnouncementServiceResult<IAdminAnnouncementMutationData>> {
 	const sanitizedHtml = sanitizeAnnouncementHtml(body.html);
 	if (getAnnouncementVisibleText(sanitizedHtml).length === 0) {
@@ -238,15 +277,24 @@ export async function createAdminAnnouncement(
 				throw new Error('invalid-announcement-profile');
 			}
 
+			const changedFields = createAnnouncementChangedFields(
+				null,
+				nextProfile
+			);
 			await insertAnnouncementVersion(
 				createVersionRecord({
 					action: 'create',
 					announcement: nextProfile,
-					changedBy,
-					previous: null,
+					changedBy: context.changedBy,
+					changedFields,
 				}),
 				database
 			);
+			await writeAnnouncementMutationAudit(database, context, {
+				action: 'admin-create-announcement',
+				announcement: nextProfile,
+				changedFields,
+			});
 
 			return nextProfile;
 		});
@@ -273,7 +321,7 @@ export async function createAdminAnnouncement(
 export async function updateAdminAnnouncement(
 	id: string,
 	body: IAdminAnnouncementBody,
-	changedBy: string | null,
+	context: IAdminAnnouncementMutationContext,
 	action: TAnnouncementVersionAction = 'update'
 ): Promise<TAnnouncementServiceResult<IAdminAnnouncementMutationData>> {
 	const sanitizedHtml = sanitizeAnnouncementHtml(body.html);
@@ -334,15 +382,27 @@ export async function updateAdminAnnouncement(
 				return 'announcement-invalid-state';
 			}
 
+			const changedFields = createAnnouncementChangedFields(
+				previousProfile,
+				nextProfile
+			);
 			await insertAnnouncementVersion(
 				createVersionRecord({
 					action,
 					announcement: nextProfile,
-					changedBy,
-					previous: previousProfile,
+					changedBy: context.changedBy,
+					changedFields,
 				}),
 				database
 			);
+			await writeAnnouncementMutationAudit(database, context, {
+				action: createAnnouncementUpdateAuditAction(
+					previousProfile.enabled,
+					nextProfile.enabled
+				),
+				announcement: nextProfile,
+				changedFields,
+			});
 
 			return nextProfile;
 		});
@@ -371,7 +431,7 @@ export async function updateAdminAnnouncement(
 
 export async function archiveAdminAnnouncement(
 	id: string,
-	changedBy: string | null
+	context: IAdminAnnouncementMutationContext
 ): Promise<TAnnouncementServiceResult<IAdminAnnouncementMutationData>> {
 	try {
 		const profile = await runAnnouncementTransaction(async (database) => {
@@ -410,15 +470,24 @@ export async function archiveAdminAnnouncement(
 				return 'announcement-invalid-state';
 			}
 
+			const changedFields = createAnnouncementChangedFields(
+				previousProfile,
+				nextProfile
+			);
 			await insertAnnouncementVersion(
 				createVersionRecord({
 					action: 'archive',
 					announcement: nextProfile,
-					changedBy,
-					previous: previousProfile,
+					changedBy: context.changedBy,
+					changedFields,
 				}),
 				database
 			);
+			await writeAnnouncementMutationAudit(database, context, {
+				action: 'admin-archive-announcement',
+				announcement: nextProfile,
+				changedFields,
+			});
 
 			return nextProfile;
 		});
@@ -447,7 +516,7 @@ export async function archiveAdminAnnouncement(
 
 export async function restoreAdminAnnouncement(
 	id: string,
-	changedBy: string | null
+	context: IAdminAnnouncementMutationContext
 ): Promise<TAnnouncementServiceResult<IAdminAnnouncementMutationData>> {
 	try {
 		const profile = await runAnnouncementTransaction(async (database) => {
@@ -489,15 +558,24 @@ export async function restoreAdminAnnouncement(
 				return 'announcement-invalid-state';
 			}
 
+			const changedFields = createAnnouncementChangedFields(
+				previousProfile,
+				nextProfile
+			);
 			await insertAnnouncementVersion(
 				createVersionRecord({
 					action: 'restore',
 					announcement: nextProfile,
-					changedBy,
-					previous: previousProfile,
+					changedBy: context.changedBy,
+					changedFields,
 				}),
 				database
 			);
+			await writeAnnouncementMutationAudit(database, context, {
+				action: 'admin-restore-announcement',
+				announcement: nextProfile,
+				changedFields,
+			});
 
 			return nextProfile;
 		});

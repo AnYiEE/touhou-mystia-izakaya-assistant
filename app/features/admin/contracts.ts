@@ -57,7 +57,7 @@ export interface IAdminAuditInitialData {
 	message: string | null;
 	query: string;
 	renderedAt: number;
-	scope: '' | 'account' | 'sso';
+	scope: '' | 'account' | 'announcement' | 'sso';
 	startTime?: number;
 	targetId: string;
 	targetType: string;
