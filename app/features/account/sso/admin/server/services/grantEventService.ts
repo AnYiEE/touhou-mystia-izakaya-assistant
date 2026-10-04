@@ -101,7 +101,6 @@ function createNullableUserProfile(
 
 	return createAccountUserProfile({
 		created_at: event.user_created_at,
-		deleted_at: event.user_deleted_at,
 		id: event.user_id,
 		last_login_at: event.user_last_login_at,
 		nickname: event.user_nickname,
@@ -109,9 +108,7 @@ function createNullableUserProfile(
 		status: event.user_status,
 		sync_generation: event.user_sync_generation,
 		sync_status: event.user_sync_status,
-		updated_at: event.event_created_at,
 		username: event.username,
-		username_normalized: event.username_normalized,
 	});
 }
 

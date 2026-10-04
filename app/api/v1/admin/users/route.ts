@@ -103,9 +103,7 @@ export async function GET(request: NextRequest) {
 		);
 	}
 
-	const query = userModule.normalizeUsername(
-		request.nextUrl.searchParams.get('query') ?? ''
-	);
+	const query = (request.nextUrl.searchParams.get('query') ?? '').trim();
 	const listUsersOptions: IListUsersOptions = {
 		limit: pageSize,
 		offset: (page - 1) * pageSize,

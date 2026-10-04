@@ -51,6 +51,7 @@ const ACCOUNT_TABLE_COLUMNS_MAP = {
 		'username',
 		'username_normalized',
 		'nickname',
+		'nickname_normalized',
 		'status',
 		'state_epoch',
 		'sync_generation',
@@ -125,6 +126,7 @@ const ACCOUNT_TABLE_COLUMN_DEFINITION_MAP = {
 		id: { dataType: 'text', structural: true },
 		last_login_at: { dataType: 'integer' },
 		nickname: { dataType: 'text' },
+		nickname_normalized: { dataType: 'text' },
 		state_epoch: { dataType: 'integer', defaultTo: 0, notNull: true },
 		status: {
 			dataType: 'text',
@@ -242,6 +244,41 @@ async function ensureTableColumns(
 		throw new Error(
 			`${SERVER_MISCONFIGURED_MESSAGE}: account table ${tableName} is missing columns after migration: ${stillMissingColumns.join(', ')}`
 		);
+	}
+}
+
+const NICKNAME_NORMALIZED_BACKFILL_BATCH_SIZE = 200;
+
+async function backfillNicknameNormalized(database: Kysely<TDatabase>) {
+	for (;;) {
+		const users = await database
+			.selectFrom(TABLE_NAME_MAP.user)
+			.select(['id', 'nickname'])
+			.where('nickname', 'is not', null)
+			.where('nickname_normalized', 'is', null)
+			.limit(NICKNAME_NORMALIZED_BACKFILL_BATCH_SIZE)
+			.execute();
+		if (users.length === 0) {
+			return;
+		}
+
+		await database.transaction().execute(async (trx) => {
+			for (const user of users) {
+				if (user.nickname === null) {
+					continue;
+				}
+
+				await trx
+					.updateTable(TABLE_NAME_MAP.user)
+					.set({ nickname_normalized: user.nickname.toLowerCase() })
+					.where('id', '=', user.id)
+					.execute();
+			}
+		});
+
+		if (users.length < NICKNAME_NORMALIZED_BACKFILL_BATCH_SIZE) {
+			return;
+		}
 	}
 }
 
@@ -413,6 +450,7 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.addColumn('username', 'text', (col) => col.notNull())
 		.addColumn('username_normalized', 'text', (col) => col.notNull())
 		.addColumn('nickname', 'text')
+		.addColumn('nickname_normalized', 'text')
 		.addColumn('status', 'text', (col) =>
 			col.notNull().defaultTo(USER_STATUS_MAP.active)
 		)
@@ -553,6 +591,7 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 			tableName as keyof typeof ACCOUNT_TABLE_COLUMNS_MAP
 		);
 	}
+	await backfillNicknameNormalized(database);
 
 	await dropMismatchedSqliteIndexes(database, [
 		{

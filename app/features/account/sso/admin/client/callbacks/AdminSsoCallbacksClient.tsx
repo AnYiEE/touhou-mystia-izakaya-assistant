@@ -848,7 +848,7 @@ export default function AdminSsoCallbacksClient({
 				<AdminSearchInput
 					ariaLabel="搜索Callback队列"
 					icon={faMagnifyingGlass}
-					placeholder="Callback ID、客户端ID、用户ID、错误"
+					placeholder="Callback ID、客户端ID、用户ID、昵称、错误"
 					value={queryInput}
 					onValueChange={handleQueryInputChange}
 				/>

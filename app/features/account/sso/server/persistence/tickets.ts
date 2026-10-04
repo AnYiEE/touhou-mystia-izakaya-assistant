@@ -220,6 +220,7 @@ export async function listAdminSsoTickets({
 				sql<boolean>`${sql.ref(`${TICKET_TABLE_NAME}.ticket_hash`)} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.id`)} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.username_normalized`)} like ${likePattern} escape '\\'`,
+				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.nickname_normalized`)} like ${likePattern} escape '\\'`,
 			])
 		);
 		totalCountQuery = totalCountQuery.where((eb) =>
@@ -230,6 +231,7 @@ export async function listAdminSsoTickets({
 				sql<boolean>`${sql.ref(`${TICKET_TABLE_NAME}.ticket_hash`)} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.id`)} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.username_normalized`)} like ${likePattern} escape '\\'`,
+				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.nickname_normalized`)} like ${likePattern} escape '\\'`,
 			])
 		);
 	}

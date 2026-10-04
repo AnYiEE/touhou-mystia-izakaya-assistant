@@ -686,7 +686,7 @@ export default function AdminSsoCallbackHistoryClient({
 				<AdminSearchInput
 					ariaLabel="搜索投递历史"
 					icon={faMagnifyingGlass}
-					placeholder="Delivery ID、Queue Key、客户端ID、用户ID、错误"
+					placeholder="Delivery ID、Queue Key、客户端ID、用户ID、昵称、错误"
 					value={queryInput}
 					onValueChange={handleQueryInputChange}
 				/>

@@ -79,9 +79,9 @@ export const AdminUserFilterPanel = memo<IAdminUserFilterPanelProps>(
 		return (
 			<AdminFilterPanel icon={faMagnifyingGlass}>
 				<AdminSearchInput
-					ariaLabel="搜索用户名或用户ID"
+					ariaLabel="搜索用户名、昵称或用户ID"
 					icon={faMagnifyingGlass}
-					placeholder="搜索用户名或用户ID"
+					placeholder="搜索用户名、昵称或用户ID"
 					value={queryInput}
 					onValueChange={onQueryInputChange}
 				/>

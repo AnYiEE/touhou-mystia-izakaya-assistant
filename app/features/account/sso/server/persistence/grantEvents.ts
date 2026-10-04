@@ -226,6 +226,7 @@ export async function listAdminSsoGrantEvents({
 				sql<boolean>`${sql.ref(`${GRANT_EVENT_TABLE_NAME}.actor_id`)} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref(`${CLIENT_TABLE_NAME}.name`)} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.username_normalized`)} like ${likePattern} escape '\\'`,
+				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.nickname_normalized`)} like ${likePattern} escape '\\'`,
 			])
 		);
 		totalCountQuery = totalCountQuery.where((eb) =>
@@ -236,6 +237,7 @@ export async function listAdminSsoGrantEvents({
 				sql<boolean>`${sql.ref(`${GRANT_EVENT_TABLE_NAME}.actor_id`)} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref(`${CLIENT_TABLE_NAME}.name`)} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.username_normalized`)} like ${likePattern} escape '\\'`,
+				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.nickname_normalized`)} like ${likePattern} escape '\\'`,
 			])
 		);
 	}

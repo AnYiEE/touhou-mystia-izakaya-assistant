@@ -426,6 +426,7 @@ export async function listAdminSsoGrants({
 				sql<boolean>`${sql.ref(`${CLIENT_TABLE_NAME}.name`)} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.id`)} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.username_normalized`)} like ${likePattern} escape '\\'`,
+				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.nickname_normalized`)} like ${likePattern} escape '\\'`,
 			])
 		);
 		totalCountQuery = totalCountQuery.where((eb) =>
@@ -434,6 +435,7 @@ export async function listAdminSsoGrants({
 				sql<boolean>`${sql.ref(`${CLIENT_TABLE_NAME}.name`)} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.id`)} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.username_normalized`)} like ${likePattern} escape '\\'`,
+				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.nickname_normalized`)} like ${likePattern} escape '\\'`,
 			])
 		);
 	}
@@ -555,12 +557,14 @@ export async function listSsoUserClientGrantsForClient(
 			eb.or([
 				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.username_normalized`)} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.id`)} like ${likePattern} escape '\\'`,
+				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.nickname_normalized`)} like ${likePattern} escape '\\'`,
 			])
 		);
 		totalCountQuery = totalCountQuery.where((eb) =>
 			eb.or([
 				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.username_normalized`)} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.id`)} like ${likePattern} escape '\\'`,
+				sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.nickname_normalized`)} like ${likePattern} escape '\\'`,
 			])
 		);
 	}

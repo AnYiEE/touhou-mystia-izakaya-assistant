@@ -17,6 +17,7 @@ import { escapeSqliteLikePattern } from '@/infrastructure/database/sqlite/queryV
 import { TABLE_NAME_MAP } from '@/infrastructure/database/tableNames';
 
 const CALLBACK_DELIVERY_TABLE_NAME = TABLE_NAME_MAP.ssoCallbackDelivery;
+const USER_TABLE_NAME = TABLE_NAME_MAP.user;
 
 export interface ISsoCallbackDeliveryAttemptInput {
 	attempt: number;
@@ -171,6 +172,19 @@ export async function listSsoCallbackDeliveries({
 				sql<boolean>`${sql.ref('event')} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref('error')} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref('queue_key')} like ${likePattern} escape '\\'`,
+				eb.exists(
+					eb
+						.selectFrom(USER_TABLE_NAME)
+						.select('id')
+						.whereRef(
+							`${USER_TABLE_NAME}.id`,
+							'=',
+							`${CALLBACK_DELIVERY_TABLE_NAME}.user_id`
+						)
+						.where(
+							sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.nickname_normalized`)} like ${likePattern} escape '\\'`
+						)
+				),
 			])
 		);
 		totalCountQuery = totalCountQuery.where((eb) =>
@@ -181,6 +195,19 @@ export async function listSsoCallbackDeliveries({
 				sql<boolean>`${sql.ref('event')} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref('error')} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref('queue_key')} like ${likePattern} escape '\\'`,
+				eb.exists(
+					eb
+						.selectFrom(USER_TABLE_NAME)
+						.select('id')
+						.whereRef(
+							`${USER_TABLE_NAME}.id`,
+							'=',
+							`${CALLBACK_DELIVERY_TABLE_NAME}.user_id`
+						)
+						.where(
+							sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.nickname_normalized`)} like ${likePattern} escape '\\'`
+						)
+				),
 			])
 		);
 	}

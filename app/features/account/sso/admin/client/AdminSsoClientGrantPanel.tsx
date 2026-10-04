@@ -524,7 +524,7 @@ export default memo<IProps>(function AdminSsoClientGrantPanel({
 						<AdminSearchInput
 							ariaLabel="搜索授权用户"
 							icon={faSearch}
-							placeholder="用户名或用户ID"
+							placeholder="用户名、昵称或用户ID"
 							value={grantQuery}
 							onValueChange={setGrantQuery}
 						/>

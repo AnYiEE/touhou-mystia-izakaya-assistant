@@ -22,6 +22,7 @@ const CLIENT_TABLE_NAME = TABLE_NAME_MAP.ssoClient;
 const CALLBACK_QUEUE_TABLE_NAME = TABLE_NAME_MAP.ssoCallbackQueue;
 
 const GRANT_TABLE_NAME = TABLE_NAME_MAP.ssoUserClientGrant;
+const USER_TABLE_NAME = TABLE_NAME_MAP.user;
 
 export const SSO_CALLBACK_FINAL_FAILURE_NEXT_RETRY_AT = Number.MAX_SAFE_INTEGER;
 
@@ -354,6 +355,19 @@ export async function listAdminSsoCallbackQueue({
 				sql<boolean>`${sql.ref('client_id')} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref('user_id')} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref('last_error')} like ${likePattern} escape '\\'`,
+				eb.exists(
+					eb
+						.selectFrom(USER_TABLE_NAME)
+						.select('id')
+						.whereRef(
+							`${USER_TABLE_NAME}.id`,
+							'=',
+							`${CALLBACK_QUEUE_TABLE_NAME}.user_id`
+						)
+						.where(
+							sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.nickname_normalized`)} like ${likePattern} escape '\\'`
+						)
+				),
 			])
 		);
 		totalCountQuery = totalCountQuery.where((eb) =>
@@ -362,6 +376,19 @@ export async function listAdminSsoCallbackQueue({
 				sql<boolean>`${sql.ref('client_id')} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref('user_id')} like ${likePattern} escape '\\'`,
 				sql<boolean>`${sql.ref('last_error')} like ${likePattern} escape '\\'`,
+				eb.exists(
+					eb
+						.selectFrom(USER_TABLE_NAME)
+						.select('id')
+						.whereRef(
+							`${USER_TABLE_NAME}.id`,
+							'=',
+							`${CALLBACK_QUEUE_TABLE_NAME}.user_id`
+						)
+						.where(
+							sql<boolean>`${sql.ref(`${USER_TABLE_NAME}.nickname_normalized`)} like ${likePattern} escape '\\'`
+						)
+				),
 			])
 		);
 	}

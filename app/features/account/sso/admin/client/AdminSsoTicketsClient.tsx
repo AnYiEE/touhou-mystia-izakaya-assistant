@@ -693,7 +693,7 @@ export default function AdminSsoTicketsClient({
 				<AdminSearchInput
 					ariaLabel="搜索Ticket"
 					icon={faMagnifyingGlass}
-					placeholder="Ticket前缀、客户端ID、用户ID、用户名、Redirect URI"
+					placeholder="Ticket前缀、客户端ID、用户ID、用户名、昵称、Redirect URI"
 					value={queryInput}
 					onValueChange={handleQueryInputChange}
 				/>

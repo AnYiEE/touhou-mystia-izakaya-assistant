@@ -118,6 +118,7 @@ const emptyBody = '<p>您好，{{user.display_name}}</p>';
 
 interface ITargetUserOption {
 	id: string;
+	nickname: string | null;
 	username: string | null;
 }
 
@@ -343,7 +344,7 @@ function getChangedFieldLabel(field: string) {
 function createTargetUserFromProfile(
 	user: IAccountUserProfile
 ): ITargetUserOption {
-	return { id: user.id, username: user.username };
+	return { id: user.id, nickname: user.nickname, username: user.username };
 }
 
 function checkSameTargetUser(
@@ -382,7 +383,7 @@ function checkAnnouncementBodyMatchesProfile(
 }
 
 function createTargetUserOptionsFromIds(ids: string[]): ITargetUserOption[] {
-	return ids.map((id) => ({ id, username: null }));
+	return ids.map((id) => ({ id, nickname: null, username: null }));
 }
 
 function mergeTargetUserProfiles(
@@ -392,7 +393,11 @@ function mergeTargetUserProfiles(
 	const userById = new Map(users.map((user) => [user.id, user]));
 	const nextTargetUsers = targetUsers.map((targetUser) => {
 		const user = userById.get(targetUser.id);
-		if (user === undefined || user.username === targetUser.username) {
+		if (
+			user === undefined ||
+			(user.username === targetUser.username &&
+				user.nickname === targetUser.nickname)
+		) {
 			return targetUser;
 		}
 
@@ -404,6 +409,16 @@ function mergeTargetUserProfiles(
 	)
 		? nextTargetUsers
 		: targetUsers;
+}
+
+function createTargetUserLabel(user: ITargetUserOption) {
+	if (user.username === null) {
+		return '未知用户';
+	}
+
+	return user.nickname === null
+		? user.username
+		: `${user.username}（${user.nickname}）`;
 }
 
 interface IAdminAnnouncementFormProps {
@@ -1409,8 +1424,8 @@ export default function AdminAnnouncementForm({
 								isDisabled={isSaving}
 								isLoading={isTargetUsersLoading}
 								isVirtualized={false}
-								label="搜索用户名或用户ID"
-								placeholder="输入用户名或用户ID"
+								label="搜索用户名、昵称或用户ID"
+								placeholder="输入用户名、昵称或用户ID"
 								selectedKey={null}
 								startContent={
 									<AdminInputIcon icon={faMagnifyingGlass} />
@@ -1423,11 +1438,13 @@ export default function AdminAnnouncementForm({
 								{(user) => (
 									<AutocompleteItem
 										key={user.id}
-										textValue={`${user.username} ${user.id}`}
+										textValue={`${user.username} ${user.nickname ?? ''} ${user.id}`}
 									>
 										<div className="flex min-w-0 flex-col">
 											<span className="truncate text-small font-medium">
-												{user.username}
+												{user.nickname === null
+													? user.username
+													: `${user.username}（${user.nickname}）`}
 											</span>
 											<span className="truncate font-mono text-tiny text-foreground-400">
 												{user.id}
@@ -1449,8 +1466,9 @@ export default function AdminAnnouncementForm({
 										>
 											<span className="min-w-0">
 												<span className="block truncate font-medium">
-													{user.username ??
-														'未知用户'}
+													{createTargetUserLabel(
+														user
+													)}
 												</span>
 												<span className="block truncate font-mono text-[0.65rem] opacity-70">
 													{user.id}
@@ -1458,7 +1476,7 @@ export default function AdminAnnouncementForm({
 											</span>
 											<Button
 												isIconOnly
-												aria-label={`移除${user.username ?? user.id}`}
+												aria-label={`移除${createTargetUserLabel(user)}`}
 												className="h-6 min-h-6 w-6 min-w-6 shrink-0"
 												isDisabled={isSaving}
 												radius="sm"

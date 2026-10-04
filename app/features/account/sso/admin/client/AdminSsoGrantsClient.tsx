@@ -877,7 +877,7 @@ export default function AdminSsoGrantsClient({
 				<AdminSearchInput
 					ariaLabel="搜索授权关系"
 					icon={faMagnifyingGlass}
-					placeholder="客户端ID、客户端名称、用户ID、用户名"
+					placeholder="客户端ID、客户端名称、用户ID、用户名、昵称"
 					value={queryInput}
 					onValueChange={handleQueryInputChange}
 				/>

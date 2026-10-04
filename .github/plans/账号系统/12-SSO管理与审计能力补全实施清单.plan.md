@@ -240,7 +240,7 @@ isProject: false
 
 1. 表单保留基础配置编辑区。
 2. Secret 区改为表格：label、hash 摘要、创建时间、创建人、最后使用时间、状态、操作。
-3. 授权用户区：分页、搜索用户名/user id、按用户状态过滤。
+3. 授权用户区：分页、搜索用户名/昵称/user id、按用户状态过滤。
 4. 授权用户行提供“撤销授权”，确认弹窗说明会删除未消费 ticket，并可能通知外部服务。
 5. 增加“批量撤销此 client 全部授权”，需要二次确认输入 client id。
 6. Callback 区展示该 client pending/final failed 和近期 delivery。
@@ -272,7 +272,7 @@ isProject: false
 
 步骤：
 
-1. 支持 query 搜索用户名、user id、client id、client name。
+1. 支持 query 搜索用户名、昵称、user id、client id、client name。
 2. 支持过滤 client 状态、用户状态、授权时间范围、最近更新时间范围。
 3. 行操作支持打开用户详情、打开 client 详情、撤销授权。
 4. 批量操作支持选择多行撤销。
@@ -617,6 +617,7 @@ isProject: false
 - 2026-06-17：继续抽取 `AdminLoadingState`、`AdminFilterPanel`、公告 badge 和 `AdminCodeBlock` 后，已执行 `pnpm exec tsc --noEmit`、`pnpm lint` 和针对本轮后台文件的 `git diff --check`；TypeScript 通过，lint 无 error，仅剩既有 9 个 `onClick` deprecated warning；diff check 仅提示 Windows LF/CRLF 换行转换。
 - 2026-06-17：per-secret API/helper/UI 闭环和后台旧 `secret_hashes` / `generate_secret` 管理入口清理后，已执行 `pnpm exec tsc --noEmit`、`pnpm lint` 和 `git diff --check`；TypeScript 通过，lint 无 error，仅剩既有 9 个 `onClick` deprecated warning；diff check 仅提示 Windows LF/CRLF 换行转换。
 - 2026-06-17：全局 grants API/helper 和 client/user 批量撤销 API/helper 落地后，已执行 `pnpm exec tsc --noEmit`、`pnpm lint` 和 `git diff --check`；TypeScript 通过，lint 无 error，仅剩既有 9 个 `onClick` deprecated warning；diff check 仅提示 Windows LF/CRLF 换行转换。
+- 2026-10-04：SSO 管理检索接入昵称：授权关系、client 授权用户、ticket、grant event、callback 队列和 callback 历史均可按昵称大小写不敏感匹配；列表页占位文案同步更新。隔离验证覆盖 6 个检索入口和回填修复路径，发布构建浏览器验证覆盖授权关系、ticket、callback 队列和 callback 历史页面。
 
 ## 十二、验收矩阵
 

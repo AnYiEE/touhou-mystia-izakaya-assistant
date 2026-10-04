@@ -172,7 +172,6 @@ export async function listAdminSsoTicketRecords(
 				used_at: ticket.ticket_used_at,
 				user: createAccountUserProfile({
 					created_at: ticket.user_created_at,
-					deleted_at: ticket.user_deleted_at,
 					id: ticket.user_id,
 					last_login_at: ticket.user_last_login_at,
 					nickname: ticket.user_nickname,
@@ -180,9 +179,7 @@ export async function listAdminSsoTicketRecords(
 					status: ticket.user_status,
 					sync_generation: ticket.user_sync_generation,
 					sync_status: ticket.user_sync_status,
-					updated_at: ticket.ticket_created_at,
 					username: ticket.username,
-					username_normalized: ticket.username_normalized,
 				}),
 			})),
 			total_count: reachableTotalCount,

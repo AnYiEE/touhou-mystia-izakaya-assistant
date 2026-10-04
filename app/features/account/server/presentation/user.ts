@@ -37,7 +37,20 @@ export function checkUserStatus(value: string): value is TUserStatus {
 	return Object.values(USER_STATUS_MAP).includes(value as TUserStatus);
 }
 
-export function createAccountUserProfile(user: TUser): IAccountUserProfile {
+export function createAccountUserProfile(
+	user: Pick<
+		TUser,
+		| 'created_at'
+		| 'id'
+		| 'last_login_at'
+		| 'nickname'
+		| 'state_epoch'
+		| 'status'
+		| 'sync_generation'
+		| 'sync_status'
+		| 'username'
+	>
+): IAccountUserProfile {
 	return {
 		created_at: user.created_at,
 		id: user.id,

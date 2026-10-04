@@ -35,7 +35,7 @@ async function readInitialUsers({
 	const listUsersOptions: Parameters<typeof usersModule.listUsers>[0] = {
 		limit: DEFAULT_PAGE_SIZE,
 		offset: (page - 1) * DEFAULT_PAGE_SIZE,
-		query: userModule.normalizeUsername(query),
+		query: query.trim(),
 	};
 
 	if (status !== '') {

@@ -33,6 +33,8 @@ type TUpdateActiveUserProfileResult =
 	| { status: 'unauthorized' }
 	| { status: 'username-conflict' };
 
+type TUserInsertInput = Omit<TUserNew, 'nickname_normalized'>;
+
 function getCredentialRetryAfter(lockedUntil: number, now: number) {
 	return Math.ceil((lockedUntil - now) / 1000);
 }
@@ -43,6 +45,19 @@ function checkUsernameUniqueConstraintError(error: unknown) {
 		'code' in error &&
 		(error as { code?: unknown }).code === 'SQLITE_CONSTRAINT_UNIQUE'
 	);
+}
+
+function createNicknameNormalized(nickname: string | null | undefined) {
+	return nickname === null || nickname === undefined
+		? null
+		: nickname.toLowerCase();
+}
+
+function createUserInsertRecord(user: TUserInsertInput) {
+	return {
+		...user,
+		nickname_normalized: createNicknameNormalized(user.nickname),
+	};
 }
 
 function assertStatusCanBeSetDirectly(status: TUserStatus) {
@@ -118,27 +133,28 @@ export async function listUsers({
 	status,
 }: IListUsersOptions): Promise<IListUsersResult> {
 	const db = await getAccountDatabase();
-	const normalizedSearchQuery = searchQuery?.trim().toLowerCase();
+	const trimmedSearchQuery = searchQuery?.trim();
 	let usersQuery = db.selectFrom(TABLE_NAME).selectAll();
 	let totalCountQuery = db
 		.selectFrom(TABLE_NAME)
 		.select((eb) => eb.fn.countAll<number>().as('total_count'));
 
-	if (normalizedSearchQuery !== undefined && normalizedSearchQuery !== '') {
-		const escapedSearchQuery = escapeSqliteLikePattern(
-			normalizedSearchQuery
-		);
-		const likePattern = `%${escapedSearchQuery}%`;
+	if (trimmedSearchQuery !== undefined && trimmedSearchQuery !== '') {
+		const normalizedLikePattern = `%${escapeSqliteLikePattern(
+			trimmedSearchQuery.toLowerCase()
+		)}%`;
 		usersQuery = usersQuery.where((eb) =>
 			eb.or([
-				sql<boolean>`${sql.ref('username_normalized')} like ${likePattern} escape '\\'`,
-				sql<boolean>`${sql.ref('id')} like ${likePattern} escape '\\'`,
+				sql<boolean>`${sql.ref('username_normalized')} like ${normalizedLikePattern} escape '\\'`,
+				sql<boolean>`${sql.ref('nickname_normalized')} like ${normalizedLikePattern} escape '\\'`,
+				sql<boolean>`${sql.ref('id')} like ${normalizedLikePattern} escape '\\'`,
 			])
 		);
 		totalCountQuery = totalCountQuery.where((eb) =>
 			eb.or([
-				sql<boolean>`${sql.ref('username_normalized')} like ${likePattern} escape '\\'`,
-				sql<boolean>`${sql.ref('id')} like ${likePattern} escape '\\'`,
+				sql<boolean>`${sql.ref('username_normalized')} like ${normalizedLikePattern} escape '\\'`,
+				sql<boolean>`${sql.ref('nickname_normalized')} like ${normalizedLikePattern} escape '\\'`,
+				sql<boolean>`${sql.ref('id')} like ${normalizedLikePattern} escape '\\'`,
 			])
 		);
 	}
@@ -166,18 +182,18 @@ export async function listUsers({
 	};
 }
 
-export async function createUser(user: TUserNew) {
+export async function createUser(user: TUserInsertInput) {
 	const db = await getAccountDatabase();
 
 	return db
 		.insertInto(TABLE_NAME)
-		.values(user)
+		.values(createUserInsertRecord(user))
 		.returningAll()
 		.executeTakeFirstOrThrow();
 }
 
 export async function createUserWithCredential(
-	user: TUserNew,
+	user: TUserInsertInput,
 	credential: TUserCredentialNew
 ) {
 	const db = await getAccountDatabase();
@@ -185,7 +201,7 @@ export async function createUserWithCredential(
 	return db.transaction().execute(async (trx) => {
 		const record = await trx
 			.insertInto(TABLE_NAME)
-			.values(user)
+			.values(createUserInsertRecord(user))
 			.onConflict((oc) => oc.column('username_normalized').doNothing())
 			.returningAll()
 			.executeTakeFirst();
@@ -204,7 +220,7 @@ export async function createUserWithCredential(
 }
 
 export async function createUserWithCredentialAndSession(
-	user: TUserNew,
+	user: TUserInsertInput,
 	credential: TUserCredentialNew,
 	session: TSessionNew,
 	writeAuditLog?: (
@@ -219,7 +235,7 @@ export async function createUserWithCredentialAndSession(
 	return db.transaction().execute(async (trx) => {
 		const record = await trx
 			.insertInto(TABLE_NAME)
-			.values(user)
+			.values(createUserInsertRecord(user))
 			.onConflict((oc) => oc.column('username_normalized').doNothing())
 			.returningAll()
 			.executeTakeFirst();
@@ -243,7 +259,7 @@ export async function createUserWithCredentialAndSession(
 }
 
 export async function createUserWithCredentialWebauthnAndSession(
-	user: TUserNew,
+	user: TUserInsertInput,
 	credential: TUserCredentialNew,
 	webauthnCredential: TUserWebauthnCredentialNew,
 	session: TSessionNew,
@@ -259,7 +275,7 @@ export async function createUserWithCredentialWebauthnAndSession(
 	return db.transaction().execute(async (trx) => {
 		const record = await trx
 			.insertInto(TABLE_NAME)
-			.values(user)
+			.values(createUserInsertRecord(user))
 			.onConflict((oc) => oc.column('username_normalized').doNothing())
 			.returningAll()
 			.executeTakeFirst();
@@ -288,10 +304,19 @@ export async function createUserWithCredentialWebauthnAndSession(
 
 export async function updateUser(id: TUser['id'], user: TUserUpdate) {
 	const db = await getAccountDatabase();
+	const userUpdate: TUserUpdate =
+		user.nickname === undefined
+			? user
+			: {
+					...user,
+					nickname_normalized: createNicknameNormalized(
+						user.nickname
+					),
+				};
 
 	const result = await db
 		.updateTable(TABLE_NAME)
-		.set(user)
+		.set(userUpdate)
 		.where('id', '=', id)
 		.executeTakeFirst();
 	if (result.numUpdatedRows !== 1n) {
@@ -405,7 +430,13 @@ export async function updateActiveUserProfile({
 			updatedUser = await trx
 				.updateTable(TABLE_NAME)
 				.set({
-					...(nickname === undefined ? {} : { nickname }),
+					...(nickname === undefined
+						? {}
+						: {
+								nickname,
+								nickname_normalized:
+									createNicknameNormalized(nickname),
+							}),
 					updated_at: now,
 					...(username === undefined ? {} : { username }),
 					...(usernameNormalized === undefined

@@ -88,6 +88,7 @@ interface ITableUser {
 	id: string;
 	last_login_at: number | null;
 	nickname: string | null;
+	nickname_normalized: string | null;
 	state_epoch: number;
 	status: TUserStatus;
 	sync_generation: number;
