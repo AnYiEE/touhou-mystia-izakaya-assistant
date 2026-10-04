@@ -38,9 +38,12 @@ export const META_MYSTIA_VIDEOS = [
 	},
 ] as const satisfies ReadonlyArray<IBilibiliVideo>;
 
-/** The player is only inserted after the viewer presses play, so it starts playing right away. */
+/**
+ * Bilibili player embed URL for an av number.
+ * The external player defaults to autoplay on, so it is disabled explicitly; `poster=1` keeps the cover visible until playback starts.
+ */
 export function getBilibiliPlayerUrl(aid: string) {
-	return `https://player.bilibili.com/player.html?isOutside=true&aid=${aid}&p=1&autoplay=1`;
+	return `https://player.bilibili.com/player.html?isOutside=true&aid=${aid}&p=1&autoplay=0&poster=1`;
 }
 
 export function getBilibiliVideoUrl(aid: string) {

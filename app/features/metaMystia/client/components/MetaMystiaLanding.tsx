@@ -32,13 +32,9 @@ import {
 	META_MYSTIA_VIDEOS,
 } from '@/features/metaMystia/links';
 
-import type { ILink } from '@/shared/site/contracts';
-import { SITE_METADATA } from '@/shared/site/metadata';
-
 import BilibiliVideo from './BilibiliVideo';
 
 const links = META_MYSTIA_LINKS;
-const { shortName } = SITE_METADATA;
 
 const specialGuest = SpecialGuestCatalog.getInstance();
 
@@ -61,11 +57,27 @@ const HERO_GUESTS = HERO_GUEST_IDS.map((id) => ({
 }));
 /** Guests shown below the `lg` breakpoint, where the whole row does not fit; the range stays centered on Shinki. */
 const COMPACT_HERO_GUEST_RANGE = { end: 7, start: 2 } as const;
+/** Guests added back from the `md` breakpoint; the range also stays centered on Shinki. */
+const MEDIUM_HERO_GUEST_RANGE = { end: 8, start: 1 } as const;
+
+/** 5 guests below `md`, 7 from `md`, and all 10 from `lg`. */
+function getHeroGuestVisibilityClassName(index: number) {
+	if (
+		index >= COMPACT_HERO_GUEST_RANGE.start &&
+		index < COMPACT_HERO_GUEST_RANGE.end
+	) {
+		return;
+	}
+
+	return index >= MEDIUM_HERO_GUEST_RANGE.start &&
+		index < MEDIUM_HERO_GUEST_RANGE.end
+		? 'hidden md:block'
+		: 'hidden lg:block';
+}
 
 interface IFeature {
 	description: string;
 	icon: FontAwesomeIconProps['icon'];
-	link: ILink | null;
 	title: string;
 }
 
@@ -74,23 +86,17 @@ const FEATURES = [
 		description:
 			'一人开房，好友加入。白天各自行动，夜晚一起经营同一家店，分工做菜、上菜和接待顾客。',
 		icon: faUserGroup,
-		link: null,
 		title: '多人联机',
 	},
 	{
 		description: `通过ResourceEx资源包，迎来${META_MYSTIA_GUEST_NAMES.slice(0, 3).join('、')}等${META_MYSTIA_GUEST_NAMES.length}位新稀客，以及新的料理、食材和酒水。单人游玩也能体验。`,
 		icon: faUtensils,
-		link: {
-			href: '/special-guests',
-			label: `在${shortName}中查看新稀客的料理搭配`,
-		},
 		title: '新稀客与新料理',
 	},
 	{
 		description:
 			'换上喜欢的角色和服装外观，房间里的其他玩家也能看到你的新造型。',
 		icon: faShirt,
-		link: null,
 		title: '皮肤系统',
 	},
 ] as const satisfies ReadonlyArray<IFeature>;
@@ -121,9 +127,7 @@ export default function MetaMystiaLanding() {
 							src={src}
 							className={cn(
 								'-mx-1.5 h-[min(7rem,30vw)] w-auto md:-mx-2.5 md:h-36',
-								(index < COMPACT_HERO_GUEST_RANGE.start ||
-									index >= COMPACT_HERO_GUEST_RANGE.end) &&
-									'hidden lg:block'
+								getHeroGuestVisibilityClassName(index)
 							)}
 						/>
 					))}
@@ -176,7 +180,6 @@ export default function MetaMystiaLanding() {
 				</Button>
 			</section>
 			<p className="-mt-4 text-small text-foreground-500">
-				<span className="block">安装工具仅支持Windows</span>
 				<span className="block">
 					欢迎加入QQ群
 					<Link
@@ -225,7 +228,7 @@ export default function MetaMystiaLanding() {
 				</div>
 			</section>
 			<section className="grid w-full grid-cols-1 gap-4 text-left md:grid-cols-3">
-				{FEATURES.map(({ description, icon, link, title }) => (
+				{FEATURES.map(({ description, icon, title }) => (
 					<Card
 						key={title}
 						shadow="sm"
@@ -241,17 +244,6 @@ export default function MetaMystiaLanding() {
 						<p className="text-small text-foreground-600">
 							{description}
 						</p>
-						{link !== null && (
-							<Link
-								href={link.href}
-								onPress={() => {
-									trackLinkClick(link.href);
-								}}
-								className="mt-2 self-start rounded-small text-small"
-							>
-								{link.label}
-							</Link>
-						)}
 					</Card>
 				))}
 			</section>
