@@ -7,7 +7,7 @@ export const META_MYSTIA_LINKS = {
 	},
 	download: {
 		href: 'https://doc.meta-mystia.izakaya.cc/user_guide/how_to_install.html',
-		label: 'MetaMystia Mod管理工具',
+		label: 'MetaMystia安装指南',
 	},
 	github: {
 		href: 'https://github.com/MetaMystia/MetaMystia',
@@ -26,7 +26,6 @@ interface IBilibiliVideo {
 	title: string;
 }
 
-/** MetaMystia showcase videos on Bilibili, referenced by their av numbers. */
 export const META_MYSTIA_VIDEOS = [
 	{
 		aid: '116358163464340',

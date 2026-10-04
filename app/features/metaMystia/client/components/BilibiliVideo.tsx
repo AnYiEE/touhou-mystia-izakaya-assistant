@@ -15,10 +15,9 @@ interface IProps {
 	title: string;
 }
 
-/** Embeds the Bilibili player directly, with the video title linked below it. */
 export default memo<IProps>(function BilibiliVideo({ aid, title }) {
 	return (
-		<figure className="flex flex-col gap-2">
+		<figure className="flex h-full flex-col gap-3 rounded-large bg-content1 p-3 shadow-small">
 			<iframe
 				allowFullScreen
 				allow="autoplay; fullscreen"
@@ -26,9 +25,9 @@ export default memo<IProps>(function BilibiliVideo({ aid, title }) {
 				sandbox="allow-popups allow-presentation allow-same-origin allow-scripts"
 				src={getBilibiliPlayerUrl(aid)}
 				title={title}
-				className="aspect-video w-full rounded-large bg-content2"
+				className="aspect-video w-full rounded-medium bg-content2"
 			/>
-			<figcaption>
+			<figcaption className="px-1">
 				<Link
 					isExternal
 					animationUnderline={false}
