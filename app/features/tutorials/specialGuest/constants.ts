@@ -1,4 +1,6 @@
 export const SPECIAL_GUEST_TUTORIAL_STORE_KEY = 'customer_rare_tutorial';
+export const SPECIAL_GUEST_TUTORIAL_LOCAL_RESET_STORE_KEY =
+	'customer_rare_tutorial_local_reset';
 export const SPECIAL_GUEST_TUTORIAL_PATHNAME = '/special-guests';
 export const SPECIAL_GUEST_TUTORIAL_RESET_LABEL = '重新进入稀客套餐搭配教程';
 export const SPECIAL_GUEST_TUTORIAL_START_DELAY_MS = 1000;

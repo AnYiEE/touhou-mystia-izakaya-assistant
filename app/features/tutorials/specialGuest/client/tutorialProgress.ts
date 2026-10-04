@@ -1,5 +1,8 @@
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
-import { SPECIAL_GUEST_TUTORIAL_STORE_KEY } from '@/features/tutorials/specialGuest/constants';
+import {
+	SPECIAL_GUEST_TUTORIAL_LOCAL_RESET_STORE_KEY,
+	SPECIAL_GUEST_TUTORIAL_STORE_KEY,
+} from '@/features/tutorials/specialGuest/constants';
 import type {
 	ISpecialGuestTutorialCommands,
 	ISpecialGuestTutorialProgress,
@@ -19,22 +22,34 @@ export function readSpecialGuestTutorialProgress(
 }
 
 export function useSpecialGuestTutorialCompleted() {
-	return globalStore.persistence.dirver
-		.use()
-		.includes(SPECIAL_GUEST_TUTORIAL_STORE_KEY);
+	const dirver = globalStore.persistence.dirver.use();
+
+	return (
+		dirver.includes(SPECIAL_GUEST_TUTORIAL_STORE_KEY) &&
+		!dirver.includes(SPECIAL_GUEST_TUTORIAL_LOCAL_RESET_STORE_KEY)
+	);
 }
 
 export function completeSpecialGuestTutorial() {
 	globalStore.persistence.dirver.set((previous) => {
-		previous.push(SPECIAL_GUEST_TUTORIAL_STORE_KEY);
+		const retainedEntries = previous.filter(
+			(item) =>
+				item !== SPECIAL_GUEST_TUTORIAL_STORE_KEY &&
+				item !== SPECIAL_GUEST_TUTORIAL_LOCAL_RESET_STORE_KEY
+		);
+		retainedEntries.push(SPECIAL_GUEST_TUTORIAL_STORE_KEY);
+		previous.splice(0, previous.length, ...retainedEntries);
 	});
 }
 
 export function resetSpecialGuestTutorial() {
 	globalStore.persistence.dirver.set((previous) => {
 		const retainedEntries = previous.filter(
-			(item) => item !== SPECIAL_GUEST_TUTORIAL_STORE_KEY
+			(item) =>
+				item !== SPECIAL_GUEST_TUTORIAL_STORE_KEY &&
+				item !== SPECIAL_GUEST_TUTORIAL_LOCAL_RESET_STORE_KEY
 		);
+		retainedEntries.push(SPECIAL_GUEST_TUTORIAL_LOCAL_RESET_STORE_KEY);
 		previous.splice(0, previous.length, ...retainedEntries);
 	});
 }
