@@ -9,7 +9,6 @@ export const ADMIN_ANNOUNCEMENT_MESSAGE_MAP = {
 	adminSessionExpired: '管理员登录已失效，请重新登录。',
 	archived: '站点通知已归档',
 	archiveFailed: '归档失败',
-	cleanupFailed: '清理通知记录失败',
 	conflictRefresh: '通知已被其他管理员更新，请刷新后再编辑。',
 	created: '站点通知已创建',
 	listReadFailed: '读取站点通知失败',
@@ -77,13 +76,3 @@ export const ANNOUNCEMENT_AUDIENCE_FILTER_OPTIONS = [
 	label: string;
 	value: TAnnouncementAudience | '';
 }>;
-
-export function createAnnouncementCleanupSuccessMessage({
-	deletedDismissals,
-	deletedVersions,
-}: {
-	deletedDismissals: number;
-	deletedVersions: number;
-}) {
-	return `已清理${deletedDismissals}条关闭记录、${deletedVersions}条历史版本`;
-}

@@ -69,12 +69,6 @@ export interface IAdminAnnouncementMutationData {
 	announcement: IAdminAnnouncementProfile;
 }
 
-export interface IAdminAnnouncementCleanupData {
-	deleted_dismissals: number;
-	deleted_versions: number;
-	message: 'announcement-records-cleaned';
-}
-
 export interface IAnnouncementChangedField {
 	field: string;
 	next: unknown;

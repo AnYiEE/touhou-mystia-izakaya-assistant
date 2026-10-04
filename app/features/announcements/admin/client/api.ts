@@ -14,7 +14,6 @@ import {
 } from '@/features/admin/client/searchParams';
 import {
 	type IAdminAnnouncementBody,
-	type IAdminAnnouncementCleanupData,
 	type IAdminAnnouncementListData,
 	type IAdminAnnouncementMutationData,
 	type IAdminAnnouncementPreviewData,
@@ -103,13 +102,6 @@ export function restoreAnnouncement(id: string, csrfToken: string) {
 	return fetchAdminApiResult<IAdminAnnouncementMutationData>(
 		`/api/v1/admin/announcements/${encodeURIComponent(id)}`,
 		createAdminCsrfRequestInit('PATCH', csrfToken)
-	);
-}
-
-export function cleanupAdminAnnouncementRecords(csrfToken: string) {
-	return fetchAdminApiResult<IAdminAnnouncementCleanupData>(
-		'/api/v1/admin/announcements/cleanup',
-		createAdminCsrfRequestInit('DELETE', csrfToken)
 	);
 }
 

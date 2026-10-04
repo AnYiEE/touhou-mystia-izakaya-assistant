@@ -2,12 +2,12 @@
 
 import {
 	faBullhorn,
+	faClipboardList,
 	faClock,
 	faPlus,
 	faSearch,
 	faServer,
 	faShieldHalved,
-	faTrash,
 	faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@heroui/theme';
@@ -30,7 +30,6 @@ import {
 
 import type { IAdminMeData } from '@/features/account/contracts';
 import { fetchAdminMe } from '@/features/admin/client/api';
-import { AdminConfirmButton } from '@/features/admin/client/components/confirmation';
 import {
 	AdminEmptyState,
 	AdminLoadingState,
@@ -66,7 +65,6 @@ import {
 	clearAdminSession,
 	isAdminSessionInvalidResult,
 } from '@/features/admin/client/session';
-import type { TAdminApiResult } from '@/features/admin/contracts';
 import {
 	ADMIN_MESSAGE_MAP,
 	ADMIN_STATUS_LABEL_MAP,
@@ -79,7 +77,6 @@ import {
 	ANNOUNCEMENT_AUDIENCE_LABEL_MAP,
 	ANNOUNCEMENT_LEVEL_FILTER_OPTIONS,
 	ANNOUNCEMENT_STATUS_FILTER_OPTIONS,
-	createAnnouncementCleanupSuccessMessage,
 } from '@/features/announcements/admin/copy';
 import {
 	type IAdminAnnouncementListData,
@@ -87,15 +84,13 @@ import {
 	type TAnnouncementComputedStatus,
 } from '@/features/announcements/contracts';
 
-import { cleanupAdminAnnouncementRecords, listAdminAnnouncements } from './api';
+import { listAdminAnnouncements } from './api';
 import {
 	AdminAnnouncementLevelBadge,
 	AdminAnnouncementStatusBadge,
 } from './statusBadges';
 
 const pageInputRegexp = /^\d*$/u;
-
-type TConfirmAction = 'cleanup' | null;
 
 function createDateTimeLabel(timestamp: number | null) {
 	return timestamp === null
@@ -190,8 +185,6 @@ export default function AdminAnnouncementsClient({
 	const [isAuthLoading, setIsAuthLoading] = useState(
 		initialData.isAuthLoading
 	);
-	const [confirmAction, setConfirmAction] = useState<TConfirmAction>(null);
-	const [isCleaning, setIsCleaning] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [message, setMessage] = useState<string | null>(initialData.message);
 	const [page, setPage] = useState(1);
@@ -306,19 +299,6 @@ export default function AdminAnnouncementsClient({
 			});
 	}, []);
 
-	const handleActionError = useCallback(
-		(result: Extract<TAdminApiResult, { status: 'error' }>) => {
-			if (isAdminSessionInvalidResult(result)) {
-				clearAdminSession();
-				setAdmin(null);
-				return;
-			}
-
-			setMessage(result.displayMessage);
-		},
-		[]
-	);
-
 	const handleQueryInputChange = useCallback((value: string) => {
 		setQueryInput(value);
 	}, []);
@@ -356,57 +336,6 @@ export default function AdminAnnouncementsClient({
 		refreshAnnouncements(1, nextQuery);
 	}, [page, query, queryInput, refreshAnnouncements]);
 
-	const handleCleanup = useCallback(() => {
-		if (isCleaning) {
-			return;
-		}
-
-		const csrfToken = admin?.csrf_token;
-		if (csrfToken === undefined) {
-			setMessage(ADMIN_ANNOUNCEMENT_MESSAGE_MAP.adminSessionExpired);
-			return;
-		}
-		trackEvent(
-			trackEvent.category.click,
-			'Remove Button',
-			'Cleanup Records'
-		);
-
-		setIsCleaning(true);
-		setConfirmAction(null);
-		setMessage(null);
-		void cleanupAdminAnnouncementRecords(csrfToken)
-			.then((result) => {
-				if (result.status === 'error') {
-					handleActionError(result);
-					return;
-				}
-
-				setMessage(
-					createAnnouncementCleanupSuccessMessage({
-						deletedDismissals: result.data.deleted_dismissals,
-						deletedVersions: result.data.deleted_versions,
-					})
-				);
-				refreshAnnouncements();
-			})
-			.catch((error: unknown) => {
-				setMessage(
-					Error.isError(error)
-						? error.message
-						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.cleanupFailed
-				);
-			})
-			.finally(() => {
-				setIsCleaning(false);
-			});
-	}, [
-		admin?.csrf_token,
-		handleActionError,
-		isCleaning,
-		refreshAnnouncements,
-	]);
-
 	const handleLeaveAnnouncementList = useCallback(() => {
 		requestIdRef.current += 1;
 		setIsLoading(false);
@@ -417,6 +346,15 @@ export default function AdminAnnouncementsClient({
 			trackEvent.category.click,
 			'Link',
 			'Open List From Announcements'
+		);
+		handleLeaveAnnouncementList();
+	}, [handleLeaveAnnouncementList]);
+
+	const handleOpenAuditLog = useCallback(() => {
+		trackEvent(
+			trackEvent.category.click,
+			'Admin Audit Button',
+			'Open Announcement Audit'
 		);
 		handleLeaveAnnouncementList();
 	}, [handleLeaveAnnouncementList]);
@@ -575,18 +513,13 @@ export default function AdminAnnouncementsClient({
 						>
 							SSO客户端
 						</AdminHeaderActionLink>
-						<AdminConfirmButton
-							color="danger"
-							confirmAction="cleanup"
-							confirmLabel="确认清理"
-							icon={faTrash}
-							isLoading={isCleaning}
-							onConfirm={handleCleanup}
-							onOpenChange={setConfirmAction}
-							openAction={confirmAction}
+						<AdminHeaderActionLink
+							href="/admin/audit?scope=announcement"
+							icon={faClipboardList}
+							onPress={handleOpenAuditLog}
 						>
-							清理历史
-						</AdminConfirmButton>
+							审计日志
+						</AdminHeaderActionLink>
 						<AdminHeaderActionLink
 							color="primary"
 							href="/admin/announcements/new"

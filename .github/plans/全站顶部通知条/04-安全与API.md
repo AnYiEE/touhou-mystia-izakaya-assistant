@@ -70,7 +70,7 @@
 
 ## 站内后台调用链
 
-当前 `app/(pages)/admin/announcements/**` 页面只委托给 `app/features/announcements/admin/server/**` 的 PageContent；浏览器调用集中在 `app/features/announcements/admin/client/api.ts`，初始鉴权与数据读取集中在 `app/features/announcements/admin/server/initialData/**`。创建、更新、归档、恢复、预览、清理和版本读取都由后台 API routes 承接。公开页面关闭通知通过 `/api/v1/announcements` 写请求同步已登录用户的关闭记录，匿名用户只保留 cookie。
+当前 `app/(pages)/admin/announcements/**` 页面只委托给 `app/features/announcements/admin/server/**` 的 PageContent；浏览器调用集中在 `app/features/announcements/admin/client/api.ts`，初始鉴权与数据读取集中在 `app/features/announcements/admin/server/initialData/**`。创建、更新、归档、恢复、预览和版本读取都由后台 API routes 承接。公开页面关闭通知通过 `/api/v1/announcements` 写请求同步已登录用户的关闭记录，匿名用户只保留 cookie。
 
 ## 后台 API
 

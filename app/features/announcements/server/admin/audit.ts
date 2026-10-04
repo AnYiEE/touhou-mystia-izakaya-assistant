@@ -5,7 +5,6 @@ import type { IAuditLogWriteInput } from '@/features/account/server/audit/contra
 import type { TDatabase } from '@/infrastructure/database/schema';
 
 export const ANNOUNCEMENT_AUDIT_SCOPE = 'announcement';
-export const ANNOUNCEMENT_AUDIT_RECORDS_TARGET_TYPE = 'announcement_records';
 export const ANNOUNCEMENT_AUDIT_TARGET_TYPE = 'announcement';
 
 export type TAnnouncementMutationAuditAction =

@@ -98,12 +98,6 @@ export interface ICleanupAnnouncementRecordsResult {
 	deletedVersions: number;
 }
 
-export type TCleanupAnnouncementRecordsAuditWriter = (
-	database: Transaction<TDatabase>,
-	now: number,
-	result: ICleanupAnnouncementRecordsResult
-) => Promise<void>;
-
 export async function runAnnouncementTransaction<T>(
 	callback: (database: Transaction<TDatabase>) => Promise<T>
 ) {
@@ -366,16 +360,12 @@ export async function listAnnouncementVersions(
 		.execute();
 }
 
-export async function cleanupAnnouncementRecords(
-	{
-		dismissalBefore,
-		versionBefore,
-		versionKeepLatest,
-	}: ICleanupAnnouncementRecordsOptions,
-	writeAuditLog?: TCleanupAnnouncementRecordsAuditWriter
-): Promise<ICleanupAnnouncementRecordsResult> {
+export async function cleanupAnnouncementRecords({
+	dismissalBefore,
+	versionBefore,
+	versionKeepLatest,
+}: ICleanupAnnouncementRecordsOptions): Promise<ICleanupAnnouncementRecordsResult> {
 	const db = await getAnnouncementDatabase();
-	const now = Date.now();
 
 	return db.transaction().execute(async (database) => {
 		const dismissalResult = await database
@@ -440,7 +430,6 @@ export async function cleanupAnnouncementRecords(
 			deletedDismissals: Number(dismissalResult.numDeletedRows),
 			deletedVersions,
 		};
-		await writeAuditLog?.(database, now, result);
 
 		return result;
 	});

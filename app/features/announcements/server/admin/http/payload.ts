@@ -10,7 +10,7 @@ const MAX_ANNOUNCEMENT_HTML_LENGTH = 4000;
 const MAX_ANNOUNCEMENT_ID_LENGTH = 80;
 const MAX_ANNOUNCEMENT_PRIORITY = 1_000_000;
 const MAX_ANNOUNCEMENT_TITLE_LENGTH = 80;
-const RESERVED_ANNOUNCEMENT_IDS = new Set(['cleanup', 'new', 'preview']);
+const RESERVED_ANNOUNCEMENT_IDS = new Set(['new', 'preview']);
 
 function normalizeInputObject(value: unknown) {
 	return isObject(value) ? (value as Record<string, unknown>) : null;
