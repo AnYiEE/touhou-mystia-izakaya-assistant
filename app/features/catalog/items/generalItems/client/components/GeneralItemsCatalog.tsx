@@ -17,12 +17,10 @@ export default function GeneralItemsCatalog({
 		<CollectibleCatalog data={data} target="item" trackingLabel="Item Card">
 			{({ effects, from }) => (
 				<>
-					{from.length > 0 && (
-						<GeneralItemSourceDetails
-							from={from}
-							openWindow={openWindow}
-						/>
-					)}
+					<GeneralItemSourceDetails
+						from={from}
+						openWindow={openWindow}
+					/>
 					{effects.length > 0 && (
 						<p>
 							<span className="font-semibold">效果：</span>

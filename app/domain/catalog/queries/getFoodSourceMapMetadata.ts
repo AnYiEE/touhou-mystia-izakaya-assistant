@@ -46,23 +46,18 @@ export function getFoodSourceMapMetadata(
 	if ('self' in from) {
 		return createMetadata([...ALL_MAP_LABELS]);
 	}
+	if ('areaTask' in from) {
+		return createMetadata([from.areaTask.map]);
+	}
 	if ('bond' in from) {
 		return createMetadata([
 			getSpecialGuestMainMap(from.bond.specialGuest, specialGuests),
 		]);
 	}
-	if ('levelup' in from) {
-		return createMetadata(
-			from.levelup.map === null ? [...ALL_MAP_LABELS] : [from.levelup.map]
-		);
-	}
 	if ('buy' in from) {
 		return createMetadata([
 			getMerchantMap(from.buy.merchant, specialGuests),
 		]);
-	}
-	if ('areaTask' in from) {
-		return createMetadata([from.areaTask.map]);
 	}
 	if ('collaboration' in from) {
 		return createMetadata(
@@ -75,6 +70,14 @@ export function getFoodSourceMapMetadata(
 			],
 			true
 		);
+	}
+	if ('levelup' in from) {
+		return createMetadata(
+			from.levelup.map === null ? [...ALL_MAP_LABELS] : [from.levelup.map]
+		);
+	}
+	if ('taskReward' in from) {
+		return createMetadata([]);
 	}
 
 	const punishmentSpecialGuestSet = new Set(

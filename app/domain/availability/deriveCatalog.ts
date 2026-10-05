@@ -19,6 +19,7 @@ import { PRAYER_LABEL_MAP } from '@/domain/data/labels/prayerFacts';
 import {
 	SCHEDULER_FACTS,
 	formatSchedulerLabels,
+	formatTaskLabel,
 } from '@/domain/data/labels/schedulerFacts';
 import { PARTNER_LIST } from '@/domain/data/partners/records';
 import { getCollectionPointFact } from '@/domain/data/places/collectionFacts';
@@ -304,20 +305,20 @@ function formatPurchaseSource(merchant: TMerchantReference, price: unknown) {
 		if (
 			isObject(projectedValue) &&
 			'amount' in projectedValue &&
-			'currencyItem' in projectedValue &&
-			typeof projectedValue.amount === 'number' &&
-			typeof projectedValue.currencyItem === 'string'
-		) {
-			return [`${projectedValue.amount}×${projectedValue.currencyItem}`];
-		}
-		if (
-			isObject(projectedValue) &&
-			'amount' in projectedValue &&
 			'cooker' in projectedValue &&
 			typeof projectedValue.amount === 'number' &&
 			typeof projectedValue.cooker === 'string'
 		) {
 			return [`${projectedValue.amount}×${projectedValue.cooker}`];
+		}
+		if (
+			isObject(projectedValue) &&
+			'amount' in projectedValue &&
+			'currencyItem' in projectedValue &&
+			typeof projectedValue.amount === 'number' &&
+			typeof projectedValue.currencyItem === 'string'
+		) {
+			return [`${projectedValue.amount}×${projectedValue.currencyItem}`];
 		}
 		return [];
 	});
@@ -385,11 +386,11 @@ function combineMerchantAndCurrencyItemPaths(
 function formatCurrencyItemSource(
 	source: (typeof CURRENCY_ITEM_LIST)[number]['from'][number]
 ) {
-	if ('mapSideTask' in source) {
-		return `地区任务：${formatMap(source.mapSideTask.map)}`;
-	}
 	if ('mapPrayer' in source) {
 		return `地区【${formatMap(source.mapPrayer.map)}】${PRAYER_LABEL_MAP[source.mapPrayer.label]}处祈愿`;
+	}
+	if ('mapSideTask' in source) {
+		return `地区任务：${formatMap(source.mapSideTask.map)}`;
 	}
 	if ('spellCardReward' in source) {
 		return `【${getSpecialGuest(source.spellCardReward.specialGuest).name}】奖励符卡`;
@@ -400,9 +401,6 @@ function formatCurrencyItemSource(
 function projectCurrencyItemSource(
 	source: (typeof CURRENCY_ITEM_LIST)[number]['from'][number]
 ) {
-	if ('mapSideTask' in source) {
-		return { task: formatMap(source.mapSideTask.map) };
-	}
 	if ('buy' in source) {
 		return {
 			buy: {
@@ -411,6 +409,9 @@ function projectCurrencyItemSource(
 			},
 		};
 	}
+	if ('mapSideTask' in source) {
+		return { task: formatMap(source.mapSideTask.map) };
+	}
 	return formatCurrencyItemSource(source);
 }
 
@@ -418,6 +419,9 @@ function resolveCurrencyItemNonBuySource(
 	source: (typeof CURRENCY_ITEM_LIST)[number]['from'][number],
 	contentDlc: TDlc
 ) {
+	if ('buy' in source) {
+		return createResult([]);
+	}
 	if ('mapSideTask' in source) {
 		const { map } = source.mapSideTask;
 		const mapDisplayLabel = formatMap(map);
@@ -432,9 +436,6 @@ function resolveCurrencyItemNonBuySource(
 				},
 			]),
 		]);
-	}
-	if ('buy' in source) {
-		return createResult([]);
 	}
 	return createOpaqueSourceResult(
 		formatCurrencyItemSource(source),
@@ -766,6 +767,9 @@ function formatFoodSource({ from, name }: (typeof FOOD_LIST)[number]) {
 			),
 		].join('、');
 	}
+	if ('taskReward' in from) {
+		return `任务${formatTaskLabel(formatSchedulerLabels(from.taskReward.task))}`;
+	}
 	throw new Error(`料理“${name}”没有文本来源`);
 }
 
@@ -781,6 +785,14 @@ function projectFoodSource(item: (typeof FOOD_LIST)[number]) {
 			},
 		};
 	}
+	if ('buy' in item.from) {
+		return {
+			buy: {
+				name: formatMerchantReference(item.from.buy.merchant),
+				price: projectPrice(item.from.buy.price),
+			},
+		};
+	}
 	if ('levelup' in item.from) {
 		return {
 			levelup: [
@@ -789,14 +801,6 @@ function projectFoodSource(item: (typeof FOOD_LIST)[number]) {
 					? null
 					: formatMap(item.from.levelup.map),
 			],
-		};
-	}
-	if ('buy' in item.from) {
-		return {
-			buy: {
-				name: formatMerchantReference(item.from.buy.merchant),
-				price: projectPrice(item.from.buy.price),
-			},
 		};
 	}
 	return formatFoodSource(item);
@@ -852,17 +856,25 @@ function resolveFoodItemAvailabilityResult(item: (typeof FOOD_LIST)[number]) {
 					),
 		]);
 	}
+	if ('taskReward' in item.from) {
+		return createResult([
+			resolveFoodTaskAvailabilityPath(
+				item.from.taskReward,
+				`任务${formatTaskLabel(formatSchedulerLabels(item.from.taskReward.task))}`
+			),
+		]);
+	}
 	return createOpaqueSourceResult(formatFoodSource(item), item.dlc);
 }
 
 function formatCookerSource(
 	source: (typeof COOKER_LIST)[number]['from'][number]
 ) {
-	if ('dlcSideTask' in source) {
-		return `【DLC${source.dlcSideTask.dlc}】${source.dlcSideTask.task}`;
-	}
 	if ('competitionReward' in source) {
 		return `完成“${formatSchedulerLabels(source.competitionReward.competitionLabel)}”后自动获得`;
+	}
+	if ('dlcSideTask' in source) {
+		return `【DLC${source.dlcSideTask.dlc}】${source.dlcSideTask.task}`;
 	}
 	throw new Error('厨具来源不是文本来源');
 }
@@ -931,17 +943,17 @@ function resolveCookerAvailabilityResult(item: (typeof COOKER_LIST)[number]) {
 function formatClothesSource(
 	source: (typeof CLOTHES_LIST)[number]['from'][number]
 ) {
-	if ('holdingRequirement' in source) {
-		return `持有${source.holdingRequirement.amount}枚“${getCurrencyItem(source.holdingRequirement.currencyItem).name}”时自动获得`;
+	if ('collaborationUnlock' in source) {
+		return `通过联动终端【${COLLABORATION_LABEL_MAP[source.collaborationUnlock.collaborationLabel]}】选项领取`;
 	}
 	if ('eventReward' in source) {
 		return `${formatSchedulerLabels(source.eventReward.eventLabel)}时自动获得`;
 	}
-	if ('collaborationUnlock' in source) {
-		return `通过联动终端【${COLLABORATION_LABEL_MAP[source.collaborationUnlock.collaborationLabel]}】选项领取`;
+	if ('holdingRequirement' in source) {
+		return `持有${source.holdingRequirement.amount}枚“${getCurrencyItem(source.holdingRequirement.currencyItem).name}”时自动获得`;
 	}
 	if ('taskReward' in source) {
-		return `完成“${formatSchedulerLabels(source.taskReward.task)}”任务后自动获得`;
+		return `任务${formatTaskLabel(formatSchedulerLabels(source.taskReward.task))}`;
 	}
 	throw new Error('服装来源不是文本来源');
 }
@@ -1068,11 +1080,11 @@ function projectPartnerSource(item: (typeof PARTNER_LIST)[number]) {
 	if ('self' in item.from) {
 		return { self: true };
 	}
-	if ('mapMainTask' in item.from) {
-		return { task: formatMap(item.from.mapMainTask.map) };
-	}
 	if ('allMapSpecialGuestBondsMaxed' in item.from) {
 		return { place: formatMap(item.from.allMapSpecialGuestBondsMaxed.map) };
+	}
+	if ('mapMainTask' in item.from) {
+		return { task: formatMap(item.from.mapMainTask.map) };
 	}
 	return formatPartnerSource(item);
 }
@@ -1093,13 +1105,13 @@ function resolvePartnerAvailabilityResult(item: (typeof PARTNER_LIST)[number]) {
 			}),
 		]);
 	}
-	if ('mapMainTask' in item.from) {
-		const { map } = item.from.mapMainTask;
+	if ('allMapSpecialGuestBondsMaxed' in item.from) {
+		const { map } = item.from.allMapSpecialGuestBondsMaxed;
 		const mapDisplayLabel = formatMap(map);
 		return createResult([
-			resolveMapAvailabilityPath(map, `地区任务：${mapDisplayLabel}`, [
+			resolveMapAvailabilityPath(map, `地区解锁：${mapDisplayLabel}`, [
 				{
-					kind: 'task',
+					kind: 'unknown',
 					name: mapDisplayLabel,
 					place: map,
 					probability: null,
@@ -1108,13 +1120,13 @@ function resolvePartnerAvailabilityResult(item: (typeof PARTNER_LIST)[number]) {
 			]),
 		]);
 	}
-	if ('allMapSpecialGuestBondsMaxed' in item.from) {
-		const { map } = item.from.allMapSpecialGuestBondsMaxed;
+	if ('mapMainTask' in item.from) {
+		const { map } = item.from.mapMainTask;
 		const mapDisplayLabel = formatMap(map);
 		return createResult([
-			resolveMapAvailabilityPath(map, `地区解锁：${mapDisplayLabel}`, [
+			resolveMapAvailabilityPath(map, `地区任务：${mapDisplayLabel}`, [
 				{
-					kind: 'unknown',
+					kind: 'task',
 					name: mapDisplayLabel,
 					place: map,
 					probability: null,

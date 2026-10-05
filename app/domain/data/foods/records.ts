@@ -3743,4 +3743,28 @@ export const FOOD_LIST = [
 			},
 		},
 	},
+	{
+		id: 12005,
+		name: '飞刀串串烧',
+		description:
+			'杂耍一般的烤肉料理！将烤肉高高抛起，然后掷出飞刀把它们钉在案板上——好看，好玩，还好吃。为了迎合芙兰的口味，烤肉特地做成了三分熟。',
+		recipes: [
+			{
+				id: 12005,
+				ingredients: [16, 16, 29, 24],
+				cookerType: 2,
+				baseCookTime: 12,
+			},
+		],
+		positiveTags: [0, 6, 13, 17, 18, 20, 33],
+		negativeTags: [],
+		dlc: 9,
+		level: 3,
+		price: 124,
+		from: {
+			taskReward: {
+				task: '_ResourceExample_Side_ScarletContract_Tri-horor_001_Mission',
+			},
+		},
+	},
 ] as const satisfies IFoodSchema[];

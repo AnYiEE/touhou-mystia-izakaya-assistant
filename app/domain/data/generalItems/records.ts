@@ -44,7 +44,7 @@ export const GENERAL_ITEM_RECORDS = [
 			'红美铃的信物，上面有本人的签名，从笔迹可以想象到她一笔一划地写字时的样子。',
 		dlc: 0,
 		effects: [],
-		from: [{ taskReward: 'Main_4_ScarletMansion_014-Mission_002' }],
+		from: [{ areaTask: { map: 'ScarletMansion', task: '主线任务' } }],
 	},
 	{
 		id: 49,
@@ -53,7 +53,7 @@ export const GENERAL_ITEM_RECORDS = [
 			'相传是龙神升天前在地上存酒用的酒坛子。至于是不是真的……算了，买都买了。',
 		dlc: 0,
 		effects: [],
-		from: [],
+		from: [{ areaTask: { map: 'ScarletMansion', task: '主线任务' } }],
 	},
 	{
 		id: 52,
@@ -139,6 +139,104 @@ export const GENERAL_ITEM_RECORDS = [
 		dlc: 5,
 		effects: [],
 		from: [{ schedulerLabel: 'DLC5_Main_Part8_GotoMakai_Event' }],
+	},
+	{
+		id: 10000,
+		name: '神秘的信封',
+		description: '散发着淡淡神秘力量的信封，打开之后可能会发生更好的事情……',
+		dlc: 9,
+		effects: [],
+		from: [
+			{
+				collaborationUnlock: {
+					collaborationLabel: 'ResourceEx_GiftMailbox',
+				},
+			},
+		],
+	},
+	{
+		id: 10001,
+		name: '诅咒羊皮纸',
+		description:
+			'铭刻着邪恶符文的羊皮纸，角落的那一点污渍不知道是墨水还是血迹……总觉得之后可能会在什么时候用到……',
+		dlc: 9,
+		effects: [],
+		from: [
+			{
+				taskReward:
+					'_ResourceExample_Kizuna_Flandre_LV1_Upgrade_002_Mission',
+			},
+		],
+	},
+	{
+		id: 10002,
+		name: '竹炭',
+		description:
+			'由竹子烧制出的炭火。用于生火的话，在其内部结构的约束下，可以得到温和的火焰。',
+		dlc: 9,
+		effects: [],
+		from: [
+			{
+				taskReward:
+					'_ResourceExample_Side_ScarletContract_Tri-horor_Mokou_002_Mission',
+			},
+		],
+	},
+	{
+		id: 10003,
+		name: '水仙花',
+		description:
+			'洁白而有着黄色花心的花朵，有着微弱的毒性所以不可食用。象征着自我克制的意识。',
+		dlc: 9,
+		effects: [],
+		from: [
+			{
+				taskReward:
+					'_ResourceExample_Side_ScarletContract_Tri-horor_Yuuka_003_Mission',
+			},
+		],
+	},
+	{
+		id: 10004,
+		name: '树枝编制的皇冠',
+		description:
+			'橙挑选树枝制作的简易皇冠，粗糙但含有一股茁壮的生命力。历经春夏秋冬也不会枯萎。',
+		dlc: 9,
+		effects: [],
+		from: [
+			{
+				taskReward:
+					'_ResourceExample_Side_ScarletContract_Tri-horor_Chen_002_Mission',
+			},
+		],
+	},
+	{
+		id: 10005,
+		name: '烧焦枯萎的花环',
+		description:
+			'被以粗暴方式错误组合的花冠，已经失去了生命力。枯焦的枝条充满遗憾。',
+		dlc: 9,
+		effects: [],
+		from: [
+			{
+				taskReward:
+					'_ResourceExample_Side_ScarletContract_Tri-horor_001_Mission',
+			},
+		],
+	},
+	{
+		id: 10006,
+		name: '七色虹花冠',
+		description:
+			'饱含生命力，盛放着的花冠，缠绕的水晶挂饰反射着七色的虹光，美轮美奂。愿她永远如这花冠般澄澈而美丽，散发无穷的、崭新的生机。',
+		dlc: 9,
+		effects: [],
+		from: [
+			{
+				taskReward:
+					'_ResourceExample_Side_ScarletContract_ThrivingProspect_Mission',
+			},
+		],
 	},
 ] as const satisfies Array<IGeneralItem<number>>;
 /* eslint-enable sort-keys */

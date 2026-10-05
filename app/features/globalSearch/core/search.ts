@@ -109,7 +109,7 @@ function createSnippet(keyword: string, text: string) {
 	const normalizedText = text.toLowerCase();
 	const index = normalizedText.indexOf(normalizedKeyword);
 
-	if (index === -1) {
+	if (index === -1 || text.length <= 36) {
 		return text.length > 36 ? `${text.slice(0, 36)}...` : text;
 	}
 

@@ -5,10 +5,13 @@ import Tooltip from '@/design/ui/components/tooltip';
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import type { IGeneralItem } from '@/domain/data/generalItems/schema';
+import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
 import {
 	SCHEDULER_FACTS,
 	formatSchedulerLabels,
+	formatTaskLabel,
 } from '@/domain/data/labels/schedulerFacts';
+import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 
 import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
@@ -58,22 +61,12 @@ function GeneralItemSource({
 	openWindow: IProps['openWindow'];
 	source: IGeneralItem['from'][number];
 }) {
-	if ('schedulerLabel' in source) {
-		const fact = SCHEDULER_FACTS[source.schedulerLabel];
-		if ('specialGuestBond' in fact) {
-			const { level, specialGuest } = fact.specialGuestBond;
-			return (
-				<>
-					{renderSpecialGuest(specialGuest)}羁绊Lv.{level - 1}
-					<span className="mx-0.5">➞</span>
-					Lv.{level}
-				</>
-			);
-		}
-		return formatSchedulerLabels(source.schedulerLabel);
+	if ('areaTask' in source) {
+		return `地区【${MAP_FACTS[source.areaTask.map].label}】${source.areaTask.task}`;
 	}
-	if ('taskReward' in source) {
-		return `完成“${formatSchedulerLabels(source.taskReward)}”任务后自动获得`;
+
+	if ('collaborationUnlock' in source) {
+		return `通过联动终端【${COLLABORATION_LABEL_MAP[source.collaborationUnlock.collaborationLabel]}】选项领取`;
 	}
 
 	if ('holdingCurrencyItem' in source) {
@@ -113,6 +106,25 @@ function GeneralItemSource({
 				时自动获得
 			</>
 		);
+	}
+
+	if ('schedulerLabel' in source) {
+		const fact = SCHEDULER_FACTS[source.schedulerLabel];
+		if ('specialGuestBond' in fact) {
+			const { level, specialGuest } = fact.specialGuestBond;
+			return (
+				<>
+					{renderSpecialGuest(specialGuest)}羁绊Lv.{level - 1}
+					<span className="mx-0.5">➞</span>
+					Lv.{level}
+				</>
+			);
+		}
+		return formatSchedulerLabels(source.schedulerLabel);
+	}
+
+	if ('taskReward' in source) {
+		return `任务${formatTaskLabel(formatSchedulerLabels(source.taskReward))}`;
 	}
 
 	return <>{renderSpecialGuest(source.positiveSpellCard)}奖励符卡</>;

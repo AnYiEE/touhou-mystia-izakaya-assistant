@@ -7,7 +7,10 @@ import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import type { IClothes, TClothesSource } from '@/domain/data/clothes/schema';
 import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
-import { formatSchedulerLabels } from '@/domain/data/labels/schedulerFacts';
+import {
+	formatSchedulerLabels,
+	formatTaskLabel,
+} from '@/domain/data/labels/schedulerFacts';
 
 import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
@@ -116,7 +119,7 @@ function renderClothesSource(
 		return `通过联动终端【${COLLABORATION_LABEL_MAP[item.collaborationUnlock.collaborationLabel]}】选项领取`;
 	}
 
-	return `完成“${formatSchedulerLabels(item.taskReward.task)}”任务后自动获得`;
+	return `任务${formatTaskLabel(formatSchedulerLabels(item.taskReward.task))}`;
 }
 
 export default function ClothesSourceDetails({ from, openWindow }: IProps) {

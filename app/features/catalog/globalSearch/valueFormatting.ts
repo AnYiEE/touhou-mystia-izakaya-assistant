@@ -11,6 +11,7 @@ import { PRAYER_LABEL_MAP } from '@/domain/data/labels/prayerFacts';
 import {
 	SCHEDULER_FACTS,
 	formatSchedulerLabels,
+	formatTaskLabel,
 } from '@/domain/data/labels/schedulerFacts';
 import { SPEED_LABEL_MAP } from '@/domain/data/partners/speedFacts';
 import { COLLECTION_POINT_REFRESH_FACTS } from '@/domain/data/places/collectionFacts';
@@ -256,15 +257,13 @@ function formatCookerPrice(value: unknown) {
 		.join(' ');
 }
 
-function formatBondSource(value: unknown, levelOverride?: number) {
+function formatBondSource(value: unknown) {
 	if (!checkIsRecord(value) || typeof value['specialGuest'] !== 'number') {
 		return '';
 	}
 
 	const name = getSpecialGuestName(value['specialGuest']);
-	const level =
-		levelOverride ??
-		(typeof value['level'] === 'number' ? value['level'] : null);
+	const level = typeof value['level'] === 'number' ? value['level'] : null;
 	if (name === null) {
 		return '';
 	}
@@ -375,9 +374,17 @@ function formatFoodSourceMethod(method: TFoodSourceMethodKey, value: unknown) {
 		)
 		.filter(Boolean);
 
-	return values.length === 0
-		? []
-		: [`${methodLabelMap[method]}：${values.join('、')}`];
+	if (values.length === 0) {
+		return [];
+	}
+	if (method === 'task') {
+		const [firstValue, ...restValues] = values;
+		return firstValue !== undefined && restValues.length === 0
+			? [`任务${formatTaskLabel(firstValue)}`]
+			: [`${methodLabelMap[method]}：${values.join('、')}`];
+	}
+
+	return [`${methodLabelMap[method]}：${values.join('、')}`];
 }
 
 function formatBuySource(value: unknown) {
@@ -397,15 +404,12 @@ function formatBuySource(value: unknown) {
 	return price.length > 0 ? `${merchant}（${price}）` : merchant;
 }
 
-function formatSourceRecord(
-	value: Record<string, unknown>,
-	bondLevel?: number
-) {
+function formatSourceRecord(value: Record<string, unknown>) {
 	if (value['self'] === true) {
 		return '初始拥有';
 	}
 	if ('bond' in value) {
-		const bond = formatBondSource(value['bond'], bondLevel);
+		const bond = formatBondSource(value['bond']);
 		if (bond.length === 0) {
 			return '';
 		}
@@ -579,10 +583,13 @@ function formatSourceRecord(
 			? `通过联动终端【${COLLABORATION_LABEL_MAP[label as keyof typeof COLLABORATION_LABEL_MAP]}】选项领取`
 			: '';
 	}
-	if ('taskReward' in value && checkIsRecord(value['taskReward'])) {
-		const label = value['taskReward']['task'];
+	if ('taskReward' in value) {
+		const { taskReward } = value;
+		const label = checkIsRecord(taskReward)
+			? taskReward['task']
+			: taskReward;
 		return typeof label === 'string' && label in SCHEDULER_FACTS
-			? `完成“${formatSchedulerLabels(label as keyof typeof SCHEDULER_FACTS)}”任务后自动获得`
+			? `任务${formatTaskLabel(formatSchedulerLabels(label as keyof typeof SCHEDULER_FACTS))}`
 			: '';
 	}
 	if ('completion' in value && checkIsRecord(value['completion'])) {
@@ -604,16 +611,16 @@ function formatSourceRecord(
 	}
 	if ('mapMainTask' in value && checkIsRecord(value['mapMainTask'])) {
 		const map = getMapDisplayLabel(value['mapMainTask']['map']);
-		return map === null ? '' : `任务：${map}`;
+		return map === null ? '' : `完成地区【${map}】主线任务`;
 	}
 	if (
 		'allMapSpecialGuestBondsMaxed' in value &&
 		checkIsRecord(value['allMapSpecialGuestBondsMaxed'])
 	) {
-		return (
-			getMapDisplayLabel(value['allMapSpecialGuestBondsMaxed']['map']) ??
-			''
+		const map = getMapDisplayLabel(
+			value['allMapSpecialGuestBondsMaxed']['map']
 		);
+		return map === null ? '' : `地区【${map}】全部稀客羁绊满级`;
 	}
 	if (
 		'unlockedMapDialogue' in value &&
@@ -650,7 +657,7 @@ function formatSourceRecord(
 	}
 	if ('mapSideTask' in value && checkIsRecord(value['mapSideTask'])) {
 		const map = getMapDisplayLabel(value['mapSideTask']['map']);
-		return map === null ? '' : `任务：${map}`;
+		return map === null ? '' : `地区【${map}】支线任务`;
 	}
 	if ('mapPrayer' in value && checkIsRecord(value['mapPrayer'])) {
 		const source = value['mapPrayer'];
@@ -678,13 +685,13 @@ function formatSourceValue(value: unknown): string[] {
 		return primitive;
 	}
 	if (Array.isArray(value)) {
-		return value
+		const sourceTexts = value
 			.map((item) =>
-				checkIsRecord(item)
-					? formatSourceRecord(item, 'bond' in item ? 0 : undefined)
-					: ''
+				checkIsRecord(item) ? formatSourceRecord(item) : ''
 			)
 			.filter(Boolean);
+
+		return sourceTexts.length === 0 ? [] : [sourceTexts.join('、')];
 	}
 	if (!checkIsRecord(value)) {
 		return [];
@@ -724,7 +731,7 @@ function formatSourceValue(value: unknown): string[] {
 		.filter(Boolean);
 
 	return sourceParts.length > 0
-		? sourceParts
+		? [sourceParts.join('；')]
 		: [formatSourceRecord(value)].filter(Boolean);
 }
 

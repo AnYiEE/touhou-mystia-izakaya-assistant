@@ -2,6 +2,7 @@ import type { TCookerTypeId } from '@/domain/data/cookers/types';
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TCollaborationLabel } from '@/domain/data/labels/collaborationFacts';
+import type { TSchedulerLabel } from '@/domain/data/labels/schedulerFacts';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TMapLabel, TMerchantReference } from '@/domain/data/places/types';
 import type { IFoodBase } from '@/domain/data/shared/foodSchema';
@@ -42,8 +43,8 @@ interface IFoodCollaborationSource {
 
 type TFoodFrom =
 	| { self: true }
+	| TFoodAreaTaskSource
 	| { bond: { level: number; specialGuest: TSpecialGuestId } }
-	| { levelup: { level: number; map: TMapLabel | null } }
 	| {
 			buy: {
 				merchant: TMerchantReference;
@@ -53,7 +54,6 @@ type TFoodFrom =
 					| null;
 			};
 	  }
-	| TFoodAreaTaskSource
 	| IFoodCollaborationSource
 	| {
 			failedCooking: {
@@ -63,7 +63,9 @@ type TFoodFrom =
 					TSpecialGuestId,
 				];
 			};
-	  };
+	  }
+	| { levelup: { level: number; map: TMapLabel | null } }
+	| { taskReward: { task: TSchedulerLabel } };
 
 export interface IFoodSchema extends Omit<IFoodBase, 'from'> {
 	from: TFoodFrom;

@@ -8,6 +8,10 @@ import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog'
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
 import type { IFood } from '@/domain/data/foods/schema';
 import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
+import {
+	formatSchedulerLabels,
+	formatTaskLabel,
+} from '@/domain/data/labels/schedulerFacts';
 import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 
 import { formatSourceReference } from '@/features/catalog/items/shared/sourceReferenceFormatting';
@@ -74,6 +78,13 @@ export default function FoodSourceDetails({ from, openWindow }: IProps) {
 
 	if ('self' in from) {
 		details = '初始拥有';
+	} else if ('areaTask' in from) {
+		const { areaTask } = from;
+		const specialGuestSuffix =
+			'specialGuest' in areaTask
+				? `（${specialGuestCatalog.getPropsById(areaTask.specialGuest, 'name')}）`
+				: '';
+		details = `地区【${MAP_FACTS[areaTask.map].label}】${areaTask.task}${specialGuestSuffix}`;
 	} else if ('bond' in from) {
 		const { level, specialGuest } = from.bond;
 		const specialGuestName = specialGuestCatalog.getPropsById(
@@ -118,6 +129,18 @@ export default function FoodSourceDetails({ from, openWindow }: IProps) {
 				{isNoPrice ? null : '）'}
 			</>
 		);
+	} else if ('collaboration' in from) {
+		const collaborationLabel =
+			COLLABORATION_LABEL_MAP[from.collaboration.collaborationLabel];
+		details = from.collaboration.merchants
+			.map(({ merchant, platformLabel }, index) => {
+				const merchantName =
+					index === 0 && 'map' in merchant
+						? `【${MAP_FACTS[merchant.map].label}“${collaborationLabel}”联动】${formatSourceReference(merchant).replace(/^【[^】]+】/u, '')}`
+						: formatSourceReference(merchant);
+				return `${merchantName}（${platformLabel}）`;
+			})
+			.join('、');
 	} else if ('levelup' in from) {
 		const { level, map } = from.levelup;
 		details = (
@@ -133,25 +156,8 @@ export default function FoodSourceDetails({ from, openWindow }: IProps) {
 				)}
 			</>
 		);
-	} else if ('areaTask' in from) {
-		const { areaTask } = from;
-		const specialGuestSuffix =
-			'specialGuest' in areaTask
-				? `（${specialGuestCatalog.getPropsById(areaTask.specialGuest, 'name')}）`
-				: '';
-		details = `地区【${MAP_FACTS[areaTask.map].label}】${areaTask.task}${specialGuestSuffix}`;
-	} else if ('collaboration' in from) {
-		const collaborationLabel =
-			COLLABORATION_LABEL_MAP[from.collaboration.collaborationLabel];
-		details = from.collaboration.merchants
-			.map(({ merchant, platformLabel }, index) => {
-				const merchantName =
-					index === 0 && 'map' in merchant
-						? `【${MAP_FACTS[merchant.map].label}“${collaborationLabel}”联动】${formatSourceReference(merchant).replace(/^【[^】]+】/u, '')}`
-						: formatSourceReference(merchant);
-				return `${merchantName}（${platformLabel}）`;
-			})
-			.join('、');
+	} else if ('taskReward' in from) {
+		details = `任务${formatTaskLabel(formatSchedulerLabels(from.taskReward.task))}`;
 	} else {
 		details = [
 			...from.failedCooking.causeLabels,

@@ -10,6 +10,30 @@ interface ISchedulerFact {
 }
 
 export const SCHEDULER_FACTS = {
+	_ResourceExample_Kizuna_Flandre_LV1_Upgrade_002_Mission: {
+		dlc: 9,
+		label: '藉由他人的自我证明',
+	},
+	_ResourceExample_Side_ScarletContract_ThrivingProspect_Mission: {
+		dlc: 9,
+		label: '【绯红契约·向阳】',
+	},
+	'_ResourceExample_Side_ScarletContract_Tri-horor_001_Mission': {
+		dlc: 9,
+		label: '【绯红契约·三重恐怖】',
+	},
+	'_ResourceExample_Side_ScarletContract_Tri-horor_Chen_002_Mission': {
+		dlc: 9,
+		label: '半行思绪和半段时光',
+	},
+	'_ResourceExample_Side_ScarletContract_Tri-horor_Mokou_002_Mission': {
+		dlc: 9,
+		label: '翠绿竹影与亘古明月',
+	},
+	'_ResourceExample_Side_ScarletContract_Tri-horor_Yuuka_003_Mission': {
+		dlc: 9,
+		label: '浮生五味与柳暗花明',
+	},
 	'10ThousandSalesCelebration-Event': { dlc: 0, label: '万份纪念奖励' },
 	DLC2_Kizuna_Orin_LV4_Upgrade_Event: {
 		dlc: 2,
@@ -68,7 +92,6 @@ export const SCHEDULER_FACTS = {
 		dlc: 0,
 		label: '平行世界的访客',
 	},
-	'Main_4_ScarletMansion_014-Mission_002': { dlc: 0, label: '红魔馆主线' },
 	Main_4_ScarletMansion_Loop_Mission_A: { dlc: 0, label: '女仆长的采购委托' },
 	Main_4_ScarletMansion_Loop_Mission_B: { dlc: 0, label: '女仆长的采购委托' },
 	Main_4_ScarletMansion_Loop_Mission_C: { dlc: 0, label: '女仆长的采购委托' },
@@ -80,6 +103,12 @@ export const SCHEDULER_FACTS = {
 } as const satisfies Record<string, ISchedulerFact>;
 
 export type TSchedulerLabel = keyof typeof SCHEDULER_FACTS;
+
+export function formatTaskLabel(label: string) {
+	return label.startsWith('【') && label.endsWith('】')
+		? label
+		: `【${label}】`;
+}
 
 export function formatSchedulerLabels(
 	labels: TSchedulerLabel | ReadonlyArray<TSchedulerLabel>
