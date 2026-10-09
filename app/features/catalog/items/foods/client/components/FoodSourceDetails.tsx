@@ -16,6 +16,7 @@ import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 
 import { formatSourceReference } from '@/features/catalog/items/shared/sourceReferenceFormatting';
 import Price from '@/features/catalog/shared/client/components/Price';
+import SpecialGuestBondReference from '@/features/catalog/shared/client/components/SpecialGuestBondReference';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import {
 	type TItemRoutePath,
@@ -87,26 +88,11 @@ export default function FoodSourceDetails({ from, openWindow }: IProps) {
 		details = `地区【${MAP_FACTS[areaTask.map].label}】${areaTask.task}${specialGuestSuffix}`;
 	} else if ('bond' in from) {
 		const { level, specialGuest } = from.bond;
-		const specialGuestName = specialGuestCatalog.getPropsById(
-			specialGuest,
-			'name'
-		);
 		details = (
-			<>
-				<span className="mr-1 inline-flex items-center">
-					【
-					<Sprite
-						target="special_guest"
-						recordId={specialGuest}
-						size={1.25}
-						className="mx-0.5 rounded-full"
-					/>
-					{specialGuestName}】羁绊
-				</span>
-				Lv.{level - 1}
-				<span className="mx-0.5">➞</span>
-				Lv.{level}
-			</>
+			<SpecialGuestBondReference
+				level={level}
+				specialGuest={specialGuest}
+			/>
 		);
 	} else if ('buy' in from) {
 		const { merchant, price } = from.buy;

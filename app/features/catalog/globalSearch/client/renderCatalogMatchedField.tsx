@@ -2,7 +2,6 @@ import { cn } from '@heroui/theme';
 import isObject from 'lodash/isObject.js';
 
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
-import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
@@ -19,6 +18,7 @@ import {
 	FOOD_TAG_STYLE,
 	INGREDIENT_TAG_STYLE,
 } from '@/features/catalog/presentation/tagStyles';
+import SpecialGuestBondReference from '@/features/catalog/shared/client/components/SpecialGuestBondReference';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import TagsComponent from '@/features/catalog/shared/client/components/Tags';
 import type {
@@ -252,31 +252,15 @@ function renderMatchedFieldSourceContent(match: IGlobalSearchMatchedField) {
 		}
 
 		const { specialGuest } = bond;
-		const name = SpecialGuestCatalog.getInstance().getPropsById(
-			specialGuest as TSpecialGuestId,
-			'name'
-		);
 		const level = typeof bond['level'] === 'number' ? bond['level'] : null;
 
 		return (
 			<span className="inline-flex min-h-6 max-w-full flex-wrap items-center">
-				<span className="mr-1 inline-flex items-center">
-					【
-					<Sprite
-						target="special_guest"
-						recordId={specialGuest as TSpecialGuestId}
-						size={1.15}
-						className="mx-0.5 rounded-full"
-					/>
-					{name}】羁绊
-				</span>
-				{level !== null && (
-					<>
-						<span>Lv.{(level - 1).toString()}</span>
-						<span className="mx-0.5">➞</span>
-						<span>Lv.{level.toString()}</span>
-					</>
-				)}
+				<SpecialGuestBondReference
+					level={level ?? undefined}
+					size={1.15}
+					specialGuest={specialGuest as TSpecialGuestId}
+				/>
 			</span>
 		);
 	}

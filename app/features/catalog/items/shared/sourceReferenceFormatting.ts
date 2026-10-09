@@ -20,7 +20,7 @@ import type {
 	TMerchantReference,
 } from '@/domain/data/places/types';
 
-type TSourceReference =
+export type TSourceReference =
 	| ITaskReference
 	| IPrayerReference
 	| TCollectionPointReference

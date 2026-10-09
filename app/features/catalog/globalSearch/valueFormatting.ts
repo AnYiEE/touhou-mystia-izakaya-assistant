@@ -10,8 +10,10 @@ import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts
 import { PRAYER_LABEL_MAP } from '@/domain/data/labels/prayerFacts';
 import {
 	SCHEDULER_FACTS,
+	type TSchedulerLabel,
 	formatSchedulerLabels,
 	formatTaskLabel,
+	getSchedulerSpecialGuestBonds,
 } from '@/domain/data/labels/schedulerFacts';
 import { SPEED_LABEL_MAP } from '@/domain/data/partners/speedFacts';
 import { COLLECTION_POINT_REFRESH_FACTS } from '@/domain/data/places/collectionFacts';
@@ -118,6 +120,37 @@ function getCurrencyItemName(value: unknown) {
 	return typeof value === 'number'
 		? CurrencyItemCatalog.getInstance().getPropsById(value as never, 'name')
 		: null;
+}
+
+function getTaskSchedulerLabels(
+	value: unknown
+): ReadonlyArray<TSchedulerLabel> | null {
+	const items = Array.isArray(value) ? value : [value];
+	const labels: TSchedulerLabel[] = [];
+
+	for (const item of items) {
+		if (!checkIsRecord(item)) {
+			return null;
+		}
+		const { task } = item;
+		if (typeof task === 'string') {
+			if (!(task in SCHEDULER_FACTS)) {
+				return null;
+			}
+			labels.push(task as TSchedulerLabel);
+		} else if (Array.isArray(task)) {
+			for (const label of task) {
+				if (typeof label !== 'string' || !(label in SCHEDULER_FACTS)) {
+					return null;
+				}
+				labels.push(label as TSchedulerLabel);
+			}
+		} else {
+			return null;
+		}
+	}
+
+	return labels.length === 0 ? null : labels;
 }
 
 function formatMerchantReference(value: unknown) {
@@ -328,6 +361,24 @@ function formatFoodSourceMethod(method: TFoodSourceMethodKey, value: unknown) {
 		task: '任务',
 	} as const;
 	const probabilityLabel = method === 'buy' ? '概率出售' : '概率掉落';
+
+	if (method === 'task') {
+		const taskLabels = getTaskSchedulerLabels(value);
+		const bonds =
+			taskLabels === null
+				? null
+				: getSchedulerSpecialGuestBonds(taskLabels);
+		if (bonds !== null) {
+			return [
+				bonds
+					.map(
+						({ level, specialGuest }) =>
+							`【${getSpecialGuestName(specialGuest) ?? ''}】羁绊Lv.${level - 1}➞Lv.${level}`
+					)
+					.join('、'),
+			];
+		}
+	}
 
 	const formatReference =
 		method === 'buy'

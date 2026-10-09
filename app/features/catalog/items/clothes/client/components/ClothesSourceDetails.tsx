@@ -3,7 +3,6 @@ import { Fragment } from 'react';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import { formatMerchantReference } from '@/domain/availability/sourceResolvers';
-import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import type { IClothes, TClothesSource } from '@/domain/data/clothes/schema';
 import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
@@ -13,6 +12,7 @@ import {
 } from '@/domain/data/labels/schedulerFacts';
 
 import Price from '@/features/catalog/shared/client/components/Price';
+import SpecialGuestBondReference from '@/features/catalog/shared/client/components/SpecialGuestBondReference';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import {
 	type TItemRoutePath,
@@ -41,26 +41,11 @@ function renderClothesSource(
 
 	if ('bond' in item) {
 		const { level, specialGuest } = item.bond;
-		const specialGuestName = SpecialGuestCatalog.getInstance().getPropsById(
-			specialGuest,
-			'name'
-		);
 		return (
-			<>
-				<span className="mr-1 inline-flex items-center">
-					【
-					<Sprite
-						target="special_guest"
-						recordId={specialGuest}
-						size={1.25}
-						className="mx-0.5 rounded-full"
-					/>
-					{specialGuestName}】羁绊
-				</span>
-				Lv.{level - 1}
-				<span className="mx-0.5">➞</span>
-				Lv.{level}
-			</>
+			<SpecialGuestBondReference
+				level={level}
+				specialGuest={specialGuest}
+			/>
 		);
 	}
 

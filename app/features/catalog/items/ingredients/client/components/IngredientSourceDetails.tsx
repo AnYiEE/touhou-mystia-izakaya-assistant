@@ -16,6 +16,7 @@ import type {
 	TCollectionPointReference,
 } from '@/domain/data/places/types';
 
+import { renderSourceReference } from '@/features/catalog/items/shared/client/renderSourceReference';
 import {
 	formatCollectionPointYield,
 	formatPrayerYield,
@@ -225,7 +226,7 @@ export default function IngredientSourceDetails({ from, id }: IProps) {
 													</Popover>
 												);
 											})()
-										: formatSourceReference(item)}
+										: renderSourceReference(item)}
 								</Ol.Li>
 							))}
 						</Ol>

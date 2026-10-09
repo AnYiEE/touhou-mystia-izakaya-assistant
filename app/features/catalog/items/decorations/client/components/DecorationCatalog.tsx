@@ -18,6 +18,7 @@ import {
 	ItemPopoverTrigger,
 } from '@/features/catalog/shared/client/components/ItemPopover';
 import ItemPopoverCard from '@/features/catalog/shared/client/components/ItemPopoverCard';
+import SpecialGuestBondReference from '@/features/catalog/shared/client/components/SpecialGuestBondReference';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import { useItemPopoverState } from '@/features/catalog/shared/client/hooks/useItemPopoverState';
 import { useOpenedItemPopover } from '@/features/catalog/shared/client/hooks/useOpenedItemPopover';
@@ -38,10 +39,6 @@ function DecorationSource({
 }) {
 	if ('bond' in from) {
 		const { level, specialGuest } = from.bond;
-		const specialGuestName = specialGuestCatalog.getPropsById(
-			specialGuest,
-			'name'
-		);
 		const taskFact =
 			'task' in from
 				? SCHEDULER_FACTS[from.task.startEventLabel]
@@ -49,18 +46,10 @@ function DecorationSource({
 
 		return (
 			<>
-				<span className="mr-1 inline-flex items-center">
-					【
-					<Sprite
-						target="special_guest"
-						recordId={specialGuest}
-						size={1.25}
-						className="mx-0.5 rounded-full"
-					/>
-					{specialGuestName}】羁绊
-				</span>
-				Lv.{level - 1}
-				<span className="mx-0.5">➞</span>Lv.{level}
+				<SpecialGuestBondReference
+					level={level}
+					specialGuest={specialGuest}
+				/>
 				{'task' in from && (
 					<>
 						，并完成任务【

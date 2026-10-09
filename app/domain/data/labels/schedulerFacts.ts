@@ -14,6 +14,16 @@ export const SCHEDULER_FACTS = {
 		dlc: 9,
 		label: '藉由他人的自我证明',
 	},
+	_ResourceExample_Kizuna_Mai_LV4_Upgrade_001_Event: {
+		dlc: 9,
+		label: '羁绊升级',
+		specialGuestBond: { level: 5, specialGuest: 11001 },
+	},
+	_ResourceExample_Kizuna_Yuki_LV4_Upgrade_001_Event: {
+		dlc: 9,
+		label: '羁绊升级',
+		specialGuestBond: { level: 5, specialGuest: 11000 },
+	},
 	_ResourceExample_Side_ScarletContract_ThrivingProspect_Mission: {
 		dlc: 9,
 		label: '【绯红契约·向阳】',
@@ -103,6 +113,32 @@ export const SCHEDULER_FACTS = {
 } as const satisfies Record<string, ISchedulerFact>;
 
 export type TSchedulerLabel = keyof typeof SCHEDULER_FACTS;
+
+export type TSpecialGuestBond = NonNullable<ISchedulerFact['specialGuestBond']>;
+
+/** 当所有标签都是稀客羁绊升级事件时返回各自的羁绊信息，否则返回 null。 */
+export function getSchedulerSpecialGuestBonds(
+	labels: TSchedulerLabel | ReadonlyArray<TSchedulerLabel>
+): ReadonlyArray<TSpecialGuestBond> | null {
+	const values: ReadonlyArray<TSchedulerLabel> =
+		typeof labels === 'string'
+			? [labels]
+			: [...new Set<TSchedulerLabel>(labels)];
+	if (values.length === 0) {
+		return null;
+	}
+
+	const bonds: TSpecialGuestBond[] = [];
+	for (const label of values) {
+		const fact = SCHEDULER_FACTS[label];
+		if (!('specialGuestBond' in fact)) {
+			return null;
+		}
+		bonds.push(fact.specialGuestBond);
+	}
+
+	return bonds;
+}
 
 export function formatTaskLabel(label: string) {
 	return label.startsWith('【') && label.endsWith('】')

@@ -14,6 +14,7 @@ import {
 import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 
 import Price from '@/features/catalog/shared/client/components/Price';
+import SpecialGuestBondReference from '@/features/catalog/shared/client/components/SpecialGuestBondReference';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import type {
 	TItemRoutePath,
@@ -113,11 +114,10 @@ function GeneralItemSource({
 		if ('specialGuestBond' in fact) {
 			const { level, specialGuest } = fact.specialGuestBond;
 			return (
-				<>
-					{renderSpecialGuest(specialGuest)}羁绊Lv.{level - 1}
-					<span className="mx-0.5">➞</span>
-					Lv.{level}
-				</>
+				<SpecialGuestBondReference
+					level={level}
+					specialGuest={specialGuest}
+				/>
 			);
 		}
 		return formatSchedulerLabels(source.schedulerLabel);

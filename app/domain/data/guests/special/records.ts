@@ -3485,7 +3485,16 @@ export const SPECIAL_GUEST_LIST = [
 			'其实我还挺同情芙兰朵露小姐的。她的力量似乎成为了一份不可能挣脱的束缚，即使包括蕾米莉亚小姐在内的所有人的本意都是好的，可惜这不是一个能被“爱”或者“友善”改变的命题。不过，就这段时间的相处而言，“伙伴”似乎可以是答案之一哦？至于证明，就交给时间吧。',
 		],
 		dlc: 9,
-		maps: ['HakureiShrine'],
+		maps: [
+			'HakureiShrine',
+			'BeastForest',
+			'HumanVillage',
+			'ScarletMansion',
+			'BambooForest',
+			'DLC1_MagicForest',
+			'DLC1_YoukaiMountain',
+			'DLC4_GardenOfTheSun',
+		],
 		price: [2500, 3200],
 		enduranceLimit: 1.4,
 		positiveTags: [18, 19, 20, 22, 24, 27, 34],
@@ -3676,7 +3685,22 @@ export const SPECIAL_GUEST_LIST = [
 			repell: '我可是丰收之神！你不能这样对我！',
 			seenRepell: '好可怕……我还是回家吃烤红薯吧……',
 		},
-		spellCards: {},
+		spellCards: {
+			positive: [
+				{
+					name: '丰符「大年收获者」',
+					description:
+						'展开「丰穣结界」，持续20s。期间新制作的料理附加「饱腹」标签，原本带有「饱腹」标签的料理立即完成；「清酒」标签的酒水数量变为无限。',
+				},
+			],
+			negative: [
+				{
+					name: '秋符「无常秋日与少女之心」',
+					description:
+						'让当前场上的顾客感到饱腹，最大点单数减少1次。立即结束正在持续的「丰穣结界」。',
+				},
+			],
+		},
 		beverageTagMapping: { 0: '粮食酿造的米酒' },
 		positiveTagMapping: { [-2]: '价格高昂' },
 		collection: false,
@@ -3813,14 +3837,14 @@ export const SPECIAL_GUEST_LIST = [
 		spellCards: {
 			positive: [
 				{
-					name: '舞符「冰晶特调」',
+					name: '冰符「冰晶特调」',
 					description:
 						'接下来30秒，持续使用冰系魔法制作饮料，为在场普通订单提供对应的酒水',
 				},
 			],
 			negative: [
 				{
-					name: '舞符「冰封酒宴」',
+					name: '霜符「冰川急冻」',
 					description:
 						'接下来30秒，所有顾客的点单料理必须额外包含「凉爽」tag，否则评价至多为「普通」',
 				},
