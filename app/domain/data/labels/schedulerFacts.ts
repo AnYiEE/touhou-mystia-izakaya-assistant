@@ -14,6 +14,16 @@ export const SCHEDULER_FACTS = {
 		dlc: 9,
 		label: '藉由他人的自我证明',
 	},
+	_ResourceExample_Kizuna_Mai_LV4_Upgrade_001_Event: {
+		dlc: 9,
+		label: '舞羁绊Lv.4➞Lv.5',
+		specialGuestBond: { level: 5, specialGuest: 11001 },
+	},
+	_ResourceExample_Kizuna_Yuki_LV4_Upgrade_001_Event: {
+		dlc: 9,
+		label: '雪羁绊Lv.4➞Lv.5',
+		specialGuestBond: { level: 5, specialGuest: 11000 },
+	},
 	_ResourceExample_Side_ScarletContract_ThrivingProspect_Mission: {
 		dlc: 9,
 		label: '【绯红契约·向阳】',

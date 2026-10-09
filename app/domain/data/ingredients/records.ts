@@ -2423,7 +2423,12 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 4,
 		price: 96,
-		from: { buy: [[{ specialGuest: 11000, map: 'HumanVillage' }, 60]] },
+		from: {
+			buy: [[{ specialGuest: 11000, map: 'HumanVillage' }, 60]],
+			task: [
+				{ task: '_ResourceExample_Kizuna_Yuki_LV4_Upgrade_001_Event' },
+			],
+		},
 	},
 	{
 		id: 11001,
@@ -2504,6 +2509,11 @@ export const INGREDIENT_LIST = [
 		dlc: 9,
 		level: 2,
 		price: 15,
-		from: { buy: [[{ specialGuest: 11001, map: 'HumanVillage' }, 90]] },
+		from: {
+			buy: [[{ specialGuest: 11001, map: 'HumanVillage' }, 90]],
+			task: [
+				{ task: '_ResourceExample_Kizuna_Mai_LV4_Upgrade_001_Event' },
+			],
+		},
 	},
 ] as const satisfies IIngredient[];
