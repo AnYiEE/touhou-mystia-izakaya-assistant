@@ -8,11 +8,9 @@ import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
 import type { TCookerTypeId } from '@/domain/data/cookers/types';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
-import {
-	DYNAMIC_FOOD_TAG_MAP,
-	FOOD_TAG_MAP,
-} from '@/domain/data/tags/tagFacts';
+import { DYNAMIC_FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TFoodTagId } from '@/domain/data/tags/types';
+import { compareMapLabelText } from '@/domain/places/localizedLabels';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import {
@@ -25,6 +23,8 @@ import {
 	toAllowedValueSet,
 } from '@/features/catalog/shared/state/catalogPersistenceShape';
 import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
+import { registerCatalogLocalizationRevisionMirror } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
+import { compareFoodTagLabels } from '@/features/catalog/shared/client/localization/tagLabels';
 import { PINYIN_SORT_STATE_MAP } from '@/features/catalog/shared/state/pinyinSort';
 
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
@@ -143,6 +143,7 @@ const state = {
 
 	persistence: foodsPersistenceShape.createDefault(),
 	shared: {
+		catalogLocalizationRevision: 0,
 		hiddenItems: { dlcs: new Set<TDlc>() },
 
 		famousShop: false,
@@ -222,7 +223,7 @@ export const foodsStore = store(state, {
 			),
 		]
 			.map((value) => ({
-				name: ingredientCatalog.getPropsById(value, 'name'),
+				name: ingredientCatalog.getDisplayPropsById(value, 'name'),
 				recordId: value,
 				value,
 			}))
@@ -241,7 +242,10 @@ export const foodsStore = store(state, {
 	availableNames: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		return sortBy(
-			getNames(currentStore.persistence.pinyinSortState.use()),
+			getNames(
+				currentStore.shared.catalogLocalizationRevision.use(),
+				currentStore.persistence.pinyinSortState.use()
+			),
 			instance.getValuesByProp(
 				'name',
 				false,
@@ -250,6 +254,7 @@ export const foodsStore = store(state, {
 		).map(toGetValueCollection);
 	},
 	availableNegativeTags: () => {
+		currentStore.shared.catalogLocalizationRevision.use();
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		return instance
 			.getValuesByProp(
@@ -257,10 +262,11 @@ export const foodsStore = store(state, {
 				false,
 				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
-			.sort((a, b) => pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b]))
+			.sort(compareFoodTagLabels)
 			.map(toGetValueCollection);
 	},
 	availablePositiveTags: () => {
+		currentStore.shared.catalogLocalizationRevision.use();
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		const tags: TFoodTagId[] = [
 			...instance.getValuesByProp(
@@ -273,10 +279,11 @@ export const foodsStore = store(state, {
 		];
 
 		return tags
-			.sort((a, b) => pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b]))
+			.sort(compareFoodTagLabels)
 			.map((value): ValueCollection<TFoodTagId> => ({ value }));
 	},
 	availableSources: () => {
+		currentStore.shared.catalogLocalizationRevision.use();
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		const visibleFoods = filterAvailableItemsByHiddenDlcs(
 			instance.data,
@@ -295,7 +302,7 @@ export const foodsStore = store(state, {
 
 		return [...sources]
 			.map((value) => ({ name: getFoodSourceFilterLabel(value), value }))
-			.sort((a, b) => pinyinSort(a.name, b.name));
+			.sort((a, b) => compareMapLabelText(a.name, b.name));
 	},
 }));
 
@@ -303,4 +310,8 @@ foodsStore.shared.hiddenItems.dlcs.onChange(() => {
 	foodsStore.persistence.filters.set(
 		foodsPersistenceShape.createDefault().filters
 	);
+});
+
+registerCatalogLocalizationRevisionMirror((revision) => {
+	foodsStore.shared.catalogLocalizationRevision.set(revision);
 });

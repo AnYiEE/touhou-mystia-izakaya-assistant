@@ -8,8 +8,10 @@ import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 
 import { withCrossTabLock } from '@/infrastructure/browser/crossTab/withCrossTabLock';
 
+import { useCurrentLocale } from '@/shared/i18n/useI18n';
 import { useHydrated } from '@/shared/react/useHydrated';
 
+import { DONATION_MODAL_LOCALES } from './locales';
 import {
 	checkDonationModalRequestValid,
 	getCurrentDonationMilestone,
@@ -39,7 +41,9 @@ function delayDonationModalLockVerify() {
 export function useDonationModalTrigger() {
 	const isMounted = useHydrated();
 	const { pathname } = usePathname();
+	const locale = useCurrentLocale();
 	const ownershipControllerRef = useRef<AbortController | null>(null);
+	const isLocaleAllowed = DONATION_MODAL_LOCALES.includes(locale);
 
 	const isOpen = donationModalStore.isOpen.use();
 	const interactionCount = useTrackedInteractionCount();
@@ -72,6 +76,7 @@ export function useDonationModalTrigger() {
 		if (
 			isOpen ||
 			!isMounted ||
+			!isLocaleAllowed ||
 			!isRequestValid ||
 			ownershipController === null
 		) {
@@ -122,5 +127,12 @@ export function useDonationModalTrigger() {
 		return () => {
 			isEffectActive = false;
 		};
-	}, [interactionCount, isMounted, isOpen, isRequestValid, pathname]);
+	}, [
+		interactionCount,
+		isLocaleAllowed,
+		isMounted,
+		isOpen,
+		isRequestValid,
+		pathname,
+	]);
 }

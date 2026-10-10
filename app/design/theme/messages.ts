@@ -1,0 +1,92 @@
+import type { TLocalizedMessageTable } from '../../shared/i18n/messages';
+import type { TDarkPalette, TLightPalette } from './runtime/types';
+
+const THEME_MESSAGES_ZH_CN = {
+	'palette.black': '深邃黑',
+	'palette.green': '清新绿',
+	'palette.izakaya': '雀食堂',
+	'palette.pink': '少女粉',
+	'palette.white': '简约白',
+	'theme.dark': '深色主题',
+	'theme.light': '浅色主题',
+	'theme.list': '可选主题列表',
+	'theme.short.dark': '深色',
+	'theme.short.light': '浅色',
+	'theme.short.system': '跟随系统',
+	'theme.switcher': '切换主题',
+	'theme.system': '跟随系统',
+} as const;
+
+export type TThemeMessageKey = keyof typeof THEME_MESSAGES_ZH_CN;
+
+export const themeMessages = {
+	en: {
+		'palette.black': 'Deep Black',
+		'palette.green': 'Fresh Green',
+		'palette.izakaya': 'Izakaya',
+		'palette.pink': 'Sakura Pink',
+		'palette.white': 'Minimal White',
+		'theme.dark': 'Dark theme',
+		'theme.light': 'Light theme',
+		'theme.list': 'Theme options',
+		'theme.short.dark': 'Dark',
+		'theme.short.light': 'Light',
+		'theme.short.system': 'System',
+		'theme.switcher': 'Switch theme',
+		'theme.system': 'System',
+	},
+	ja: {
+		'palette.black': 'ディープブラック',
+		'palette.green': 'フレッシュグリーン',
+		'palette.izakaya': '雀食堂',
+		'palette.pink': '乙女ピンク',
+		'palette.white': 'シンプルホワイト',
+		'theme.dark': 'ダークテーマ',
+		'theme.light': 'ライトテーマ',
+		'theme.list': '選択可能なテーマ',
+		'theme.short.dark': 'ダーク',
+		'theme.short.light': 'ライト',
+		'theme.short.system': 'システム',
+		'theme.switcher': 'テーマを切り替え',
+		'theme.system': 'システム',
+	},
+	ko: {
+		'palette.black': '딥 블랙',
+		'palette.green': '프레시 그린',
+		'palette.izakaya': '참새 식당',
+		'palette.pink': '소녀 핑크',
+		'palette.white': '미니멀 화이트',
+		'theme.dark': '다크 테마',
+		'theme.light': '라이트 테마',
+		'theme.list': '선택 가능한 테마',
+		'theme.short.dark': '다크',
+		'theme.short.light': '라이트',
+		'theme.short.system': '시스템',
+		'theme.switcher': '테마 전환',
+		'theme.system': '시스템',
+	},
+	'zh-CN': THEME_MESSAGES_ZH_CN,
+	'zh-TW': {
+		'palette.black': '深邃黑',
+		'palette.green': '清新綠',
+		'palette.izakaya': '雀食堂',
+		'palette.pink': '少女粉',
+		'palette.white': '簡約白',
+		'theme.dark': '深色主題',
+		'theme.light': '淺色主題',
+		'theme.list': '可選主題列表',
+		'theme.short.dark': '深色',
+		'theme.short.light': '淺色',
+		'theme.short.system': '跟隨系統',
+		'theme.switcher': '切換主題',
+		'theme.system': '跟隨系統',
+	},
+} as const satisfies TLocalizedMessageTable<keyof typeof THEME_MESSAGES_ZH_CN>;
+
+export const PALETTE_MESSAGE_KEYS = {
+	black: 'palette.black',
+	green: 'palette.green',
+	izakaya: 'palette.izakaya',
+	pink: 'palette.pink',
+	white: 'palette.white',
+} as const satisfies Record<TDarkPalette | TLightPalette, TThemeMessageKey>;

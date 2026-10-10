@@ -7,7 +7,9 @@ import Loading from '@/design/ui/components/loading';
 import Placeholder from '@/design/ui/components/placeholder';
 
 import { useSkipProcessItemData } from '@/features/catalog/shared/client/hooks/useSkipProcessItemData';
+import { catalogSharedMessages } from '@/features/catalog/shared/client/messages';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { useHydrated } from '@/shared/react/useHydrated';
 
 interface IProps {
@@ -22,6 +24,7 @@ export default memo<PropsWithChildren<IProps>>(function ItemPage({
 }) {
 	const isMounted = useHydrated();
 	const shouldSkipProcessData = useSkipProcessItemData();
+	const { t } = useI18n(catalogSharedMessages);
 
 	if (!isMounted) {
 		return <Loading />;
@@ -37,7 +40,11 @@ export default memo<PropsWithChildren<IProps>>(function ItemPage({
 			)}
 		>
 			{!shouldSkipProcessData && sideButton}
-			{isEmpty ? <Placeholder>数据为空</Placeholder> : children}
+			{isEmpty ? (
+				<Placeholder>{t('catalog.itemPage.empty')}</Placeholder>
+			) : (
+				children
+			)}
 		</div>
 	);
 });

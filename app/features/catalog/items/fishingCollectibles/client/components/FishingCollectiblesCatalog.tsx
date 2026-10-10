@@ -1,15 +1,20 @@
-import { DLC_LABEL_MAP } from '@/domain/availability/messages';
+import { getDlcLabel } from '@/domain/availability/localizedLabels';
 import type { FishingCollectibleCatalog } from '@/domain/catalog/items/FishingCollectibleCatalog';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+import { getMapLabel } from '@/domain/places/localizedLabels';
 
 import CollectibleCatalog from '@/features/catalog/items/collectibles/client/components/CollectibleCatalog';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import type { TItemData } from '@/features/catalog/shared/contracts';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 export default function FishingCollectiblesCatalog({
 	data,
 }: {
 	data: TItemData<FishingCollectibleCatalog>;
 }) {
+	const { t } = useI18n(catalogItemsMessages);
+
 	return (
 		<CollectibleCatalog
 			data={data}
@@ -18,12 +23,16 @@ export default function FishingCollectiblesCatalog({
 			summaryDetails={({ map, requiredContentDlc }) => (
 				<>
 					<p className="whitespace-nowrap">
-						<span className="font-semibold">垂钓地区：</span>
-						{MAP_FACTS[map].label}
+						<span className="font-semibold">
+							{t('items.source.fishingArea')}
+						</span>
+						{getMapLabel(map)}
 					</p>
 					<p className="whitespace-nowrap">
-						<span className="font-semibold">所需内容：</span>
-						{DLC_LABEL_MAP[requiredContentDlc].label}
+						<span className="font-semibold">
+							{t('items.source.requiredContent')}
+						</span>
+						{getDlcLabel(requiredContentDlc)}
 					</p>
 				</>
 			)}

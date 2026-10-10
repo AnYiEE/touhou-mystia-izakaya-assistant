@@ -11,10 +11,14 @@ import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import { type PartnerCatalog as PartnerCatalogModel } from '@/domain/catalog/items/PartnerCatalog';
 import type { TPartnerSource } from '@/domain/data/partners/schema';
-import { MAP_FACTS, PLACE_LABEL_MAP } from '@/domain/data/places/placeFacts';
-import { SPEED_LABEL_MAP } from '@/domain/data/partners/speedFacts';
+import { getMapLabel, getPlaceLabel } from '@/domain/places/localizedLabels';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import {
+	CATALOG_ITEMS_SPEED_LABEL_MESSAGE_KEYS,
+	type TCatalogItemsTranslate,
+	catalogItemsMessages,
+} from '@/features/catalog/items/shared/messages';
 import { getPartnerTachiePath } from '@/features/catalog/presentation/tachiePaths';
 import ItemCard from '@/features/catalog/shared/client/components/ItemCard';
 import {
@@ -30,6 +34,7 @@ import { useOpenedItemPopover } from '@/features/catalog/shared/client/hooks/use
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps {
 	data: TItemData<PartnerCatalogModel>;
@@ -37,27 +42,57 @@ interface IProps {
 
 const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 
-function formatPartnerSource(source: TPartnerSource) {
+function formatPartnerSource(
+	source: TPartnerSource,
+	t: TCatalogItemsTranslate
+) {
 	if ('self' in source) {
-		return '初始拥有';
+		return t('items.source.initialOwned');
 	}
 	if ('mapMainTask' in source) {
-		return `完成地区【${MAP_FACTS[source.mapMainTask.map].label}】主线任务`;
+		return t('items.source.mainTask', {
+			map: getMapLabel(source.mapMainTask.map),
+		});
 	}
 	if ('allMapSpecialGuestBondsMaxed' in source) {
-		return `地区【${MAP_FACTS[source.allMapSpecialGuestBondsMaxed.map].label}】全部稀客羁绊满级`;
+		return t('items.source.allBondsMaxed', {
+			map: getMapLabel(source.allMapSpecialGuestBondsMaxed.map),
+		});
 	}
 	if ('unlockedMapDialogue' in source) {
-		return `解锁地区【${MAP_FACTS[source.unlockedMapDialogue.map].label}】后，和【${specialGuestCatalog.getPropsById(source.unlockedMapDialogue.specialGuest, 'name')}】对话。`;
+		return t('items.source.unlockMapDialogue', {
+			guest: specialGuestCatalog.getDisplayPropsById(
+				source.unlockedMapDialogue.specialGuest,
+				'name'
+			),
+			map: getMapLabel(source.unlockedMapDialogue.map),
+		});
 	}
 	if ('datedMapTrial' in source) {
-		return `解锁地区【${MAP_FACTS[source.datedMapTrial.map].label}】后，完成由【${specialGuestCatalog.getPropsById(source.datedMapTrial.specialGuest, 'name')}】于${source.datedMapTrial.month}月${source.datedMapTrial.day}日发起的试炼。`;
+		return t('items.source.datedMapTrial', {
+			day: source.datedMapTrial.day,
+			guest: specialGuestCatalog.getDisplayPropsById(
+				source.datedMapTrial.specialGuest,
+				'name'
+			),
+			map: getMapLabel(source.datedMapTrial.map),
+			month: source.datedMapTrial.month,
+		});
 	}
 
-	return `${source.storyDialogue.prerequisiteLabel}后，和地区【${PLACE_LABEL_MAP[source.storyDialogue.placeLabel]}】的【${specialGuestCatalog.getPropsById(source.storyDialogue.specialGuest, 'name')}】对话，选择“${source.storyDialogue.dialogueOptionLabel}”。`;
+	return t('items.source.storyDialogue', {
+		guest: specialGuestCatalog.getDisplayPropsById(
+			source.storyDialogue.specialGuest,
+			'name'
+		),
+		option: source.storyDialogue.dialogueOptionLabel,
+		place: getPlaceLabel(source.storyDialogue.placeLabel),
+		prerequisite: source.storyDialogue.prerequisiteLabel,
+	});
 }
 
 export default memo<IProps>(function PartnerCatalog({ data }) {
+	const { t } = useI18n(catalogItemsMessages);
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const { defaultOpenedPopover, getPopoverOpenChangeProps } =
 		useOpenedItemPopover(popoverCardRef, data);
@@ -132,31 +167,49 @@ export default memo<IProps>(function PartnerCatalog({ data }) {
 						ref={popoverCardRef}
 					>
 						<p>
-							<span className="font-semibold">来源：</span>
-							{formatPartnerSource(from)}
+							<span className="font-semibold">
+								{t('items.source.from')}
+							</span>
+							{formatPartnerSource(from, t)}
 						</p>
 						<p>
 							<span className="font-semibold">
-								支付当天营收的：
+								{t('items.source.pay')}
 							</span>
 							{pay}%
 						</p>
 						<p>
-							<span className="font-semibold">移动速度：</span>
-							{SPEED_LABEL_MAP[speed.moving]}
+							<span className="font-semibold">
+								{t('items.source.movingSpeed')}
+							</span>
+							{t(
+								CATALOG_ITEMS_SPEED_LABEL_MESSAGE_KEYS[
+									speed.moving
+								]
+							)}
 						</p>
 						<p>
-							<span className="font-semibold">工作速度：</span>
-							{SPEED_LABEL_MAP[speed.working]}
+							<span className="font-semibold">
+								{t('items.source.workingSpeed')}
+							</span>
+							{t(
+								CATALOG_ITEMS_SPEED_LABEL_MESSAGE_KEYS[
+									speed.working
+								]
+							)}
 						</p>
 						{effect !== null && (
 							<p className="break-all text-justify">
-								<span className="font-semibold">效果：</span>
+								<span className="font-semibold">
+									{t('items.source.effect')}
+								</span>
 								{effect}
 							</p>
 						)}
 						<p>
-							<span className="font-semibold">立绘：</span>
+							<span className="font-semibold">
+								{t('items.source.artwork')}
+							</span>
 							<Popover
 								placement={placement}
 								showArrow={placement === 'top'}
@@ -170,7 +223,7 @@ export default memo<IProps>(function PartnerCatalog({ data }) {
 											CLASSNAME_FOCUS_VISIBLE_OUTLINE
 										)}
 									>
-										查看立绘
+										{t('items.source.viewArtwork')}
 									</span>
 								</PopoverTrigger>
 								<PopoverContent>

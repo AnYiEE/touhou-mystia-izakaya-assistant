@@ -30,7 +30,7 @@ import {
 	handleUnauthorizedAccountActionError,
 	handleUnauthorizedAccountError,
 } from './controller';
-import { ACCOUNT_MANAGER_MESSAGE_MAP } from './copy';
+import { ACCOUNT_MANAGER_MESSAGE_KEYS } from './copy';
 
 interface IUseAccountSessionsOptions {
 	bootstrapStatus: ReturnType<typeof accountStore.shared.bootstrapStatus.get>;
@@ -163,7 +163,7 @@ export function useAccountSessions(
 						setMessage(
 							Error.isError(error)
 								? error.message
-								: ACCOUNT_MANAGER_MESSAGE_MAP.sessionRefreshFailed
+								: ACCOUNT_MANAGER_MESSAGE_KEYS.sessionRefreshFailed
 						);
 					}
 
@@ -306,7 +306,7 @@ export function useAccountSessions(
 					prev.filter((session) => session.id !== sessionId)
 				);
 				sessionListUpdatedAtRef.current = Date.now();
-				setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.sessionRevoked);
+				setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.sessionRevoked);
 			})
 			.catch((error: unknown) => {
 				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
@@ -321,7 +321,7 @@ export function useAccountSessions(
 				setMessage(
 					Error.isError(error)
 						? error.message
-						: ACCOUNT_MANAGER_MESSAGE_MAP.sessionRevokeFailed
+						: ACCOUNT_MANAGER_MESSAGE_KEYS.sessionRevokeFailed
 				);
 			})
 			.finally(() => {

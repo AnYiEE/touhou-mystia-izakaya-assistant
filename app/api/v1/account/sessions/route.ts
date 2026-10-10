@@ -10,6 +10,7 @@ import {
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 import { createAccountSessionRecord } from '@/features/account/server/presentation/session';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
@@ -62,6 +63,7 @@ export async function GET(request: NextRequest) {
 
 	const sessionsModule =
 		await import('@/features/account/server/persistence/repositories/sessions');
+	const locale = readContentLocale(request);
 	const sessions = await sessionsModule.listSessionsForActiveUserSession(
 		auth.data.user.id,
 		{ id: auth.data.session.id, token_hash: auth.data.session.token_hash }
@@ -75,7 +77,7 @@ export async function GET(request: NextRequest) {
 
 	return createNoStoreJsonResponse({
 		sessions: sessions.sessions.map((session) =>
-			createAccountSessionRecord(session, auth.data.session.id)
+			createAccountSessionRecord(session, auth.data.session.id, locale)
 		),
 	} satisfies IAccountSessionListData);
 }

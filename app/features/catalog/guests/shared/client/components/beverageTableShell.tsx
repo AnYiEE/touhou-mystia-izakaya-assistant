@@ -16,11 +16,13 @@ import Placeholder from '@/design/ui/components/placeholder';
 import type { TBeverageId } from '@/domain/data/beverages/types';
 
 import type { TBeverageSuitabilityRow } from '@/features/catalog/guests/shared/contracts';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import {
 	type ITableColumn,
 	type TBeverageTableColumnKey,
 } from '@/features/catalog/guests/shared/state/tableDescriptors';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 interface IProps {
@@ -55,6 +57,7 @@ export default memo<IProps>(function BeverageTableShell({
 	topContent,
 	totalPages,
 }) {
+	const { t } = useI18n(catalogGuestsMessages);
 	const tableSelectedKeys = useMemo(
 		() => new Set(Array.from(selectedKeys, String)),
 		[selectedKeys]
@@ -108,22 +111,25 @@ export default memo<IProps>(function BeverageTableShell({
 			topContent={topContent}
 			topContentPlacement="outside"
 			onSortChange={onSortChange}
-			aria-label="酒水选择表格"
+			aria-label={t('guests.table.beverageAria')}
+			data-tutorial-beverage-table
 			classNames={tableClassNames}
 		>
 			<TableHeader columns={headerColumns}>
-				{({ key, label, sortable }) => (
+				{({ key, labelKey, sortable }) => (
 					<TableColumn
 						key={key}
 						align={key === 'action' ? 'center' : 'start'}
 						allowsSorting={sortable}
 					>
-						{label}
+						{t(labelKey)}
 					</TableColumn>
 				)}
 			</TableHeader>
 			<TableBody
-				emptyContent={<Placeholder>数据为空</Placeholder>}
+				emptyContent={
+					<Placeholder>{t('guests.table.empty')}</Placeholder>
+				}
 				items={items}
 			>
 				{(item) => (

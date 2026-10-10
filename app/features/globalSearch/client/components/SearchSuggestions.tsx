@@ -4,6 +4,7 @@ import type { TSpriteRecordIdentity } from '@/domain/data/sprites/types';
 
 import { getCatalogSearchSuggestionRecordKey } from '@/features/catalog/globalSearch/suggestionRecords';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
+import { globalSearchMessages } from '@/features/globalSearch/client/messages';
 import type {
 	IGlobalSearchFieldCondition,
 	IGlobalSearchIndexItem,
@@ -12,6 +13,9 @@ import type {
 } from '@/features/globalSearch/contracts';
 import { getGlobalSearchFieldValueDisplayText } from '@/features/globalSearch/core/fieldValueSuggestions';
 import { getFieldPrefixLabel } from '@/features/globalSearch/core/parser';
+
+import type { TLocale } from '@/shared/i18n/locale';
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import { renderSearchSyntax } from './SearchSyntax';
 
@@ -48,14 +52,16 @@ export function PrefixSuggestions({
 	onPress: (suggestion: IGlobalSearchPrefixSuggestion) => void;
 	suggestions: ReadonlyArray<IGlobalSearchPrefixSuggestion>;
 }) {
+	const { t } = useI18n(globalSearchMessages);
+
 	return (
 		<>
 			<div className="mb-2 flex items-center gap-2 px-0.5">
 				<span className="text-tiny font-semibold text-foreground-600">
-					可用前缀
+					{t('spotlight.suggestions.prefixTitle')}
 				</span>
 				<span className="text-tiny text-foreground-400">
-					选择后继续输入关键词
+					{t('spotlight.suggestions.prefixHint')}
 				</span>
 			</div>
 			<div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
@@ -74,8 +80,9 @@ export function PrefixSuggestions({
 						</span>
 						<span className="shrink-0 text-tiny text-foreground-400">
 							{suggestion.kind === 'section'
-								? '分区'
-								: (suggestion.valueTypeLabel ?? '字段')}
+								? t('spotlight.suggestions.sectionBadge')
+								: (suggestion.valueTypeLabel ??
+									t('spotlight.suggestions.fieldBadge'))}
 						</span>
 					</Button>
 				))}
@@ -87,6 +94,7 @@ export function PrefixSuggestions({
 export function FieldValueSuggestions({
 	activeFieldCondition,
 	catalogSuggestionRecordMap,
+	locale,
 	nameSuggestionItemMap,
 	onPress,
 	resultSection,
@@ -97,6 +105,7 @@ export function FieldValueSuggestions({
 		string,
 		ReadonlyArray<TSpriteRecordIdentity>
 	>;
+	locale: TLocale;
 	nameSuggestionItemMap: ReadonlyMap<
 		string,
 		ReadonlyArray<IGlobalSearchIndexItem>
@@ -105,21 +114,25 @@ export function FieldValueSuggestions({
 	resultSection: null | TGlobalSearchSection;
 	suggestions: ReadonlyArray<string>;
 }) {
+	const { t } = useI18n(globalSearchMessages);
 	const fieldLabel =
 		activeFieldCondition === null
 			? ''
 			: getFieldPrefixLabel(
 					activeFieldCondition.fieldType,
-					resultSection
+					resultSection,
+					locale
 				);
 	return (
 		<>
 			<div className="mb-2 flex items-center gap-2 px-0.5">
 				<span className="text-tiny font-semibold text-foreground-600">
-					可用{fieldLabel}
+					{t('spotlight.suggestions.fieldTitle', {
+						field: fieldLabel,
+					})}
 				</span>
 				<span className="text-tiny text-foreground-400">
-					选择后填入当前条件
+					{t('spotlight.suggestions.fieldHint')}
 				</span>
 			</div>
 			<div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">

@@ -9,19 +9,22 @@ import PressElement from '@/design/ui/components/pressElement';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import { isAvailableWithHiddenDlcs } from '@/domain/availability';
-import { DLC_LABEL_MAP } from '@/domain/availability/messages';
+import { getDlcLabel } from '@/domain/availability/localizedLabels';
 import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
 import { getRelatedFoods } from '@/domain/catalog/queries/getRelatedFoods';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
 
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import {
 	type TItemRoutePath,
 	type TShareableItemId,
 	type TShareableItemName,
 } from '@/features/itemSharing/contracts';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 
@@ -40,6 +43,8 @@ export default function IngredientRelatedFoods({
 	ingredient,
 	openWindow,
 }: IProps) {
+	const { t } = useI18n(catalogItemsMessages);
+	useCatalogLocalizationRevision();
 	const relatedFoods = getRelatedFoods(
 		ingredient,
 		FoodCatalog.getInstance().getPinyinSortedData()
@@ -57,10 +62,12 @@ export default function IngredientRelatedFoods({
 	const relatedFoodsGroupByDlcSorted = [...relatedFoodsGroupByDlcMap].sort(
 		([a], [b]) => numberSort(a, b)
 	);
-	const label = '点击：在新窗口中查看此料理的详情';
+	const label = t('items.source.actionRelatedFood');
 	return (
 		<p>
-			<span className="font-semibold">关联料理：</span>
+			<span className="font-semibold">
+				{t('items.source.relatedFoods')}
+			</span>
 			<Popover offset={5} placement="bottom-start" size="sm">
 				<PopoverTrigger>
 					<span
@@ -71,7 +78,7 @@ export default function IngredientRelatedFoods({
 							CLASSNAME_FOCUS_VISIBLE_OUTLINE
 						)}
 					>
-						查看包含此食材的料理
+						{t('items.source.viewRelatedFoods')}
 					</span>
 				</PopoverTrigger>
 				<PopoverContent>
@@ -80,7 +87,7 @@ export default function IngredientRelatedFoods({
 							([relatedDlc, foods], dlcIndex) => (
 								<div key={dlcIndex}>
 									<p className="mb-1 text-small font-medium">
-										{DLC_LABEL_MAP[relatedDlc].label}
+										{getDlcLabel(relatedDlc)}
 									</p>
 									<div className="grid h-min grid-cols-2 content-start justify-items-start gap-x-4 gap-y-2">
 										{foods.map(({ id, name }) => (

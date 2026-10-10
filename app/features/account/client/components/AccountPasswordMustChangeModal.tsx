@@ -35,8 +35,9 @@ import {
 	changeAccountPassword,
 	logoutAccount,
 } from '@/features/account/client/api';
-import { ACCOUNT_CLIENT_MESSAGE_MAP } from '@/features/account/client/copy';
+import { ACCOUNT_CLIENT_MESSAGE_KEYS } from '@/features/account/client/copy';
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
+import { accountMessages } from '@/features/account/client/messages';
 import {
 	applyAccountAuthSuccessResponse,
 	checkCurrentAccountAuthContext,
@@ -48,7 +49,8 @@ import {
 } from '@/features/account/client/session';
 import { accountStore } from '@/features/account/client/state/accountStore';
 import {
-	PASSWORD_RULE_DESCRIPTION,
+	PASSWORD_MAX_LENGTH,
+	PASSWORD_MIN_LENGTH,
 	checkPasswordPolicy,
 } from '@/features/account/constants';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
@@ -58,6 +60,8 @@ import { createRecommendationBridgeContinuationUrl } from '@/features/recommenda
 
 import { createMainSiteUrl } from '@/infrastructure/http/siteUrl';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 const ACCOUNT_PASSWORD_MODAL_CLASS_NAMES = {
 	body: 'px-[18px] py-0.5',
@@ -134,6 +138,7 @@ interface IProps {}
 export default memo<IProps>(function AccountPasswordMustChangeModal() {
 	const pathname = usePathname();
 	const vibrate = useVibrate();
+	const { locale, t } = useI18n(accountMessages);
 
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const isLoggedIn = accountStore.shared.isLoggedIn.use();
@@ -189,7 +194,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 
 		if (!checkPasswordPolicy(newPassword)) {
 			setPasswordChangeError(null);
-			setMessage(PASSWORD_RULE_DESCRIPTION);
+			setMessage('invalid-password-rule');
 			return;
 		}
 
@@ -233,7 +238,10 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 										Error.isError(error)
 											? error.message
 											: '',
-										ACCOUNT_CLIENT_MESSAGE_MAP.accountStateRefreshFailed
+										locale,
+										t(
+											ACCOUNT_CLIENT_MESSAGE_KEYS.accountStateRefreshFailed
+										)
 									)
 								);
 							}
@@ -305,7 +313,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 				setMessage(
 					Error.isError(error)
 						? error.message
-						: ACCOUNT_CLIENT_MESSAGE_MAP.passwordChangeFailed
+						: 'password-change-failed'
 				);
 			})
 			.finally(() => {
@@ -316,8 +324,10 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 		csrfToken,
 		currentPassword,
 		isSubmitting,
+		locale,
 		newPassword,
 		shouldResumeSso,
+		t,
 		user,
 		vibrate,
 	]);
@@ -410,7 +420,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 				setMessage(
 					Error.isError(error)
 						? error.message
-						: ACCOUNT_CLIENT_MESSAGE_MAP.logoutFailed
+						: 'account-logout-failed'
 				);
 			})
 			.finally(() => {
@@ -428,7 +438,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 	if (!isOpen) {
 		return (
 			<CoordinatedModal
-				aria-label="更新账号密码"
+				aria-label={t('account.manager.passwordChange.aria')}
 				coordination={ACCOUNT_PASSWORD_MODAL_COORDINATION}
 				isOpen={false}
 			>
@@ -438,11 +448,11 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 	}
 
 	const messageText =
-		message === null ? null : getAccountClientErrorMessage(message);
+		message === null ? null : getAccountClientErrorMessage(message, locale);
 	const passwordChangeErrorMessage =
 		passwordChangeError === null
 			? null
-			: getAccountClientErrorMessage(passwordChangeError);
+			: getAccountClientErrorMessage(passwordChangeError, locale);
 	const isPasswordReady =
 		csrfToken !== null &&
 		currentPassword.length > 0 &&
@@ -452,7 +462,9 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 	return (
 		<CoordinatedModal
 			aria-label={
-				shouldResumeSso ? 'SSO授权 - 更新账号密码' : '更新账号密码'
+				shouldResumeSso
+					? t('account.manager.passwordChange.titleSso')
+					: t('account.manager.passwordChange.aria')
 			}
 			coordination={ACCOUNT_PASSWORD_MODAL_COORDINATION}
 			hideCloseButton
@@ -467,21 +479,25 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 					isFirst
 					subTitle={
 						shouldResumeSso
-							? '管理员已重置此账号的登录凭据。请更新密码后继续授权给外部应用。'
-							: '管理员已重置此账号的登录凭据。完成密码更新后，账号同步和数据操作会恢复可用。'
+							? t('account.manager.passwordChange.subtitleSso')
+							: t(
+									'account.manager.passwordChange.subtitleAccount'
+								)
 					}
 					classNames={ACCOUNT_PASSWORD_MODAL_HEADING_CLASS_NAMES}
 				>
 					{shouldResumeSso
-						? 'SSO授权 - 更新账号密码'
-						: '更新账号密码'}
+						? t('account.manager.passwordChange.titleSso')
+						: t('account.manager.passwordChange.aria')}
 				</Heading>
 
 				<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
 					<div className="space-y-4">
 						<PasswordChangePanel>
 							<PasswordChangePanelTitle icon={faUser}>
-								当前账号
+								{t(
+									'account.manager.passwordChange.currentAccount'
+								)}
 							</PasswordChangePanelTitle>
 							<div className="flex flex-wrap items-center gap-3">
 								<div className="flex h-10 w-10 items-center justify-center rounded-full bg-danger/15 text-danger-600 dark:text-danger">
@@ -492,10 +508,15 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 								</div>
 								<div className="min-w-0 space-y-1">
 									<p className="truncate text-base font-medium leading-none">
-										{user?.username ?? '当前账号'}
+										{user?.username ??
+											t(
+												'account.manager.passwordChange.currentAccount'
+											)}
 									</p>
 									<p className="truncate text-tiny text-danger-600 dark:text-danger">
-										需要更新密码后继续使用
+										{t(
+											'account.manager.passwordChange.badge'
+										)}
 									</p>
 								</div>
 							</div>
@@ -503,7 +524,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 
 						<PasswordChangePanel>
 							<PasswordChangePanelTitle icon={faKey}>
-								设置新密码
+								{t('account.manager.passwordChange.setupTitle')}
 							</PasswordChangePanelTitle>
 							<form
 								className="space-y-3"
@@ -511,7 +532,9 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 							>
 								<input
 									readOnly
-									aria-label="账号用户名"
+									aria-label={t(
+										'account.manager.passwordChange.usernameAria'
+									)}
 									autoComplete="username"
 									className="sr-only"
 									name="username"
@@ -527,8 +550,12 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 									isInvalid={
 										passwordChangeErrorMessage !== null
 									}
-									label="当前临时密码"
-									placeholder="输入管理员提供或刚登录使用的密码"
+									label={t(
+										'account.manager.passwordChange.currentPasswordLabel'
+									)}
+									placeholder={t(
+										'account.manager.passwordChange.currentPasswordPlaceholder'
+									)}
 									startContent={
 										<PasswordChangeInputIcon
 											icon={faShieldHalved}
@@ -540,15 +567,25 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 								/>
 								<Input
 									autoComplete="new-password"
-									description={PASSWORD_RULE_DESCRIPTION}
+									description={t('account.passwordRule', {
+										max: PASSWORD_MAX_LENGTH,
+										min: PASSWORD_MIN_LENGTH,
+									})}
 									errorMessage={
 										isNewPasswordInvalid
-											? PASSWORD_RULE_DESCRIPTION
+											? t('account.passwordRule', {
+													max: PASSWORD_MAX_LENGTH,
+													min: PASSWORD_MIN_LENGTH,
+												})
 											: undefined
 									}
 									isInvalid={isNewPasswordInvalid}
-									label="新密码"
-									placeholder="输入之后要长期使用的新密码"
+									label={t(
+										'account.manager.field.newPassword'
+									)}
+									placeholder={t(
+										'account.manager.passwordChange.newPasswordPlaceholder'
+									)}
 									startContent={
 										<PasswordChangeInputIcon icon={faKey} />
 									}
@@ -583,7 +620,9 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 									type="submit"
 									variant="flat"
 								>
-									更新密码后继续
+									{t(
+										'account.manager.passwordChange.updateAndContinue'
+									)}
 								</Button>
 							</form>
 						</PasswordChangePanel>
@@ -595,7 +634,13 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 								icon={faShieldHalved}
 								iconClassName="text-default-500"
 							>
-								{shouldResumeSso ? 'SSO受限状态' : '受限状态'}
+								{shouldResumeSso
+									? t(
+											'account.manager.passwordChange.restrictedTitleSso'
+										)
+									: t(
+											'account.manager.passwordChange.restrictedTitle'
+										)}
 							</PasswordChangePanelTitle>
 							<div className="space-y-3 text-small leading-6 text-foreground-600">
 								<div className="flex items-start gap-2 rounded-small bg-warning/10 px-3 py-2 text-warning-700 dark:text-warning-600">
@@ -605,14 +650,22 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 									/>
 									<p>
 										{shouldResumeSso
-											? ACCOUNT_CLIENT_MESSAGE_MAP.passwordMustChangeAuthorizePaused
-											: ACCOUNT_CLIENT_MESSAGE_MAP.passwordMustChangeAccountPaused}
+											? t(
+													ACCOUNT_CLIENT_MESSAGE_KEYS.passwordMustChangeAuthorizePaused
+												)
+											: t(
+													ACCOUNT_CLIENT_MESSAGE_KEYS.passwordMustChangeAccountPaused
+												)}
 									</p>
 								</div>
 								<p>
 									{shouldResumeSso
-										? ACCOUNT_CLIENT_MESSAGE_MAP.passwordMustChangeLogoutAuthorize
-										: ACCOUNT_CLIENT_MESSAGE_MAP.passwordMustChangeLogoutAccount}
+										? t(
+												ACCOUNT_CLIENT_MESSAGE_KEYS.passwordMustChangeLogoutAuthorize
+											)
+										: t(
+												ACCOUNT_CLIENT_MESSAGE_KEYS.passwordMustChangeLogoutAccount
+											)}
 								</p>
 							</div>
 						</div>
@@ -632,7 +685,11 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 							variant="flat"
 							onPress={handleLogout}
 						>
-							{shouldResumeSso ? '切换账号' : '退出登录'}
+							{shouldResumeSso
+								? t(
+										'account.manager.passwordChange.switchAccount'
+									)
+								: t('account.manager.ui.logout')}
 						</Button>
 					</PasswordChangePanel>
 				</div>

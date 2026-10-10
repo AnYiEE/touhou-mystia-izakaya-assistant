@@ -23,6 +23,7 @@ import type {
 } from './features/account/contracts';
 import { startAnalyticsClient } from './features/analytics/client';
 import CompatibleBrowser from './features/appShell/client/CompatibleBrowser';
+import { startCatalogLocalizationClient } from './features/catalog/shared/client/localization/catalogLocalizationRuntime';
 import DonationModal from './features/donations/client/DonationModal';
 import { OverlayCoordinatorHost } from './features/overlays/client';
 import DesignPreferencesConnector from './features/preferences/client/designPreferencesConnector';
@@ -31,10 +32,16 @@ import {
 	globalSettingKeyIsHighAppearance,
 	globalStore,
 } from './features/preferences/client/state/globalPersistenceStore';
+import {
+	startLocaleClient,
+	useHydratedLocale,
+} from './features/preferences/client/state/localeRuntime';
 import { startRecommendationClient } from './features/recommendations/client';
 import SiteStatusProvider from './features/siteStatus/client/SiteStatusProvider';
 import SpecialGuestTutorial from './features/tutorials/specialGuest/client/SpecialGuestTutorial';
 import { PUBLIC_RUNTIME_CONFIG } from './infrastructure/environment/publicRuntimeConfig';
+import { type TLocale } from './shared/i18n/locale';
+import { I18nProvider } from './shared/i18n/useI18n';
 import { SITE_METADATA } from './shared/site/metadata';
 
 const { cdnUrl } = PUBLIC_RUNTIME_CONFIG;
@@ -42,7 +49,8 @@ const { version } = SITE_METADATA;
 
 interface IProps {
 	accountInitialData: IAccountInitialData | null;
-	locale: string;
+	locale: TLocale;
+	routeLocale: TLocale | null;
 }
 
 interface IAccountInitialData {
@@ -76,16 +84,20 @@ function AccountInitialDataHydrators({
 
 function ProviderStack({
 	children,
-	locale,
-}: PropsWithChildren<Pick<IProps, 'locale'>>) {
+	initialLocale,
+	routeLocale,
+}: PropsWithChildren<{ initialLocale: TLocale; routeLocale: TLocale | null }>) {
 	const router = useRouter();
+	const locale = useHydratedLocale(initialLocale, routeLocale);
 
 	return (
 		<SiteStatusProvider>
 			<DesignPreferencesConnector>
-				<HeroUIProvider locale={locale} navigate={router.push}>
-					<ProgressBarProvider>{children}</ProgressBarProvider>
-				</HeroUIProvider>
+				<I18nProvider locale={locale}>
+					<HeroUIProvider locale={locale} navigate={router.push}>
+						<ProgressBarProvider>{children}</ProgressBarProvider>
+					</HeroUIProvider>
+				</I18nProvider>
 			</DesignPreferencesConnector>
 		</SiteStatusProvider>
 	);
@@ -95,12 +107,16 @@ export default function Providers({
 	accountInitialData,
 	children,
 	locale,
+	routeLocale,
 }: PropsWithChildren<IProps>) {
 	const shouldSkipInitialAccountBootstrap = accountInitialData !== null;
 
 	useEffect(() => {
 		const stopAnalyticsClient = startAnalyticsClient();
 		const stopPreferencesClient = startPreferencesClient();
+		const stopLocaleClient = startLocaleClient(routeLocale);
+		const stopCatalogLocalizationClient =
+			startCatalogLocalizationClient(routeLocale);
 
 		// If the saved version is not set or outdated, initialize it with the current version.
 		// When an outdated version is detected, the current tab will update the saved version in local storage.
@@ -123,13 +139,15 @@ export default function Providers({
 		return () => {
 			stopRecommendationClient();
 			stopAccountFeatureClients();
+			stopCatalogLocalizationClient();
+			stopLocaleClient();
 			stopPreferencesClient();
 			stopAnalyticsClient();
 		};
-	}, [shouldSkipInitialAccountBootstrap]);
+	}, [routeLocale, shouldSkipInitialAccountBootstrap]);
 
 	return (
-		<ProviderStack locale={locale}>
+		<ProviderStack initialLocale={locale} routeLocale={routeLocale}>
 			<AccountInitialDataHydrators data={accountInitialData} />
 			<CompatibleBrowser />
 			<OverlayCoordinatorHost />

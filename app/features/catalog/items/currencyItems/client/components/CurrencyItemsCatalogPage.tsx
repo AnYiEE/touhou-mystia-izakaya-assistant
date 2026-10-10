@@ -6,6 +6,7 @@ import { hasEquivalentDlcFilters } from '@/domain/availability';
 
 import { filterCurrencyItemData } from '@/features/catalog/items/currencyItems/client/queries/filterCurrencyItemData';
 import { currencyItemsStore } from '@/features/catalog/items/currencyItems/client/state/store';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import ItemPage from '@/features/catalog/shared/client/components/ItemPage';
 import SideButtonGroup from '@/features/catalog/shared/client/components/SideButtonGroup';
 import SideFilterIconButton, {
@@ -14,13 +15,17 @@ import SideFilterIconButton, {
 import SidePinyinSortIconButton from '@/features/catalog/shared/client/components/SidePinyinSortIconButton';
 import { useFilteredData } from '@/features/catalog/shared/client/hooks/useFilteredData';
 import { useSortedData } from '@/features/catalog/shared/client/hooks/useSortedData';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import { type IPinyinSortConfig } from '@/features/catalog/shared/state/pinyinSort';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 import CurrencyItemsCatalog from './CurrencyItemsCatalog';
 
 export default function CurrencyItemsCatalogPage() {
+	const { t } = useI18n(catalogItemsMessages);
+	useCatalogLocalizationRevision();
 	const instance = currencyItemsStore.instance.get();
 	const isAvailabilityDlcFilterRedundant = hasEquivalentDlcFilters(
 		instance.data
@@ -72,7 +77,7 @@ export default function CurrencyItemsCatalogPage() {
 		() => [
 			{
 				items: availableContentDlcs,
-				label: '内容归属',
+				label: t('items.filter.contentDlc'),
 				selectedKeys: filterContentDlcs,
 				setSelectedKeys:
 					currencyItemsStore.persistence.filters.contentDlcs.set,
@@ -83,7 +88,7 @@ export default function CurrencyItemsCatalogPage() {
 				: [
 						{
 							items: availableAvailabilityDlcs,
-							label: '可获取于',
+							label: t('items.filter.acquirableAt'),
 							selectedKeys: filterAvailabilityDlcs,
 							setSelectedKeys:
 								currencyItemsStore.persistence.filters
@@ -98,6 +103,7 @@ export default function CurrencyItemsCatalogPage() {
 			filterAvailabilityDlcs,
 			filterContentDlcs,
 			isAvailabilityDlcFilterRedundant,
+			t,
 		]
 	);
 

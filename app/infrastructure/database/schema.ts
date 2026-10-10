@@ -31,11 +31,13 @@ interface ITableAnnouncement {
 	html: string;
 	id: string;
 	level: TAnnouncementLevel;
+	locales_json: string;
 	priority: number;
 	revision: number;
 	starts_at: number | null;
 	target_user_ids_json: string;
 	title: string;
+	translations_json: string;
 	updated_at: number;
 }
 

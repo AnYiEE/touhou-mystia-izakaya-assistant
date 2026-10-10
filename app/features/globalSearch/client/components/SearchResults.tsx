@@ -7,6 +7,7 @@ import { type Ref } from 'react';
 import Button from '@/design/ui/components/button';
 import ScrollMask from '@/design/ui/components/scrollMask';
 
+import { globalSearchMessages } from '@/features/globalSearch/client/messages';
 import { type TGlobalSearchModel } from '@/features/globalSearch/client/useGlobalSearchModel';
 import type {
 	IGlobalSearchIndexItem,
@@ -17,6 +18,13 @@ import {
 	checkGlobalSearchFieldTypeIsDlc,
 	getGlobalSearchMatchedDlcDisplayText,
 } from '@/features/globalSearch/core/fieldValueSuggestions';
+import {
+	getFieldDisplayLabel,
+	getSectionDisplayLabel,
+} from '@/features/globalSearch/core/parser';
+
+import type { TLocale } from '@/shared/i18n/locale';
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import { SPOTLIGHT_LIST_TRANSITION, SPOTLIGHT_RESULT_VARIANTS } from './motion';
 import { SearchItemVisual } from './SearchItemVisual';
@@ -45,6 +53,7 @@ function ResultRow({
 	index,
 	isHighAppearance,
 	isSelected,
+	locale,
 	onOpenItem,
 	onSelect,
 	result,
@@ -53,6 +62,7 @@ function ResultRow({
 	index: number;
 	isHighAppearance: boolean;
 	isSelected: boolean;
+	locale: TLocale;
 	onOpenItem: (
 		item: IGlobalSearchIndexItem,
 		match?: IGlobalSearchMatchedField
@@ -60,6 +70,7 @@ function ResultRow({
 	onSelect: (index: number) => void;
 	result: IGlobalSearchResult;
 }) {
+	const { t } = useI18n(globalSearchMessages);
 	const { item } = result;
 	const { matches } = result;
 	const [match] = matches;
@@ -105,19 +116,31 @@ function ResultRow({
 								: 'bg-default/40 text-foreground-500'
 						)}
 					>
-						{item.sectionLabel}
+						{getSectionDisplayLabel(
+							item.section,
+							item.sectionLabel,
+							locale
+						)}
 					</span>
 				</span>
 				<span className="mt-0.5 block max-w-full truncate text-tiny text-foreground-500">
 					{match === undefined
 						? item.description
-						: `${match.field.label}中命中：${
+						: `${t('spotlight.results.matchIn', {
+								field: getFieldDisplayLabel(
+									match.field.fieldType,
+									item.section,
+									match.field.label,
+									locale
+								),
+							})}${
 								checkGlobalSearchFieldTypeIsDlc(
 									match.field.fieldType
 								)
 									? getGlobalSearchMatchedDlcDisplayText(
 											match.field.text,
-											match.keyword
+											match.keyword,
+											locale
 										)
 									: match.snippet
 							}`}
@@ -158,6 +181,7 @@ export function SearchResults({
 	query: string;
 	ref?: Ref<HTMLDivElement>;
 }) {
+	const { t } = useI18n(globalSearchMessages);
 	const shouldShowPreviewPane = model.results.length > 0;
 
 	return (
@@ -187,7 +211,7 @@ export function SearchResults({
 			<div
 				role="listbox"
 				id={`${baseId}-results`}
-				aria-label="搜索结果"
+				aria-label={t('spotlight.results.aria')}
 				className={cn(
 					'min-h-0 min-w-0 overflow-hidden border-b border-default-200/80 md:border-b-0 md:border-r',
 					isHighAppearance
@@ -207,10 +231,10 @@ export function SearchResults({
 							/>
 							<div className="space-y-1">
 								<p className="font-medium text-foreground-600">
-									没有找到结果
+									{t('spotlight.results.empty')}
 								</p>
 								<p className="text-tiny text-foreground-400">
-									试试删除部分前缀或换一个关键词
+									{t('spotlight.results.emptyHint')}
 								</p>
 							</div>
 							{model.shouldShowRelaxedQuery && (
@@ -225,7 +249,7 @@ export function SearchResults({
 											);
 										}}
 									>
-										放宽条件
+										{t('spotlight.results.relax')}
 									</Button>
 								</div>
 							)}
@@ -250,6 +274,7 @@ export function SearchResults({
 													model.resolvedSelectedIndex ===
 													index
 												}
+												locale={model.locale}
 												onOpenItem={onOpenItem}
 												onSelect={onSelect}
 												result={result}
@@ -277,6 +302,7 @@ export function SearchResults({
 													model.resolvedSelectedIndex ===
 													index
 												}
+												locale={model.locale}
 												onOpenItem={onOpenItem}
 												onSelect={onSelect}
 												result={result}
@@ -299,6 +325,7 @@ export function SearchResults({
 					)}
 				>
 					<SearchPreview
+						locale={model.locale}
 						selectedResult={model.selectedResult}
 						onOpenItem={onOpenItem}
 						onOpenNewWindow={onOpenNewWindow}

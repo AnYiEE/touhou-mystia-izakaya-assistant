@@ -177,8 +177,7 @@ export const globalStore = store(state, {
 			name: storeName,
 			normalizeRemoteState: normalizeGlobalStoreRemoteState,
 			remoteStateApplicationGuard: accountRemoteStateApplicationGuard,
-			storeVersion:
-				GLOBAL_PERSISTENCE_STORE_VERSION.suggestMealsSortProfile,
+			storeVersion: GLOBAL_PERSISTENCE_STORE_VERSION.locale,
 			watch: ['persistence'],
 		}),
 		createPersistMiddleware<typeof state>({
@@ -217,7 +216,7 @@ export const globalStore = store(state, {
 					persistence: currentStore.persistence,
 				} as typeof currentStore;
 			},
-			version: GLOBAL_PERSISTENCE_STORE_VERSION.suggestMealsSortProfile,
+			version: GLOBAL_PERSISTENCE_STORE_VERSION.locale,
 		}),
 	],
 })

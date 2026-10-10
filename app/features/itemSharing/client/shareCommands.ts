@@ -10,8 +10,8 @@ export function createShareableItemUrl(options: {
 	return createItemShareUrl(options);
 }
 
-export function shareItem(name: string, url: string) {
-	const shareObject = createItemShareData(name, url);
+export function shareItem(shareText: string, url: string) {
+	const shareObject = createItemShareData(shareText, url);
 	if (
 		typeof navigator === 'undefined' ||
 		typeof navigator.canShare !== 'function' ||

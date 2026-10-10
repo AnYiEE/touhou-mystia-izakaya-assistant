@@ -1,17 +1,26 @@
 'use client';
 
 import { hasEquivalentDlcFilters } from '@/domain/availability';
+import { getDlcLabel } from '@/domain/availability/localizedLabels';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import {
-	COOKER_SERIES_LABEL_MAP,
-	COOKER_TYPE_LABEL_MAP,
-} from '@/domain/data/cookers/cookerFacts';
-import { INGREDIENT_TYPE_MAP } from '@/domain/data/ingredients/ingredientFacts';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+	getCookerSeriesLabel,
+	getCookerTypeLabel,
+	getIngredientTypeLabel,
+} from '@/domain/catalog/localizedCategoryLabels';
 import type { TDlc } from '@/domain/data/shared/types';
-import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TFoodTagId } from '@/domain/data/tags/types';
+import { getMapLabel } from '@/domain/places/localizedLabels';
 
+import {
+	APP_SHELL_NAV_LABEL_KEYS,
+	type TAppShellMessageKey,
+	appShellMessages,
+} from '@/features/appShell/client/messages';
+import {
+	type TCatalogGlobalSearchMessageKey,
+	catalogGlobalSearchMessages,
+} from '@/features/catalog/globalSearch/messages';
 import { badgesStore } from '@/features/catalog/items/badges/client/state/store';
 import { beveragesStore } from '@/features/catalog/items/beverages/client/state/store';
 import { clothesStore } from '@/features/catalog/items/clothes/client/state/store';
@@ -24,17 +33,58 @@ import { generalItemsStore } from '@/features/catalog/items/generalItems/client/
 import { ingredientsStore } from '@/features/catalog/items/ingredients/client/state/store';
 import { partnersStore } from '@/features/catalog/items/partners/client/state/store';
 import { recordsStore } from '@/features/catalog/items/records/client/state/store';
+import {
+	type TCatalogItemsMessageKey,
+	catalogItemsMessages,
+} from '@/features/catalog/items/shared/messages';
+import { getActiveLocalizationLocale } from '@/features/catalog/shared/client/localization/activeLocalizationLocale';
+import {
+	getBeverageTagLabel,
+	getFoodTagLabel,
+} from '@/features/catalog/shared/client/localization/tagLabels';
 import type {
 	IGlobalSearchFilterAction,
 	IGlobalSearchQueryAst,
 	TGlobalSearchFieldType,
 	TGlobalSearchSection,
 } from '@/features/globalSearch/contracts';
+import { GLOBAL_SEARCH_SECTION_PATH_MAP } from '@/features/globalSearch/core/constants';
 import { normalizeSearchMatchText } from '@/features/globalSearch/core/text';
 
+import { type TMessageParams, translate } from '@/shared/i18n/messages';
 import { createBoundedRuntimeCache } from '@/shared/utilities/cache/createBoundedRuntimeCache';
 import { getPinyin } from '@/shared/utilities/pinyin/getPinyin';
 import { processPinyin } from '@/shared/utilities/pinyin/processPinyin';
+
+function tAppShell(key: TAppShellMessageKey, params?: TMessageParams): string {
+	return translate(
+		appShellMessages,
+		getActiveLocalizationLocale(),
+		key,
+		params
+	);
+}
+
+function tItems(key: TCatalogItemsMessageKey, params?: TMessageParams): string {
+	return translate(
+		catalogItemsMessages,
+		getActiveLocalizationLocale(),
+		key,
+		params
+	);
+}
+
+function tSearch(
+	key: TCatalogGlobalSearchMessageKey,
+	params?: TMessageParams
+): string {
+	return translate(
+		catalogGlobalSearchMessages,
+		getActiveLocalizationLocale(),
+		key,
+		params
+	);
+}
 
 type TFilterableGlobalSearchSection = Extract<
 	TGlobalSearchSection,
@@ -164,18 +214,20 @@ function getDlcSearchTexts(value: string | number) {
 	const normalizedValue = value.toString();
 	const dlc = Number(normalizedValue) as TDlc;
 	const labelMeta = Number.isFinite(dlc) ? DLC_LABEL_MAP[dlc] : undefined;
+	const localizedLabel = labelMeta === undefined ? '' : getDlcLabel(dlc);
 
 	return [
 		normalizedValue,
 		labelMeta?.label ?? '',
 		labelMeta?.shortLabel ?? '',
+		localizedLabel,
 	].filter(Boolean);
 }
 
 function getDlcDisplayLabel(value: string | number) {
 	const dlc = Number(value) as TDlc;
 
-	return dlc in DLC_LABEL_MAP ? DLC_LABEL_MAP[dlc].label : value.toString();
+	return dlc in DLC_LABEL_MAP ? getDlcLabel(dlc) : value.toString();
 }
 
 function resolveDlcAvailableValue(
@@ -237,13 +289,13 @@ function createAppendFilterAction<T extends number | string>({
 function createDlcFilterAction({
 	availableValues,
 	currentValues,
-	filterLabel,
+	filterLabelKey,
 	keyword,
 	setValues,
 }: {
 	availableValues: () => Array<ValueCollection<string | number>>;
 	currentValues: () => string[];
-	filterLabel: '内容归属' | '可获取于';
+	filterLabelKey: TCatalogItemsMessageKey;
 	keyword: string;
 	setValues: (values: string[]) => void;
 }): Omit<IGlobalSearchFilterAction, 'label' | 'targetSection'> | null {
@@ -254,7 +306,10 @@ function createDlcFilterAction({
 
 	return createAppendFilterAction({
 		currentValues,
-		description: `筛选${filterLabel}：${getDlcDisplayLabel(value)}`,
+		description: tSearch('search.filter.dlc', {
+			label: tItems(filterLabelKey),
+			value: getDlcDisplayLabel(value),
+		}),
 		setValues,
 		value,
 	});
@@ -291,8 +346,10 @@ function createFoodFilterAction(
 				dlcFilterKind === 'availability'
 					? foodsStore.persistence.filters.availabilityDlcs.get
 					: foodsStore.persistence.filters.contentDlcs.get,
-			filterLabel:
-				dlcFilterKind === 'availability' ? '可获取于' : '内容归属',
+			filterLabelKey:
+				dlcFilterKind === 'availability'
+					? 'items.filter.acquirableAt'
+					: 'items.filter.contentDlc',
 			keyword,
 			setValues:
 				dlcFilterKind === 'availability'
@@ -309,7 +366,9 @@ function createFoodFilterAction(
 		}
 		return createAppendFilterAction({
 			currentValues: foodsStore.persistence.filters.ingredients.get,
-			description: `筛选食材包含：${match.label}`,
+			description: tSearch('search.filter.ingredient', {
+				value: match.label,
+			}),
 			setValues: foodsStore.persistence.filters.ingredients.set,
 			value: match.value,
 		});
@@ -320,14 +379,16 @@ function createFoodFilterAction(
 		const match = resolveTypedAvailableValue(
 			availableValues,
 			keyword,
-			({ value }) => FOOD_TAG_MAP[value]
+			({ value }) => getFoodTagLabel(value)
 		);
 		if (match === null) {
 			return null;
 		}
 		return createAppendFilterAction({
 			currentValues: foodsStore.persistence.filters.positiveTags.get,
-			description: `筛选正特性包含：${match.label}`,
+			description: tSearch('search.filter.positiveTag', {
+				value: match.label,
+			}),
 			setValues: foodsStore.persistence.filters.positiveTags.set,
 			value: match.value,
 		});
@@ -338,14 +399,16 @@ function createFoodFilterAction(
 		const match = resolveTypedAvailableValue(
 			availableValues,
 			keyword,
-			({ value }) => FOOD_TAG_MAP[value]
+			({ value }) => getFoodTagLabel(value)
 		);
 		if (match === null) {
 			return null;
 		}
 		return createAppendFilterAction({
 			currentValues: foodsStore.persistence.filters.negativeTags.get,
-			description: `筛选反特性包含：${match.label}`,
+			description: tSearch('search.filter.negativeTag', {
+				value: match.label,
+			}),
 			setValues: foodsStore.persistence.filters.negativeTags.set,
 			value: match.value,
 		});
@@ -355,18 +418,20 @@ function createFoodFilterAction(
 		const positiveMatch = resolveTypedAvailableValue(
 			foodsStore.availablePositiveTags.get(),
 			keyword,
-			({ value }) => FOOD_TAG_MAP[value]
+			({ value }) => getFoodTagLabel(value)
 		);
 		const negativeMatch = resolveTypedAvailableValue(
 			foodsStore.availableNegativeTags.get(),
 			keyword,
-			({ value }) => FOOD_TAG_MAP[value as TFoodTagId]
+			({ value }) => getFoodTagLabel(value as TFoodTagId)
 		);
 
 		if (positiveMatch !== null && negativeMatch === null) {
 			return createAppendFilterAction({
 				currentValues: foodsStore.persistence.filters.positiveTags.get,
-				description: `筛选正特性包含：${positiveMatch.label}`,
+				description: tSearch('search.filter.positiveTag', {
+					value: positiveMatch.label,
+				}),
 				setValues: foodsStore.persistence.filters.positiveTags.set,
 				value: positiveMatch.value,
 			});
@@ -374,7 +439,9 @@ function createFoodFilterAction(
 		if (negativeMatch !== null && positiveMatch === null) {
 			return createAppendFilterAction({
 				currentValues: foodsStore.persistence.filters.negativeTags.get,
-				description: `筛选反特性包含：${negativeMatch.label}`,
+				description: tSearch('search.filter.negativeTag', {
+					value: negativeMatch.label,
+				}),
 				setValues: foodsStore.persistence.filters.negativeTags.set,
 				value: negativeMatch.value,
 			});
@@ -391,7 +458,7 @@ function createFoodFilterAction(
 		}
 		return createAppendFilterAction({
 			currentValues: foodsStore.persistence.filters.places.get,
-			description: `筛选地区包含：${match.label}`,
+			description: tSearch('search.filter.place', { value: match.label }),
 			setValues: foodsStore.persistence.filters.places.set,
 			value: match.value,
 		});
@@ -405,7 +472,9 @@ function createFoodFilterAction(
 		}
 		return createAppendFilterAction({
 			currentValues: foodsStore.persistence.filters.cookerTypes.get,
-			description: `筛选厨具：${match.label}`,
+			description: tSearch('search.filter.cookerType', {
+				value: match.label,
+			}),
 			setValues: foodsStore.persistence.filters.cookerTypes.set,
 			value: match.value,
 		});
@@ -419,7 +488,7 @@ function createFoodFilterAction(
 		}
 		return createAppendFilterAction({
 			currentValues: foodsStore.persistence.filters.levels.get,
-			description: `筛选等级：${value}`,
+			description: tSearch('search.filter.level', { value }),
 			setValues: foodsStore.persistence.filters.levels.set,
 			value,
 		});
@@ -446,8 +515,10 @@ function createBeverageFilterAction(
 				dlcFilterKind === 'availability'
 					? beveragesStore.persistence.filters.availabilityDlcs.get
 					: beveragesStore.persistence.filters.contentDlcs.get,
-			filterLabel:
-				dlcFilterKind === 'availability' ? '可获取于' : '内容归属',
+			filterLabelKey:
+				dlcFilterKind === 'availability'
+					? 'items.filter.acquirableAt'
+					: 'items.filter.contentDlc',
 			keyword,
 			setValues:
 				dlcFilterKind === 'availability'
@@ -461,14 +532,14 @@ function createBeverageFilterAction(
 		const match = resolveTypedAvailableValue(
 			availableValues,
 			keyword,
-			({ value }) => BEVERAGE_TAG_MAP[value]
+			({ value }) => getBeverageTagLabel(value)
 		);
 		if (match === null) {
 			return null;
 		}
 		return createAppendFilterAction({
 			currentValues: beveragesStore.persistence.filters.tags.get,
-			description: `筛选标签包含：${match.label}`,
+			description: tSearch('search.filter.tag', { value: match.label }),
 			setValues: beveragesStore.persistence.filters.tags.set,
 			value: match.value,
 		});
@@ -479,14 +550,14 @@ function createBeverageFilterAction(
 		const match = resolveTypedAvailableValue(
 			availableValues,
 			keyword,
-			({ value }) => MAP_FACTS[value].label
+			({ value }) => getMapLabel(value)
 		);
 		if (match === null) {
 			return null;
 		}
 		return createAppendFilterAction({
 			currentValues: beveragesStore.persistence.filters.places.get,
-			description: `筛选地区包含：${match.label}`,
+			description: tSearch('search.filter.place', { value: match.label }),
 			setValues: beveragesStore.persistence.filters.places.set,
 			value: match.value,
 		});
@@ -500,7 +571,7 @@ function createBeverageFilterAction(
 		}
 		return createAppendFilterAction({
 			currentValues: beveragesStore.persistence.filters.levels.get,
-			description: `筛选等级：${value}`,
+			description: tSearch('search.filter.level', { value }),
 			setValues: beveragesStore.persistence.filters.levels.set,
 			value,
 		});
@@ -527,8 +598,10 @@ function createIngredientFilterAction(
 				dlcFilterKind === 'availability'
 					? ingredientsStore.persistence.filters.availabilityDlcs.get
 					: ingredientsStore.persistence.filters.contentDlcs.get,
-			filterLabel:
-				dlcFilterKind === 'availability' ? '可获取于' : '内容归属',
+			filterLabelKey:
+				dlcFilterKind === 'availability'
+					? 'items.filter.acquirableAt'
+					: 'items.filter.contentDlc',
 			keyword,
 			setValues:
 				dlcFilterKind === 'availability'
@@ -542,14 +615,16 @@ function createIngredientFilterAction(
 		const match = resolveTypedAvailableValue(
 			availableTypes,
 			keyword,
-			({ value }) => INGREDIENT_TYPE_MAP[value]
+			({ value }) => getIngredientTypeLabel(value)
 		);
 		if (match === null) {
 			return null;
 		}
 		const type = match.value;
 		return {
-			description: `筛选类型：${INGREDIENT_TYPE_MAP[type]}`,
+			description: tSearch('search.filter.type', {
+				value: getIngredientTypeLabel(type),
+			}),
 			run: () => {
 				const currentTypes =
 					ingredientsStore.persistence.filters.types.get();
@@ -568,14 +643,14 @@ function createIngredientFilterAction(
 		const match = resolveTypedAvailableValue(
 			availableValues,
 			keyword,
-			({ value }) => FOOD_TAG_MAP[value]
+			({ value }) => getFoodTagLabel(value)
 		);
 		if (match === null) {
 			return null;
 		}
 		return createAppendFilterAction({
 			currentValues: ingredientsStore.persistence.filters.tags.get,
-			description: `筛选标签包含：${match.label}`,
+			description: tSearch('search.filter.tag', { value: match.label }),
 			setValues: ingredientsStore.persistence.filters.tags.set,
 			value: match.value,
 		});
@@ -586,14 +661,14 @@ function createIngredientFilterAction(
 		const match = resolveTypedAvailableValue(
 			availableValues,
 			keyword,
-			({ value }) => MAP_FACTS[value].label
+			({ value }) => getMapLabel(value)
 		);
 		if (match === null) {
 			return null;
 		}
 		return createAppendFilterAction({
 			currentValues: ingredientsStore.persistence.filters.places.get,
-			description: `筛选地区包含：${match.label}`,
+			description: tSearch('search.filter.place', { value: match.label }),
 			setValues: ingredientsStore.persistence.filters.places.set,
 			value: match.value,
 		});
@@ -607,7 +682,7 @@ function createIngredientFilterAction(
 		}
 		return createAppendFilterAction({
 			currentValues: ingredientsStore.persistence.filters.levels.get,
-			description: `筛选等级：${value}`,
+			description: tSearch('search.filter.level', { value }),
 			setValues: ingredientsStore.persistence.filters.levels.set,
 			value,
 		});
@@ -634,8 +709,10 @@ function createCookerFilterAction(
 				dlcFilterKind === 'availability'
 					? cookersStore.persistence.filters.availabilityDlcs.get
 					: cookersStore.persistence.filters.contentDlcs.get,
-			filterLabel:
-				dlcFilterKind === 'availability' ? '可获取于' : '内容归属',
+			filterLabelKey:
+				dlcFilterKind === 'availability'
+					? 'items.filter.acquirableAt'
+					: 'items.filter.contentDlc',
 			keyword,
 			setValues:
 				dlcFilterKind === 'availability'
@@ -649,14 +726,14 @@ function createCookerFilterAction(
 		const match = resolveTypedAvailableValue(
 			availableValues,
 			keyword,
-			({ value }) => COOKER_TYPE_LABEL_MAP[value]
+			({ value }) => getCookerTypeLabel(value)
 		);
 		if (match === null) {
 			return null;
 		}
 		return createAppendFilterAction({
 			currentValues: cookersStore.persistence.filters.types.get,
-			description: `筛选类型：${match.label}`,
+			description: tSearch('search.filter.type', { value: match.label }),
 			setValues: cookersStore.persistence.filters.types.set,
 			value: match.value,
 		});
@@ -667,7 +744,7 @@ function createCookerFilterAction(
 		const match = resolveTypedAvailableValue(
 			availableValues,
 			keyword,
-			({ value }) => COOKER_SERIES_LABEL_MAP[value]
+			({ value }) => getCookerSeriesLabel(value)
 		);
 		if (match === null) {
 			return null;
@@ -679,7 +756,9 @@ function createCookerFilterAction(
 			return null;
 		}
 		return {
-			description: `筛选系列：${match.label}`,
+			description: tSearch('search.filter.series', {
+				value: match.label,
+			}),
 			run: () => {
 				const currentValues =
 					cookersStore.persistence.filters.series.get();
@@ -748,7 +827,12 @@ function createDlcOnlyFilterAction(
 			? null
 			: createAppendFilterAction({
 					currentValues: sourceStore.persistence.filters.sources.get,
-					description: `筛选${targetSection === 'fishing-collectibles' ? '垂钓地区' : '来源'}：${value}`,
+					description: tSearch(
+						targetSection === 'fishing-collectibles'
+							? 'search.filter.fishingArea'
+							: 'search.filter.source',
+						{ value }
+					),
 					setValues: sourceStore.persistence.filters.sources.set,
 					value,
 				});
@@ -768,7 +852,10 @@ function createDlcOnlyFilterAction(
 			dlcFilterKind === 'availability'
 				? targetStore.persistence.filters.availabilityDlcs.get
 				: targetStore.persistence.filters.contentDlcs.get,
-		filterLabel: dlcFilterKind === 'availability' ? '可获取于' : '内容归属',
+		filterLabelKey:
+			dlcFilterKind === 'availability'
+				? 'items.filter.acquirableAt'
+				: 'items.filter.contentDlc',
 		keyword,
 		setValues:
 			dlcFilterKind === 'availability'
@@ -799,22 +886,9 @@ function getFilterTargetSection(
 }
 
 function getFilterTargetLabel(section: TFilterableGlobalSearchSection) {
-	const labelMap = {
-		badges: '徽章',
-		beverages: '酒水',
-		clothes: '衣服',
-		cookers: '厨具',
-		'currency-items': '货币',
-		decorations: '摆件',
-		'fishing-collectibles': '垂钓收藏',
-		foods: '料理',
-		ingredients: '食材',
-		items: '道具',
-		partners: '伙伴',
-		records: '唱片',
-	} as const;
-
-	return labelMap[section];
+	return tAppShell(
+		APP_SHELL_NAV_LABEL_KEYS[GLOBAL_SEARCH_SECTION_PATH_MAP[section]]
+	);
 }
 
 function createFilterAction(
@@ -868,8 +942,10 @@ export function getCatalogSearchFilterAction(
 	return {
 		description: filterActions
 			.map(({ description }) => description)
-			.join('；'),
-		label: `应用到${getFilterTargetLabel(targetSection)}筛选`,
+			.join(tItems('items.source.tooltipSeparator')),
+		label: tSearch('search.filter.applyTo', {
+			label: getFilterTargetLabel(targetSection),
+		}),
 		run: () => {
 			filterActions.forEach(({ run }) => {
 				run();

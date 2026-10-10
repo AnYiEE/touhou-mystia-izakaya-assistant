@@ -12,10 +12,12 @@ import {
 import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
 import Tooltip from '@/design/ui/components/tooltip';
 
+import { itemSharingMessages } from '@/features/itemSharing/client/messages';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 interface IUsePictureInPictureOptions {
@@ -35,6 +37,7 @@ interface IUsePictureInPictureReturn {
 export function usePictureInPicture(
 	options: IUsePictureInPictureOptions = {}
 ): IUsePictureInPictureReturn {
+	const { t } = useI18n(itemSharingMessages);
 	const {
 		height: requestedHeight,
 		offset: { height: offsetHeight = 0, width: offsetWidth = 0 } = {},
@@ -185,7 +188,7 @@ export function usePictureInPicture(
 				return null;
 			}
 
-			const label = '在画中画中打开';
+			const label = t('itemSharing.pipLabel');
 
 			return (
 				<div className="flex justify-end pt-2 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
@@ -210,7 +213,7 @@ export function usePictureInPicture(
 				</div>
 			);
 		},
-		[isOpen, isSupported, togglePictureInPicture, vibrate]
+		[isOpen, isSupported, t, togglePictureInPicture, vibrate]
 	);
 
 	return {

@@ -18,9 +18,11 @@ import { useTheme } from '@/design/theme/runtime/useTheme';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import { getAccountActionLabel } from '@/features/account/client/copy';
+import { accountMessages } from '@/features/account/client/messages';
 import { accountStore } from '@/features/account/client/state/accountStore';
 import { getAccountSyncPauseIndicator } from '@/features/account/client/sync/accountSyncPauseIndicator';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { appShellMessages } from '@/features/appShell/client/messages';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { showProgress } from '@/features/appShell/client/progress';
 import { openGlobalSearch } from '@/features/globalSearch/client/commands';
@@ -34,12 +36,14 @@ import {
 	useCoordinatedOverlay,
 } from '@/features/overlays/client';
 import type { TOverlayId } from '@/features/overlays/contracts';
+import { preferencesMessages } from '@/features/preferences/client/messages';
 import { openPreferencesModal } from '@/features/preferences/client/overlayCommands';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { checkIsApplePlatform } from '@/infrastructure/browser/capabilities/platform';
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { useHydrated } from '@/shared/react/useHydrated';
 
 import DesktopNavigation from './DesktopNavigation';
@@ -58,6 +62,9 @@ const NAVBAR_CLASS_NAMES = {
 } as const;
 
 export default function Navbar() {
+	const { t } = useI18n(appShellMessages);
+	const { t: tPreferences } = useI18n(preferencesMessages);
+	const { t: tAccount } = useI18n(accountMessages);
 	const { pathname } = usePathname();
 	const startProgress = useProgress();
 	const router = useRouter();
@@ -83,14 +90,21 @@ export default function Navbar() {
 
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const accountUser = accountStore.shared.user.use();
-	const { isPaused: isAccountSyncPaused, label: accountSyncPauseLabel } =
-		getAccountSyncPauseIndicator(accountUser?.sync_status);
+	const {
+		isPaused: isAccountSyncPaused,
+		labelKey: accountSyncPauseLabelKey,
+	} = getAccountSyncPauseIndicator(accountUser?.sync_status);
+	const accountSyncPauseLabel =
+		accountSyncPauseLabelKey === null
+			? null
+			: tAccount(accountSyncPauseLabelKey);
 
 	const shouldShowAccountAction =
 		isAccountFeatureClientEnabled && accountBootstrapStatus !== 'disabled';
 	const accountActionLabel = getAccountActionLabel(
 		accountBootstrapStatus,
-		accountUser
+		accountUser,
+		tAccount
 	);
 	const accountMenuDisabledKeys = useMemo(
 		() => (accountBootstrapStatus === 'unknown' ? ['account'] : []),
@@ -348,8 +362,8 @@ export default function Navbar() {
 	].includes(basePathname);
 
 	const mobileActionSectionTitle = shouldShowAccountAction
-		? '账号和主题'
-		: '主题';
+		? t('appShell.accountTheme.aria')
+		: tPreferences('preferences.theme.section');
 
 	return (
 		<>

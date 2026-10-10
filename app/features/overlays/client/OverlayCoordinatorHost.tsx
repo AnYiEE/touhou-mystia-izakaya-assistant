@@ -9,7 +9,9 @@ import {
 
 import Modal from '@/design/ui/components/modal';
 
-import { OVERLAY_COORDINATOR_MESSAGE_MAP } from './copy';
+import { useI18n } from '@/shared/i18n/useI18n';
+
+import { overlayCoordinatorMessages } from './messages';
 import {
 	getOverlayCoordinatorSnapshot,
 	handleOverlayCoordinatorKeyDown,
@@ -44,6 +46,7 @@ function getOutsidePortalInteractionRoots(portalContainer: HTMLElement) {
 }
 
 export default function OverlayCoordinatorHost() {
+	const { t } = useI18n(overlayCoordinatorMessages);
 	const snapshot = useSyncExternalStore(
 		subscribeOverlayCoordinator,
 		getOverlayCoordinatorSnapshot,
@@ -216,15 +219,15 @@ export default function OverlayCoordinatorHost() {
 			portalContainer={portalContainer}
 			scrollShadow={false}
 			size="sm"
-			aria-label="账号阻断状态准备中"
+			aria-label={t('overlays.preparing.ariaLabel')}
 			classNames={PREPARATION_MODAL_CLASS_NAMES}
 		>
 			<p aria-live="polite" role="status">
 				{preparationTimedOut
-					? OVERLAY_COORDINATOR_MESSAGE_MAP.accountBlockerUnavailable
+					? t('overlays.preparing.accountBlockerUnavailable')
 					: blockerId === 'account.password-required'
-						? OVERLAY_COORDINATOR_MESSAGE_MAP.preparingAccountSecurity
-						: OVERLAY_COORDINATOR_MESSAGE_MAP.preparingSyncConflict}
+						? t('overlays.preparing.accountSecurity')
+						: t('overlays.preparing.syncConflict')}
 			</p>
 		</Modal>
 	);

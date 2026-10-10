@@ -9,7 +9,7 @@ export const MERCHANT_LABEL_MAP = {
 	Merchant_Seiran: '清兰',
 	Rinnosuke: '香霖堂',
 	WineMerchant_HakureiShrine: '河童商人',
-	Merchant_Maid: '妖精女仆',
+	Merchant_Maid: '卖剩货的妖精女仆',
 	Merchant_Goblin: '地精商人',
 	Yousei_Tired: '匿名妖精女仆',
 	Koakuma: '小恶魔',

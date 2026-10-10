@@ -30,16 +30,14 @@ import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
-import {
-	DYNAMIC_FOOD_TAG_MAP,
-	FOOD_TAG_MAP,
-} from '@/domain/data/tags/tagFacts';
+import { DYNAMIC_FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TFoodTagId } from '@/domain/data/tags/types';
 
 import FoodTableActionButton from '@/features/catalog/guests/shared/client/components/foodTableActionButton';
 import FoodTableShell from '@/features/catalog/guests/shared/client/components/foodTableShell';
 import TagGroup from '@/features/catalog/guests/shared/client/components/tagGroup';
 import type { TFoodSuitabilityRow } from '@/features/catalog/guests/shared/contracts';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import {
 	type ITableSortDescriptor,
 	type TFoodTableColumnKey,
@@ -52,12 +50,16 @@ import { SPECIAL_GUEST_TAG_STYLE } from '@/features/catalog/presentation/tagStyl
 import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import Tags from '@/features/catalog/shared/client/components/Tags';
+import {
+	compareFoodTagLabels,
+	getFoodTagLabel,
+} from '@/features/catalog/shared/client/localization/tagLabels';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 const cookerCatalog = CookerCatalog.getInstance();
 const FOOD_AUTOCOMPLETE_ITEM_CLASS_NAMES = {
@@ -72,6 +74,7 @@ const TABLE_DROPDOWN_ITEM_CLASSES = {
 } as const;
 
 export default function FoodTabContent() {
+	const { t } = useI18n(catalogGuestsMessages);
 	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
 	const selectMotionProps = useMotionProps('select');
@@ -157,7 +160,10 @@ export default function FoodTabContent() {
 			const cookerTypeLabel = COOKER_TYPE_LABEL_MAP[cookerType];
 			const ingredientEntries = ingredients.map((id) => ({
 				id,
-				name: IngredientCatalog.getInstance().getPropsById(id, 'name'),
+				name: IngredientCatalog.getInstance().getDisplayPropsById(
+					id,
+					'name'
+				),
 			}));
 
 			if (currentSpecialGuest === null) {
@@ -169,46 +175,40 @@ export default function FoodTabContent() {
 
 			const tags = (
 				<TagGroup>
-					{positiveTags
-						.toSorted((a, b) =>
-							pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b])
-						)
-						.map((tag) => {
-							const tagLabel = FOOD_TAG_MAP[tag];
-							const isNegativeTagMatched =
-								matchedNegativeTags.includes(tag);
-							const isPositiveTagMatched =
-								matchedPositiveTags.includes(tag);
-							const isTagMatched =
-								isNegativeTagMatched || isPositiveTagMatched;
-							const tagStyle = isNegativeTagMatched
-								? negativeTagStyle
-								: isPositiveTagMatched
-									? positiveTagStyle
-									: undefined;
-							const tagType = isNegativeTagMatched
-								? 'negative'
-								: isPositiveTagMatched
-									? 'positive'
-									: null;
-							return (
-								<Tags.Tag
-									key={tag}
-									tag={tagLabel}
-									tagStyle={tagStyle}
-									tagType={tagType}
-									className={cn({
-										'opacity-50': !isTagMatched,
-									})}
-								/>
-							);
-						})}
+					{positiveTags.toSorted(compareFoodTagLabels).map((tag) => {
+						const tagLabel = getFoodTagLabel(tag);
+						const isNegativeTagMatched =
+							matchedNegativeTags.includes(tag);
+						const isPositiveTagMatched =
+							matchedPositiveTags.includes(tag);
+						const isTagMatched =
+							isNegativeTagMatched || isPositiveTagMatched;
+						const tagStyle = isNegativeTagMatched
+							? negativeTagStyle
+							: isPositiveTagMatched
+								? positiveTagStyle
+								: undefined;
+						const tagType = isNegativeTagMatched
+							? 'negative'
+							: isPositiveTagMatched
+								? 'positive'
+								: null;
+						return (
+							<Tags.Tag
+								key={tag}
+								tag={tagLabel}
+								tagStyle={tagStyle}
+								tagType={tagType}
+								className={cn({ 'opacity-50': !isTagMatched })}
+							/>
+						);
+					})}
 				</TagGroup>
 			);
 
 			switch (columnKey) {
 				case 'food': {
-					const label = `点击：在新窗口中查看料理【${name}】的详情`;
+					const label = t('guests.table.viewFoodTip', { name });
 					return (
 						<div className="flex min-w-0 items-center">
 							<Tooltip
@@ -266,7 +266,9 @@ export default function FoodTabContent() {
 														<FontAwesomeIconButton
 															icon={faTags}
 															variant="light"
-															aria-label="料理标签"
+															aria-label={t(
+																'guests.tagColumn.foodAria'
+															)}
 															className="inline h-4 w-4 min-w-0 scale-75 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
 														/>
 													</PopoverTrigger>
@@ -330,7 +332,12 @@ export default function FoodTabContent() {
 																	ingredient
 																);
 															}}
-															aria-label={`点击：在新窗口中查看食材【${ingredient}】的详情`}
+															aria-label={t(
+																'guests.savedMeal.viewIngredientTip',
+																{
+																	name: ingredient,
+																}
+															)}
 															role="button"
 														/>
 													)
@@ -368,7 +375,10 @@ export default function FoodTabContent() {
 						<div className="flex flex-nowrap">
 							{ingredientEntries.map(
 								({ id, name: ingredient }, index) => {
-									const ingredientLabel = `点击：在新窗口中查看食材【${ingredient}】的详情`;
+									const ingredientLabel = t(
+										'guests.savedMeal.viewIngredientTip',
+										{ name: ingredient }
+									);
 									return (
 										<Tooltip
 											key={`${id}-${index}`}
@@ -407,7 +417,7 @@ export default function FoodTabContent() {
 						<div className="flex">
 							{suitability === Infinity ||
 							suitability === -Infinity ? (
-								'固定评级'
+								t('guests.foodTable.fixedRating')
 							) : (
 								<Price showSymbol={false}>{suitability}</Price>
 							)}
@@ -418,7 +428,9 @@ export default function FoodTabContent() {
 						<div className="flex whitespace-nowrap">
 							{cookTime.min}
 							<span className="mx-0.5">-</span>
-							{cookTime.max}秒
+							{t('guests.foodTable.seconds', {
+								seconds: cookTime.max,
+							})}
 						</div>
 					);
 				case 'action':
@@ -436,7 +448,7 @@ export default function FoodTabContent() {
 					);
 			}
 		},
-		[currentSpecialGuest, openWindow, tableVisibleColumns, vibrate]
+		[currentSpecialGuest, openWindow, t, tableVisibleColumns, vibrate]
 	);
 
 	const tableToolbar = useMemo(
@@ -450,7 +462,7 @@ export default function FoodTabContent() {
 							disableAnimation={isReducedMotion}
 							inputValue={searchValue}
 							isVirtualized={false}
-							placeholder="名称"
+							placeholder={t('guests.search.namePlaceholder')}
 							size="sm"
 							startContent={
 								<FontAwesomeIcon
@@ -465,8 +477,8 @@ export default function FoodTabContent() {
 									value
 								);
 							}}
-							aria-label="选择或输入料理名称"
-							title="选择或输入料理名称"
+							aria-label={t('guests.foodSearch.nameAria')}
+							title={t('guests.foodSearch.nameAria')}
 							popoverProps={{
 								motionProps: selectMotionProps,
 								shouldCloseOnScroll: false,
@@ -507,7 +519,7 @@ export default function FoodTabContent() {
 							disableAnimation={isReducedMotion}
 							isVirtualized={false}
 							items={availableFoodTags}
-							placeholder="标签"
+							placeholder={t('guests.search.tagPlaceholder')}
 							selectedKeys={selectedGuestFoodTagKeys}
 							size="sm"
 							startContent={<FontAwesomeIcon icon={faTags} />}
@@ -515,8 +527,8 @@ export default function FoodTabContent() {
 							onSelectionChange={
 								specialGuestStore.onFoodTableSelectedPositiveTagsChange
 							}
-							aria-label="按料理标签筛选料理"
-							title="按料理标签筛选料理"
+							aria-label={t('guests.foodSearch.tagAria')}
+							title={t('guests.foodSearch.tagAria')}
 							popoverProps={{
 								motionProps: selectMotionProps,
 								shouldCloseOnScroll: false,
@@ -537,7 +549,7 @@ export default function FoodTabContent() {
 						>
 							{({ value }) => (
 								<SelectItem key={value.toString()}>
-									{FOOD_TAG_MAP[value as TFoodTagId]}
+									{getFoodTagLabel(value as TFoodTagId)}
 								</SelectItem>
 							)}
 						</Select>
@@ -562,7 +574,7 @@ export default function FoodTabContent() {
 										}
 									)}
 								>
-									厨具
+									{t('guests.table.column.cookerType')}
 								</Button>
 							</DropdownTrigger>
 							<DropdownMenu
@@ -574,7 +586,7 @@ export default function FoodTabContent() {
 								onSelectionChange={
 									specialGuestStore.onFoodTableSelectedCookerTypesChange
 								}
-								aria-label="选择目标料理所使用的厨具"
+								aria-label={t('guests.foodSearch.cookerAria')}
 								itemClasses={TABLE_DROPDOWN_ITEM_CLASSES}
 							>
 								{({ cookerType, id, name }) => (
@@ -617,7 +629,7 @@ export default function FoodTabContent() {
 											}
 										)}
 									>
-										可获取于
+										{t('guests.filter.acquirableAt')}
 									</Button>
 								</DropdownTrigger>
 								<DropdownMenu
@@ -629,7 +641,9 @@ export default function FoodTabContent() {
 									onSelectionChange={
 										specialGuestStore.onFoodTableSelectedAvailabilityDlcsChange
 									}
-									aria-label="按可获取内容筛选料理"
+									aria-label={t(
+										'guests.foodSearch.acquirableAria'
+									)}
 									itemClasses={TABLE_DROPDOWN_ITEM_CLASSES}
 								>
 									{({ value }) => (
@@ -660,7 +674,7 @@ export default function FoodTabContent() {
 										{ 'backdrop-blur': isHighAppearance }
 									)}
 								>
-									条目
+									{t('guests.table.columnsButton')}
 								</Button>
 							</DropdownTrigger>
 							<DropdownMenu
@@ -674,12 +688,12 @@ export default function FoodTabContent() {
 								onSelectionChange={
 									globalStore.foodTableColumns.set
 								}
-								aria-label="选择表格所显示的列"
+								aria-label={t('guests.table.columnsAria')}
 								itemClasses={TABLE_DROPDOWN_ITEM_CLASSES}
 							>
-								{({ key, label }) => (
+								{({ key, labelKey }) => (
 									<DropdownItem key={key}>
-										{label}
+										{t(labelKey)}
 									</DropdownItem>
 								)}
 							</DropdownMenu>
@@ -687,10 +701,14 @@ export default function FoodTabContent() {
 					</div>
 				</div>
 				<div className="flex items-center justify-between text-small text-default-700">
-					<span>共{tableSortedRows.length}套食谱</span>
+					<span>
+						{t('guests.foodTable.totalRecipes', {
+							count: tableSortedRows.length,
+						})}
+					</span>
 					<label className="flex items-center gap-2">
 						<span className="cursor-auto whitespace-nowrap">
-							表格行数
+							{t('guests.table.rowsLabel')}
 						</span>
 						<Select
 							disallowEmptySelection
@@ -703,8 +721,8 @@ export default function FoodTabContent() {
 							onSelectionChange={
 								globalStore.onTableRowsPerPageChange
 							}
-							aria-label="选择表格每页最大行数"
-							title="选择表格每页最大行数"
+							aria-label={t('guests.table.rowsAria')}
+							title={t('guests.table.rowsAria')}
 							popoverProps={{
 								motionProps: selectMotionProps,
 								shouldCloseOnScroll: false,
@@ -749,6 +767,7 @@ export default function FoodTabContent() {
 			selectedAvailabilityDlcs,
 			selectedCookerTypes,
 			selectedGuestFoodTagKeys,
+			t,
 			tableSortedRows.length,
 			tableRowsPerPage,
 			tableSelectableRows,

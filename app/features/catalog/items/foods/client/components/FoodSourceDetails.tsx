@@ -7,13 +7,17 @@ import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
 import type { IFood } from '@/domain/data/foods/schema';
-import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
 import {
 	formatSchedulerLabels,
 	formatTaskLabel,
 } from '@/domain/data/labels/schedulerFacts';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+import { getCollaborationLabel } from '@/domain/labels/localizedCollaborationLabels';
+import { getMapLabel } from '@/domain/places/localizedLabels';
 
+import {
+	CATALOG_ITEMS_CAUSE_LABEL_MESSAGE_KEYS,
+	catalogItemsMessages,
+} from '@/features/catalog/items/shared/messages';
 import { formatSourceReference } from '@/features/catalog/items/shared/sourceReferenceFormatting';
 import Price from '@/features/catalog/shared/client/components/Price';
 import SpecialGuestBondReference from '@/features/catalog/shared/client/components/SpecialGuestBondReference';
@@ -23,6 +27,8 @@ import {
 	type TShareableItemId,
 	type TShareableItemName,
 } from '@/features/itemSharing/contracts';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps {
 	from: IFood['from'];
@@ -45,11 +51,14 @@ function CurrencyItemPrice({
 	currencyItem: TCurrencyItemId;
 	openWindow: IProps['openWindow'];
 }) {
-	const currencyItemName = currencyItemCatalog.getPropsById(
+	const currencyItemName = currencyItemCatalog.getDisplayPropsById(
 		currencyItem,
 		'name'
 	);
-	const actionLabel = `点击：在新窗口中查看货币【${currencyItemName}】的详情`;
+	const { t } = useI18n(catalogItemsMessages);
+	const actionLabel = t('items.source.actionCurrency', {
+		label: currencyItemName,
+	});
 
 	return (
 		<span className="inline-flex items-center">
@@ -75,17 +84,26 @@ function CurrencyItemPrice({
 }
 
 export default function FoodSourceDetails({ from, openWindow }: IProps) {
+	const { locale, t } = useI18n(catalogItemsMessages);
 	let details;
 
 	if ('self' in from) {
-		details = '初始拥有';
+		details = t('items.source.initialOwned');
 	} else if ('areaTask' in from) {
 		const { areaTask } = from;
 		const specialGuestSuffix =
 			'specialGuest' in areaTask
-				? `（${specialGuestCatalog.getPropsById(areaTask.specialGuest, 'name')}）`
+				? t('items.source.guestSuffix', {
+						name: specialGuestCatalog.getDisplayPropsById(
+							areaTask.specialGuest,
+							'name'
+						),
+					})
 				: '';
-		details = `地区【${MAP_FACTS[areaTask.map].label}】${areaTask.task}${specialGuestSuffix}`;
+		details = `${t('items.source.areaTask', {
+			map: getMapLabel(areaTask.map),
+			task: areaTask.task,
+		})}${specialGuestSuffix}`;
 	} else if ('bond' in from) {
 		const { level, specialGuest } = from.bond;
 		details = (
@@ -97,12 +115,12 @@ export default function FoodSourceDetails({ from, openWindow }: IProps) {
 	} else if ('buy' in from) {
 		const { merchant, price } = from.buy;
 		const isNoPrice = price === null;
-		const merchantName = formatSourceReference(merchant);
+		const merchantName = formatSourceReference(merchant, locale);
 		details = (
 			<>
-				{isNoPrice ? '出售于' : null}
+				{isNoPrice ? t('items.source.soldAt') : null}
 				{merchantName}
-				{isNoPrice ? null : '（'}
+				{isNoPrice ? null : t('items.source.parenthesisOpen')}
 				{isObject(price) ? (
 					<CurrencyItemPrice
 						amount={price.amount}
@@ -112,52 +130,73 @@ export default function FoodSourceDetails({ from, openWindow }: IProps) {
 				) : isNoPrice ? null : (
 					<Price>{price}</Price>
 				)}
-				{isNoPrice ? null : '）'}
+				{isNoPrice ? null : t('items.source.parenthesisClose')}
 			</>
 		);
 	} else if ('collaboration' in from) {
-		const collaborationLabel =
-			COLLABORATION_LABEL_MAP[from.collaboration.collaborationLabel];
+		const collaborationLabel = getCollaborationLabel(
+			from.collaboration.collaborationLabel
+		);
 		details = from.collaboration.merchants
 			.map(({ merchant, platformLabel }, index) => {
 				const merchantName =
 					index === 0 && 'map' in merchant
-						? `【${MAP_FACTS[merchant.map].label}“${collaborationLabel}”联动】${formatSourceReference(merchant).replace(/^【[^】]+】/u, '')}`
-						: formatSourceReference(merchant);
-				return `${merchantName}（${platformLabel}）`;
+						? t('items.source.collaborationSource', {
+								collaboration: collaborationLabel,
+								label: formatSourceReference(merchant, locale, {
+									omitMap: true,
+								}),
+								map: getMapLabel(merchant.map),
+							})
+						: formatSourceReference(merchant, locale);
+				return `${merchantName}${t('items.source.parenthesisOpen')}${platformLabel}${t('items.source.parenthesisClose')}`;
 			})
-			.join('、');
+			.join(t('items.source.listSeparator'));
 	} else if ('levelup' in from) {
 		const { level, map } = from.levelup;
 		details = (
 			<>
-				<span className="mr-1">游戏等级</span>
+				<span className="mr-1">{t('items.source.gameLevel')}</span>
 				Lv.{level - 1}
 				<span className="mx-0.5">➞</span>
 				Lv.{level}
 				{map !== null && (
 					<span className="ml-0.5">
-						且已解锁地区【{MAP_FACTS[map].label}】
+						{t('items.source.andUnlockedMap', {
+							map: getMapLabel(map),
+						})}
 					</span>
 				)}
 			</>
 		);
 	} else if ('taskReward' in from) {
-		details = `任务${formatTaskLabel(formatSchedulerLabels(from.taskReward.task))}`;
+		details = t('items.source.task', {
+			label: formatTaskLabel(formatSchedulerLabels(from.taskReward.task)),
+		});
 	} else {
 		details = [
-			...from.failedCooking.causeLabels,
+			...from.failedCooking.causeLabels.map((label) => {
+				const key = CATALOG_ITEMS_CAUSE_LABEL_MESSAGE_KEYS[label];
+				return key === undefined ? label : t(key);
+			}),
 			...from.failedCooking.punishmentSpellCardSpecialGuests.map(
 				(specialGuest) =>
-					`【${specialGuestCatalog.getPropsById(specialGuest, 'name')}】惩罚符卡`
+					t('items.source.punishmentSpellCard', {
+						name: specialGuestCatalog.getDisplayPropsById(
+							specialGuest,
+							'name'
+						),
+					})
 			),
-		].join('、');
+		].join(t('items.source.listSeparator'));
 	}
 
 	return (
 		<Fragment>
 			<p className="break-all text-justify">
-				<span className="font-semibold">食谱来源：</span>
+				<span className="font-semibold">
+					{t('items.source.recipeFrom')}
+				</span>
 				{details}
 			</p>
 		</Fragment>

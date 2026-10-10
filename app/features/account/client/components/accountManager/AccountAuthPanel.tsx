@@ -18,10 +18,13 @@ import Input from '@/design/ui/components/input';
 import Link from '@/design/ui/components/link';
 
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
+import { accountMessages } from '@/features/account/client/messages';
 import {
-	NICKNAME_RULE_DESCRIPTION,
-	PASSWORD_RULE_DESCRIPTION,
-	USERNAME_RULE_DESCRIPTION,
+	NICKNAME_MAX_LENGTH,
+	PASSWORD_MAX_LENGTH,
+	PASSWORD_MIN_LENGTH,
+	USERNAME_MAX_LENGTH,
+	USERNAME_MIN_LENGTH,
 } from '@/features/account/constants';
 import { SITE_LINKS } from '@/features/appShell/links';
 
@@ -33,10 +36,12 @@ import {
 	AccountPanelTitle,
 } from './accountPanelLayout';
 import {
-	ACCOUNT_MANAGER_STATUS_LABEL_MAP,
+	ACCOUNT_MANAGER_STATUS_LABEL_KEYS,
 	type IAccountLoginSupportMessage,
 } from './copy';
 import { type IUseAccountAuthenticationResult } from './useAccountAuthentication';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 const ACCOUNT_AUTH_PASSWORD_FORM_ID = 'account-auth-password-form';
 
@@ -58,6 +63,7 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 	registrationNicknameErrorMessage,
 	...authentication
 }) {
+	const { locale, t } = useI18n(accountMessages);
 	const {
 		authMode,
 		authTermsCheckboxRef,
@@ -138,7 +144,7 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 					className="cursor-pointer rounded-small outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-focus peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background"
 					onPointerDown={handleAuthTermsLabelPointerDown}
 				>
-					我已阅读并同意
+					{t('account.manager.auth.termsPrefix')}
 				</label>
 				<Button
 					disableRipple
@@ -149,7 +155,7 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 					onClick={handleOpenLegalModal}
 				>
 					<span className="group relative inline-block leading-5">
-						法律声明
+						{t('account.manager.auth.termsLink')}
 						<span className="absolute bottom-0.5 left-1/2 h-px w-0 -translate-x-1/2 bg-current transition-width group-data-[focus-visible=true]:w-full group-data-[hover=true]:w-full motion-reduce:transition-none" />
 					</span>
 				</Button>
@@ -158,7 +164,10 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 	) : null;
 
 	const passwordErrorMessage = isRegistrationPasswordInvalid ? (
-		PASSWORD_RULE_DESCRIPTION
+		t('account.passwordRule', {
+			max: PASSWORD_MAX_LENGTH,
+			min: PASSWORD_MIN_LENGTH,
+		})
 	) : authCredentialErrorMessage ===
 	  null ? undefined : accountLoginSupportMessage === null ? (
 		authCredentialErrorMessage
@@ -197,7 +206,7 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 									</span>
 									<div className="min-w-0">
 										<p className="text-small font-medium leading-5 text-foreground-700">
-											通行密钥
+											{t('account.manager.field.passkey')}
 										</p>
 										<p
 											className={cn(
@@ -211,12 +220,17 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 											{authCredentialErrorMessage ??
 												(isWebauthnSlow
 													? getAccountClientErrorMessage(
-															'webauthn-timeout'
+															'webauthn-timeout',
+															locale
 														)
 													: isWebauthnLoginPending ||
 														  isWebauthnAccountRegistrationPending
-														? ACCOUNT_MANAGER_STATUS_LABEL_MAP.awaitingSystemVerification
-														: ACCOUNT_MANAGER_STATUS_LABEL_MAP.passkeyPrompt)}
+														? t(
+																ACCOUNT_MANAGER_STATUS_LABEL_KEYS.awaitingSystemVerification
+															)
+														: t(
+																ACCOUNT_MANAGER_STATUS_LABEL_KEYS.passkeyPrompt
+															))}
 										</p>
 									</div>
 								</div>
@@ -238,7 +252,7 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 									variant="flat"
 									onPress={handleWebAuthnLogin}
 								>
-									使用通行密钥继续
+									{t('account.manager.auth.passkeyContinue')}
 								</Button>
 							</div>
 							{authTermsConfirmation}
@@ -265,7 +279,9 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 												handleWebAuthnAccountRegistration
 											}
 										>
-											使用通行密钥注册新账号
+											{t(
+												'account.manager.auth.passkeyRegister'
+											)}
 										</Button>
 									) : null}
 								</AccountCollapseMotion>
@@ -282,7 +298,7 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 									variant="light"
 									onPress={handlePasswordAuthEntryPress}
 								>
-									使用用户名和密码注册/登录
+									{t('account.manager.auth.passwordEntry')}
 								</Button>
 							</div>
 						</div>
@@ -310,7 +326,7 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 										}
 										onPress={handleLoginModePress}
 									>
-										登录
+										{t('account.manager.auth.loginTab')}
 									</Button>
 									<Button
 										fullWidth
@@ -332,7 +348,7 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 										}
 										onPress={handleRegisterModePress}
 									>
-										注册
+										{t('account.manager.auth.registerTab')}
 									</Button>
 								</div>
 								<form
@@ -346,12 +362,19 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 												? 'username webauthn'
 												: 'username'
 										}
-										description={USERNAME_RULE_DESCRIPTION}
+										description={t('account.usernameRule', {
+											max: USERNAME_MAX_LENGTH,
+											min: USERNAME_MIN_LENGTH,
+										})}
 										isInvalid={
 											authCredentialErrorMessage !== null
 										}
-										label="用户名"
-										placeholder="输入账号用户名"
+										label={t(
+											'account.manager.field.username'
+										)}
+										placeholder={t(
+											'account.manager.auth.usernamePlaceholder'
+										)}
 										startContent={
 											<AccountInputIcon icon={faUser} />
 										}
@@ -365,12 +388,20 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 											<div className="pt-3">
 												<Input
 													autoComplete="nickname"
-													description={
-														NICKNAME_RULE_DESCRIPTION
-													}
+													description={t(
+														'account.nicknameRule',
+														{
+															max: NICKNAME_MAX_LENGTH,
+														}
+													)}
 													errorMessage={
 														isRegistrationNicknameInvalid
-															? NICKNAME_RULE_DESCRIPTION
+															? t(
+																	'account.nicknameRule',
+																	{
+																		max: NICKNAME_MAX_LENGTH,
+																	}
+																)
 															: (registrationNicknameErrorMessage ??
 																undefined)
 													}
@@ -379,8 +410,12 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 														registrationNicknameErrorMessage !==
 															null
 													}
-													label="昵称（可选）"
-													placeholder="设置显示名称"
+													label={t(
+														'account.manager.field.nicknameOptional'
+													)}
+													placeholder={t(
+														'account.manager.auth.nicknamePlaceholder'
+													)}
 													startContent={
 														<AccountInputIcon
 															icon={faUser}
@@ -408,11 +443,17 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 												authCredentialErrorMessage !==
 													null
 											}
-											label="密码"
+											label={t(
+												'account.manager.field.password'
+											)}
 											placeholder={
 												authMode === 'login'
-													? '输入密码'
-													: '设置登录密码'
+													? t(
+															'account.manager.auth.passwordPlaceholderLogin'
+														)
+													: t(
+															'account.manager.auth.passwordPlaceholderRegister'
+														)
 											}
 											startContent={
 												<AccountInputIcon
@@ -464,8 +505,10 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 									variant="flat"
 								>
 									{authMode === 'login'
-										? '登录账号'
-										: '创建账号'}
+										? t('account.manager.auth.loginAction')
+										: t(
+												'account.manager.auth.registerAction'
+											)}
 								</Button>
 								{isPasskeyPreferredAuthAvailable ? (
 									<Button
@@ -481,7 +524,9 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 										variant="light"
 										onPress={handlePasskeyAuthEntryPress}
 									>
-										使用通行密钥注册/登录
+										{t(
+											'account.manager.auth.passkeyToggle'
+										)}
 									</Button>
 								) : null}
 							</div>
@@ -494,23 +539,19 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 					icon={faShieldHalved}
 					iconClassName="text-default-500"
 				>
-					{isSsoContext ? 'SSO授权' : '账号同步'}
+					{isSsoContext
+						? t('account.manager.auth.sideTitleSso')
+						: t('account.manager.auth.sideTitleSync')}
 				</AccountPanelTitle>
 				{isSsoContext ? (
 					<>
-						<p>
-							登录后，您可以授权外部应用获取您的小助手账号身份。
-						</p>
-						<p>注册后会自动登录；登录后即可在授权页面完成确认。</p>
+						<p>{t('account.manager.auth.ssoDescription1')}</p>
+						<p>{t('account.manager.auth.ssoDescription2')}</p>
 					</>
 				) : (
 					<>
-						<p>
-							账号会同步此浏览器保存的数据，让其他设备继续使用相同配置。
-						</p>
-						<p>
-							注册后会自动登录；登录后，本设备尚未上传的更改会自动继续同步。
-						</p>
+						<p>{t('account.manager.auth.syncDescription1')}</p>
+						<p>{t('account.manager.auth.syncDescription2')}</p>
 					</>
 				)}
 			</AccountPanel>

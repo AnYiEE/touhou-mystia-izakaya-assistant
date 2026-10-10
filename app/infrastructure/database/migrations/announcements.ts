@@ -43,6 +43,7 @@ const ANNOUNCEMENT_TABLE_COLUMNS_MAP = {
 		'id',
 		'title',
 		'level',
+		'locales_json',
 		'audience',
 		'html',
 		'enabled',
@@ -51,6 +52,7 @@ const ANNOUNCEMENT_TABLE_COLUMNS_MAP = {
 		'starts_at',
 		'ends_at',
 		'target_user_ids_json',
+		'translations_json',
 		'revision',
 		'created_at',
 		'updated_at',
@@ -93,6 +95,7 @@ const ANNOUNCEMENT_TABLE_COLUMN_DEFINITION_MAP = {
 			defaultTo: ANNOUNCEMENT_DEFAULT_LEVEL,
 			notNull: true,
 		},
+		locales_json: { dataType: 'text', defaultTo: '[]', notNull: true },
 		priority: { dataType: 'integer', defaultTo: 0, notNull: true },
 		revision: { dataType: 'integer', defaultTo: 1, notNull: true },
 		starts_at: { dataType: 'integer' },
@@ -102,6 +105,7 @@ const ANNOUNCEMENT_TABLE_COLUMN_DEFINITION_MAP = {
 			notNull: true,
 		},
 		title: { dataType: 'text', defaultTo: '', notNull: true },
+		translations_json: { dataType: 'text', defaultTo: '{}', notNull: true },
 		updated_at: { dataType: 'integer', defaultTo: 0, notNull: true },
 	},
 	[TABLE_NAME_MAP.announcementDismissal]: {
@@ -381,6 +385,12 @@ export async function migrateAnnouncementTables(database: Kysely<TDatabase>) {
 		.addColumn('starts_at', 'integer')
 		.addColumn('ends_at', 'integer')
 		.addColumn('target_user_ids_json', 'text', (col) =>
+			col.notNull().defaultTo('[]')
+		)
+		.addColumn('translations_json', 'text', (col) =>
+			col.notNull().defaultTo('{}')
+		)
+		.addColumn('locales_json', 'text', (col) =>
 			col.notNull().defaultTo('[]')
 		)
 		.addColumn('revision', 'integer', (col) => col.notNull().defaultTo(1))

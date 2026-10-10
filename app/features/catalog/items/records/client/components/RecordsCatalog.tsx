@@ -4,13 +4,16 @@ import Tooltip from '@/design/ui/components/tooltip';
 
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import type { RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog';
-import { MERCHANT_LABEL_MAP } from '@/domain/data/places/merchantFacts';
+import { getMerchantLabel } from '@/domain/places/localizedLabels';
 
 import CollectibleCatalog from '@/features/catalog/items/collectibles/client/components/CollectibleCatalog';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 const currencyItemCatalog = CurrencyItemCatalog.getInstance();
 
@@ -20,6 +23,7 @@ export default function RecordsCatalog({
 	data: TItemData<RecordItemCatalog>;
 }) {
 	const openWindow = useViewInNewWindow();
+	const { t } = useI18n(catalogItemsMessages);
 
 	return (
 		<CollectibleCatalog
@@ -30,28 +34,45 @@ export default function RecordsCatalog({
 			{({ buy, composer, original, trackName }) => (
 				<>
 					<p>
-						<span className="font-semibold">曲名：</span>
+						<span className="font-semibold">
+							{t('items.source.trackName')}
+						</span>
 						{trackName}
 					</p>
 					<p>
-						<span className="font-semibold">原曲：</span>
+						<span className="font-semibold">
+							{t('items.source.originalTrack')}
+						</span>
 						{original}
 					</p>
 					<p>
-						<span className="font-semibold">编曲：</span>
+						<span className="font-semibold">
+							{t('items.source.arranger')}
+						</span>
 						{composer}
 					</p>
 					<p>
-						<span className="font-semibold">来源：</span>
-						{MERCHANT_LABEL_MAP[buy.merchant]}（
+						<span className="font-semibold">
+							{t('items.source.from')}
+						</span>
+						{getMerchantLabel(buy.merchant)}
+						{t('items.source.parenthesisOpen')}
 						{buy.prices.map(({ amount, currencyItem }, index) => (
 							<Fragment key={currencyItem}>
-								{index > 0 && '、'}
+								{index > 0 && t('items.source.listSeparator')}
 								<span className="inline-flex items-center">
 									<Price showSymbol={false}>{amount}×</Price>
 									<Tooltip
 										showArrow
-										content={`点击：在新窗口中查看货币【${currencyItemCatalog.getPropsById(currencyItem, 'name')}】的详情`}
+										content={t(
+											'items.source.actionCurrency',
+											{
+												label: currencyItemCatalog.getDisplayPropsById(
+													currencyItem,
+													'name'
+												),
+											}
+										)}
 										offset={1}
 										size="sm"
 									>
@@ -63,20 +84,28 @@ export default function RecordsCatalog({
 												openWindow(
 													'currencies',
 													currencyItem,
-													currencyItemCatalog.getPropsById(
+													currencyItemCatalog.getDisplayPropsById(
 														currencyItem,
 														'name'
 													)
 												);
 											}}
-											aria-label={`点击：在新窗口中查看货币【${currencyItemCatalog.getPropsById(currencyItem, 'name')}】的详情`}
+											aria-label={t(
+												'items.source.actionCurrency',
+												{
+													label: currencyItemCatalog.getDisplayPropsById(
+														currencyItem,
+														'name'
+													),
+												}
+											)}
 											role="button"
 										/>
 									</Tooltip>
 								</span>
 							</Fragment>
 						))}
-						）
+						{t('items.source.parenthesisClose')}
 					</p>
 				</>
 			)}

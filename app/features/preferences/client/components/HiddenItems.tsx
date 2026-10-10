@@ -16,7 +16,7 @@ import Heading from '@/design/ui/components/heading';
 import { type IModalProps } from '@/design/ui/components/modal';
 
 import { filterAvailableItemsByHiddenDlcs } from '@/domain/availability';
-import { DLC_LABEL_MAP } from '@/domain/availability/messages';
+import { getDlcLabel } from '@/domain/availability/localizedLabels';
 
 import { beveragesStore } from '@/features/catalog/items/beverages/client/state/store';
 import { foodsStore } from '@/features/catalog/items/foods/client/state/store';
@@ -28,6 +28,7 @@ import type {
 	TItemData,
 	TItemInstance,
 } from '@/features/catalog/shared/contracts';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import {
 	CoordinatedModal,
 	pushOverlayChild,
@@ -36,8 +37,10 @@ import {
 } from '@/features/overlays/client';
 import type { TOverlayId } from '@/features/overlays/contracts';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
+import { preferencesMessages } from '@/features/preferences/client/messages';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 
@@ -57,6 +60,7 @@ const SettingsButton = memo<ISettingsButtonProps>(function SettingsButton({
 	onClick,
 }) {
 	const vibrate = useVibrate();
+	const { t } = useI18n(preferencesMessages);
 
 	const handleClick = useCallback(() => {
 		vibrate();
@@ -71,7 +75,7 @@ const SettingsButton = memo<ISettingsButtonProps>(function SettingsButton({
 			onClick={handleClick}
 			className={cn(isActive && 'ring-2 ring-primary')}
 		>
-			打开设置
+			{t('preferences.hidden.openSettings')}
 		</Button>
 	);
 });
@@ -180,6 +184,7 @@ function SettingsPanelDlcGroup<U extends TData[number]>({
 	const [renderedCount, setRenderedCount] = useState(() =>
 		Math.min(SETTINGS_PANEL_RENDER_BATCH_SIZE, items.length)
 	);
+	const { t } = useI18n(preferencesMessages);
 
 	const itemCount = items.length;
 	const renderedItems = items.slice(0, renderedCount);
@@ -227,7 +232,7 @@ function SettingsPanelDlcGroup<U extends TData[number]>({
 				)}
 			>
 				<Heading as="h4" isFirst={index === 0}>
-					{DLC_LABEL_MAP[dlc].label}
+					{getDlcLabel(dlc)}
 				</Heading>
 				<SwitchItem
 					color="warning"
@@ -236,10 +241,15 @@ function SettingsPanelDlcGroup<U extends TData[number]>({
 					onValueChange={() => {
 						handleDlcToggle(dlc);
 					}}
-					aria-label={`${dlcToggleState === true ? '隐藏' : '显示'}${DLC_LABEL_MAP[dlc].label}的全部项目`}
+					aria-label={t(
+						dlcToggleState === true
+							? 'preferences.hidden.dlcToggleHideAria'
+							: 'preferences.hidden.dlcToggleShowAria',
+						{ label: getDlcLabel(dlc) }
+					)}
 					title={
 						isDlcToggleDisabled
-							? '此分组下的所有料理均因包含已被隐藏的食材而被隐藏'
+							? t('preferences.hidden.groupHiddenNote')
 							: undefined
 					}
 					className={cn(index !== 0 && 'mt-1')}
@@ -270,10 +280,15 @@ function SettingsPanelDlcGroup<U extends TData[number]>({
 							onValueChange={() => {
 								handleValueChange(id);
 							}}
-							aria-label={`${hiddenItems.has(id) ? '显示' : '隐藏'}${name}`}
+							aria-label={t(
+								hiddenItems.has(id)
+									? 'preferences.hidden.itemShowAria'
+									: 'preferences.hidden.itemHideAria',
+								{ name }
+							)}
 							title={
 								isHiddenByIngredient
-									? '此料理因包含已被隐藏的食材而被隐藏'
+									? t('preferences.hidden.foodHiddenNote')
 									: undefined
 							}
 						/>
@@ -399,6 +414,8 @@ interface IProps {
 }
 
 export default memo<IProps>(function HiddenItems({ onModalClose }) {
+	const { t } = useI18n(preferencesMessages);
+	const catalogLocalizationRevision = useCatalogLocalizationRevision();
 	const [isBeveragesSettingsPanelOpen, setBeveragesSettingsPanelOpen] =
 		useState(false);
 	const [isFoodsSettingsPanelOpen, setFoodsSettingsPanelOpen] =
@@ -416,47 +433,47 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 	const foodInstance = foodsStore.instance.get();
 	const ingredientInstance = ingredientsStore.instance.get();
 
-	const beverageData = useMemo(
-		() =>
-			filterAvailableItemsByHiddenDlcs(
-				beverageInstance.getPinyinSortedData(),
-				hiddenDlcs
-			),
-		[beverageInstance, hiddenDlcs]
-	);
+	const beverageData = useMemo(() => {
+		void catalogLocalizationRevision;
+		return filterAvailableItemsByHiddenDlcs(
+			beverageInstance.getPinyinSortedData(),
+			hiddenDlcs
+		);
+	}, [beverageInstance, catalogLocalizationRevision, hiddenDlcs]);
 
-	const foodData = useMemo(
-		() =>
-			filterAvailableItemsByHiddenDlcs(
-				foodInstance.getPinyinSortedData(),
-				hiddenDlcs
-			)
-				.filter(({ id }) => !foodInstance.blockedFoods.has(id))
-				.map((food) => {
-					if (
-						food.recipes.every(({ ingredients }) =>
-							ingredients.some((ingredient) =>
-								hiddenIngredients.has(ingredient)
-							)
+	const foodData = useMemo(() => {
+		void catalogLocalizationRevision;
+		return filterAvailableItemsByHiddenDlcs(
+			foodInstance.getPinyinSortedData(),
+			hiddenDlcs
+		)
+			.filter(({ id }) => !foodInstance.blockedFoods.has(id))
+			.map((food) => {
+				if (
+					food.recipes.every(({ ingredients }) =>
+						ingredients.some((ingredient) =>
+							hiddenIngredients.has(ingredient)
 						)
-					) {
-						return { ...food, isHiddenByIngredient: true };
-					}
-					return food;
-				}),
-		[foodInstance, hiddenDlcs, hiddenIngredients]
-	);
+					)
+				) {
+					return { ...food, isHiddenByIngredient: true };
+				}
+				return food;
+			});
+	}, [
+		catalogLocalizationRevision,
+		foodInstance,
+		hiddenDlcs,
+		hiddenIngredients,
+	]);
 
-	const ingredientData = useMemo(
-		() =>
-			filterAvailableItemsByHiddenDlcs(
-				ingredientInstance.getPinyinSortedData(),
-				hiddenDlcs
-			).filter(
-				({ id }) => !ingredientInstance.blockedIngredients.has(id)
-			),
-		[hiddenDlcs, ingredientInstance]
-	);
+	const ingredientData = useMemo(() => {
+		void catalogLocalizationRevision;
+		return filterAvailableItemsByHiddenDlcs(
+			ingredientInstance.getPinyinSortedData(),
+			hiddenDlcs
+		).filter(({ id }) => !ingredientInstance.blockedIngredients.has(id));
+	}, [catalogLocalizationRevision, hiddenDlcs, ingredientInstance]);
 
 	const isInModal = onModalClose !== undefined;
 	const openSettingsPanel = useCallback(
@@ -511,7 +528,9 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 	return (
 		<div className="mr-1 space-y-2">
 			<div className="flex items-center gap-2">
-				<span className="font-medium">启用或禁用特定酒水</span>
+				<span className="font-medium">
+					{t('preferences.hidden.beverages')}
+				</span>
 				<SettingsButton
 					isActive={!checkLengthEmpty(hiddenBeverages)}
 					onClick={handleBeveragesSettingsButtonClick}
@@ -527,12 +546,14 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 						hiddenItems={hiddenBeverages}
 						setHiddenItems={globalStore.hiddenBeverages.set}
 						target="beverage"
-						title="启用或禁用特定酒水"
+						title={t('preferences.hidden.beverages')}
 					/>
 				</SettingsModal>
 			</div>
 			<div className="flex items-center gap-2">
-				<span className="font-medium">启用或禁用特定料理</span>
+				<span className="font-medium">
+					{t('preferences.hidden.foods')}
+				</span>
 				<SettingsButton
 					isActive={!checkLengthEmpty(hiddenFoods)}
 					onClick={handleFoodsSettingsButtonClick}
@@ -548,12 +569,14 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 						hiddenItems={hiddenFoods}
 						setHiddenItems={globalStore.hiddenFoods.set}
 						target="food"
-						title="启用或禁用特定料理"
+						title={t('preferences.hidden.foods')}
 					/>
 				</SettingsModal>
 			</div>
 			<div className="flex items-center gap-2">
-				<span className="font-medium">启用或禁用特定食材</span>
+				<span className="font-medium">
+					{t('preferences.hidden.ingredients')}
+				</span>
 				<SettingsButton
 					isActive={!checkLengthEmpty(hiddenIngredients)}
 					onClick={handleIngredientsSettingsButtonClick}
@@ -569,7 +592,7 @@ export default memo<IProps>(function HiddenItems({ onModalClose }) {
 						hiddenItems={hiddenIngredients}
 						setHiddenItems={globalStore.hiddenIngredients.set}
 						target="ingredient"
-						title="启用或禁用特定食材"
+						title={t('preferences.hidden.ingredients')}
 					/>
 				</SettingsModal>
 			</div>

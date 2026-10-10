@@ -2,25 +2,51 @@ import { type MetadataRoute } from 'next';
 
 import { COLOR_MAP } from './design/theme/runtime/constants';
 import { PUBLIC_RUNTIME_CONFIG } from './infrastructure/environment/publicRuntimeConfig';
+import { DEFAULT_LOCALE } from './shared/i18n/locale';
+import { translate } from './shared/i18n/messages';
+import { siteMessages } from './shared/site/messages';
 import { SITE_METADATA } from './shared/site/metadata';
 
 type TManifest = MetadataRoute.Manifest & {
 	edge_side_panel: Partial<{ preferred_width: number }>;
 };
 
-const { cdnUrl, isOffline } = PUBLIC_RUNTIME_CONFIG;
-const { description, id, locale, name, shortName } = SITE_METADATA;
+const { cdnUrl, isExportMode, isOffline } = PUBLIC_RUNTIME_CONFIG;
+const { id } = SITE_METADATA;
 
-export const dynamic = 'force-static';
+async function readManifestLocale() {
+	if (isExportMode) {
+		return DEFAULT_LOCALE;
+	}
 
-export default function manifest(): TManifest {
+	const requestLocaleModule =
+		await import('./features/preferences/server/requestLocale');
+	return requestLocaleModule.readRequestLocale();
+}
+
+export default async function manifest(): Promise<TManifest> {
+	const locale = await readManifestLocale();
+	const siteName = translate(siteMessages, locale, 'site.name');
+	const siteShortName = translate(siteMessages, locale, 'site.shortName');
+	const offlineSuffix = translate(
+		siteMessages,
+		locale,
+		'site.manifest.offlineSuffix'
+	);
+
 	return {
 		id: isOffline ? `${id}-offline` : id,
-		name: isOffline ? `${name}（离线版）` : name,
-		short_name: isOffline ? `${shortName}（离线版）` : shortName,
+		name: isOffline ? `${siteName}${offlineSuffix}` : siteName,
+		short_name: isOffline
+			? `${siteShortName}${offlineSuffix}`
+			: siteShortName,
 
 		categories: ['games'],
-		description,
+		description: translate(
+			siteMessages,
+			locale,
+			'site.manifest.description'
+		),
 
 		display: 'standalone',
 		display_override: ['window-controls-overlay', 'standalone', 'browser'],
@@ -42,8 +68,11 @@ export default function manifest(): TManifest {
 		],
 		shortcuts: [
 			{
-				description:
-					'搭配稀客的料理套餐或查看顾客图鉴（包括羁绊奖励和符卡效果查询）',
+				description: translate(
+					siteMessages,
+					locale,
+					'site.manifest.shortcut.description'
+				),
 				icons: [
 					{
 						sizes: '192x192',
@@ -56,8 +85,16 @@ export default function manifest(): TManifest {
 						type: 'image/png',
 					},
 				],
-				name: '为稀有顾客搭配料理套餐',
-				short_name: '搭配稀客套餐',
+				name: translate(
+					siteMessages,
+					locale,
+					'site.manifest.shortcut.name'
+				),
+				short_name: translate(
+					siteMessages,
+					locale,
+					'site.manifest.shortcut.shortName'
+				),
 				url: '/special-guests',
 			},
 		],

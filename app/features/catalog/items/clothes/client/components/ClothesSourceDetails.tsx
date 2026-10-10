@@ -5,12 +5,16 @@ import Tooltip from '@/design/ui/components/tooltip';
 import { formatMerchantReference } from '@/domain/availability/sourceResolvers';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import type { IClothes, TClothesSource } from '@/domain/data/clothes/schema';
-import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
 import {
 	formatSchedulerLabels,
 	formatTaskLabel,
 } from '@/domain/data/labels/schedulerFacts';
+import { getCollaborationLabel } from '@/domain/labels/localizedCollaborationLabels';
 
+import {
+	type TCatalogItemsTranslate,
+	catalogItemsMessages,
+} from '@/features/catalog/items/shared/messages';
 import Price from '@/features/catalog/shared/client/components/Price';
 import SpecialGuestBondReference from '@/features/catalog/shared/client/components/SpecialGuestBondReference';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
@@ -20,6 +24,7 @@ import {
 	type TShareableItemName,
 } from '@/features/itemSharing/contracts';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkObjectOrStringEmpty } from '@/shared/utilities/collections/check';
 
 interface IProps {
@@ -33,10 +38,11 @@ interface IProps {
 
 function renderClothesSource(
 	item: TClothesSource,
-	openWindow: IProps['openWindow']
+	openWindow: IProps['openWindow'],
+	t: TCatalogItemsTranslate
 ) {
 	if ('self' in item) {
-		return '初始拥有';
+		return t('items.source.initialOwned');
 	}
 
 	if ('bond' in item) {
@@ -51,18 +57,22 @@ function renderClothesSource(
 
 	if ('buy' in item) {
 		const { amount, currencyItem } = item.buy.price.currencyItem;
-		const currencyItemName = CurrencyItemCatalog.getInstance().getPropsById(
-			currencyItem,
-			'name'
-		);
+		const currencyItemName =
+			CurrencyItemCatalog.getInstance().getDisplayPropsById(
+				currencyItem,
+				'name'
+			);
 		return (
 			<>
-				{formatMerchantReference(item.buy.merchant)}（
+				{formatMerchantReference(item.buy.merchant)}
+				{t('items.source.parenthesisOpen')}
 				<span className="inline-flex items-center">
 					<Price showSymbol={false}>{amount}×</Price>
 					<Tooltip
 						showArrow
-						content={`点击：在新窗口中查看货币【${currencyItemName}】的详情`}
+						content={t('items.source.actionCurrency', {
+							label: currencyItemName,
+						})}
 						offset={1}
 						size="sm"
 					>
@@ -77,48 +87,64 @@ function renderClothesSource(
 									currencyItemName
 								);
 							}}
-							aria-label={`点击：在新窗口中查看货币【${currencyItemName}】的详情`}
+							aria-label={t('items.source.actionCurrency', {
+								label: currencyItemName,
+							})}
 							role="button"
 						/>
 					</Tooltip>
 				</span>
-				）
+				{t('items.source.parenthesisClose')}
 			</>
 		);
 	}
 
 	if ('holdingRequirement' in item) {
 		const { amount, currencyItem } = item.holdingRequirement;
-		const currencyItemName = CurrencyItemCatalog.getInstance().getPropsById(
-			currencyItem,
-			'name'
-		);
-		return `持有${amount}枚“${currencyItemName}”时自动获得`;
+		const currencyItemName =
+			CurrencyItemCatalog.getInstance().getDisplayPropsById(
+				currencyItem,
+				'name'
+			);
+		return t('items.source.autoObtainedHolding', {
+			amount,
+			currency: currencyItemName,
+		});
 	}
 
 	if ('eventReward' in item) {
-		return `${formatSchedulerLabels(item.eventReward.eventLabel)}时自动获得`;
+		return t('items.source.autoObtainedOnEvent', {
+			event: formatSchedulerLabels(item.eventReward.eventLabel),
+		});
 	}
 
 	if ('collaborationUnlock' in item) {
-		return `通过联动终端【${COLLABORATION_LABEL_MAP[item.collaborationUnlock.collaborationLabel]}】选项领取`;
+		return t('items.source.collaborationTerminal', {
+			label: getCollaborationLabel(
+				item.collaborationUnlock.collaborationLabel
+			),
+		});
 	}
 
-	return `任务${formatTaskLabel(formatSchedulerLabels(item.taskReward.task))}`;
+	return t('items.source.task', {
+		label: formatTaskLabel(formatSchedulerLabels(item.taskReward.task)),
+	});
 }
 
 export default function ClothesSourceDetails({ from, openWindow }: IProps) {
+	const { t } = useI18n(catalogItemsMessages);
+
 	if (checkObjectOrStringEmpty(from)) {
 		return null;
 	}
 
 	return (
 		<p className="break-all text-justify">
-			<span className="font-semibold">来源：</span>
+			<span className="font-semibold">{t('items.source.from')}</span>
 			{from.map((item, fromIndex) => (
 				<Fragment key={fromIndex}>
-					{fromIndex > 0 && '、'}
-					{renderClothesSource(item, openWindow)}
+					{fromIndex > 0 && t('items.source.listSeparator')}
+					{renderClothesSource(item, openWindow, t)}
 				</Fragment>
 			))}
 		</p>

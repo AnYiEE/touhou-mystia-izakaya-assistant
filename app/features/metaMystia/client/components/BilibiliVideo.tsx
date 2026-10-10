@@ -5,10 +5,13 @@ import { memo } from 'react';
 import Link from '@/design/ui/components/link';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { metaMystiaMessages } from '@/features/metaMystia/client/messages';
 import {
 	getBilibiliPlayerUrl,
 	getBilibiliVideoUrl,
 } from '@/features/metaMystia/links';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps {
 	aid: string;
@@ -16,6 +19,8 @@ interface IProps {
 }
 
 export default memo<IProps>(function BilibiliVideo({ aid, title }) {
+	const { t } = useI18n(metaMystiaMessages);
+
 	return (
 		<figure className="flex h-full flex-col gap-3 rounded-large bg-content1 p-3 shadow-small">
 			<iframe
@@ -32,7 +37,7 @@ export default memo<IProps>(function BilibiliVideo({ aid, title }) {
 					isExternal
 					animationUnderline={false}
 					href={getBilibiliVideoUrl(aid)}
-					title={`在哔哩哔哩观看：${title}`}
+					title={t('metaMystia.videos.watchOnBilibili', { title })}
 					onPress={() => {
 						trackEvent(
 							trackEvent.category.click,

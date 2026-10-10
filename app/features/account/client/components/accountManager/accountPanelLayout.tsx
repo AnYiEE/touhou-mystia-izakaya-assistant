@@ -13,6 +13,8 @@ import Card from '@/design/ui/components/card';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
+import { type TLocale } from '@/shared/i18n/locale';
+
 const ACCOUNT_COLLAPSE_MOTION_TRANSITION = {
 	duration: MOTION_DURATION_S.base,
 	ease: MOTION_EASE.standard,
@@ -220,6 +222,6 @@ export const AccountInputIcon = memo<IAccountInputIconProps>(
 	}
 );
 
-export function formatSessionTimestamp(timestamp: number) {
-	return new Date(timestamp).toLocaleString('zh-CN');
+export function formatSessionTimestamp(timestamp: number, locale: TLocale) {
+	return new Date(timestamp).toLocaleString(locale);
 }

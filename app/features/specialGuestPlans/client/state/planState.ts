@@ -1,12 +1,30 @@
 import { createAccountClientId } from '@/features/account/client/clientId';
-import {
-	SPECIAL_GUEST_PLAN_DEFAULT_NAME,
-	SPECIAL_GUEST_PLAN_MAX_NAME_LENGTH,
-} from '@/features/specialGuestPlans/constants';
+import { resolveEffectiveLocale } from '@/features/preferences/client/state/localeMirror';
+import { getLocalePreference } from '@/features/preferences/client/state/localeRuntime';
+import { specialGuestPlansMessages } from '@/features/specialGuestPlans/client/messages';
+import { SPECIAL_GUEST_PLAN_MAX_NAME_LENGTH } from '@/features/specialGuestPlans/constants';
 import type {
 	ISpecialGuestPlan,
 	ISpecialGuestPlansState,
 } from '@/features/specialGuestPlans/contracts';
+
+import { translate } from '@/shared/i18n/messages';
+
+function getSpecialGuestPlanDefaultName() {
+	return translate(
+		specialGuestPlansMessages,
+		resolveEffectiveLocale(getLocalePreference()),
+		'plans.defaultName'
+	);
+}
+
+function getSpecialGuestPlanCopySuffix() {
+	return translate(
+		specialGuestPlansMessages,
+		resolveEffectiveLocale(getLocalePreference()),
+		'plans.copySuffix'
+	);
+}
 
 const SPECIAL_GUEST_VIRTUAL_PLAN_ID = '__virtual_default__';
 
@@ -21,7 +39,7 @@ function createSpecialGuestVirtualPlan(): ISpecialGuestPlan {
 		maps: [],
 		mealSource: 'saved',
 		mode: 'region',
-		name: SPECIAL_GUEST_PLAN_DEFAULT_NAME,
+		name: getSpecialGuestPlanDefaultName(),
 		updatedAt: 0,
 	};
 }
@@ -32,7 +50,7 @@ export function normalizeSpecialGuestPlanName(name: string) {
 		.slice(0, SPECIAL_GUEST_PLAN_MAX_NAME_LENGTH);
 
 	return trimmedName.length === 0
-		? SPECIAL_GUEST_PLAN_DEFAULT_NAME
+		? getSpecialGuestPlanDefaultName()
 		: trimmedName;
 }
 
@@ -51,7 +69,7 @@ export function createSpecialGuestPlan(
 		maps: [],
 		mealSource: 'saved',
 		mode: 'region',
-		name: SPECIAL_GUEST_PLAN_DEFAULT_NAME,
+		name: getSpecialGuestPlanDefaultName(),
 		updatedAt: now,
 		...overrides,
 	};
@@ -72,7 +90,9 @@ export function copySpecialGuestPlan(
 		manualGuests: [...plan.manualGuests],
 		maps: [...plan.maps],
 		mealSource: plan.mealSource,
-		name: normalizeSpecialGuestPlanName(`${plan.name}副本`),
+		name: normalizeSpecialGuestPlanName(
+			`${plan.name}${getSpecialGuestPlanCopySuffix()}`
+		),
 		updatedAt: now,
 	};
 }

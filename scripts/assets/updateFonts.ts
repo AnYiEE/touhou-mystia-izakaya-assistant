@@ -39,11 +39,23 @@ const FONT_CONFIGS = [
 		family: 'Noto Sans SC',
 		slug: 'noto-sans-sc',
 	},
+	{
+		cssUrl: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap',
+		family: 'Noto Sans JP',
+		slug: 'noto-sans-jp',
+	},
+	{
+		cssUrl: 'https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap',
+		family: 'Noto Sans KR',
+		slug: 'noto-sans-kr',
+	},
 ] as const;
 
 const STATIC_FILES = [
 	'index.css',
 	'OFL-Noto-Sans-and-Mono.txt',
+	'OFL-Noto-Sans-JP.txt',
+	'OFL-Noto-Sans-KR.txt',
 	'OFL-Noto-Sans-SC.txt',
 ] as const;
 
@@ -200,13 +212,15 @@ function getLocalDate() {
 function createReadme(files: number, bytes: number) {
 	return `# 本地字体资源
 
-本目录保存根布局使用的 Noto Sans、Noto Sans Mono 和 Noto Sans SC 可变字体。字体 CSS 与其引用的全部 ${files} 个 WOFF2 Unicode 分片于 ${getLocalDate()} 从 Google Fonts CSS API 获取，共 ${bytes.toLocaleString('en-US')} 字节：
+本目录保存根布局使用的 Noto Sans、Noto Sans Mono、Noto Sans SC、Noto Sans JP 和 Noto Sans KR 可变字体。字体 CSS 与其引用的全部 ${files} 个 WOFF2 Unicode 分片于 ${getLocalDate()} 从 Google Fonts CSS API 获取，共 ${bytes.toLocaleString('en-US')} 字节：
 
 - \`Noto Sans\`: \`family=Noto+Sans:wght@100..900&display=swap\`
 - \`Noto Sans Mono\`: \`family=Noto+Sans+Mono:wght@100..900&display=swap\`
 - \`Noto Sans SC\`: \`family=Noto+Sans+SC:wght@100..900&display=swap\`
+- \`Noto Sans JP\`: \`family=Noto+Sans+JP:wght@100..900&display=swap\`
+- \`Noto Sans KR\`: \`family=Noto+Sans+KR:wght@100..900&display=swap\`
 
-\`google-fonts.css\` 和三个字体子目录由脚本管理。需要更新字体时，在可访问 Google Fonts 的环境中运行：
+\`google-fonts.css\` 和五个字体子目录由脚本管理。需要更新字体时，在可访问 Google Fonts 的环境中运行：
 
 \`\`\`bash
 pnpm fonts:update
@@ -216,7 +230,7 @@ pnpm fonts:update
 
 \`index.css\` 中的度量兼容回退和 CSS 变量由人工维护，不会被脚本生成。Google Fonts 更新字形后，如果字体度量发生变化，需要另行核对其中的 \`size-adjust\`、\`ascent-override\` 和 \`descent-override\`。
 
-字体使用 SIL Open Font License 1.1。Noto Sans 与 Noto Sans Mono 的许可证见 \`OFL-Noto-Sans-and-Mono.txt\`，Noto Sans SC 的许可证见 \`OFL-Noto-Sans-SC.txt\`。许可证文本取自 Google Fonts 仓库提交 \`${FONT_LICENSE_COMMIT}\`。
+字体使用 SIL Open Font License 1.1。Noto Sans 与 Noto Sans Mono 的许可证见 \`OFL-Noto-Sans-and-Mono.txt\`，Noto Sans SC 的许可证见 \`OFL-Noto-Sans-SC.txt\`，Noto Sans JP 的许可证见 \`OFL-Noto-Sans-JP.txt\`，Noto Sans KR 的许可证见 \`OFL-Noto-Sans-KR.txt\`。许可证文本取自 Google Fonts 仓库提交 \`${FONT_LICENSE_COMMIT}\`。
 `;
 }
 

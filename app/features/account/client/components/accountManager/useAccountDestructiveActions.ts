@@ -12,7 +12,8 @@ import {
 	logoutAllAccount,
 } from '@/features/account/client/api';
 import { createAccountClientId } from '@/features/account/client/clientId';
-import { ACCOUNT_CLIENT_MESSAGE_MAP } from '@/features/account/client/copy';
+import { ACCOUNT_CLIENT_MESSAGE_KEYS } from '@/features/account/client/copy';
+import { accountMessages } from '@/features/account/client/messages';
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
 import {
 	checkCurrentAccountAuthContext,
@@ -46,7 +47,9 @@ import {
 	handleUnauthorizedAccountActionError,
 	handleUnauthorizedAccountError,
 } from './controller';
-import { ACCOUNT_MANAGER_MESSAGE_MAP } from './copy';
+import { ACCOUNT_MANAGER_MESSAGE_KEYS } from './copy';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 const LOGOUT_SKIPPED = Symbol('logout-skipped');
 type TLogoutAfterFlushResult =
@@ -75,6 +78,7 @@ interface IUseAccountDestructiveActionsResult {
 export function useAccountDestructiveActions(
 	options: IUseAccountDestructiveActionsOptions
 ): IUseAccountDestructiveActionsResult {
+	const { locale, t } = useI18n(accountMessages);
 	const {
 		controller: { isSubmitting, setIsSubmitting, setMessage },
 
@@ -135,7 +139,7 @@ export function useAccountDestructiveActions(
 						}
 
 						setMessage(
-							ACCOUNT_MANAGER_MESSAGE_MAP.syncPendingBeforeLogout
+							ACCOUNT_MANAGER_MESSAGE_KEYS.syncPendingBeforeLogout
 						);
 
 						return LOGOUT_SKIPPED;
@@ -189,7 +193,7 @@ export function useAccountDestructiveActions(
 					setMessage(
 						Error.isError(error)
 							? error.message
-							: ACCOUNT_MANAGER_MESSAGE_MAP.logoutSyncFailed
+							: ACCOUNT_MANAGER_MESSAGE_KEYS.logoutSyncFailed
 					);
 				})
 				.finally(() => {
@@ -254,7 +258,7 @@ export function useAccountDestructiveActions(
 		)
 			.then(async (leaseResult) => {
 				if (leaseResult === null) {
-					setMessage(ACCOUNT_CLIENT_MESSAGE_MAP.operationBusy);
+					setMessage(ACCOUNT_CLIENT_MESSAGE_KEYS.operationBusy);
 					return;
 				}
 				const { operationId, pauseResult, result } = leaseResult;
@@ -278,7 +282,7 @@ export function useAccountDestructiveActions(
 							result.message === 'sync-generation-mismatch')
 					) {
 						setMessage(
-							ACCOUNT_MANAGER_MESSAGE_MAP.cloudDataChangedRefreshing
+							ACCOUNT_MANAGER_MESSAGE_KEYS.cloudDataChangedRefreshing
 						);
 						try {
 							await refreshAccountState();
@@ -295,7 +299,7 @@ export function useAccountDestructiveActions(
 								return;
 							}
 							setMessage(
-								ACCOUNT_CLIENT_MESSAGE_MAP.accountStateRefreshFailed
+								ACCOUNT_CLIENT_MESSAGE_KEYS.accountStateRefreshFailed
 							);
 							return;
 						}
@@ -305,7 +309,7 @@ export function useAccountDestructiveActions(
 							)
 						) {
 							setMessage(
-								ACCOUNT_MANAGER_MESSAGE_MAP.cloudDataChangedReconfirm
+								ACCOUNT_MANAGER_MESSAGE_KEYS.cloudDataChangedReconfirm
 							);
 						}
 						return;
@@ -340,7 +344,7 @@ export function useAccountDestructiveActions(
 						}
 
 						setMessage(
-							ACCOUNT_MANAGER_MESSAGE_MAP.cloudDataCleared
+							ACCOUNT_MANAGER_MESSAGE_KEYS.cloudDataCleared
 						);
 					})
 					.catch((error: unknown) => {
@@ -355,7 +359,7 @@ export function useAccountDestructiveActions(
 						}
 
 						setMessage(
-							ACCOUNT_MANAGER_MESSAGE_MAP.cloudDataCleared
+							ACCOUNT_MANAGER_MESSAGE_KEYS.cloudDataCleared
 						);
 					});
 			})
@@ -373,14 +377,24 @@ export function useAccountDestructiveActions(
 				setMessage(
 					getAccountClientErrorMessage(
 						errorCode,
-						ACCOUNT_MANAGER_MESSAGE_MAP.cloudDataClearFailed
+						locale,
+						t(ACCOUNT_MANAGER_MESSAGE_KEYS.cloudDataClearFailed)
 					)
 				);
 			})
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [csrfToken, isSubmitting, setIsSubmitting, setMessage, user, vibrate]);
+	}, [
+		csrfToken,
+		isSubmitting,
+		locale,
+		setIsSubmitting,
+		setMessage,
+		t,
+		user,
+		vibrate,
+	]);
 
 	const handleDeleteAccount = useCallback(() => {
 		if (csrfToken === null || isSubmitting || user === null) {
@@ -481,7 +495,7 @@ export function useAccountDestructiveActions(
 				setMessage(
 					Error.isError(error)
 						? error.message
-						: ACCOUNT_MANAGER_MESSAGE_MAP.accountDeleteFailed
+						: ACCOUNT_MANAGER_MESSAGE_KEYS.accountDeleteFailed
 				);
 			})
 			.finally(() => {

@@ -11,6 +11,7 @@ import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 import { type ClothesCatalog as ClothesCatalogModel } from '@/domain/catalog/items/ClothesCatalog';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import { getClothesTachiePath } from '@/features/catalog/presentation/tachiePaths';
 import ItemCard from '@/features/catalog/shared/client/components/ItemCard';
 import {
@@ -26,6 +27,8 @@ import { useOpenedItemPopover } from '@/features/catalog/shared/client/hooks/use
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 
 import ClothesSourceDetails from './ClothesSourceDetails';
@@ -35,6 +38,7 @@ interface IProps {
 }
 
 export default memo<IProps>(function ClothesCatalog({ data }) {
+	const { t } = useI18n(catalogItemsMessages);
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const { defaultOpenedPopover, getPopoverOpenChangeProps } =
 		useOpenedItemPopover(popoverCardRef, data);
@@ -115,12 +119,16 @@ export default memo<IProps>(function ClothesCatalog({ data }) {
 						/>
 						<p>
 							<span className="font-semibold">
-								可选更改店铺装潢：
+								{t('items.source.changeDecoration')}
 							</span>
-							{izakaya ? '是' : '否'}
+							{t(
+								izakaya ? 'items.source.yes' : 'items.source.no'
+							)}
 						</p>
 						<p>
-							<span className="font-semibold">立绘：</span>
+							<span className="font-semibold">
+								{t('items.source.artwork')}
+							</span>
 							<Popover
 								placement={placement}
 								showArrow={placement === 'top'}
@@ -134,7 +142,7 @@ export default memo<IProps>(function ClothesCatalog({ data }) {
 											CLASSNAME_FOCUS_VISIBLE_OUTLINE
 										)}
 									>
-										查看立绘
+										{t('items.source.viewArtwork')}
 									</span>
 								</PopoverTrigger>
 								<PopoverContent>

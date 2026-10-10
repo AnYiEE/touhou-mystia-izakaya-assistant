@@ -14,13 +14,14 @@ import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import { compareMapCanonicalOrder } from '@/domain/places/mapOrdering';
 
+import { appShellMessages } from '@/features/appShell/client/messages';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
-import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
 import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
 import GuestTabSlider from '@/features/catalog/guests/shared/client/components/guestTabSlider';
 import { useGuestRouteData } from '@/features/catalog/guests/shared/client/hooks/useGuestRouteData';
 import { useIngredientRouteData } from '@/features/catalog/guests/shared/client/hooks/useIngredientRouteData';
 import type { TTab } from '@/features/catalog/guests/shared/contracts';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import {
 	guestTabStyleMap,
 	ingredientTabStyleMap,
@@ -40,8 +41,10 @@ import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { checkCompatibility } from '@/infrastructure/browser/compatibility/checkCompatibility';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { useDocumentTitle } from '@/shared/react/useDocumentTitle';
 import { useHydrated } from '@/shared/react/useHydrated';
+import { siteMessages } from '@/shared/site/messages';
 import { SITE_METADATA } from '@/shared/site/metadata';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
@@ -53,7 +56,7 @@ import IngredientTabContent from './ingredientTabContent';
 import ResultCard from './resultCard';
 import SavedMealCard from './savedMealCard';
 
-const { enName, name: zhName } = SITE_METADATA;
+const { enName } = SITE_METADATA;
 const GUEST_TAB_BY_KEY: ReadonlyMap<Key, TTab> = new Map([
 	['beverage', 'beverage'],
 	['food', 'food'],
@@ -78,6 +81,7 @@ const NormalGuestTabs = memo<INormalGuestTabsProps>(function NormalGuestTabs({
 	onSelectionChange,
 	selectedKey,
 }) {
+	const { t: tAppShell } = useI18n(appShellMessages);
 	const disableAnimation =
 		isReducedMotion || !checkCompatibility().largeSlidingPanelAnimation;
 	const classNames = useMemo(
@@ -108,10 +112,22 @@ const NormalGuestTabs = memo<INormalGuestTabsProps>(function NormalGuestTabs({
 			onSelectionChange={onSelectionChange}
 			classNames={classNames}
 		>
-			<Tab key="guest" title="普客" />
-			<Tab isDisabled={!isGuestSelected} key="food" title="料理" />
-			<Tab isDisabled={!isGuestSelected} key="beverage" title="酒水" />
-			<Tab isDisabled={!isMealSelected} key="ingredient" title="食材" />
+			<Tab key="guest" title={tAppShell('appShell.nav.normalGuests')} />
+			<Tab
+				isDisabled={!isGuestSelected}
+				key="food"
+				title={tAppShell('appShell.nav.foods')}
+			/>
+			<Tab
+				isDisabled={!isGuestSelected}
+				key="beverage"
+				title={tAppShell('appShell.nav.beverages')}
+			/>
+			<Tab
+				isDisabled={!isMealSelected}
+				key="ingredient"
+				title={tAppShell('appShell.nav.ingredients')}
+			/>
 		</Tabs>
 	);
 });
@@ -119,6 +135,9 @@ const NormalGuestTabs = memo<INormalGuestTabsProps>(function NormalGuestTabs({
 export default function Content() {
 	const { pathname } = usePathname();
 	const router = useRouter();
+	const { t } = useI18n(catalogGuestsMessages);
+	const { t: tAppShell } = useI18n(appShellMessages);
+	const { t: tSite } = useI18n(siteMessages);
 
 	const [, , routeGuestSegment] = pathname.split('/');
 	const routeGuest = resolveGuestRouteSegment({
@@ -129,7 +148,12 @@ export default function Content() {
 	const routeGuestName = routeGuest?.name ?? null;
 	const hasGuestPath =
 		routeGuestSegment !== undefined && routeGuestSegment !== '';
-	const title = `${routeGuestName === null ? '' : `${routeGuestName} | `}${getPageTitle('/normal-guests')} | ${zhName} - ${enName}`;
+	const siteName = tSite('site.name');
+	const siteTitle =
+		siteName === enName ? siteName : `${siteName} - ${enName}`;
+	const title = `${
+		routeGuestName === null ? '' : `${routeGuestName} | `
+	}${tAppShell('appShell.nav.normalGuests')} | ${siteTitle}`;
 
 	useDocumentTitle(title, '/normal-guests');
 
@@ -209,7 +233,7 @@ export default function Content() {
 		() => [
 			{
 				items: availableGuestAvailabilityDlcs,
-				label: '可出现于',
+				label: t('guests.filter.guestAvailability'),
 				selectedKeys: guestFilterAvailabilityDlcs,
 				setSelectedKeys:
 					normalGuestStore.persistence.guest.filters.availabilityDlcs
@@ -218,7 +242,7 @@ export default function Content() {
 			},
 			{
 				items: canonicalAvailableGuestMaps,
-				label: '出没地区（包含）',
+				label: t('guests.filter.guestPlacesInclude'),
 				selectedKeys: guestFilterMaps,
 				setSelectedKeys:
 					normalGuestStore.persistence.guest.filters.places.set,
@@ -226,7 +250,7 @@ export default function Content() {
 			},
 			{
 				items: canonicalAvailableGuestMaps,
-				label: '出没地区（排除）',
+				label: t('guests.filter.guestPlacesExclude'),
 				selectedKeys: guestFilterNoMaps,
 				setSelectedKeys:
 					normalGuestStore.persistence.guest.filters.noPlaces.set,
@@ -238,7 +262,7 @@ export default function Content() {
 					recordId: id,
 					value: id,
 				})),
-				label: '额外包含',
+				label: t('guests.filter.guestIncludes'),
 				selectedKeys: guestFilterIncludes,
 				setSelectedKeys:
 					normalGuestStore.persistence.guest.filters.includes.set,
@@ -250,7 +274,7 @@ export default function Content() {
 					recordId: id,
 					value: id,
 				})),
-				label: '额外排除',
+				label: t('guests.filter.guestExcludes'),
 				selectedKeys: guestFilterExcludes,
 				setSelectedKeys:
 					normalGuestStore.persistence.guest.filters.excludes.set,
@@ -266,6 +290,7 @@ export default function Content() {
 			guestFilterIncludes,
 			guestFilterNoMaps,
 			guestFilterMaps,
+			t,
 		]
 	);
 
@@ -312,7 +337,7 @@ export default function Content() {
 		() => [
 			{
 				items: availableIngredientAvailabilityDlcs,
-				label: '可获取于',
+				label: t('guests.filter.acquirableAt'),
 				selectedKeys: ingredientFilterAvailabilityDlcs,
 				setSelectedKeys:
 					normalGuestStore.persistence.ingredient.filters
@@ -321,7 +346,7 @@ export default function Content() {
 			},
 			{
 				items: availableIngredientTags,
-				label: '食材标签（包含）',
+				label: t('guests.filter.ingredientTagsInclude'),
 				selectedKeys: ingredientFilterTags,
 				setSelectedKeys:
 					normalGuestStore.persistence.ingredient.filters.tags.set,
@@ -329,7 +354,7 @@ export default function Content() {
 			},
 			{
 				items: availableIngredientTags,
-				label: '食材标签（排除）',
+				label: t('guests.filter.ingredientTagsExclude'),
 				selectedKeys: ingredientFilterNoTags,
 				setSelectedKeys:
 					normalGuestStore.persistence.ingredient.filters.noTags.set,
@@ -337,7 +362,7 @@ export default function Content() {
 			},
 			{
 				items: availableIngredientLevels,
-				label: '等级',
+				label: t('guests.filter.level'),
 				selectedKeys: ingredientFilterLevels,
 				setSelectedKeys:
 					normalGuestStore.persistence.ingredient.filters.levels.set,
@@ -351,6 +376,7 @@ export default function Content() {
 			ingredientFilterLevels,
 			ingredientFilterNoTags,
 			ingredientFilterTags,
+			t,
 		]
 	);
 
@@ -445,7 +471,7 @@ export default function Content() {
 							aria-hidden
 							className="image-rendering-pixelated block h-loading w-loading bg-loading"
 						/>
-						<p>选择顾客以继续</p>
+						<p>{t('guests.guestPage.selectGuestPrompt')}</p>
 					</Placeholder>
 				) : (
 					<>
@@ -492,7 +518,9 @@ export default function Content() {
 				currentNormalGuest !== null && (
 					<Tachie
 						aria-hidden
-						alt="雀酒屋工作装"
+						alt={normalGuestStore.instances.clothes
+							.get()
+							.getDisplayPropsById(-2, 'name')}
 						src={getClothesTachiePath(-2)}
 						width={120}
 						className="pointer-events-none fixed bottom-0 right-0 pr-1"

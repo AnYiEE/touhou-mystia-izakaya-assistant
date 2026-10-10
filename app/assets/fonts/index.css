@@ -32,4 +32,21 @@
 	--font-noto-sans: 'Noto Sans', 'Noto Sans Fallback';
 	--font-noto-sans-mono: 'Noto Sans Mono', 'Noto Sans Mono Fallback';
 	--font-noto-sans-sc: 'Noto Sans SC', 'Noto Sans SC Fallback';
+	--font-noto-sans-jp: 'Noto Sans JP';
+	--font-noto-sans-kr: 'Noto Sans KR';
+	--font-cjk-sans: var(--font-noto-sans-sc);
+}
+
+/*
+ * Han unification note: Japanese and Simplified Chinese share most codepoints
+ * but prefer different glyph forms. The `lang` attribute (kept in sync with
+ * the active locale by the root layout and the pre-hydration script) selects
+ * which CJK face wins; Korean text uses Noto Sans KR with SC as fallback.
+ */
+html:lang(ja) {
+	--font-cjk-sans: var(--font-noto-sans-jp), var(--font-noto-sans-sc);
+}
+
+html:lang(ko) {
+	--font-cjk-sans: var(--font-noto-sans-kr), var(--font-noto-sans-sc);
 }

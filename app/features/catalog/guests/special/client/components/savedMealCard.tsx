@@ -11,12 +11,8 @@ import FadeMotionDiv, {
 import { PopoverTrigger } from '@/design/ui/components/popover';
 import Tooltip from '@/design/ui/components/tooltip';
 
-import {
-	BEVERAGE_TAG_MAP,
-	DARK_MATTER_META_MAP,
-	FOOD_TAG_MAP,
-} from '@/domain/data/tags/tagFacts';
-import { GUEST_RATING_MAP } from '@/domain/evaluation/labels';
+import { DARK_MATTER_META_MAP } from '@/domain/data/tags/tagFacts';
+import { getEvaluationLabelByKey } from '@/domain/evaluation/localizedLabels';
 import { getMealCookerSeries } from '@/domain/meals/getMealCookerSeries';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
@@ -36,14 +32,21 @@ import {
 	removeFirstMatchingMeal,
 } from '@/features/catalog/guests/shared/mealPlanning/savedMealEquality';
 import { swapSavedMeals } from '@/features/catalog/guests/shared/mealPlanning/swapSavedMeals';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import {
 	BEVERAGE_TAG_STYLE,
 	FOOD_TAG_STYLE,
 } from '@/features/catalog/presentation/tagStyles';
 import Price from '@/features/catalog/shared/client/components/Price';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import Tags from '@/features/catalog/shared/client/components/Tags';
+import {
+	getBeverageTagLabel,
+	getFoodTagLabel,
+} from '@/features/catalog/shared/client/localization/tagLabels';
 import { usePictureInPicture } from '@/features/itemSharing/client/hooks/usePictureInPicture';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
@@ -56,6 +59,7 @@ export {
 const RATING_AVATAR_CLASS_NAMES = { base: 'h-5 w-44 ring-offset-0' } as const;
 
 export default function SavedMealCard() {
+	const { t } = useI18n(catalogGuestsMessages);
 	const { isHighAppearance } = useDesignPreferences();
 	const {
 		CLASSNAME_EXCLUDE_FROM_PIP,
@@ -203,9 +207,12 @@ export default function SavedMealCard() {
 				);
 			}
 			const { food } = foodCatalog.getRecipeOwnerById(mealFood.recipeId);
-			const beverageName = beverageCatalog.getPropsById(beverage, 'name');
+			const beverageName = beverageCatalog.getDisplayPropsById(
+				beverage,
+				'name'
+			);
 			const extraIngredientNames = mealFood.extraIngredients.map((id) =>
-				ingredientCatalog.getPropsById(id, 'name')
+				ingredientCatalog.getDisplayPropsById(id, 'name')
 			);
 			trackEvent(
 				trackEvent.category.click,
@@ -264,7 +271,7 @@ export default function SavedMealCard() {
 													cookerSeries
 												);
 											const cookerName =
-												cookerCatalog.getPropsById(
+												cookerCatalog.getDisplayPropsById(
 													cooker,
 													'name'
 												);
@@ -276,24 +283,43 @@ export default function SavedMealCard() {
 												? DARK_MATTER_META_MAP.name
 												: food.name;
 											const displayFood = isDarkMatter
-												? foodCatalog.getPropsById(-1)
+												? foodCatalog.getDisplayPropsById(
+														-1
+													)
 												: food;
 											const beverageName =
-												beverageCatalog.getPropsById(
+												beverageCatalog.getDisplayPropsById(
 													beverage,
 													'name'
 												);
 											const rating =
 												ratingKey === null
-													? '未评级'
-													: GUEST_RATING_MAP[
+													? t(
+															'guests.resultCard.unrated'
+														)
+													: getEvaluationLabelByKey(
 															ratingKey
-														];
+														);
 											const ratingColor =
 												ratingKey ?? 'default';
-											const beverageLabel = `点击：在新窗口中查看酒水【${beverageName}】的详情`;
-											const cookerLabel = `点击：在新窗口中查看厨具【${cookerName}】的详情`;
-											const foodLabel = `点击：在新窗口中查看料理【${foodName}】的详情`;
+											const beverageLabel = t(
+												'guests.table.viewBeverageTip',
+												{ name: beverageName }
+											);
+											const cookerLabel = t(
+												'guests.savedMeal.viewCookerTip',
+												{ name: cookerName }
+											);
+											const foodLabel = t(
+												'guests.table.viewFoodTip',
+												{
+													name: isDarkMatter
+														? t(
+																'guests.ingredient.darkMatter'
+															)
+														: foodName,
+												}
+											);
 											return (
 												<>
 													<RatingAvatarShell
@@ -329,12 +355,9 @@ export default function SavedMealCard() {
 																					null &&
 																					isDarkMatterOrNormalMeal && (
 																						<Tags.Tag
-																							tag={
-																								FOOD_TAG_MAP[
-																									guestOrder
-																										.foodTag
-																								]
-																							}
+																							tag={getFoodTagLabel(
+																								guestOrder.foodTag
+																							)}
 																							tagStyle={
 																								FOOD_TAG_STYLE.positive
 																							}
@@ -345,12 +368,9 @@ export default function SavedMealCard() {
 																					null &&
 																					isDarkMatterOrNormalMeal && (
 																						<Tags.Tag
-																							tag={
-																								BEVERAGE_TAG_MAP[
-																									guestOrder
-																										.beverageTag
-																								]
-																							}
+																							tag={getBeverageTagLabel(
+																								guestOrder.beverageTag
+																							)}
 																							tagStyle={
 																								BEVERAGE_TAG_STYLE.positive
 																							}
@@ -467,7 +487,7 @@ export default function SavedMealCard() {
 												openWindow(
 													'ingredients',
 													ingredient,
-													ingredientCatalog.getPropsById(
+													ingredientCatalog.getDisplayPropsById(
 														ingredient,
 														'name'
 													)
@@ -553,14 +573,14 @@ export default function SavedMealCard() {
 													mealFood.recipeId
 												);
 											const beverageName =
-												beverageCatalog.getPropsById(
+												beverageCatalog.getDisplayPropsById(
 													beverage,
 													'name'
 												);
 											const extraIngredientNames =
 												mealFood.extraIngredients.map(
 													(id) =>
-														ingredientCatalog.getPropsById(
+														ingredientCatalog.getDisplayPropsById(
 															id,
 															'name'
 														)

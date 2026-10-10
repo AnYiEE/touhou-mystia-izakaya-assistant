@@ -1,17 +1,68 @@
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AnimatePresence } from 'framer-motion';
+import { Fragment } from 'react';
 
 import Button from '@/design/ui/components/button';
 import Tooltip from '@/design/ui/components/tooltip';
 
-import type { IGlobalSearchIndexItem } from '@/features/globalSearch/contracts';
-import { GLOBAL_SEARCH_EXAMPLE_QUERIES } from '@/features/globalSearch/core/constants';
+import type {
+	IGlobalSearchExampleQuery,
+	IGlobalSearchIndexItem,
+	TGlobalSearchFieldType,
+	TGlobalSearchSection,
+} from '@/features/globalSearch/contracts';
+import { globalSearchMessages } from '@/features/globalSearch/client/messages';
+import {
+	GLOBAL_SEARCH_FIELD_PREFIX_GROUPS,
+	GLOBAL_SEARCH_SECTION_PREFIX_GROUPS,
+} from '@/features/globalSearch/core/constants';
+import { GLOBAL_SEARCH_LOCALIZED_SYNTAX } from '@/features/globalSearch/core/localizedSyntax';
+import { getSectionDisplayLabel } from '@/features/globalSearch/core/parser';
 import { type IGlobalSearchRecentState } from '@/features/globalSearch/shapes/recentSearchShape';
+
+import { type TLocale } from '@/shared/i18n/locale';
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import { SearchItemVisual } from './SearchItemVisual';
 import { SearchSyntaxToken, renderSearchSyntax } from './SearchSyntax';
 import { SpotlightMotionBlock } from './SpotlightMotion';
+
+const SECTION_ALIAS_MAP = new Map(
+	GLOBAL_SEARCH_SECTION_PREFIX_GROUPS.map((group) => [
+		group.key,
+		group.aliases[0] as string,
+	])
+);
+const FIELD_ALIAS_MAP = new Map(
+	GLOBAL_SEARCH_FIELD_PREFIX_GROUPS.map((group) => [
+		group.key,
+		group.aliases[0] as string,
+	])
+);
+
+function getExampleSyntaxTokens(locale: TLocale) {
+	const localized = GLOBAL_SEARCH_LOCALIZED_SYNTAX[locale];
+	const section = (key: TGlobalSearchSection) =>
+		`@${
+			localized?.sections[key].aliases[0] ??
+			SECTION_ALIAS_MAP.get(key) ??
+			key
+		}`;
+	const field = (key: TGlobalSearchFieldType) =>
+		`@${
+			localized?.fields[key].aliases?.[0] ??
+			FIELD_ALIAS_MAP.get(key) ??
+			key
+		}`;
+
+	return {
+		fieldTokens: (['ingredient', 'tag', 'from'] as const).map(field),
+		sectionTokens: (['foods', 'beverages', 'preferences'] as const).map(
+			section
+		),
+	};
+}
 
 function HistoryHeader({
 	clearLabel,
@@ -50,6 +101,8 @@ function HistoryHeader({
 
 export function SearchHome({
 	examplePreviewItemMap,
+	examples,
+	locale,
 	onApplyQuery,
 	onClearItems,
 	onClearQueries,
@@ -58,6 +111,8 @@ export function SearchHome({
 	recentState,
 }: {
 	examplePreviewItemMap: ReadonlyMap<string, IGlobalSearchIndexItem | null>;
+	examples: ReadonlyArray<IGlobalSearchExampleQuery>;
+	locale: TLocale;
 	onApplyQuery: (query: string, source: string) => void;
 	onClearItems: () => void;
 	onClearQueries: () => void;
@@ -65,6 +120,15 @@ export function SearchHome({
 	recentItems: ReadonlyArray<IGlobalSearchIndexItem>;
 	recentState: IGlobalSearchRecentState;
 }) {
+	const { t } = useI18n(globalSearchMessages);
+	const { fieldTokens, sectionTokens } = getExampleSyntaxTokens(locale);
+	const renderTokens = (tokens: ReadonlyArray<string>) =>
+		tokens.map((token, index) => (
+			<Fragment key={token}>
+				{index > 0 && t('spotlight.home.separator')}
+				<SearchSyntaxToken>{token}</SearchSyntaxToken>
+			</Fragment>
+		));
 	const hasRecentHistory =
 		recentItems.length > 0 || recentState.queries.length > 0;
 
@@ -73,47 +137,41 @@ export function SearchHome({
 			<SpotlightMotionBlock motionKey="examples" className="space-y-3">
 				<div className="space-y-1 px-0.5">
 					<h3 className="text-small font-semibold text-foreground-700">
-						搜索示例
+						{t('spotlight.home.title')}
 					</h3>
 					<p className="text-tiny leading-5 text-foreground-500">
-						直接输入会搜索名称、简介、标签等内容，也支持拼音全拼和首字母；用
-						<SearchSyntaxToken>@料理</SearchSyntaxToken>、
-						<SearchSyntaxToken>@酒水</SearchSyntaxToken>、
-						<SearchSyntaxToken>@设置</SearchSyntaxToken>
-						限定结果分区，用
-						<SearchSyntaxToken>@食材</SearchSyntaxToken>、
-						<SearchSyntaxToken>@标签</SearchSyntaxToken>、
-						<SearchSyntaxToken>@来源</SearchSyntaxToken>
-						限定字段，前缀可组合使用。
+						{t('spotlight.home.introPrefix')}
+						{renderTokens(sectionTokens)}
+						{t('spotlight.home.sectionSuffix')}
+						{renderTokens(fieldTokens)}
+						{t('spotlight.home.fieldSuffix')}
 					</p>
 				</div>
 				<div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-					{GLOBAL_SEARCH_EXAMPLE_QUERIES.map(
-						({ description, query }) => (
-							<Button
-								key={query}
+					{examples.map(({ description, query }) => (
+						<Button
+							key={query}
+							size="sm"
+							variant="light"
+							onPress={() => {
+								onApplyQuery(query, 'Use Example Query');
+							}}
+							className="h-auto min-h-14 justify-start gap-2.5 rounded-small border border-default-200/55 bg-background/45 px-2.5 py-2 text-left backdrop-blur data-[hover=true]:border-primary/25 data-[hover=true]:bg-primary/10 dark:bg-content1/30"
+						>
+							<SearchItemVisual
+								item={examplePreviewItemMap.get(query)}
 								size="sm"
-								variant="light"
-								onPress={() => {
-									onApplyQuery(query, 'Use Example Query');
-								}}
-								className="h-auto min-h-14 justify-start gap-2.5 rounded-small border border-default-200/55 bg-background/45 px-2.5 py-2 text-left backdrop-blur data-[hover=true]:border-primary/25 data-[hover=true]:bg-primary/10 dark:bg-content1/30"
-							>
-								<SearchItemVisual
-									item={examplePreviewItemMap.get(query)}
-									size="sm"
-								/>
-								<span className="min-w-0">
-									<span className="block truncate text-small font-medium">
-										{renderSearchSyntax(query)}
-									</span>
-									<span className="block truncate text-tiny text-foreground-500">
-										{description}
-									</span>
+							/>
+							<span className="min-w-0">
+								<span className="block truncate text-small font-medium">
+									{renderSearchSyntax(query)}
 								</span>
-							</Button>
-						)
-					)}
+								<span className="block truncate text-tiny text-foreground-500">
+									{description}
+								</span>
+							</span>
+						</Button>
+					))}
 				</div>
 			</SpotlightMotionBlock>
 			<AnimatePresence mode="popLayout" initial={false}>
@@ -124,7 +182,7 @@ export function SearchHome({
 					>
 						<div className="px-0.5">
 							<h3 className="text-small font-semibold text-foreground-700">
-								最近记录
+								{t('spotlight.history.title')}
 							</h3>
 						</div>
 						<div className="space-y-3">
@@ -135,9 +193,13 @@ export function SearchHome({
 										className="space-y-2"
 									>
 										<HistoryHeader
-											title="最近打开"
+											title={t(
+												'spotlight.history.recentOpen'
+											)}
 											count={recentItems.length}
-											clearLabel="清空最近打开"
+											clearLabel={t(
+												'spotlight.history.clearRecentOpen'
+											)}
 											onClear={onClearItems}
 										/>
 										<div className="flex flex-wrap gap-2">
@@ -156,8 +218,12 @@ export function SearchHome({
 														size="sm"
 													/>
 													<span className="min-w-0 truncate">
-														{item.sectionLabel} ⦁{' '}
-														{item.name}
+														{getSectionDisplayLabel(
+															item.section,
+															item.sectionLabel,
+															locale
+														)}{' '}
+														⦁ {item.name}
 													</span>
 												</Button>
 											))}
@@ -172,9 +238,13 @@ export function SearchHome({
 										className="space-y-2"
 									>
 										<HistoryHeader
-											title="最近查询"
+											title={t(
+												'spotlight.history.recentQuery'
+											)}
 											count={recentState.queries.length}
-											clearLabel="清空最近查询"
+											clearLabel={t(
+												'spotlight.history.clearRecentQuery'
+											)}
 											onClear={onClearQueries}
 										/>
 										<div className="flex flex-wrap gap-2">

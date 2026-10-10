@@ -13,7 +13,6 @@ import { useAutoHideTooltip } from '@/design/ui/hooks/useAutoHideTooltip';
 import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 
 import type { TIngredientId } from '@/domain/data/ingredients/types';
-import { DARK_MATTER_META_MAP } from '@/domain/data/tags/tagFacts';
 import { GUEST_RATING_MAP } from '@/domain/evaluation/labels';
 import { getMealCookerSeries } from '@/domain/meals/getMealCookerSeries';
 
@@ -23,14 +22,19 @@ import {
 	UnknownItemIcon,
 } from '@/features/catalog/guests/shared/client/components/resultCardAtoms';
 import SlidingSprite from '@/features/catalog/guests/shared/client/components/slidingSprite';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
+import { formatSelectionTip } from '@/features/catalog/guests/shared/presentation/buildSelectionTip';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import Price from '@/features/catalog/shared/client/components/Price';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 import { suggestedMealsUiStore } from '@/features/recommendations/client/state/suggestedMealsUiStore';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+
 const EMPTY_INGREDIENT_IDS = [] as const satisfies ReadonlyArray<TIngredientId>;
 
 export default function ResultCard() {
+	const { t } = useI18n(catalogGuestsMessages);
 	const { breakpoint: placement } = useBreakpoint(
 		{ left: 426, top: -1 },
 		'top'
@@ -65,7 +69,7 @@ export default function ResultCard() {
 	const currentBeverageName =
 		currentBeverage === null
 			? null
-			: beverageCatalog.getPropsById(currentBeverage, 'name');
+			: beverageCatalog.getDisplayPropsById(currentBeverage, 'name');
 	const currentRecipeOwner = useMemo(
 		() =>
 			currentMealFood
@@ -136,7 +140,7 @@ export default function ResultCard() {
 						isSuggestMealsVisible ? 'pb-12 xl:py-6' : 'pb-2 md:pb-4'
 					)}
 				>
-					选择一种料理或酒水以继续
+					{t('guests.resultCard.pickPrompt')}
 				</Placeholder>
 			);
 			contentClassName = isSuggestMealsVisible ? '' : 'my-auto';
@@ -166,11 +170,16 @@ export default function ResultCard() {
 											})
 										);
 									const foodName = isDarkMatter
-										? DARK_MATTER_META_MAP.name
+										? t('guests.ingredient.darkMatter')
 										: food.name;
 									const label = isDarkMatter
 										? cookerTypeLabel
-										: `点击：将此点单标记为使用${hasMystiaCooker ? '非' : ''}【夜雀${cookerTypeLabel}】制作`;
+										: t(
+												hasMystiaCooker
+													? 'guests.resultCard.cookerMarkNon'
+													: 'guests.resultCard.cookerMark',
+												{ type: cookerTypeLabel }
+											);
 									return (
 										<>
 											<Tooltip showArrow content={label}>
@@ -210,7 +219,9 @@ export default function ResultCard() {
 								<>
 									<Tooltip
 										showArrow
-										content="请选择料理"
+										content={t(
+											'guests.resultCard.selectFood'
+										)}
 										offset={7}
 									>
 										<SlidingSprite
@@ -219,7 +230,9 @@ export default function ResultCard() {
 											fallbackKey="empty-food-cooker"
 											fallback={
 												<UnknownItemIcon
-													title="请选择料理"
+													title={t(
+														'guests.resultCard.selectFood'
+													)}
 													iconSize={1.5}
 													size={2}
 												/>
@@ -229,7 +242,9 @@ export default function ResultCard() {
 									</Tooltip>
 									<Tooltip
 										showArrow
-										content="请选择料理"
+										content={t(
+											'guests.resultCard.selectFood'
+										)}
 										offset={3}
 									>
 										<SlidingSprite
@@ -238,7 +253,9 @@ export default function ResultCard() {
 											fallbackKey="empty-food"
 											fallback={
 												<UnknownItemIcon
-													title="请选择料理"
+													title={t(
+														'guests.resultCard.selectFood'
+													)}
 													iconSize={2}
 													size={2.5}
 												/>
@@ -265,7 +282,9 @@ export default function ResultCard() {
 							) : (
 								<Tooltip
 									showArrow
-									content="请选择酒水"
+									content={t(
+										'guests.resultCard.selectBeverage'
+									)}
 									offset={3}
 								>
 									<SlidingSprite
@@ -274,7 +293,9 @@ export default function ResultCard() {
 										fallbackKey="empty-beverage"
 										fallback={
 											<UnknownItemIcon
-												title="请选择酒水"
+												title={t(
+													'guests.resultCard.selectBeverage'
+												)}
 												iconSize={2}
 												size={2.5}
 											/>
@@ -293,7 +314,10 @@ export default function ResultCard() {
 					</div>
 					<Tooltip
 						showArrow
-						content={unsatisfiedSelectionTip.save}
+						content={formatSelectionTip(
+							unsatisfiedSelectionTip.save,
+							t
+						)}
 						isOpen={isShowSaveButtonTooltip}
 						placement={placement}
 					>
@@ -303,13 +327,22 @@ export default function ResultCard() {
 							size="sm"
 							variant="flat"
 							onPress={handleSaveButtonPress}
-							aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${GUEST_RATING_MAP[currentRating]}`}`}
+							aria-label={t('guests.resultCard.saveMealAria', {
+								status:
+									currentRating === null
+										? t('guests.resultCard.unrated')
+										: t('guests.resultCard.ratedAs', {
+												rating: GUEST_RATING_MAP[
+													currentRating
+												],
+											}),
+							})}
 							className={cn(
 								'flex-col gap-0 text-tiny leading-none !transition motion-reduce:!transition-none md:w-auto',
 								{ 'opacity-disabled': isSaveButtonDisabled }
 							)}
 						>
-							<span>保存套餐</span>
+							<span>{t('guests.resultCard.saveMeal')}</span>
 							<span>
 								<Price>{currentMealPrice}</Price>
 							</span>

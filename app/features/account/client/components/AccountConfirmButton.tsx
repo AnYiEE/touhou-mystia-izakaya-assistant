@@ -13,6 +13,10 @@ import Popover, {
 	PopoverTrigger,
 } from '@/design/ui/components/popover';
 
+import { accountMessages } from '@/features/account/client/messages';
+
+import { useI18n } from '@/shared/i18n/useI18n';
+
 interface IProps {
 	ariaLabel?: IButtonProps['aria-label'];
 	buttonLabel: ReactNodeWithoutBoolean;
@@ -52,6 +56,8 @@ export default memo<IProps>(function AccountConfirmButton({
 	radius,
 	size,
 }) {
+	const { t } = useI18n(accountMessages);
+
 	return (
 		<Popover
 			shouldBlockScroll
@@ -105,7 +111,7 @@ export default memo<IProps>(function AccountConfirmButton({
 					variant="ghost"
 					onPress={onCancel}
 				>
-					取消
+					{t('account.manager.confirm.cancel')}
 				</Button>
 			</PopoverContent>
 		</Popover>

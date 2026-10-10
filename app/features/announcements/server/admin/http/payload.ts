@@ -2,14 +2,22 @@ import isObject from 'lodash/isObject.js';
 
 import { type IAdminAnnouncementBody } from '@/features/announcements/contracts';
 import {
+	MAX_ANNOUNCEMENT_HTML_LENGTH,
+	MAX_ANNOUNCEMENT_ID_LENGTH,
+	MAX_ANNOUNCEMENT_PRIORITY,
+	MAX_ANNOUNCEMENT_TITLE_LENGTH,
+} from '@/features/announcements/limits';
+import {
+	normalizeAnnouncementLocales,
+	normalizeAnnouncementTranslations,
+} from '@/features/announcements/server/localization';
+import {
 	checkAnnouncementAudience,
 	checkAnnouncementLevel,
 } from '@/features/announcements/validation';
 
-const MAX_ANNOUNCEMENT_HTML_LENGTH = 4000;
-const MAX_ANNOUNCEMENT_ID_LENGTH = 80;
-const MAX_ANNOUNCEMENT_PRIORITY = 1_000_000;
-const MAX_ANNOUNCEMENT_TITLE_LENGTH = 80;
+import { isLocale } from '@/shared/i18n/locale';
+
 const RESERVED_ANNOUNCEMENT_IDS = new Set(['new', 'preview']);
 
 function normalizeInputObject(value: unknown) {
@@ -127,6 +135,17 @@ export function parseAdminAnnouncementBody(data: unknown) {
 	const startsAt = normalizeOptionalTimestamp(input['starts_at']);
 	const endsAt = normalizeOptionalTimestamp(input['ends_at']);
 	const targetUserIds = normalizeTargetUserIds(input['target_user_ids']);
+	const locales = normalizeAnnouncementLocales(input['locales']);
+	const translations = normalizeAnnouncementTranslations(
+		input['translations']
+	);
+	const rawPreviewLocale = input['preview_locale'];
+	const previewLocale =
+		rawPreviewLocale === undefined
+			? undefined
+			: typeof rawPreviewLocale === 'string' && isLocale(rawPreviewLocale)
+				? rawPreviewLocale
+				: null;
 	const id =
 		input['id'] === undefined
 			? undefined
@@ -146,6 +165,9 @@ export function parseAdminAnnouncementBody(data: unknown) {
 		startsAt === undefined ||
 		endsAt === undefined ||
 		targetUserIds === null ||
+		locales === null ||
+		translations === null ||
+		previewLocale === null ||
 		id === null
 	) {
 		return null;
@@ -163,15 +185,20 @@ export function parseAdminAnnouncementBody(data: unknown) {
 		...(expectedRevision === undefined
 			? {}
 			: { expected_revision: expectedRevision }),
+		...(previewLocale === undefined
+			? {}
+			: { preview_locale: previewLocale }),
 		audience: rawAudience,
 		dismissible: input['dismissible'],
 		enabled: input['enabled'],
 		ends_at: endsAt,
 		html,
 		level: rawLevel,
+		locales,
 		priority,
 		starts_at: startsAt,
 		target_user_ids: rawAudience === 'targeted' ? targetUserIds : [],
 		title,
+		translations,
 	} satisfies IAdminAnnouncementBody;
 }

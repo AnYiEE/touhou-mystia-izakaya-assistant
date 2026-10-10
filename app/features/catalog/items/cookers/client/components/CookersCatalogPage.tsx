@@ -7,6 +7,7 @@ import type { TCookerSeriesId } from '@/domain/data/cookers/types';
 
 import { filterCookerData } from '@/features/catalog/items/cookers/client/queries/filterCookerData';
 import { cookersStore } from '@/features/catalog/items/cookers/client/state/store';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import ItemPage from '@/features/catalog/shared/client/components/ItemPage';
 import SideButtonGroup from '@/features/catalog/shared/client/components/SideButtonGroup';
 import SideFilterIconButton, {
@@ -15,13 +16,17 @@ import SideFilterIconButton, {
 import SidePinyinSortIconButton from '@/features/catalog/shared/client/components/SidePinyinSortIconButton';
 import { useFilteredData } from '@/features/catalog/shared/client/hooks/useFilteredData';
 import { useSortedData } from '@/features/catalog/shared/client/hooks/useSortedData';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import { type IPinyinSortConfig } from '@/features/catalog/shared/state/pinyinSort';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 import CookerCatalog from './CookerCatalog';
 
 export default function CookersCatalogPage() {
+	const { t } = useI18n(catalogItemsMessages);
+	useCatalogLocalizationRevision();
 	const instance = cookersStore.instance.get();
 	const isAvailabilityDlcFilterRedundant = hasEquivalentDlcFilters(
 		instance.data
@@ -119,7 +124,7 @@ export default function CookersCatalogPage() {
 		() => [
 			{
 				items: availableContentDlcs,
-				label: '内容归属',
+				label: t('items.filter.contentDlc'),
 				selectedKeys: filterContentDlcs,
 				setSelectedKeys:
 					cookersStore.persistence.filters.contentDlcs.set,
@@ -130,7 +135,7 @@ export default function CookersCatalogPage() {
 				: [
 						{
 							items: availableAvailabilityDlcs,
-							label: '可获取于',
+							label: t('items.filter.acquirableAt'),
 							selectedKeys: filterAvailabilityDlcs,
 							setSelectedKeys:
 								cookersStore.persistence.filters
@@ -140,28 +145,28 @@ export default function CookersCatalogPage() {
 					]),
 			{
 				items: availableSeries,
-				label: '厨具系列（包含）',
+				label: t('items.filter.cookerSeriesInclude'),
 				selectedKeys: filterSeriesGroupValues,
 				setSelectedKeys: setFilterSeriesGroupValues,
 				valueType: 'cookerSeries',
 			},
 			{
 				items: availableSeries,
-				label: '厨具系列（排除）',
+				label: t('items.filter.cookerSeriesExclude'),
 				selectedKeys: filterNoSeriesGroupValues,
 				setSelectedKeys: setFilterNoSeriesGroupValues,
 				valueType: 'cookerSeries',
 			},
 			{
 				items: availableTypes,
-				label: '厨具类别（包含）',
+				label: t('items.filter.cookerTypeInclude'),
 				selectedKeys: filterTypes,
 				setSelectedKeys: cookersStore.persistence.filters.types.set,
 				valueType: 'cookerType',
 			},
 			{
 				items: availableTypes,
-				label: '厨具类别（排除）',
+				label: t('items.filter.cookerTypeExclude'),
 				selectedKeys: filterNoTypes,
 				setSelectedKeys: cookersStore.persistence.filters.noTypes.set,
 				valueType: 'cookerType',
@@ -181,6 +186,7 @@ export default function CookersCatalogPage() {
 			isAvailabilityDlcFilterRedundant,
 			setFilterNoSeriesGroupValues,
 			setFilterSeriesGroupValues,
+			t,
 		]
 	);
 

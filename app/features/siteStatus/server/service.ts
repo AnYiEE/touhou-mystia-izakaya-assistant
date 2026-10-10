@@ -3,6 +3,8 @@ import { type Kysely } from 'kysely';
 import { getApplicationDatabase } from '@/infrastructure/database/applicationDatabase';
 import type { TDatabase } from '@/infrastructure/database/schema';
 
+import type { TLocale } from '@/shared/i18n/locale';
+
 import { getCompiledSiteStatusBuildOperationId } from './buildIdentity';
 import { toDeploymentMaintenancePublicState } from './maintenancePolicy';
 import {
@@ -13,6 +15,7 @@ import {
 export async function resolveDeploymentMaintenanceForDatabase(
 	database: Kysely<TDatabase>,
 	compiledOperationId: string | null,
+	locale: TLocale,
 	now = Date.now()
 ) {
 	let state = await readActiveDeploymentMaintenance(database, now);
@@ -35,13 +38,14 @@ export async function resolveDeploymentMaintenanceForDatabase(
 		}
 	}
 
-	return toDeploymentMaintenancePublicState(state);
+	return toDeploymentMaintenancePublicState(state, locale);
 }
 
-export async function readDeploymentMaintenance() {
+export async function readDeploymentMaintenance(locale: TLocale) {
 	const database = await getApplicationDatabase();
 	return await resolveDeploymentMaintenanceForDatabase(
 		database,
-		getCompiledSiteStatusBuildOperationId()
+		getCompiledSiteStatusBuildOperationId(),
+		locale
 	);
 }

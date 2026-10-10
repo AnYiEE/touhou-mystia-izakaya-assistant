@@ -13,12 +13,20 @@ import Popover, {
 import Snippet from '@/design/ui/components/snippet';
 
 import { renderCatalogMatchedField } from '@/features/catalog/globalSearch/client/renderCatalogMatchedField';
+import { globalSearchMessages } from '@/features/globalSearch/client/messages';
 import type {
 	IGlobalSearchIndexItem,
 	IGlobalSearchMatchedField,
 	IGlobalSearchResult,
 } from '@/features/globalSearch/contracts';
+import {
+	getFieldDisplayLabel,
+	getSectionDisplayLabel,
+} from '@/features/globalSearch/core/parser';
 import { getGlobalSearchItemShareUrl } from '@/features/globalSearch/itemNavigation';
+
+import type { TLocale } from '@/shared/i18n/locale';
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import { SearchItemVisual } from './SearchItemVisual';
 import { SpotlightPreviewMotion } from './SpotlightMotion';
@@ -28,11 +36,13 @@ const SHARE_SNIPPET_CLASS_NAMES = {
 } as const;
 
 export function SearchPreview({
+	locale,
 	onOpenItem,
 	onOpenNewWindow,
 	onShareItem,
 	selectedResult,
 }: {
+	locale: TLocale;
 	onOpenItem: (
 		item: IGlobalSearchIndexItem,
 		match?: IGlobalSearchMatchedField
@@ -44,6 +54,8 @@ export function SearchPreview({
 	onShareItem: (item: IGlobalSearchIndexItem) => void;
 	selectedResult: IGlobalSearchResult | null;
 }) {
+	const { t } = useI18n(globalSearchMessages);
+
 	if (selectedResult === null) {
 		return (
 			<SpotlightPreviewMotion
@@ -51,7 +63,7 @@ export function SearchPreview({
 				className="flex h-full min-h-48 items-start justify-center px-4 pt-24 text-center"
 			>
 				<p className="max-w-56 text-small leading-5 text-foreground-400">
-					选择一个结果查看摘要
+					{t('spotlight.preview.empty')}
 				</p>
 			</SpotlightPreviewMotion>
 		);
@@ -76,7 +88,11 @@ export function SearchPreview({
 						<SearchItemVisual item={item} size="md" />
 						<div className="min-w-0 flex-1 overflow-hidden">
 							<p className="text-tiny font-medium text-foreground-500">
-								{item.sectionLabel}
+								{getSectionDisplayLabel(
+									item.section,
+									item.sectionLabel,
+									locale
+								)}
 							</p>
 							<h2 className="truncate text-lg font-semibold leading-tight">
 								{item.name}
@@ -96,12 +112,19 @@ export function SearchPreview({
 									className="flex min-h-8 min-w-0 max-w-full flex-wrap items-center overflow-hidden rounded-small border border-default-200/40 bg-default/25 px-2 py-0.5 text-small leading-5"
 								>
 									<span className="shrink-0 font-medium">
-										{match.field.label}：
+										{getFieldDisplayLabel(
+											match.field.fieldType,
+											item.section,
+											match.field.label,
+											locale
+										)}
+										{t('spotlight.preview.fieldSeparator')}
 									</span>
 									<span className="inline-flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1">
 										{renderCatalogMatchedField(
 											item,
-											match
+											match,
+											locale
 										) ?? (
 											<span className="min-w-0 break-words">
 												{match.snippet}
@@ -126,9 +149,9 @@ export function SearchPreview({
 					{item.section === 'preferences'
 						? item.navigationAction?.type ===
 							'open-special-guest-plans'
-							? '打开营业预设'
-							: '打开设置'
-						: '查看详情'}
+							? t('spotlight.preview.openPlan')
+							: t('spotlight.preview.openPreferences')
+						: t('spotlight.preview.viewDetails')}
 				</Button>
 				{item.section !== 'preferences' && (
 					<>
@@ -145,12 +168,12 @@ export function SearchPreview({
 										onShareItem(item);
 									}}
 								>
-									分享
+									{t('spotlight.preview.share')}
 								</Button>
 							</PopoverTrigger>
 							<PopoverContent>
 								<p className="mr-4 cursor-default select-none self-end text-right text-tiny text-default-500">
-									点击以复制当前选中项的链接↓
+									{t('spotlight.preview.copyLinkHint')}
 								</p>
 								<Snippet
 									disableTooltip
@@ -180,7 +203,7 @@ export function SearchPreview({
 								onOpenNewWindow(item, selectedMatch);
 							}}
 						>
-							新标签页打开
+							{t('spotlight.preview.openInNewTab')}
 						</Button>
 					</>
 				)}

@@ -12,6 +12,7 @@ import {
 	renderAnnouncementHtmlTemplate,
 	sanitizeAnnouncementHtml,
 } from '@/features/announcements/server/html';
+import { getVisibleAnnouncementLocalizedContent } from '@/features/announcements/server/localization';
 import {
 	checkAnnouncementIsActive,
 	checkAnnouncementMatchesRequestContext,
@@ -33,6 +34,7 @@ import type {
 	TUser,
 } from '@/infrastructure/database/schema';
 
+import type { TLocale } from '@/shared/i18n/locale';
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 
 const DEFAULT_VISIBLE_ANNOUNCEMENT_LIMIT = 5;
@@ -47,6 +49,7 @@ const activeCandidateCache = new Map<
 export interface IAnnouncementRequestContext {
 	dismissedTokens: string[];
 	isAuthenticated: boolean;
+	locale: TLocale;
 	nickname?: TUser['nickname'];
 	now?: number;
 	userId?: TUser['id'];
@@ -68,13 +71,15 @@ function createVisibleAudienceList(isAuthenticated: boolean) {
 function createActiveCandidateCacheKey({
 	audiences,
 	limit,
+	locale,
 	offset = 0,
 }: {
 	audiences: ReadonlyArray<TAnnouncement['audience']>;
 	limit: number;
+	locale: TLocale;
 	offset?: number;
 }) {
-	return `${[...new Set(audiences)].sort().join(',')}:${limit}:${offset}`;
+	return `${[...new Set(audiences)].sort().join(',')}:${locale}:${limit}:${offset}`;
 }
 
 export function invalidateActiveAnnouncementCandidateCache() {
@@ -84,19 +89,28 @@ export function invalidateActiveAnnouncementCandidateCache() {
 async function listCachedActiveAnnouncementCandidates({
 	audiences,
 	limit,
+	locale,
 	now,
 	offset = 0,
 }: {
 	audiences: Array<TAnnouncement['audience']>;
 	limit: number;
+	locale: TLocale;
 	now: number;
 	offset?: number;
 }) {
-	const key = createActiveCandidateCacheKey({ audiences, limit, offset });
+	const key = createActiveCandidateCacheKey({
+		audiences,
+		limit,
+		locale,
+		offset,
+	});
 	const cached = activeCandidateCache.get(key);
 	if (cached !== undefined && cached.expiresAt > Date.now()) {
-		return cached.records.filter((record) =>
-			checkAnnouncementIsActive(record, now)
+		return cached.records.filter(
+			(record) =>
+				checkAnnouncementIsActive(record, now) &&
+				getVisibleAnnouncementLocalizedContent(record, locale) !== null
 		);
 	}
 
@@ -117,6 +131,7 @@ async function listCachedActiveAnnouncementCandidates({
 export async function getVisibleAnnouncementsForRequestContext({
 	dismissedTokens,
 	isAuthenticated,
+	locale,
 	nickname,
 	now = Date.now(),
 	userId,
@@ -131,6 +146,7 @@ export async function getVisibleAnnouncementsForRequestContext({
 		const batch = await listCachedActiveAnnouncementCandidates({
 			audiences: [...audiences],
 			limit: ACTIVE_CANDIDATE_BATCH_SIZE,
+			locale,
 			now,
 			offset,
 		});
@@ -171,8 +187,16 @@ export async function getVisibleAnnouncementsForRequestContext({
 		);
 
 		for (const announcement of visibleCandidates) {
+			const localized = getVisibleAnnouncementLocalizedContent(
+				announcement,
+				locale
+			);
+			if (localized === null) {
+				continue;
+			}
+
 			const sanitizedHtml = sanitizeAnnouncementHtml(
-				renderAnnouncementHtmlTemplate(announcement.html, {
+				renderAnnouncementHtmlTemplate(localized.html, {
 					nickname: nickname ?? null,
 					userId: userId ?? null,
 					username: username ?? null,
@@ -184,6 +208,7 @@ export async function getVisibleAnnouncementsForRequestContext({
 
 			const item = createPublicAnnouncementItem(
 				announcement,
+				localized,
 				sanitizedHtml
 			);
 			if (item === null) {

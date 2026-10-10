@@ -5,8 +5,11 @@ import { memo, useCallback, useEffect } from 'react';
 import Button from '@/design/ui/components/button';
 
 import { accountStore } from '@/features/account/client/state/accountStore';
+import { accountMessages } from '@/features/account/client/messages';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps {}
 
@@ -37,6 +40,7 @@ export default memo<IProps>(function SsoAuthorizeAccountGate() {
 export const SsoAuthorizeAccountGateButton = memo(
 	function SsoAuthorizeAccountGateButton() {
 		const vibrate = useVibrate();
+		const { t } = useI18n(accountMessages);
 
 		const handleOpenAccountModal = useCallback(() => {
 			vibrate();
@@ -54,7 +58,7 @@ export const SsoAuthorizeAccountGateButton = memo(
 				variant="flat"
 				onClick={handleOpenAccountModal}
 			>
-				打开账号流程
+				{t('account.sso.openAccountFlow')}
 			</Button>
 		);
 	}

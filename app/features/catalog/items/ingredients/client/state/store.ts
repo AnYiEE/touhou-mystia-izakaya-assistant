@@ -4,14 +4,11 @@ import { filterAvailableItemsByHiddenDlcs } from '@/domain/availability';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { compareIngredientTypes } from '@/domain/data/ingredients/ingredientFacts';
 import type { TIngredientTypeId } from '@/domain/data/ingredients/types';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
-import {
-	DYNAMIC_FOOD_TAG_MAP,
-	FOOD_TAG_MAP,
-} from '@/domain/data/tags/tagFacts';
+import { DYNAMIC_FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TFoodTagId } from '@/domain/data/tags/types';
+import { compareMapLabels } from '@/domain/places/localizedLabels';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import {
@@ -19,6 +16,8 @@ import {
 	toAllowedValueSet,
 } from '@/features/catalog/shared/state/catalogPersistenceShape';
 import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
+import { registerCatalogLocalizationRevisionMirror } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
+import { compareFoodTagLabels } from '@/features/catalog/shared/client/localization/tagLabels';
 import { PINYIN_SORT_STATE_MAP } from '@/features/catalog/shared/state/pinyinSort';
 
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
@@ -26,7 +25,6 @@ import { createPersistMiddleware } from '@/infrastructure/browser/storage/create
 import { sortBy } from '@/shared/utilities/collections/sortBy';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import {
 	INGREDIENTS_STORE_VERSION,
@@ -103,6 +101,7 @@ const state = {
 
 	persistence: persistenceShape.createDefault(),
 	shared: {
+		catalogLocalizationRevision: 0,
 		hiddenItems: { dlcs: new Set<TDlc>() },
 
 		famousShop: false,
@@ -159,6 +158,7 @@ export const ingredientsStore = store(state, {
 			.sort(numberSort);
 	},
 	availableMaps: () => {
+		currentStore.shared.catalogLocalizationRevision.use();
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		return instance
 			.getValuesByProp(
@@ -167,17 +167,15 @@ export const ingredientsStore = store(state, {
 				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
 			.map(toGetValueCollection)
-			.sort((left, right) =>
-				pinyinSort(
-					MAP_FACTS[left.value].label,
-					MAP_FACTS[right.value].label
-				)
-			);
+			.sort((left, right) => compareMapLabels(left.value, right.value));
 	},
 	availableNames: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		return sortBy(
-			getNames(currentStore.persistence.pinyinSortState.use()),
+			getNames(
+				currentStore.shared.catalogLocalizationRevision.use(),
+				currentStore.persistence.pinyinSortState.use()
+			),
 			instance.getValuesByProp(
 				'name',
 				false,
@@ -186,6 +184,7 @@ export const ingredientsStore = store(state, {
 		).map(toGetValueCollection);
 	},
 	availableTags: () => {
+		currentStore.shared.catalogLocalizationRevision.use();
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		const tags = [
 			...instance.getValuesByProp(
@@ -196,9 +195,7 @@ export const ingredientsStore = store(state, {
 			DYNAMIC_FOOD_TAG_MAP.popularNegative,
 			DYNAMIC_FOOD_TAG_MAP.popularPositive,
 		];
-		return tags
-			.sort((a, b) => pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b]))
-			.map(toGetValueCollection);
+		return tags.sort(compareFoodTagLabels).map(toGetValueCollection);
 	},
 	availableTypes: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
@@ -217,4 +214,8 @@ ingredientsStore.shared.hiddenItems.dlcs.onChange(() => {
 	ingredientsStore.persistence.filters.set(
 		persistenceShape.createDefault().filters
 	);
+});
+
+registerCatalogLocalizationRevisionMirror((revision) => {
+	ingredientsStore.shared.catalogLocalizationRevision.set(revision);
 });

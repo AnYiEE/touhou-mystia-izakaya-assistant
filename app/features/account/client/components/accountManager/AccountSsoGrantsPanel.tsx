@@ -14,7 +14,10 @@ import {
 	AccountAnimatedList,
 	AccountAnimatedListItem,
 } from './accountPanelLayout';
-import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
+import { ACCOUNT_MANAGER_STATUS_LABEL_KEYS } from './copy';
+import { accountMessages } from '@/features/account/client/messages';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IAccountSsoGrantsPanelProps {
 	csrfToken: string | null;
@@ -32,6 +35,7 @@ interface IAccountSsoGrantsPanelProps {
 
 export default memo<IAccountSsoGrantsPanelProps>(
 	function AccountSsoGrantsPanel(props) {
+		const { t } = useI18n(accountMessages);
 		const {
 			csrfToken,
 			handleRefreshSsoGrants,
@@ -54,14 +58,20 @@ export default memo<IAccountSsoGrantsPanelProps>(
 							className="w-4 text-primary-600"
 						/>
 						<span className="text-small font-medium text-foreground-700">
-							已授权应用
+							{t('account.manager.ssoGrants.title')}
 						</span>
 					</div>
-					<Tooltip showArrow content="刷新授权" placement="left">
+					<Tooltip
+						showArrow
+						content={t('account.manager.ssoGrants.refresh')}
+						placement="left"
+					>
 						<span className="inline-flex shrink-0">
 							<Button
 								isIconOnly
-								aria-label="刷新授权"
+								aria-label={t(
+									'account.manager.ssoGrants.refresh'
+								)}
 								className="h-8 w-8 min-w-8 text-primary-600"
 								isDisabled={isSubmitting}
 								isLoading={isSsoGrantListLoading}
@@ -88,15 +98,17 @@ export default memo<IAccountSsoGrantsPanelProps>(
 					{isSsoGrantListLoading && !isSsoGrantsReady ? (
 						<AccountAnimatedListItem key="loading">
 							<p className="text-small leading-5 text-foreground-500">
-								{
-									ACCOUNT_MANAGER_STATUS_LABEL_MAP.readingSsoGrants
-								}
+								{t(
+									ACCOUNT_MANAGER_STATUS_LABEL_KEYS.readingSsoGrants
+								)}
 							</p>
 						</AccountAnimatedListItem>
 					) : visibleSsoGrants.length === 0 ? (
 						<AccountAnimatedListItem key="empty">
 							<p className="text-small leading-5 text-foreground-500">
-								{ACCOUNT_MANAGER_STATUS_LABEL_MAP.noSsoGrants}
+								{t(
+									ACCOUNT_MANAGER_STATUS_LABEL_KEYS.noSsoGrants
+								)}
 							</p>
 						</AccountAnimatedListItem>
 					) : (
@@ -116,16 +128,24 @@ export default memo<IAccountSsoGrantsPanelProps>(
 									</div>
 									<Tooltip
 										showArrow
-										content="撤销授权"
+										content={t(
+											'account.manager.ssoGrants.revoke'
+										)}
 										placement="left"
 									>
 										<span className="inline-flex shrink-0">
 											<AccountConfirmButton
-												ariaLabel="撤销授权"
-												buttonLabel="撤销授权"
+												ariaLabel={t(
+													'account.manager.ssoGrants.revoke'
+												)}
+												buttonLabel={t(
+													'account.manager.ssoGrants.revoke'
+												)}
 												className="h-8 w-8 min-w-8 justify-center text-warning-600"
 												color="warning"
-												confirmLabel="确认撤销"
+												confirmLabel={t(
+													'account.manager.ssoGrants.confirmRevoke'
+												)}
 												fullWidth={false}
 												icon={faPlug}
 												isDisabled={

@@ -14,6 +14,7 @@ import {
 	getMissingDlcRequirementPaths,
 	isAvailableWithHiddenDlcs,
 } from '@/domain/availability';
+import { getDlcLabel } from '@/domain/availability/localizedLabels';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import type {
@@ -22,8 +23,14 @@ import type {
 } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
 
+import {
+	type TCatalogGuestsTranslate,
+	catalogGuestsMessages,
+} from '@/features/catalog/guests/shared/messages';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps {
 	ingredients: ReadonlyArray<TIngredientId>;
@@ -46,37 +53,53 @@ const foodAvailabilityWarningCache = new WeakMap<
 	Map<string, IFoodAvailabilityWarning>
 >();
 
-function formatDlcRequirementPath(path: ReadonlyArray<TDlc>) {
-	return path.map((dlc) => DLC_LABEL_MAP[dlc].label).join('、');
+function formatDlcRequirementPath(
+	path: ReadonlyArray<TDlc>,
+	t: TCatalogGuestsTranslate
+) {
+	return path
+		.map((dlc) =>
+			Object.hasOwn(DLC_LABEL_MAP, dlc) ? getDlcLabel(dlc) : String(dlc)
+		)
+		.join(t('guests.listSeparator'));
 }
 
-function formatDlcRequirementPaths(paths: ReadonlyArray<ReadonlyArray<TDlc>>) {
+function formatDlcRequirementPaths(
+	paths: ReadonlyArray<ReadonlyArray<TDlc>>,
+	t: TCatalogGuestsTranslate
+) {
 	if (paths.length === 0) {
 		return '';
 	}
 
 	if (paths.length === 1) {
-		return formatDlcRequirementPath(paths[0] as ReadonlyArray<TDlc>);
+		return formatDlcRequirementPath(paths[0] as ReadonlyArray<TDlc>, t);
 	}
 
 	if (paths.every((path) => path.length === 1)) {
-		const labels = paths.map((path) => formatDlcRequirementPath(path));
+		const labels = paths.map((path) => formatDlcRequirementPath(path, t));
 		const lastLabel = labels.at(-1) as string;
-		return `${labels.slice(0, -1).join('、')}或${lastLabel}`;
+		return `${labels.slice(0, -1).join(t('guests.listSeparator'))}${t(
+			'guests.listOr'
+		)}${lastLabel}`;
 	}
 
 	return paths
 		.map((path) =>
 			path.length === 1
-				? formatDlcRequirementPath(path)
-				: `同时启用${formatDlcRequirementPath(path)}`
+				? formatDlcRequirementPath(path, t)
+				: t('guests.foodAction.dlcAnd', {
+						path: formatDlcRequirementPath(path, t),
+					})
 		)
-		.join('，或');
+		.join(t('guests.listJoinOr'));
 }
 
 function getFoodAvailabilityWarning(
 	ingredients: ReadonlyArray<TIngredientId>,
-	hiddenDlcs: ReadonlySet<TDlc>
+	hiddenDlcs: ReadonlySet<TDlc>,
+	locale: string,
+	t: TCatalogGuestsTranslate
 ) {
 	const hiddenDlcsKey = [...hiddenDlcs]
 		.sort((left, right) => left - right)
@@ -85,12 +108,12 @@ function getFoodAvailabilityWarning(
 	const createWarning = () => {
 		const unavailableIngredients = [...new Set(ingredients)]
 			.map((id) => ({
-				availabilityPaths: ingredientCatalog.getPropsById(
+				availabilityPaths: ingredientCatalog.getDisplayPropsById(
 					id,
 					'availabilityPaths'
 				),
 				id,
-				name: ingredientCatalog.getPropsById(id, 'name'),
+				name: ingredientCatalog.getDisplayPropsById(id, 'name'),
 			}))
 			.filter(
 				({ availabilityPaths }) =>
@@ -103,7 +126,8 @@ function getFoodAvailabilityWarning(
 						({ availabilityPaths }) => availabilityPaths
 					),
 					hiddenDlcs
-				)
+				),
+				t
 			),
 			unavailableIngredients,
 		};
@@ -111,10 +135,13 @@ function getFoodAvailabilityWarning(
 
 	const warningCache = foodAvailabilityWarningCache.getOrInsertComputed(
 		ingredients,
-		() => new Map([[hiddenDlcsKey, createWarning()]])
+		() => new Map([[`${hiddenDlcsKey}|${locale}`, createWarning()]])
 	);
 
-	return warningCache.getOrInsertComputed(hiddenDlcsKey, createWarning);
+	return warningCache.getOrInsertComputed(
+		`${hiddenDlcsKey}|${locale}`,
+		createWarning
+	);
 }
 
 function renderBreakableText(text: string) {
@@ -124,7 +151,7 @@ function renderBreakableText(text: string) {
 		<Fragment key={`${token}-${index}`}>
 			{token}
 			{index < tokens.length - 1 &&
-				!/[，。、]/u.test(tokens[index + 1] as string) && <wbr />}
+				!/[.,，。、]/u.test(tokens[index + 1] as string) && <wbr />}
 		</Fragment>
 	));
 }
@@ -133,12 +160,13 @@ export default memo<IProps>(function FoodTableActionButton({
 	ingredients,
 	onSelect,
 }) {
+	const { locale, t } = useI18n(catalogGuestsMessages);
 	const [isConfirmPopoverOpen, setIsConfirmPopoverOpen] = useState(false);
 	const hiddenDlcs = globalStore.hiddenDlcs.use();
 
 	const { requirementLabel, unavailableIngredients } = useMemo(
-		() => getFoodAvailabilityWarning(ingredients, hiddenDlcs),
-		[hiddenDlcs, ingredients]
+		() => getFoodAvailabilityWarning(ingredients, hiddenDlcs, locale, t),
+		[hiddenDlcs, ingredients, locale, t]
 	);
 
 	useEffect(() => {
@@ -152,7 +180,7 @@ export default memo<IProps>(function FoodTableActionButton({
 		onSelect();
 	};
 
-	const label = '点击：选择此项';
+	const label = t('guests.foodAction.selectTip');
 
 	if (unavailableIngredients.length === 0) {
 		return (
@@ -194,7 +222,7 @@ export default memo<IProps>(function FoodTableActionButton({
 								color="warning"
 								size="sm"
 								variant="light"
-								aria-label="选择此项前确认未启用的数据集"
+								aria-label={t('guests.foodAction.confirmAria')}
 							>
 								<FontAwesomeIcon icon={faPlus} />
 							</Button>
@@ -204,10 +232,10 @@ export default memo<IProps>(function FoodTableActionButton({
 				<PopoverContent className="w-auto max-w-[calc(100vw-1rem)] p-2">
 					<div className="grid w-64 max-w-full gap-2">
 						<p className="text-small font-medium leading-5">
-							仍要选择此料理吗？
+							{t('guests.foodAction.confirmTitle')}
 						</p>
 						<p className="text-justify text-tiny leading-5 text-foreground-500">
-							料理所需食材
+							{t('guests.foodAction.requiredIngredients')}
 							{unavailableIngredients.map(
 								({ id, name }, index) => (
 									<span
@@ -223,12 +251,14 @@ export default memo<IProps>(function FoodTableActionButton({
 										{name}
 										{index <
 											unavailableIngredients.length - 1 &&
-											'、'}
+											t('guests.listSeparator')}
 									</span>
 								)
 							)}
 							{renderBreakableText(
-								`当前不可获取，需要启用${requirementLabel}数据集。`
+								t('guests.foodAction.unavailable', {
+									requirement: requirementLabel,
+								})
 							)}
 						</p>
 						<div className="mt-1 flex justify-end gap-1">
@@ -240,7 +270,7 @@ export default memo<IProps>(function FoodTableActionButton({
 									setIsConfirmPopoverOpen(false);
 								}}
 							>
-								取消
+								{t('guests.foodAction.cancel')}
 							</Button>
 							<Button
 								className="h-8 min-w-0 px-3"
@@ -249,7 +279,7 @@ export default memo<IProps>(function FoodTableActionButton({
 								variant="flat"
 								onPress={handleConfirmPress}
 							>
-								仍然选择
+								{t('guests.foodAction.confirm')}
 							</Button>
 						</div>
 					</div>

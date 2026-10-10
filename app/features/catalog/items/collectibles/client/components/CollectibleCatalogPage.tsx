@@ -7,6 +7,7 @@ import {
 	type TCollectibleCatalog,
 	createCollectibleStore,
 } from '@/features/catalog/items/collectibles/client/state/createCollectibleStore';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import ItemPage from '@/features/catalog/shared/client/components/ItemPage';
 import SideButtonGroup from '@/features/catalog/shared/client/components/SideButtonGroup';
 import SideFilterIconButton, {
@@ -16,7 +17,10 @@ import SidePinyinSortIconButton from '@/features/catalog/shared/client/component
 import { useFilteredData } from '@/features/catalog/shared/client/hooks/useFilteredData';
 import { useSortedData } from '@/features/catalog/shared/client/hooks/useSortedData';
 import type { TItemData } from '@/features/catalog/shared/contracts';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import { type IPinyinSortConfig } from '@/features/catalog/shared/state/pinyinSort';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 type TCollectibleStoreConfig<TCatalog extends TCollectibleCatalog> = ReturnType<
 	typeof createCollectibleStore<TCatalog>
@@ -35,6 +39,8 @@ export default function CollectibleCatalogPage<
 	renderCatalog: (data: TItemData<TCatalog>) => ReactNode;
 	sourceFilterLabel?: string;
 }) {
+	const { t } = useI18n(catalogItemsMessages);
+	useCatalogLocalizationRevision();
 	const { getSources, store } = config;
 	const instance = store.instance.get();
 	const isAvailabilityDlcFilterRedundant = hasEquivalentDlcFilters(
@@ -96,7 +102,7 @@ export default function CollectibleCatalogPage<
 		() => [
 			{
 				items: availableContentDlcs,
-				label: '内容归属',
+				label: t('items.filter.contentDlc'),
 				selectedKeys: filterContentDlcs,
 				setSelectedKeys: store.persistence.filters.contentDlcs.set,
 				valueType: 'dlc',
@@ -106,7 +112,7 @@ export default function CollectibleCatalogPage<
 				: [
 						{
 							items: availableAvailabilityDlcs,
-							label: '可获取于',
+							label: t('items.filter.acquirableAt'),
 							selectedKeys: filterAvailabilityDlcs,
 							setSelectedKeys:
 								store.persistence.filters.availabilityDlcs.set,
@@ -137,6 +143,7 @@ export default function CollectibleCatalogPage<
 			store.persistence.filters.availabilityDlcs.set,
 			store.persistence.filters.contentDlcs.set,
 			store.persistence.filters.sources.set,
+			t,
 		]
 	);
 

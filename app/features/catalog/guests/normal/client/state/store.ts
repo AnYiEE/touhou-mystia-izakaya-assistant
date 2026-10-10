@@ -6,6 +6,7 @@ import {
 	normalizeNormalGuestRemotePartial,
 } from '@/features/catalog/guests/shared/state/guestPersistenceShape';
 import { NORMAL_GUEST_STORE_VERSION } from '@/features/catalog/guests/shared/state/guestStoreVersions';
+import { registerCatalogLocalizationRevisionMirror } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 
 import { createStoreSyncMiddleware } from '@/infrastructure/browser/crossTab/createStoreSyncMiddleware';
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
@@ -55,3 +56,7 @@ export const normalGuestStore = store(normalGuestInitialState, {
 	.actions(createNormalGuestStoreActions);
 
 wireNormalGuestStoreSubscriptions(normalGuestStore);
+
+registerCatalogLocalizationRevisionMirror((revision) => {
+	normalGuestStore.shared.catalogLocalizationRevision.set(revision);
+});

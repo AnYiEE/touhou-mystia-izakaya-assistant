@@ -20,12 +20,18 @@ import {
 	GUEST_EVALUATION_KEY_MAP,
 	GUEST_RATING_MAP,
 } from '@/domain/evaluation/labels';
+import { getEvaluationLabelByText } from '@/domain/evaluation/localizedLabels';
 import type { TRatingKey } from '@/domain/evaluation/types';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import {
+	type TAppShellMessageKey,
+	appShellMessages,
+} from '@/features/appShell/client/messages';
 import InfoButtonBase, {
 	InfoSectionTitle,
 } from '@/features/catalog/guests/shared/client/components/infoButtonBase';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { getSpecialGuestTachiePath } from '@/features/catalog/presentation/tachiePaths';
 import Price from '@/features/catalog/shared/client/components/Price';
@@ -33,6 +39,7 @@ import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import Tachie from '@/features/catalog/shared/client/components/Tachie';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 interface ILevelLabelProps {
@@ -71,6 +78,17 @@ const RATING_CLASS_NAMES = {
 } as const;
 const RATING_AVATAR_CLASS_NAMES = { base: 'h-6 w-2 ring-offset-0' } as const;
 
+type TRewardLabelType = Exclude<TRewardType, '采集'>;
+
+const REWARD_TYPE_MESSAGE_KEYS = {
+	伙伴: 'appShell.nav.partners',
+	厨具: 'appShell.nav.cookers',
+	摆件: 'appShell.nav.decorations',
+	料理: 'appShell.nav.foods',
+	衣服: 'appShell.nav.clothes',
+	道具: 'appShell.nav.items',
+} as const satisfies Record<TRewardLabelType, TAppShellMessageKey>;
+
 const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({ level }) {
 	return (
 		<span className="whitespace-nowrap font-medium">
@@ -81,6 +99,8 @@ const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({ level }) {
 });
 
 export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
+	const { t } = useI18n(catalogGuestsMessages);
+	const { t: tAppShell } = useI18n(appShellMessages);
 	const openWindow = useViewInNewWindow();
 	const { breakpoint: placement } = useBreakpoint(
 		{ bottom: -1, 'right-start': 426 },
@@ -99,7 +119,7 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 		trackEvent(
 			trackEvent.category.click,
 			'Info Button',
-			specialGuestCatalog.getPropsById(currentSpecialGuest, 'name')
+			specialGuestCatalog.getDisplayPropsById(currentSpecialGuest, 'name')
 		);
 	}, [currentSpecialGuest, specialGuestCatalog]);
 
@@ -108,7 +128,7 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 	}
 
 	const currentSpecialGuestData =
-		specialGuestCatalog.getPropsById(currentSpecialGuest);
+		specialGuestCatalog.getDisplayPropsById(currentSpecialGuest);
 	const {
 		chat: currentSpecialGuestChat,
 		description: currentSpecialGuestDescriptionSeed,
@@ -157,8 +177,10 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 			? DEFAULT_EXPANDED_KEYS_WITH_CARD
 			: DEFAULT_EXPANDED_KEYS;
 
-	const getLabel = (type: TRewardType) =>
-		`点击：在新窗口中查看此${type}的详情`;
+	const getLabel = (type: TRewardLabelType) =>
+		t('guests.info.viewItemTip', {
+			type: tAppShell(REWARD_TYPE_MESSAGE_KEYS[type]),
+		});
 
 	return (
 		<InfoButtonBase
@@ -170,18 +192,24 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 		>
 			<AccordionItem
 				key="description"
-				aria-label={`${currentSpecialGuestName}介绍`}
+				aria-label={t('guests.info.introAria', {
+					name: currentSpecialGuestName,
+				})}
 				textValue={currentSpecialGuestName}
 				title={<InfoSectionTitle title={currentSpecialGuestName} />}
 				classNames={DESCRIPTION_CLASS_NAMES}
 			>
 				<div className="flex items-center gap-4">
 					<p>
-						<span className="font-semibold">ID：</span>
+						<span className="font-semibold">
+							{t('guests.info.idLabel')}
+						</span>
 						<Price showSymbol={false}>{currentSpecialGuest}</Price>
 					</p>
 					<p className="flex items-center">
-						<span className="font-semibold">立绘：</span>
+						<span className="font-semibold">
+							{t('guests.info.tachieLabel')}
+						</span>
 						<Popover
 							placement={placement}
 							showArrow={placement === 'bottom'}
@@ -201,7 +229,7 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 										size={1.25}
 										className="mr-0.5 rounded-full"
 									/>
-									查看立绘
+									{t('guests.info.viewTachie')}
 								</span>
 							</PopoverTrigger>
 							<PopoverContent>
@@ -238,8 +266,10 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 			{hasBondRewards ? (
 				<AccordionItem
 					key="bond"
-					aria-label={`${currentSpecialGuestName}羁绊奖励`}
-					title="羁绊奖励"
+					aria-label={t('guests.info.bondAria', {
+						name: currentSpecialGuestName,
+					})}
+					title={t('guests.info.bond')}
 					classNames={BOND_CLASS_NAMES}
 				>
 					<div className="grid grid-cols-2 content-start gap-1">
@@ -409,12 +439,16 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 						{currentSpecialGuestCollection && (
 							<p className="flex items-center leading-5">
 								<LevelLabel level={5} />
-								采集【{currentSpecialGuestMainPlace}】
+								{t('guests.info.gatherPlace', {
+									place: currentSpecialGuestMainPlace,
+								})}
 							</p>
 						)}
 						{bondPartner !== null && (
 							<p className="flex items-center">
-								<LevelLabel level="伙伴" />
+								<LevelLabel
+									level={tAppShell('appShell.nav.partners')}
+								/>
 								<Tooltip
 									showArrow
 									content={getLabel('伙伴')}
@@ -453,14 +487,16 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 			{hasSpellCards ? (
 				<AccordionItem
 					key="card"
-					aria-label={`${currentSpecialGuestName}符卡效果`}
-					title="符卡效果"
+					aria-label={t('guests.info.spellCardsAria', {
+						name: currentSpecialGuestName,
+					})}
+					title={t('guests.info.spellCards')}
 					classNames={DESCRIPTION_CLASS_NAMES}
 				>
 					{hasPositiveSpellCards && (
 						<div className="space-y-1">
 							<p className="text-large font-semibold text-exgood-border dark:text-exgood">
-								奖励符卡
+								{t('guests.info.spellCardPositive')}
 							</p>
 							<div className="space-y-1.5">
 								{currentSpecialGuestSpellCards.positive.map(
@@ -496,7 +532,7 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 							})}
 						>
 							<p className="text-large font-semibold text-bad dark:text-bad-border">
-								惩罚符卡
+								{t('guests.info.spellCardNegative')}
 							</p>
 							<div className="space-y-1.5">
 								{currentSpecialGuestSpellCards.negative.map(
@@ -530,8 +566,8 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 			{checkLengthEmpty(currentSpecialGuestChat) ? null : (
 				<AccordionItem
 					key="chat"
-					aria-label="闲聊对话"
-					title="闲聊对话"
+					aria-label={t('guests.info.chat')}
+					title={t('guests.info.chat')}
 					classNames={CHAT_CLASS_NAMES}
 				>
 					<Ol>
@@ -543,8 +579,8 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 			)}
 			<AccordionItem
 				key="rating"
-				aria-label="评价对话"
-				title="评价对话"
+				aria-label={t('guests.info.ratingConversations')}
+				title={t('guests.info.ratingConversations')}
 				classNames={RATING_CLASS_NAMES}
 			>
 				{Object.entries(GUEST_EVALUATION_KEY_MAP).map(
@@ -567,16 +603,22 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 									/>
 									<div>
 										<p className="font-semibold">
-											{evaluation}
-											{evaluation === '极度不满' &&
+											{getEvaluationLabelByText(
+												evaluation
+											)}
+											{evaluationKey === 'exbad' &&
 											hasNegativeSpellCards ? (
 												<span className="font-normal">
-													（释放惩罚符卡）
+													{t(
+														'guests.info.releaseNegative'
+													)}
 												</span>
-											) : evaluation === '完美' &&
+											) : evaluationKey === 'exgood' &&
 											  hasPositiveSpellCards ? (
 												<span className="font-normal">
-													（释放奖励符卡）
+													{t(
+														'guests.info.releasePositive'
+													)}
 												</span>
 											) : null}
 										</p>
@@ -600,45 +642,39 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 			</AccordionItem>
 			<AccordionItem
 				key="help"
-				aria-label="特别说明"
-				title="特别说明"
+				aria-label={t('guests.info.help')}
+				title={t('guests.info.help')}
 				classNames={DESCRIPTION_CLASS_NAMES}
 			>
 				<div>
-					<p className="font-semibold">搭配套餐</p>
+					<p className="font-semibold">
+						{t('guests.info.mealSection')}
+					</p>
 					<Ol className="text-small">
-						<li>
-							顾客标签和套餐评级按一般营业情景计算。任务中的临时偏好、符卡改判等特殊情况可能不会反映在结果中。
-						</li>
-						<li>
-							除流行趋势标签外，点击顾客卡片中的料理或酒水标签，可以将其设为点单需求；默认也会用该标签筛选对应表格，这项联动可在设置中关闭。
-						</li>
-						<li>
-							选择料理后，点击套餐卡片中的厨具可切换为“夜雀”系列厨具。使用后无需选择点单需求；黑暗物质不适用。
-						</li>
-						<li>
-							保存套餐需要料理和酒水，还需分别选定料理、酒水点单需求，或标记使用“夜雀”系列厨具。
-						</li>
-						<li>
-							“猜您想要”可按当前选择自动推荐套餐；“营业预设”可集中查看多个稀客的已保存套餐或自动推荐。
-						</li>
+						<li>{t('guests.info.help.special.p1')}</li>
+						<li>{t('guests.info.help.special.p2')}</li>
+						<li>{t('guests.info.help.special.p3')}</li>
+						<li>{t('guests.info.help.special.p4')}</li>
+						<li>{t('guests.info.help.special.p5')}</li>
 					</Ol>
 				</div>
 				<div>
-					<p className="font-semibold">快捷功能</p>
+					<p className="font-semibold">
+						{t('guests.info.shortcutsSection')}
+					</p>
 					<Ol className="text-small">
 						<li>
 							<span className="hidden md:inline">
-								从顶部进入“设置”
+								{t('guests.info.help.shortcutSettings')}
 							</span>
 							<span className="md:hidden">
-								使用页面右下角的“设置”按钮，或从右上角菜单进入“设置”
+								{t('guests.info.help.shortcutSettingsMobile')}
 							</span>
-							，可以调整流行趋势、明星店、自动推荐、内容显示和数据管理等选项。
+							{t(
+								'guests.info.help.shortcutSettingsSuffixSpecial'
+							)}
 						</li>
-						<li>
-							点击导航栏的搜索按钮可查找资料、设置或直接应用筛选。名称搜索支持中文、拼音全拼和首字母。
-						</li>
+						<li>{t('guests.info.help.shortcutSearch')}</li>
 					</Ol>
 				</div>
 			</AccordionItem>

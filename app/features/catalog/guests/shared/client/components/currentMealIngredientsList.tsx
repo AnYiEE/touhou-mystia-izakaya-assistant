@@ -7,6 +7,9 @@ import Tooltip from '@/design/ui/components/tooltip';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
 import { UnknownItemIcon } from './resultCardAtoms';
@@ -25,6 +28,7 @@ export default memo<IProps>(function CurrentMealIngredientsList({
 	onRemoveExtraIngredient,
 	originalIngredients,
 }) {
+	const { t } = useI18n(catalogGuestsMessages);
 	const filledIngredients = [
 		...originalIngredients,
 		...extraIngredients,
@@ -39,10 +43,17 @@ export default memo<IProps>(function CurrentMealIngredientsList({
 				const ingredientName =
 					ingredient === null
 						? null
-						: ingredientCatalog.getPropsById(ingredient, 'name');
+						: ingredientCatalog.getDisplayPropsById(
+								ingredient,
+								'name'
+							);
 				const label = isExtraIngredient
-					? `点击：删除额外食材【${ingredientName}】`
-					: (ingredientName ?? '空食材');
+					? t('guests.mealIngredients.removeTip', {
+							name:
+								ingredientName ??
+								t('guests.mealIngredients.empty'),
+						})
+					: (ingredientName ?? t('guests.mealIngredients.empty'));
 
 				return (
 					<Tooltip key={index} showArrow content={label} offset={3}>
@@ -81,7 +92,9 @@ export default memo<IProps>(function CurrentMealIngredientsList({
 									fallbackKey={`empty-ingredient-${index}`}
 									fallback={
 										<UnknownItemIcon
-											title="空食材"
+											title={t(
+												'guests.mealIngredients.empty'
+											)}
 											iconSize={2}
 											size={2.5}
 										/>
@@ -95,7 +108,9 @@ export default memo<IProps>(function CurrentMealIngredientsList({
 									fallbackKey={`empty-ingredient-${index}`}
 									fallback={
 										<UnknownItemIcon
-											title="空食材"
+											title={t(
+												'guests.mealIngredients.empty'
+											)}
 											iconSize={2}
 											size={2.5}
 										/>

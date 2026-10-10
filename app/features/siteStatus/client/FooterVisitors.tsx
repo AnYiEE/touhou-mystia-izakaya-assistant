@@ -2,13 +2,17 @@
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+
 import {
-	SITE_VISITOR_STATUS_MESSAGE_MAP,
+	SITE_VISITOR_STATUS_MESSAGE_KEYS,
 	createSiteVisitorCountMessage,
 } from './copy';
+import { siteStatusMessages } from './messages';
 import { useSiteVisitors } from './SiteStatusProvider';
 
 export default function FooterVisitors() {
+	const { t } = useI18n(siteStatusMessages);
 	const { hasLoaded, visitors } = useSiteVisitors();
 
 	if (
@@ -18,10 +22,10 @@ export default function FooterVisitors() {
 	) {
 		return null;
 	} else if (!hasLoaded) {
-		return <span>{SITE_VISITOR_STATUS_MESSAGE_MAP.loading}</span>;
+		return <span>{t(SITE_VISITOR_STATUS_MESSAGE_KEYS.loading)}</span>;
 	} else if (visitors === null) {
-		return <span>{SITE_VISITOR_STATUS_MESSAGE_MAP.failed}</span>;
+		return <span>{t(SITE_VISITOR_STATUS_MESSAGE_KEYS.failed)}</span>;
 	}
 
-	return <span>{createSiteVisitorCountMessage(visitors)}</span>;
+	return <span>{createSiteVisitorCountMessage(visitors, t)}</span>;
 }

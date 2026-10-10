@@ -4,7 +4,6 @@ import {
 	SCHEDULER_FACTS,
 	formatSchedulerLabels,
 } from '@/domain/data/labels/schedulerFacts';
-import { MERCHANT_LABEL_MAP } from '@/domain/data/places/merchantFacts';
 import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 import type {
 	ITaskReference,
@@ -12,6 +11,7 @@ import type {
 	TMerchantReference,
 } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
+import { getMapLabel, getMerchantLabel } from '@/domain/places/localizedLabels';
 
 import { DLC_LABEL_MAP } from './messages';
 import { createAvailabilityPath } from './path';
@@ -81,11 +81,11 @@ export function formatMerchantReference(merchant: TMerchantReference) {
 			throw new Error(`找不到商人关联的稀客“${merchant.specialGuest}”`);
 		}
 		return 'map' in merchant
-			? `【${MAP_FACTS[merchant.map].label}】${specialGuest.name}`
+			? `【${getMapLabel(merchant.map)}】${specialGuest.name}`
 			: `【${specialGuest.name}】${merchant.label}`;
 	}
 
-	return `【${MAP_FACTS[merchant.map].label}】${MERCHANT_LABEL_MAP[merchant.label]}`;
+	return `【${getMapLabel(merchant.map)}】${getMerchantLabel(merchant.label)}`;
 }
 
 export function resolveMerchantAvailabilityResult(

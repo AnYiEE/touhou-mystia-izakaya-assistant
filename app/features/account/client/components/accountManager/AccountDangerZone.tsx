@@ -11,7 +11,10 @@ import { memo } from 'react';
 import { ACCOUNT_SYNC_STATUS_MAP } from '@/domain/account/contracts';
 
 import AccountConfirmButton from '@/features/account/client/components/AccountConfirmButton';
+import { accountMessages } from '@/features/account/client/messages';
 import type { IAccountUserProfile } from '@/features/account/contracts';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IAccountDangerZoneProps {
 	csrfToken: string | null;
@@ -41,6 +44,8 @@ export default memo<IAccountDangerZoneProps>(function AccountDangerZone(props) {
 		isSubmitting,
 		user,
 	} = props;
+	const { t } = useI18n(accountMessages);
+
 	return (
 		<div className="space-y-3 border-t border-default-200/80 pt-4">
 			<div className="flex items-start gap-2 rounded-medium bg-warning/10 px-3 py-2 text-small leading-5 text-warning-700 dark:text-warning-600">
@@ -48,19 +53,17 @@ export default memo<IAccountDangerZoneProps>(function AccountDangerZone(props) {
 					icon={faTriangleExclamation}
 					className="mt-1 w-4 shrink-0"
 				/>
-				<p>
-					危险操作会影响云端数据或账号本身，请先通过数据管理导出需要保留的数据。
-				</p>
+				<p>{t('account.manager.danger.warning')}</p>
 			</div>
 			<div className="flex flex-col gap-2">
 				<AccountConfirmButton
 					buttonLabel={
 						user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
-							? '云端数据已清空'
-							: '清空云端数据'
+							? t('account.manager.danger.clearDataCleared')
+							: t('account.manager.danger.clearData')
 					}
 					color="warning"
-					confirmLabel="确认清空"
+					confirmLabel={t('account.manager.danger.clearDataConfirm')}
 					icon={faCloudArrowUp}
 					isDisabled={
 						isSubmitting ||
@@ -74,9 +77,11 @@ export default memo<IAccountDangerZoneProps>(function AccountDangerZone(props) {
 					onCancel={handleDeleteDataCancel}
 				/>
 				<AccountConfirmButton
-					buttonLabel="删除账号"
+					buttonLabel={t('account.manager.danger.deleteAccount')}
 					color="danger"
-					confirmLabel="确认删除"
+					confirmLabel={t(
+						'account.manager.danger.deleteAccountConfirm'
+					)}
 					icon={faTrash}
 					isDisabled={isSubmitting || csrfToken === null}
 					isLoading={isSubmitting}

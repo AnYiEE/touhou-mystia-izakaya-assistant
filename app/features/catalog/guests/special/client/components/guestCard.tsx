@@ -17,10 +17,9 @@ import Tooltip from '@/design/ui/components/tooltip';
 
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import type { TSpecialGuestName } from '@/domain/data/guests/special/types';
-import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
-import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import { GUEST_RATING_MAP } from '@/domain/evaluation/labels';
+import { getCollaborationLabel } from '@/domain/labels/localizedCollaborationLabels';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
@@ -28,6 +27,8 @@ import { GuestCardSiteInfo } from '@/features/catalog/guests/shared/client/compo
 import RatingAvatarShell from '@/features/catalog/guests/shared/client/components/ratingAvatarShell';
 import SlidingSprite from '@/features/catalog/guests/shared/client/components/slidingSprite';
 import TagGroup from '@/features/catalog/guests/shared/client/components/tagGroup';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
+import { formatSelectionTip } from '@/features/catalog/guests/shared/presentation/buildSelectionTip';
 import {
 	buildRareTagTooltip,
 	isPopularTrendTag,
@@ -37,16 +38,22 @@ import { getSpecialGuestDisplayMeta } from '@/features/catalog/presentation/gues
 import { SPECIAL_GUEST_TAG_STYLE } from '@/features/catalog/presentation/tagStyles';
 import Price from '@/features/catalog/shared/client/components/Price';
 import Tags from '@/features/catalog/shared/client/components/Tags';
+import {
+	compareFoodTagLabels,
+	getBeverageTagLabel,
+	getFoodTagLabel,
+} from '@/features/catalog/shared/client/localization/tagLabels';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import InfoButton from './infoButton';
 
 export default function GuestCard() {
+	const { locale, t } = useI18n(catalogGuestsMessages);
 	const { isHighAppearance } = useDesignPreferences();
 	const { pushState } = usePathname();
 	const vibrate = useVibrate();
@@ -136,13 +143,13 @@ export default function GuestCard() {
 		() =>
 			currentBeverage === null
 				? ([] as TBeverageTagId[])
-				: beverageCatalog.getPropsById(currentBeverage, 'tags'),
+				: beverageCatalog.getDisplayPropsById(currentBeverage, 'tags'),
 		[beverageCatalog, currentBeverage]
 	);
 
 	const avatarRatingContent = hasRating
 		? GUEST_RATING_MAP[currentRating]
-		: unsatisfiedSelectionTip.rating;
+		: formatSelectionTip(unsatisfiedSelectionTip.rating, t);
 
 	const avatarRatingColor = hasRating
 		? (`${currentRating}-border` as const)
@@ -180,23 +187,34 @@ export default function GuestCard() {
 			tag: string,
 			isPopularTrend: boolean
 		) =>
-			buildRareTagTooltip({
-				currentOrderTag:
-					type === 'beverageTag'
-						? currentGuestOrder.beverageTag === null
-							? null
-							: BEVERAGE_TAG_MAP[currentGuestOrder.beverageTag]
-						: currentGuestOrder.foodTag === null
-							? null
-							: FOOD_TAG_MAP[currentGuestOrder.foodTag],
-				hasMystiaCooker,
-				isDarkMatter: Boolean(isDarkMatter),
-				isOrderLinkedFilter,
-				isPopularTrend,
-				tag,
-				type,
-			}),
-		[currentGuestOrder, hasMystiaCooker, isDarkMatter, isOrderLinkedFilter]
+			buildRareTagTooltip(
+				{
+					currentOrderTag:
+						type === 'beverageTag'
+							? currentGuestOrder.beverageTag === null
+								? null
+								: getBeverageTagLabel(
+										currentGuestOrder.beverageTag
+									)
+							: currentGuestOrder.foodTag === null
+								? null
+								: getFoodTagLabel(currentGuestOrder.foodTag),
+					hasMystiaCooker,
+					isDarkMatter: Boolean(isDarkMatter),
+					isOrderLinkedFilter,
+					isPopularTrend,
+					tag,
+					type,
+				},
+				t
+			),
+		[
+			currentGuestOrder,
+			hasMystiaCooker,
+			isDarkMatter,
+			isOrderLinkedFilter,
+			t,
+		]
 	);
 
 	if (currentSpecialGuest === null) {
@@ -213,7 +231,7 @@ export default function GuestCard() {
 		positiveTagMapping: currentGuestPositiveTagMapping,
 		positiveTags: currentGuestPositiveTags,
 		price: currentGuestPrice,
-	} = specialGuestCatalog.getPropsById(currentSpecialGuest);
+	} = specialGuestCatalog.getDisplayPropsById(currentSpecialGuest);
 	const currentGuestRecord = specialGuestCatalog.data.find(
 		({ id }) => id === currentSpecialGuest
 	);
@@ -230,50 +248,60 @@ export default function GuestCard() {
 		hasOtherPlaces,
 		mainPlace: currentGuestMainPlace,
 		placeContent,
-	} = getSpecialGuestDisplayMeta(specialGuestCatalog, currentSpecialGuest);
+	} = getSpecialGuestDisplayMeta(
+		specialGuestCatalog,
+		currentSpecialGuest,
+		locale
+	);
 
 	const { label: dlcLabel, shortLabel: dlcShortLabel } =
 		DLC_LABEL_MAP[currentGuestDlc];
 	const sourceLabel =
 		currentGuestCollaboration === undefined
 			? dlcLabel
-			: COLLABORATION_LABEL_MAP[currentGuestCollaboration];
+			: getCollaborationLabel(currentGuestCollaboration);
 	const sourceShortLabel =
-		currentGuestCollaboration === undefined ? dlcShortLabel : '联动';
+		currentGuestCollaboration === undefined
+			? dlcShortLabel
+			: t('guests.guestCard.collaboration');
 
 	const enduranceLimitContent = (
 		<div>
 			<p>
 				{hasEnduranceLimit ? (
 					<>
-						可超支预算
+						{t('guests.guestCard.budgetOverrun')}
 						<Price showSymbol={false}>
 							{currentGuestEnduranceLimitPercent}
 						</Price>
 						%
 					</>
 				) : hasNegativeSpellCards ? (
-					'不接受预算超支'
+					t('guests.guestCard.noBudgetOverrun')
 				) : (
 					''
 				)}
 				{hasNegativeSpellCards &&
-					`（超${hasEnduranceLimit ? '过' : '支'}则释放惩罚符卡）`}
+					t(
+						hasEnduranceLimit
+							? 'guests.guestCard.penaltyExceeded'
+							: 'guests.guestCard.penaltyOverspent'
+					)}
 			</p>
 			<p>
-				最少
+				{t('guests.guestCard.budgetMin')}
 				<Price>
 					{Math.ceil(
 						currentGuestPrice[0] * currentGuestEnduranceLimit
 					)}
 				</Price>
-				，平均
+				{t('guests.guestCard.budgetAverage')}
 				<Price>
 					{currentGuestAveragePrice}
 					{hasEnduranceLimit &&
 						`-${Math.ceil(currentGuestAveragePrice * currentGuestEnduranceLimit)}`}
 				</Price>
-				，最多
+				{t('guests.guestCard.budgetMax')}
 				<Price>
 					{Math.ceil(
 						currentGuestPrice[1] * currentGuestEnduranceLimit
@@ -406,7 +434,7 @@ export default function GuestCard() {
 						</p>
 						<div className="flex items-center justify-between gap-4">
 							<p>
-								可能持有：
+								{t('guests.guestCard.mayHold')}
 								<Popover showArrow offset={4}>
 									<Tooltip
 										showArrow
@@ -449,11 +477,9 @@ export default function GuestCard() {
 					{!checkLengthEmpty(currentGuestPositiveTags) && (
 						<TagGroup>
 							{currentGuestPositiveTags
-								.toSorted((a, b) =>
-									pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b])
-								)
+								.toSorted(compareFoodTagLabels)
 								.map((tag) => {
-									const tagLabel = FOOD_TAG_MAP[tag];
+									const tagLabel = getFoodTagLabel(tag);
 									const isPopularTrend =
 										isPopularTrendTag(tag);
 									const tagDescription = (
@@ -490,6 +516,7 @@ export default function GuestCard() {
 													SPECIAL_GUEST_TAG_STYLE.positive
 												}
 												tagType="positive"
+												data-tutorial-food-tag={tag}
 												onPress={
 													isPopularTrend
 														? undefined
@@ -499,7 +526,26 @@ export default function GuestCard() {
 																);
 															}
 												}
-												aria-label={`${tagLabel}${isPopularTrend ? '/不会被顾客点单' : currentGuestOrder.foodTag === tag ? '/已选定' : ''}${currentFoodTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
+												aria-label={`${tagLabel}${
+													isPopularTrend
+														? t(
+																'guests.tagStatus.notOrdered'
+															)
+														: currentGuestOrder.foodTag ===
+															  tag
+															? t(
+																	'guests.tagStatus.selected'
+																)
+															: ''
+												}${
+													currentFoodTagsWithTrend.includes(
+														tag
+													)
+														? t(
+																'guests.tagStatus.satisfied'
+															)
+														: ''
+												}`}
 												tabIndex={
 													isPopularTrend &&
 													isShowTagsTooltip
@@ -544,13 +590,11 @@ export default function GuestCard() {
 					{!checkLengthEmpty(currentGuestNegativeTags) && (
 						<TagGroup>
 							{currentGuestNegativeTags
-								.toSorted((a, b) =>
-									pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b])
-								)
+								.toSorted(compareFoodTagLabels)
 								.map((tag) => (
 									<Tags.Tag
 										key={tag}
-										tag={FOOD_TAG_MAP[tag]}
+										tag={getFoodTagLabel(tag)}
 										tagStyle={
 											SPECIAL_GUEST_TAG_STYLE.negative
 										}
@@ -575,7 +619,7 @@ export default function GuestCard() {
 							{currentGuestBeverageTags
 								.toSorted(numberSort)
 								.map((tag) => {
-									const tagLabel = BEVERAGE_TAG_MAP[tag];
+									const tagLabel = getBeverageTagLabel(tag);
 									const tagDescription = (
 										currentGuestBeverageTagMapping as Partial<
 											Record<TBeverageTagId, string>
@@ -610,10 +654,24 @@ export default function GuestCard() {
 													SPECIAL_GUEST_TAG_STYLE.beverage
 												}
 												tagType="positive"
+												data-tutorial-beverage-tag={tag}
 												onPress={() => {
 													handleBeverageTagPress(tag);
 												}}
-												aria-label={`${tagLabel}${currentGuestOrder.beverageTag === tag ? '/已选定' : ''}${beverageTags.includes(tag) ? '/已满足' : ''}`}
+												aria-label={`${tagLabel}${
+													currentGuestOrder.beverageTag ===
+													tag
+														? t(
+																'guests.tagStatus.selected'
+															)
+														: ''
+												}${
+													beverageTags.includes(tag)
+														? t(
+																'guests.tagStatus.satisfied'
+															)
+														: ''
+												}`}
 												className={cn(
 													'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 													{
@@ -642,24 +700,32 @@ export default function GuestCard() {
 					)}
 				</div>
 				{hasSelected ? (
-					<Tooltip showArrow content="重置当前选定项" offset={4}>
+					<Tooltip
+						showArrow
+						content={t('guests.guestCard.resetSelection')}
+						offset={4}
+					>
 						<FontAwesomeIconButton
 							icon={faArrowsRotate}
 							variant="light"
 							onPress={() => {
 								handleRefreshSelectedItems(currentGuestName);
 							}}
-							aria-label="重置当前选定项"
+							aria-label={t('guests.guestCard.resetSelection')}
 							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 						/>
 					</Tooltip>
 				) : (
-					<Tooltip showArrow content="取消选择当前顾客" offset={4}>
+					<Tooltip
+						showArrow
+						content={t('guests.guestCard.deselect')}
+						offset={4}
+					>
 						<FontAwesomeIconButton
 							icon={faXmark}
 							variant="light"
 							onPress={handleRefreshGuest}
-							aria-label="取消选择当前顾客"
+							aria-label={t('guests.guestCard.deselect')}
 							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 						/>
 					</Tooltip>

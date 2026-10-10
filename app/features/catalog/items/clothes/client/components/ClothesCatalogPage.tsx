@@ -6,6 +6,7 @@ import { hasEquivalentDlcFilters } from '@/domain/availability';
 
 import { filterClothesData } from '@/features/catalog/items/clothes/client/queries/filterClothesData';
 import { clothesStore } from '@/features/catalog/items/clothes/client/state/store';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import ItemPage from '@/features/catalog/shared/client/components/ItemPage';
 import SideButtonGroup from '@/features/catalog/shared/client/components/SideButtonGroup';
 import SideFilterIconButton, {
@@ -14,13 +15,17 @@ import SideFilterIconButton, {
 import SidePinyinSortIconButton from '@/features/catalog/shared/client/components/SidePinyinSortIconButton';
 import { useFilteredData } from '@/features/catalog/shared/client/hooks/useFilteredData';
 import { useSortedData } from '@/features/catalog/shared/client/hooks/useSortedData';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import { type IPinyinSortConfig } from '@/features/catalog/shared/state/pinyinSort';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 import ClothesCatalog from './ClothesCatalog';
 
 export default function ClothesCatalogPage() {
+	const { t } = useI18n(catalogItemsMessages);
+	useCatalogLocalizationRevision();
 	const instance = clothesStore.instance.get();
 	const isAvailabilityDlcFilterRedundant = hasEquivalentDlcFilters(
 		instance.data
@@ -70,7 +75,7 @@ export default function ClothesCatalogPage() {
 		() => [
 			{
 				items: availableContentDlcs,
-				label: '内容归属',
+				label: t('items.filter.contentDlc'),
 				selectedKeys: filterContentDlcs,
 				setSelectedKeys:
 					clothesStore.persistence.filters.contentDlcs.set,
@@ -81,7 +86,7 @@ export default function ClothesCatalogPage() {
 				: [
 						{
 							items: availableAvailabilityDlcs,
-							label: '可获取于',
+							label: t('items.filter.acquirableAt'),
 							selectedKeys: filterAvailabilityDlcs,
 							setSelectedKeys:
 								clothesStore.persistence.filters
@@ -96,6 +101,7 @@ export default function ClothesCatalogPage() {
 			filterAvailabilityDlcs,
 			filterContentDlcs,
 			isAvailabilityDlcFilterRedundant,
+			t,
 		]
 	);
 

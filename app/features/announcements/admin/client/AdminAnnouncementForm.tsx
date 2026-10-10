@@ -6,6 +6,7 @@ import {
 	faClockRotateLeft,
 	faEye,
 	faFileArchive,
+	faLanguage,
 	faMagnifyingGlass,
 	faRotate,
 	faSave,
@@ -100,8 +101,19 @@ import {
 	type IAdminAnnouncementPreviewData,
 	type IAdminAnnouncementProfile,
 	type IAdminAnnouncementVersionListData,
+	type TAnnouncementTranslations,
 } from '@/features/announcements/contracts';
+import {
+	MAX_ANNOUNCEMENT_HTML_LENGTH,
+	MAX_ANNOUNCEMENT_TITLE_LENGTH,
+} from '@/features/announcements/limits';
 
+import {
+	DEFAULT_LOCALE,
+	SUPPORTED_LOCALES,
+	type TLocale,
+	isLocale,
+} from '@/shared/i18n/locale';
 import { checkOrderedArrayEqual } from '@/shared/utilities/collections/check';
 
 import {
@@ -130,14 +142,63 @@ const LEVEL_OPTIONS = [
 	{ key: 'critical', label: ANNOUNCEMENT_LEVEL_LABEL_MAP.critical },
 ] as const satisfies Array<{ key: TAnnouncementLevel; label: string }>;
 
+const LOCALE_LABEL_MAP = {
+	en: 'English',
+	ja: '日本語',
+	ko: '한국어',
+	'zh-CN': '简体中文',
+	'zh-TW': '繁體中文',
+} as const satisfies Record<TLocale, string>;
+
+const TRANSLATION_LOCALES = SUPPORTED_LOCALES.filter(
+	(locale) => locale !== DEFAULT_LOCALE
+);
+
+function createAnnouncementSelectClassNames(
+	baseClassName: string,
+	isHighAppearance: boolean
+) {
+	return {
+		base: baseClassName,
+		listboxWrapper: cn(
+			'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
+			{
+				'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
+					isHighAppearance,
+			}
+		),
+		popoverContent: cn({
+			'bg-content1/70 backdrop-blur-lg': isHighAppearance,
+		}),
+		trigger: cn('transition-background motion-reduce:transition-none', {
+			'backdrop-blur': isHighAppearance,
+			'bg-default/40 data-[hover=true]:bg-default-400/40': true,
+		}),
+	};
+}
+
+function getSingleSelectionKey(keys: 'all' | Set<Key>) {
+	if (keys === 'all') {
+		return null;
+	}
+
+	const { value } = keys.values().next();
+
+	return typeof value === 'string' ? value : null;
+}
+
 function AdminAnnouncementUserPreview({
 	dismissible,
 	level,
+	onPreviewLocaleChange,
 	preview,
+	previewLocale,
 }: {
 	dismissible: boolean;
 	level: TAnnouncementLevel;
+	onPreviewLocaleChange: (locale: TLocale) => void;
 	preview: IAdminAnnouncementPreviewData | null;
+	previewLocale: TLocale;
 }) {
 	const { isHighAppearance } = useDesignPreferences();
 
@@ -146,71 +207,111 @@ function AdminAnnouncementUserPreview({
 	}
 
 	const levelMeta = ANNOUNCEMENT_LEVEL_PRESENTATION[level];
+	const previewLocaleSelectClassNames = createAnnouncementSelectClassNames(
+		'w-36',
+		isHighAppearance
+	);
 
 	return (
 		<div className="space-y-2">
-			<div className="text-tiny leading-5 text-foreground-500">
-				用户视角预览
-			</div>
-			<section
-				aria-label="站点通知预览"
-				role="region"
-				className={cn(
-					'relative overflow-hidden transition-colors duration-300 motion-reduce:transition-none',
-					levelMeta.rootClassName,
-					isHighAppearance && 'backdrop-saturate-125 backdrop-blur-sm'
-				)}
-			>
-				<span
-					aria-hidden
-					className="pointer-events-none absolute inset-0 z-0"
-				>
-					<span
-						className={cn(
-							'announcement-flowing-background absolute inset-0',
-							levelMeta.backgroundClassName
-						)}
-					/>
+			<div className="flex flex-wrap items-center gap-2">
+				<span className="text-tiny leading-5 text-foreground-500">
+					用户视角预览
 				</span>
-				<div
+				<Select
+					disallowEmptySelection
+					aria-label="选择预览语言"
+					classNames={previewLocaleSelectClassNames}
+					selectedKeys={new Set([previewLocale])}
+					selectionMode="single"
+					size="sm"
+					variant="flat"
+					onSelectionChange={(keys) => {
+						const key = getSingleSelectionKey(keys);
+						if (key !== null && isLocale(key)) {
+							onPreviewLocaleChange(key);
+						}
+					}}
+				>
+					{SUPPORTED_LOCALES.map((locale) => (
+						<SelectItem
+							key={locale}
+							textValue={LOCALE_LABEL_MAP[locale]}
+						>
+							{LOCALE_LABEL_MAP[locale]}
+						</SelectItem>
+					))}
+				</Select>
+			</div>
+			{preview.is_visible ? (
+				<section
+					aria-label="站点通知预览"
+					role="region"
 					className={cn(
-						'relative z-10 mx-auto flex max-w-7xl items-center gap-2.5 py-1.5 pl-6 pr-4 sm:pr-6 md:pl-10 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl',
-						levelMeta.contentClassName
+						'relative overflow-hidden transition-colors duration-300 motion-reduce:transition-none',
+						levelMeta.rootClassName,
+						isHighAppearance &&
+							'backdrop-saturate-125 backdrop-blur-sm'
 					)}
 				>
 					<span
-						className={cn(
-							'inline-flex h-5 w-5 shrink-0 items-center justify-center',
-							levelMeta.iconClassName
-						)}
+						aria-hidden
+						className="pointer-events-none absolute inset-0 z-0"
 					>
-						<FontAwesomeIcon
-							icon={levelMeta.icon}
-							className="w-3"
+						<span
+							className={cn(
+								'announcement-flowing-background absolute inset-0',
+								levelMeta.backgroundClassName
+							)}
 						/>
 					</span>
-					<div className="min-w-0 flex-1 overflow-hidden">
-						<AnnouncementHtml html={preview.html} />
-					</div>
-					{dismissible ? (
-						<Button
-							isIconOnly
-							aria-label="关闭站点通知"
+					<div
+						className={cn(
+							'relative z-10 mx-auto flex max-w-7xl items-center gap-2.5 py-1.5 pl-6 pr-4 sm:pr-6 md:pl-10 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl',
+							levelMeta.contentClassName
+						)}
+					>
+						<span
 							className={cn(
-								'h-7 min-h-7 w-7 min-w-7 shrink-0',
-								levelMeta.buttonClassName
+								'inline-flex h-5 w-5 shrink-0 items-center justify-center',
+								levelMeta.iconClassName
 							)}
-							radius="sm"
-							size="sm"
-							variant="light"
 						>
-							<FontAwesomeIcon icon={faXmark} className="w-3.5" />
-						</Button>
-					) : (
-						<span aria-hidden className="h-7 w-7 shrink-0" />
-					)}
+							<FontAwesomeIcon
+								icon={levelMeta.icon}
+								className="w-3"
+							/>
+						</span>
+						<div className="min-w-0 flex-1 overflow-hidden">
+							<AnnouncementHtml html={preview.html} />
+						</div>
+						{dismissible ? (
+							<Button
+								isIconOnly
+								aria-label="关闭站点通知"
+								className={cn(
+									'h-7 min-h-7 w-7 min-w-7 shrink-0',
+									levelMeta.buttonClassName
+								)}
+								radius="sm"
+								size="sm"
+								variant="light"
+							>
+								<FontAwesomeIcon
+									icon={faXmark}
+									className="w-3.5"
+								/>
+							</Button>
+						) : (
+							<span aria-hidden className="h-7 w-7 shrink-0" />
+						)}
+					</div>
+				</section>
+			) : (
+				<div className="rounded-small border border-default-200/80 bg-default-50 px-3 py-2 text-small text-foreground-500">
+					{LOCALE_LABEL_MAP[preview.locale]}下不展示该通知
 				</div>
-			</section>
+			)}
 		</div>
 	);
 }
@@ -243,36 +344,15 @@ const CHANGED_FIELD_LABEL_MAP: Partial<
 	html: 'HTML内容',
 	id: 'ID',
 	level: '等级',
+	locales: '目标语言',
 	priority: '优先级',
 	revision: '版本',
 	starts_at: '开始时间',
 	target_user_ids: '指定用户',
 	title: '标题',
+	translations: '翻译内容',
 	updated_at: '更新时间',
 };
-
-function createAnnouncementSelectClassNames(
-	baseClassName: string,
-	isHighAppearance: boolean
-) {
-	return {
-		base: baseClassName,
-		listboxWrapper: cn(
-			'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
-			{
-				'focus:[&_li]:!bg-default/40 data-[focus=true]:[&_li]:!bg-default/40 data-[hover=true]:[&_li]:!bg-default/40':
-					isHighAppearance,
-			}
-		),
-		popoverContent: cn({
-			'bg-content1/70 backdrop-blur-lg': isHighAppearance,
-		}),
-		trigger: cn('transition-background motion-reduce:transition-none', {
-			'backdrop-blur': isHighAppearance,
-			'bg-default/40 data-[hover=true]:bg-default-400/40': true,
-		}),
-	};
-}
 
 function createLocalDateTimeValue(timestamp: number | null) {
 	if (timestamp === null) {
@@ -302,16 +382,6 @@ function createDateTimeLabel(timestamp: number | null) {
 	return timestamp === null
 		? '不限'
 		: new Date(timestamp).toLocaleString('zh-CN');
-}
-
-function getSingleSelectionKey(keys: 'all' | Set<Key>) {
-	if (keys === 'all') {
-		return null;
-	}
-
-	const { value } = keys.values().next();
-
-	return typeof value === 'string' ? value : null;
 }
 
 function getChangedFieldValue(value: unknown) {
@@ -378,8 +448,90 @@ function checkAnnouncementBodyMatchesProfile(
 			body.target_user_ids,
 			announcement.target_user_ids
 		) &&
-		body.title === announcement.title
+		body.title === announcement.title &&
+		checkOrderedArrayEqual(body.locales, announcement.locales) &&
+		JSON.stringify(body.translations) ===
+			JSON.stringify(announcement.translations)
 	);
+}
+
+function createOrderedTranslations(
+	translations: TAnnouncementTranslations
+): TAnnouncementTranslations {
+	const ordered: TAnnouncementTranslations = {};
+	for (const locale of SUPPORTED_LOCALES) {
+		const entry = translations[locale];
+		if (entry !== undefined) {
+			ordered[locale] = entry;
+		}
+	}
+
+	return ordered;
+}
+
+/**
+ * @description Form values are submitted trimmed, and a locale block whose
+ * title and content are both empty is omitted (= not shown in that language).
+ */
+function createSubmissionTranslations(
+	translations: TAnnouncementTranslations
+): TAnnouncementTranslations {
+	const next: TAnnouncementTranslations = {};
+	for (const locale of SUPPORTED_LOCALES) {
+		const entry = translations[locale];
+		if (entry === undefined) {
+			continue;
+		}
+
+		const html = entry.html.trim();
+		const title = entry.title.trim();
+		if (html.length === 0 && title.length === 0) {
+			continue;
+		}
+
+		next[locale] = { html, title };
+	}
+
+	return next;
+}
+
+function checkTranslationEntryPartial(
+	entry: { html: string; title: string } | undefined
+) {
+	if (entry === undefined) {
+		return false;
+	}
+
+	const hasHtml = entry.html.trim().length > 0;
+	const hasTitle = entry.title.trim().length > 0;
+
+	return hasHtml !== hasTitle;
+}
+
+function checkTranslationsInputValid(translations: TAnnouncementTranslations) {
+	for (const locale of SUPPORTED_LOCALES) {
+		const entry = translations[locale];
+		if (entry === undefined) {
+			continue;
+		}
+
+		const html = entry.html.trim();
+		const title = entry.title.trim();
+		if (html.length === 0 && title.length === 0) {
+			continue;
+		}
+		if (html.length === 0 || title.length === 0) {
+			return false;
+		}
+		if (
+			title.length > MAX_ANNOUNCEMENT_TITLE_LENGTH ||
+			html.length > MAX_ANNOUNCEMENT_HTML_LENGTH
+		) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 function createTargetUserOptionsFromIds(ids: string[]): ITargetUserOption[] {
@@ -467,12 +619,16 @@ export default function AdminAnnouncementForm({
 	const [level, setLevel] = useState<TAnnouncementLevel>(
 		initialAnnouncement?.level ?? 'info'
 	);
+	const [locales, setLocales] = useState<TLocale[]>(
+		initialAnnouncement?.locales ?? []
+	);
 	const [loadError, setLoadError] = useState<string | null>(
 		initialData.loadError
 	);
 	const [message, setMessage] = useState<string | null>(initialData.message);
 	const [preview, setPreview] =
 		useState<IAdminAnnouncementPreviewData | null>(null);
+	const [previewLocale, setPreviewLocale] = useState<TLocale>(DEFAULT_LOCALE);
 	const [priority, setPriority] = useState(
 		String(initialAnnouncement?.priority ?? 0)
 	);
@@ -490,6 +646,9 @@ export default function AdminAnnouncementForm({
 		)
 	);
 	const [title, setTitle] = useState(initialAnnouncement?.title ?? '');
+	const [translations, setTranslations] = useState<TAnnouncementTranslations>(
+		initialAnnouncement?.translations ?? {}
+	);
 	const [versions, setVersions] =
 		useState<IAdminAnnouncementVersionListData | null>(
 			initialData.versions
@@ -500,6 +659,10 @@ export default function AdminAnnouncementForm({
 	);
 	const audienceSelectClassNames = useMemo(
 		() => createAnnouncementSelectClassNames('w-40', isHighAppearance),
+		[isHighAppearance]
+	);
+	const localeSelectClassNames = useMemo(
+		() => createAnnouncementSelectClassNames('w-full', isHighAppearance),
 		[isHighAppearance]
 	);
 
@@ -522,6 +685,7 @@ export default function AdminAnnouncementForm({
 
 	const audienceSelectedKeys = useMemo(() => new Set([audience]), [audience]);
 	const levelSelectedKeys = useMemo(() => new Set([level]), [level]);
+	const localesSelectedKeys = useMemo(() => new Set(locales), [locales]);
 
 	const csrfToken =
 		admin?.csrf_token ?? accountStore.shared.adminCsrfToken.get();
@@ -539,6 +703,7 @@ export default function AdminAnnouncementForm({
 		admin !== null &&
 		title.trim().length > 0 &&
 		html.trim().length > 0 &&
+		checkTranslationsInputValid(translations) &&
 		Number.isSafeInteger(numericPriority) &&
 		startsAt !== undefined &&
 		endsAt !== undefined &&
@@ -566,6 +731,7 @@ export default function AdminAnnouncementForm({
 			ends_at: endsAt ?? null,
 			html,
 			level,
+			locales,
 			priority: numericPriority,
 			starts_at: startsAt ?? null,
 			target_user_ids:
@@ -573,6 +739,7 @@ export default function AdminAnnouncementForm({
 					? targetUsers.map((user) => user.id)
 					: [],
 			title: title.trim(),
+			translations: createSubmissionTranslations(translations),
 		};
 	}, [
 		announcement,
@@ -586,10 +753,12 @@ export default function AdminAnnouncementForm({
 		id,
 		isEditMode,
 		level,
+		locales,
 		numericPriority,
 		startsAt,
 		targetUsers,
 		title,
+		translations,
 	]);
 	const hasFormChanges = !checkAnnouncementBodyMatchesProfile(
 		formBody,
@@ -607,6 +776,7 @@ export default function AdminAnnouncementForm({
 			setHtml(nextAnnouncement.html);
 			setId(nextAnnouncement.id);
 			setLevel(nextAnnouncement.level);
+			setLocales(nextAnnouncement.locales);
 			setPriority(String(nextAnnouncement.priority));
 			setStartsAtInput(
 				createLocalDateTimeValue(nextAnnouncement.starts_at)
@@ -615,6 +785,7 @@ export default function AdminAnnouncementForm({
 				createTargetUserOptionsFromIds(nextAnnouncement.target_user_ids)
 			);
 			setTitle(nextAnnouncement.title);
+			setTranslations(nextAnnouncement.translations);
 		},
 		[]
 	);
@@ -628,6 +799,38 @@ export default function AdminAnnouncementForm({
 			}
 
 			setMessage(result.displayMessage);
+		},
+		[]
+	);
+
+	const handleLocalesSelectionChange = useCallback(
+		(keys: 'all' | Set<Key>) => {
+			const selected: TLocale[] = [];
+			if (keys !== 'all') {
+				for (const key of keys) {
+					if (typeof key === 'string' && isLocale(key)) {
+						selected.push(key);
+					}
+				}
+			}
+
+			setLocales(
+				SUPPORTED_LOCALES.filter((locale) => selected.includes(locale))
+			);
+		},
+		[]
+	);
+
+	const handleTranslationChange = useCallback(
+		(locale: TLocale, field: 'html' | 'title', value: string) => {
+			setTranslations((current) => {
+				const entry = current[locale] ?? { html: '', title: '' };
+
+				return createOrderedTranslations({
+					...current,
+					[locale]: { ...entry, [field]: value },
+				});
+			});
 		},
 		[]
 	);
@@ -737,35 +940,55 @@ export default function AdminAnnouncementForm({
 			});
 	}, []);
 
+	const runPreview = useCallback(
+		(locale: TLocale) => {
+			if (formBody === null || csrfToken === null) {
+				return;
+			}
+
+			setIsSaving(true);
+			setPreview(null);
+			setMessage(null);
+
+			void previewAnnouncement(
+				{ ...formBody, preview_locale: locale },
+				csrfToken
+			)
+				.then((result) => {
+					if (result.status === 'error') {
+						handleActionError(result);
+						return;
+					}
+
+					setPreview(result.data);
+				})
+				.catch((error: unknown) => {
+					setMessage(
+						Error.isError(error)
+							? error.message
+							: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.previewFailed
+					);
+				})
+				.finally(() => {
+					setIsSaving(false);
+				});
+		},
+		[csrfToken, formBody, handleActionError]
+	);
+
 	const handlePreview = useCallback(() => {
-		if (formBody === null || csrfToken === null) {
-			return;
-		}
+		runPreview(previewLocale);
+	}, [previewLocale, runPreview]);
 
-		setIsSaving(true);
-		setPreview(null);
-		setMessage(null);
-
-		void previewAnnouncement(formBody, csrfToken)
-			.then((result) => {
-				if (result.status === 'error') {
-					handleActionError(result);
-					return;
-				}
-
-				setPreview(result.data);
-			})
-			.catch((error: unknown) => {
-				setMessage(
-					Error.isError(error)
-						? error.message
-						: ADMIN_ANNOUNCEMENT_MESSAGE_MAP.previewFailed
-				);
-			})
-			.finally(() => {
-				setIsSaving(false);
-			});
-	}, [csrfToken, formBody, handleActionError]);
+	const handlePreviewLocaleChange = useCallback(
+		(locale: TLocale) => {
+			setPreviewLocale(locale);
+			if (preview !== null) {
+				runPreview(locale);
+			}
+		},
+		[preview, runPreview]
+	);
 
 	const handleSave = useCallback(() => {
 		if (formBody === null || csrfToken === null) {
@@ -1304,7 +1527,9 @@ export default function AdminAnnouncementForm({
 			<AdminAnnouncementUserPreview
 				dismissible={dismissible}
 				level={level}
+				onPreviewLocaleChange={handlePreviewLocaleChange}
 				preview={preview}
+				previewLocale={previewLocale}
 			/>
 
 			<div className="grid min-w-0 gap-4">
@@ -1403,6 +1628,44 @@ export default function AdminAnnouncementForm({
 							</Select>
 						</div>
 					</div>
+					<div className="space-y-2 rounded-small border border-default-200/80 px-3 py-3">
+						<div className="flex flex-wrap items-center justify-between gap-2">
+							<span className="inline-flex items-center gap-2 text-small font-medium text-foreground-700">
+								<FontAwesomeIcon
+									icon={faLanguage}
+									className="w-3.5 text-foreground-400"
+								/>
+								目标语言
+							</span>
+							<span className="text-tiny text-foreground-500">
+								{locales.length === 0
+									? '全部语言'
+									: `已选择${locales.length}种语言`}
+							</span>
+						</div>
+						<Select
+							aria-label="选择目标语言"
+							classNames={localeSelectClassNames}
+							isDisabled={isSaving}
+							selectedKeys={localesSelectedKeys}
+							selectionMode="multiple"
+							size="sm"
+							variant="flat"
+							onSelectionChange={handleLocalesSelectionChange}
+						>
+							{SUPPORTED_LOCALES.map((locale) => (
+								<SelectItem
+									key={locale}
+									textValue={LOCALE_LABEL_MAP[locale]}
+								>
+									{LOCALE_LABEL_MAP[locale]}
+								</SelectItem>
+							))}
+						</Select>
+						<p className="text-tiny text-foreground-500">
+							不选择表示全部语言；未填写翻译的语言不会展示该通知（简体中文始终按上方内容展示）。
+						</p>
+					</div>
 					{audience === 'targeted' && (
 						<div className="space-y-3 rounded-small border border-default-200/80 px-3 py-3">
 							<div className="flex flex-wrap items-center justify-between gap-2">
@@ -1499,6 +1762,78 @@ export default function AdminAnnouncementForm({
 							)}
 						</div>
 					)}
+					<div className="space-y-3 rounded-small border border-default-200/80 px-3 py-3">
+						<div className="flex flex-wrap items-center gap-2 text-small font-medium text-foreground-700">
+							<FontAwesomeIcon
+								icon={faLanguage}
+								className="w-3.5 text-foreground-400"
+							/>
+							多语言翻译
+							<span className="text-tiny font-normal text-foreground-500">
+								简体中文使用上方的标题与 HTML
+								内容（必填）；其余语言留空表示该语言不展示。
+							</span>
+						</div>
+						<div className="grid gap-3 xl:grid-cols-2">
+							{TRANSLATION_LOCALES.map((locale) => {
+								const entry = translations[locale];
+								const isPartial =
+									checkTranslationEntryPartial(entry);
+
+								return (
+									<div
+										key={locale}
+										className="min-w-0 space-y-2 rounded-small border border-default-200/60 p-3"
+									>
+										<div className="flex flex-wrap items-center justify-between gap-2 text-small font-medium">
+											<span>
+												{LOCALE_LABEL_MAP[locale]}
+											</span>
+											{isPartial && (
+												<span className="text-tiny font-normal text-danger-500">
+													需同时填写标题与内容，否则保存失败
+												</span>
+											)}
+										</div>
+										<Input
+											aria-label={`${LOCALE_LABEL_MAP[locale]}标题`}
+											isDisabled={isSaving}
+											label="标题"
+											maxLength={
+												MAX_ANNOUNCEMENT_TITLE_LENGTH
+											}
+											value={entry?.title ?? ''}
+											onValueChange={(value) => {
+												handleTranslationChange(
+													locale,
+													'title',
+													value
+												);
+											}}
+										/>
+										<Textarea
+											aria-label={`${LOCALE_LABEL_MAP[locale]}HTML内容`}
+											classNames={adminTextareaClassNames}
+											isDisabled={isSaving}
+											label="HTML内容"
+											maxLength={
+												MAX_ANNOUNCEMENT_HTML_LENGTH
+											}
+											minRows={4}
+											value={entry?.html ?? ''}
+											onValueChange={(value) => {
+												handleTranslationChange(
+													locale,
+													'html',
+													value
+												);
+											}}
+										/>
+									</div>
+								);
+							})}
+						</div>
+					</div>
 					<div className="grid gap-3 md:grid-cols-3">
 						<div className="space-y-1.5">
 							<span className="text-small font-medium text-foreground-600">

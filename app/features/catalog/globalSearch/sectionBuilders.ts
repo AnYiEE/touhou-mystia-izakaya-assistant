@@ -12,20 +12,35 @@ import { FishingCollectibleCatalog } from '@/domain/catalog/items/FishingCollect
 import { GeneralItemCatalog } from '@/domain/catalog/items/GeneralItemCatalog';
 import { PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
 import { RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog';
+import {
+	getCookerSeriesLabel,
+	getCookerTypeLabel,
+	getIngredientTypeLabel,
+} from '@/domain/catalog/localizedCategoryLabels';
 import { getBondFoods } from '@/domain/catalog/queries/getBondFoods';
-import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
-import { INGREDIENT_TYPE_MAP } from '@/domain/data/ingredients/ingredientFacts';
-import { MERCHANT_LABEL_MAP } from '@/domain/data/places/merchantFacts';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
-import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
-import { formatGeneralItemSource } from '@/domain/generalItems/sourceFormatting';
+import { getMapLabel, getMerchantLabel } from '@/domain/places/localizedLabels';
 
+import {
+	APP_SHELL_NAV_LABEL_KEYS,
+	type TAppShellMessageKey,
+	appShellMessages,
+} from '@/features/appShell/client/messages';
+import {
+	type TCatalogItemsMessageKey,
+	catalogItemsMessages,
+} from '@/features/catalog/items/shared/messages';
 import type { TItemData } from '@/features/catalog/shared/contracts';
+import { getActiveLocalizationLocale } from '@/features/catalog/shared/client/localization/activeLocalizationLocale';
+import {
+	compareFoodTagLabels,
+	getBeverageTagLabel,
+	getFoodTagLabel,
+} from '@/features/catalog/shared/client/localization/tagLabels';
 import type { TGlobalSearchSection } from '@/features/globalSearch/contracts';
 
+import { type TMessageParams, translate } from '@/shared/i18n/messages';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import {
 	CATALOG_SEARCH_FIELD_WEIGHT,
@@ -34,18 +49,51 @@ import {
 	createItem,
 } from './itemFactory';
 import {
+	type TCatalogGlobalSearchMessageKey,
+	catalogGlobalSearchMessages,
+} from './messages';
+import {
 	extractPlacesFromSource,
+	formatGeneralItemSourceText,
 	formatSpellCardList,
 } from './valueFormatting';
 
+function tAppShell(key: TAppShellMessageKey, params?: TMessageParams): string {
+	return translate(
+		appShellMessages,
+		getActiveLocalizationLocale(),
+		key,
+		params
+	);
+}
+
+function tItems(key: TCatalogItemsMessageKey, params?: TMessageParams): string {
+	return translate(
+		catalogItemsMessages,
+		getActiveLocalizationLocale(),
+		key,
+		params
+	);
+}
+
+function tSearch(
+	key: TCatalogGlobalSearchMessageKey,
+	params?: TMessageParams
+): string {
+	return translate(
+		catalogGlobalSearchMessages,
+		getActiveLocalizationLocale(),
+		key,
+		params
+	);
+}
+
 function getBeverageTagLabels(tags: ReadonlyArray<TBeverageTagId>) {
-	return tags.toSorted(numberSort).map((id) => BEVERAGE_TAG_MAP[id]);
+	return tags.toSorted(numberSort).map((id) => getBeverageTagLabel(id));
 }
 
 function getFoodTagLabels(tags: ReadonlyArray<TFoodTagId>) {
-	return tags
-		.toSorted((a, b) => pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b]))
-		.map((id) => FOOD_TAG_MAP[id]);
+	return tags.toSorted(compareFoodTagLabels).map((id) => getFoodTagLabel(id));
 }
 
 function getSpecialGuestBondRewards(
@@ -62,16 +110,16 @@ function getSpecialGuestBondRewards(
 		...getBondFoods(specialGuest, foodCatalog.data).map(
 			({ id, level }) => ({
 				level,
-				name: foodCatalog.getPropsById(id, 'name'),
-				type: '料理',
+				name: foodCatalog.getDisplayPropsById(id, 'name'),
+				type: tAppShell(APP_SHELL_NAV_LABEL_KEYS['/foods']),
 			})
 		),
 		...decorationCatalog
 			.getBondDecorationsBySpecialGuest(specialGuest)
 			.map(({ id, level }) => ({
 				level,
-				name: decorationCatalog.getPropsById(id, 'name'),
-				type: '摆件',
+				name: decorationCatalog.getDisplayPropsById(id, 'name'),
+				type: tAppShell(APP_SHELL_NAV_LABEL_KEYS['/decorations']),
 			})),
 	];
 	const cookerCatalog = CookerCatalog.getInstance();
@@ -88,37 +136,39 @@ function getSpecialGuestBondRewards(
 
 	if (bondCooker !== null) {
 		bondRewards.push({
-			level: '伙伴',
-			name: cookerCatalog.getPropsById(bondCooker, 'name'),
-			type: '厨具',
+			level: tAppShell(APP_SHELL_NAV_LABEL_KEYS['/partners']),
+			name: cookerCatalog.getDisplayPropsById(bondCooker, 'name'),
+			type: tAppShell(APP_SHELL_NAV_LABEL_KEYS['/cookers']),
 		});
 	}
 	if (bondClothes !== null) {
 		bondRewards.push({
-			level: '伙伴',
-			name: clothesCatalog.getPropsById(bondClothes, 'name'),
-			type: '衣服',
+			level: tAppShell(APP_SHELL_NAV_LABEL_KEYS['/partners']),
+			name: clothesCatalog.getDisplayPropsById(bondClothes, 'name'),
+			type: tAppShell(APP_SHELL_NAV_LABEL_KEYS['/clothes']),
 		});
 	}
 	if (item.collection) {
 		bondRewards.push({
 			level: 5,
-			name: `采集【${MAP_FACTS[item.maps[0]].label}】`,
-			type: '采集',
+			name: tSearch('search.reward.collectionWithMap', {
+				map: getMapLabel(item.maps[0]),
+			}),
+			type: tItems('items.source.way.collect'),
 		});
 	}
 	if (bondPartner !== null) {
 		bondRewards.push({
-			level: '伙伴',
-			name: partnerCatalog.getPropsById(bondPartner, 'name'),
-			type: '伙伴',
+			level: tAppShell(APP_SHELL_NAV_LABEL_KEYS['/partners']),
+			name: partnerCatalog.getDisplayPropsById(bondPartner, 'name'),
+			type: tAppShell(APP_SHELL_NAV_LABEL_KEYS['/partners']),
 		});
 	}
 	bondRewards.push(
 		...bondGeneralItems.map(({ id, level }) => ({
 			level,
-			name: generalItemCatalog.getPropsById(id, 'name'),
-			type: '道具',
+			name: generalItemCatalog.getDisplayPropsById(id, 'name'),
+			type: tAppShell(APP_SHELL_NAV_LABEL_KEYS['/items']),
 		}))
 	);
 
@@ -308,7 +358,7 @@ export function buildIngredientItems(
 				...createField(
 					'type',
 					'类型',
-					INGREDIENT_TYPE_MAP[item.type],
+					getIngredientTypeLabel(item.type),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
@@ -352,13 +402,13 @@ export function buildCookerItems(data = CookerCatalog.getInstance().data) {
 				...createField(
 					'type',
 					'类型',
-					item.availableTypes.map((id) => COOKER_TYPE_LABEL_MAP[id]),
+					item.availableTypes.map((id) => getCookerTypeLabel(id)),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
 					'category',
 					'类别',
-					CookerCatalog.getInstance().getSeriesLabelById(item.series),
+					getCookerSeriesLabel(item.series),
 					CATALOG_SEARCH_FIELD_WEIGHT.primary
 				),
 				...createField(
@@ -477,7 +527,9 @@ export function buildGeneralItemItems(
 				...createField(
 					'from',
 					'来源',
-					item.from.map(formatGeneralItemSource).join('、'),
+					item.from
+						.map(formatGeneralItemSourceText)
+						.join(tItems('items.source.listSeparator')),
 					CATALOG_SEARCH_FIELD_WEIGHT.context
 				),
 			],
@@ -521,7 +573,7 @@ export function buildRecordItems(data = RecordItemCatalog.getInstance().data) {
 				...createField(
 					'from',
 					'来源',
-					MERCHANT_LABEL_MAP[item.buy.merchant],
+					getMerchantLabel(item.buy.merchant),
 					CATALOG_SEARCH_FIELD_WEIGHT.context
 				),
 			],
@@ -549,7 +601,7 @@ export function buildFishingCollectibleItems(
 				...createField(
 					'place',
 					'垂钓地区',
-					MAP_FACTS[item.map].label,
+					getMapLabel(item.map),
 					CATALOG_SEARCH_FIELD_WEIGHT.context
 				),
 			],

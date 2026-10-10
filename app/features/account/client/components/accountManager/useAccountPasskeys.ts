@@ -45,7 +45,7 @@ import {
 	handleUnauthorizedAccountActionError,
 	handleUnauthorizedAccountError,
 } from './controller';
-import { ACCOUNT_MANAGER_MESSAGE_MAP } from './copy';
+import { ACCOUNT_MANAGER_MESSAGE_KEYS } from './copy';
 
 type TWebAuthnSupportStatus = 'supported' | 'unsupported';
 
@@ -310,7 +310,7 @@ export function useAccountPasskeys({
 						setMessage(
 							Error.isError(error)
 								? error.message
-								: ACCOUNT_MANAGER_MESSAGE_MAP.passkeyRefreshFailed
+								: ACCOUNT_MANAGER_MESSAGE_KEYS.passkeyRefreshFailed
 						);
 					}
 
@@ -463,7 +463,7 @@ export function useAccountPasskeys({
 				passkeyListUpdatedAtRef.current = Date.now();
 				setNewPasskeyName('');
 				setIsAddPasskeyFormOpen(false);
-				setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.passkeyAdded);
+				setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.passkeyAdded);
 				if (expectedAuthContext.expectedUserId !== null) {
 					broadcastPasskeyChange(expectedAuthContext.expectedUserId);
 				}
@@ -477,7 +477,7 @@ export function useAccountPasskeys({
 				setMessage(
 					Error.isError(error)
 						? error.message
-						: ACCOUNT_MANAGER_MESSAGE_MAP.passkeyAddFailed
+						: ACCOUNT_MANAGER_MESSAGE_KEYS.passkeyAddFailed
 				);
 			})
 			.finally(() => {
@@ -560,7 +560,7 @@ export function useAccountPasskeys({
 				);
 				setPasskeysUserId(expectedAuthContext.expectedUserId);
 				passkeyListUpdatedAtRef.current = Date.now();
-				setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.passkeyDeleted);
+				setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.passkeyDeleted);
 				if (expectedAuthContext.expectedUserId !== null) {
 					broadcastPasskeyChange(expectedAuthContext.expectedUserId);
 				}
@@ -574,7 +574,7 @@ export function useAccountPasskeys({
 				setMessage(
 					Error.isError(error)
 						? error.message
-						: ACCOUNT_MANAGER_MESSAGE_MAP.passkeyDeleteFailed
+						: ACCOUNT_MANAGER_MESSAGE_KEYS.passkeyDeleteFailed
 				);
 			})
 			.finally(() => {
@@ -659,7 +659,7 @@ export function useAccountPasskeys({
 				passkeyListUpdatedAtRef.current = Date.now();
 				setEditingPasskeyId(null);
 				setEditingPasskeyName('');
-				setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.passkeyRenamed);
+				setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.passkeyRenamed);
 				if (expectedAuthContext.expectedUserId !== null) {
 					broadcastPasskeyChange(expectedAuthContext.expectedUserId);
 				}
@@ -673,7 +673,7 @@ export function useAccountPasskeys({
 				setMessage(
 					Error.isError(error)
 						? error.message
-						: ACCOUNT_MANAGER_MESSAGE_MAP.passkeyRenameFailed
+						: ACCOUNT_MANAGER_MESSAGE_KEYS.passkeyRenameFailed
 				);
 			})
 			.finally(() => {

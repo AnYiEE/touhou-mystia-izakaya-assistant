@@ -27,22 +27,28 @@ import type { TCookerId } from '@/domain/data/cookers/types';
 import type { TFoodId } from '@/domain/data/foods/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
-import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
+import { getMapLabel } from '@/domain/places/localizedLabels';
 import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';
 
 import { specialGuestPlanCatalogPort } from '@/features/catalog/guests/special/client/state/specialGuestPlanCatalogPort';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
+import {
+	compareFoodTagLabels,
+	getBeverageTagLabel,
+	getFoodTagLabel,
+} from '@/features/catalog/shared/client/localization/tagLabels';
 import { recommendationPreferencesFacade } from '@/features/preferences/client/recommendationPreferencesFacade';
+import { specialGuestPlansMessages } from '@/features/specialGuestPlans/client/messages';
 import { useSpecialGuestPlanRecommendations } from '@/features/specialGuestPlans/client/useSpecialGuestPlanRecommendations';
 import type { IResolvedSpecialGuestPlanGroup } from '@/features/specialGuestPlans/contracts';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
-import { SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_MAP } from './copy';
+import { SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_KEYS } from './copy';
 import {
 	isGuestGroupToggleGuarded,
 	isSpecialGuestPlanInteractiveTarget,
@@ -96,8 +102,10 @@ export default function GuestGroup({
 	recommendationSessionKey: string;
 	recommendationSortProfile: TRecommendationSortProfile;
 }) {
+	const { t } = useI18n(specialGuestPlansMessages);
 	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
+	const catalogLocalizationRevision = useCatalogLocalizationRevision();
 	const hiddenBeverages = specialGuestPlanCatalogPort.hiddenBeverages.use();
 	const hiddenDlcs = specialGuestPlanCatalogPort.hiddenDlcs.use();
 	const hiddenFoods = specialGuestPlanCatalogPort.hiddenFoods.use();
@@ -112,7 +120,7 @@ export default function GuestGroup({
 	const recommendedMaxResults =
 		recommendationPreferencesFacade.maxResults.use();
 	const cardRef = useRef<HTMLDivElement>(null);
-	const specialGuestName = specialGuestPlanCatalog.getPropsById(
+	const specialGuestName = specialGuestPlanCatalog.getDisplayPropsById(
 		group.specialGuest,
 		'name'
 	);
@@ -171,6 +179,7 @@ export default function GuestGroup({
 		[activeRecommendedSetIndex, displayMeals, isRecommendedSource]
 	);
 	const recommendedFoodTagOptions = useMemo<TFoodTagId[]>(() => {
+		void catalogLocalizationRevision;
 		const tags = new Set<TFoodTagId>();
 		activeRecommendedSetMeals.forEach(({ meal }) => {
 			if (meal.order.foodTag !== null) {
@@ -178,10 +187,8 @@ export default function GuestGroup({
 			}
 		});
 
-		return [...tags].sort((a, b) =>
-			pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b])
-		);
-	}, [activeRecommendedSetMeals]);
+		return [...tags].sort(compareFoodTagLabels);
+	}, [activeRecommendedSetMeals, catalogLocalizationRevision]);
 	const recommendedBeverageTagOptions = useMemo<TBeverageTagId[]>(() => {
 		const tags = new Set<TBeverageTagId>();
 		activeRecommendedSetMeals.forEach(({ meal }) => {
@@ -192,26 +199,34 @@ export default function GuestGroup({
 
 		return [...tags].sort(numberSort);
 	}, [activeRecommendedSetMeals]);
-	const recommendedFoodTagSelectItems = useMemo(
-		() => [
-			{ label: '全部料理需求', value: RECOMMENDED_FILTER_ALL_KEY },
+	const recommendedFoodTagSelectItems = useMemo(() => {
+		void catalogLocalizationRevision;
+
+		return [
+			{
+				label: t('plans.filters.allFood'),
+				value: RECOMMENDED_FILTER_ALL_KEY,
+			},
 			...recommendedFoodTagOptions.map((tag) => ({
-				label: FOOD_TAG_MAP[tag],
+				label: getFoodTagLabel(tag),
 				value: tag.toString(),
 			})),
-		],
-		[recommendedFoodTagOptions]
-	);
-	const recommendedBeverageTagSelectItems = useMemo(
-		() => [
-			{ label: '全部酒水需求', value: RECOMMENDED_FILTER_ALL_KEY },
+		];
+	}, [catalogLocalizationRevision, recommendedFoodTagOptions, t]);
+	const recommendedBeverageTagSelectItems = useMemo(() => {
+		void catalogLocalizationRevision;
+
+		return [
+			{
+				label: t('plans.filters.allBeverage'),
+				value: RECOMMENDED_FILTER_ALL_KEY,
+			},
 			...recommendedBeverageTagOptions.map((tag) => ({
-				label: BEVERAGE_TAG_MAP[tag],
+				label: getBeverageTagLabel(tag),
 				value: tag.toString(),
 			})),
-		],
-		[recommendedBeverageTagOptions]
-	);
+		];
+	}, [catalogLocalizationRevision, recommendedBeverageTagOptions, t]);
 	const recommendedBeverageTagByKey = useMemo<
 		ReadonlyMap<string, TBeverageTagId | null>
 	>(
@@ -255,10 +270,10 @@ export default function GuestGroup({
 	const recommendedSetSelectItems = useMemo(
 		() =>
 			availableRecommendedSetIndexes.map((index) => ({
-				label: `预设${index + 1}`,
+				label: t('plans.guest.presetLabel', { number: index + 1 }),
 				value: index.toString(),
 			})),
-		[availableRecommendedSetIndexes]
+		[availableRecommendedSetIndexes, t]
 	);
 	const recommendedSetByKey = useMemo<ReadonlyMap<string, number>>(
 		() =>
@@ -345,27 +360,38 @@ export default function GuestGroup({
 	const recommendedStatusNotice = isRecommendedMealsLoading
 		? {
 				className: 'text-foreground-500',
-				text: SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_MAP.loadingMore,
+				text: t(
+					SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_KEYS.loadingMore
+				),
 			}
 		: isRecommendedMealsError
 			? {
 					className: 'text-danger-600',
-					text: SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_MAP.partialFailure,
+					text: t(
+						SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_KEYS.partialFailure
+					),
 				}
 			: null;
 	const mealCountLabel = isRecommendedSource
 		? checkLengthEmpty(displayMeals)
 			? isRecommendedMealsPending
-				? SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_MAP.pending
+				? t(SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_KEYS.pending)
 				: isRecommendedMealsError
-					? SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_MAP.failed
+					? t(SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_KEYS.failed)
 					: isRecommendedMealsComplete
-						? '0个套餐'
-						: SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_MAP.automatic
+						? t('plans.guest.countZero')
+						: t(
+								SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_KEYS.automatic
+							)
 			: isRecommendedFilterActive
-				? `${filteredDisplayMeals.length}/${activeRecommendedSetMeals.length}个套餐`
-				: `${activeRecommendedSetMeals.length}个套餐`
-		: `${group.visibleMealCount}个套餐`;
+				? t('plans.guest.countFiltered', {
+						filtered: filteredDisplayMeals.length,
+						total: activeRecommendedSetMeals.length,
+					})
+				: t('plans.guest.count', {
+						count: activeRecommendedSetMeals.length,
+					})
+		: t('plans.guest.count', { count: group.visibleMealCount });
 
 	useEffect(() => {
 		if (!isRecommendedSource) {
@@ -551,7 +577,7 @@ export default function GuestGroup({
 						</h3>
 						<p className="truncate text-tiny text-foreground-500">
 							{group.specialGuestMaps
-								.map((map) => MAP_FACTS[map].label)
+								.map((map) => getMapLabel(map))
 								.join(' / ')}
 						</p>
 					</div>
@@ -560,12 +586,14 @@ export default function GuestGroup({
 					<span className="whitespace-nowrap rounded-small bg-default-100/70 px-2 py-1 text-small text-foreground-600 dark:bg-default-50/10">
 						{mealCountLabel}
 					</span>
-					<Tooltip showArrow content="查看顾客">
+					<Tooltip showArrow content={t('plans.guest.viewGuest')}>
 						<FontAwesomeIconButton
 							icon={faArrowRight}
 							size="sm"
 							variant="light"
-							aria-label={`查看顾客【${specialGuestName}】`}
+							aria-label={t('plans.guest.viewGuestAria', {
+								name: specialGuestName,
+							})}
 							onPress={() => {
 								onOpenGuest(group.specialGuest);
 							}}
@@ -573,7 +601,11 @@ export default function GuestGroup({
 					</Tooltip>
 					<Tooltip
 						showArrow
-						content={isExpanded ? '收起套餐' : '展开套餐'}
+						content={
+							isExpanded
+								? t('plans.guest.collapseMeals')
+								: t('plans.guest.expandMeals')
+						}
 					>
 						<Button
 							isIconOnly
@@ -581,7 +613,12 @@ export default function GuestGroup({
 							size="sm"
 							variant="light"
 							aria-expanded={isExpanded}
-							aria-label={`${isExpanded ? '收起' : '展开'}【${specialGuestName}】套餐`}
+							aria-label={t(
+								isExpanded
+									? 'plans.guest.collapseAria'
+									: 'plans.guest.expandAria',
+								{ name: specialGuestName }
+							)}
 							onPress={() => {
 								onToggleExpanded(group.specialGuest);
 							}}
@@ -620,7 +657,9 @@ export default function GuestGroup({
 												1
 											}
 											items={recommendedSetSelectItems}
-											label="推荐预设"
+											label={t(
+												'plans.guest.recommendedPresetLabel'
+											)}
 											selectedKeys={
 												selectedRecommendedSetKeys
 											}
@@ -647,7 +686,9 @@ export default function GuestGroup({
 											items={
 												recommendedFoodTagSelectItems
 											}
-											label="料理需求"
+											label={t(
+												'plans.guest.foodRequirementLabel'
+											)}
 											selectedKeys={
 												selectedRecommendedFoodTagKeys
 											}
@@ -674,7 +715,9 @@ export default function GuestGroup({
 											items={
 												recommendedBeverageTagSelectItems
 											}
-											label="酒水需求"
+											label={t(
+												'plans.guest.beverageRequirementLabel'
+											)}
 											selectedKeys={
 												selectedRecommendedBeverageTagKeys
 											}
@@ -700,16 +743,16 @@ export default function GuestGroup({
 								)}
 							{isRecommendedMealsPending ? (
 								<Placeholder className="rounded-small border border-dashed border-default-200/80 bg-background/35 px-3 py-5 text-small dark:bg-default-50/5">
-									{
-										SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_MAP.loading
-									}
+									{t(
+										SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_KEYS.loading
+									)}
 								</Placeholder>
 							) : isRecommendedMealsError &&
 							  checkLengthEmpty(filteredDisplayMeals) ? (
 								<Placeholder className="rounded-small border border-dashed border-default-200/80 bg-background/35 px-3 py-5 text-small dark:bg-default-50/5">
-									{
-										SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_MAP.totalFailure
-									}
+									{t(
+										SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_KEYS.totalFailure
+									)}
 								</Placeholder>
 							) : checkLengthEmpty(filteredDisplayMeals) ? (
 								<Placeholder className="space-y-3 rounded-small border border-dashed border-default-200/80 bg-background/35 px-3 py-5 text-small dark:bg-default-50/5">
@@ -717,13 +760,21 @@ export default function GuestGroup({
 										<p>
 											{isRecommendedFilterActive
 												? isRecommendedMealsComplete
-													? SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_MAP.filteredEmpty
-													: SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_MAP.filteredPending
-												: SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_MAP.noMatch}
+													? t(
+															SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_KEYS.filteredEmpty
+														)
+													: t(
+															SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_KEYS.filteredPending
+														)
+												: t(
+														SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_KEYS.noMatch
+													)}
 										</p>
 									) : (
 										<>
-											<p>暂无可见的自定义套餐</p>
+											<p>
+												{t('plans.guest.noCustomMeals')}
+											</p>
 											<Button
 												color="primary"
 												size="sm"
@@ -739,7 +790,7 @@ export default function GuestGroup({
 													);
 												}}
 											>
-												去搭配套餐
+												{t('plans.guest.goPlan')}
 											</Button>
 										</>
 									)}

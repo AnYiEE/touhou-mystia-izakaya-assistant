@@ -14,12 +14,13 @@ import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import { compareMapCanonicalOrder } from '@/domain/places/mapOrdering';
 
+import { appShellMessages } from '@/features/appShell/client/messages';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
-import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
 import GuestTabSlider from '@/features/catalog/guests/shared/client/components/guestTabSlider';
 import { useGuestRouteData } from '@/features/catalog/guests/shared/client/hooks/useGuestRouteData';
 import { useIngredientRouteData } from '@/features/catalog/guests/shared/client/hooks/useIngredientRouteData';
 import type { TTab } from '@/features/catalog/guests/shared/contracts';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import {
 	guestTabStyleMap,
 	ingredientTabStyleMap,
@@ -42,8 +43,10 @@ import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/stat
 
 import { checkCompatibility } from '@/infrastructure/browser/compatibility/checkCompatibility';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { useDocumentTitle } from '@/shared/react/useDocumentTitle';
 import { useHydrated } from '@/shared/react/useHydrated';
+import { siteMessages } from '@/shared/site/messages';
 import { SITE_METADATA } from '@/shared/site/metadata';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
@@ -56,7 +59,7 @@ import ResultCard from './resultCard';
 import SavedMealCard from './savedMealCard';
 import SuggestedMealCard from './suggestedMealCard';
 
-const { enName, name: zhName } = SITE_METADATA;
+const { enName } = SITE_METADATA;
 const GUEST_TAB_BY_KEY: ReadonlyMap<Key, TTab> = new Map([
 	['beverage', 'beverage'],
 	['food', 'food'],
@@ -82,6 +85,7 @@ const SpecialGuestTabs = memo<ISpecialGuestTabsProps>(
 		onSelectionChange,
 		selectedKey,
 	}) {
+		const { t: tAppShell } = useI18n(appShellMessages);
 		const disableAnimation =
 			isReducedMotion || !checkCompatibility().largeSlidingPanelAnimation;
 		const classNames = useMemo(
@@ -112,17 +116,24 @@ const SpecialGuestTabs = memo<ISpecialGuestTabsProps>(
 				onSelectionChange={onSelectionChange}
 				classNames={classNames}
 			>
-				<Tab key="guest" title="稀客" />
-				<Tab isDisabled={!isGuestSelected} key="food" title="料理" />
+				<Tab
+					key="guest"
+					title={tAppShell('appShell.nav.specialGuests')}
+				/>
+				<Tab
+					isDisabled={!isGuestSelected}
+					key="food"
+					title={tAppShell('appShell.nav.foods')}
+				/>
 				<Tab
 					isDisabled={!isGuestSelected}
 					key="beverage"
-					title="酒水"
+					title={tAppShell('appShell.nav.beverages')}
 				/>
 				<Tab
 					isDisabled={!isMealSelected}
 					key="ingredient"
-					title="食材"
+					title={tAppShell('appShell.nav.ingredients')}
 				/>
 			</Tabs>
 		);
@@ -132,6 +143,9 @@ const SpecialGuestTabs = memo<ISpecialGuestTabsProps>(
 export default function Content() {
 	const { pathname } = usePathname();
 	const router = useRouter();
+	const { t } = useI18n(catalogGuestsMessages);
+	const { t: tAppShell } = useI18n(appShellMessages);
+	const { t: tSite } = useI18n(siteMessages);
 
 	const [, , routeGuestSegment] = pathname.split('/');
 	const routeGuest = resolveGuestRouteSegment({
@@ -143,7 +157,14 @@ export default function Content() {
 	const hasGuestPath =
 		routeGuestSegment !== undefined && routeGuestSegment !== '';
 	const isPlanDrawerOpen = specialGuestPlansStore.shared.drawer.isOpen.use();
-	const title = `${isPlanDrawerOpen ? '营业预设 | ' : ''}${routeGuestName === null ? '' : `${routeGuestName} | `}${getPageTitle('/special-guests')} | ${zhName} - ${enName}`;
+	const siteName = tSite('site.name');
+	const siteTitle =
+		siteName === enName ? siteName : `${siteName} - ${enName}`;
+	const title = `${
+		isPlanDrawerOpen ? t('guests.documentTitle.planPrefix') : ''
+	}${
+		routeGuestName === null ? '' : `${routeGuestName} | `
+	}${tAppShell('appShell.nav.specialGuests')} | ${siteTitle}`;
 
 	useDocumentTitle(title, '/special-guests');
 
@@ -225,7 +246,7 @@ export default function Content() {
 		() => [
 			{
 				items: availableGuestAvailabilityDlcs,
-				label: '可出现于',
+				label: t('guests.filter.guestAvailability'),
 				selectedKeys: guestFilterAvailabilityDlcs,
 				setSelectedKeys:
 					specialGuestStore.persistence.guest.filters.availabilityDlcs
@@ -234,7 +255,7 @@ export default function Content() {
 			},
 			{
 				items: canonicalAvailableGuestMaps,
-				label: '出没地区（包含）',
+				label: t('guests.filter.guestPlacesInclude'),
 				selectedKeys: guestFilterMaps,
 				setSelectedKeys:
 					specialGuestStore.persistence.guest.filters.places.set,
@@ -242,7 +263,7 @@ export default function Content() {
 			},
 			{
 				items: canonicalAvailableGuestMaps,
-				label: '出没地区（排除）',
+				label: t('guests.filter.guestPlacesExclude'),
 				selectedKeys: guestFilterNoMaps,
 				setSelectedKeys:
 					specialGuestStore.persistence.guest.filters.noPlaces.set,
@@ -254,7 +275,7 @@ export default function Content() {
 					recordId: id,
 					value: id,
 				})),
-				label: '额外包含',
+				label: t('guests.filter.guestIncludes'),
 				selectedKeys: guestFilterIncludes,
 				setSelectedKeys:
 					specialGuestStore.persistence.guest.filters.includes.set,
@@ -266,7 +287,7 @@ export default function Content() {
 					recordId: id,
 					value: id,
 				})),
-				label: '额外排除',
+				label: t('guests.filter.guestExcludes'),
 				selectedKeys: guestFilterExcludes,
 				setSelectedKeys:
 					specialGuestStore.persistence.guest.filters.excludes.set,
@@ -282,6 +303,7 @@ export default function Content() {
 			guestFilterIncludes,
 			guestFilterMaps,
 			guestFilterNoMaps,
+			t,
 		]
 	);
 
@@ -328,7 +350,7 @@ export default function Content() {
 		() => [
 			{
 				items: availableIngredientAvailabilityDlcs,
-				label: '可获取于',
+				label: t('guests.filter.acquirableAt'),
 				selectedKeys: ingredientFilterAvailabilityDlcs,
 				setSelectedKeys:
 					specialGuestStore.persistence.ingredient.filters
@@ -337,7 +359,7 @@ export default function Content() {
 			},
 			{
 				items: availableIngredientTags,
-				label: '食材标签（包含）',
+				label: t('guests.filter.ingredientTagsInclude'),
 				selectedKeys: ingredientFilterTags,
 				setSelectedKeys:
 					specialGuestStore.persistence.ingredient.filters.tags.set,
@@ -345,7 +367,7 @@ export default function Content() {
 			},
 			{
 				items: availableIngredientTags,
-				label: '食材标签（排除）',
+				label: t('guests.filter.ingredientTagsExclude'),
 				selectedKeys: ingredientFilterNoTags,
 				setSelectedKeys:
 					specialGuestStore.persistence.ingredient.filters.noTags.set,
@@ -353,7 +375,7 @@ export default function Content() {
 			},
 			{
 				items: availableIngredientLevels,
-				label: '等级',
+				label: t('guests.filter.level'),
 				selectedKeys: ingredientFilterLevels,
 				setSelectedKeys:
 					specialGuestStore.persistence.ingredient.filters.levels.set,
@@ -367,6 +389,7 @@ export default function Content() {
 			ingredientFilterLevels,
 			ingredientFilterNoTags,
 			ingredientFilterTags,
+			t,
 		]
 	);
 
@@ -464,7 +487,7 @@ export default function Content() {
 							aria-hidden
 							className="image-rendering-pixelated block h-loading w-loading bg-loading"
 						/>
-						<p>选择顾客以继续</p>
+						<p>{t('guests.guestPage.selectGuestPrompt')}</p>
 					</Placeholder>
 				) : (
 					<>

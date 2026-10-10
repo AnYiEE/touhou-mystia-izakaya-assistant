@@ -35,6 +35,11 @@ import {
 } from '@/features/account/sync/serializers/utils';
 import { migrateLegacyFoodTableColumnKeys } from '@/features/catalog/guests/shared/state/migrateLegacyFoodTableKeys';
 
+import {
+	SYSTEM_LOCALE_PREFERENCE,
+	isLocalePreference,
+	parseLocalePreference,
+} from '@/shared/i18n/locale';
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
 import type { IPersistedShape } from '@/shared/utilities/state/persistedShape';
@@ -78,6 +83,7 @@ const currentRootKeys = new Set([
 	'guestCardTagsTooltip',
 	'hiddenItems',
 	'highAppearance',
+	'locale',
 	'popularTrend',
 	'suggestMeals',
 	'table',
@@ -135,6 +141,7 @@ function createDefaultGlobalPreferencesSnapshot(): TGlobalPreferencesSnapshot {
 		guestCardTagsTooltip: true,
 		hiddenItems: { dlcs: [] },
 		highAppearance: true,
+		locale: SYSTEM_LOCALE_PREFERENCE,
 		popularTrend: { isNegative: false, tag: null },
 		suggestMeals: {
 			enabled: true,
@@ -279,11 +286,29 @@ function migrateGlobalPreferencesV2ToV3(value: unknown) {
 	};
 }
 
+function migrateGlobalPreferencesV3ToV4(value: unknown) {
+	const dataWithDefaults = applyGlobalPreferencesDefaults(
+		value,
+		createSchema3Defaults()
+	);
+	const migratedData = sanitizeGlobalPreferences(dataWithDefaults);
+	if (!isObjectTagRecord(migratedData)) {
+		return {};
+	}
+	return {
+		...migratedData,
+		locale:
+			parseLocalePreference(migratedData['locale']) ??
+			SYSTEM_LOCALE_PREFERENCE,
+	};
+}
+
 const globalPreferencesMigrator = createVersionedMigrator({
-	currentVersion: 3,
+	currentVersion: 4,
 	migrations: {
 		1: migrateGlobalPreferencesV1ToV2,
 		2: migrateGlobalPreferencesV2ToV3,
+		3: migrateGlobalPreferencesV3ToV4,
 	},
 	minVersion: 1,
 });
@@ -291,7 +316,7 @@ const globalPreferencesMigrator = createVersionedMigrator({
 export const globalPreferencesShape = {
 	createDefault: createDefaultGlobalPreferencesSnapshot,
 	migrate(value: unknown, version: number): TGlobalPreferencesSnapshot {
-		if (version !== 1 && version !== 2 && version !== 3) {
+		if (version !== 1 && version !== 2 && version !== 3 && version !== 4) {
 			throw new Error('unsupported-global-preferences-schema-version');
 		}
 		const migratedData = globalPreferencesMigrator(value, version);
@@ -349,6 +374,9 @@ export const globalPreferencesShape = {
 				record['highAppearance'],
 				defaults.highAppearance
 			),
+			locale:
+				parseLocalePreference(record['locale']) ??
+				SYSTEM_LOCALE_PREFERENCE,
 			popularTrend: {
 				isNegative: normalizeBoolean(
 					popularTrend['isNegative'],
@@ -445,6 +473,7 @@ export const globalPreferencesShape = {
 			typeof value['famousShop'] === 'boolean' &&
 			typeof value['guestCardTagsTooltip'] === 'boolean' &&
 			typeof value['highAppearance'] === 'boolean' &&
+			isLocalePreference(value['locale']) &&
 			checkExactKeys(popularTrend, popularTrendKeys) &&
 			typeof popularTrend['isNegative'] === 'boolean' &&
 			(popularTrend['tag'] === null ||
@@ -560,6 +589,12 @@ function createSchema2Defaults() {
 	const { sortProfile: _sortProfile, ...suggestMeals } =
 		defaults.suggestMeals;
 	return { ...defaults, suggestMeals };
+}
+
+function createSchema3Defaults() {
+	const { locale: _locale, ...schema3Defaults } =
+		createDefaultGlobalPreferencesSnapshot();
+	return schema3Defaults;
 }
 
 function createLegacyDefaults() {

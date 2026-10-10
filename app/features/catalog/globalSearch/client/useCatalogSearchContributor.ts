@@ -22,6 +22,7 @@ import { RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import { ALL_MAP_LABELS, MAP_FACTS } from '@/domain/data/places/placeFacts';
 import type { TDlc } from '@/domain/data/shared/types';
+import { getMapLabel } from '@/domain/places/localizedLabels';
 
 import { buildCatalogSearchIndex } from '@/features/catalog/globalSearch/buildCatalogSearchIndex';
 import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
@@ -38,6 +39,7 @@ import { generalItemsStore } from '@/features/catalog/items/generalItems/client/
 import { ingredientsStore } from '@/features/catalog/items/ingredients/client/state/store';
 import { partnersStore } from '@/features/catalog/items/partners/client/state/store';
 import { recordsStore } from '@/features/catalog/items/records/client/state/store';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 
 function filterRecipesByHiddenIngredients(
 	recipes: TFood['recipes'],
@@ -56,6 +58,7 @@ function filterRecipesByHiddenIngredients(
 }
 
 export function useCatalogSearchContributor() {
+	const catalogLocalizationRevision = useCatalogLocalizationRevision();
 	const badgeHiddenDlcs = badgesStore.shared.hiddenItems.dlcs.use();
 	const beverageHiddenDlcs = beveragesStore.shared.hiddenItems.dlcs.use();
 	const clothesHiddenDlcs = clothesStore.shared.hiddenItems.dlcs.use();
@@ -90,11 +93,12 @@ export function useCatalogSearchContributor() {
 		() =>
 			ALL_MAP_LABELS.filter(
 				(map) => !ingredientHiddenDlcs.has(MAP_FACTS[map].dlc)
-			).map((map) => MAP_FACTS[map].label),
+			).map((map) => getMapLabel(map)),
 		[ingredientHiddenDlcs]
 	);
 
 	const index = useMemo(() => {
+		void catalogLocalizationRevision;
 		const filterByHiddenDlcs =
 			(hiddenDlcs: ReadonlySet<TDlc>) =>
 			({ availabilityPaths }: IAvailabilityItemData) =>
@@ -204,6 +208,7 @@ export function useCatalogSearchContributor() {
 	}, [
 		badgeHiddenDlcs,
 		beverageHiddenDlcs,
+		catalogLocalizationRevision,
 		clothesHiddenDlcs,
 		cookerHiddenDlcs,
 		currencyItemHiddenDlcs,

@@ -14,6 +14,9 @@ import PressElement from '@/design/ui/components/pressElement';
 import ScrollShadow from '@/design/ui/components/scrollShadow';
 
 import type { IGuestTabStyle } from '@/features/catalog/guests/shared/contracts';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps<TItemId extends Key, TItemName extends string> {
 	currentGuest: TItemId | null;
@@ -37,6 +40,7 @@ export default memo(function GuestTabShell<
 	renderAvatar,
 	sortedData,
 }: IProps<TItemId, TItemName>) {
+	const { t } = useI18n(catalogGuestsMessages);
 	const [viewportHeight, setViewportHeight] = useState<number | null>(null);
 
 	const contentRef = useRef<HTMLDivElement | null>(null);
@@ -157,10 +161,13 @@ export default memo(function GuestTabShell<
 								<PressElement
 									key={id}
 									as="div"
+									data-tutorial-guest={id}
 									onPress={() => {
 										onSelect(id, name);
 									}}
-									title={`点击：选择【${name}】`}
+									title={t('guests.guestTab.selectTip', {
+										name,
+									})}
 									className="group flex cursor-pointer flex-col items-center gap-1"
 								>
 									{renderAvatar(id, name)}
@@ -195,7 +202,7 @@ export default memo(function GuestTabShell<
 					size="sm"
 					variant="flat"
 					onClick={onToggleVisibility}
-					aria-label={guestTabStyle.ariaLabel}
+					aria-label={t(guestTabStyle.ariaLabelKey)}
 					className="h-4 w-4/5 text-default-400"
 				>
 					{guestTabStyle.buttonNode}

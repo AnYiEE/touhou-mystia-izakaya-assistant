@@ -16,22 +16,25 @@ import Tooltip from '@/design/ui/components/tooltip';
 import Rednote from '@/design/ui/icons/Rednote';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { appShellMessages } from '@/features/appShell/client/messages';
 import { SITE_LINKS } from '@/features/appShell/links';
 
-import { SITE_METADATA } from '@/shared/site/metadata';
+import { useI18n } from '@/shared/i18n/useI18n';
+import { siteMessages } from '@/shared/site/messages';
 
 const links = SITE_LINKS;
-const { shortName } = SITE_METADATA;
 
 const QQ_OVERLAY_CLASS_NAMES = { content: 'px-0 pb-1' } as const;
 const REDNOTE_TOOLTIP_CLASS_NAMES = { content: 'p-0 pb-1' } as const;
 
 export default function Home() {
+	const { t } = useI18n(appShellMessages);
+	const { t: tSite } = useI18n(siteMessages);
 	const qqCodeContent = useMemo(
 		() => (
 			<div className="flex flex-col items-center">
 				<p className="pt-1 text-tiny leading-none">
-					分享经验、交流心得、提出建议、反馈问题
+					{t('appShell.home.qqHint')}
 				</p>
 				<div className="flex">
 					<QRCode text={links.qqGroup1.href}>
@@ -39,7 +42,7 @@ export default function Home() {
 							isExternal
 							showAnchorIcon
 							href={links.qqGroup1.href}
-							title={links.qqGroup1.label}
+							title={t('appShell.links.qqGroup1')}
 							onPress={() => {
 								trackEvent(
 									trackEvent.category.click,
@@ -49,7 +52,9 @@ export default function Home() {
 							}}
 							className="text-tiny text-foreground"
 						>
-							点击加入{links.qqGroup1.label}
+							{t('appShell.home.joinGroup', {
+								label: t('appShell.links.qqGroup1'),
+							})}
 						</Link>
 					</QRCode>
 					<QRCode text={links.qqGroup2.href}>
@@ -57,7 +62,7 @@ export default function Home() {
 							isExternal
 							showAnchorIcon
 							href={links.qqGroup2.href}
-							title={links.qqGroup2.label}
+							title={t('appShell.links.qqGroup2')}
 							onPress={() => {
 								trackEvent(
 									trackEvent.category.click,
@@ -67,43 +72,46 @@ export default function Home() {
 							}}
 							className="text-tiny text-foreground"
 						>
-							点击加入{links.qqGroup2.label}
+							{t('appShell.home.joinGroup', {
+								label: t('appShell.links.qqGroup2'),
+							})}
 						</Link>
 					</QRCode>
 				</div>
 			</div>
 		),
-		[]
+		[t]
 	);
 
 	return (
 		<div className="grid min-h-main-content grid-cols-1 lg:grid-cols-2 xl:pt-8">
 			<div className="flex items-center justify-center">
 				<div className="flex flex-col gap-6">
-					<div className="-mt-4 mb-8 whitespace-nowrap">
+					<div className="-mt-4 mb-8">
 						<p className="text-4xl tracking-wider md:text-5xl">
-							欢迎使用<strong>{shortName}</strong>
+							{t('appShell.home.welcomePrefix')}
+							<strong>{tSite('site.shortName')}</strong>
 						</p>
 						<p className="hidden text-large md:inline-block lg:hidden">
-							点击顶部的按钮以使用各项功能
+							{t('appShell.home.hintTop')}
 						</p>
 						<p className="inline-flex items-center md:hidden">
-							点击右上角的
+							{t('appShell.home.hintMenuPrefix')}
 							<span
-								aria-label="菜单按钮图例"
+								aria-label={t('appShell.home.menuIconLabel')}
 								role="img"
 								className="mx-0.5 block h-4 rounded bg-content2"
 							>
 								<span className="flex h-full flex-col justify-center p-1 before:h-px before:w-4 before:-translate-y-1 before:bg-current after:h-px after:w-4 after:translate-y-1 after:bg-current" />
 							</span>
-							以使用各项功能
+							{t('appShell.home.hintMenuSuffix')}
 						</p>
 						<p>
 							<Link
 								isExternal
 								showAnchorIcon
 								href={links.appQA.href}
-								title={links.appQA.label}
+								title={t('appShell.links.appQA')}
 								onPress={() => {
 									trackEvent(
 										trackEvent.category.click,
@@ -113,13 +121,13 @@ export default function Home() {
 								}}
 								className="rounded-small text-small text-foreground-500 md:text-base lg:text-large"
 							>
-								{links.appQA.label}
+								{t('appShell.links.appQA')}
 							</Link>
 						</p>
 					</div>
 					<div className="flex flex-wrap items-end leading-none">
 						<p className="text-foreground-500 lg:hidden">
-							官方群：
+							{t('appShell.home.officialGroup')}
 						</p>
 						<div className="flex items-center gap-2 lg:gap-4">
 							<Popover
@@ -154,7 +162,14 @@ export default function Home() {
 											<FontAwesomeIconButton
 												icon={faQq}
 												variant="light"
-												aria-label="夜雀助手QQ群加群链接和二维码"
+												aria-label={t(
+													'appShell.home.qqIconLabel',
+													{
+														name: tSite(
+															'site.shortName'
+														),
+													}
+												)}
 												className="h-auto w-auto min-w-0 rounded-small text-base text-qq-blue data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
 											/>
 										</PopoverTrigger>
@@ -166,7 +181,11 @@ export default function Home() {
 								showArrow
 								content={
 									<QRCode text={links.rednoteGroup.href}>
-										扫码加入{links.rednoteGroup.label}
+										{t('appShell.home.scanGroup', {
+											label: t(
+												'appShell.links.rednoteGroup'
+											),
+										})}
 									</QRCode>
 								}
 								onOpenChange={(isOpen) => {
@@ -188,7 +207,9 @@ export default function Home() {
 									variant="light"
 									href={links.rednoteGroup.href}
 									role="link"
-									title={`点击加入${links.rednoteGroup.label}`}
+									title={t('appShell.home.joinGroup', {
+										label: t('appShell.links.rednoteGroup'),
+									})}
 									onPress={() => {
 										trackEvent(
 											trackEvent.category.click,
@@ -210,7 +231,7 @@ export default function Home() {
 					aria-hidden
 					className="image-rendering-pixelated block h-loading w-loading bg-loading"
 				/>
-				<p>点击顶部的按钮以使用各项功能</p>
+				<p>{t('appShell.home.hintTop')}</p>
 			</Placeholder>
 		</div>
 	);

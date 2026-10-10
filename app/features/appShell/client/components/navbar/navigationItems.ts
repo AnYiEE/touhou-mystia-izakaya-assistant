@@ -1,18 +1,20 @@
 import { faCircleInfo, faGear } from '@fortawesome/free-solid-svg-icons';
 import { type FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
 
-import { NAV_ITEMS } from '@/features/appShell/navigation/config';
+import {
+	NAV_ITEMS,
+	type TSitePath,
+} from '@/features/appShell/navigation/config';
 import type { TSpriteNavigationItem } from '@/features/appShell/navigation/contracts';
 
 const navItems = NAV_ITEMS;
 
 export interface IMobileIconNavItem {
-	href: string;
+	href: TSitePath;
 	icon: FontAwesomeIconProps['icon'];
-	label: string;
 }
 
-export type TMobileSpriteNavItem = TSpriteNavigationItem;
+export type TMobileSpriteNavItem = TSpriteNavigationItem<TSitePath>;
 
 export const MOBILE_GUEST_NAV_ITEMS = [
 	{
@@ -30,8 +32,8 @@ export const MOBILE_GUEST_NAV_ITEMS = [
 ] as const satisfies ReadonlyArray<TMobileSpriteNavItem>;
 
 export const MOBILE_UTILITY_NAV_ITEMS = [
-	{ href: '/preferences', icon: faGear, label: '设置' },
-	{ href: '/about', icon: faCircleInfo, label: '关于' },
+	{ href: '/preferences', icon: faGear },
+	{ href: '/about', icon: faCircleInfo },
 ] as const satisfies ReadonlyArray<IMobileIconNavItem>;
 
 export const MOBILE_QUERY_NAV_GROUPS = navItems.flatMap((navItem) => {

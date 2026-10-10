@@ -8,7 +8,6 @@ import type { TBeverage, TFood } from '@/domain/catalog/food/types';
 import { resolveLegacyTagLabel } from '@/domain/catalog/legacy/resolveLegacyTagLabel';
 import { getBondFoods } from '@/domain/catalog/queries/getBondFoods';
 import { getBondRewards } from '@/domain/catalog/queries/getBondRewards';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 import {
 	BEVERAGE_TAG_MAP,
 	DARK_MATTER_META_MAP,
@@ -22,19 +21,24 @@ import {
 	checkFoodEasterEgg as checkSpecialGuestFoodEasterEgg,
 	checkIngredientEasterEgg as checkSpecialGuestIngredientEasterEgg,
 } from '@/domain/evaluation/specialGuestMeal';
+import {
+	compareMapLabelText,
+	getMapLabel,
+} from '@/domain/places/localizedLabels';
 
 import { getVisibleSavedMeals } from '@/features/catalog/guests/shared/mealPlanning/getVisibleSavedMeals';
 import { buildSelectionTip } from '@/features/catalog/guests/shared/presentation/buildSelectionTip';
 import { buildBeverageSuitabilityRows } from '@/features/catalog/guests/shared/queries/buildBeverageSuitabilityRows';
 import { buildFoodSuitabilityRows } from '@/features/catalog/guests/shared/queries/buildFoodSuitabilityRows';
 import { cookerTypeSelectionAdapter } from '@/features/catalog/guests/shared/state/cookerTypeSelectionAdapter';
+import { compareFoodTagLabels } from '@/features/catalog/shared/client/localization/tagLabels';
 import { PINYIN_SORT_STATE_MAP } from '@/features/catalog/shared/state/pinyinSort';
 import { createSpecialGuestPlansComputedDefinition } from '@/features/specialGuestPlans/client/state/planStoreDefinition';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 import { sortBy } from '@/shared/utilities/collections/sortBy';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
-import { matchPinyinName } from '@/shared/utilities/search/matchPinyinName';
+import { createCatalogNameMatcher } from '@/shared/utilities/search/localeNameMatch';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 import { createComputedAccessor } from '@/shared/utilities/state/createComputedAccessor';
@@ -89,6 +93,11 @@ export function createSpecialGuestComputedState(
 	currentStore: State<typeof specialGuestInitialState>
 ) {
 	const currentGuestName = createComputedAccessor((getOrUse) => {
+		if (getOrUse === 'get') {
+			currentStore.shared.catalogLocalizationRevision.get();
+		} else {
+			currentStore.shared.catalogLocalizationRevision.use();
+		}
 		const shouldGet = getOrUse === 'get';
 		const currentSpecialGuest = shouldGet
 			? currentStore.shared.guest.id.get()
@@ -96,10 +105,18 @@ export function createSpecialGuestComputedState(
 
 		return currentSpecialGuest === null
 			? null
-			: specialGuestCatalog.getPropsById(currentSpecialGuest, 'name');
+			: specialGuestCatalog.getDisplayPropsById(
+					currentSpecialGuest,
+					'name'
+				);
 	});
 
 	const beverageTableRows = createComputedAccessor((getOrUse) => {
+		if (getOrUse === 'get') {
+			currentStore.shared.catalogLocalizationRevision.get();
+		} else {
+			currentStore.shared.catalogLocalizationRevision.use();
+		}
 		const shouldGet = getOrUse === 'get';
 		const currentSpecialGuest = shouldGet
 			? currentStore.shared.guest.id.get()
@@ -107,7 +124,7 @@ export function createSpecialGuestComputedState(
 		const guestBeverageTags =
 			currentSpecialGuest === null
 				? null
-				: specialGuestCatalog.getPropsById(
+				: specialGuestCatalog.getDisplayPropsById(
 						currentSpecialGuest,
 						'beverageTags'
 					);
@@ -123,7 +140,7 @@ export function createSpecialGuestComputedState(
 				: currentStore.shared.hiddenItems.dlcs.use()) as ReadonlySet<
 				TBeverage['dlc']
 			>,
-			matchSearch: matchPinyinName,
+			matchSearch: createCatalogNameMatcher(beverageCatalog),
 			page: shouldGet
 				? currentStore.shared.beverage.table.page.get()
 				: currentStore.shared.beverage.table.page.use(),
@@ -148,6 +165,11 @@ export function createSpecialGuestComputedState(
 	});
 
 	const foodTableRows = createComputedAccessor((getOrUse) => {
+		if (getOrUse === 'get') {
+			currentStore.shared.catalogLocalizationRevision.get();
+		} else {
+			currentStore.shared.catalogLocalizationRevision.use();
+		}
 		const shouldGet = getOrUse === 'get';
 		const currentSpecialGuest = shouldGet
 			? currentStore.shared.guest.id.get()
@@ -161,7 +183,7 @@ export function createSpecialGuestComputedState(
 		const guestData =
 			currentSpecialGuest === null
 				? null
-				: specialGuestCatalog.getPropsById(currentSpecialGuest);
+				: specialGuestCatalog.getDisplayPropsById(currentSpecialGuest);
 
 		return buildFoodSuitabilityRows({
 			foodCatalog,
@@ -192,7 +214,7 @@ export function createSpecialGuestComputedState(
 				? currentStore.shared.recipe.table.hiddenIngredients.get()
 				: currentStore.shared.recipe.table.hiddenIngredients.use(),
 			isFamousShop,
-			matchSearch: matchPinyinName,
+			matchSearch: createCatalogNameMatcher(foodCatalog),
 			page: shouldGet
 				? currentStore.shared.recipe.table.page.get()
 				: currentStore.shared.recipe.table.page.use(),
@@ -221,6 +243,11 @@ export function createSpecialGuestComputedState(
 	});
 
 	const currentMealPrice = createComputedAccessor((getOrUse) => {
+		if (getOrUse === 'get') {
+			currentStore.shared.catalogLocalizationRevision.get();
+		} else {
+			currentStore.shared.catalogLocalizationRevision.use();
+		}
 		const shouldGet = getOrUse === 'get';
 		const currentBeverage = shouldGet
 			? currentStore.shared.beverage.id.get()
@@ -237,7 +264,7 @@ export function createSpecialGuestComputedState(
 		const beveragePrice =
 			currentBeverage === null
 				? 0
-				: beverageCatalog.getPropsById(currentBeverage, 'price');
+				: beverageCatalog.getDisplayPropsById(currentBeverage, 'price');
 		const foodPrice =
 			currentMealFood === null
 				? 0
@@ -250,6 +277,11 @@ export function createSpecialGuestComputedState(
 	});
 
 	const bondRewards = createComputedAccessor((getOrUse) => {
+		if (getOrUse === 'get') {
+			currentStore.shared.catalogLocalizationRevision.get();
+		} else {
+			currentStore.shared.catalogLocalizationRevision.use();
+		}
 		const shouldGet = getOrUse === 'get';
 		const currentSpecialGuest = shouldGet
 			? currentStore.shared.guest.id.get()
@@ -269,7 +301,7 @@ export function createSpecialGuestComputedState(
 		}
 
 		const { collection } =
-			specialGuestCatalog.getPropsById(currentSpecialGuest);
+			specialGuestCatalog.getDisplayPropsById(currentSpecialGuest);
 		const rewards = getBondRewards({
 			collection,
 			getBondClothes: (specialGuest) =>
@@ -297,7 +329,7 @@ export function createSpecialGuestComputedState(
 					? null
 					: {
 							id: rewards.bondClothes,
-							name: clothesCatalog.getPropsById(
+							name: clothesCatalog.getDisplayPropsById(
 								rewards.bondClothes,
 								'name'
 							),
@@ -307,7 +339,7 @@ export function createSpecialGuestComputedState(
 					? null
 					: {
 							id: rewards.bondCooker,
-							name: cookerCatalog.getPropsById(
+							name: cookerCatalog.getDisplayPropsById(
 								rewards.bondCooker,
 								'name'
 							),
@@ -315,24 +347,24 @@ export function createSpecialGuestComputedState(
 			bondDecorations: rewards.bondDecorations.map(({ id, level }) => ({
 				id,
 				level,
-				name: decorationCatalog.getPropsById(id, 'name'),
+				name: decorationCatalog.getDisplayPropsById(id, 'name'),
 			})),
 			bondFoods: rewards.bondFoods.map(({ id, level }) => ({
 				id,
 				level,
-				name: foodCatalog.getPropsById(id, 'name'),
+				name: foodCatalog.getDisplayPropsById(id, 'name'),
 			})),
 			bondGeneralItems: rewards.bondGeneralItems.map(({ id, level }) => ({
 				id,
 				level,
-				name: generalItemCatalog.getPropsById(id, 'name'),
+				name: generalItemCatalog.getDisplayPropsById(id, 'name'),
 			})),
 			bondPartner:
 				rewards.bondPartner === null
 					? null
 					: {
 							id: rewards.bondPartner,
-							name: partnerCatalog.getPropsById(
+							name: partnerCatalog.getDisplayPropsById(
 								rewards.bondPartner,
 								'name'
 							),
@@ -343,6 +375,11 @@ export function createSpecialGuestComputedState(
 	});
 
 	const ingredientScoreChanges = createComputedAccessor((getOrUse) => {
+		if (getOrUse === 'get') {
+			currentStore.shared.catalogLocalizationRevision.get();
+		} else {
+			currentStore.shared.catalogLocalizationRevision.use();
+		}
 		const shouldGet = getOrUse === 'get';
 		const currentSpecialGuest = shouldGet
 			? currentStore.shared.guest.id.get()
@@ -375,7 +412,7 @@ export function createSpecialGuestComputedState(
 		const {
 			negativeTags: specialGuestNegativeTags,
 			positiveTags: specialGuestPositiveTags,
-		} = specialGuestCatalog.getPropsById(currentSpecialGuest);
+		} = specialGuestCatalog.getDisplayPropsById(currentSpecialGuest);
 		return getIngredientScoreChanges({
 			calculateFoodTagsWithTrend: (foodTags) =>
 				foodCatalog.calculateFoodTagsWithTrend(
@@ -448,6 +485,11 @@ export function createSpecialGuestComputedState(
 	});
 
 	const savedGuestMealsWithEvaluation = createComputedAccessor((getOrUse) => {
+		if (getOrUse === 'get') {
+			currentStore.shared.catalogLocalizationRevision.get();
+		} else {
+			currentStore.shared.catalogLocalizationRevision.use();
+		}
 		const shouldGet = getOrUse === 'get';
 		const currentSpecialGuest = shouldGet
 			? currentStore.shared.guest.id.get()
@@ -491,14 +533,14 @@ export function createSpecialGuestComputedState(
 						meal.food.recipeId
 					);
 					return {
-						beveragePaths: beverageCatalog.getPropsById(
+						beveragePaths: beverageCatalog.getDisplayPropsById(
 							meal.beverage,
 							'availabilityPaths'
 						),
 						foodPaths: food.availabilityPaths,
 						ingredientPaths: meal.food.extraIngredients.map(
 							(ingredient) =>
-								ingredientCatalog.getPropsById(
+								ingredientCatalog.getDisplayPropsById(
 									ingredient,
 									'availabilityPaths'
 								)
@@ -548,6 +590,11 @@ export function createSpecialGuestComputedState(
 	});
 
 	const unsatisfiedSelectionTip = createComputedAccessor((getOrUse) => {
+		if (getOrUse === 'get') {
+			currentStore.shared.catalogLocalizationRevision.get();
+		} else {
+			currentStore.shared.catalogLocalizationRevision.use();
+		}
 		const shouldGet = getOrUse === 'get';
 		const currentBeverage = shouldGet
 			? currentStore.shared.beverage.id.get()
@@ -572,8 +619,8 @@ export function createSpecialGuestComputedState(
 		};
 
 		return {
-			rating: buildSelectionTip({ action: '评级', ...args }),
-			save: buildSelectionTip({ action: '保存', ...args }),
+			rating: buildSelectionTip({ action: 'rate', ...args }),
+			save: buildSelectionTip({ action: 'save', ...args }),
 		};
 	});
 
@@ -647,7 +694,7 @@ export function createSpecialGuestComputedState(
 					return {
 						cookerType,
 						id,
-						name: cookerCatalog.getPropsById(id, 'name'),
+						name: cookerCatalog.getDisplayPropsById(id, 'name'),
 					};
 				})
 				.sort((a, b) => pinyinSort(a.name, b.name));
@@ -663,6 +710,7 @@ export function createSpecialGuestComputedState(
 				.sort((a, b) => pinyinSort(a.name, b.name));
 		},
 		availableFoodTags: () => {
+			currentStore.shared.catalogLocalizationRevision.use();
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 			return [
 				...foodCatalog.getValuesByProp(
@@ -681,7 +729,7 @@ export function createSpecialGuestComputedState(
 				DYNAMIC_FOOD_TAG_MAP.popularNegative,
 				DYNAMIC_FOOD_TAG_MAP.popularPositive,
 			]
-				.sort((a, b) => pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b]))
+				.sort(compareFoodTagLabels)
 				.map(toGetValueCollection);
 		},
 		availableGuestAvailabilityDlcs: () => {
@@ -698,6 +746,7 @@ export function createSpecialGuestComputedState(
 				.sort(numberSort);
 		},
 		availableGuestMaps: () => {
+			currentStore.shared.catalogLocalizationRevision.use();
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 			return specialGuestCatalog
 				.getValuesByProp(
@@ -708,13 +757,16 @@ export function createSpecialGuestComputedState(
 						hiddenDlcs
 					)
 				)
-				.map(({ value }) => ({ name: MAP_FACTS[value].label, value }))
-				.sort((a, b) => pinyinSort(a.name, b.name));
+				.map(({ value }) => ({ name: getMapLabel(value), value }))
+				.sort((a, b) => compareMapLabelText(a.name, b.name));
 		},
 		availableGuestNames: () => {
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 			return sortBy(
-				getNames(currentStore.persistence.guest.pinyinSortState.use()),
+				getNames(
+					currentStore.shared.catalogLocalizationRevision.use(),
+					currentStore.persistence.guest.pinyinSortState.use()
+				),
 				specialGuestCatalog.getValuesByProp(
 					'name',
 					false,
@@ -755,6 +807,7 @@ export function createSpecialGuestComputedState(
 				.sort(numberSort);
 		},
 		availableIngredientTags: () => {
+			currentStore.shared.catalogLocalizationRevision.use();
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 			return [
 				...ingredientCatalog.getValuesByProp(
@@ -773,10 +826,11 @@ export function createSpecialGuestComputedState(
 				DYNAMIC_FOOD_TAG_MAP.popularNegative,
 				DYNAMIC_FOOD_TAG_MAP.popularPositive,
 			]
-				.sort((a, b) => pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b]))
+				.sort(compareFoodTagLabels)
 				.map(toGetValueCollection);
 		},
 		availableSpecialGuests: () => {
+			currentStore.shared.catalogLocalizationRevision.use();
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 			const sortState =
 				currentStore.persistence.guest.pinyinSortState.use();

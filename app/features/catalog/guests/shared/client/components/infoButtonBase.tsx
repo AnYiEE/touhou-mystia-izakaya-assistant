@@ -17,6 +17,7 @@ import Tooltip from '@/design/ui/components/tooltip';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import { useParams } from '@/features/appShell/client/navigation/useParams';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { GUEST_INFO_QUERY_PARAM } from '@/features/catalog/guests/shared/navigation';
 import {
 	CoordinatedModal,
@@ -26,6 +27,8 @@ import type { TOverlayId } from '@/features/overlays/contracts';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 const EMPTY_ACCORDION_KEYS: ReadonlyArray<never> = [];
 const INFO_ACCORDION_ITEM_CLASSES = {
@@ -94,6 +97,7 @@ export default memo<IProps>(function InfoButtonBase({
 	overlayId,
 	showMobileTextTrigger = false,
 }) {
+	const { t } = useI18n(catalogGuestsMessages);
 	const isReducedMotion = useReducedMotion();
 	const { params, replaceState } = useParams();
 	const [isOpened, setOpened] = useState(false);
@@ -124,9 +128,14 @@ export default memo<IProps>(function InfoButtonBase({
 		setOpened(params.has(GUEST_INFO_QUERY_PARAM));
 	}, [params]);
 
-	const buttonLabel = '更多信息';
+	const buttonLabel = t('guests.infoButton.label');
 	const iconButton = (
-		<Tooltip showArrow content="查看更多资料" offset={1} size="sm">
+		<Tooltip
+			showArrow
+			content={t('guests.infoButton.tooltip')}
+			offset={1}
+			size="sm"
+		>
 			<Button
 				isIconOnly
 				size="sm"

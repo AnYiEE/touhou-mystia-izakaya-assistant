@@ -1,12 +1,17 @@
 import isNil from 'lodash/isNil.js';
 
+import { getDlcLabel } from '@/domain/availability/localizedLabels';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { getCookerTypeLabel } from '@/domain/catalog/localizedCategoryLabels';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
-import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
+import {
+	COLLABORATION_LABEL_MAP,
+	type TCollaborationLabel,
+} from '@/domain/data/labels/collaborationFacts';
 import { PRAYER_LABEL_MAP } from '@/domain/data/labels/prayerFacts';
 import {
 	SCHEDULER_FACTS,
@@ -17,22 +22,72 @@ import {
 } from '@/domain/data/labels/schedulerFacts';
 import { SPEED_LABEL_MAP } from '@/domain/data/partners/speedFacts';
 import { COLLECTION_POINT_REFRESH_FACTS } from '@/domain/data/places/collectionFacts';
-import { MERCHANT_LABEL_MAP } from '@/domain/data/places/merchantFacts';
+import type { TGeneralItemSource } from '@/domain/data/generalItems/schema';
+import {
+	MERCHANT_LABEL_MAP,
+	type TMerchantLabel,
+} from '@/domain/data/places/merchantFacts';
 import {
 	ALL_MAP_LABELS_SET,
 	MAP_FACTS,
 	PLACE_LABEL_MAP,
 } from '@/domain/data/places/placeFacts';
-import type { TMapLabel } from '@/domain/data/places/types';
+import type { TMapLabel, TPlaceLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
 import { GUEST_EVALUATION_MAP } from '@/domain/evaluation/labels';
+import { getEvaluationLabelByKey } from '@/domain/evaluation/localizedLabels';
+import type { TEvaluationKey } from '@/domain/evaluation/types';
+import { getCollaborationLabel } from '@/domain/labels/localizedCollaborationLabels';
+import {
+	getSchedulerTaskGuestLabel,
+	getSchedulerTaskLocationLabel,
+} from '@/domain/labels/localizedSchedulerLabels';
+import {
+	getMapLabel,
+	getMerchantLabel,
+	getPlaceLabel,
+} from '@/domain/places/localizedLabels';
 
 import type { TGlobalSearchFieldType } from '@/features/globalSearch/contracts';
 
+import {
+	CATALOG_ITEMS_SPEED_LABEL_MESSAGE_KEYS,
+	type TCatalogItemsMessageKey,
+	catalogItemsMessages,
+} from '@/features/catalog/items/shared/messages';
+import { getActiveLocalizationLocale } from '@/features/catalog/shared/client/localization/activeLocalizationLocale';
+
+import { type TMessageParams, translate } from '@/shared/i18n/messages';
 import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+
+import {
+	type TCatalogGlobalSearchMessageKey,
+	catalogGlobalSearchMessages,
+} from './messages';
 
 type TFoodSourceMethodKey =
 	'buy' | 'collect' | 'fishing' | 'fishingAdvanced' | 'prayer' | 'task';
+
+function tItems(key: TCatalogItemsMessageKey, params?: TMessageParams): string {
+	return translate(
+		catalogItemsMessages,
+		getActiveLocalizationLocale(),
+		key,
+		params
+	);
+}
+
+function tSearch(
+	key: TCatalogGlobalSearchMessageKey,
+	params?: TMessageParams
+): string {
+	return translate(
+		catalogGlobalSearchMessages,
+		getActiveLocalizationLocale(),
+		key,
+		params
+	);
+}
 
 function normalizePrimitive(value: unknown): string[] {
 	if (value === false) {
@@ -42,7 +97,7 @@ function normalizePrimitive(value: unknown): string[] {
 		return [];
 	}
 	if (value === true) {
-		return ['是'];
+		return [tItems('items.source.yes')];
 	}
 	if (typeof value === 'string' || typeof value === 'number') {
 		return [value.toString()];
@@ -81,16 +136,14 @@ function formatNumericLabels(
 
 function formatCookerTypes(value: unknown) {
 	return formatNumericLabels(value, (id) =>
-		Object.hasOwn(COOKER_TYPE_LABEL_MAP, id)
-			? COOKER_TYPE_LABEL_MAP[id as keyof typeof COOKER_TYPE_LABEL_MAP]
-			: ''
+		Object.hasOwn(COOKER_TYPE_LABEL_MAP, id) ? getCookerTypeLabel(id) : ''
 	);
 }
 
 function formatIngredients(value: unknown) {
 	const catalog = IngredientCatalog.getInstance();
 	return formatNumericLabels(value, (id) =>
-		catalog.getPropsById(id as never, 'name')
+		catalog.getDisplayPropsById(id as never, 'name')
 	);
 }
 
@@ -100,25 +153,31 @@ export function joinValue(value: unknown) {
 
 function getMapDisplayLabel(value: unknown) {
 	return typeof value === 'string' && ALL_MAP_LABELS_SET.has(value)
-		? MAP_FACTS[value as TMapLabel].label
+		? getMapLabel(value as TMapLabel)
 		: null;
 }
 
 function getPlaceDisplayLabel(value: unknown) {
 	return typeof value === 'string' && value in PLACE_LABEL_MAP
-		? PLACE_LABEL_MAP[value as keyof typeof PLACE_LABEL_MAP]
+		? getPlaceLabel(value as TPlaceLabel)
 		: null;
 }
 
 function getSpecialGuestName(value: unknown) {
 	return typeof value === 'number'
-		? SpecialGuestCatalog.getInstance().getPropsById(value as never, 'name')
+		? SpecialGuestCatalog.getInstance().getDisplayPropsById(
+				value as never,
+				'name'
+			)
 		: null;
 }
 
 function getCurrencyItemName(value: unknown) {
 	return typeof value === 'number'
-		? CurrencyItemCatalog.getInstance().getPropsById(value as never, 'name')
+		? CurrencyItemCatalog.getInstance().getDisplayPropsById(
+				value as never,
+				'name'
+			)
 		: null;
 }
 
@@ -153,7 +212,10 @@ function getTaskSchedulerLabels(
 	return labels.length === 0 ? null : labels;
 }
 
-function formatMerchantReference(value: unknown) {
+function formatMerchantReference(
+	value: unknown,
+	options: { omitMap?: boolean } = {}
+) {
 	if (!checkIsRecord(value)) {
 		return '';
 	}
@@ -163,10 +225,16 @@ function formatMerchantReference(value: unknown) {
 
 	if (specialGuestName !== null) {
 		if (mapLabel !== null) {
-			return `【${mapLabel}】${specialGuestName}`;
+			return tItems('items.source.mapGuest', {
+				guest: specialGuestName,
+				map: mapLabel,
+			});
 		}
 		return typeof value['label'] === 'string'
-			? `【${specialGuestName}】${value['label']}`
+			? tItems('items.source.guestLabel', {
+					guest: specialGuestName,
+					label: value['label'],
+				})
 			: specialGuestName;
 	}
 	if (typeof value['label'] !== 'string') {
@@ -175,14 +243,15 @@ function formatMerchantReference(value: unknown) {
 
 	const merchantLabel =
 		value['label'] in MERCHANT_LABEL_MAP
-			? MERCHANT_LABEL_MAP[
-					value['label'] as keyof typeof MERCHANT_LABEL_MAP
-				]
+			? getMerchantLabel(value['label'] as TMerchantLabel)
 			: value['label'];
 
-	return mapLabel === null
+	return mapLabel === null || options.omitMap === true
 		? merchantLabel
-		: `【${mapLabel}】${merchantLabel}`;
+		: tItems('items.source.mapCollection', {
+				label: merchantLabel,
+				map: mapLabel,
+			});
 }
 
 function formatCollectionPointReference(value: unknown) {
@@ -214,7 +283,10 @@ function formatCollectionPointReference(value: unknown) {
 
 	const map = getMapDisplayLabel(value['map']);
 	if (map !== null && displayLabel !== null) {
-		return `【${map}】${displayLabel}`;
+		return tItems('items.source.mapCollection', {
+			label: displayLabel,
+			map,
+		});
 	}
 
 	if (Array.isArray(value['excludedMaps'])) {
@@ -222,7 +294,10 @@ function formatCollectionPointReference(value: unknown) {
 			.map(getMapDisplayLabel)
 			.filter((label) => label !== null);
 		if (excludedMaps.length > 0) {
-			return `非【${excludedMaps.join('、')}】${displayLabel ?? ''}`;
+			return tItems('items.source.excludedMaps', {
+				label: displayLabel ?? '',
+				maps: excludedMaps.join(tItems('items.source.listSeparator')),
+			});
 		}
 	}
 
@@ -266,7 +341,7 @@ function formatCookerPrice(value: unknown) {
 				const { cooker } = part;
 				return typeof cooker['cooker'] === 'number' &&
 					typeof cooker['amount'] === 'number'
-					? `${CookerCatalog.getInstance().getPropsById(cooker['cooker'] as never, 'name')} ${cooker['amount']}`
+					? `${CookerCatalog.getInstance().getDisplayPropsById(cooker['cooker'] as never, 'name')} ${cooker['amount']}`
 					: '';
 			}
 			if (checkIsRecord(part['currencyItem'])) {
@@ -302,8 +377,12 @@ function formatBondSource(value: unknown) {
 	}
 
 	return level === null
-		? `【${name}】羁绊`
-		: `【${name}】羁绊Lv.${level - 1}➞Lv.${level}`;
+		? tSearch('search.source.bond', { guest: name })
+		: tSearch('search.source.bondLevel', {
+				from: level - 1,
+				guest: name,
+				to: level,
+			});
 }
 
 function formatLevelupSource(value: unknown) {
@@ -311,15 +390,20 @@ function formatLevelupSource(value: unknown) {
 		return '';
 	}
 
-	const levelText = `游戏等级Lv.${value['level'] - 1}➞Lv.${value['level']}`;
+	const levelText = `${tItems('items.source.gameLevel')}Lv.${value['level'] - 1}➞Lv.${value['level']}`;
 	const map = getMapDisplayLabel(value['map']);
 
-	return map === null ? levelText : `${levelText}且已解锁地区【${map}】`;
+	return map === null
+		? levelText
+		: `${levelText}${tItems('items.source.andUnlockedMap', { map })}`;
 }
 
 function formatSourceProbability(value: unknown, label: string) {
 	if (typeof value === 'number') {
-		return `${value}%${label}`;
+		return tItems('items.source.itemProbability', {
+			label,
+			probability: value,
+		});
 	}
 	if (value === true) {
 		return label;
@@ -341,26 +425,33 @@ function formatSourceArrayItem(
 	const details = [
 		formatSourceProbability(probability, probabilityLabel),
 		typeof startTime === 'number' && typeof endTime === 'number'
-			? `出现时间：${startTime}-${endTime}点`
+			? tSearch('search.source.spotTime', {
+					end: endTime,
+					start: startTime,
+				})
 			: '',
 	].filter(Boolean);
 	const referenceText = formatReference(reference);
 
 	return details.length === 0
 		? referenceText
-		: `${referenceText}（${details.join('；')}）`;
+		: `${referenceText}${tItems('items.source.parenthesisOpen')}${details.join(tItems('items.source.tooltipSeparator'))}${tItems('items.source.parenthesisClose')}`;
 }
 
 function formatFoodSourceMethod(method: TFoodSourceMethodKey, value: unknown) {
-	const methodLabelMap = {
-		buy: '购买',
-		collect: '采集',
-		fishing: '垂钓',
-		fishingAdvanced: '高级垂钓',
-		prayer: '祈愿',
-		task: '任务',
-	} as const;
-	const probabilityLabel = method === 'buy' ? '概率出售' : '概率掉落';
+	const methodMessageKeys = {
+		buy: 'items.source.way.buy',
+		collect: 'items.source.way.collect',
+		fishing: 'items.source.way.fishing',
+		fishingAdvanced: 'items.source.way.fishingAdvanced',
+		prayer: 'items.source.way.prayer',
+		task: 'items.source.way.task',
+	} as const satisfies Record<TFoodSourceMethodKey, TCatalogItemsMessageKey>;
+	const probabilityLabel = tItems(
+		method === 'buy'
+			? 'items.source.probabilitySell'
+			: 'items.source.probabilityDrop'
+	);
 
 	if (method === 'task') {
 		const taskLabels = getTaskSchedulerLabels(value);
@@ -371,11 +462,14 @@ function formatFoodSourceMethod(method: TFoodSourceMethodKey, value: unknown) {
 		if (bonds !== null) {
 			return [
 				bonds
-					.map(
-						({ level, specialGuest }) =>
-							`【${getSpecialGuestName(specialGuest) ?? ''}】羁绊Lv.${level - 1}➞Lv.${level}`
+					.map(({ level, specialGuest }) =>
+						tSearch('search.source.bondLevel', {
+							from: level - 1,
+							guest: getSpecialGuestName(specialGuest) ?? '',
+							to: level,
+						})
 					)
-					.join('、'),
+					.join(tItems('items.source.listSeparator')),
 			];
 		}
 	}
@@ -401,7 +495,12 @@ function formatFoodSourceMethod(method: TFoodSourceMethodKey, value: unknown) {
 										'label'
 									] as keyof typeof PRAYER_LABEL_MAP
 								];
-							return map === null ? label : `【${map}】${label}`;
+							return map === null
+								? label
+								: tItems('items.source.mapCollection', {
+										label,
+										map,
+									});
 						}
 					: method === 'task'
 						? (item: unknown) =>
@@ -431,11 +530,19 @@ function formatFoodSourceMethod(method: TFoodSourceMethodKey, value: unknown) {
 	if (method === 'task') {
 		const [firstValue, ...restValues] = values;
 		return firstValue !== undefined && restValues.length === 0
-			? [`任务${formatTaskLabel(firstValue)}`]
-			: [`${methodLabelMap[method]}：${values.join('、')}`];
+			? [
+					tItems('items.source.task', {
+						label: formatTaskLabel(firstValue),
+					}),
+				]
+			: [
+					`${tItems(methodMessageKeys[method])}${tSearch('search.source.colon')}${values.join(tItems('items.source.listSeparator'))}`,
+				];
 	}
 
-	return [`${methodLabelMap[method]}：${values.join('、')}`];
+	return [
+		`${tItems(methodMessageKeys[method])}${tSearch('search.source.colon')}${values.join(tItems('items.source.listSeparator'))}`,
+	];
 }
 
 function formatBuySource(value: unknown) {
@@ -452,12 +559,14 @@ function formatBuySource(value: unknown) {
 				formatCurrencyItemPrice(priceValue['currencyItem'])
 			: formatFoodPrice(priceValue);
 
-	return price.length > 0 ? `${merchant}（${price}）` : merchant;
+	return price.length > 0
+		? `${merchant}${tItems('items.source.parenthesisOpen')}${price}${tItems('items.source.parenthesisClose')}`
+		: merchant;
 }
 
 function formatSourceRecord(value: Record<string, unknown>) {
 	if (value['self'] === true) {
-		return '初始拥有';
+		return tItems('items.source.initialOwned');
 	}
 	if ('bond' in value) {
 		const bond = formatBondSource(value['bond']);
@@ -479,13 +588,13 @@ function formatSourceRecord(value: Record<string, unknown>) {
 				taskFact !== null &&
 				'locationLabel' in taskFact &&
 				typeof taskFact.locationLabel === 'string'
-					? taskFact.locationLabel
+					? getSchedulerTaskLocationLabel(taskFact.locationLabel)
 					: null;
 			const dialogueGuestLabel =
 				taskFact !== null &&
 				'dialogueGuestLabel' in taskFact &&
 				typeof taskFact.dialogueGuestLabel === 'string'
-					? taskFact.dialogueGuestLabel
+					? getSchedulerTaskGuestLabel(taskFact.dialogueGuestLabel)
 					: null;
 			return map === null ||
 				typeof missionLabel !== 'string' ||
@@ -493,7 +602,14 @@ function formatSourceRecord(value: Record<string, unknown>) {
 				locationLabel === null ||
 				dialogueGuestLabel === null
 				? bond
-				: `${bond}并完成任务【${formatSchedulerLabels(missionLabel as keyof typeof SCHEDULER_FACTS)}】（前往${map}的${locationLabel}与${dialogueGuestLabel}交谈）。`;
+				: `${bond}${tSearch('search.source.bondTaskSuffix', {
+						guest: dialogueGuestLabel,
+						location: locationLabel,
+						map,
+						task: formatSchedulerLabels(
+							missionLabel as keyof typeof SCHEDULER_FACTS
+						),
+					})}`;
 		}
 		return bond;
 	}
@@ -511,18 +627,21 @@ function formatSourceRecord(value: Record<string, unknown>) {
 		const guestName = getSpecialGuestName(areaTask['specialGuest']);
 		return map === null || typeof areaTask['task'] !== 'string'
 			? ''
-			: `地区【${map}】${areaTask['task']}${guestName === null ? '' : `（${guestName}）`}`;
+			: `${tItems('items.source.areaTask', {
+					map,
+					task: areaTask['task'],
+				})}${guestName === null ? '' : tItems('items.source.guestSuffix', { name: guestName })}`;
 	}
 	if ('collaboration' in value && checkIsRecord(value['collaboration'])) {
 		const { collaboration } = value;
 		const collaborationLabel =
 			typeof collaboration['collaborationLabel'] === 'string' &&
 			collaboration['collaborationLabel'] in COLLABORATION_LABEL_MAP
-				? COLLABORATION_LABEL_MAP[
+				? getCollaborationLabel(
 						collaboration[
 							'collaborationLabel'
-						] as keyof typeof COLLABORATION_LABEL_MAP
-					]
+						] as TCollaborationLabel
+					)
 				: null;
 		if (Array.isArray(collaboration['merchants'])) {
 			return collaboration['merchants']
@@ -545,17 +664,25 @@ function formatSourceRecord(value: Record<string, unknown>) {
 						const map = getMapDisplayLabel(merchant['map']);
 						return map === null
 							? `${merchantText}${platform}`
-							: `【${map}“${collaborationLabel}”联动】${merchantText.replace(/^【[^】]+】/u, '')}${platform}`;
+							: `${tItems('items.source.collaborationSource', {
+									collaboration: collaborationLabel,
+									label: formatMerchantReference(merchant, {
+										omitMap: true,
+									}),
+									map,
+								})}${platform}`;
 					}
 					return `${merchantText}${platform}`;
 				})
 				.filter(Boolean)
-				.join('、');
+				.join(tItems('items.source.listSeparator'));
 		}
 		if (collaborationLabel === null) {
 			return '';
 		}
-		return `通过联动终端【${collaborationLabel}】选项领取`;
+		return tItems('items.source.collaborationTerminal', {
+			label: collaborationLabel,
+		});
 	}
 	if ('failedCooking' in value && checkIsRecord(value['failedCooking'])) {
 		const { failedCooking } = value;
@@ -566,11 +693,13 @@ function formatSourceRecord(value: Record<string, unknown>) {
 					)
 				: []),
 			...(Array.isArray(failedCooking['punishmentSpellCardSpecialGuests'])
-				? failedCooking['punishmentSpellCardSpecialGuests'].map(
-						(id) => `【${getSpecialGuestName(id) ?? ''}】惩罚符卡`
+				? failedCooking['punishmentSpellCardSpecialGuests'].map((id) =>
+						tItems('items.source.punishmentSpellCard', {
+							name: getSpecialGuestName(id) ?? '',
+						})
 					)
 				: []),
-		].join('、');
+		].join(tItems('items.source.listSeparator'));
 	}
 	if ('collect' in value) {
 		return formatFoodSourceMethod('collect', value['collect']).join(' ');
@@ -594,7 +723,10 @@ function formatSourceRecord(value: Record<string, unknown>) {
 		const source = value['dlcSideTask'];
 		return typeof source['dlc'] === 'number' &&
 			typeof source['task'] === 'string'
-			? `【DLC${source['dlc']}】${source['task']}`
+			? tItems('items.source.dlcSideTask', {
+					dlc: source['dlc'],
+					task: source['task'],
+				})
 			: '';
 	}
 	if (
@@ -603,7 +735,11 @@ function formatSourceRecord(value: Record<string, unknown>) {
 	) {
 		const label = value['competitionReward']['competitionLabel'];
 		return typeof label === 'string' && label in SCHEDULER_FACTS
-			? `完成“${formatSchedulerLabels(label as keyof typeof SCHEDULER_FACTS)}”后自动获得`
+			? tItems('items.source.afterCompetition', {
+					label: formatSchedulerLabels(
+						label as keyof typeof SCHEDULER_FACTS
+					),
+				})
 			: '';
 	}
 	if (
@@ -616,13 +752,20 @@ function formatSourceRecord(value: Record<string, unknown>) {
 		);
 		return currencyItemName !== null &&
 			typeof requirement['amount'] === 'number'
-			? `持有${requirement['amount']}枚“${currencyItemName}”时自动获得`
+			? tItems('items.source.autoObtainedHolding', {
+					amount: requirement['amount'],
+					currency: currencyItemName,
+				})
 			: '';
 	}
 	if ('eventReward' in value && checkIsRecord(value['eventReward'])) {
 		const label = value['eventReward']['eventLabel'];
 		return typeof label === 'string' && label in SCHEDULER_FACTS
-			? `${formatSchedulerLabels(label as keyof typeof SCHEDULER_FACTS)}时自动获得`
+			? tItems('items.source.autoObtainedOnEvent', {
+					event: formatSchedulerLabels(
+						label as keyof typeof SCHEDULER_FACTS
+					),
+				})
 			: '';
 	}
 	if (
@@ -631,7 +774,9 @@ function formatSourceRecord(value: Record<string, unknown>) {
 	) {
 		const label = value['collaborationUnlock']['collaborationLabel'];
 		return typeof label === 'string' && label in COLLABORATION_LABEL_MAP
-			? `通过联动终端【${COLLABORATION_LABEL_MAP[label as keyof typeof COLLABORATION_LABEL_MAP]}】选项领取`
+			? tItems('items.source.collaborationTerminal', {
+					label: getCollaborationLabel(label as TCollaborationLabel),
+				})
 			: '';
 	}
 	if ('taskReward' in value) {
@@ -640,7 +785,13 @@ function formatSourceRecord(value: Record<string, unknown>) {
 			? taskReward['task']
 			: taskReward;
 		return typeof label === 'string' && label in SCHEDULER_FACTS
-			? `任务${formatTaskLabel(formatSchedulerLabels(label as keyof typeof SCHEDULER_FACTS))}`
+			? tItems('items.source.task', {
+					label: formatTaskLabel(
+						formatSchedulerLabels(
+							label as keyof typeof SCHEDULER_FACTS
+						)
+					),
+				})
 			: '';
 	}
 	if ('completion' in value && checkIsRecord(value['completion'])) {
@@ -652,17 +803,26 @@ function formatSourceRecord(value: Record<string, unknown>) {
 			: [];
 		const guestName = getSpecialGuestName(completion['specialGuest']);
 		const { story } = completion;
+		const [map1, map2] = maps;
 		return maps.length === 2 &&
+			map1 !== undefined &&
+			map2 !== undefined &&
 			guestName !== null &&
 			checkIsRecord(story) &&
 			typeof story['dlc'] === 'number' &&
 			typeof story['conditionLabel'] === 'string'
-			? `地区【${maps[0]}】和【${maps[1]}】全部稀客羁绊满级，并完成【DLC${story['dlc']}】${story['conditionLabel']}后，和【${guestName}】对话领取。`
+			? tItems('items.source.bondCompletion', {
+					condition: story['conditionLabel'],
+					dlc: story['dlc'],
+					guest: guestName,
+					map1,
+					map2,
+				})
 			: '';
 	}
 	if ('mapMainTask' in value && checkIsRecord(value['mapMainTask'])) {
 		const map = getMapDisplayLabel(value['mapMainTask']['map']);
-		return map === null ? '' : `完成地区【${map}】主线任务`;
+		return map === null ? '' : tItems('items.source.mainTask', { map });
 	}
 	if (
 		'allMapSpecialGuestBondsMaxed' in value &&
@@ -671,7 +831,9 @@ function formatSourceRecord(value: Record<string, unknown>) {
 		const map = getMapDisplayLabel(
 			value['allMapSpecialGuestBondsMaxed']['map']
 		);
-		return map === null ? '' : `地区【${map}】全部稀客羁绊满级`;
+		return map === null
+			? ''
+			: tItems('items.source.allBondsMaxed', { map });
 	}
 	if (
 		'unlockedMapDialogue' in value &&
@@ -682,7 +844,10 @@ function formatSourceRecord(value: Record<string, unknown>) {
 		const guestName = getSpecialGuestName(source['specialGuest']);
 		return map === null || guestName === null
 			? ''
-			: `解锁地区【${map}】后，和【${guestName}】对话。`;
+			: tItems('items.source.unlockMapDialogue', {
+					guest: guestName,
+					map,
+				});
 	}
 	if ('datedMapTrial' in value && checkIsRecord(value['datedMapTrial'])) {
 		const source = value['datedMapTrial'];
@@ -693,7 +858,12 @@ function formatSourceRecord(value: Record<string, unknown>) {
 			typeof source['month'] !== 'number' ||
 			typeof source['day'] !== 'number'
 			? ''
-			: `解锁地区【${map}】后，完成由【${guestName}】于${source['month']}月${source['day']}日发起的试炼。`;
+			: tItems('items.source.datedMapTrial', {
+					day: source['day'],
+					guest: guestName,
+					map,
+					month: source['month'],
+				});
 	}
 	if ('storyDialogue' in value && checkIsRecord(value['storyDialogue'])) {
 		const source = value['storyDialogue'];
@@ -704,11 +874,16 @@ function formatSourceRecord(value: Record<string, unknown>) {
 			typeof source['prerequisiteLabel'] !== 'string' ||
 			typeof source['dialogueOptionLabel'] !== 'string'
 			? ''
-			: `${source['prerequisiteLabel']}后，和地区【${place}】的【${guestName}】对话，选择“${source['dialogueOptionLabel']}”。`;
+			: tItems('items.source.storyDialogue', {
+					guest: guestName,
+					option: source['dialogueOptionLabel'],
+					place,
+					prerequisite: source['prerequisiteLabel'],
+				});
 	}
 	if ('mapSideTask' in value && checkIsRecord(value['mapSideTask'])) {
 		const map = getMapDisplayLabel(value['mapSideTask']['map']);
-		return map === null ? '' : `地区【${map}】支线任务`;
+		return map === null ? '' : tItems('items.source.mapSideTask', { map });
 	}
 	if ('mapPrayer' in value && checkIsRecord(value['mapPrayer'])) {
 		const source = value['mapPrayer'];
@@ -718,13 +893,20 @@ function formatSourceRecord(value: Record<string, unknown>) {
 			typeof label !== 'string' ||
 			!(label in PRAYER_LABEL_MAP)
 			? ''
-			: `地区【${map}】${PRAYER_LABEL_MAP[label as keyof typeof PRAYER_LABEL_MAP]}处祈愿`;
+			: tItems('items.source.mapPrayer', {
+					map,
+					prayer: PRAYER_LABEL_MAP[
+						label as keyof typeof PRAYER_LABEL_MAP
+					],
+				});
 	}
 	if ('spellCardReward' in value && checkIsRecord(value['spellCardReward'])) {
 		const guestName = getSpecialGuestName(
 			value['spellCardReward']['specialGuest']
 		);
-		return guestName === null ? '' : `【${guestName}】奖励符卡`;
+		return guestName === null
+			? ''
+			: tItems('items.source.rewardSpellCard', { name: guestName });
 	}
 
 	return '';
@@ -742,7 +924,9 @@ function formatSourceValue(value: unknown): string[] {
 			)
 			.filter(Boolean);
 
-		return sourceTexts.length === 0 ? [] : [sourceTexts.join('、')];
+		return sourceTexts.length === 0
+			? []
+			: [sourceTexts.join(tItems('items.source.listSeparator'))];
 	}
 	if (!checkIsRecord(value)) {
 		return [];
@@ -782,7 +966,7 @@ function formatSourceValue(value: unknown): string[] {
 		.filter(Boolean);
 
 	return sourceParts.length > 0
-		? [sourceParts.join('；')]
+		? [sourceParts.join(tItems('items.source.tooltipSeparator'))]
 		: [formatSourceRecord(value)].filter(Boolean);
 }
 
@@ -793,7 +977,9 @@ function formatEffectValue(value: unknown): string[] {
 		typeof value[1] === 'boolean'
 	) {
 		return [
-			value[1] ? `${value[0]}（只有米斯蒂娅使用才有此效果）` : value[0],
+			value[1]
+				? `${value[0]}${tItems('items.source.parenthesisOpen')}${tItems('items.cooker.mystiaOnly')}${tItems('items.source.parenthesisClose')}`
+				: value[0],
 		];
 	}
 
@@ -811,11 +997,20 @@ function formatRewardValue(value: unknown): string[] {
 	const level = 'level' in value ? joinValue(value['level']) : '';
 	const name = 'name' in value ? joinValue(value['name']) : '';
 	const type = 'type' in value ? joinValue(value['type']) : '';
+	const levelText =
+		level.length === 0
+			? ''
+			: Number.isFinite(Number(level)) ||
+				  getActiveLocalizationLocale().startsWith('zh')
+				? `Lv.${level}`
+				: `${level} `;
 
 	return [
 		[
-			level.length > 0 ? `Lv.${level}` : '',
-			type.length > 0 ? `${type}：` : '',
+			levelText,
+			type.length > 0
+				? tSearch('search.reward.typeSuffix', { type })
+				: '',
 			name,
 		]
 			.filter(Boolean)
@@ -836,10 +1031,14 @@ function formatEvaluationValue(value: unknown): string[] {
 
 		const label =
 			key in GUEST_EVALUATION_MAP
-				? GUEST_EVALUATION_MAP[key as keyof typeof GUEST_EVALUATION_MAP]
+				? getEvaluationLabelByKey(key as TEvaluationKey)
 				: undefined;
 
-		return [label === undefined ? text : `${label}：${text}`];
+		return [
+			label === undefined
+				? text
+				: `${label}${tSearch('search.source.colon')}${text}`,
+		];
 	});
 }
 
@@ -858,9 +1057,13 @@ function formatPriceValue(value: unknown): string[] {
 
 function formatSpeedValue(value: unknown): string[] {
 	if (typeof value === 'string' && value in SPEED_LABEL_MAP) {
-		return [SPEED_LABEL_MAP[value as keyof typeof SPEED_LABEL_MAP]].filter(
-			Boolean
-		);
+		return [
+			tItems(
+				CATALOG_ITEMS_SPEED_LABEL_MESSAGE_KEYS[
+					value as keyof typeof SPEED_LABEL_MAP
+				]
+			),
+		].filter(Boolean);
 	}
 	if (checkIsRecord(value)) {
 		return Object.values(value).flatMap(formatSpeedValue);
@@ -870,9 +1073,7 @@ function formatSpeedValue(value: unknown): string[] {
 
 function formatPlaceValue(value: unknown): string[] {
 	return flattenValue(value).map((place) =>
-		ALL_MAP_LABELS_SET.has(place)
-			? MAP_FACTS[place as TMapLabel].label
-			: place
+		ALL_MAP_LABELS_SET.has(place) ? getMapLabel(place as TMapLabel) : place
 	);
 }
 
@@ -1041,11 +1242,74 @@ function formatDlcValue(value: unknown): string[] {
 			return dlcValue;
 		}
 
-		const labelMeta = DLC_LABEL_MAP[dlc];
+		if (getActiveLocalizationLocale() === 'zh-CN') {
+			const labelMeta = DLC_LABEL_MAP[dlc];
 
-		return [labelMeta.label, labelMeta.shortLabel, dlcValue].filter(
-			Boolean
-		);
+			return [labelMeta.label, labelMeta.shortLabel, dlcValue].filter(
+				Boolean
+			);
+		}
+
+		return [getDlcLabel(dlc), dlcValue];
+	});
+}
+
+/**
+ * @description Localized text used by the search index for general-item
+ * sources. The canonical record formatter stays untouched; this projection
+ * swaps map/guest/currency/task display names and joins for the active
+ * language so free-text matching and result snippets follow the catalogue
+ * localization pipeline.
+ */
+export function formatGeneralItemSourceText(source: TGeneralItemSource) {
+	if ('areaTask' in source) {
+		return tItems('items.source.areaTask', {
+			map: getMapLabel(source.areaTask.map),
+			task: source.areaTask.task,
+		});
+	}
+	if ('collaborationUnlock' in source) {
+		return tItems('items.source.collaborationTerminal', {
+			label: getCollaborationLabel(
+				source.collaborationUnlock.collaborationLabel
+			),
+		});
+	}
+	if ('holdingCurrencyItem' in source) {
+		const { amount, currencyItem } = source.holdingCurrencyItem;
+		return tItems('items.source.autoObtainedHolding', {
+			amount,
+			currency: CurrencyItemCatalog.getInstance().getDisplayPropsById(
+				currencyItem,
+				'name'
+			),
+		});
+	}
+	if ('schedulerLabel' in source) {
+		const fact = SCHEDULER_FACTS[source.schedulerLabel];
+		if ('specialGuestBond' in fact) {
+			const { level, specialGuest } = fact.specialGuestBond;
+			return tSearch('search.source.bondLevel', {
+				from: level - 1,
+				guest: SpecialGuestCatalog.getInstance().getDisplayPropsById(
+					specialGuest,
+					'name'
+				),
+				to: level,
+			});
+		}
+		return formatSchedulerLabels(source.schedulerLabel);
+	}
+	if ('taskReward' in source) {
+		return tItems('items.source.task', {
+			label: formatTaskLabel(formatSchedulerLabels(source.taskReward)),
+		});
+	}
+	return tItems('items.source.rewardSpellCard', {
+		name: SpecialGuestCatalog.getInstance().getDisplayPropsById(
+			source.positiveSpellCard,
+			'name'
+		),
 	});
 }
 
@@ -1088,7 +1352,7 @@ export function formatSpellCardList(value: unknown): string[] {
 		const description =
 			'description' in value ? joinValue(value.description) : '';
 		if (name.length > 0 && description.length > 0) {
-			return [`${name}：${description}`];
+			return [`${name}${tSearch('search.source.colon')}${description}`];
 		}
 
 		return [name, description].filter(Boolean);

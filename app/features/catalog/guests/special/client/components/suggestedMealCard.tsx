@@ -23,12 +23,14 @@ import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
-import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
-import { GUEST_RATING_MAP } from '@/domain/evaluation/labels';
+import { getEvaluationLabelByKey } from '@/domain/evaluation/localizedLabels';
+import { getRecommendationSortProfileLabel } from '@/domain/recommendations/localizedLabels';
+import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { Plus } from '@/features/catalog/guests/shared/client/components/resultCardAtoms';
 import TagGroup from '@/features/catalog/guests/shared/client/components/tagGroup';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { useSuggestedMealsViewModel } from '@/features/catalog/guests/special/client/useSuggestedMealsViewModel';
 import {
@@ -38,14 +40,19 @@ import {
 import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import Tags from '@/features/catalog/shared/client/components/Tags';
+import {
+	getBeverageTagLabel,
+	getFoodTagLabel,
+} from '@/features/catalog/shared/client/localization/tagLabels';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 import {
-	SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP,
-	SUGGESTED_MEAL_STATUS_MESSAGE_MAP,
+	SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_KEYS,
+	SUGGESTED_MEAL_STATUS_MESSAGE_KEYS,
 } from './suggestedMealCopy';
 
 const REFRESHING_NOTICE_DELAY_MS = 160;
@@ -75,6 +82,7 @@ function useDeferredRefreshingNotice(isRefreshing: boolean) {
 }
 
 export default function SuggestedMealCard() {
+	const { t } = useI18n(catalogGuestsMessages);
 	const isReducedMotion = useReducedMotion();
 	const selectMotionProps = useMotionProps('select');
 	const openWindow = useViewInNewWindow();
@@ -164,19 +172,21 @@ export default function SuggestedMealCard() {
 	if (isVisible && currentGuestName !== null) {
 		const maxRatingLabel =
 			selectableMaxRatings.find((item) => item.value === suggestMaxRating)
-				?.label ?? '完美';
+				?.label ?? getEvaluationLabelByKey('exgood');
 		const hasSuggestedMealRows =
 			suggestedMealRows !== null && !checkLengthEmpty(suggestedMealRows);
 		const isResultInteractionDisabled = suggestionStatus !== 'success';
 		const statusNotice = isRefreshingNoticeVisible
 			? {
 					className: 'text-default-500',
-					text: SUGGESTED_MEAL_STATUS_MESSAGE_MAP.refreshing,
+					text: t(SUGGESTED_MEAL_STATUS_MESSAGE_KEYS.refreshing),
 				}
 			: suggestionStatus === 'error' && hasSuggestedMealRows
 				? {
 						className: 'text-danger-600',
-						text: SUGGESTED_MEAL_STATUS_MESSAGE_MAP.refreshFailed,
+						text: t(
+							SUGGESTED_MEAL_STATUS_MESSAGE_KEYS.refreshFailed
+						),
 					}
 				: null;
 
@@ -188,13 +198,15 @@ export default function SuggestedMealCard() {
 						currentFood !== null && '-mt-2 xl:mt-0'
 					)}
 				>
-					猜您想要
+					{t('guests.suggestedMeal.title')}
 					<Popover showArrow>
 						<PopoverTrigger>
 							<span
 								role="button"
 								tabIndex={0}
-								aria-label="推荐说明"
+								aria-label={t(
+									'guests.suggestedMeal.explainerAria'
+								)}
 								className="inline-flex cursor-pointer items-center text-default-500 transition-opacity hover:opacity-hover active:opacity-hover"
 							>
 								<FontAwesomeIcon
@@ -205,62 +217,83 @@ export default function SuggestedMealCard() {
 						</PopoverTrigger>
 						<PopoverContent>
 							<div className="max-w-80 space-y-1.5 p-1 text-tiny text-default-700">
-								<p className="font-medium">会推荐什么：</p>
-								<Ol className="space-y-0.5">
-									<Ol.Li>
-										什么都没选：搭配料理、酒水和额外食材
-									</Ol.Li>
-									<Ol.Li>
-										只选了料理：补上酒水和额外食材
-									</Ol.Li>
-									<Ol.Li>
-										只选了酒水：补上料理和额外食材
-									</Ol.Li>
-									<Ol.Li>
-										料理和酒水都选了：只补额外食材
-									</Ol.Li>
-								</Ol>
 								<p className="font-medium">
-									当前策略：{effectiveSortProfileLabel}
+									{t('guests.suggestedMeal.whatTitle')}
 								</p>
 								<Ol className="space-y-0.5">
 									<Ol.Li>
-										少料易做：评级相同时，料理本身和额外食材的总成本越低越靠前
+										{t('guests.suggestedMeal.what.none')}
 									</Ol.Li>
 									<Ol.Li>
-										容易获取：评级相同时，优先当前稀客所属内容和更合适的获取路径
+										{t(
+											'guests.suggestedMeal.what.foodOnly'
+										)}
 									</Ol.Li>
 									<Ol.Li>
-										低价优先：评级相同时，套餐总价越低越靠前
+										{t(
+											'guests.suggestedMeal.what.beverageOnly'
+										)}
 									</Ol.Li>
 									<Ol.Li>
-										高价优先：评级相同时，套餐总价越高越靠前
-									</Ol.Li>
-								</Ol>
-								<p className="font-medium">筛选和排序：</p>
-								<Ol className="space-y-0.5">
-									<Ol.Li>
-										结果按评级从高到低排列，最高显示到“
-										{maxRatingLabel}”
-									</Ol.Li>
-									<Ol.Li>
-										评级相同时，还会参考内容归属、稀客所在地区、地图进度、预算和获取难度；有额外食材时也会计算材料成本
-									</Ol.Li>
-									<Ol.Li>
-										超过加料上限的套餐不会显示。价格略高于预算偏好时会靠后，超过顾客可接受的预算上限后不会显示
+										{t('guests.suggestedMeal.what.both')}
 									</Ol.Li>
 								</Ol>
-								<p className="font-medium">结果说明：</p>
+								<p className="font-medium">
+									{t('guests.suggestedMeal.currentProfile', {
+										profile: effectiveSortProfileLabel,
+									})}
+								</p>
 								<Ol className="space-y-0.5">
 									<Ol.Li>
-										推荐结果会受“流行趋势”和“明星店”效果影响
+										{t(
+											'guests.suggestedMeal.profile.material'
+										)}
 									</Ol.Li>
 									<Ol.Li>
-										没指定酒水时，点击推荐酒水可查看可替换酒水；点击额外食材可查看可替换食材
+										{t(
+											'guests.suggestedMeal.profile.availability'
+										)}
+									</Ol.Li>
+									<Ol.Li>
+										{t(
+											'guests.suggestedMeal.profile.lowPrice'
+										)}
+									</Ol.Li>
+									<Ol.Li>
+										{t(
+											'guests.suggestedMeal.profile.highPrice'
+										)}
+									</Ol.Li>
+								</Ol>
+								<p className="font-medium">
+									{t('guests.suggestedMeal.filterTitle')}
+								</p>
+								<Ol className="space-y-0.5">
+									<Ol.Li>
+										{t('guests.suggestedMeal.filter.p1', {
+											rating: maxRatingLabel,
+										})}
+									</Ol.Li>
+									<Ol.Li>
+										{t('guests.suggestedMeal.filter.p2')}
+									</Ol.Li>
+									<Ol.Li>
+										{t('guests.suggestedMeal.filter.p3')}
+									</Ol.Li>
+								</Ol>
+								<p className="font-medium">
+									{t('guests.suggestedMeal.resultTitle')}
+								</p>
+								<Ol className="space-y-0.5">
+									<Ol.Li>
+										{t('guests.suggestedMeal.result.p1')}
+									</Ol.Li>
+									<Ol.Li>
+										{t('guests.suggestedMeal.result.p2')}
 									</Ol.Li>
 								</Ol>
 								<p className="font-medium text-danger-700">
-									厨具和推荐策略只在当前浏览器标签页生效。选择“跟随全局设置”后，这里会使用默认推荐策略；评级、加料上限和推荐条数会保存到全局设置。
+									{t('guests.suggestedMeal.tabNote')}
 								</p>
 							</div>
 						</PopoverContent>
@@ -275,34 +308,40 @@ export default function SuggestedMealCard() {
 						<Button
 							size="sm"
 							variant="flat"
-							aria-label="打开“猜您想要”推荐设置"
+							aria-label={t('guests.suggestedMeal.settingsAria')}
 							className="h-6 min-h-6"
-							title="打开“猜您想要”推荐设置"
+							title={t('guests.suggestedMeal.settingsAria')}
 						>
-							推荐设置
+							{t('guests.suggestedMeal.settingsTitle')}
 						</Button>
 					</PopoverTrigger>
 					<PopoverContent className="max-h-[calc(100dvh-2rem)] w-72 max-w-[calc(100vw-2rem)] overflow-y-auto px-3.5 py-2">
 						<div className="w-full space-y-3 text-default-700">
 							<p className="text-tiny">
-								厨具和推荐策略仅在当前标签页生效；修改评级、加料上限或推荐条数会保存到全局设置。
+								{t('guests.suggestedMeal.settingsNote')}
 							</p>
 							{currentFood === null && (
 								<label className="block space-y-1">
 									<span className="block cursor-auto px-1 text-tiny font-medium">
-										厨具
+										{t('guests.table.column.cookerType')}
 									</span>
 									<Select
 										disableAnimation={isReducedMotion}
 										isVirtualized={false}
 										items={availableFoodCookers}
-										placeholder="全部"
+										placeholder={t(
+											'guests.suggestedMeal.allPlaceholder'
+										)}
 										selectedKeys={selectedCookerKeys}
 										size="sm"
 										variant="flat"
 										onSelectionChange={handleCookerChange}
-										aria-label="选择推荐套餐使用的厨具"
-										title="选择推荐套餐使用的厨具"
+										aria-label={t(
+											'guests.suggestedMeal.cookerAria'
+										)}
+										title={t(
+											'guests.suggestedMeal.cookerAria'
+										)}
 										popoverProps={selectPopoverProps}
 										classNames={cookerSelectClassNames}
 									>
@@ -328,7 +367,7 @@ export default function SuggestedMealCard() {
 							)}
 							<label className="block space-y-1">
 								<span className="block cursor-auto px-1 text-tiny font-medium">
-									推荐策略
+									{t('guests.suggestedMeal.strategyLabel')}
 								</span>
 								<Select
 									disallowEmptySelection
@@ -340,24 +379,36 @@ export default function SuggestedMealCard() {
 									size="sm"
 									variant="flat"
 									onSelectionChange={handleSortProfileChange}
-									aria-label="选择猜您想要推荐策略；跟随全局设置时实时使用默认推荐策略"
-									title="选择猜您想要推荐策略；跟随全局设置时实时使用默认推荐策略"
+									aria-label={t(
+										'guests.suggestedMeal.strategyAria'
+									)}
+									title={t(
+										'guests.suggestedMeal.strategyAria'
+									)}
 									popoverProps={selectPopoverProps}
 									classNames={sortProfileSelectClassNames}
 								>
-									{({ label, value }) => (
-										<SelectItem
-											key={value}
-											textValue={label}
-										>
-											{label}
-										</SelectItem>
-									)}
+									{({ labelKey, value }) => {
+										const label =
+											labelKey === null
+												? getRecommendationSortProfileLabel(
+														value as TRecommendationSortProfile
+													)
+												: t(labelKey);
+										return (
+											<SelectItem
+												key={value}
+												textValue={label}
+											>
+												{label}
+											</SelectItem>
+										);
+									}}
 								</Select>
 							</label>
 							<label className="block space-y-1">
 								<span className="block cursor-auto px-1 text-tiny font-medium">
-									推荐条数
+									{t('guests.suggestedMeal.countLabel')}
 								</span>
 								<Select
 									disallowEmptySelection
@@ -368,8 +419,10 @@ export default function SuggestedMealCard() {
 									size="sm"
 									variant="flat"
 									onSelectionChange={handleMaxResultsChange}
-									aria-label="选择推荐套餐的推荐条数；修改后会保存到全局设置"
-									title="选择推荐套餐的推荐条数；修改后会保存到全局设置"
+									aria-label={t(
+										'guests.suggestedMeal.countAria'
+									)}
+									title={t('guests.suggestedMeal.countAria')}
 									popoverProps={selectPopoverProps}
 									classNames={maxExtraSelectClassNames}
 								>
@@ -385,7 +438,7 @@ export default function SuggestedMealCard() {
 							</label>
 							<label className="block space-y-1">
 								<span className="block cursor-auto px-1 text-tiny font-medium">
-									评级上限
+									{t('guests.suggestedMeal.maxRatingLabel')}
 								</span>
 								<Select
 									disallowEmptySelection
@@ -396,8 +449,12 @@ export default function SuggestedMealCard() {
 									size="sm"
 									variant="flat"
 									onSelectionChange={handleMaxRatingChange}
-									aria-label="选择推荐套餐的最高评级"
-									title="选择推荐套餐的最高评级"
+									aria-label={t(
+										'guests.suggestedMeal.maxRatingAria'
+									)}
+									title={t(
+										'guests.suggestedMeal.maxRatingAria'
+									)}
 									popoverProps={selectPopoverProps}
 									classNames={maxRatingSelectClassNames}
 								>
@@ -413,19 +470,25 @@ export default function SuggestedMealCard() {
 							</label>
 							<label className="block space-y-1">
 								<span className="block cursor-auto px-1 text-tiny font-medium">
-									加料上限
+									{t('guests.suggestedMeal.maxExtraLabel')}
 								</span>
 								<Select
 									disableAnimation={isReducedMotion}
 									isVirtualized={false}
 									items={selectableMaxExtraIngredients}
-									placeholder="不限"
+									placeholder={t(
+										'guests.suggestedMeal.unlimitedPlaceholder'
+									)}
 									selectedKeys={selectedMaxExtraKeys}
 									size="sm"
 									variant="flat"
 									onSelectionChange={handleMaxExtraChange}
-									aria-label="选择推荐套餐的额外食材上限"
-									title="选择推荐套餐的额外食材上限"
+									aria-label={t(
+										'guests.suggestedMeal.maxExtraAria'
+									)}
+									title={t(
+										'guests.suggestedMeal.maxExtraAria'
+									)}
 									popoverProps={selectPopoverProps}
 									classNames={maxExtraSelectClassNames}
 								>
@@ -478,7 +541,7 @@ export default function SuggestedMealCard() {
 					<Divider className="md:hidden" />
 					{suggestionStatus === 'pending' ? (
 						<Placeholder className="py-4">
-							{SUGGESTED_MEAL_STATUS_MESSAGE_MAP.loading}
+							{t(SUGGESTED_MEAL_STATUS_MESSAGE_KEYS.loading)}
 						</Placeholder>
 					) : hasSuggestedMealRows ? (
 						suggestedMealRows.map(
@@ -504,11 +567,24 @@ export default function SuggestedMealCard() {
 								},
 								loopIndex
 							) => {
-								const rating = GUEST_RATING_MAP[ratingKey];
-								const beverageDetailsLabel = `点击：在新窗口中查看酒水【${beverage.name}】的详情`;
-								const beverageAlternativesLabel = `酒水【${beverage.name}】（点击查看可替换酒水）`;
-								const cookerLabel = `点击：在新窗口中查看厨具【${cooker.name}】的详情`;
-								const foodLabel = `点击：在新窗口中查看料理【${food.displayName}】的详情`;
+								const rating =
+									getEvaluationLabelByKey(ratingKey);
+								const beverageDetailsLabel = t(
+									'guests.table.viewBeverageTip',
+									{ name: beverage.name }
+								);
+								const beverageAlternativesLabel = t(
+									'guests.suggestedMeal.beverageAlternativesLabel',
+									{ name: beverage.name }
+								);
+								const cookerLabel = t(
+									'guests.savedMeal.viewCookerTip',
+									{ name: cooker.name }
+								);
+								const foodLabel = t(
+									'guests.table.viewFoodTip',
+									{ name: food.displayName }
+								);
 								return (
 									<Fragment key={key}>
 										<div className="relative flex flex-col items-center gap-4 md:static md:flex-row md:gap-3 lg:gap-4 xl:gap-3">
@@ -551,12 +627,9 @@ export default function SuggestedMealCard() {
 																			{currentGuestOrder.foodTag !==
 																				null && (
 																				<Tags.Tag
-																					tag={
-																						FOOD_TAG_MAP[
-																							currentGuestOrder
-																								.foodTag
-																						]
-																					}
+																					tag={getFoodTagLabel(
+																						currentGuestOrder.foodTag
+																					)}
 																					tagStyle={
 																						FOOD_TAG_STYLE.positive
 																					}
@@ -566,12 +639,9 @@ export default function SuggestedMealCard() {
 																			{currentGuestOrder.beverageTag !==
 																				null && (
 																				<Tags.Tag
-																					tag={
-																						BEVERAGE_TAG_MAP[
-																							currentGuestOrder
-																								.beverageTag
-																						]
-																					}
+																					tag={getBeverageTagLabel(
+																						currentGuestOrder.beverageTag
+																					)}
 																					tagStyle={
 																						BEVERAGE_TAG_STYLE.positive
 																					}
@@ -693,15 +763,23 @@ export default function SuggestedMealCard() {
 																				'pending' ||
 																			beverageAlternativesStatus ===
 																				'idle'
-																				? SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.loading
+																				? t(
+																						SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_KEYS.loading
+																					)
 																				: beverageAlternativesStatus ===
 																					  'error'
-																					? SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.failed
+																					? t(
+																							SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_KEYS.failed
+																						)
 																					: checkLengthEmpty(
 																								beverageAlternatives
 																						  )
-																						? SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.empty
-																						: SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.ready}
+																						? t(
+																								SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_KEYS.empty
+																							)
+																						: t(
+																								SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_KEYS.ready
+																							)}
 																		</span>
 																		<Tooltip
 																			showArrow
@@ -725,7 +803,9 @@ export default function SuggestedMealCard() {
 																				}
 																				className="h-6 min-h-6 px-2 text-tiny"
 																			>
-																				原酒水详情
+																				{t(
+																					'guests.suggestedMeal.originalBeverage'
+																				)}
 																			</Button>
 																		</Tooltip>
 																	</div>
@@ -742,7 +822,15 @@ export default function SuggestedMealCard() {
 																					const priceDifference =
 																						alternativePrice -
 																						price;
-																					const alternativeLabel = `点击：在新窗口中查看酒水【${alternativeName}】\u2005的详情；套餐价格由¥${price}变为¥${alternativePrice}`;
+																					const alternativeLabel =
+																						t(
+																							'guests.suggestedMeal.alternativeAria',
+																							{
+																								alternativePrice,
+																								name: alternativeName,
+																								price,
+																							}
+																						);
 																					return (
 																						<Tooltip
 																							key={
@@ -751,15 +839,12 @@ export default function SuggestedMealCard() {
 																							showArrow
 																							content={
 																								<span>
-																									{
-																										'点击：在新窗口中查看酒水【'
-																									}
-																									{
-																										alternativeName
-																									}
-																									{
-																										'】的详情；套餐价格由\u2005¥'
-																									}
+																									{t(
+																										'guests.suggestedMeal.alternativeTipPrefix',
+																										{
+																											name: alternativeName,
+																										}
+																									)}
 																									<Price
 																										showSymbol={
 																											false
@@ -769,9 +854,9 @@ export default function SuggestedMealCard() {
 																											price
 																										}
 																									</Price>
-																									{
-																										'\u2005变为\u2005¥'
-																									}
+																									{t(
+																										'guests.suggestedMeal.alternativeTipMiddle'
+																									)}
 																									<Price
 																										showSymbol={
 																											false
@@ -824,7 +909,9 @@ export default function SuggestedMealCard() {
 																								>
 																									{priceDifference ===
 																									0 ? (
-																										'不变'
+																										t(
+																											'guests.suggestedMeal.priceUnchanged'
+																										)
 																									) : (
 																										<>
 																											{priceDifference >
@@ -895,7 +982,10 @@ export default function SuggestedMealCard() {
 															{ id, name },
 															index
 														) => {
-															const label = `点击：在新窗口中查看食材【${name}】的详情`;
+															const label = t(
+																'guests.savedMeal.viewIngredientTip',
+																{ name }
+															);
 															return (
 																<Tooltip
 																	key={`${id}-${index}`}
@@ -939,7 +1029,13 @@ export default function SuggestedMealCard() {
 																	},
 																	index
 																) => {
-																	const label = `额外食材【${name}】`;
+																	const label =
+																		t(
+																			'guests.suggestedMeal.extraIngredientLabel',
+																			{
+																				name,
+																			}
+																		);
 																	const alternatives =
 																		getAlternatives(
 																			id
@@ -970,7 +1066,12 @@ export default function SuggestedMealCard() {
 																						alternatives
 																					)
 																						? label
-																						: `${label}（点击查看可替换食材）`
+																						: t(
+																								'guests.suggestedMeal.extraAlternativesLabel',
+																								{
+																									label,
+																								}
+																							)
 																				}
 																				offset={
 																					4
@@ -998,15 +1099,23 @@ export default function SuggestedMealCard() {
 																							'pending' ||
 																						alternativesStatus ===
 																							'idle'
-																							? SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.loading
+																							? t(
+																									SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_KEYS.loading
+																								)
 																							: alternativesStatus ===
 																								  'error'
-																								? SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.failed
+																								? t(
+																										SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_KEYS.failed
+																									)
 																								: checkLengthEmpty(
 																											alternatives
 																									  )
-																									? SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.empty
-																									: SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP.ready}
+																									? t(
+																											SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_KEYS.empty
+																										)
+																									: t(
+																											SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_KEYS.ready
+																										)}
 																					</span>
 																					{!checkLengthEmpty(
 																						alternatives
@@ -1021,7 +1130,13 @@ export default function SuggestedMealCard() {
 																									id: alternativeIngredient,
 																									name: altName,
 																								}) => {
-																									const altLabel = `点击：在新窗口中查看食材【${altName}】的详情`;
+																									const altLabel =
+																										t(
+																											'guests.savedMeal.viewIngredientTip',
+																											{
+																												name: altName,
+																											}
+																										);
 																									return (
 																										<Tooltip
 																											key={
@@ -1102,7 +1217,9 @@ export default function SuggestedMealCard() {
 													}}
 													className="md:w-auto xl:h-6"
 												>
-													选择
+													{t(
+														'guests.savedMeal.select'
+													)}
 												</Button>
 											</div>
 										</div>
@@ -1116,11 +1233,11 @@ export default function SuggestedMealCard() {
 						)
 					) : suggestionStatus === 'error' ? (
 						<Placeholder className="py-4">
-							{SUGGESTED_MEAL_STATUS_MESSAGE_MAP.failed}
+							{t(SUGGESTED_MEAL_STATUS_MESSAGE_KEYS.failed)}
 						</Placeholder>
 					) : (
 						<Placeholder className="py-4">
-							{SUGGESTED_MEAL_STATUS_MESSAGE_MAP.noMatch}
+							{t(SUGGESTED_MEAL_STATUS_MESSAGE_KEYS.noMatch)}
 						</Placeholder>
 					)}
 				</div>

@@ -8,10 +8,12 @@ import QRCode from '@/design/ui/components/qrCode';
 
 import { useTrackedInteractionCount } from '@/features/analytics/client/interactionCount';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { appShellMessages } from '@/features/appShell/client/messages';
 import { SITE_LINKS } from '@/features/appShell/links';
 import { CoordinatedModal } from '@/features/overlays/client';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { useHydrated } from '@/shared/react/useHydrated';
 import { SITE_METADATA } from '@/shared/site/metadata';
 
@@ -34,6 +36,7 @@ const { name, shortName } = SITE_METADATA;
 
 export default function DonationModal() {
 	useDonationModalTrigger();
+	const { t: tAppShell } = useI18n(appShellMessages);
 
 	const isMounted = useHydrated();
 	const vibrate = useVibrate();
@@ -121,7 +124,7 @@ export default function DonationModal() {
 					</p>
 				</div>
 				<QRCode text={links.donate.href} className="w-28">
-					{links.donate.label.replace('链接', '码')}
+					{tAppShell('appShell.links.donateQrCode')}
 				</QRCode>
 				<div className="flex justify-end gap-2">
 					<Button

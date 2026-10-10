@@ -2,48 +2,68 @@ import { type NormalGuestCatalog } from '@/domain/catalog/guests/NormalGuestCata
 import { type SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import type { TNormalGuestId } from '@/domain/data/guests/normal/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
-import type { TMapDisplayLabel } from '@/domain/data/places/types';
+import { getMapLabel } from '@/domain/places/localizedLabels';
 
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
+
+import { type TLocale } from '@/shared/i18n/locale';
+import { translate } from '@/shared/i18n/messages';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
+
+function formatPlaceContent(
+	otherPlaces: ReadonlyArray<string>,
+	hasOtherPlaces: boolean,
+	locale: TLocale
+) {
+	if (!hasOtherPlaces) {
+		return translate(catalogGuestsMessages, locale, 'guests.place.none');
+	}
+
+	return translate(
+		catalogGuestsMessages,
+		locale,
+		'guests.place.otherPlaces',
+		{
+			places: otherPlaces.join(
+				translate(catalogGuestsMessages, locale, 'guests.listSeparator')
+			),
+		}
+	);
+}
 
 export function getNormalGuestDisplayMeta(
 	guestCatalog: NormalGuestCatalog,
-	guest: TNormalGuestId
-): {
-	hasOtherPlaces: boolean;
-	mainPlace: TMapDisplayLabel | null;
-	placeContent: string;
-} {
+	guest: TNormalGuestId,
+	locale: TLocale
+): { hasOtherPlaces: boolean; mainPlace: null | string; placeContent: string } {
 	const { maps } = guestCatalog.getPropsById(guest);
-	const places = maps.map((map) => MAP_FACTS[map].label);
+	const places = maps.map((map) => getMapLabel(map));
 	const [mainPlace = null, ...otherPlaces] = places;
 	const hasOtherPlaces = !checkLengthEmpty(otherPlaces);
 
 	return {
 		hasOtherPlaces,
 		mainPlace,
-		placeContent: hasOtherPlaces
-			? `其他出没地区：${otherPlaces.join('、')}`
-			: '暂未收录其他出没地区',
+		placeContent: formatPlaceContent(otherPlaces, hasOtherPlaces, locale),
 	};
 }
 
 export function getSpecialGuestDisplayMeta(
 	guestCatalog: SpecialGuestCatalog,
-	guest: TSpecialGuestId
+	guest: TSpecialGuestId,
+	locale: TLocale
 ): {
 	averagePrice: number;
 	enduranceLimitPercent: number;
 	hasEnduranceLimit: boolean;
 	hasNegativeSpellCards: boolean;
 	hasOtherPlaces: boolean;
-	mainPlace: TMapDisplayLabel;
+	mainPlace: string;
 	placeContent: string;
 } {
 	const { enduranceLimit, maps, price, spellCards } =
 		guestCatalog.getPropsById(guest);
-	const places = maps.map((map) => MAP_FACTS[map].label);
+	const places = maps.map((map) => getMapLabel(map));
 	const [mainPlace, ...otherPlaces] = places;
 	const hasOtherPlaces = !checkLengthEmpty(otherPlaces);
 	const averagePrice = (price[0] + price[1]) / 2;
@@ -64,8 +84,6 @@ export function getSpecialGuestDisplayMeta(
 		hasNegativeSpellCards,
 		hasOtherPlaces,
 		mainPlace,
-		placeContent: hasOtherPlaces
-			? `其他出没地区：${otherPlaces.join('、')}`
-			: '暂未收录其他出没地区',
+		placeContent: formatPlaceContent(otherPlaces, hasOtherPlaces, locale),
 	};
 }

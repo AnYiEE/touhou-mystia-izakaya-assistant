@@ -10,14 +10,18 @@ import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 import type { BadgeCatalog } from '@/domain/catalog/items/BadgeCatalog';
 
 import CollectibleCatalog from '@/features/catalog/items/collectibles/client/components/CollectibleCatalog';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import type { TItemData } from '@/features/catalog/shared/contracts';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 export default function BadgesCatalog({
 	data,
 }: {
 	data: TItemData<BadgeCatalog>;
 }) {
+	const { t } = useI18n(catalogItemsMessages);
 	const { breakpoint: placement } = useBreakpoint(
 		{ 'right-start': 426, top: -1 },
 		'top'
@@ -28,11 +32,13 @@ export default function BadgesCatalog({
 			data={data}
 			target="badge"
 			trackingLabel="Badge Card"
-			descriptionLabel="获取条件"
+			descriptionLabel={t('items.source.obtainConditions')}
 		>
 			{({ id, name }) => (
 				<p>
-					<span className="font-semibold">大图：</span>
+					<span className="font-semibold">
+						{t('items.source.largeImage')}
+					</span>
 					<Popover
 						placement={placement}
 						showArrow={placement === 'top'}
@@ -46,7 +52,7 @@ export default function BadgesCatalog({
 									CLASSNAME_FOCUS_VISIBLE_OUTLINE
 								)}
 							>
-								查看大图
+								{t('items.source.viewLargeImage')}
 							</span>
 						</PopoverTrigger>
 						<PopoverContent>

@@ -12,12 +12,12 @@ import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { showProgress } from '@/features/appShell/client/progress';
 import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
+import { preferencesMessages } from '@/features/preferences/client/messages';
 import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/state/store';
 import { resetSpecialGuestTutorial } from '@/features/tutorials/specialGuest/client/tutorialProgress';
-import {
-	SPECIAL_GUEST_TUTORIAL_PATHNAME,
-	SPECIAL_GUEST_TUTORIAL_RESET_LABEL,
-} from '@/features/tutorials/specialGuest/constants';
+import { SPECIAL_GUEST_TUTORIAL_PATHNAME } from '@/features/tutorials/specialGuest/constants';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 type TResetTarget = 'meals' | 'plans';
 
@@ -36,6 +36,7 @@ export default memo<IProps>(function ResetSavedDataPanel({
 }) {
 	const { pathname } = usePathname();
 	const startProgress = useProgress();
+	const { t } = useI18n(preferencesMessages);
 
 	const handleResetMealData = useCallback(() => {
 		setResetTarget(null);
@@ -75,7 +76,7 @@ export default memo<IProps>(function ResetSavedDataPanel({
 							);
 						}}
 					>
-						重置已保存的顾客套餐数据
+						{t('preferences.reset.meals')}
 					</Button>
 				</PopoverTrigger>
 				<PopoverContent className="space-y-1 p-1">
@@ -86,7 +87,7 @@ export default memo<IProps>(function ResetSavedDataPanel({
 						variant="ghost"
 						onPress={handleResetMealData}
 					>
-						确认重置
+						{t('preferences.reset.confirm')}
 					</Button>
 					<Button
 						fullWidth
@@ -97,7 +98,7 @@ export default memo<IProps>(function ResetSavedDataPanel({
 							setResetTarget(null);
 						}}
 					>
-						取消重置
+						{t('preferences.reset.cancel')}
 					</Button>
 				</PopoverContent>
 			</Popover>
@@ -117,7 +118,7 @@ export default memo<IProps>(function ResetSavedDataPanel({
 							);
 						}}
 					>
-						重置已保存的营业预设数据
+						{t('preferences.reset.plans')}
 					</Button>
 				</PopoverTrigger>
 				<PopoverContent className="space-y-1 p-1">
@@ -128,7 +129,7 @@ export default memo<IProps>(function ResetSavedDataPanel({
 						variant="ghost"
 						onPress={handleResetPlanData}
 					>
-						确认重置
+						{t('preferences.reset.confirm')}
 					</Button>
 					<Button
 						fullWidth
@@ -139,7 +140,7 @@ export default memo<IProps>(function ResetSavedDataPanel({
 							setResetTarget(null);
 						}}
 					>
-						取消重置
+						{t('preferences.reset.cancel')}
 					</Button>
 				</PopoverContent>
 			</Popover>
@@ -209,7 +210,7 @@ export default memo<IProps>(function ResetSavedDataPanel({
 					);
 				}}
 			>
-				{SPECIAL_GUEST_TUTORIAL_RESET_LABEL}
+				{t('preferences.reset.tutorial')}
 			</Button>
 		</div>
 	);

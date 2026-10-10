@@ -6,6 +6,7 @@ import {
 	specialGuestPersistenceShape,
 } from '@/features/catalog/guests/shared/state/guestPersistenceShape';
 import { SPECIAL_GUEST_STORE_VERSION } from '@/features/catalog/guests/shared/state/guestStoreVersions';
+import { registerCatalogLocalizationRevisionMirror } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 
 import { createStoreSyncMiddleware } from '@/infrastructure/browser/crossTab/createStoreSyncMiddleware';
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
@@ -66,3 +67,9 @@ wireSpecialGuestStoreSubscriptions(
 	specialGuestPersistenceStore,
 	specialGuestFoodCatalog
 );
+
+registerCatalogLocalizationRevisionMirror((revision) => {
+	specialGuestPersistenceStore.shared.catalogLocalizationRevision.set(
+		revision
+	);
+});

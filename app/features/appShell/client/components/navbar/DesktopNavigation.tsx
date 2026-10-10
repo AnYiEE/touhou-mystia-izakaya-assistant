@@ -23,6 +23,10 @@ import Link from '@/design/ui/components/link';
 import SiteInfo from '@/design/ui/components/siteInfo';
 import Tooltip from '@/design/ui/components/tooltip';
 
+import {
+	APP_SHELL_NAV_LABEL_KEYS,
+	appShellMessages,
+} from '@/features/appShell/client/messages';
 import { SITE_LINKS } from '@/features/appShell/links';
 import { NAV_ITEMS } from '@/features/appShell/navigation/config';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
@@ -30,7 +34,8 @@ import ThemeSwitcher from '@/features/preferences/client/components/ThemeSwitche
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
-import { SITE_METADATA } from '@/shared/site/metadata';
+import { useI18n } from '@/shared/i18n/useI18n';
+import { siteMessages } from '@/shared/site/messages';
 import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
 import AccountThemeMenu from './AccountThemeMenu';
@@ -46,7 +51,6 @@ import type { INavbarPaletteItem } from './themeItems';
 
 const { baseURL } = PUBLIC_RUNTIME_CONFIG;
 const links = SITE_LINKS;
-const { name, shortName } = SITE_METADATA;
 const navItems = NAV_ITEMS;
 
 const NAVIGATION_MENU_ITEM_CLASSES = {
@@ -118,6 +122,8 @@ export default function DesktopNavigation({
 	shouldShowAccountAction,
 	shouldShowPreferences,
 }: IProps) {
+	const { t } = useI18n(appShellMessages);
+	const { t: tSite } = useI18n(siteMessages);
 	const handleMenuAction = useCallback(
 		(key: Key) => {
 			if (typeof key === 'string') {
@@ -152,31 +158,31 @@ export default function DesktopNavigation({
 						onPress={() => {
 							onNavigate();
 						}}
-						aria-label={links.index.label}
+						aria-label={t('appShell.links.index')}
 						role="button"
 						className="flex select-none items-center justify-start gap-1 rounded-small hover:brightness-100 active:opacity-disabled"
 					>
 						<span
 							aria-hidden
-							title={shortName}
+							title={tSite('site.shortName')}
 							className="image-rendering-pixelated h-10 w-10 rounded-full bg-logo bg-cover bg-no-repeat"
 						/>
 						<p className="hidden font-bold lg:inline-block">
-							{name}
+							{tSite('site.name')}
 						</p>
 						<SiteInfo
 							baseUrl={baseURL}
 							aria-hidden="false"
 							fontSize={16}
-							name={shortName}
-							className="pointer-events-auto h-full select-auto font-bold text-foreground lg:hidden"
+							name={tSite('site.shortName')}
+							className="pointer-events-auto h-full max-w-[13rem] select-auto font-bold text-foreground lg:hidden"
 						/>
 					</Link>
 				</NavbarBrand>
 				<ul className="hidden justify-start gap-4 pl-2 md:flex">
 					{navItems.map((navItem, navItemIndex) => {
 						if ('href' in navItem) {
-							const { href, label } = navItem;
+							const { href } = navItem;
 							const isActivated = href === basePathname;
 							return href === '/preferences' &&
 								!shouldShowPreferences ? null : (
@@ -190,13 +196,14 @@ export default function DesktopNavigation({
 											onNavigate(href);
 										}}
 									>
-										{label}
+										{t(APP_SHELL_NAV_LABEL_KEYS[href])}
 									</NavbarButtonLink>
 								</NavbarItem>
 							);
 						}
 						return Object.entries(navItem).map(
-							([dropdownLabel, dropdownItems], dropdownIndex) => {
+							([, dropdownItems], dropdownIndex) => {
+								const queryLabel = t('appShell.nav.query');
 								const isDropdownActivated = dropdownItems.some(
 									({ href }) => href === basePathname
 								);
@@ -224,14 +231,17 @@ export default function DesktopNavigation({
 													}
 													className="text-base"
 												>
-													{dropdownLabel}
+													{queryLabel}
 												</Button>
 											</DropdownTrigger>
 										</NavbarItem>
 										<DropdownMenu
 											items={dropdownItems}
 											onAction={handleMenuAction}
-											aria-label={`${dropdownLabel}列表`}
+											aria-label={t(
+												'appShell.search.listLabel',
+												{ label: queryLabel }
+											)}
 											classNames={{
 												base: 'min-w-0 p-1',
 												list: 'grid grid-cols-[repeat(3,6.75rem)] gap-1',
@@ -242,17 +252,21 @@ export default function DesktopNavigation({
 										>
 											{({
 												href,
-												label,
 												sprite,
 												spriteRecordId,
 											}) => {
 												const isActivated =
 													href === basePathname;
+												const itemLabel = t(
+													APP_SHELL_NAV_LABEL_KEYS[
+														href
+													]
+												);
 
 												return (
 													<DropdownItem
 														key={href}
-														textValue={label}
+														textValue={itemLabel}
 													>
 														<Button
 															fullWidth
@@ -305,7 +319,7 @@ export default function DesktopNavigation({
 																/>
 															</span>
 															<span className="min-w-0 truncate text-tiny font-medium leading-5">
-																{label}
+																{itemLabel}
 															</span>
 														</Button>
 													</DropdownItem>
@@ -331,12 +345,12 @@ export default function DesktopNavigation({
 						placement="left"
 						content={
 							<span className="flex items-center gap-1">
-								搜索
+								{t('appShell.search.button')}
 								<kbd className="rounded-small bg-default/40 px-1 py-0.5 text-tiny">
 									{searchShortcutLabel}
 								</kbd>
 								<span className="text-tiny text-foreground-400">
-									或
+									{t('appShell.search.hintSeparator')}
 								</span>
 								<kbd className="rounded-small bg-default/40 px-1 py-0.5 text-tiny">
 									/
@@ -348,7 +362,7 @@ export default function DesktopNavigation({
 							isIconOnly
 							size="sm"
 							variant="light"
-							aria-label="搜索"
+							aria-label={t('appShell.search.button')}
 							onPress={() => {
 								onSearchPress();
 							}}

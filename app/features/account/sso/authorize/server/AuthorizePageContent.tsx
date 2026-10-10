@@ -1,5 +1,9 @@
 import AccountInitialStateHydrator from '@/features/account/client/components/AccountInitialStateHydrator';
 import AccountSsoGrantInitialDataHydrator from '@/features/account/client/components/AccountSsoGrantInitialDataHydrator';
+import {
+	type TAccountMessageKey,
+	accountMessages,
+} from '@/features/account/client/messages';
 import type { TAccountMeResponse } from '@/features/account/contracts';
 import {
 	SsoAuthorizeAccountContextRefresh,
@@ -12,9 +16,16 @@ import {
 	SsoAuthorizePanel,
 	authorizePanelIcons,
 } from '@/features/account/sso/authorize/client';
-import { SSO_AUTHORIZE_MESSAGE_MAP } from '@/features/account/sso/authorize/copy';
+import { readRequestLocale } from '@/features/preferences/server/requestLocale';
+
+import { type TLocale } from '@/shared/i18n/locale';
+import { translate } from '@/shared/i18n/messages';
 
 import { readSsoAuthorizeInitialData } from './initialData';
+
+function t(locale: TLocale, key: TAccountMessageKey) {
+	return translate(accountMessages, locale, key);
+}
 
 const SSO_AUTHORIZE_LOGGED_OUT_ACCOUNT_STATE = {
 	csrf_token: null,
@@ -27,19 +38,25 @@ const SSO_AUTHORIZE_LOGGED_OUT_ACCOUNT_STATE = {
 	user: null,
 } as const satisfies TAccountMeResponse;
 
-function SsoAuthorizeMessage({ status }: { status: string | null }) {
+function SsoAuthorizeMessage({
+	locale,
+	status,
+}: {
+	locale: TLocale;
+	status: string | null;
+}) {
 	const message =
 		status === 'cancelled'
-			? SSO_AUTHORIZE_MESSAGE_MAP.authorizationCancelled
+			? t(locale, 'account.sso.status.authorizationCancelled')
 			: status === 'expired'
-				? SSO_AUTHORIZE_MESSAGE_MAP.authorizationExpired
-				: SSO_AUTHORIZE_MESSAGE_MAP.invalidRequest;
+				? t(locale, 'account.sso.status.authorizationExpired')
+				: t(locale, 'account.sso.status.invalidRequest');
 
 	return (
 		<div className="min-h-main-content text-foreground">
 			<SsoAuthorizePanel
 				icon={authorizePanelIcons.error}
-				subtitle="无法继续当前授权流程"
+				subtitle={t(locale, 'account.sso.errorFlowSubtitle')}
 				tone="warning"
 			>
 				<SsoAuthorizeNotice
@@ -53,7 +70,7 @@ function SsoAuthorizeMessage({ status }: { status: string | null }) {
 	);
 }
 
-function SsoAuthorizeLoginRequired() {
+function SsoAuthorizeLoginRequired({ locale }: { locale: TLocale }) {
 	return (
 		<div className="min-h-main-content text-foreground">
 			<AccountInitialStateHydrator
@@ -62,10 +79,10 @@ function SsoAuthorizeLoginRequired() {
 			<SsoAuthorizeAccountGate />
 			<SsoAuthorizePanel
 				icon={authorizePanelIcons.login}
-				subtitle="需要确认您的小助手账号身份"
+				subtitle={t(locale, 'account.sso.loginRequiredSubtitle')}
 			>
 				<SsoAuthorizeNotice>
-					请先登录小助手账号，登录完成后会回到当前授权流程。
+					{t(locale, 'account.sso.loginRequiredNotice')}
 				</SsoAuthorizeNotice>
 				<SsoAuthorizeAccountGateButton />
 			</SsoAuthorizePanel>
@@ -73,16 +90,16 @@ function SsoAuthorizeLoginRequired() {
 	);
 }
 
-function SsoAuthorizePasswordChangeRequired() {
+function SsoAuthorizePasswordChangeRequired({ locale }: { locale: TLocale }) {
 	return (
 		<div className="min-h-main-content text-foreground">
 			<SsoAuthorizePanel
 				icon={authorizePanelIcons.password}
-				subtitle="账号需要先完成安全更新"
+				subtitle={t(locale, 'account.sso.passwordChangeSubtitle')}
 				tone="warning"
 			>
 				<SsoAuthorizeNotice tone="warning">
-					请先在弹窗中更新账号密码，完成后会继续授权。
+					{t(locale, 'account.sso.passwordChangeNotice')}
 				</SsoAuthorizeNotice>
 				<SsoAuthorizeAccountGateButton />
 			</SsoAuthorizePanel>
@@ -96,21 +113,25 @@ export default async function SsoAuthorizePageContent({
 	searchParams: Promise<{ status?: string }>;
 }) {
 	const resolvedSearchParams = await searchParams;
+	const locale = await readRequestLocale();
 	const initialData = await readSsoAuthorizeInitialData(
-		resolvedSearchParams.status ?? null
+		resolvedSearchParams.status ?? null,
+		locale
 	);
 
 	if (initialData.kind === 'login-required') {
-		return <SsoAuthorizeLoginRequired />;
+		return <SsoAuthorizeLoginRequired locale={locale} />;
 	}
 	if (initialData.kind === 'message') {
-		return <SsoAuthorizeMessage status={initialData.status} />;
+		return (
+			<SsoAuthorizeMessage locale={locale} status={initialData.status} />
+		);
 	}
 	if (initialData.kind === 'password-change-required') {
 		return (
 			<>
 				<AccountInitialStateHydrator data={initialData.account} />
-				<SsoAuthorizePasswordChangeRequired />
+				<SsoAuthorizePasswordChangeRequired locale={locale} />
 			</>
 		);
 	}
@@ -122,18 +143,24 @@ export default async function SsoAuthorizePageContent({
 			<SsoAuthorizeAccountContextRefresh
 				initialUser={initialData.account.user}
 			/>
-			<SsoAuthorizePanel subtitle="确认后将返回发起登录的外部服务">
+			<SsoAuthorizePanel
+				subtitle={t(locale, 'account.sso.confirmSubtitle')}
+			>
 				<SsoAuthorizeNotice>
-					{initialData.clientName}
-					将获取您的小助手账号身份、用户名和昵称。
+					{translate(
+						accountMessages,
+						locale,
+						'account.sso.confirmNotice',
+						{ client: initialData.clientName }
+					)}
 				</SsoAuthorizeNotice>
 				<SsoAuthorizeDetailList>
 					<SsoAuthorizeDetailRow
-						label="授权服务"
+						label={t(locale, 'account.sso.detail.client')}
 						value={initialData.clientName}
 					/>
 					<SsoAuthorizeDetailRow
-						label="当前账号"
+						label={t(locale, 'account.sso.detail.account')}
 						value={initialData.accountLabel}
 					/>
 				</SsoAuthorizeDetailList>

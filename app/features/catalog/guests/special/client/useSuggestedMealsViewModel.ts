@@ -29,7 +29,7 @@ import { DARK_MATTER_META_MAP } from '@/domain/data/tags/tagFacts';
 import { getRestExtraIngredients } from '@/domain/meals/getRestExtraIngredients';
 import type { IMealFood } from '@/domain/meals/types';
 import type { IGuestOrder } from '@/domain/orders/types';
-import { RECOMMENDATION_SORT_PROFILE_LABEL_MAP } from '@/domain/recommendations/labels';
+import { getRecommendationSortProfileLabel } from '@/domain/recommendations/localizedLabels';
 import {
 	RECOMMENDATION_SORT_PROFILES,
 	type TRecommendationSortProfile,
@@ -37,6 +37,7 @@ import {
 import type { ISuggestParams } from '@/domain/recommendations/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
+import { type TCatalogGuestsMessageKey } from '@/features/catalog/guests/shared/messages';
 import { recommendationPreferencesFacade } from '@/features/preferences/client/recommendationPreferencesFacade';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 import { RECOMMENDATION_CACHE_READ_GRACE_MS } from '@/features/recommendations/client/cache/constants';
@@ -55,6 +56,7 @@ import {
 	readSuggestedMealsMemoryCache,
 	suggestMeals,
 } from '@/features/recommendations/client/suggestMeals';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
@@ -77,9 +79,13 @@ const EMPTY_BEVERAGE_ALTERNATIVES_MAP = new Map<
 >();
 const FOLLOW_SETTINGS_SORT_PROFILE_KEY = 'follow-settings';
 const SUGGESTED_MEAL_SORT_PROFILE_OPTIONS = [
-	{ label: '跟随全局设置', value: FOLLOW_SETTINGS_SORT_PROFILE_KEY },
+	{
+		labelKey:
+			'guests.suggestedMeal.followSettings' as TCatalogGuestsMessageKey | null,
+		value: FOLLOW_SETTINGS_SORT_PROFILE_KEY,
+	},
 	...RECOMMENDATION_SORT_PROFILES.map((value) => ({
-		label: RECOMMENDATION_SORT_PROFILE_LABEL_MAP[value],
+		labelKey: null as TCatalogGuestsMessageKey | null,
 		value,
 	})),
 ];
@@ -172,6 +178,7 @@ interface ISuggestedMealRowViewModel {
 }
 
 export function useSuggestedMealsViewModel() {
+	const catalogLocalizationRevision = useCatalogLocalizationRevision();
 	const { isHighAppearance } = useDesignPreferences();
 
 	const currentSpecialGuest = specialGuestStore.shared.guest.id.use();
@@ -853,11 +860,12 @@ export function useSuggestedMealsViewModel() {
 	const suggestedMealRows = useMemo<
 		ISuggestedMealRowViewModel[] | null
 	>(() => {
+		void catalogLocalizationRevision;
 		if (suggestions === null || resultContext === null) {
 			return null;
 		}
 
-		const guest = specialGuestCatalog.getPropsById(
+		const guest = specialGuestCatalog.getDisplayPropsById(
 			resultContext.specialGuest
 		);
 
@@ -875,20 +883,20 @@ export function useSuggestedMealsViewModel() {
 			const visibleExtraIngredientViews = visibleExtraIngredients.map(
 				(id) => ({
 					id,
-					name: ingredientCatalog.getPropsById(id, 'name'),
+					name: ingredientCatalog.getDisplayPropsById(id, 'name'),
 				})
 			);
 			const extraIngredients = mealFood.extraIngredients.map((id) => ({
 				id,
-				name: ingredientCatalog.getPropsById(id, 'name'),
+				name: ingredientCatalog.getDisplayPropsById(id, 'name'),
 			}));
 			const ingredients = baseIngredients.map((id) => ({
 				id,
-				name: ingredientCatalog.getPropsById(id, 'name'),
+				name: ingredientCatalog.getDisplayPropsById(id, 'name'),
 			}));
 			const beverageView = {
 				id: beverage,
-				name: beverageCatalog.getPropsById(beverage, 'name'),
+				name: beverageCatalog.getDisplayPropsById(beverage, 'name'),
 			};
 			const currentMeal: IMealFood = {
 				extraIngredients: [...mealFood.extraIngredients],
@@ -900,7 +908,7 @@ export function useSuggestedMealsViewModel() {
 			const cooker = cookerCatalog.getIdByTypeAndSeries(cookerType, 0);
 			const cookerView = {
 				id: cooker,
-				name: cookerCatalog.getPropsById(cooker, 'name'),
+				name: cookerCatalog.getDisplayPropsById(cooker, 'name'),
 			};
 			const mealKey = `${food.id}|${mealFood.recipeId}|${beverage}|${mealFood.extraIngredients.join(',')}`;
 			const currentAlternatives = alternativesMap.get(mealKey);
@@ -917,7 +925,7 @@ export function useSuggestedMealsViewModel() {
 					currentBeverageAlternatives?.meals.map(
 						({ beverage: alternativeBeverage, price }) => ({
 							id: alternativeBeverage,
-							name: beverageCatalog.getPropsById(
+							name: beverageCatalog.getDisplayPropsById(
 								alternativeBeverage,
 								'name'
 							),
@@ -938,7 +946,7 @@ export function useSuggestedMealsViewModel() {
 
 					loadAlternatives(mealKey, {
 						baseRating: ratingKey,
-						beverageTags: beverageCatalog.getPropsById(
+						beverageTags: beverageCatalog.getDisplayPropsById(
 							beverage,
 							'tags'
 						),
@@ -983,7 +991,10 @@ export function useSuggestedMealsViewModel() {
 						.get(ingredient)
 						?.map((id) => ({
 							id,
-							name: ingredientCatalog.getPropsById(id, 'name'),
+							name: ingredientCatalog.getDisplayPropsById(
+								id,
+								'name'
+							),
 						})) ?? EMPTY_ALTERNATIVES,
 				hasAlternativesLoaded: alternativesStatus === 'success',
 				ingredients,
@@ -998,6 +1009,7 @@ export function useSuggestedMealsViewModel() {
 		alternativesMap,
 		beverageCatalog,
 		beverageAlternativesMap,
+		catalogLocalizationRevision,
 		cookerCatalog,
 		foodCatalog,
 		ingredientCatalog,
@@ -1016,7 +1028,7 @@ export function useSuggestedMealsViewModel() {
 		currentGuestName,
 		currentGuestOrder: displayGuestOrder,
 		effectiveSortProfileLabel:
-			RECOMMENDATION_SORT_PROFILE_LABEL_MAP[effectiveSortProfile],
+			getRecommendationSortProfileLabel(effectiveSortProfile),
 		handleCookerChange,
 		handleMaxExtraChange,
 		handleMaxRatingChange,

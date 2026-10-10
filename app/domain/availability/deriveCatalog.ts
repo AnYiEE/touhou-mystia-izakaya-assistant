@@ -14,7 +14,6 @@ import { NORMAL_GUEST_LIST } from '@/domain/data/guests/normal/records';
 import { SPECIAL_GUEST_LIST } from '@/domain/data/guests/special/records';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import { INGREDIENT_LIST } from '@/domain/data/ingredients/records';
-import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
 import { PRAYER_LABEL_MAP } from '@/domain/data/labels/prayerFacts';
 import {
 	SCHEDULER_FACTS,
@@ -23,7 +22,7 @@ import {
 } from '@/domain/data/labels/schedulerFacts';
 import { PARTNER_LIST } from '@/domain/data/partners/records';
 import { getCollectionPointFact } from '@/domain/data/places/collectionFacts';
-import { MAP_FACTS, PLACE_LABEL_MAP } from '@/domain/data/places/placeFacts';
+import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 import type {
 	TCollectionPointReference,
 	TMapLabel,
@@ -32,7 +31,9 @@ import type {
 import { RECORD_LIST } from '@/domain/data/records/records';
 import type { IFoodBase } from '@/domain/data/shared/foodSchema';
 import type { TDlc } from '@/domain/data/shared/types';
+import { getCollaborationLabel } from '@/domain/labels/localizedCollaborationLabels';
 import { extractMapsFromCollectionPoint } from '@/domain/places/collectionLocations';
+import { getMapLabel, getPlaceLabel } from '@/domain/places/localizedLabels';
 
 import { attachAvailabilityCollectionPointReference } from './acquisitionSourceMetadata';
 import { DLC_LABEL_MAP } from './messages';
@@ -195,7 +196,7 @@ function getCurrencyItem(currencyItem: TCurrencyItemId) {
 }
 
 function formatMap(map: TMapLabel) {
-	return MAP_FACTS[map].label;
+	return getMapLabel(map);
 }
 
 export function formatCollectionPointReference(
@@ -746,8 +747,9 @@ function formatFoodSource({ from, name }: (typeof FOOD_LIST)[number]) {
 		return `地区【${formatMap(from.areaTask.map)}】${from.areaTask.task}${specialGuestSuffix}`;
 	}
 	if ('collaboration' in from) {
-		const collaborationLabel =
-			COLLABORATION_LABEL_MAP[from.collaboration.collaborationLabel];
+		const collaborationLabel = getCollaborationLabel(
+			from.collaboration.collaborationLabel
+		);
 		return from.collaboration.merchants
 			.map(({ merchant, platformLabel }, index) => {
 				const merchantName =
@@ -944,7 +946,7 @@ function formatClothesSource(
 	source: (typeof CLOTHES_LIST)[number]['from'][number]
 ) {
 	if ('collaborationUnlock' in source) {
-		return `通过联动终端【${COLLABORATION_LABEL_MAP[source.collaborationUnlock.collaborationLabel]}】选项领取`;
+		return `通过联动终端【${getCollaborationLabel(source.collaborationUnlock.collaborationLabel)}】选项领取`;
 	}
 	if ('eventReward' in source) {
 		return `${formatSchedulerLabels(source.eventReward.eventLabel)}时自动获得`;
@@ -1022,7 +1024,7 @@ function resolveClothesAvailabilityResult(item: (typeof CLOTHES_LIST)[number]) {
 function formatDecorationSource(item: (typeof DECORATION_LIST)[number]) {
 	const { from, name } = item;
 	if ('collaboration' in from) {
-		return `通过联动终端【${COLLABORATION_LABEL_MAP[from.collaboration.collaborationLabel]}】选项领取`;
+		return `通过联动终端【${getCollaborationLabel(from.collaboration.collaborationLabel)}】选项领取`;
 	}
 	if ('completion' in from) {
 		const [firstMap, secondMap] = from.completion.maps;
@@ -1071,7 +1073,7 @@ function formatPartnerSource(item: (typeof PARTNER_LIST)[number]) {
 		return `解锁地区【${formatMap(from.datedMapTrial.map)}】后，完成由【${getSpecialGuest(from.datedMapTrial.specialGuest).name}】于${from.datedMapTrial.month}月${from.datedMapTrial.day}日发起的试炼。`;
 	}
 	if ('storyDialogue' in from) {
-		return `${from.storyDialogue.prerequisiteLabel}后，和地区【${PLACE_LABEL_MAP[from.storyDialogue.placeLabel]}】的【${getSpecialGuest(from.storyDialogue.specialGuest).name}】对话，选择“${from.storyDialogue.dialogueOptionLabel}”。`;
+		return `${from.storyDialogue.prerequisiteLabel}后，和地区【${getPlaceLabel(from.storyDialogue.placeLabel)}】的【${getSpecialGuest(from.storyDialogue.specialGuest).name}】对话，选择“${from.storyDialogue.dialogueOptionLabel}”。`;
 	}
 	throw new Error(`伙伴“${name}”没有文本来源`);
 }

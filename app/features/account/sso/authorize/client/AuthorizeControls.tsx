@@ -5,15 +5,17 @@ import { useCallback, useRef, useState } from 'react';
 import Button from '@/design/ui/components/button';
 
 import {
-	SSO_AUTHORIZE_MESSAGE_MAP,
-	createSsoAuthorizeRateLimitedMessage,
-} from '@/features/account/sso/authorize/copy';
+	type TAccountTranslate,
+	accountMessages,
+} from '@/features/account/client/messages';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { fetchServiceApi } from '@/infrastructure/http/client/fetchServiceApi';
 import { ServiceApiError } from '@/infrastructure/http/client/serviceApiError';
 import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 type TSsoAuthorizeIntent = 'agree' | 'cancel';
 
@@ -25,25 +27,28 @@ interface ISsoAuthorizeControlsProps {
 	transactionId: string;
 }
 
-function createSubmitErrorMessage(error: unknown) {
+function createSubmitErrorMessage(error: unknown, t: TAccountTranslate) {
 	if (error instanceof ServiceApiError) {
 		if (error.status === 429) {
 			return error.retryAfter === null
-				? SSO_AUTHORIZE_MESSAGE_MAP.rateLimited
-				: createSsoAuthorizeRateLimitedMessage(error.retryAfter);
+				? t('account.sso.status.rateLimited')
+				: t('account.sso.status.rateLimitedWithDelay', {
+						seconds: Math.ceil(error.retryAfter),
+					});
 		}
 		if (error.status === 0) {
-			return SSO_AUTHORIZE_MESSAGE_MAP.networkFailed;
+			return t('account.sso.status.networkFailed');
 		}
 	}
 
-	return SSO_AUTHORIZE_MESSAGE_MAP.invalidRequest;
+	return t('account.sso.status.invalidRequest');
 }
 
 export default function SsoAuthorizeControls({
 	transactionId,
 }: ISsoAuthorizeControlsProps) {
 	const vibrate = useVibrate();
+	const { t } = useI18n(accountMessages);
 
 	const [message, setMessage] = useState<string | null>(null);
 	const [submittingIntent, setSubmittingIntent] =
@@ -91,14 +96,14 @@ export default function SsoAuthorizeControls({
 							? error.status
 							: undefined
 					);
-					setMessage(createSubmitErrorMessage(error));
+					setMessage(createSubmitErrorMessage(error, t));
 				})
 				.finally(() => {
 					submitInFlightRef.current = false;
 					setSubmittingIntent(null);
 				});
 		},
-		[transactionId, vibrate]
+		[t, transactionId, vibrate]
 	);
 
 	return (
@@ -115,7 +120,7 @@ export default function SsoAuthorizeControls({
 						submit('agree');
 					}}
 				>
-					同意并继续
+					{t('account.sso.agreeAction')}
 				</Button>
 				<Button
 					className="sm:min-w-24"
@@ -127,7 +132,7 @@ export default function SsoAuthorizeControls({
 						submit('cancel');
 					}}
 				>
-					取消
+					{t('account.sso.cancelAction')}
 				</Button>
 			</div>
 			{message === null ? null : (

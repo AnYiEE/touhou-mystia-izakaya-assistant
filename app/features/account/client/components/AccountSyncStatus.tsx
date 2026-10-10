@@ -21,17 +21,18 @@ import {
 } from '@/domain/account/contracts';
 
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
+import { accountMessages } from '@/features/account/client/messages';
 import { accountStore } from '@/features/account/client/state/accountStore';
 import { checkAccountSyncBroadcastSupported } from '@/features/account/client/sync/broadcast';
 import {
-	ACCOUNT_SYNC_CONTROL_LABEL_MAP,
-	ACCOUNT_SYNC_NAMESPACE_STATUS_LABEL_MAP,
-	ACCOUNT_SYNC_PAUSED_REASON_LABEL_MAP,
-	ACCOUNT_SYNC_STATUS_FALLBACK_MESSAGE_MAP,
-	ACCOUNT_SYNC_STATUS_MESSAGE_MAP,
-	ACCOUNT_SYNC_STORAGE_MODE_LABEL_MAP,
-	createAccountSyncFailedAttemptsMessage,
-	getAccountSyncNamespaceStatusLabel,
+	ACCOUNT_SYNC_CONTROL_LABEL_KEYS,
+	ACCOUNT_SYNC_FAILED_ATTEMPTS_MESSAGE_KEY,
+	ACCOUNT_SYNC_NAMESPACE_STATUS_LABEL_KEYS,
+	ACCOUNT_SYNC_PAUSED_REASON_LABEL_KEYS,
+	ACCOUNT_SYNC_STATUS_FALLBACK_MESSAGE_KEYS,
+	ACCOUNT_SYNC_STATUS_MESSAGE_KEYS,
+	ACCOUNT_SYNC_STORAGE_MODE_LABEL_KEYS,
+	getAccountSyncNamespaceStatusLabelKey,
 } from '@/features/account/client/sync/conflictCopy';
 import { readDirtyQueueEntries } from '@/features/account/client/sync/dirtyQueue/collisionEvidence';
 import { retryAccountSyncQueue } from '@/features/account/client/sync/flush';
@@ -43,6 +44,8 @@ import { useVibrate } from '@/features/preferences/client/useVibrate';
 import { checkCrossTabNativeLockSupported } from '@/infrastructure/browser/crossTab/withCrossTabLock';
 import { getSafeStorageMode } from '@/infrastructure/browser/storage/safeStorage';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import AccountConfirmButton from './AccountConfirmButton';
 
@@ -67,6 +70,62 @@ function getNamespaceLabel(namespace: TSyncNamespace) {
 export default memo<IProps>(function AccountSyncStatus() {
 	const isReducedMotion = useReducedMotion();
 	const vibrate = useVibrate();
+	const { locale, t } = useI18n(accountMessages);
+	const controlLabel = {
+		broadcastAvailable: t(
+			ACCOUNT_SYNC_CONTROL_LABEL_KEYS.broadcastAvailable
+		),
+		broadcastUnavailable: t(
+			ACCOUNT_SYNC_CONTROL_LABEL_KEYS.broadcastUnavailable
+		),
+		collapseDetails: t(ACCOUNT_SYNC_CONTROL_LABEL_KEYS.collapseDetails),
+		compatibleLock: t(ACCOUNT_SYNC_CONTROL_LABEL_KEYS.compatibleLock),
+		expandDetails: t(ACCOUNT_SYNC_CONTROL_LABEL_KEYS.expandDetails),
+		nativeLock: t(ACCOUNT_SYNC_CONTROL_LABEL_KEYS.nativeLock),
+		restore: t(ACCOUNT_SYNC_CONTROL_LABEL_KEYS.restore),
+		restoring: t(ACCOUNT_SYNC_CONTROL_LABEL_KEYS.restoring),
+		sync: t(ACCOUNT_SYNC_CONTROL_LABEL_KEYS.sync),
+		syncing: t(ACCOUNT_SYNC_CONTROL_LABEL_KEYS.syncing),
+	};
+	const namespaceStatusLabel = {
+		automaticResolutionPaused: t(
+			ACCOUNT_SYNC_NAMESPACE_STATUS_LABEL_KEYS.automaticResolutionPaused
+		),
+	};
+	const pausedReasonLabel = {
+		'applying-remote': t(
+			ACCOUNT_SYNC_PAUSED_REASON_LABEL_KEYS['applying-remote']
+		),
+		bootstrap: t(ACCOUNT_SYNC_PAUSED_REASON_LABEL_KEYS.bootstrap),
+		'cloud-paused': t(
+			ACCOUNT_SYNC_PAUSED_REASON_LABEL_KEYS['cloud-paused']
+		),
+		conflict: t(ACCOUNT_SYNC_PAUSED_REASON_LABEL_KEYS.conflict),
+		'delete-data': t(ACCOUNT_SYNC_PAUSED_REASON_LABEL_KEYS['delete-data']),
+		'importing-backup': t(
+			ACCOUNT_SYNC_PAUSED_REASON_LABEL_KEYS['importing-backup']
+		),
+	};
+	const statusMessage = {
+		noPendingData: t(ACCOUNT_SYNC_STATUS_MESSAGE_KEYS.noPendingData),
+		noSuccessfulRecord: t(
+			ACCOUNT_SYNC_STATUS_MESSAGE_KEYS.noSuccessfulRecord
+		),
+		pausedEmptyDescription: t(
+			ACCOUNT_SYNC_STATUS_MESSAGE_KEYS.pausedEmptyDescription
+		),
+		sessionQueueFallback: t(
+			ACCOUNT_SYNC_STATUS_MESSAGE_KEYS.sessionQueueFallback
+		),
+		sessionQueueWarning: t(
+			ACCOUNT_SYNC_STATUS_MESSAGE_KEYS.sessionQueueWarning
+		),
+	};
+	const storageModeLabel = {
+		local: t(ACCOUNT_SYNC_STORAGE_MODE_LABEL_KEYS.local),
+		memory: t(ACCOUNT_SYNC_STORAGE_MODE_LABEL_KEYS.memory),
+		session: t(ACCOUNT_SYNC_STORAGE_MODE_LABEL_KEYS.session),
+	};
 
 	const sync = accountStore.shared.sync.use();
 	const user = accountStore.shared.user.use();
@@ -112,7 +171,7 @@ export default memo<IProps>(function AccountSyncStatus() {
 		(sync.lastError === 'account-sync-pause-incomplete' ||
 			checkAccountSyncResetPrepared(user.id));
 	const pauseError = hasIncompletePauseTransition
-		? getAccountClientErrorMessage('account-sync-pause-incomplete')
+		? getAccountClientErrorMessage('account-sync-pause-incomplete', locale)
 		: rebuildError;
 
 	const handleManualSyncPress = useCallback(() => {
@@ -153,14 +212,17 @@ export default memo<IProps>(function AccountSyncStatus() {
 						Error.isError(error)
 							? error.message
 							: 'sync-rebuild-failed',
-						ACCOUNT_SYNC_STATUS_FALLBACK_MESSAGE_MAP.rebuildFailed
+						locale,
+						t(
+							ACCOUNT_SYNC_STATUS_FALLBACK_MESSAGE_KEYS.rebuildFailed
+						)
 					)
 				);
 			})
 			.finally(() => {
 				setIsRebuilding(false);
 			});
-	}, [isRebuilding, vibrate]);
+	}, [isRebuilding, locale, t, vibrate]);
 
 	const handleRebuildCancel = useCallback(() => {
 		setIsRebuildConfirmOpen(false);
@@ -178,20 +240,22 @@ export default memo<IProps>(function AccountSyncStatus() {
 			<div className="space-y-3 rounded-medium border border-warning/40 bg-warning/5 p-3 text-small">
 				<div className="flex items-center gap-2 text-warning-700 dark:text-warning">
 					<FontAwesomeIcon icon={faCloudArrowUp} className="w-4" />
-					<span className="font-medium">云同步已暂停</span>
+					<span className="font-medium">
+						{t('account.syncUi.pausedTitle')}
+					</span>
 				</div>
 				<p className="leading-5 text-foreground-500">
-					{ACCOUNT_SYNC_STATUS_MESSAGE_MAP.pausedEmptyDescription}
+					{statusMessage.pausedEmptyDescription}
 				</p>
 				<AccountConfirmButton
 					buttonLabel={
 						isRebuilding
-							? ACCOUNT_SYNC_CONTROL_LABEL_MAP.restoring
-							: ACCOUNT_SYNC_CONTROL_LABEL_MAP.restore
+							? controlLabel.restoring
+							: controlLabel.restore
 					}
 					color="warning"
 					confirmColor="warning"
-					confirmLabel="确认恢复"
+					confirmLabel={t('account.syncUi.confirmRestore')}
 					icon={faCloudArrowUp}
 					isDisabled={isRebuilding || hasIncompletePauseTransition}
 					isLoading={isRebuilding}
@@ -221,7 +285,7 @@ export default memo<IProps>(function AccountSyncStatus() {
 						className="w-4 text-primary-600"
 					/>
 					<span className="text-small font-medium text-foreground-700">
-						同步状态
+						{t('account.syncUi.title')}
 					</span>
 				</div>
 				<div className="inline-flex shrink-0 items-center gap-1">
@@ -230,8 +294,8 @@ export default memo<IProps>(function AccountSyncStatus() {
 							showArrow
 							content={
 								sync.isSyncing
-									? ACCOUNT_SYNC_CONTROL_LABEL_MAP.syncing
-									: ACCOUNT_SYNC_CONTROL_LABEL_MAP.sync
+									? controlLabel.syncing
+									: controlLabel.sync
 							}
 							placement="left"
 						>
@@ -240,8 +304,8 @@ export default memo<IProps>(function AccountSyncStatus() {
 									isIconOnly
 									aria-label={
 										sync.isSyncing
-											? ACCOUNT_SYNC_CONTROL_LABEL_MAP.syncing
-											: ACCOUNT_SYNC_CONTROL_LABEL_MAP.sync
+											? controlLabel.syncing
+											: controlLabel.sync
 									}
 									className="h-8 w-8 min-w-8 text-primary-600"
 									color="primary"
@@ -270,8 +334,8 @@ export default memo<IProps>(function AccountSyncStatus() {
 						showArrow
 						content={
 							isDetailOpen
-								? ACCOUNT_SYNC_CONTROL_LABEL_MAP.collapseDetails
-								: ACCOUNT_SYNC_CONTROL_LABEL_MAP.expandDetails
+								? controlLabel.collapseDetails
+								: controlLabel.expandDetails
 						}
 						placement="left"
 					>
@@ -280,8 +344,8 @@ export default memo<IProps>(function AccountSyncStatus() {
 								isIconOnly
 								aria-label={
 									isDetailOpen
-										? ACCOUNT_SYNC_CONTROL_LABEL_MAP.collapseDetails
-										: ACCOUNT_SYNC_CONTROL_LABEL_MAP.expandDetails
+										? controlLabel.collapseDetails
+										: controlLabel.expandDetails
 								}
 								className="h-8 w-8 min-w-8 text-primary-600"
 								radius="full"
@@ -302,19 +366,27 @@ export default memo<IProps>(function AccountSyncStatus() {
 			</div>
 			{isIdleWithoutSyncRecord ? (
 				<p className="leading-5 text-foreground-500">
-					{ACCOUNT_SYNC_STATUS_MESSAGE_MAP.noPendingData}
+					{statusMessage.noPendingData}
 				</p>
 			) : (
 				<div className="flex flex-wrap gap-x-4 gap-y-1 text-foreground-500">
-					<span>待上传：{sync.pendingCount}</span>
-					<span>冲突：{sync.conflicts.length}</span>
+					<span>
+						{t('account.syncUi.pending', {
+							count: sync.pendingCount,
+						})}
+					</span>
+					<span>
+						{t('account.syncUi.conflicts', {
+							count: sync.conflicts.length,
+						})}
+					</span>
 					{sync.isSyncing ? (
-						<span>{ACCOUNT_SYNC_CONTROL_LABEL_MAP.syncing}</span>
+						<span>{controlLabel.syncing}</span>
 					) : (
 						<span>
-							最近同步：
+							{t('account.syncUi.lastSync')}
 							{sync.lastSyncedAt === null ? (
-								ACCOUNT_SYNC_STATUS_MESSAGE_MAP.noSuccessfulRecord
+								statusMessage.noSuccessfulRecord
 							) : (
 								<TimeAgo timestamp={sync.lastSyncedAt} />
 							)}
@@ -324,19 +396,20 @@ export default memo<IProps>(function AccountSyncStatus() {
 			)}
 			{storageMode !== 'local' && (
 				<p className="leading-5 text-foreground-500">
-					{ACCOUNT_SYNC_STATUS_MESSAGE_MAP.sessionQueueFallback}
+					{statusMessage.sessionQueueFallback}
 				</p>
 			)}
 			{sync.lastError !== null && (
 				<p className="leading-5 text-danger-600 dark:text-danger">
 					{getAccountClientErrorMessage(
 						sync.lastError,
-						ACCOUNT_SYNC_STATUS_FALLBACK_MESSAGE_MAP.syncFailed
+						locale,
+						t(ACCOUNT_SYNC_STATUS_FALLBACK_MESSAGE_KEYS.syncFailed)
 					)}
 					{sync.failedAttempts > 0
-						? createAccountSyncFailedAttemptsMessage(
-								sync.failedAttempts
-							)
+						? t(ACCOUNT_SYNC_FAILED_ATTEMPTS_MESSAGE_KEY, {
+								attempts: sync.failedAttempts,
+							})
 						: ''}
 				</p>
 			)}
@@ -355,48 +428,42 @@ export default memo<IProps>(function AccountSyncStatus() {
 			>
 				<AccordionItem
 					key={SYNC_DETAIL_ACCORDION_KEY}
-					aria-label="同步详情"
-					title="同步详情"
+					aria-label={t('account.syncUi.details')}
+					title={t('account.syncUi.details')}
 				>
 					<div className="grid gap-2 sm:grid-cols-3">
 						<div className="rounded-medium border border-default-200 bg-default-50/40 px-3 py-2">
 							<p className="text-tiny text-foreground-500">
-								存储
+								{t('account.syncUi.storage')}
 							</p>
 							<p className="text-small font-medium text-foreground-700">
-								{
-									ACCOUNT_SYNC_STORAGE_MODE_LABEL_MAP[
-										storageMode
-									]
-								}
+								{storageModeLabel[storageMode]}
 							</p>
 						</div>
 						<div className="rounded-medium border border-default-200 bg-default-50/40 px-3 py-2">
 							<p className="text-tiny text-foreground-500">
-								跨标签互斥
+								{t('account.syncUi.crossTabLock')}
 							</p>
 							<p className="text-small font-medium text-foreground-700">
 								{supportsNativeLock
-									? ACCOUNT_SYNC_CONTROL_LABEL_MAP.nativeLock
-									: ACCOUNT_SYNC_CONTROL_LABEL_MAP.compatibleLock}
+									? controlLabel.nativeLock
+									: controlLabel.compatibleLock}
 							</p>
 						</div>
 						<div className="rounded-medium border border-default-200 bg-default-50/40 px-3 py-2">
 							<p className="text-tiny text-foreground-500">
-								跨标签广播
+								{t('account.syncUi.crossTabBroadcast')}
 							</p>
 							<p className="text-small font-medium text-foreground-700">
 								{supportsBroadcast
-									? ACCOUNT_SYNC_CONTROL_LABEL_MAP.broadcastAvailable
-									: ACCOUNT_SYNC_CONTROL_LABEL_MAP.broadcastUnavailable}
+									? controlLabel.broadcastAvailable
+									: controlLabel.broadcastUnavailable}
 							</p>
 						</div>
 					</div>
 					{storageMode !== 'local' && (
 						<p className="rounded-medium bg-warning/10 px-3 py-2 text-small leading-5 text-warning-700 dark:text-warning">
-							{
-								ACCOUNT_SYNC_STATUS_MESSAGE_MAP.sessionQueueWarning
-							}
+							{statusMessage.sessionQueueWarning}
 						</p>
 					)}
 					<div className="space-y-2">
@@ -419,14 +486,15 @@ export default memo<IProps>(function AccountSyncStatus() {
 								conflictNamespaceSet.has(namespace) ||
 								(dirtyEntry?.paused === 'conflict' &&
 									!isAutomaticResolution);
-							const statusLabel =
-								getAccountSyncNamespaceStatusLabel({
+							const statusLabel = t(
+								getAccountSyncNamespaceStatusLabelKey({
 									hasConflict: hasNamespaceConflict,
 									isAutomaticResolution,
 									isDirty: dirtyEntry !== undefined,
 									resolutionReadiness,
 									terminalError,
-								});
+								})
+							);
 							const isResolutionUnavailable =
 								resolutionReadiness === 'storage-unavailable' ||
 								resolutionReadiness === 'unsupported';
@@ -459,7 +527,9 @@ export default memo<IProps>(function AccountSyncStatus() {
 												{getNamespaceLabel(namespace)}
 											</p>
 											<p className="text-tiny text-foreground-500">
-												云端版本：
+												{t(
+													'account.syncUi.cloudVersion'
+												)}
 												{sync.meta?.revisions[
 													namespace
 												] ?? 0}
@@ -474,14 +544,18 @@ export default memo<IProps>(function AccountSyncStatus() {
 									{dirtyEntry !== undefined && (
 										<div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-tiny text-foreground-500">
 											<span>
-												基线版本：
+												{t(
+													'account.syncUi.baselineVersion'
+												)}
 												{dirtyEntry.baseRevision}
 											</span>
 											<span>
-												尝试：{dirtyEntry.attempts}
+												{t('account.syncUi.attempts', {
+													count: dirtyEntry.attempts,
+												})}
 											</span>
 											<span>
-												变更时间：
+												{t('account.syncUi.changedAt')}
 												<TimeAgo
 													timestamp={
 														dirtyEntry.dirtyAt
@@ -490,10 +564,10 @@ export default memo<IProps>(function AccountSyncStatus() {
 											</span>
 											{dirtyEntry.paused !== null && (
 												<span>
-													暂停：
+													{t('account.syncUi.paused')}
 													{isAutomaticResolution
-														? ACCOUNT_SYNC_NAMESPACE_STATUS_LABEL_MAP.automaticResolutionPaused
-														: ACCOUNT_SYNC_PAUSED_REASON_LABEL_MAP[
+														? namespaceStatusLabel.automaticResolutionPaused
+														: pausedReasonLabel[
 																dirtyEntry
 																	.paused
 															]}

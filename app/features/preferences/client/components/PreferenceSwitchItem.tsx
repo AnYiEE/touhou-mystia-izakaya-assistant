@@ -4,6 +4,10 @@ import { type PropsWithChildren, memo, useMemo } from 'react';
 import Switch, { type ISwitchProps } from '@/design/ui/components/switch';
 import Tooltip from '@/design/ui/components/tooltip';
 
+import { preferencesMessages } from '@/features/preferences/client/messages';
+
+import { useI18n } from '@/shared/i18n/useI18n';
+
 interface IProps extends Pick<
 	ISwitchProps,
 	'color' | 'className' | 'isDisabled' | 'title'
@@ -31,6 +35,7 @@ export default memo<PropsWithChildren<IProps>>(function SwitchItem({
 		}),
 		[isDisabled]
 	);
+	const { t } = useI18n(preferencesMessages);
 
 	return (
 		<div className={cn('flex items-center gap-2', className)}>
@@ -44,8 +49,8 @@ export default memo<PropsWithChildren<IProps>>(function SwitchItem({
 				size="sm"
 			>
 				<Switch
-					endContent={<span>关</span>}
-					startContent={<span>开</span>}
+					endContent={<span>{t('preferences.switch.off')}</span>}
+					startContent={<span>{t('preferences.switch.on')}</span>}
 					isDisabled={Boolean(isDisabled)}
 					isSelected={isSelected}
 					size="sm"

@@ -21,7 +21,10 @@ import {
 	AccountAnimatedListItem,
 	formatSessionTimestamp,
 } from './accountPanelLayout';
-import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
+import { ACCOUNT_MANAGER_STATUS_LABEL_KEYS } from './copy';
+import { accountMessages } from '@/features/account/client/messages';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IAccountSessionsPanelProps {
 	handleRefreshSessions: () => void;
@@ -38,6 +41,7 @@ interface IAccountSessionsPanelProps {
 
 export default memo<IAccountSessionsPanelProps>(
 	function AccountSessionsPanel(props) {
+		const { locale, t } = useI18n(accountMessages);
 		const {
 			handleRefreshSessions,
 			handleRevokeSession,
@@ -59,14 +63,20 @@ export default memo<IAccountSessionsPanelProps>(
 							className="w-4 text-primary-600"
 						/>
 						<span className="text-small font-medium text-foreground-700">
-							登录设备
+							{t('account.manager.sessions.title')}
 						</span>
 					</div>
-					<Tooltip showArrow content="刷新会话" placement="left">
+					<Tooltip
+						showArrow
+						content={t('account.manager.sessions.refresh')}
+						placement="left"
+					>
 						<span className="inline-flex shrink-0">
 							<Button
 								isIconOnly
-								aria-label="刷新会话"
+								aria-label={t(
+									'account.manager.sessions.refresh'
+								)}
 								className="h-8 w-8 min-w-8 text-primary-600"
 								isDisabled={isSubmitting}
 								isLoading={isSessionListLoading}
@@ -93,15 +103,17 @@ export default memo<IAccountSessionsPanelProps>(
 					{isSessionListLoading && !isAccountSessionsReady ? (
 						<AccountAnimatedListItem key="loading">
 							<p className="text-small leading-5 text-foreground-500">
-								{
-									ACCOUNT_MANAGER_STATUS_LABEL_MAP.readingSessions
-								}
+								{t(
+									ACCOUNT_MANAGER_STATUS_LABEL_KEYS.readingSessions
+								)}
 							</p>
 						</AccountAnimatedListItem>
 					) : visibleAccountSessions.length === 0 ? (
 						<AccountAnimatedListItem key="empty">
 							<p className="text-small leading-5 text-foreground-500">
-								{ACCOUNT_MANAGER_STATUS_LABEL_MAP.noSessions}
+								{t(
+									ACCOUNT_MANAGER_STATUS_LABEL_KEYS.noSessions
+								)}
 							</p>
 						</AccountAnimatedListItem>
 					) : (
@@ -123,27 +135,41 @@ export default memo<IAccountSessionsPanelProps>(
 												<div className="flex min-w-0 flex-wrap items-center gap-2">
 													<p className="min-w-0 truncate text-small font-medium text-foreground-700">
 														{isCurrentSession
-															? '当前会话'
-															: '其他会话'}
+															? t(
+																	'account.manager.sessions.current'
+																)
+															: t(
+																	'account.manager.sessions.other'
+																)}
 													</p>
 												</div>
 												{isCurrentSession ? (
 													<span className="my-1.5 inline-flex min-w-8 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-primary/10 px-2 py-1 text-tiny leading-none text-primary-700">
-														本设备
+														{t(
+															'account.manager.sessions.thisDevice'
+														)}
 													</span>
 												) : (
 													<Tooltip
 														showArrow
-														content="下线设备"
+														content={t(
+															'account.manager.sessions.revoke'
+														)}
 														placement="left"
 													>
 														<span className="inline-flex shrink-0">
 															<AccountConfirmButton
-																ariaLabel="下线设备"
-																buttonLabel="下线设备"
+																ariaLabel={t(
+																	'account.manager.sessions.revoke'
+																)}
+																buttonLabel={t(
+																	'account.manager.sessions.revoke'
+																)}
 																className="h-8 w-8 min-w-8 justify-center text-warning-600"
 																color="warning"
-																confirmLabel="确认下线"
+																confirmLabel={t(
+																	'account.manager.sessions.confirmRevoke'
+																)}
 																fullWidth={
 																	false
 																}
@@ -196,10 +222,13 @@ export default memo<IAccountSessionsPanelProps>(
 												<p
 													className="break-words text-tiny text-foreground-500"
 													title={formatSessionTimestamp(
-														session.last_seen_at
+														session.last_seen_at,
+														locale
 													)}
 												>
-													最近活动：
+													{t(
+														'account.manager.sessions.lastActive'
+													)}
 													<TimeAgo
 														timestamp={
 															session.last_seen_at
@@ -208,13 +237,18 @@ export default memo<IAccountSessionsPanelProps>(
 													<span className="mx-1">
 														&nbsp;
 													</span>
-													来源：
+													{t(
+														'account.manager.sessions.source'
+													)}
 													{session.ip_summary}
 												</p>
 												<p className="break-words text-tiny text-foreground-500">
-													创建于
+													{t(
+														'account.manager.sessions.createdAt'
+													)}
 													{formatSessionTimestamp(
-														session.created_at
+														session.created_at,
+														locale
 													)}
 												</p>
 											</div>

@@ -3,14 +3,19 @@ import { memo, useMemo, useRef } from 'react';
 
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import { type DecorationCatalog as DecorationCatalogModel } from '@/domain/catalog/items/DecorationCatalog';
-import { COLLABORATION_LABEL_MAP } from '@/domain/data/labels/collaborationFacts';
 import {
 	SCHEDULER_FACTS,
 	formatSchedulerLabels,
 } from '@/domain/data/labels/schedulerFacts';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+import { getCollaborationLabel } from '@/domain/labels/localizedCollaborationLabels';
+import {
+	getSchedulerTaskGuestLabel,
+	getSchedulerTaskLocationLabel,
+} from '@/domain/labels/localizedSchedulerLabels';
+import { getMapLabel } from '@/domain/places/localizedLabels';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import ItemCard from '@/features/catalog/shared/client/components/ItemCard';
 import {
 	ItemPopover,
@@ -26,6 +31,8 @@ import type { TItemData } from '@/features/catalog/shared/contracts';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+
 interface IProps {
 	data: TItemData<DecorationCatalogModel>;
 }
@@ -37,6 +44,8 @@ function DecorationSource({
 }: {
 	from: TItemData<DecorationCatalogModel>[number]['from'];
 }) {
+	const { t } = useI18n(catalogItemsMessages);
+
 	if ('bond' in from) {
 		const { level, specialGuest } = from.bond;
 		const taskFact =
@@ -52,11 +61,16 @@ function DecorationSource({
 				/>
 				{'task' in from && (
 					<>
-						，并完成任务【
-						{formatSchedulerLabels(from.task.missionLabel)}】（前往
-						{MAP_FACTS[from.task.map].label}的
-						{taskFact?.locationLabel}与
-						{taskFact?.dialogueGuestLabel}交谈）。
+						{t('items.source.bondTaskSuffix', {
+							guest: getSchedulerTaskGuestLabel(
+								taskFact?.dialogueGuestLabel ?? ''
+							),
+							location: getSchedulerTaskLocationLabel(
+								taskFact?.locationLabel ?? ''
+							),
+							map: getMapLabel(from.task.map),
+							task: formatSchedulerLabels(from.task.missionLabel),
+						})}
 					</>
 				)}
 			</>
@@ -64,32 +78,28 @@ function DecorationSource({
 	}
 
 	if ('collaboration' in from) {
-		return (
-			<>
-				通过联动终端【
-				{COLLABORATION_LABEL_MAP[from.collaboration.collaborationLabel]}
-				】选项领取
-			</>
-		);
+		return t('items.source.collaborationTerminal', {
+			label: getCollaborationLabel(from.collaboration.collaborationLabel),
+		});
 	}
 
 	const { maps, specialGuest, story } = from.completion;
-	const specialGuestName = specialGuestCatalog.getPropsById(
+	const specialGuestName = specialGuestCatalog.getDisplayPropsById(
 		specialGuest,
 		'name'
 	);
 
-	return (
-		<>
-			地区【{MAP_FACTS[maps[0]].label}】和【
-			{MAP_FACTS[maps[1]].label}】全部稀客羁绊满级，并完成【DLC
-			{story.dlc}】{story.conditionLabel}后，和【{specialGuestName}
-			】对话领取。
-		</>
-	);
+	return t('items.source.bondCompletion', {
+		condition: story.conditionLabel,
+		dlc: story.dlc,
+		guest: specialGuestName,
+		map1: getMapLabel(maps[0]),
+		map2: getMapLabel(maps[1]),
+	});
 }
 
 export default memo<IProps>(function DecorationCatalog({ data }) {
+	const { t } = useI18n(catalogItemsMessages);
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const { defaultOpenedPopover, getPopoverOpenChangeProps } =
 		useOpenedItemPopover(popoverCardRef, data);
@@ -151,11 +161,15 @@ export default memo<IProps>(function DecorationCatalog({ data }) {
 						ref={popoverCardRef}
 					>
 						<p className="break-all text-justify">
-							<span className="font-semibold">来源：</span>
+							<span className="font-semibold">
+								{t('items.source.from')}
+							</span>
 							<DecorationSource from={from} />
 						</p>
 						<p className="break-all text-justify">
-							<span className="font-semibold">效果：</span>
+							<span className="font-semibold">
+								{t('items.source.effect')}
+							</span>
 							{effect}
 						</p>
 					</ItemPopoverCard>

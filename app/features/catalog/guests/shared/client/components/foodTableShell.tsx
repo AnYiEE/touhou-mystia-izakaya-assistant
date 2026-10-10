@@ -14,18 +14,14 @@ import Pagination from '@/design/ui/components/pagination';
 import Placeholder from '@/design/ui/components/placeholder';
 
 import type { TFoodSuitabilityRow } from '@/features/catalog/guests/shared/contracts';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import {
 	type ITableColumn,
 	type TFoodTableColumnKey,
 } from '@/features/catalog/guests/shared/state/tableDescriptors';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-
-const FOOD_TABLE_EMPTY_MESSAGE_MAP = {
-	default: '数据为空',
-	popularTrendRequired: '请您先在设置中指定「流行趋势」',
-	popularTrendUnset: '选定的筛选条件包含流行趋势标签',
-} as const;
 
 interface IProps {
 	hasUnsetPopularTrendFilter: boolean;
@@ -61,6 +57,7 @@ export default memo<IProps>(function FoodTableShell({
 	topContent,
 	totalPages,
 }) {
+	const { t } = useI18n(catalogGuestsMessages);
 	const tableSelectedKeys = useMemo(
 		() => new Set(Array.from(selectedKeys, String)),
 		[selectedKeys]
@@ -115,17 +112,18 @@ export default memo<IProps>(function FoodTableShell({
 			topContent={topContent}
 			topContentPlacement="outside"
 			onSortChange={onSortChange}
-			aria-label="料理选择表格"
+			aria-label={t('guests.table.foodAria')}
+			data-tutorial-food-table
 			classNames={tableClassNames}
 		>
 			<TableHeader columns={headerColumns}>
-				{({ key, label, sortable }) => (
+				{({ key, labelKey, sortable }) => (
 					<TableColumn
 						key={key}
 						align={key === 'action' ? 'center' : 'start'}
 						allowsSorting={sortable}
 					>
-						{label}
+						{t(labelKey)}
 					</TableColumn>
 				)}
 			</TableHeader>
@@ -133,19 +131,11 @@ export default memo<IProps>(function FoodTableShell({
 				emptyContent={
 					hasUnsetPopularTrendFilter ? (
 						<Placeholder className="space-y-2">
-							<p>
-								{FOOD_TABLE_EMPTY_MESSAGE_MAP.popularTrendUnset}
-							</p>
-							<p>
-								{
-									FOOD_TABLE_EMPTY_MESSAGE_MAP.popularTrendRequired
-								}
-							</p>
+							<p>{t('guests.table.popularTrendUnset')}</p>
+							<p>{t('guests.table.popularTrendRequired')}</p>
 						</Placeholder>
 					) : (
-						<Placeholder>
-							{FOOD_TABLE_EMPTY_MESSAGE_MAP.default}
-						</Placeholder>
+						<Placeholder>{t('guests.table.empty')}</Placeholder>
 					)
 				}
 				items={items}

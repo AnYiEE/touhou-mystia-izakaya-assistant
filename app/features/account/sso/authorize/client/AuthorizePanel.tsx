@@ -15,6 +15,10 @@ import { type ReactNode, memo, useMemo } from 'react';
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Card, { type ICardProps } from '@/design/ui/components/card';
 
+import { accountMessages } from '@/features/account/client/messages';
+
+import { useI18n } from '@/shared/i18n/useI18n';
+
 type TAuthorizePanelTone = 'danger' | 'primary' | 'warning';
 
 interface IAuthorizePanelProps extends Omit<ICardProps, 'children' | 'title'> {
@@ -66,11 +70,12 @@ export default memo<IAuthorizePanelProps>(function SsoAuthorizePanel({
 	classNames,
 	icon = faShieldHalved,
 	subtitle,
-	title = 'SSO授权',
+	title,
 	tone = 'primary',
 	...props
 }) {
 	const { isHighAppearance } = useDesignPreferences();
+	const { t } = useI18n(accountMessages);
 
 	const mergedClassNames = useMemo(
 		() => ({
@@ -99,7 +104,7 @@ export default memo<IAuthorizePanelProps>(function SsoAuthorizePanel({
 					</div>
 					<div className="min-w-0 space-y-1">
 						<h1 className="break-words text-xl font-semibold leading-7 text-foreground-900">
-							{title}
+							{title ?? t('account.sso.panelTitle')}
 						</h1>
 						<p className="break-words text-small leading-5 text-foreground-500">
 							{subtitle}

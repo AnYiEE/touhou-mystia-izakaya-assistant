@@ -43,7 +43,7 @@ const InteractiveIngredientTabItem = memo<IInteractiveProps>(
 		scoreChange,
 		tooltipContent,
 	}) {
-		const name = ingredientCatalog.getPropsById(ingredient, 'name');
+		const name = ingredientCatalog.getDisplayPropsById(ingredient, 'name');
 		const badgeClassNames = useMemo(
 			() => ({
 				badge: cn('font-mono', {
@@ -67,6 +67,7 @@ const InteractiveIngredientTabItem = memo<IInteractiveProps>(
 			>
 				<PressElement
 					as="div"
+					data-tutorial-ingredient={ingredient}
 					onPress={onPress}
 					role="button"
 					tabIndex={0}
@@ -105,7 +106,7 @@ const InteractiveIngredientTabItem = memo<IInteractiveProps>(
 export default memo<TProps>(function IngredientTabItemPresenter(props) {
 	if (props.kind === 'static') {
 		const { className, ingredient } = props;
-		const name = ingredientCatalog.getPropsById(ingredient, 'name');
+		const name = ingredientCatalog.getDisplayPropsById(ingredient, 'name');
 
 		return (
 			<div

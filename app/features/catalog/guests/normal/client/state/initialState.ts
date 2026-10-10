@@ -47,6 +47,7 @@ export const normalGuestInitialState = {
 				selectableRows: [] as Array<ValueCollection<number>>,
 			},
 		},
+		catalogLocalizationRevision: 0,
 		guest: {
 			id: null as TNormalGuestId | null,
 

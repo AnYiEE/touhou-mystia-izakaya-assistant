@@ -11,8 +11,10 @@ import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/
 import InfoButtonBase, {
 	InfoSectionTitle,
 } from '@/features/catalog/guests/shared/client/components/infoButtonBase';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import Price from '@/features/catalog/shared/client/components/Price';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 const DEFAULT_EXPANDED_KEYS = ['description', 'rating'] as const;
@@ -33,6 +35,7 @@ const RATING_CLASS_NAMES = {
 const RATING_AVATAR_CLASS_NAMES = { base: 'h-6 w-2 ring-offset-0' } as const;
 
 export default function InfoButton() {
+	const { t } = useI18n(catalogGuestsMessages);
 	const currentNormalGuest = normalGuestStore.shared.guest.id.use();
 
 	const normalGuestCatalog = normalGuestStore.instances.guest.get();
@@ -44,7 +47,7 @@ export default function InfoButton() {
 		trackEvent(
 			trackEvent.category.click,
 			'Info Button',
-			normalGuestCatalog.getPropsById(currentNormalGuest, 'name')
+			normalGuestCatalog.getDisplayPropsById(currentNormalGuest, 'name')
 		);
 	}, [currentNormalGuest, normalGuestCatalog]);
 
@@ -56,7 +59,7 @@ export default function InfoButton() {
 		chat: currentGuestChat,
 		description: currentGuestDescription,
 		name: currentGuestName,
-	} = normalGuestCatalog.getPropsById(currentNormalGuest);
+	} = normalGuestCatalog.getDisplayPropsById(currentNormalGuest);
 
 	const defaultExpandedKeys = checkLengthEmpty(currentGuestChat)
 		? DEFAULT_EXPANDED_KEYS
@@ -70,18 +73,24 @@ export default function InfoButton() {
 		>
 			<AccordionItem
 				key="description"
-				aria-label={`${currentGuestName}介绍`}
+				aria-label={t('guests.info.introAria', {
+					name: currentGuestName,
+				})}
 				textValue={currentGuestName}
 				title={<InfoSectionTitle title={currentGuestName} />}
 				classNames={DESCRIPTION_CLASS_NAMES}
 			>
 				<div className="flex items-center gap-4">
 					<p>
-						<span className="font-semibold">名字：</span>
+						<span className="font-semibold">
+							{t('guests.info.nameLabel')}
+						</span>
 						{currentGuestName}
 					</p>
 					<p>
-						<span className="font-semibold">ID：</span>
+						<span className="font-semibold">
+							{t('guests.info.idLabel')}
+						</span>
 						<Price showSymbol={false}>{currentNormalGuest}</Price>
 					</p>
 				</div>
@@ -90,8 +99,8 @@ export default function InfoButton() {
 			{checkLengthEmpty(currentGuestChat) ? null : (
 				<AccordionItem
 					key="chat"
-					aria-label="闲聊对话"
-					title="闲聊对话"
+					aria-label={t('guests.info.chat')}
+					title={t('guests.info.chat')}
 					classNames={CHAT_CLASS_NAMES}
 				>
 					<Ol>
@@ -103,8 +112,8 @@ export default function InfoButton() {
 			)}
 			<AccordionItem
 				key="rating"
-				aria-label="评级图例"
-				title="评级图例"
+				aria-label={t('guests.info.ratingLegend')}
+				title={t('guests.info.ratingLegend')}
 				classNames={RATING_CLASS_NAMES}
 			>
 				{GUEST_RATING_KEY.filter((key) =>
@@ -125,42 +134,36 @@ export default function InfoButton() {
 			</AccordionItem>
 			<AccordionItem
 				key="help"
-				aria-label="特别说明"
-				title="特别说明"
+				aria-label={t('guests.info.help')}
+				title={t('guests.info.help')}
 				classNames={DESCRIPTION_CLASS_NAMES}
 			>
 				<div>
-					<p className="font-semibold">搭配套餐</p>
+					<p className="font-semibold">
+						{t('guests.info.mealSection')}
+					</p>
 					<Ol className="text-small">
-						<li>
-							套餐评级按一般营业情景计算。任务中的临时效果、符卡改判等特殊情况可能不会反映在结果中。
-						</li>
-						<li>
-							除流行趋势标签外，点击顾客卡片中的料理或酒水标签，可以用该标签筛选对应表格；再次点击即可取消筛选。
-						</li>
-						<li>
-							选择料理后即可评级并保存套餐，酒水可选。评级默认您已正确端上这位普客点单的料理和酒水。
-						</li>
-						<li>
-							已保存套餐会按当前的流行趋势和明星店设置重新评级；隐藏或未拥有的内容不会显示。
-						</li>
+						<li>{t('guests.info.help.meal.p1')}</li>
+						<li>{t('guests.info.help.meal.p2')}</li>
+						<li>{t('guests.info.help.meal.p3')}</li>
+						<li>{t('guests.info.help.meal.p4')}</li>
 					</Ol>
 				</div>
 				<div>
-					<p className="font-semibold">快捷功能</p>
+					<p className="font-semibold">
+						{t('guests.info.shortcutsSection')}
+					</p>
 					<Ol className="text-small">
 						<li>
 							<span className="hidden md:inline">
-								从顶部进入“设置”
+								{t('guests.info.help.shortcutSettings')}
 							</span>
 							<span className="md:hidden">
-								使用页面右下角的“设置”按钮，或从右上角菜单进入“设置”
+								{t('guests.info.help.shortcutSettingsMobile')}
 							</span>
-							，可以调整流行趋势、明星店、内容显示和数据管理等选项。
+							{t('guests.info.help.shortcutSettingsSuffix')}
 						</li>
-						<li>
-							点击导航栏的搜索按钮可查找资料、设置或直接应用筛选。名称搜索支持中文、拼音全拼和首字母。
-						</li>
+						<li>{t('guests.info.help.shortcutSearch')}</li>
 					</Ol>
 				</div>
 			</AccordionItem>

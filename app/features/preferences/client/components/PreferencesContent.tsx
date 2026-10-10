@@ -7,17 +7,21 @@ import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import MobileAccountActionButton from '@/features/account/client/components/MobileAccountActionButton';
 import { getAccountActionLabel } from '@/features/account/client/copy';
+import { accountMessages } from '@/features/account/client/messages';
 import { accountStore } from '@/features/account/client/state/accountStore';
 import { getAccountSyncPauseIndicator } from '@/features/account/client/sync/accountSyncPauseIndicator';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import DataManager, {
 	type IDataManagerProps,
 } from '@/features/preferences/client/dataManagement/DataManager';
+import { preferencesMessages } from '@/features/preferences/client/messages';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import AppearancePreferencesSection from './AppearancePreferencesSection';
 import CatalogPreferencesSection from './CatalogPreferencesSection';
@@ -35,6 +39,8 @@ interface IProps extends IDataManagerProps {}
 export default memo<IProps>(function Content({ onModalClose }) {
 	const isReducedMotion = useReducedMotion();
 	const vibrate = useVibrate();
+	const { t } = useI18n(preferencesMessages);
+	const { t: tAccount } = useI18n(accountMessages);
 
 	const isPreferencesModalOpen =
 		globalStore.shared.preferencesModal.isOpen.use();
@@ -47,9 +53,13 @@ export default memo<IProps>(function Content({ onModalClose }) {
 
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const accountUser = accountStore.shared.user.use();
-	const { label: accountSyncPauseLabel } = getAccountSyncPauseIndicator(
+	const { labelKey: accountSyncPauseLabelKey } = getAccountSyncPauseIndicator(
 		accountUser?.sync_status
 	);
+	const accountSyncPauseLabel =
+		accountSyncPauseLabelKey === null
+			? null
+			: tAccount(accountSyncPauseLabelKey);
 
 	const shouldShowMobileAccountEntry =
 		isPreferencesModalOpen &&
@@ -58,7 +68,8 @@ export default memo<IProps>(function Content({ onModalClose }) {
 		accountBootstrapStatus !== 'disabled';
 	const accountActionLabel = getAccountActionLabel(
 		accountBootstrapStatus,
-		accountUser
+		accountUser,
+		tAccount
 	);
 
 	const handleAccountButtonPress = useCallback(() => {
@@ -116,8 +127,8 @@ export default memo<IProps>(function Content({ onModalClose }) {
 
 	return (
 		<div>
-			<Heading isFirst subTitle="以下所有的更改都会即时生效">
-				设置
+			<Heading isFirst subTitle={t('preferences.subtitle')}>
+				{t('preferences.title')}
 			</Heading>
 			{shouldShowMobileAccountEntry && (
 				<MobileAccountActionButton

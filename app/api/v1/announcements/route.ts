@@ -13,6 +13,7 @@ import {
 	parseAnnouncementDismissedCookieValue,
 } from '@/features/announcements/dismissals';
 import { ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP } from '@/features/announcements/server/http/serviceErrorStatus';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
@@ -63,6 +64,7 @@ export async function GET(request: NextRequest) {
 			request.cookies.get(ANNOUNCEMENT_DISMISSED_COOKIE_NAME)?.value ??
 				null
 		);
+		const locale = readContentLocale(request);
 		const auth = await authModule.authenticateAccountFromRequest(
 			request,
 			true
@@ -72,6 +74,7 @@ export async function GET(request: NextRequest) {
 				? await serviceModule.getVisibleAnnouncementsForRequestContext({
 						dismissedTokens,
 						isAuthenticated: true,
+						locale,
 						nickname: auth.data.user.nickname,
 						userId: auth.data.user.id,
 						username: auth.data.user.username,
@@ -79,6 +82,7 @@ export async function GET(request: NextRequest) {
 				: await serviceModule.getVisibleAnnouncementsForRequestContext({
 						dismissedTokens,
 						isAuthenticated: false,
+						locale,
 					});
 
 		return createNoStoreJsonResponse(data);

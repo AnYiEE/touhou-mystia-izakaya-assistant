@@ -10,7 +10,12 @@ import { type KeyboardEventHandler, type RefObject, useMemo } from 'react';
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
 
+import { appShellMessages } from '@/features/appShell/client/messages';
+import { globalSearchMessages } from '@/features/globalSearch/client/messages';
 import { type TGlobalSearchModel } from '@/features/globalSearch/client/useGlobalSearchModel';
+import { getFieldDisplayLabel } from '@/features/globalSearch/core/parser';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import { SPOTLIGHT_CONTENT_TRANSITION } from './motion';
 
@@ -41,6 +46,8 @@ export function SearchInput({
 	onValueChange: (value: string) => void;
 	query: string;
 }) {
+	const { t } = useI18n(globalSearchMessages);
+	const { t: tAppShell } = useI18n(appShellMessages);
 	const resultListId = `${baseId}-results`;
 	const resultStatusId = `${baseId}-status`;
 	const selectedResultOptionId =
@@ -63,15 +70,41 @@ export function SearchInput({
 			? {}
 			: { 'aria-controls': inputControlledElementId };
 	const selectedMatch = model.selectedResult?.matches[0];
+	const placeholderItems = [
+		tAppShell('appShell.nav.foods'),
+		tAppShell('appShell.nav.beverages'),
+		tAppShell('appShell.nav.ingredients'),
+		tAppShell('appShell.nav.specialGuests'),
+		tAppShell('appShell.nav.preferences'),
+	].join(t('spotlight.home.separator'));
 	const resultStatusText = model.isQueryEmpty
-		? '输入关键词开始搜索'
+		? t('spotlight.input.hint')
 		: model.isPrefixSuggestionOnly
-			? `可用前缀${model.prefixSuggestions.length}个`
+			? t('spotlight.input.prefixCount', {
+					count: model.prefixSuggestions.length,
+				})
 			: model.isFieldValueSuggestionOnly
-				? `可用取值${model.fieldValueSuggestions.length}个`
+				? t('spotlight.input.valueCount', {
+						count: model.fieldValueSuggestions.length,
+					})
 				: model.selectedResult === null
-					? '没有找到结果'
-					: `找到${model.results.length}个结果，当前选中第${model.resolvedSelectedIndex + 1}个：${model.selectedResult.item.name}${selectedMatch === undefined ? '' : `，${selectedMatch.field.label}中命中`}`;
+					? t('spotlight.input.noResults')
+					: `${t('spotlight.input.resultBase', {
+							count: model.results.length,
+							index: model.resolvedSelectedIndex + 1,
+							name: model.selectedResult.item.name,
+						})}${
+							selectedMatch === undefined
+								? ''
+								: t('spotlight.input.matchSuffix', {
+										field: getFieldDisplayLabel(
+											selectedMatch.field.fieldType,
+											model.selectedResult.item.section,
+											selectedMatch.field.label,
+											model.locale
+										),
+									})
+						}`;
 
 	const inputClassNames = useMemo(
 		() => ({
@@ -126,7 +159,7 @@ export function SearchInput({
 				>
 					<Button
 						isIconOnly
-						aria-label="返回搜索首页"
+						aria-label={t('spotlight.input.backHomeAria')}
 						isDisabled={model.isQueryEmpty}
 						size="lg"
 						variant="light"
@@ -148,11 +181,13 @@ export function SearchInput({
 					onBlur={onBlur}
 					onFocus={onFocus}
 					onKeyDown={onKeyDown}
-					aria-label="全局搜索"
+					aria-label={t('spotlight.input.searchAria')}
 					aria-autocomplete="list"
 					aria-describedby={resultStatusId}
 					aria-expanded={!model.isQueryEmpty}
-					placeholder="搜索料理、酒水、食材、稀客、设置..."
+					placeholder={t('spotlight.input.placeholderTemplate', {
+						items: placeholderItems,
+					})}
 					role="combobox"
 					{...inputActiveDescendantProps}
 					{...inputControlsProps}

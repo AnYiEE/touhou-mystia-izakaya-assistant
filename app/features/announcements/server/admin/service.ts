@@ -15,7 +15,9 @@ import {
 	type IAdminAnnouncementProfile,
 	type IAdminAnnouncementVersionListData,
 	type IAnnouncementChangedField,
+	type IAnnouncementLocalizedContent,
 	type TAnnouncementComputedStatus,
+	type TAnnouncementTranslations,
 } from '@/features/announcements/contracts';
 import type { TAnnouncementServiceResult } from '@/features/announcements/server/contracts';
 import {
@@ -45,6 +47,7 @@ import type {
 } from '@/infrastructure/database/schema';
 import { checkSqlitePrimaryKeyOrUniqueConstraintError } from '@/infrastructure/database/sqlite/constraintErrors';
 
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/shared/i18n/locale';
 import { canIncrementNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 
 import {
@@ -60,6 +63,11 @@ import {
 } from './history';
 
 const DEFAULT_ANNOUNCEMENT_LIST_PAGE_SIZE = 20;
+const PREVIEW_SAMPLE_CONTEXT = {
+	nickname: '夜雀',
+	userId: '00000000-0000-0000-0000-000000000000',
+	username: '米斯蒂娅',
+} as const;
 
 export interface IListAdminAnnouncementsOptions {
 	audience?: TAnnouncementAudience;
@@ -77,6 +85,23 @@ function createMonotonicTimestamp(previousTimestamp: number) {
 		: null;
 }
 
+function sanitizeAnnouncementTranslations(
+	translations: TAnnouncementTranslations
+): TAnnouncementTranslations {
+	const sanitized: TAnnouncementTranslations = {};
+	for (const locale of SUPPORTED_LOCALES) {
+		const entry = translations[locale];
+		if (entry !== undefined) {
+			sanitized[locale] = {
+				html: sanitizeAnnouncementHtml(entry.html),
+				title: entry.title,
+			};
+		}
+	}
+
+	return sanitized;
+}
+
 function createAnnouncementRecordFromBody(
 	body: IAdminAnnouncementBody,
 	now: number
@@ -91,11 +116,15 @@ function createAnnouncementRecordFromBody(
 		html: sanitizeAnnouncementHtml(body.html),
 		id: body.id ?? randomUUID(),
 		level: body.level,
+		locales_json: JSON.stringify(body.locales),
 		priority: body.priority,
 		revision: 1,
 		starts_at: body.starts_at,
 		target_user_ids_json: JSON.stringify(body.target_user_ids),
 		title: body.title,
+		translations_json: JSON.stringify(
+			sanitizeAnnouncementTranslations(body.translations)
+		),
 		updated_at: now,
 	} satisfies TAnnouncementNew;
 }
@@ -159,11 +188,10 @@ function createPreviewProfile(body: IAdminAnnouncementBody) {
 	const record = createAnnouncementRecordFromBody(
 		{
 			...body,
-			html: renderAnnouncementHtmlTemplate(body.html, {
-				nickname: '夜雀',
-				userId: '00000000-0000-0000-0000-000000000000',
-				username: '米斯蒂娅',
-			}),
+			html: renderAnnouncementHtmlTemplate(
+				body.html,
+				PREVIEW_SAMPLE_CONTEXT
+			),
 		},
 		now
 	);
@@ -236,19 +264,80 @@ export function previewAnnouncement(
 	body: IAdminAnnouncementBody
 ): TAnnouncementServiceResult<IAdminAnnouncementPreviewData> {
 	const profile = createPreviewProfile(body);
-	if (
-		profile === null ||
-		getAnnouncementVisibleText(profile.html).length === 0
-	) {
+	if (profile === null) {
+		return { error: 'announcement-invalid-state', status: 'error' };
+	}
+
+	const previewLocale = body.preview_locale ?? DEFAULT_LOCALE;
+	const localized: IAnnouncementLocalizedContent | null =
+		previewLocale === DEFAULT_LOCALE
+			? { html: profile.html, title: profile.title }
+			: (profile.translations[previewLocale] ?? null);
+
+	if (previewLocale === DEFAULT_LOCALE && localized !== null) {
+		const visibleTextLength = getAnnouncementVisibleText(
+			localized.html
+		).length;
+		if (visibleTextLength > 0) {
+			const isVisible =
+				profile.locales.length === 0 ||
+				profile.locales.includes(previewLocale);
+
+			return {
+				data: {
+					computed_status: profile.computed_status,
+					html: isVisible ? localized.html : '',
+					is_visible: isVisible,
+					locale: previewLocale,
+					visible_text_length: isVisible ? visibleTextLength : 0,
+				},
+				status: 'ok',
+			};
+		}
+
 		return { error: 'announcement-not-visible', status: 'error' };
+	}
+
+	if (
+		localized === null ||
+		(profile.locales.length > 0 && !profile.locales.includes(previewLocale))
+	) {
+		return {
+			data: {
+				computed_status: profile.computed_status,
+				html: '',
+				is_visible: false,
+				locale: previewLocale,
+				visible_text_length: 0,
+			},
+			status: 'ok',
+		};
+	}
+
+	const sanitizedHtml = sanitizeAnnouncementHtml(
+		renderAnnouncementHtmlTemplate(localized.html, PREVIEW_SAMPLE_CONTEXT)
+	);
+	const visibleTextLength = getAnnouncementVisibleText(sanitizedHtml).length;
+	if (visibleTextLength === 0) {
+		return {
+			data: {
+				computed_status: profile.computed_status,
+				html: '',
+				is_visible: false,
+				locale: previewLocale,
+				visible_text_length: 0,
+			},
+			status: 'ok',
+		};
 	}
 
 	return {
 		data: {
 			computed_status: profile.computed_status,
-			html: profile.html,
-			visible_text_length: getAnnouncementVisibleText(profile.html)
-				.length,
+			html: sanitizedHtml,
+			is_visible: true,
+			locale: previewLocale,
+			visible_text_length: visibleTextLength,
 		},
 		status: 'ok',
 	};
@@ -364,11 +453,15 @@ export async function updateAdminAnnouncement(
 					ends_at: body.ends_at,
 					html: sanitizedHtml,
 					level: body.level,
+					locales_json: JSON.stringify(body.locales),
 					priority: body.priority,
 					revision: current.revision + 1,
 					starts_at: body.starts_at,
 					target_user_ids_json: JSON.stringify(body.target_user_ids),
 					title: body.title,
+					translations_json: JSON.stringify(
+						sanitizeAnnouncementTranslations(body.translations)
+					),
 					updated_at: now,
 				},
 				{ database, expectedRevision: body.expected_revision }

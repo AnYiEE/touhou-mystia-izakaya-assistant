@@ -19,6 +19,8 @@ import type {
 import { escapeSqliteLikePattern } from '@/infrastructure/database/sqlite/queryValues';
 import { TABLE_NAME_MAP } from '@/infrastructure/database/tableNames';
 
+import { DEFAULT_LOCALE } from '@/shared/i18n/locale';
+
 import type { IAuditLogWriteInput } from './contracts';
 
 const AUDIT_LOG_TABLE_NAME = TABLE_NAME_MAP.accountAuditLog;
@@ -111,13 +113,20 @@ function serializeAuditMetadata(metadata: Record<string, unknown> | undefined) {
 }
 
 function createAuditMetadata(input: IAuditLogWriteInput) {
+	// Audit entries stay Simplified Chinese: the administration area is
+	// Simplified Chinese only and stored summaries are historical values.
 	return {
 		...(isNil(input.ipAddress)
 			? {}
-			: { ip_summary: createIpSummary(input.ipAddress) }),
+			: { ip_summary: createIpSummary(input.ipAddress, DEFAULT_LOCALE) }),
 		...(isNil(input.userAgent)
 			? {}
-			: { user_agent_summary: createUserAgentSummary(input.userAgent) }),
+			: {
+					user_agent_summary: createUserAgentSummary(
+						input.userAgent,
+						DEFAULT_LOCALE
+					),
+				}),
 		...input.metadata,
 	};
 }

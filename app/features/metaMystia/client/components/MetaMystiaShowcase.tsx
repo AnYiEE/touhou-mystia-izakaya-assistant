@@ -12,17 +12,26 @@ import Heading from '@/design/ui/components/heading';
 import Link from '@/design/ui/components/link';
 import Tooltip from '@/design/ui/components/tooltip';
 
-import type { TSpriteTarget } from '@/domain/data/sprites/types';
-
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { GUEST_INFO_QUERY_PARAM } from '@/features/catalog/guests/shared/navigation';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import { ITEM_SHARE_PARAM_NAME } from '@/features/itemSharing/contracts';
+import {
+	type TMetaMystiaMessageKey,
+	metaMystiaMessages,
+} from '@/features/metaMystia/client/messages';
 import {
 	type IMetaMystiaShowcaseGroup,
 	META_MYSTIA_GUESTS,
+	META_MYSTIA_GUEST_IDS,
 	META_MYSTIA_SHOWCASE_GROUPS,
+	type TMetaMystiaShowcaseTarget,
+	getMetaMystiaGuestDisplayName,
+	getMetaMystiaShowcaseDisplayName,
 } from '@/features/metaMystia/content';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import CountUpNumber from './CountUpNumber';
 import RevealOnView from './RevealOnView';
@@ -37,24 +46,30 @@ const META_MYSTIA_GUEST_HREF =
 		: `/special-guests/${FIRST_META_MYSTIA_GUEST.id}?${GUEST_INFO_QUERY_PARAM}`;
 
 const META_MYSTIA_STATS = [
-	{ label: '新稀客', value: META_MYSTIA_GUESTS.length },
 	{
-		label: '新料理',
+		labelKey: 'metaMystia.showcase.groups.guests',
+		value: META_MYSTIA_GUESTS.length,
+	},
+	{
+		labelKey: 'metaMystia.showcase.groups.foods',
 		value: META_MYSTIA_SHOWCASE_GROUPS.foods.records.length,
 	},
 	{
-		label: '新食材',
+		labelKey: 'metaMystia.showcase.groups.ingredients',
 		value: META_MYSTIA_SHOWCASE_GROUPS.ingredients.records.length,
 	},
 	{
-		label: '新酒水',
+		labelKey: 'metaMystia.showcase.groups.beverages',
 		value: META_MYSTIA_SHOWCASE_GROUPS.beverages.records.length,
 	},
 	{
-		label: '新服装',
+		labelKey: 'metaMystia.showcase.groups.clothes',
 		value: META_MYSTIA_SHOWCASE_GROUPS.clothes.records.length,
 	},
-] as const;
+] as const satisfies ReadonlyArray<{
+	labelKey: TMetaMystiaMessageKey;
+	value: number;
+}>;
 
 function trackShowcaseLinkClick(href: string) {
 	trackEvent(trackEvent.category.click, 'Link', `meta-mystia:${href}`);
@@ -80,6 +95,7 @@ function ShowcasePanel({
 	unit,
 }: IShowcasePanelProps) {
 	const { isHighAppearance } = useDesignPreferences();
+	const { t } = useI18n(metaMystiaMessages);
 
 	const cardClassNames = useMemo(
 		() => ({
@@ -97,8 +113,7 @@ function ShowcasePanel({
 				<div className="flex items-baseline justify-between gap-2">
 					<h3 className="font-semibold">{label}</h3>
 					<span className="text-small text-foreground-500">
-						共{count}
-						{unit}
+						{t('metaMystia.showcase.total', { count, unit })}
 					</span>
 				</div>
 				<div className="mt-4 flex-1">{children}</div>
@@ -111,7 +126,7 @@ function ShowcasePanel({
 						}}
 						className="rounded-small text-primary"
 					>
-						查看图鉴
+						{t('metaMystia.showcase.viewCatalog')}
 					</Link>
 					<FontAwesomeIcon
 						aria-hidden
@@ -124,16 +139,20 @@ function ShowcasePanel({
 	);
 }
 
-interface IGroupPanelProps<T extends TSpriteTarget> {
+interface IGroupPanelProps<T extends TMetaMystiaShowcaseTarget> {
 	delay: number;
 	gridClassName: string;
 	group: IMetaMystiaShowcaseGroup<T>;
+	label: string;
+	unit: string;
 }
 
-function GroupPanel<T extends TSpriteTarget>({
+function GroupPanel<T extends TMetaMystiaShowcaseTarget>({
 	delay,
 	gridClassName,
 	group,
+	label,
+	unit,
 }: IGroupPanelProps<T>) {
 	const [firstRecord] = group.records;
 	const gridRef = useRef<HTMLDivElement>(null);
@@ -151,16 +170,19 @@ function GroupPanel<T extends TSpriteTarget>({
 					? group.href
 					: `${group.href}?${ITEM_SHARE_PARAM_NAME}=${firstRecord.id}`
 			}
-			label={group.label}
+			label={label}
 			trackName={group.href}
-			unit={group.unit}
+			unit={unit}
 		>
 			<div ref={gridRef} className={gridClassName}>
-				{group.records.map(({ id, name }, index) => (
+				{group.records.map(({ id }, index) => (
 					<Tooltip
 						key={id}
 						showArrow
-						content={name}
+						content={getMetaMystiaShowcaseDisplayName(
+							group.target,
+							id
+						)}
 						offset={4}
 						size="sm"
 					>
@@ -184,23 +206,28 @@ function GroupPanel<T extends TSpriteTarget>({
 }
 
 function GuestPanel({ delay }: { delay: number }) {
+	const { t } = useI18n(metaMystiaMessages);
 	const gridRef = useRef<HTMLDivElement>(null);
 	const isGridInView = useInView(gridRef, {
 		margin: '0px 0px 10% 0px',
 		once: true,
 	});
+	const guests = META_MYSTIA_GUEST_IDS.map((id) => ({
+		id,
+		name: getMetaMystiaGuestDisplayName(id),
+	}));
 
 	return (
 		<ShowcasePanel
-			count={META_MYSTIA_GUESTS.length}
+			count={guests.length}
 			delay={delay}
 			href={META_MYSTIA_GUEST_HREF}
-			label="新稀客"
+			label={t('metaMystia.showcase.groups.guests')}
 			trackName="/special-guests"
-			unit="位"
+			unit={t('metaMystia.showcase.units.guests')}
 		>
 			<div ref={gridRef} className="grid grid-cols-5 gap-x-2 gap-y-4">
-				{META_MYSTIA_GUESTS.map(({ id, name }, index) => (
+				{guests.map(({ id, name }, index) => (
 					<div
 						key={id}
 						className="group flex flex-col items-center gap-1"
@@ -230,6 +257,8 @@ function GuestPanel({ delay }: { delay: number }) {
 
 export default function MetaMystiaShowcase() {
 	const { isHighAppearance } = useDesignPreferences();
+	const { t } = useI18n(metaMystiaMessages);
+	useCatalogLocalizationRevision();
 
 	const statsCardClassNames = useMemo(
 		() => ({
@@ -246,16 +275,16 @@ export default function MetaMystiaShowcase() {
 			<Heading
 				as="h2"
 				isFirst
-				subTitle="以下内容来自示例资源包，单人游玩同样可用"
+				subTitle={t('metaMystia.showcase.subTitle')}
 			>
-				ResourceEx内容扩展
+				{t('metaMystia.showcase.title')}
 			</Heading>
 			<RevealOnView>
 				<Card shadow="sm" classNames={statsCardClassNames}>
 					<div className="flex flex-wrap justify-center gap-x-10 gap-y-5">
-						{META_MYSTIA_STATS.map(({ label, value }) => (
+						{META_MYSTIA_STATS.map(({ labelKey, value }) => (
 							<div
-								key={label}
+								key={labelKey}
 								className="flex min-w-16 flex-col items-center gap-1"
 							>
 								<CountUpNumber
@@ -263,7 +292,7 @@ export default function MetaMystiaShowcase() {
 									value={value}
 								/>
 								<span className="text-small text-foreground-500">
-									{label}
+									{t(labelKey)}
 								</span>
 							</div>
 						))}
@@ -276,22 +305,30 @@ export default function MetaMystiaShowcase() {
 					delay={0.1}
 					gridClassName="grid grid-cols-6 place-items-center gap-2 md:grid-cols-12"
 					group={META_MYSTIA_SHOWCASE_GROUPS.foods}
+					label={t('metaMystia.showcase.groups.foods')}
+					unit={t('metaMystia.showcase.units.foods')}
 				/>
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 					<GroupPanel
 						delay={0.15}
 						gridClassName={ITEM_GRID_CLASS_NAME}
 						group={META_MYSTIA_SHOWCASE_GROUPS.ingredients}
+						label={t('metaMystia.showcase.groups.ingredients')}
+						unit={t('metaMystia.showcase.units.ingredients')}
 					/>
 					<GroupPanel
 						delay={0.2}
 						gridClassName={ITEM_GRID_CLASS_NAME}
 						group={META_MYSTIA_SHOWCASE_GROUPS.beverages}
+						label={t('metaMystia.showcase.groups.beverages')}
+						unit={t('metaMystia.showcase.units.beverages')}
 					/>
 					<GroupPanel
 						delay={0.25}
 						gridClassName={ITEM_GRID_CLASS_NAME}
 						group={META_MYSTIA_SHOWCASE_GROUPS.clothes}
+						label={t('metaMystia.showcase.groups.clothes')}
+						unit={t('metaMystia.showcase.units.clothes')}
 					/>
 				</div>
 			</div>

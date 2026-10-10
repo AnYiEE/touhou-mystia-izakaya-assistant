@@ -20,6 +20,7 @@ import {
 	getGlobalSearchItemNavigationUrl,
 	getGlobalSearchItemShareUrl,
 } from '@/features/globalSearch/itemNavigation';
+import { itemSharingMessages } from '@/features/itemSharing/client/messages';
 import {
 	openItemInNewTab,
 	shareItem,
@@ -31,10 +32,15 @@ import {
 	openSpecialGuestPlansDrawer,
 } from '@/features/specialGuestPlans/client/drawerCommands';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+import { siteMessages } from '@/shared/site/messages';
+
 import { closeGlobalSearch, setGlobalSearchTransientTarget } from './commands';
 import { setSpecialGuestTutorialAllowedPathname } from './specialGuestTutorialHandoff';
 
 export function useGlobalSearchNavigationActions() {
+	const { t } = useI18n(itemSharingMessages);
+	const { t: tSite } = useI18n(siteMessages);
 	const { pathname } = usePathname();
 	const router = useRouter();
 
@@ -132,9 +138,18 @@ export function useGlobalSearchNavigationActions() {
 		[pathname, router]
 	);
 
-	const shareSearchItem = useCallback((item: IGlobalSearchIndexItem) => {
-		shareItem(item.name, getGlobalSearchItemShareUrl(item));
-	}, []);
+	const shareSearchItem = useCallback(
+		(item: IGlobalSearchIndexItem) => {
+			shareItem(
+				t('itemSharing.shareText', {
+					name: item.name,
+					site: tSite('site.name'),
+				}),
+				getGlobalSearchItemShareUrl(item)
+			);
+		},
+		[t, tSite]
+	);
 
 	const openSearchItemInNewTab = useCallback(
 		(item: IGlobalSearchIndexItem, match?: IGlobalSearchMatchedField) => {

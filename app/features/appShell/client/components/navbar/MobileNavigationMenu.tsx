@@ -1,4 +1,4 @@
-import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import { faGlobe, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
 	NavbarContent,
@@ -8,11 +8,26 @@ import {
 } from '@heroui/navbar';
 import { cn } from '@heroui/theme';
 
+import { PALETTE_MESSAGE_KEYS, themeMessages } from '@/design/theme/messages';
 import Button from '@/design/ui/components/button';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import MobileAccountActionButton from '@/features/account/client/components/MobileAccountActionButton';
+import {
+	APP_SHELL_NAV_LABEL_KEYS,
+	appShellMessages,
+} from '@/features/appShell/client/messages';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
+import { LOCALE_MENU_ITEMS } from '@/features/preferences/client/localeMenuItems';
+import { preferencesMessages } from '@/features/preferences/client/messages';
+import {
+	setLocalePreference,
+	useLocalePreference,
+} from '@/features/preferences/client/state/localeRuntime';
+
+import { SYSTEM_LOCALE_PREFERENCE } from '@/shared/i18n/locale';
+import { useI18n } from '@/shared/i18n/useI18n';
+import { useHydrated } from '@/shared/react/useHydrated';
 
 import {
 	type IMobileIconNavItem,
@@ -73,12 +88,15 @@ export default function MobileNavigationMenu({
 	selectedThemeKeys,
 	shouldShowAccountAction,
 }: IProps) {
-	const renderMobileIconNavItem = ({
-		href,
-		icon,
-		label,
-	}: IMobileIconNavItem) => {
+	const isHydrated = useHydrated();
+	const localePreference = useLocalePreference();
+	const { t: tAppShell } = useI18n(appShellMessages);
+	const { t: tPreferences } = useI18n(preferencesMessages);
+	const { t: tTheme } = useI18n(themeMessages);
+
+	const renderMobileIconNavItem = ({ href, icon }: IMobileIconNavItem) => {
 		const isActivated = href === basePathname;
+		const label = tAppShell(APP_SHELL_NAV_LABEL_KEYS[href]);
 		return (
 			<Button
 				key={href}
@@ -118,11 +136,11 @@ export default function MobileNavigationMenu({
 
 	const renderMobileGuestNavItem = ({
 		href,
-		label,
 		sprite,
 		spriteRecordId,
 	}: TMobileSpriteNavItem) => {
 		const isActivated = href === basePathname;
+		const label = tAppShell(APP_SHELL_NAV_LABEL_KEYS[href]);
 		return (
 			<Button
 				key={href}
@@ -172,11 +190,11 @@ export default function MobileNavigationMenu({
 
 	const renderMobileQueryNavItem = ({
 		href,
-		label,
 		sprite,
 		spriteRecordId,
 	}: TMobileSpriteNavItem) => {
 		const isActivated = href === basePathname;
+		const label = tAppShell(APP_SHELL_NAV_LABEL_KEYS[href]);
 		return (
 			<Button
 				key={href}
@@ -235,9 +253,10 @@ export default function MobileNavigationMenu({
 	const renderMobileThemeActionItem = ({
 		icon,
 		key,
-		label,
+		shortLabelKey,
 	}: (typeof NAVBAR_THEME_ITEMS)[number]) => {
 		const isSelected = selectedThemeKeys.includes(key);
+		const label = tTheme(shortLabelKey);
 		return (
 			<Button
 				key={key}
@@ -254,19 +273,18 @@ export default function MobileNavigationMenu({
 				)}
 			>
 				<FontAwesomeIcon icon={icon} className="w-3.5" />
-				<span className="text-tiny font-medium leading-4">
-					{label.replace('主题', '')}
-				</span>
+				<span className="text-tiny font-medium leading-4">{label}</span>
 			</Button>
 		);
 	};
 
 	const renderMobilePaletteActionItem = ({
 		key,
-		label,
+		palette,
 		swatchClassName,
 	}: INavbarPaletteItem) => {
 		const isSelected = selectedPaletteKey === key;
+		const label = tTheme(PALETTE_MESSAGE_KEYS[palette]);
 		return (
 			<Button
 				key={key}
@@ -291,6 +309,39 @@ export default function MobileNavigationMenu({
 		);
 	};
 
+	const renderMobileLocaleActionItem = ({
+		key,
+		label,
+		preference,
+	}: (typeof LOCALE_MENU_ITEMS)[number]) => {
+		const isSelected = isHydrated && localePreference === preference;
+		const itemLabel =
+			preference === SYSTEM_LOCALE_PREFERENCE
+				? tPreferences('preferences.locale.system')
+				: label;
+		return (
+			<Button
+				key={key}
+				variant="light"
+				onPress={() => {
+					setLocalePreference(preference);
+				}}
+				className={cn(
+					'flex h-auto min-h-12 w-full min-w-0 flex-col items-center justify-center gap-0.5 px-2 py-1.5 text-center',
+					NAVIGATION_CARD_BASE_CLASS_NAME,
+					isSelected
+						? NAVIGATION_CARD_ACTIVE_CLASS_NAME
+						: NAVIGATION_CARD_INACTIVE_CLASS_NAME
+				)}
+			>
+				<FontAwesomeIcon icon={faGlobe} className="w-3.5" />
+				<span className="text-tiny font-medium leading-4">
+					{itemLabel}
+				</span>
+			</Button>
+		);
+	};
+
 	return (
 		<>
 			<NavbarContent
@@ -304,12 +355,16 @@ export default function MobileNavigationMenu({
 						isHighAppearance && 'bg-default/35 backdrop-blur'
 					)}
 				>
-					<Tooltip showArrow content="搜索" placement="left">
+					<Tooltip
+						showArrow
+						content={tAppShell('appShell.search.button')}
+						placement="left"
+					>
 						<Button
 							isIconOnly
 							size="sm"
 							variant="light"
-							aria-label="搜索"
+							aria-label={tAppShell('appShell.search.button')}
 							onClick={onSearchPress}
 							className="h-9 w-9 min-w-9 rounded-small text-base text-foreground-600 transition-background data-[hover=true]:bg-default/40 data-[pressed=true]:bg-default/50 motion-reduce:transition-none"
 						>
@@ -322,13 +377,25 @@ export default function MobileNavigationMenu({
 					<span className="h-5 w-px bg-default-300/70" />
 					<Tooltip
 						showArrow
-						content={isMenuOpened ? '收起菜单' : '打开菜单'}
+						content={
+							isMenuOpened
+								? tAppShell('appShell.mobile.closeMenu')
+								: tAppShell('appShell.mobile.openMenu')
+						}
 						placement="left"
 					>
 						<NavbarMenuToggle
 							onChange={onMenuToggleChange}
-							srOnlyText={isMenuOpened ? '收起菜单' : '打开菜单'}
-							aria-label={isMenuOpened ? '收起菜单' : '打开菜单'}
+							srOnlyText={
+								isMenuOpened
+									? tAppShell('appShell.mobile.closeMenu')
+									: tAppShell('appShell.mobile.openMenu')
+							}
+							aria-label={
+								isMenuOpened
+									? tAppShell('appShell.mobile.closeMenu')
+									: tAppShell('appShell.mobile.openMenu')
+							}
 							className={cn(
 								'h-9 w-9 rounded-small transition-background motion-reduce:transition-none',
 								isMenuOpened
@@ -353,7 +420,7 @@ export default function MobileNavigationMenu({
 				<NavbarMenuItem>
 					<section className="space-y-2">
 						<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
-							顾客
+							{tAppShell('appShell.mobile.customers')}
 						</h2>
 						<div className="grid grid-cols-2 gap-2">
 							{MOBILE_GUEST_NAV_ITEMS.map(
@@ -366,7 +433,7 @@ export default function MobileNavigationMenu({
 					<NavbarMenuItem key={label}>
 						<section className="space-y-2">
 							<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
-								{label}
+								{tAppShell('appShell.nav.query')}
 							</h2>
 							<div className="grid grid-cols-4 gap-2">
 								{items.map(renderMobileQueryNavItem)}
@@ -377,7 +444,7 @@ export default function MobileNavigationMenu({
 				<NavbarMenuItem>
 					<section className="space-y-2">
 						<h2 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
-							更多
+							{tAppShell('appShell.mobile.more')}
 						</h2>
 						<div className="grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-2">
 							{MOBILE_UTILITY_NAV_ITEMS.map((item) =>
@@ -404,7 +471,9 @@ export default function MobileNavigationMenu({
 						{paletteItems.length > 0 && (
 							<div className="space-y-2 pt-1">
 								<h3 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
-									主题配色
+									{tPreferences(
+										'preferences.palette.section'
+									)}
 								</h3>
 								<div className="grid grid-cols-2 gap-2">
 									{paletteItems.map(
@@ -413,6 +482,16 @@ export default function MobileNavigationMenu({
 								</div>
 							</div>
 						)}
+						<div className="space-y-2 pt-1">
+							<h3 className={MOBILE_SECTION_TITLE_CLASS_NAME}>
+								{tPreferences('preferences.language.section')}
+							</h3>
+							<div className="grid grid-cols-3 gap-2">
+								{LOCALE_MENU_ITEMS.map(
+									renderMobileLocaleActionItem
+								)}
+							</div>
+						</div>
 					</section>
 				</NavbarMenuItem>
 			</NavbarMenu>

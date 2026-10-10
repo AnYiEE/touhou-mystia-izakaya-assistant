@@ -6,8 +6,13 @@ import type { FishingCollectibleCatalog } from '@/domain/catalog/items/FishingCo
 import type { GeneralItemCatalog } from '@/domain/catalog/items/GeneralItemCatalog';
 import type { RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog';
 import type { TDlc } from '@/domain/data/shared/types';
+import {
+	getMapLabelByDisplayLabel,
+	getMerchantLabelByDisplayLabel,
+} from '@/domain/places/localizedLabels';
 
 import type { TItemDataItem } from '@/features/catalog/shared/contracts';
+import { registerCatalogLocalizationRevisionMirror } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import {
 	createCatalogPersistenceShape,
 	toAllowedValueSet,
@@ -68,7 +73,10 @@ export function createCollectibleStore<TCatalog extends TCollectibleCatalog>({
 	const state = {
 		instance,
 		persistence: persistenceShape.createDefault(),
-		shared: { hiddenItems: { dlcs: new Set<TDlc>() } },
+		shared: {
+			catalogLocalizationRevision: 0,
+			hiddenItems: { dlcs: new Set<TDlc>() },
+		},
 	};
 	const getNames = createNamesCache(instance);
 	const getVisibleData = (hiddenDlcs: ReadonlySet<TDlc>) =>
@@ -117,6 +125,7 @@ export function createCollectibleStore<TCatalog extends TCollectibleCatalog>({
 			);
 			return (
 				getNames(
+					currentStore.shared.catalogLocalizationRevision.use(),
 					currentStore.persistence.pinyinSortState.use()
 				) as string[]
 			)
@@ -125,6 +134,7 @@ export function createCollectibleStore<TCatalog extends TCollectibleCatalog>({
 		},
 		availableSources: () => {
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
+			currentStore.shared.catalogLocalizationRevision.use();
 			return [
 				...new Set(
 					getVisibleData(hiddenDlcs).flatMap((item) =>
@@ -133,7 +143,12 @@ export function createCollectibleStore<TCatalog extends TCollectibleCatalog>({
 				),
 			]
 				.toSorted(pinyinSort)
-				.map((value) => ({ value }));
+				.map((value) => ({
+					name: getMerchantLabelByDisplayLabel(
+						getMapLabelByDisplayLabel(value)
+					),
+					value,
+				}));
 		},
 	}));
 
@@ -141,6 +156,10 @@ export function createCollectibleStore<TCatalog extends TCollectibleCatalog>({
 		collectibleStore.persistence.filters.set(
 			persistenceShape.createDefault().filters
 		);
+	});
+
+	registerCatalogLocalizationRevisionMirror((revision) => {
+		collectibleStore.shared.catalogLocalizationRevision.set(revision);
 	});
 
 	return { getSources, store: collectibleStore };

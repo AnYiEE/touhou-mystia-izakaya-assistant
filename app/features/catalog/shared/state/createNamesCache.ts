@@ -36,10 +36,14 @@ function getAllItemNames<T extends TItemInstance>(
 }
 
 export function createNamesCache<T extends TItemInstance>(instance: T) {
-	const cache = new Map<TPinyinSortState, TNames<T>>();
+	const cache = new Map<string, TNames<T>>();
 
-	return function getNames(pinyinSortState: TPinyinSortState) {
-		return cache.getOrInsertComputed(pinyinSortState, () =>
+	return function getNames(
+		revision: number,
+		pinyinSortState: TPinyinSortState
+	) {
+		const cacheKey = `${pinyinSortState}:${revision}`;
+		return cache.getOrInsertComputed(cacheKey, () =>
 			getAllItemNames(instance, pinyinSortState)
 		);
 	};

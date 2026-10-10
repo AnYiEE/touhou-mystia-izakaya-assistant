@@ -3,14 +3,15 @@ import { memo, useCallback, useMemo } from 'react';
 import Placeholder from '@/design/ui/components/placeholder';
 
 import type { TIngredientId } from '@/domain/data/ingredients/types';
-import { DARK_MATTER_META_MAP } from '@/domain/data/tags/tagFacts';
 
 import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
 import IngredientTabContentSkeleton from '@/features/catalog/guests/shared/client/components/ingredientTabContentSkeleton';
 import IngredientTabItemPresenter from '@/features/catalog/guests/shared/client/components/ingredientTabItemPresenter';
 import type { IIngredientTabContentProps } from '@/features/catalog/guests/shared/ingredientTabContracts';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 interface IProps extends IIngredientTabContentProps {}
@@ -19,6 +20,7 @@ export default memo<IProps>(function IngredientTabContent({
 	ingredientTabStyle,
 	sortedData,
 }) {
+	const { t } = useI18n(catalogGuestsMessages);
 	const vibrate = useVibrate();
 
 	const currentNormalGuest = normalGuestStore.shared.guest.id.use();
@@ -76,7 +78,7 @@ export default memo<IProps>(function IngredientTabContent({
 	if (checkLengthEmpty(sortedData)) {
 		return (
 			<Placeholder className="pt-4 md:min-h-40 md:pt-0">
-				数据为空
+				{t('guests.table.empty')}
 			</Placeholder>
 		);
 	}
@@ -94,7 +96,9 @@ export default memo<IProps>(function IngredientTabContent({
 			<div className="my-4 flex items-center">
 				<div className="h-px w-full bg-foreground-300" />
 				<div className="select-none whitespace-nowrap text-small font-light text-foreground-500">
-					制作{DARK_MATTER_META_MAP.name}？
+					{t('guests.ingredient.craftDarkMatterQuestion', {
+						name: t('guests.ingredient.darkMatter'),
+					})}
 				</div>
 				<div className="h-px w-full bg-foreground-300" />
 			</div>
@@ -139,7 +143,14 @@ export default memo<IProps>(function IngredientTabContent({
 				const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
 
 				const badgeContent = isNoChange ? '' : score;
-				const tooltipContent = `点击：加入额外食材【${name}】${isNoChange ? '' : `，匹配度${score}`}`;
+				const tooltipContent = `${t(
+					'guests.ingredient.addTipPrefix',
+					{ name }
+				)}${
+					isNoChange
+						? ''
+						: t('guests.ingredient.score', { score })
+				}`;
 
 				return (
 					<IngredientTabItemPresenter

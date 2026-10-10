@@ -24,12 +24,19 @@ import Link from '@/design/ui/components/link';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { getSpecialGuestTachiePath } from '@/features/catalog/presentation/tachiePaths';
 import Tachie from '@/features/catalog/shared/client/components/Tachie';
+import {
+	type TMetaMystiaMessageKey,
+	metaMystiaMessages,
+} from '@/features/metaMystia/client/messages';
 import { META_MYSTIA_GUESTS } from '@/features/metaMystia/content';
 import {
 	META_MYSTIA_LINKS,
 	META_MYSTIA_QQ_GROUP_NUMBER,
 	META_MYSTIA_VIDEOS,
 } from '@/features/metaMystia/links';
+
+import { type TMessageParams } from '@/shared/i18n/messages';
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import BilibiliVideo from './BilibiliVideo';
 import MetaMystiaShowcase from './MetaMystiaShowcase';
@@ -61,57 +68,71 @@ function getHeroGuestVisibilityClassName(index: number) {
 		: 'hidden lg:block';
 }
 
-const HERO_TAGS = ['多人联机', '内容扩展', '免费开源'] as const;
+const HERO_TAGS = [
+	'metaMystia.hero.tag.multiplayer',
+	'metaMystia.hero.tag.content',
+	'metaMystia.hero.tag.openSource',
+] as const satisfies ReadonlyArray<TMetaMystiaMessageKey>;
 
 interface IFeature {
-	description: string;
+	descriptionKey: TMetaMystiaMessageKey;
 	icon: FontAwesomeIconProps['icon'];
-	title: string;
+	titleKey: TMetaMystiaMessageKey;
 }
 
 const FEATURES = [
 	{
-		description:
-			'一人开房，好友加入。白天各忙各的，夜里一起做菜、上菜、招待客人。',
+		descriptionKey: 'metaMystia.features.multiplayer.description',
 		icon: faUserGroup,
-		title: '多人联机',
+		titleKey: 'metaMystia.features.multiplayer.title',
 	},
 	{
-		description:
-			'支持游戏内、DLC和ResourceEx服装，换装后会同步给房间里所有人。',
+		descriptionKey: 'metaMystia.features.skins.description',
 		icon: faShirt,
-		title: '皮肤系统',
+		titleKey: 'metaMystia.features.skins.title',
 	},
 	{
-		description:
-			'单人游玩也能体验ResourceEx的新稀客、料理、酒水与羁绊剧情。',
+		descriptionKey: 'metaMystia.features.solo.description',
 		icon: faGamepad,
-		title: '单人也能玩',
+		titleKey: 'metaMystia.features.solo.title',
 	},
 ] as const satisfies ReadonlyArray<IFeature>;
+
+interface ICommunityLink {
+	href: string;
+	icon: FontAwesomeIconProps['icon'];
+	iconClassName: string;
+	labelKey: TMetaMystiaMessageKey;
+	params?: TMessageParams | undefined;
+	trackName: string;
+}
 
 const COMMUNITY_LINKS = [
 	{
 		href: links.qqGroup.href,
 		icon: faQq,
 		iconClassName: 'text-qq-blue',
-		label: `QQ群${META_MYSTIA_QQ_GROUP_NUMBER}`,
+		labelKey: 'metaMystia.community.qqGroup',
+		params: { number: META_MYSTIA_QQ_GROUP_NUMBER },
 		trackName: 'QQ group',
 	},
 	{
 		href: links.github.href,
 		icon: faGithub,
 		iconClassName: 'text-foreground',
-		label: 'GitHub仓库',
+		labelKey: 'metaMystia.community.github',
+		params: undefined,
 		trackName: 'GitHub',
 	},
-] as const;
+] as const satisfies ReadonlyArray<ICommunityLink>;
 
 function trackLinkClick(name: string) {
 	trackEvent(trackEvent.category.click, 'Link', `meta-mystia:${name}`);
 }
 
 function LandingActions() {
+	const { t } = useI18n(metaMystiaMessages);
+
 	return (
 		<div className="mx-auto flex w-full max-w-xs flex-col gap-3 md:max-w-none md:flex-row md:justify-center">
 			<Button
@@ -124,12 +145,12 @@ function LandingActions() {
 				href={links.download.href}
 				role="link"
 				startContent={<FontAwesomeIcon icon={faDownload} />}
-				title={links.download.label}
+				title={t('metaMystia.links.download')}
 				onPress={() => {
 					trackLinkClick('Download');
 				}}
 			>
-				下载与安装
+				{t('metaMystia.actions.download')}
 			</Button>
 			<Button
 				as={Link}
@@ -141,12 +162,12 @@ function LandingActions() {
 				href={links.docs.href}
 				role="link"
 				startContent={<FontAwesomeIcon icon={faBookOpen} />}
-				title={links.docs.label}
+				title={t('metaMystia.links.docs')}
 				onPress={() => {
 					trackLinkClick('Docs');
 				}}
 			>
-				阅读使用文档
+				{t('metaMystia.actions.docs')}
 			</Button>
 		</div>
 	);
@@ -154,6 +175,7 @@ function LandingActions() {
 
 export default function MetaMystiaLanding() {
 	const { isHighAppearance } = useDesignPreferences();
+	const { t } = useI18n(metaMystiaMessages);
 
 	const featureCardClassNames = useMemo(
 		() => ({
@@ -195,7 +217,7 @@ export default function MetaMystiaLanding() {
 				</div>
 				<RevealOnView delay={0.06}>
 					<p className="text-small text-foreground-500 md:text-base">
-						《东方夜雀食堂》非官方Mod
+						{t('metaMystia.hero.kicker')}
 					</p>
 				</RevealOnView>
 				<RevealOnView delay={0.12}>
@@ -205,13 +227,15 @@ export default function MetaMystiaLanding() {
 				</RevealOnView>
 				<RevealOnView delay={0.18}>
 					<p className="text-large md:text-xl">
-						让原本只能单人游玩的夜雀食堂，
-						<span className="inline-block">真正“热闹”起来</span>
+						{t('metaMystia.hero.tagline.prefix')}
+						<span className="inline-block">
+							{t('metaMystia.hero.tagline.highlight')}
+						</span>
 					</p>
 				</RevealOnView>
 				<RevealOnView className="hidden md:block" delay={0.24}>
 					<p className="mt-3 max-w-xl text-small text-foreground-500">
-						和朋友一起经营食堂，或单人体验全新的稀客、料理与剧情
+						{t('metaMystia.hero.note')}
 					</p>
 				</RevealOnView>
 				<RevealOnView delay={0.3}>
@@ -221,7 +245,7 @@ export default function MetaMystiaLanding() {
 								key={tag}
 								className="rounded-full bg-content2 px-3 py-1 text-tiny text-foreground-600"
 							>
-								{tag}
+								{t(tag)}
 							</span>
 						))}
 					</div>
@@ -237,9 +261,9 @@ export default function MetaMystiaLanding() {
 					<Heading
 						as="h2"
 						isFirst
-						subTitle="十人同屏的夜雀食堂是什么样？"
+						subTitle={t('metaMystia.videos.subTitle')}
 					>
-						联机实况
+						{t('metaMystia.videos.title')}
 					</Heading>
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 						{META_MYSTIA_VIDEOS.map(({ aid, title }) => (
@@ -251,13 +275,17 @@ export default function MetaMystiaLanding() {
 			<MetaMystiaShowcase />
 			<RevealOnView className="w-full">
 				<section className="w-full">
-					<Heading as="h2" isFirst subTitle="安装之后，你可以这样玩">
-						玩法亮点
+					<Heading
+						as="h2"
+						isFirst
+						subTitle={t('metaMystia.features.subTitle')}
+					>
+						{t('metaMystia.features.title')}
 					</Heading>
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-						{FEATURES.map(({ description, icon, title }) => (
+						{FEATURES.map(({ descriptionKey, icon, titleKey }) => (
 							<Card
-								key={title}
+								key={titleKey}
 								shadow="sm"
 								classNames={featureCardClassNames}
 							>
@@ -267,9 +295,11 @@ export default function MetaMystiaLanding() {
 										className="w-4"
 									/>
 								</span>
-								<h3 className="mb-1 font-semibold">{title}</h3>
+								<h3 className="mb-1 font-semibold">
+									{t(titleKey)}
+								</h3>
 								<p className="text-small text-foreground-600">
-									{description}
+									{t(descriptionKey)}
 								</p>
 							</Card>
 						))}
@@ -279,10 +309,10 @@ export default function MetaMystiaLanding() {
 			<RevealOnView className="w-full">
 				<section className="w-full rounded-large border border-primary/20 bg-primary/10 px-6 py-8 text-center">
 					<h2 className="text-xl font-semibold md:text-2xl">
-						叫上朋友，一起经营夜雀食堂
+						{t('metaMystia.cta.title')}
 					</h2>
 					<p className="mt-2 text-small text-foreground-600">
-						下载并安装，几分钟就能开张
+						{t('metaMystia.cta.description')}
 					</p>
 					<div className="mt-6">
 						<LandingActions />
@@ -294,9 +324,9 @@ export default function MetaMystiaLanding() {
 					<Heading
 						as="h2"
 						isFirst
-						subTitle="遇到问题或有新想法，欢迎来这里找我们"
+						subTitle={t('metaMystia.community.subTitle')}
 					>
-						加入社区
+						{t('metaMystia.community.title')}
 					</Heading>
 					<div className="flex flex-wrap gap-3">
 						{COMMUNITY_LINKS.map(
@@ -304,7 +334,8 @@ export default function MetaMystiaLanding() {
 								href,
 								icon,
 								iconClassName,
-								label,
+								labelKey,
+								params,
 								trackName,
 							}) => (
 								<Link
@@ -312,7 +343,7 @@ export default function MetaMystiaLanding() {
 									isExternal
 									animationUnderline={false}
 									href={href}
-									title={label}
+									title={t(labelKey, params)}
 									onPress={() => {
 										trackLinkClick(trackName);
 									}}
@@ -322,7 +353,7 @@ export default function MetaMystiaLanding() {
 										icon={icon}
 										className={iconClassName}
 									/>
-									{label}
+									{t(labelKey, params)}
 								</Link>
 							)
 						)}

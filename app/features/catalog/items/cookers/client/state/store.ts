@@ -13,6 +13,7 @@ import {
 	toAllowedValueSet,
 } from '@/features/catalog/shared/state/catalogPersistenceShape';
 import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
+import { registerCatalogLocalizationRevisionMirror } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import { PINYIN_SORT_STATE_MAP } from '@/features/catalog/shared/state/pinyinSort';
 
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
@@ -73,7 +74,10 @@ const state = {
 	instance,
 
 	persistence: persistenceShape.createDefault(),
-	shared: { hiddenItems: { dlcs: new Set<TDlc>() } },
+	shared: {
+		catalogLocalizationRevision: 0,
+		hiddenItems: { dlcs: new Set<TDlc>() },
+	},
 };
 
 const getNames = createNamesCache(instance);
@@ -119,7 +123,10 @@ export const cookersStore = store(state, {
 	availableNames: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		return sortBy(
-			getNames(currentStore.persistence.pinyinSortState.use()),
+			getNames(
+				currentStore.shared.catalogLocalizationRevision.use(),
+				currentStore.persistence.pinyinSortState.use()
+			),
 			instance.getValuesByProp(
 				'name',
 				false,
@@ -151,4 +158,8 @@ cookersStore.shared.hiddenItems.dlcs.onChange(() => {
 	cookersStore.persistence.filters.set(
 		persistenceShape.createDefault().filters
 	);
+});
+
+registerCatalogLocalizationRevisionMirror((revision) => {
+	cookersStore.shared.catalogLocalizationRevision.set(revision);
 });

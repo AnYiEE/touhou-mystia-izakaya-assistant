@@ -12,10 +12,13 @@ import type {
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import GuestTabShell from '@/features/catalog/guests/shared/client/components/guestTabShell';
 import type { IGuestTabStyle } from '@/features/catalog/guests/shared/contracts';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps {
 	guestTabStyle: IGuestTabStyle;
@@ -31,6 +34,7 @@ interface ISpecialGuestAvatarProps {
 
 const SpecialGuestAvatar = memo<ISpecialGuestAvatarProps>(
 	function SpecialGuestAvatar({ id, isSelected, name }) {
+		const { t } = useI18n(catalogGuestsMessages);
 		const classNames = useMemo(
 			() => ({
 				base: cn(
@@ -52,7 +56,7 @@ const SpecialGuestAvatar = memo<ISpecialGuestAvatarProps>(
 						target="special_guest"
 						recordId={id}
 						size={5}
-						title={`点击：选择【${name}】`}
+						title={t('guests.guestTab.selectTip', { name })}
 					/>
 				}
 				role="button"

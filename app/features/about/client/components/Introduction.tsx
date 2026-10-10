@@ -5,33 +5,47 @@ import Link from '@/design/ui/components/link';
 import QRCode from '@/design/ui/components/qrCode';
 import Tooltip from '@/design/ui/components/tooltip';
 
+import { aboutMessages } from '@/features/about/client/messages';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { appShellMessages } from '@/features/appShell/client/messages';
 import { SITE_LINKS } from '@/features/appShell/links';
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+import { siteMessages } from '@/shared/site/messages';
 import { SITE_METADATA } from '@/shared/site/metadata';
 
 const links = SITE_LINKS;
 const { baseURL } = PUBLIC_RUNTIME_CONFIG;
-const { enName, name, shortName } = SITE_METADATA;
+const { enName } = SITE_METADATA;
 
 const DONATE_TOOLTIP_CLASS_NAMES = { content: 'px-1' } as const;
 
 export default function Introduction() {
+	const { locale, t } = useI18n(aboutMessages);
+	const { t: tAppShell } = useI18n(appShellMessages);
+	const { t: tSite } = useI18n(siteMessages);
+	const siteShortName = tSite('site.shortName');
+	const params = {
+		name: tSite('site.name'),
+		shortName: siteShortName,
+		// The English template already uses the English name as the site name,
+		// so it intentionally omits the redundant parenthesis.
+		...(locale === 'en' ? {} : { enName }),
+	};
+
 	return (
 		<>
-			<Heading isFirst>项目介绍</Heading>
+			<Heading isFirst>{t('about.introduction.title')}</Heading>
 			<div className="space-y-2 break-all text-justify indent-8">
 				<p>
-					“{name}”（英语：{enName}）网站（下文中称“本网站”或“
-					{shortName}
-					”）是由此
+					{t('about.introduction.p1.prefix', params)}
 					<Link
 						isExternal
 						showAnchorIcon
 						href={links.github.href}
-						title={links.github.label}
+						title={tAppShell('appShell.links.github')}
 						onPress={() => {
 							trackEvent(
 								trackEvent.category.click,
@@ -41,41 +55,35 @@ export default function Introduction() {
 						}}
 						className="rounded-small indent-0"
 					>
-						GitHub仓库
+						{t('about.introduction.githubLink')}
 					</Link>
-					所有者（下文中称“开发者”或“我”）
-					为游戏《东方夜雀食堂》开发的辅助工具。
+					{t('about.introduction.p1.suffix')}
 				</p>
 				<p>
-					{shortName}
-					提供顾客图鉴（包括羁绊奖励和符卡效果查询）、搭配稀客和普客的料理套餐，以及料理（食谱）、酒水、食材、厨具、摆件、衣服、伙伴、货币、道具、唱片、垂钓收藏和徽章查询等功能，通过本网站（https://
-					{baseURL}
-					）以及现在或未来可能提供的其他网站、计算机软件、移动应用程序或其他类似的产品和服务，为
-					{shortName}
-					用户（下文中称“玩家”或“您”）的游玩过程提供相关信息和帮助。
+					{t('about.introduction.p2', {
+						baseURL,
+						shortName: siteShortName,
+					})}
 				</p>
 				<p>
-					{shortName}
-					还提供账号系统，您可以通过注册账号来使用云备份套餐搭配数据、在多个设备间同步数据等功能。账号系统支持通过用户名和密码登录，并提供会话管理、密码修改、账号注销等基础账号功能。
+					{t('about.introduction.p3', { shortName: siteShortName })}
 				</p>
 				<p>
-					此外，{shortName}
-					实现了轻量级单点登录（SSO）能力，允许外部应用或服务请求您的授权以获取您的
-					{shortName}
-					账号身份。您可以在授权页面自主决定是否授权；授权后可在账号设置中随时撤销已授予的授权。
+					{t('about.introduction.p4', { shortName: siteShortName })}
 				</p>
 				<p>
-					{shortName}
-					中的数据直接提取自游戏《东方夜雀食堂》，因此在大多数情况下本网站所提供的信息是准确的。但受游戏版本迭代，以及开发、维护的频率和时效性等各方面因素的影响，本网站所提供的信息仍可能和游戏中的实际内容存在差异。请您知悉并以游戏内信息为准。
+					{t('about.introduction.p5', { shortName: siteShortName })}
 				</p>
 				<p>
-					如果{shortName}对您的游玩过程有所帮助，您可以考虑
+					{t('about.introduction.p6.prefix', {
+						shortName: siteShortName,
+					})}
 					<Tooltip
 						showArrow
 						closeDelay={10}
 						content={
 							<QRCode text={links.donate.href} className="w-24">
-								{links.donate.label.replace('链接', '码')}
+								{tAppShell('appShell.links.donateQrCode')}
 							</QRCode>
 						}
 						offset={1}
@@ -94,7 +102,7 @@ export default function Introduction() {
 							isExternal
 							showAnchorIcon
 							href={links.donate.href}
-							title={links.donate.label}
+							title={tAppShell('appShell.links.donate')}
 							onPress={() => {
 								trackEvent(
 									trackEvent.category.click,
@@ -104,11 +112,12 @@ export default function Introduction() {
 							}}
 							className="rounded-small indent-0"
 						>
-							向我捐赠
+							{t('about.introduction.donateLink')}
 						</Link>
 					</Tooltip>
-					以支持{shortName}
-					的开发和维护。但请注意，该捐赠仅为您个人的自愿行为，并非面向公众的募捐，仅构成平等主体之间的民事赠与关系，不附带任何物质或其他回报。
+					{t('about.introduction.p6.suffix', {
+						shortName: siteShortName,
+					})}
 				</p>
 			</div>
 		</>

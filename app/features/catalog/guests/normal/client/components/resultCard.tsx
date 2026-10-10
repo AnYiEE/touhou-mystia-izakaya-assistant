@@ -13,7 +13,7 @@ import { useAutoHideTooltip } from '@/design/ui/hooks/useAutoHideTooltip';
 
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
-import { GUEST_RATING_MAP } from '@/domain/evaluation/labels';
+import { getEvaluationLabelByKey } from '@/domain/evaluation/localizedLabels';
 
 import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
 import CurrentMealIngredientsList from '@/features/catalog/guests/shared/client/components/currentMealIngredientsList';
@@ -22,7 +22,10 @@ import {
 	UnknownItemIcon,
 } from '@/features/catalog/guests/shared/client/components/resultCardAtoms';
 import SlidingSprite from '@/features/catalog/guests/shared/client/components/slidingSprite';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 export { Plus } from '@/features/catalog/guests/shared/client/components/resultCardAtoms';
 
@@ -30,6 +33,7 @@ const cookerCatalog = CookerCatalog.getInstance();
 const EMPTY_INGREDIENT_IDS = [] as const satisfies ReadonlyArray<TIngredientId>;
 
 export default function NormalGuestResultCard() {
+	const { t } = useI18n(catalogGuestsMessages);
 	const { isHighAppearance } = useDesignPreferences();
 	const vibrate = useVibrate();
 
@@ -52,7 +56,7 @@ export default function NormalGuestResultCard() {
 	const currentBeverageName =
 		currentBeverage === null
 			? null
-			: beverageCatalog.getPropsById(currentBeverage, 'name');
+			: beverageCatalog.getDisplayPropsById(currentBeverage, 'name');
 
 	const currentRecipeOwner = useMemo(
 		() =>
@@ -116,7 +120,7 @@ export default function NormalGuestResultCard() {
 		} else {
 			content = (
 				<Placeholder className="pb-6 pt-12 md:py-8 xl:pb-2 xl:pt-0">
-					选择点单料理以继续
+					{t('guests.resultCard.pickOrderedFoodPrompt')}
 				</Placeholder>
 			);
 			contentClassName = 'my-auto';
@@ -154,7 +158,9 @@ export default function NormalGuestResultCard() {
 								<>
 									<Tooltip
 										showArrow
-										content="请选择料理"
+										content={t(
+											'guests.resultCard.selectFood'
+										)}
 										offset={7}
 									>
 										<SlidingSprite
@@ -163,7 +169,9 @@ export default function NormalGuestResultCard() {
 											fallbackKey="empty-food-cooker"
 											fallback={
 												<UnknownItemIcon
-													title="请选择料理"
+													title={t(
+														'guests.resultCard.selectFood'
+													)}
 													iconSize={1.5}
 													size={2}
 												/>
@@ -173,7 +181,9 @@ export default function NormalGuestResultCard() {
 									</Tooltip>
 									<Tooltip
 										showArrow
-										content="请选择料理"
+										content={t(
+											'guests.resultCard.selectFood'
+										)}
 										offset={3}
 									>
 										<SlidingSprite
@@ -182,7 +192,9 @@ export default function NormalGuestResultCard() {
 											fallbackKey="empty-food"
 											fallback={
 												<UnknownItemIcon
-													title="请选择料理"
+													title={t(
+														'guests.resultCard.selectFood'
+													)}
 													iconSize={2}
 													size={2.5}
 												/>
@@ -209,7 +221,9 @@ export default function NormalGuestResultCard() {
 							) : (
 								<Tooltip
 									showArrow
-									content="可选择酒水"
+									content={t(
+										'guests.resultCard.optionalBeverage'
+									)}
 									offset={3}
 								>
 									<SlidingSprite
@@ -218,7 +232,9 @@ export default function NormalGuestResultCard() {
 										fallbackKey="empty-beverage"
 										fallback={
 											<UnknownItemIcon
-												title="可选择酒水"
+												title={t(
+													'guests.resultCard.optionalBeverage'
+												)}
 												iconSize={2}
 												size={2.5}
 											/>
@@ -240,7 +256,7 @@ export default function NormalGuestResultCard() {
 					</div>
 					<Tooltip
 						showArrow
-						content="请选择点单料理以保存"
+						content={t('guests.resultCard.pickOrderedFoodToSave')}
 						isOpen={isShowSaveButtonTooltip}
 					>
 						<Button
@@ -249,13 +265,22 @@ export default function NormalGuestResultCard() {
 							size="sm"
 							variant="flat"
 							onPress={handleSaveButtonPress}
-							aria-label={`保存套餐，当前${currentRating === null ? '未评级' : `评级为${GUEST_RATING_MAP[currentRating]}`}`}
+							aria-label={t('guests.resultCard.saveMealAria', {
+								status:
+									currentRating === null
+										? t('guests.resultCard.unrated')
+										: t('guests.resultCard.ratedAs', {
+												rating: getEvaluationLabelByKey(
+													currentRating
+												),
+											}),
+							})}
 							className={cn(
 								'!transition motion-reduce:!transition-none md:w-auto',
 								{ 'opacity-disabled': isSaveButtonDisabled }
 							)}
 						>
-							保存套餐
+							{t('guests.resultCard.saveMeal')}
 						</Button>
 					</Tooltip>
 				</div>

@@ -8,6 +8,7 @@ import { filterGuestData } from '@/features/catalog/guests/shared/queries/filter
 import { type specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { useFilteredData } from '@/features/catalog/shared/client/hooks/useFilteredData';
 import { useSortedData } from '@/features/catalog/shared/client/hooks/useSortedData';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import type { TItemData } from '@/features/catalog/shared/contracts';
 
 type TGuestCatalog = NormalGuestCatalog | SpecialGuestCatalog;
@@ -40,6 +41,7 @@ export function useGuestRouteData(
 	catalog: TGuestCatalog,
 	store: TGuestRouteStore
 ) {
+	const catalogLocalizationRevision = useCatalogLocalizationRevision();
 	const guestPinyinSortState = store.persistence.guest.pinyinSortState.use();
 
 	const guestFilterAvailabilityDlcs =
@@ -53,25 +55,25 @@ export function useGuestRouteData(
 	const guestFilterNoMaps = store.persistence.guest.filters.noPlaces.use();
 	const guestFilterMaps = store.persistence.guest.filters.places.use();
 
-	const filterData = useCallback(
-		() =>
-			filterGuestData<TGuestRouteItem>({
-				guestData: catalog.data,
-				guestFilterAvailabilityDlcs,
-				guestFilterExcludes,
-				guestFilterIncludes,
-				guestFilterMaps,
-				guestFilterNoMaps,
-			}) as TGuestData,
-		[
+	const filterData = useCallback(() => {
+		void catalogLocalizationRevision;
+		return filterGuestData<TGuestRouteItem>({
+			guestData: catalog.data,
 			guestFilterAvailabilityDlcs,
 			guestFilterExcludes,
 			guestFilterIncludes,
 			guestFilterMaps,
 			guestFilterNoMaps,
-			catalog.data,
-		]
-	);
+		}) as TGuestData;
+	}, [
+		catalogLocalizationRevision,
+		guestFilterAvailabilityDlcs,
+		guestFilterExcludes,
+		guestFilterIncludes,
+		guestFilterMaps,
+		guestFilterNoMaps,
+		catalog.data,
+	]);
 	const guestFilteredData = useFilteredData(catalog, filterData);
 
 	const guestSortedData = useSortedData(

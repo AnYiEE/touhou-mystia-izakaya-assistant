@@ -3,7 +3,10 @@ import { memo } from 'react';
 import Heading from '@/design/ui/components/heading';
 
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
+import { preferencesMessages } from '@/features/preferences/client/messages';
 import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import HiddenItems from './HiddenItems';
 import SwitchItem from './PreferenceSwitchItem';
@@ -28,11 +31,12 @@ export default memo<IProps>(function CatalogPreferencesSection({
 		specialGuestStore.persistence.guest.orderLinkedFilter.use();
 	const isShowTagDescription =
 		specialGuestStore.persistence.guest.showTagDescription.use();
+	const { t } = useI18n(preferencesMessages);
 
 	return (
 		<>
-			<Heading as="h2">顾客页面</Heading>
-			<Heading as="h3">酒水、料理和食材</Heading>
+			<Heading as="h2">{t('preferences.section.catalog')}</Heading>
+			<Heading as="h3">{t('preferences.section.catalog.items')}</Heading>
 			<div className="space-y-2">
 				<div
 					{...getPreferenceTargetDataProps('guest-hidden-items')}
@@ -48,7 +52,9 @@ export default memo<IProps>(function CatalogPreferencesSection({
 				highlightedPreferenceKey={highlightedPreferenceKey}
 				isReducedMotion={isReducedMotion}
 			/>
-			<Heading as="h3">稀客卡片</Heading>
+			<Heading as="h3">
+				{t('preferences.section.catalog.specialGuest')}
+			</Heading>
 			<div className="space-y-2">
 				<div
 					{...getPreferenceTargetDataProps(
@@ -65,9 +71,13 @@ export default memo<IProps>(function CatalogPreferencesSection({
 							specialGuestStore.persistence.guest
 								.orderLinkedFilter.set
 						}
-						aria-label={`选择点单需求标签的同时${isOrderLinkedFilter ? '不' : ''}筛选表格`}
+						aria-label={t(
+							isOrderLinkedFilter
+								? 'preferences.catalog.orderLinked.enabledAria'
+								: 'preferences.catalog.orderLinked.disabledAria'
+						)}
 					>
-						选择点单需求的同时筛选表格
+						{t('preferences.catalog.orderLinked.label')}
 					</SwitchItem>
 				</div>
 				<div
@@ -85,9 +95,13 @@ export default memo<IProps>(function CatalogPreferencesSection({
 							specialGuestStore.persistence.guest
 								.showTagDescription.set
 						}
-						aria-label={`${isShowTagDescription ? '隐藏' : '显示'}料理标签描述`}
+						aria-label={t(
+							isShowTagDescription
+								? 'preferences.catalog.tagDescription.hideAria'
+								: 'preferences.catalog.tagDescription.showAria'
+						)}
 					>
-						显示料理标签所对应的关键词
+						{t('preferences.catalog.tagDescription.label')}
 					</SwitchItem>
 				</div>
 			</div>

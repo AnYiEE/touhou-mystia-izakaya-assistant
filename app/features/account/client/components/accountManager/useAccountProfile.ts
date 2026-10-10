@@ -9,7 +9,8 @@ import {
 	setInitialAccountPassword,
 } from '@/features/account/client/api';
 import { createAccountClientId } from '@/features/account/client/clientId';
-import { ACCOUNT_CLIENT_MESSAGE_MAP } from '@/features/account/client/copy';
+import { ACCOUNT_CLIENT_MESSAGE_KEYS } from '@/features/account/client/copy';
+import { accountMessages } from '@/features/account/client/messages';
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
 import {
 	applyAccountAuthSuccessResponse,
@@ -19,7 +20,6 @@ import {
 } from '@/features/account/client/session';
 import { postAccountSyncBroadcastMessage } from '@/features/account/client/sync/broadcast';
 import {
-	PASSWORD_RULE_DESCRIPTION,
 	checkNicknamePolicy,
 	checkPasswordPolicy,
 	checkUsernamePolicy,
@@ -35,8 +35,10 @@ import {
 	handleUnauthorizedAccountActionError,
 	handleUnauthorizedAccountError,
 } from './controller';
-import { ACCOUNT_MANAGER_MESSAGE_MAP } from './copy';
+import { ACCOUNT_MANAGER_MESSAGE_KEYS } from './copy';
 import { type IUseAccountPasskeysResult } from './useAccountPasskeys';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IUseAccountProfileOptions {
 	controller: IAccountActionController;
@@ -84,6 +86,7 @@ export function useAccountProfile({
 	user,
 	vibrate,
 }: IUseAccountProfileOptions): IUseAccountProfileResult {
+	const { locale, t } = useI18n(accountMessages);
 	const [currentPassword, setCurrentPassword] = useState('');
 
 	const [newPassword, setNewPassword] = useState('');
@@ -155,7 +158,7 @@ export function useAccountProfile({
 
 		if (!checkPasswordPolicy(newPassword)) {
 			setPasswordChangeError(null);
-			setMessage(PASSWORD_RULE_DESCRIPTION);
+			setMessage('invalid-password-rule');
 			return;
 		}
 
@@ -217,7 +220,10 @@ export function useAccountProfile({
 										Error.isError(error)
 											? error.message
 											: '',
-										ACCOUNT_CLIENT_MESSAGE_MAP.accountStateRefreshFailed
+										locale,
+										t(
+											ACCOUNT_CLIENT_MESSAGE_KEYS.accountStateRefreshFailed
+										)
 									)
 								);
 							}
@@ -262,8 +268,8 @@ export function useAccountProfile({
 				setPasswordChangeError(null);
 				setMessage(
 					isInitialPasswordSetup
-						? ACCOUNT_MANAGER_MESSAGE_MAP.passwordSet
-						: ACCOUNT_MANAGER_MESSAGE_MAP.passwordUpdated
+						? ACCOUNT_MANAGER_MESSAGE_KEYS.passwordSet
+						: ACCOUNT_MANAGER_MESSAGE_KEYS.passwordUpdated
 				);
 				void publishAccountRuntimeInvalidation({
 					reason: 'password-changed',
@@ -290,7 +296,7 @@ export function useAccountProfile({
 				setMessage(
 					Error.isError(error)
 						? error.message
-						: ACCOUNT_CLIENT_MESSAGE_MAP.passwordChangeFailed
+						: ACCOUNT_CLIENT_MESSAGE_KEYS.passwordChangeFailed
 				);
 			})
 			.finally(() => {
@@ -301,10 +307,12 @@ export function useAccountProfile({
 		currentPassword,
 		isInitialPasswordSetup,
 		isSubmitting,
+		locale,
 		newPassword,
 		passwordMustChange,
 		setIsSubmitting,
 		setMessage,
+		t,
 		user,
 		vibrate,
 	]);
@@ -360,7 +368,7 @@ export function useAccountProfile({
 			isProfileNicknameUnchanged
 		) {
 			setProfileError(null);
-			setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.profileUpdated);
+			setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.profileUpdated);
 			return;
 		}
 		if (isProfileNicknameInvalid) {
@@ -431,7 +439,10 @@ export function useAccountProfile({
 										Error.isError(error)
 											? error.message
 											: '',
-										ACCOUNT_CLIENT_MESSAGE_MAP.accountStateRefreshFailed
+										locale,
+										t(
+											ACCOUNT_CLIENT_MESSAGE_KEYS.accountStateRefreshFailed
+										)
 									)
 								);
 							}
@@ -479,7 +490,7 @@ export function useAccountProfile({
 				setProfileNickname(data.user.nickname ?? '');
 				setProfileUsername(data.user.username);
 				setProfileError(null);
-				setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.profileUpdated);
+				setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.profileUpdated);
 				signalCurrentWebAuthnUserDetails({
 					displayName: data.user.nickname ?? data.user.username,
 					userId: data.user.id,
@@ -507,7 +518,7 @@ export function useAccountProfile({
 				setProfileError(
 					Error.isError(error)
 						? error.message
-						: ACCOUNT_MANAGER_MESSAGE_MAP.profileUpdateFailed
+						: ACCOUNT_MANAGER_MESSAGE_KEYS.profileUpdateFailed
 				);
 			})
 			.finally(() => {
@@ -516,6 +527,7 @@ export function useAccountProfile({
 	}, [
 		csrfToken,
 		isSubmitting,
+		locale,
 		profileCurrentPassword,
 		profileUsername,
 		isProfileNicknameInvalid,
@@ -525,6 +537,7 @@ export function useAccountProfile({
 		normalizedProfileNickname,
 		setIsSubmitting,
 		setMessage,
+		t,
 		signalCurrentWebAuthnUserDetails,
 		user,
 		vibrate,

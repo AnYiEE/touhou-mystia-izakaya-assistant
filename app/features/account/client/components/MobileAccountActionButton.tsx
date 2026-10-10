@@ -7,6 +7,10 @@ import { memo } from 'react';
 
 import Button, { type IButtonProps } from '@/design/ui/components/button';
 
+import { accountMessages } from '@/features/account/client/messages';
+
+import { useI18n } from '@/shared/i18n/useI18n';
+
 interface IProps extends Pick<
 	IButtonProps,
 	'className' | 'isDisabled' | 'onClick' | 'onPress' | 'onPressStart'
@@ -24,6 +28,7 @@ export default memo<IProps>(function MobileAccountActionButton({
 	onPressStart,
 	syncStatusLabel,
 }) {
+	const { t } = useI18n(accountMessages);
 	const interactionProps = {
 		...(onClick === undefined ? {} : { onClick }),
 		...(onPress === undefined ? {} : { onPress }),
@@ -50,7 +55,7 @@ export default memo<IProps>(function MobileAccountActionButton({
 					{label}
 				</span>
 				<span className="block truncate text-tiny text-foreground-500">
-					数据同步和账号安全
+					{t('account.manager.mobile.subtitle')}
 				</span>
 			</span>
 			{syncStatusLabel !== null && (

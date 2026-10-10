@@ -7,6 +7,7 @@ import { compareMapCanonicalOrder } from '@/domain/places/mapOrdering';
 
 import { filterBeverageData } from '@/features/catalog/items/beverages/client/queries/filterBeverageData';
 import { beveragesStore } from '@/features/catalog/items/beverages/client/state/store';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import ItemPage from '@/features/catalog/shared/client/components/ItemPage';
 import SideButtonGroup from '@/features/catalog/shared/client/components/SideButtonGroup';
 import SideFilterIconButton, {
@@ -15,13 +16,17 @@ import SideFilterIconButton, {
 import SidePinyinSortIconButton from '@/features/catalog/shared/client/components/SidePinyinSortIconButton';
 import { useFilteredData } from '@/features/catalog/shared/client/hooks/useFilteredData';
 import { useSortedData } from '@/features/catalog/shared/client/hooks/useSortedData';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import { type IPinyinSortConfig } from '@/features/catalog/shared/state/pinyinSort';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 import BeverageCatalog from './BeverageCatalog';
 
 export default function BeveragesCatalogPage() {
+	const { t } = useI18n(catalogItemsMessages);
+	useCatalogLocalizationRevision();
 	const instance = beveragesStore.instance.get();
 	const isAvailabilityDlcFilterRedundant = hasEquivalentDlcFilters(
 		instance.data
@@ -97,7 +102,7 @@ export default function BeveragesCatalogPage() {
 		() => [
 			{
 				items: availableContentDlcs,
-				label: '内容归属',
+				label: t('items.filter.contentDlc'),
 				selectedKeys: filterContentDlcs,
 				setSelectedKeys:
 					beveragesStore.persistence.filters.contentDlcs.set,
@@ -108,7 +113,7 @@ export default function BeveragesCatalogPage() {
 				: [
 						{
 							items: availableAvailabilityDlcs,
-							label: '可获取于',
+							label: t('items.filter.acquirableAt'),
 							selectedKeys: filterAvailabilityDlcs,
 							setSelectedKeys:
 								beveragesStore.persistence.filters
@@ -118,34 +123,34 @@ export default function BeveragesCatalogPage() {
 					]),
 			{
 				items: availableTags,
-				label: '酒水标签（包含）',
+				label: t('items.filter.beverageTagInclude'),
 				selectedKeys: filterTags,
 				setSelectedKeys: beveragesStore.persistence.filters.tags.set,
 				valueType: 'beverageTag',
 			},
 			{
 				items: availableTags,
-				label: '酒水标签（排除）',
+				label: t('items.filter.beverageTagExclude'),
 				selectedKeys: filterNoTags,
 				setSelectedKeys: beveragesStore.persistence.filters.noTags.set,
 				valueType: 'beverageTag',
 			},
 			{
 				items: availableLevels,
-				label: '等级',
+				label: t('items.filter.level'),
 				selectedKeys: filterLevels,
 				setSelectedKeys: beveragesStore.persistence.filters.levels.set,
 			},
 			{
 				items: canonicalAvailableMaps,
-				label: '地区（包含）',
+				label: t('items.filter.mapInclude'),
 				selectedKeys: filterPlaces,
 				setSelectedKeys: beveragesStore.persistence.filters.places.set,
 				valueType: 'map',
 			},
 			{
 				items: canonicalAvailableMaps,
-				label: '地区（排除）',
+				label: t('items.filter.mapExclude'),
 				selectedKeys: filterNoPlaces,
 				setSelectedKeys:
 					beveragesStore.persistence.filters.noPlaces.set,
@@ -166,6 +171,7 @@ export default function BeveragesCatalogPage() {
 			filterPlaces,
 			filterTags,
 			isAvailabilityDlcFilterRedundant,
+			t,
 		]
 	);
 

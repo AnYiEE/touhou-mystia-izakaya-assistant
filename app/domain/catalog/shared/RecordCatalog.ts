@@ -1,6 +1,7 @@
 import { attachAvailabilityData } from '@/domain/availability/catalog';
 import type { TAvailabilityCategory } from '@/domain/availability/types';
 
+import type { TLocale } from '@/shared/i18n/locale';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
 import { getPinyin } from '@/shared/utilities/pinyin/getPinyin';
@@ -53,6 +54,9 @@ export class RecordCatalog<
 		ReadonlyArray<TItem>,
 		ReadonlyArray<TItem>
 	>;
+	private _activeLocalizedData: ReadonlyArray<TItem> | null = null;
+	private _activeLocalizedLocale: TLocale | null = null;
+	private _nameCollator: Intl.Collator | null = null;
 
 	protected constructor(data: TItems, category?: TAvailabilityCategory) {
 		const dataWithAvailability =
@@ -89,7 +93,32 @@ export class RecordCatalog<
 	}
 
 	public get data() {
+		return this._activeLocalizedData ?? this._data;
+	}
+
+	public get canonicalData() {
 		return this._data;
+	}
+
+	/**
+	 * @description Display projection for one locale. The canonical data keeps
+	 * owning identity (names, indices, pinyin); the localized view only feeds
+	 * rendering, sorting and display-oriented queries.
+	 */
+	public setActiveLocalizedData(
+		locale: TLocale | null,
+		data: ReadonlyArray<TItem> | null
+	) {
+		this._activeLocalizedData = data;
+		this._activeLocalizedLocale = locale;
+		this._nameCollator =
+			locale !== null && !locale.startsWith('zh')
+				? new Intl.Collator(locale)
+				: null;
+	}
+
+	public get activeLocalizedLocale() {
+		return this._activeLocalizedLocale;
 	}
 
 	public formatId(id: TItemId) {
@@ -176,6 +205,55 @@ export class RecordCatalog<
 		return this.getPropsByIndex<T>(this.findIndexById(id), ...props);
 	}
 
+	public getDisplayPropsById(id: TItem['id']): TItem;
+	public getDisplayPropsById(id: TItem['id'], prop: 'name'): TItemName;
+	public getDisplayPropsById<T extends keyof TItem>(
+		id: TItem['id'],
+		prop: T
+	): TItem[T];
+	public getDisplayPropsById<T extends keyof TItem>(
+		id: TItem['id'],
+		...props: T[]
+	): Array<TItem[T]>;
+	/**
+	 * @description Display projection of {@link getPropsById}: reads the
+	 * locale-localized view when one is active. Identity reads ({@link
+	 * getPropsById}) intentionally stay canonical.
+	 */
+	public getDisplayPropsById<T extends keyof TItem>(
+		id: TItem['id'],
+		...props: T[]
+	): TItem | TItem[T] | Array<TItem[T]> {
+		return this.getDisplayPropsByIndex<T>(this.findIndexById(id), ...props);
+	}
+
+	public getDisplayPropsByIndex(index: number): TItem;
+	public getDisplayPropsByIndex(index: number, prop: 'name'): TItemName;
+	public getDisplayPropsByIndex<T extends keyof TItem>(
+		index: number,
+		prop: T
+	): TItem[T];
+	public getDisplayPropsByIndex<T extends keyof TItem>(
+		index: number,
+		...props: T[]
+	): Array<TItem[T]>;
+	public getDisplayPropsByIndex<T extends keyof TItem>(
+		index: number,
+		...props: T[]
+	): TItem | TItem[T] | Array<TItem[T]> {
+		const item = this.data[index];
+		this.checkIndexRange(index, item);
+
+		if (!checkLengthEmpty(props)) {
+			if (props.length === 1) {
+				return item[props[0] as T];
+			}
+			return props.map((prop) => item[prop]);
+		}
+
+		return item;
+	}
+
 	public getValuesByProp<T extends keyof TItem>(
 		prop: T | ReadonlyArray<T>,
 		wrap: true,
@@ -191,7 +269,7 @@ export class RecordCatalog<
 		wrap?: boolean,
 		data?: ReadonlyArray<TItem>
 	) {
-		const target = data ?? this._data;
+		const target = data ?? this.data;
 
 		const props = isReadonlyArray(prop) ? prop : [prop];
 		const values = new Set<unknown>();
@@ -229,10 +307,9 @@ export class RecordCatalog<
 	}
 
 	public getPinyinSortedData(data?: ReadonlyArray<TItem>) {
-		const target = data ?? this._data;
-		return this._pinyinSortedDataCacheMap.getOrInsertComputed(
-			target,
-			this.sortByPinyin
+		const target = data ?? this.data;
+		return this._pinyinSortedDataCacheMap.getOrInsertComputed(target, () =>
+			this.sortForDisplay(target)
 		);
 	}
 
@@ -245,9 +322,14 @@ export class RecordCatalog<
 		}
 	}
 
-	private sortByPinyin(data: ReadonlyArray<TItem>) {
-		return data.toSorted(({ pinyin: a }, { pinyin: b }) =>
-			pinyinSort(a, b)
-		);
+	private sortForDisplay(data: ReadonlyArray<TItem>) {
+		const collator = this._nameCollator;
+		if (collator === null) {
+			return data.toSorted(({ pinyin: a }, { pinyin: b }) =>
+				pinyinSort(a, b)
+			);
+		}
+
+		return data.toSorted((a, b) => collator.compare(a.name, b.name));
 	}
 }

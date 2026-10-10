@@ -5,5 +5,5 @@ export function getAccountSyncPauseIndicator(
 ) {
 	void syncStatus;
 
-	return { isPaused: false, label: null };
+	return { isPaused: false, labelKey: null };
 }

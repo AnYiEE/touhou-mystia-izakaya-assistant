@@ -6,6 +6,10 @@ import {
 	type IAnnouncementChangedField,
 } from '@/features/announcements/contracts';
 import {
+	normalizeAnnouncementLocales,
+	normalizeAnnouncementTranslations,
+} from '@/features/announcements/server/localization';
+import {
 	checkAnnouncementAudience,
 	checkAnnouncementComputedStatus,
 	checkAnnouncementLevel,
@@ -20,6 +24,13 @@ import {
 	isPositiveSafeInteger,
 } from '@/shared/utilities/numbers/check';
 import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+
+/** Fields whose value is a structured payload compared by JSON equality. */
+const DEEP_COMPARED_FIELDS: ReadonlySet<string> = new Set([
+	'locales',
+	'target_user_ids',
+	'translations',
+]);
 
 function parseJsonObject(value: string) {
 	try {
@@ -108,11 +119,17 @@ function parseAnnouncementSnapshot(
 	const endsAt = snapshot['ends_at'];
 	const deletedAt = snapshot['deleted_at'];
 	const targetUserIds = parseTargetUserIds(snapshot['target_user_ids'] ?? []);
+	const locales = normalizeAnnouncementLocales(snapshot['locales'] ?? []);
+	const translations = normalizeAnnouncementTranslations(
+		snapshot['translations'] ?? {}
+	);
 	if (
 		!isNullableNonNegativeSafeInteger(startsAt) ||
 		!isNullableNonNegativeSafeInteger(endsAt) ||
 		!isNullableNonNegativeSafeInteger(deletedAt) ||
-		targetUserIds === null
+		locales === null ||
+		targetUserIds === null ||
+		translations === null
 	) {
 		return null;
 	}
@@ -128,11 +145,13 @@ function parseAnnouncementSnapshot(
 		html: snapshot['html'],
 		id: snapshot['id'],
 		level,
+		locales,
 		priority: snapshot['priority'],
 		revision: snapshot['revision'],
 		starts_at: startsAt,
 		target_user_ids: targetUserIds,
 		title: snapshot['title'],
+		translations,
 		updated_at: snapshot['updated_at'],
 	};
 }
@@ -177,11 +196,13 @@ export function createAnnouncementChangedFields(
 		'html',
 		'id',
 		'level',
+		'locales',
 		'priority',
 		'revision',
 		'starts_at',
 		'target_user_ids',
 		'title',
+		'translations',
 		'updated_at',
 	] as const;
 
@@ -195,7 +216,7 @@ export function createAnnouncementChangedFields(
 
 	return fields
 		.filter((field) => {
-			if (field === 'target_user_ids') {
+			if (DEEP_COMPARED_FIELDS.has(field)) {
 				return (
 					JSON.stringify(previous[field]) !==
 					JSON.stringify(next[field])

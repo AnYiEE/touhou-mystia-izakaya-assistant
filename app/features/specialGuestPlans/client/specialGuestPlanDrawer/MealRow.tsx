@@ -12,8 +12,7 @@ import type { TBeverageId } from '@/domain/data/beverages/types';
 import type { TCookerId } from '@/domain/data/cookers/types';
 import type { TFoodId } from '@/domain/data/foods/types';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
-import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
-import { GUEST_RATING_MAP } from '@/domain/evaluation/labels';
+import { getEvaluationLabelByKey } from '@/domain/evaluation/localizedLabels';
 
 import RatingAvatarShell from '@/features/catalog/guests/shared/client/components/ratingAvatarShell';
 import { Plus } from '@/features/catalog/guests/shared/client/components/resultCardAtoms';
@@ -26,7 +25,15 @@ import {
 import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import Tags from '@/features/catalog/shared/client/components/Tags';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
+import {
+	getBeverageTagLabel,
+	getFoodTagLabel,
+} from '@/features/catalog/shared/client/localization/tagLabels';
+import { specialGuestPlansMessages } from '@/features/specialGuestPlans/client/messages';
 import type { IResolvedSpecialGuestPlanGroup } from '@/features/specialGuestPlans/contracts';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 const beverageCatalog = BeverageCatalog.getInstance();
 const cookerCatalog = CookerCatalog.getInstance();
@@ -48,6 +55,8 @@ export default function MealRow({
 	onOpenIngredient: (ingredient: TIngredientId) => void;
 	popoverPortalProps: Pick<IPopoverProps, 'portalContainer'>;
 }) {
+	const { t } = useI18n(specialGuestPlansMessages);
+	useCatalogLocalizationRevision();
 	const {
 		cooker,
 		evaluation: { isDarkMatter, price, rating: ratingKey },
@@ -56,21 +65,28 @@ export default function MealRow({
 	} = meal;
 	const isDarkMatterOrNormalMeal = isDarkMatter || !hasMystiaCooker;
 	const { food, recipe } = foodCatalog.getRecipeOwnerById(mealFood.recipeId);
-	const beverageName = beverageCatalog.getPropsById(beverage, 'name');
-	const cookerName = cookerCatalog.getPropsById(cooker, 'name');
-	const displayFood = isDarkMatter ? foodCatalog.getPropsById(-1) : food;
+	const beverageName = beverageCatalog.getDisplayPropsById(beverage, 'name');
+	const cookerName = cookerCatalog.getDisplayPropsById(cooker, 'name');
+	const displayFood = isDarkMatter
+		? foodCatalog.getDisplayPropsById(-1)
+		: food;
 	const foodName = displayFood.name;
-	const rating = ratingKey === null ? '未评级' : GUEST_RATING_MAP[ratingKey];
+	const rating =
+		ratingKey === null
+			? t('plans.meal.unrated')
+			: getEvaluationLabelByKey(ratingKey);
 	const ratingColor = ratingKey ?? 'default';
-	const cookerLabel = `点击：在新窗口中查看厨具【${cookerName}】的详情`;
-	const foodLabel = `点击：在新窗口中查看料理【${foodName}】的详情`;
-	const beverageLabel = `点击：在新窗口中查看酒水【${beverageName}】的详情`;
+	const cookerLabel = t('plans.meal.viewCookerTip', { name: cookerName });
+	const foodLabel = t('plans.meal.viewFoodTip', { name: foodName });
+	const beverageLabel = t('plans.meal.viewBeverageTip', {
+		name: beverageName,
+	});
 
 	return (
 		<div className="relative isolate min-w-0 rounded-small border border-default-200/80 bg-background/35 px-4 py-3 transition-background hover:bg-default/30 motion-reduce:transition-none dark:border-white/10 dark:bg-white/[0.06] dark:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.05),0_8px_20px_rgb(0_0_0_/_0.12)] dark:hover:bg-white/[0.085]">
 			{source === 'recommended' && (
 				<span className="pointer-events-none absolute right-1.5 top-1.5 z-[1] rounded-small bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary">
-					推荐
+					{t('plans.meal.recommended')}
 				</span>
 			)}
 			<div className="relative z-10 flex min-w-0 flex-col flex-wrap items-center gap-2 md:flex-row md:flex-nowrap md:gap-3 min-[1202px]:gap-2">
@@ -102,12 +118,9 @@ export default function MealRow({
 												isDarkMatterOrNormalMeal && (
 													<Tags.Tag
 														className="p-0.5"
-														tag={
-															FOOD_TAG_MAP[
-																guestOrder
-																	.foodTag
-															]
-														}
+														tag={getFoodTagLabel(
+															guestOrder.foodTag
+														)}
 														tagStyle={
 															FOOD_TAG_STYLE.positive
 														}
@@ -117,12 +130,9 @@ export default function MealRow({
 												isDarkMatterOrNormalMeal && (
 													<Tags.Tag
 														className="p-0.5"
-														tag={
-															BEVERAGE_TAG_MAP[
-																guestOrder
-																	.beverageTag
-															]
-														}
+														tag={getBeverageTagLabel(
+															guestOrder.beverageTag
+														)}
 														tagStyle={
 															BEVERAGE_TAG_STYLE.positive
 														}

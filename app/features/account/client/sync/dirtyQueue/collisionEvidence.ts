@@ -57,6 +57,11 @@ export const isolatedFutureSchemaNamespaces = new Map<
 
 const dirtyIntentCollisionNamespaces = new Map<string, Set<TSyncNamespace>>();
 
+/**
+ * @description Persisted evidence identifiers, not display copy. These
+ * strings are stored in the local collision record; rendering maps them to
+ * the active locale through the account message table.
+ */
 const DIRTY_QUEUE_COLLISION_SOURCE_LABEL_MAP = {
 	canonicalQueue: '兼容队列版本',
 	legacyQueue: '旧标签页版本',

@@ -8,12 +8,16 @@ import { usePopoverContext } from '@/design/ui/components/popover';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import { useParams } from '@/features/appShell/client/navigation/useParams';
+import { itemSharingMessages } from '@/features/itemSharing/client/messages';
 import {
 	ITEM_PREVIEW_PARAM_NAME,
 	ITEM_SHARE_PARAM_NAME,
 } from '@/features/itemSharing/contracts';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+
 export const ItemPopoverCloseButton = memo(function ItemPopoverCloseButton() {
+	const { t } = useI18n(itemSharingMessages);
 	const { params, replaceState } = useParams();
 	const { onClose } = usePopoverContext();
 
@@ -34,7 +38,9 @@ export const ItemPopoverCloseButton = memo(function ItemPopoverCloseButton() {
 		}
 	}, [isPreviewMode, onClose, params, replaceState]);
 
-	const label = `点击：关闭${isPreviewMode ? '窗口' : '弹出框'}`;
+	const label = t(
+		isPreviewMode ? 'itemSharing.closeWindow' : 'itemSharing.closePopover'
+	);
 
 	return (
 		<Tooltip

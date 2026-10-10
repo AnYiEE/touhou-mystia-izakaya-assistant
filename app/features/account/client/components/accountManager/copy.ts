@@ -1,61 +1,76 @@
 import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
+import {
+	type TAccountMessageKey,
+	type TAccountTranslate,
+} from '@/features/account/client/messages';
 
-export const ACCOUNT_MANAGER_MESSAGE_MAP = {
-	accountDeleteFailed: '删除账号失败',
-	authenticationCredentialsRequired: '请输入用户名和密码',
-	authenticationFailed: '认证失败',
-	cloudDataChangedReconfirm: '云端数据已发生变化，请重新确认后再清空',
-	cloudDataChangedRefreshing: '云端数据已发生变化，正在刷新账号状态…',
-	cloudDataCleared: '云端数据已清空',
-	cloudDataClearFailed: '清空云端数据失败',
-	loginSuccess: '登录成功',
-	logoutSyncFailed: '退出前同步失败',
-	passkeyAdded: '通行密钥已添加',
-	passkeyAddFailed: '通行密钥添加失败',
-	passkeyDeleted: '通行密钥已删除',
-	passkeyDeleteFailed: '通行密钥删除失败',
-	passkeyRefreshFailed: '通行密钥刷新失败',
-	passkeyRenamed: '通行密钥已重命名',
-	passkeyRenameFailed: '通行密钥重命名失败',
-	passwordSet: '登录密码已设置',
-	passwordUpdated: '密码已更新',
-	profileUpdated: '资料已更新',
-	profileUpdateFailed: '资料修改失败',
-	registrationFailed: '注册失败',
-	registrationSuccess: '注册成功',
-	sessionRefreshFailed: '登录设备刷新失败',
-	sessionRevoked: '已下线登录设备',
-	sessionRevokeFailed: '登录设备撤销失败',
-	ssoGrantRefreshFailed: '已授权应用刷新失败',
-	ssoGrantRevoked: '已撤销授权',
-	ssoGrantRevokeFailed: '撤销授权失败',
-	syncPendingBeforeLogout: '同步尚未完成，请先重试同步后再退出',
-	termsRequired: '请先阅读并同意法律声明',
-} as const;
+export const ACCOUNT_MANAGER_MESSAGE_KEYS = {
+	accountDeleteFailed: 'account.manager.accountDeleteFailed',
+	authenticationCredentialsRequired:
+		'account.manager.authenticationCredentialsRequired',
+	authenticationFailed: 'account.manager.authenticationFailed',
+	cloudDataChangedReconfirm: 'account.manager.cloudDataChangedReconfirm',
+	cloudDataChangedRefreshing: 'account.manager.cloudDataChangedRefreshing',
+	cloudDataCleared: 'account.manager.cloudDataCleared',
+	cloudDataClearFailed: 'account.manager.cloudDataClearFailed',
+	loginSuccess: 'account.manager.loginSuccess',
+	logoutSyncFailed: 'account.manager.logoutSyncFailed',
+	passkeyAdded: 'account.manager.passkeyAdded',
+	passkeyAddFailed: 'account.manager.passkeyAddFailed',
+	passkeyDeleted: 'account.manager.passkeyDeleted',
+	passkeyDeleteFailed: 'account.manager.passkeyDeleteFailed',
+	passkeyRefreshFailed: 'account.manager.passkeyRefreshFailed',
+	passkeyRenamed: 'account.manager.passkeyRenamed',
+	passkeyRenameFailed: 'account.manager.passkeyRenameFailed',
+	passwordSet: 'account.manager.passwordSet',
+	passwordUpdated: 'account.manager.passwordUpdated',
+	profileUpdated: 'account.manager.profileUpdated',
+	profileUpdateFailed: 'account.manager.profileUpdateFailed',
+	registrationFailed: 'account.manager.registrationFailed',
+	registrationSuccess: 'account.manager.registrationSuccess',
+	sessionRefreshFailed: 'account.manager.sessionRefreshFailed',
+	sessionRevoked: 'account.manager.sessionRevoked',
+	sessionRevokeFailed: 'account.manager.sessionRevokeFailed',
+	ssoGrantRefreshFailed: 'account.manager.ssoGrantRefreshFailed',
+	ssoGrantRevoked: 'account.manager.ssoGrantRevoked',
+	ssoGrantRevokeFailed: 'account.manager.ssoGrantRevokeFailed',
+	syncPendingBeforeLogout: 'account.manager.syncPendingBeforeLogout',
+	termsRequired: 'account.manager.termsRequired',
+} as const satisfies Record<string, TAccountMessageKey>;
 
-export const ACCOUNT_MANAGER_SUCCESS_MESSAGE_SET = new Set<string>([
-	ACCOUNT_MANAGER_MESSAGE_MAP.cloudDataCleared,
-	ACCOUNT_MANAGER_MESSAGE_MAP.loginSuccess,
-	ACCOUNT_MANAGER_MESSAGE_MAP.passkeyAdded,
-	ACCOUNT_MANAGER_MESSAGE_MAP.passkeyDeleted,
-	ACCOUNT_MANAGER_MESSAGE_MAP.passkeyRenamed,
-	ACCOUNT_MANAGER_MESSAGE_MAP.passwordSet,
-	ACCOUNT_MANAGER_MESSAGE_MAP.passwordUpdated,
-	ACCOUNT_MANAGER_MESSAGE_MAP.profileUpdated,
-	ACCOUNT_MANAGER_MESSAGE_MAP.registrationSuccess,
-	ACCOUNT_MANAGER_MESSAGE_MAP.sessionRevoked,
-	ACCOUNT_MANAGER_MESSAGE_MAP.ssoGrantRevoked,
+export const ACCOUNT_MANAGER_SUCCESS_MESSAGE_KEY_SET = new Set<string>([
+	ACCOUNT_MANAGER_MESSAGE_KEYS.cloudDataCleared,
+	ACCOUNT_MANAGER_MESSAGE_KEYS.loginSuccess,
+	ACCOUNT_MANAGER_MESSAGE_KEYS.passkeyAdded,
+	ACCOUNT_MANAGER_MESSAGE_KEYS.passkeyDeleted,
+	ACCOUNT_MANAGER_MESSAGE_KEYS.passkeyRenamed,
+	ACCOUNT_MANAGER_MESSAGE_KEYS.passwordSet,
+	ACCOUNT_MANAGER_MESSAGE_KEYS.passwordUpdated,
+	ACCOUNT_MANAGER_MESSAGE_KEYS.profileUpdated,
+	ACCOUNT_MANAGER_MESSAGE_KEYS.registrationSuccess,
+	ACCOUNT_MANAGER_MESSAGE_KEYS.sessionRevoked,
+	ACCOUNT_MANAGER_MESSAGE_KEYS.ssoGrantRevoked,
 ]);
 
-const ACCOUNT_LOGIN_SUPPORT_LINK_LABEL = '联系管理员';
+const ACCOUNT_LOGIN_SUPPORT_LINK_KEY: TAccountMessageKey =
+	'account.manager.loginSupportLink';
 
-const ACCOUNT_LOGIN_SUPPORT_MESSAGE_PREFIX_MAP = new Map<string, string>([
+const ACCOUNT_LOGIN_SUPPORT_MESSAGE_PREFIX_KEY_MAP = new Map<
+	string,
+	TAccountMessageKey
+>([
 	[
 		ACCOUNT_API_RESPONSE_CODE_MAP.invalidCredentials,
-		'用户名或密码不正确。如需帮助，请',
+		'account.manager.loginSupport.invalidCredentials',
 	],
-	[ACCOUNT_API_RESPONSE_CODE_MAP.userDeleted, '账号已删除。如需恢复，请'],
-	[ACCOUNT_API_RESPONSE_CODE_MAP.userDisabled, '账号已停用。如需启用，请'],
+	[
+		ACCOUNT_API_RESPONSE_CODE_MAP.userDeleted,
+		'account.manager.loginSupport.userDeleted',
+	],
+	[
+		ACCOUNT_API_RESPONSE_CODE_MAP.userDisabled,
+		'account.manager.loginSupport.userDisabled',
+	],
 ]);
 
 export interface IAccountLoginSupportMessage {
@@ -66,44 +81,60 @@ export interface IAccountLoginSupportMessage {
 export function checkAccountLoginCredentialError(message: string | null) {
 	return (
 		message !== null &&
-		ACCOUNT_LOGIN_SUPPORT_MESSAGE_PREFIX_MAP.has(message)
+		ACCOUNT_LOGIN_SUPPORT_MESSAGE_PREFIX_KEY_MAP.has(message)
 	);
 }
 
 export function getAccountLoginSupportMessage(
-	message: string | null
+	message: string | null,
+	t: TAccountTranslate
 ): IAccountLoginSupportMessage | null {
-	const messagePrefix =
+	const messagePrefixKey =
 		message === null
 			? undefined
-			: ACCOUNT_LOGIN_SUPPORT_MESSAGE_PREFIX_MAP.get(message);
-	return messagePrefix === undefined
+			: ACCOUNT_LOGIN_SUPPORT_MESSAGE_PREFIX_KEY_MAP.get(message);
+	return messagePrefixKey === undefined
 		? null
-		: { messagePrefix, supportLinkLabel: ACCOUNT_LOGIN_SUPPORT_LINK_LABEL };
+		: {
+				messagePrefix: t(messagePrefixKey),
+				supportLinkLabel: t(ACCOUNT_LOGIN_SUPPORT_LINK_KEY),
+			};
 }
 
-export const ACCOUNT_MANAGER_STATUS_LABEL_MAP = {
-	awaitingSystemVerification: '正在等待系统验证…',
-	connected: '账号同步已连接',
-	noPasskeys: '暂无通行密钥',
-	noSessions: '暂无可见会话',
-	noSsoGrants: '暂无已授权应用',
-	passkeyPrompt: '无需输入密码，按系统提示确认即可',
-	passkeysUnsupported: '当前环境不支持通行密钥',
-	paused: '云同步已暂停',
-	readingPasskeys: '正在读取通行密钥',
-	readingSessions: '正在读取登录设备',
-	readingSsoGrants: '正在读取已授权应用',
-} as const;
+export const ACCOUNT_MANAGER_STATUS_LABEL_KEYS = {
+	awaitingSystemVerification:
+		'account.manager.status.awaitingSystemVerification',
+	connected: 'account.manager.status.connected',
+	noPasskeys: 'account.manager.status.noPasskeys',
+	noSessions: 'account.manager.status.noSessions',
+	noSsoGrants: 'account.manager.status.noSsoGrants',
+	passkeyPrompt: 'account.manager.status.passkeyPrompt',
+	passkeysUnsupported: 'account.manager.status.passkeysUnsupported',
+	paused: 'account.manager.status.paused',
+	readingPasskeys: 'account.manager.status.readingPasskeys',
+	readingSessions: 'account.manager.status.readingSessions',
+	readingSsoGrants: 'account.manager.status.readingSsoGrants',
+} as const satisfies Record<string, TAccountMessageKey>;
 
-const ACCOUNT_BOOTSTRAP_ERROR_MESSAGE_MAP: Record<string, string> = {
-	'bootstrap-failed': '账号服务初始化失败，请刷新页面重试',
-	'server-misconfigured': '服务器配置异常',
+const ACCOUNT_BOOTSTRAP_ERROR_MESSAGE_KEYS: Readonly<
+	Record<string, TAccountMessageKey>
+> = {
+	'bootstrap-failed': 'account.manager.bootstrapFailed',
+	'server-misconfigured': 'account.manager.bootstrapServerMisconfigured',
 };
 
-export function getAccountBootstrapErrorMessage(errorCode: string | null) {
+export function getAccountBootstrapErrorMessage(
+	errorCode: string | null,
+	t: TAccountTranslate
+) {
 	if (errorCode === null) {
-		return '账号功能暂不可用：服务器配置异常';
+		return t('account.manager.bootstrapUnavailable', {
+			message: t('account.manager.bootstrapServerMisconfigured'),
+		});
 	}
-	return `账号功能暂不可用：${ACCOUNT_BOOTSTRAP_ERROR_MESSAGE_MAP[errorCode] ?? errorCode}`;
+
+	const messageKey = ACCOUNT_BOOTSTRAP_ERROR_MESSAGE_KEYS[errorCode];
+	return t('account.manager.bootstrapUnavailable', {
+		message: messageKey === undefined ? errorCode : t(messageKey),
+	});
 }

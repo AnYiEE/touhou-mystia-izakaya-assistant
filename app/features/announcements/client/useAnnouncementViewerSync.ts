@@ -12,10 +12,14 @@ import type {
 import { fetchServiceApi } from '@/infrastructure/http/client/fetchServiceApi';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
+import type { TLocale } from '@/shared/i18n/locale';
+
 const ANNOUNCEMENT_VIEWER_SYNC_DEBOUNCE_MS = 150;
 
 interface IUseAnnouncementViewerSyncOptions {
+	locale: TLocale;
 	onAnnouncements: (announcements: IAnnouncementPublicItem[]) => void;
+	renderedLocale: TLocale;
 	serverViewerSignature: string | null;
 }
 
@@ -28,7 +32,9 @@ function readCurrentViewerSignature() {
 }
 
 export function useAnnouncementViewerSync({
+	locale,
 	onAnnouncements,
+	renderedLocale,
 	serverViewerSignature,
 }: IUseAnnouncementViewerSyncOptions) {
 	const bootstrapStatus = accountStore.shared.bootstrapStatus.use();
@@ -40,18 +46,24 @@ export function useAnnouncementViewerSync({
 		user,
 	});
 	const renderedViewerSignatureRef = useRef(serverViewerSignature);
+	const renderedLocaleRef = useRef(renderedLocale);
+	const latestLocaleRef = useRef(locale);
 	const syncGenerationRef = useRef(0);
+	latestLocaleRef.current = locale;
 
 	useEffect(() => {
 		renderedViewerSignatureRef.current = serverViewerSignature;
+		renderedLocaleRef.current = renderedLocale;
 		syncGenerationRef.current += 1;
-	}, [serverViewerSignature]);
+	}, [renderedLocale, serverViewerSignature]);
 
 	useEffect(() => {
+		if (serverViewerSignature === null || viewerSignature === null) {
+			return;
+		}
 		if (
-			serverViewerSignature === null ||
-			viewerSignature === null ||
-			viewerSignature === renderedViewerSignatureRef.current
+			viewerSignature === renderedViewerSignatureRef.current &&
+			locale === renderedLocaleRef.current
 		) {
 			return;
 		}
@@ -61,11 +73,16 @@ export function useAnnouncementViewerSync({
 			if (generation !== syncGenerationRef.current) {
 				return;
 			}
+			if (latestLocaleRef.current !== locale) {
+				return;
+			}
 
 			const currentViewerSignature = readCurrentViewerSignature();
 			if (
 				currentViewerSignature === null ||
-				currentViewerSignature === renderedViewerSignatureRef.current
+				(currentViewerSignature ===
+					renderedViewerSignatureRef.current &&
+					locale === renderedLocaleRef.current)
 			) {
 				return;
 			}
@@ -79,6 +96,9 @@ export function useAnnouncementViewerSync({
 					if (generation !== syncGenerationRef.current) {
 						return;
 					}
+					if (latestLocaleRef.current !== locale) {
+						return;
+					}
 					if (
 						readCurrentViewerSignature() !== currentViewerSignature
 					) {
@@ -86,6 +106,7 @@ export function useAnnouncementViewerSync({
 					}
 
 					renderedViewerSignatureRef.current = currentViewerSignature;
+					renderedLocaleRef.current = locale;
 					onAnnouncements(data.announcements);
 				} catch (error) {
 					console.warn('announcement viewer sync failed', {
@@ -98,5 +119,5 @@ export function useAnnouncementViewerSync({
 		return () => {
 			clearTimeout(timer);
 		};
-	}, [onAnnouncements, serverViewerSignature, viewerSignature]);
+	}, [locale, onAnnouncements, serverViewerSignature, viewerSignature]);
 }

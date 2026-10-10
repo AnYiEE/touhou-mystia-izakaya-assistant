@@ -9,6 +9,8 @@ import type {
 	TFoodTableColumnKey,
 } from '@/features/catalog/guests/shared/state/tableDescriptors';
 
+import type { TLocalePreference } from '@/shared/i18n/locale';
+
 export interface TGlobalPreferencesSnapshot {
 	donationModal: {
 		interactionCount: number;
@@ -19,6 +21,7 @@ export interface TGlobalPreferencesSnapshot {
 	guestCardTagsTooltip: boolean;
 	hiddenItems: { dlcs: string[] };
 	highAppearance: boolean;
+	locale: TLocalePreference;
 	popularTrend: IPopularTrend;
 	suggestMeals: {
 		enabled: boolean;

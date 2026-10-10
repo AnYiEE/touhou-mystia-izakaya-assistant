@@ -8,14 +8,21 @@ import Heading from '@/design/ui/components/heading';
 import Switch from '@/design/ui/components/switch';
 import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
 
-import { DLC_LABEL_MAP } from '@/domain/availability/messages';
+import { getDlcLabel } from '@/domain/availability/localizedLabels';
+import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
-import { DYNAMIC_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import { DYNAMIC_FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
+import { getFoodTagLabel } from '@/features/catalog/shared/client/localization/tagLabels';
+import { catalogSharedMessages } from '@/features/catalog/shared/client/messages';
+import { preferencesMessages } from '@/features/preferences/client/messages';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import SwitchItem from './PreferenceSwitchItem';
 import {
@@ -24,6 +31,7 @@ import {
 } from './preferenceTarget';
 
 const SHAMEIMARU_AYA_ID: TSpecialGuestId = 4000;
+const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 const POPULAR_TREND_SWITCH_CLASS_NAMES = {
 	base: 'mx-2',
 	wrapper: 'bg-primary',
@@ -45,6 +53,9 @@ export default memo<IProps>(function GlobalPreferencesSection({
 	const { isHighAppearance } = useDesignPreferences();
 	const selectMotionProps = useMotionProps('select');
 	const vibrate = useVibrate();
+	const { t } = useI18n(preferencesMessages);
+	const { t: tShared } = useI18n(catalogSharedMessages);
+	useCatalogLocalizationRevision();
 
 	const allDlcs = globalStore.dlcs.get();
 	const hiddenDlcs = globalStore.hiddenDlcs.use();
@@ -93,18 +104,18 @@ export default memo<IProps>(function GlobalPreferencesSection({
 	return (
 		<>
 			<Heading as="h2" className="mt-0">
-				全局设置
+				{t('preferences.section.global')}
 			</Heading>
 			<Heading
 				as="h3"
-				subTitle="关闭未拥有的数据集以隐藏仅在对应数据集中出现或可以获取的内容"
+				subTitle={t('preferences.global.dataset.subTitle')}
 			>
-				数据集
+				{t('preferences.global.dataset.title')}
 			</Heading>
 			<div
 				{...getPreferenceTargetDataProps('global-hidden-dlcs')}
 				className={cn(
-					'grid h-min w-full grid-cols-2 content-start justify-items-start gap-2 md:grid-cols-3 md:gap-x-12',
+					'grid h-min w-full grid-cols-2 content-start gap-2 md:grid-cols-3 md:gap-x-12',
 					{ 'lg:w-1/2': !isPreferencesModalOpen },
 					getPreferenceTargetClassName(
 						'global-hidden-dlcs',
@@ -114,6 +125,7 @@ export default memo<IProps>(function GlobalPreferencesSection({
 			>
 				{allDlcs.map(({ value: dlc }, index) => {
 					const isHidden = hiddenDlcs.has(dlc);
+					const dlcLabel = getDlcLabel(dlc);
 					return (
 						<SwitchItem
 							key={index}
@@ -128,10 +140,15 @@ export default memo<IProps>(function GlobalPreferencesSection({
 								}
 								globalStore.hiddenDlcs.set(newHiddenDlcs);
 							}}
-							aria-label={`${isHidden ? '显示' : '隐藏'}${DLC_LABEL_MAP[dlc].label}数据集`}
+							aria-label={t(
+								isHidden
+									? 'preferences.global.dataset.showAria'
+									: 'preferences.global.dataset.hideAria',
+								{ label: dlcLabel }
+							)}
 						>
 							<span className="inline-block min-w-16">
-								{DLC_LABEL_MAP[dlc].label}
+								{dlcLabel}
 							</span>
 						</SwitchItem>
 					);
@@ -139,9 +156,9 @@ export default memo<IProps>(function GlobalPreferencesSection({
 			</div>
 			<Heading
 				as="h3"
-				subTitle="正确设置游戏中现时的流行趋势可以使套餐评级更为准确"
+				subTitle={t('preferences.global.popularTrend.subTitle')}
 			>
-				流行趋势
+				{t('preferences.global.popularTrend.title')}
 			</Heading>
 			<div
 				{...getPreferenceTargetDataProps('global-popular-trend')}
@@ -154,22 +171,35 @@ export default memo<IProps>(function GlobalPreferencesSection({
 				)}
 			>
 				<div className="flex items-center">
-					<span className="font-medium">类别：</span>
-					{DYNAMIC_TAG_MAP.popularPositive}
+					<span className="font-medium">
+						{t('preferences.global.popularTrend.category')}
+					</span>
+					{getFoodTagLabel(DYNAMIC_FOOD_TAG_MAP.popularPositive)}
 					<Switch
 						isSelected={isPopularTrendNegative}
 						size="sm"
 						onValueChange={
 							globalStore.persistence.popularTrend.isNegative.set
 						}
-						aria-label={`设置为${isPopularTrendNegative ? DYNAMIC_TAG_MAP.popularPositive : DYNAMIC_TAG_MAP.popularNegative}`}
+						aria-label={t(
+							'preferences.global.popularTrend.switchAria',
+							{
+								tag: getFoodTagLabel(
+									isPopularTrendNegative
+										? DYNAMIC_FOOD_TAG_MAP.popularPositive
+										: DYNAMIC_FOOD_TAG_MAP.popularNegative
+								),
+							}
+						)}
 						classNames={POPULAR_TREND_SWITCH_CLASS_NAMES}
 					/>
-					{DYNAMIC_TAG_MAP.popularNegative}
+					{getFoodTagLabel(DYNAMIC_FOOD_TAG_MAP.popularNegative)}
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
 					<div className="flex items-center">
-						<span className="font-medium">标签：</span>
+						<span className="font-medium">
+							{t('preferences.global.popularTrend.tag')}
+						</span>
 						<Select
 							disableAnimation={isReducedMotion}
 							isVirtualized={false}
@@ -180,8 +210,12 @@ export default memo<IProps>(function GlobalPreferencesSection({
 							onSelectionChange={
 								globalStore.selectedPopularTag.set
 							}
-							aria-label="选择游戏中现时流行的标签"
-							title="选择游戏中现时流行的标签"
+							aria-label={t(
+								'preferences.global.popularTrend.selectAria'
+							)}
+							title={t(
+								'preferences.global.popularTrend.selectAria'
+							)}
 							popoverProps={popularTagPopoverProps}
 							classNames={popularTagSelectClassNames}
 						>
@@ -199,25 +233,34 @@ export default memo<IProps>(function GlobalPreferencesSection({
 						variant="flat"
 						onPress={onClearPopularTrendButtonPress}
 					>
-						清除选择
+						{t('preferences.global.popularTrend.clear')}
 					</Button>
 				</div>
 				<SwitchItem
 					isSelected={isFamousShop}
 					onValueChange={globalStore.persistence.famousShop.set}
-					aria-label={`${isFamousShop ? '关闭' : '开启'}“明星店”效果`}
+					aria-label={t(
+						isFamousShop
+							? 'preferences.global.famousShop.disableAria'
+							: 'preferences.global.famousShop.enableAria'
+					)}
 					className="!mt-4"
 				>
-					“明星店”效果
+					{t('preferences.global.famousShop')}
 					<span className="text-tiny text-foreground-500">
-						【
+						{tShared('catalog.guestTag.open')}
 						<Sprite
 							target="special_guest"
 							recordId={SHAMEIMARU_AYA_ID}
 							size={1}
 							className="mx-0.5 rounded-full align-text-top"
 						/>
-						射命丸文】奖励符卡
+						{specialGuestCatalog.getDisplayPropsById(
+							SHAMEIMARU_AYA_ID,
+							'name'
+						)}
+						{tShared('catalog.guestTag.close')}
+						{t('preferences.global.famousShop.rewardSuffix')}
 					</span>
 				</SwitchItem>
 			</div>

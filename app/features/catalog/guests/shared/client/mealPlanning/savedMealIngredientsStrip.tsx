@@ -7,7 +7,10 @@ import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import { getRestExtraIngredients } from '@/domain/meals/getRestExtraIngredients';
 
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps extends Pick<HTMLDivElementAttributes, 'className'> {
 	extraIngredients: ReadonlyArray<TIngredientId>;
@@ -25,6 +28,7 @@ export default memo<IProps>(function SavedMealIngredientsStrip({
 	onOpenIngredient,
 	originalIngredients,
 }) {
+	const { t } = useI18n(catalogGuestsMessages);
 	const visibleExtraIngredients = getRestExtraIngredients(
 		extraIngredients,
 		originalIngredients.length
@@ -33,8 +37,11 @@ export default memo<IProps>(function SavedMealIngredientsStrip({
 	return (
 		<div className={cn('flex items-center gap-x-3', className)}>
 			{originalIngredients.map((ingredient, index) => {
-				const name = ingredientCatalog.getPropsById(ingredient, 'name');
-				const label = `点击：在新窗口中查看食材【${name}】的详情`;
+				const name = ingredientCatalog.getDisplayPropsById(
+					ingredient,
+					'name'
+				);
+				const label = t('guests.savedMeal.viewIngredientTip', { name });
 
 				return (
 					<Tooltip
@@ -64,11 +71,14 @@ export default memo<IProps>(function SavedMealIngredientsStrip({
 					)}
 				>
 					{visibleExtraIngredients.map((ingredient, index) => {
-						const name = ingredientCatalog.getPropsById(
+						const name = ingredientCatalog.getDisplayPropsById(
 							ingredient,
 							'name'
 						);
-						const label = `点击：在新窗口中查看额外食材【${name}】的详情`;
+						const label = t(
+							'guests.savedMeal.viewExtraIngredientTip',
+							{ name }
+						);
 
 						return (
 							<Tooltip

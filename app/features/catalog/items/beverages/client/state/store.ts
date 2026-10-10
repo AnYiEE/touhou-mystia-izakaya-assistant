@@ -2,16 +2,17 @@ import { store } from '@davstack/store';
 
 import { filterAvailableItemsByHiddenDlcs } from '@/domain/availability';
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
 import type { TBeverageTagId } from '@/domain/data/tags/types';
+import { compareMapLabels } from '@/domain/places/localizedLabels';
 
 import {
 	createCatalogPersistenceShape,
 	toAllowedValueSet,
 } from '@/features/catalog/shared/state/catalogPersistenceShape';
 import { createNamesCache } from '@/features/catalog/shared/state/createNamesCache';
+import { registerCatalogLocalizationRevisionMirror } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import { PINYIN_SORT_STATE_MAP } from '@/features/catalog/shared/state/pinyinSort';
 
 import { createPersistMiddleware } from '@/infrastructure/browser/storage/createPersistMiddleware';
@@ -19,7 +20,6 @@ import { createPersistMiddleware } from '@/infrastructure/browser/storage/create
 import { sortBy } from '@/shared/utilities/collections/sortBy';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import {
 	BEVERAGES_STORE_VERSION,
@@ -77,7 +77,10 @@ const state = {
 	instance,
 
 	persistence: persistenceShape.createDefault(),
-	shared: { hiddenItems: { dlcs: new Set<TDlc>() } },
+	shared: {
+		catalogLocalizationRevision: 0,
+		hiddenItems: { dlcs: new Set<TDlc>() },
+	},
 };
 
 const getNames = createNamesCache(instance);
@@ -131,6 +134,7 @@ export const beveragesStore = store(state, {
 			.sort(numberSort);
 	},
 	availableMaps: () => {
+		currentStore.shared.catalogLocalizationRevision.use();
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		return instance
 			.getValuesByProp(
@@ -139,17 +143,15 @@ export const beveragesStore = store(state, {
 				filterAvailableItemsByHiddenDlcs(instance.data, hiddenDlcs)
 			)
 			.map(toGetValueCollection)
-			.sort((left, right) =>
-				pinyinSort(
-					MAP_FACTS[left.value].label,
-					MAP_FACTS[right.value].label
-				)
-			);
+			.sort((left, right) => compareMapLabels(left.value, right.value));
 	},
 	availableNames: () => {
 		const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 		return sortBy(
-			getNames(currentStore.persistence.pinyinSortState.use()),
+			getNames(
+				currentStore.shared.catalogLocalizationRevision.use(),
+				currentStore.persistence.pinyinSortState.use()
+			),
 			instance.getValuesByProp(
 				'name',
 				false,
@@ -172,4 +174,8 @@ beveragesStore.shared.hiddenItems.dlcs.onChange(() => {
 	beveragesStore.persistence.filters.set(
 		persistenceShape.createDefault().filters
 	);
+});
+
+registerCatalogLocalizationRevisionMirror((revision) => {
+	beveragesStore.shared.catalogLocalizationRevision.set(revision);
 });

@@ -15,7 +15,6 @@ import type {
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
-import { FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import { evaluateSpecialGuestSavedMeal } from '@/domain/evaluation/evaluateSavedMeal';
 import type { TRatingKey } from '@/domain/evaluation/types';
@@ -24,6 +23,7 @@ import type { IMealFood, ISpecialGuestSavedMeal } from '@/domain/meals/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import { getVisibleSavedMeals } from '@/features/catalog/guests/shared/mealPlanning/getVisibleSavedMeals';
+import { compareFoodTagLabels } from '@/features/catalog/shared/client/localization/tagLabels';
 import type {
 	IResolvedSpecialGuestPlanGroup,
 	IResolvedSpecialGuestPlanMeal,
@@ -271,7 +271,7 @@ function sortResolvedSpecialGuestPlanMeals({
 		const foodTagSort = compareOptionalTags(
 			a.meal.order.foodTag,
 			b.meal.order.foodTag,
-			(a, b) => pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b])
+			compareFoodTagLabels
 		);
 		if (foodTagSort !== 0) {
 			return foodTagSort;

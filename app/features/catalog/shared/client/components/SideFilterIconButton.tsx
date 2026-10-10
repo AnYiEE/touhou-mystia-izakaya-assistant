@@ -23,23 +23,29 @@ import Tooltip from '@/design/ui/components/tooltip';
 import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
-import { DLC_LABEL_MAP } from '@/domain/availability/messages';
+import { getDlcLabel } from '@/domain/availability/localizedLabels';
 import {
-	COOKER_SERIES_LABEL_MAP,
-	COOKER_TYPE_LABEL_MAP,
-} from '@/domain/data/cookers/cookerFacts';
+	getCookerSeriesLabel,
+	getCookerTypeLabel,
+	getIngredientTypeLabel,
+} from '@/domain/catalog/localizedCategoryLabels';
 import type { TCookerSeriesId } from '@/domain/data/cookers/types';
-import { INGREDIENT_TYPE_MAP } from '@/domain/data/ingredients/ingredientFacts';
 import type { TIngredientTypeId } from '@/domain/data/ingredients/types';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
 import type { TSpriteTarget } from '@/domain/data/sprites/types';
-import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
+import { getMapLabel } from '@/domain/places/localizedLabels';
 
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
+import {
+	getBeverageTagLabel,
+	getFoodTagLabel,
+} from '@/features/catalog/shared/client/localization/tagLabels';
+import { catalogSharedMessages } from '@/features/catalog/shared/client/messages';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 import Sprite from './Sprite';
@@ -176,23 +182,21 @@ function renderSelectItem(
 	const label =
 		name ??
 		(config.valueType === 'beverageTag'
-			? BEVERAGE_TAG_MAP[Number(value) as TBeverageTagId]
+			? getBeverageTagLabel(Number(value) as TBeverageTagId)
 			: config.valueType === 'cookerSeries'
-				? COOKER_SERIES_LABEL_MAP[Number(value) as TCookerSeriesId]
+				? getCookerSeriesLabel(Number(value) as TCookerSeriesId)
 				: config.valueType === 'cookerType'
-					? COOKER_TYPE_LABEL_MAP[
-							Number(value) as keyof typeof COOKER_TYPE_LABEL_MAP
-						]
+					? getCookerTypeLabel(Number(value))
 					: config.valueType === 'dlc'
-						? DLC_LABEL_MAP[value as TDlc].label
+						? getDlcLabel(value as TDlc)
 						: config.valueType === 'ingredientType'
-							? INGREDIENT_TYPE_MAP[
+							? getIngredientTypeLabel(
 									Number(value) as TIngredientTypeId
-								]
+								)
 							: config.valueType === 'foodTag'
-								? FOOD_TAG_MAP[Number(value) as TFoodTagId]
+								? getFoodTagLabel(Number(value) as TFoodTagId)
 								: config.valueType === 'map'
-									? MAP_FACTS[value as TMapLabel].label
+									? getMapLabel(value as TMapLabel)
 									: value.toString());
 
 	return <SelectItem key={value.toString()}>{label}</SelectItem>;
@@ -214,6 +218,8 @@ export default memo<IProps>(function SideFilterIconButton({
 	const selectMotionProps = useMotionProps('select');
 	const isReducedMotion = useReducedMotion();
 	const vibrate = useVibrate();
+	const { t } = useI18n(catalogSharedMessages);
+	useCatalogLocalizationRevision();
 
 	const filteredSelectConfig = useMemo(
 		() =>
@@ -346,7 +352,9 @@ export default memo<IProps>(function SideFilterIconButton({
 		return null;
 	}
 
-	const content = `筛选（${hasFilter ? '已' : '未'}激活）`;
+	const content = t(
+		hasFilter ? 'catalog.sideFilter.active' : 'catalog.sideFilter.inactive'
+	);
 
 	return (
 		<Popover
@@ -418,7 +426,7 @@ export default memo<IProps>(function SideFilterIconButton({
 						variant="flat"
 						onPress={handleResetFilters}
 					>
-						重置当前筛选
+						{t('catalog.sideFilter.reset')}
 					</Button>
 				</div>
 			</PopoverContent>

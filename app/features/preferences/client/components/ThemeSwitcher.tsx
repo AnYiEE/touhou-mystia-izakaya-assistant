@@ -3,6 +3,7 @@
 import {
 	faCircleHalfStroke,
 	faDesktop,
+	faGlobe,
 	faMoon,
 	faSun,
 } from '@fortawesome/free-solid-svg-icons';
@@ -19,6 +20,11 @@ import {
 	DARK_PALETTE_PRESENTATION_MAP,
 	LIGHT_PALETTE_PRESENTATION_MAP,
 } from '@/design/theme/palettePresentation';
+import {
+	PALETTE_MESSAGE_KEYS,
+	type TThemeMessageKey,
+	themeMessages,
+} from '@/design/theme/messages';
 import {
 	DARK_PALETTE_MAP,
 	LIGHT_PALETTE_MAP,
@@ -42,14 +48,25 @@ import { toSelectionKeySet } from '@/design/ui/components/selectionKeys';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import {
+	LOCALE_MENU_ITEMS,
+	resolveLocaleMenuPreference,
+	toLocaleMenuKey,
+} from '@/features/preferences/client/localeMenuItems';
+import { preferencesMessages } from '@/features/preferences/client/messages';
+import {
+	setLocalePreference,
+	useLocalePreference,
+} from '@/features/preferences/client/state/localeRuntime';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
+import { SYSTEM_LOCALE_PREFERENCE } from '@/shared/i18n/locale';
+import { useI18n } from '@/shared/i18n/useI18n';
 import { useHydrated } from '@/shared/react/useHydrated';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
 
 interface IPaletteItem {
 	key: string;
-	label: string;
 	palette: TDarkPalette | TLightPalette;
 	swatchClassName: string;
 }
@@ -60,14 +77,11 @@ const THEME_ICON_MAP = {
 	system: faCircleHalfStroke,
 } as const satisfies Record<TTheme, FontAwesomeIconProps['icon']>;
 
-const THEME_LABEL_MAP = {
-	dark: '深色主题',
-	light: '浅色主题',
-	list: '可选主题列表',
-	switcher: '切换主题',
-	system: '跟随系统',
-} as const satisfies Record<TTheme, string> &
-	Record<'list' | 'switcher', string>;
+const THEME_MESSAGE_KEY_BY_THEME = {
+	dark: 'theme.dark',
+	light: 'theme.light',
+	system: 'theme.system',
+} as const satisfies Record<TTheme, TThemeMessageKey>;
 
 const THEME_LABEL_ICON_MAP = {
 	dark: faMoon,
@@ -115,6 +129,9 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 	const { isHighAppearance } = useDesignPreferences();
 	const isMounted = useHydrated();
 	const vibrate = useVibrate();
+	const localePreference = useLocalePreference();
+	const { t: tPreferences } = useI18n(preferencesMessages);
+	const { t: tTheme } = useI18n(themeMessages);
 
 	const [
 		theme,
@@ -135,13 +152,24 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 			? `light-palette:${lightPalette}`
 			: `dark-palette:${darkPalette}`;
 	const selectedKeys = useMemo(
-		() => toSelectionKeySet([theme, selectedPaletteKey]),
-		[selectedPaletteKey, theme]
+		() =>
+			toSelectionKeySet([
+				theme,
+				selectedPaletteKey,
+				toLocaleMenuKey(localePreference),
+			]),
+		[localePreference, selectedPaletteKey, theme]
 	);
 
 	const handleMenuAction = useCallback(
 		(key: Key) => {
 			if (typeof key !== 'string') {
+				return;
+			}
+
+			const nextLocalePreference = resolveLocaleMenuPreference(key);
+			if (nextLocalePreference !== null) {
+				setLocalePreference(nextLocalePreference);
 				return;
 			}
 
@@ -195,7 +223,7 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 			<div className="flex h-5 w-5 items-center justify-center">
 				<Spinner
 					color="default"
-					title={THEME_LABEL_MAP.switcher}
+					title={tTheme('theme.switcher')}
 					classNames={THEME_SPINNER_CLASS_NAMES}
 				/>
 			</div>
@@ -211,7 +239,7 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 		>
 			<Tooltip
 				showArrow
-				content={THEME_LABEL_MAP.switcher}
+				content={tTheme('theme.switcher')}
 				placement={isMenu ? 'left' : 'bottom'}
 			>
 				<span className="flex">
@@ -219,7 +247,7 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 						<FontAwesomeIconButton
 							disableAnimation={isMenu}
 							icon={currentThemeIcon}
-							aria-label={THEME_LABEL_MAP.switcher}
+							aria-label={tTheme('theme.switcher')}
 							className={cn(
 								'h-5 w-5 min-w-min bg-transparent !text-medium',
 								isMenu
@@ -236,53 +264,79 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 				selectedKeys={selectedKeys}
 				selectionMode="multiple"
 				onAction={handleMenuAction}
-				aria-label={THEME_LABEL_MAP.list}
-				className="w-28"
+				aria-label={tTheme('theme.list')}
+				className="w-max min-w-28 max-w-52"
 				itemClasses={THEME_MENU_ITEM_CLASSES}
 			>
 				<DropdownSection
 					showDivider
-					title="主题"
+					title={tPreferences('preferences.theme.section')}
 					classNames={THEME_MENU_SECTION_CLASS_NAMES}
 				>
-					{THEME_ITEMS.map(({ value }) => (
-						<DropdownItem
-							key={value}
-							textValue={THEME_LABEL_MAP[value]}
-						>
-							<div className="flex items-center gap-1">
-								<FontAwesomeIcon
-									icon={THEME_LABEL_ICON_MAP[value]}
-									className="w-4 pb-px opacity-80"
-								/>
-								{THEME_LABEL_MAP[value]}
-							</div>
-						</DropdownItem>
-					))}
+					{THEME_ITEMS.map(({ value }) => {
+						const label = tTheme(THEME_MESSAGE_KEY_BY_THEME[value]);
+						return (
+							<DropdownItem key={value} textValue={label}>
+								<div className="flex items-center gap-1">
+									<FontAwesomeIcon
+										icon={THEME_LABEL_ICON_MAP[value]}
+										className="w-4 pb-px opacity-80"
+									/>
+									{label}
+								</div>
+							</DropdownItem>
+						);
+					})}
 				</DropdownSection>
 				<DropdownSection
 					items={paletteItems}
-					title="主题配色"
+					showDivider
+					title={tPreferences('preferences.palette.section')}
 					classNames={THEME_MENU_SECTION_CLASS_NAMES}
 				>
-					{({ key, label, swatchClassName }) => (
-						<DropdownItem
-							key={key}
-							closeOnSelect={false}
-							textValue={label}
-						>
-							<div className="flex items-center gap-1.5">
-								<span
-									aria-hidden="true"
-									className={cn(
-										'h-3.5 w-3.5 rounded-full',
-										swatchClassName
-									)}
-								/>
-								{label}
-							</div>
-						</DropdownItem>
-					)}
+					{({ key, palette, swatchClassName }) => {
+						const label = tTheme(PALETTE_MESSAGE_KEYS[palette]);
+						return (
+							<DropdownItem
+								key={key}
+								closeOnSelect={false}
+								textValue={label}
+							>
+								<div className="flex items-center gap-1.5">
+									<span
+										aria-hidden="true"
+										className={cn(
+											'h-3.5 w-3.5 rounded-full',
+											swatchClassName
+										)}
+									/>
+									{label}
+								</div>
+							</DropdownItem>
+						);
+					}}
+				</DropdownSection>
+				<DropdownSection
+					title={tPreferences('preferences.language.section')}
+					classNames={THEME_MENU_SECTION_CLASS_NAMES}
+				>
+					{LOCALE_MENU_ITEMS.map(({ key, label, preference }) => {
+						const itemLabel =
+							preference === SYSTEM_LOCALE_PREFERENCE
+								? tPreferences('preferences.locale.system')
+								: label;
+						return (
+							<DropdownItem key={key} textValue={itemLabel}>
+								<div className="flex items-center gap-1">
+									<FontAwesomeIcon
+										icon={faGlobe}
+										className="w-4 pb-px opacity-80"
+									/>
+									{itemLabel}
+								</div>
+							</DropdownItem>
+						);
+					})}
 				</DropdownSection>
 			</DropdownMenu>
 		</Dropdown>

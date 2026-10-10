@@ -8,13 +8,14 @@ import Popover, {
 } from '@/design/ui/components/popover';
 import Tooltip from '@/design/ui/components/tooltip';
 
-import { type CookerCatalog as CookerCatalogModel } from '@/domain/catalog/items/CookerCatalog';
+import { CookerCatalog as CookerCatalogModel } from '@/domain/catalog/items/CookerCatalog';
 import {
-	COOKER_SERIES_LABEL_MAP,
-	COOKER_TYPE_LABEL_MAP,
-} from '@/domain/data/cookers/cookerFacts';
+	getCookerSeriesLabel,
+	getCookerTypeLabel,
+} from '@/domain/catalog/localizedCategoryLabels';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import ItemCard from '@/features/catalog/shared/client/components/ItemCard';
 import {
 	ItemPopover,
@@ -30,10 +31,12 @@ import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+
 import CookerSourceDetails from './CookerSourceDetails';
 
 interface INameProps {
-	category: (typeof COOKER_SERIES_LABEL_MAP)[keyof typeof COOKER_SERIES_LABEL_MAP];
+	category: string;
 }
 
 const Name = memo<PropsWithChildren<INameProps>>(function Name({
@@ -58,6 +61,7 @@ interface IProps {
 }
 
 export default memo<IProps>(function CookerCatalog({ data }) {
+	const { t } = useI18n(catalogItemsMessages);
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const { defaultOpenedPopover, getPopoverOpenChangeProps } =
 		useOpenedItemPopover(popoverCardRef, data);
@@ -67,16 +71,21 @@ export default memo<IProps>(function CookerCatalog({ data }) {
 	const presentationData = useMemo(
 		() =>
 			data.map((record) => {
-				const category = COOKER_SERIES_LABEL_MAP[record.series];
-				const types = record.availableTypes.map(
-					(type) => COOKER_TYPE_LABEL_MAP[type]
+				const category = getCookerSeriesLabel(record.series);
+				const types = record.availableTypes.map((type) =>
+					getCookerTypeLabel(type)
 				);
 				const type = types.length === 1 ? types[0] : types;
+				const canonicalName =
+					CookerCatalogModel.getInstance().getPropsById(
+						record.id
+					).name;
 
 				return {
 					...record,
 					cardName: <Name category={category}>{record.name}</Name>,
 					displayName: <Name category={category}>{record.name}</Name>,
+					isFryingPanFamily: canonicalName.includes('油锅'),
 					presentationDescription: {
 						description: record.description,
 						...(type === undefined ? {} : { type }),
@@ -95,6 +104,7 @@ export default memo<IProps>(function CookerCatalog({ data }) {
 				effect,
 				from,
 				id,
+				isFryingPanFamily,
 				name,
 				presentationDescription,
 			},
@@ -119,7 +129,7 @@ export default memo<IProps>(function CookerCatalog({ data }) {
 								recordId={id}
 								size={3}
 								className={cn({
-									'translate-y-px': name.includes('油锅'),
+									'translate-y-px': isFryingPanFamily,
 								})}
 							/>
 						}
@@ -150,13 +160,17 @@ export default memo<IProps>(function CookerCatalog({ data }) {
 						/>
 						{effect !== null && (
 							<p className="text-justify">
-								<span className="font-semibold">效果：</span>
+								<span className="font-semibold">
+									{t('items.source.effect')}
+								</span>
 								{Array.isArray(effect) ? (
 									(effect[1] as boolean) ? (
 										<Popover showArrow offset={3} size="sm">
 											<Tooltip
 												showArrow
-												content="只有米斯蒂娅使用才有此效果"
+												content={t(
+													'items.cooker.mystiaOnly'
+												)}
 												offset={1}
 												size="sm"
 											>
@@ -174,7 +188,7 @@ export default memo<IProps>(function CookerCatalog({ data }) {
 												</span>
 											</Tooltip>
 											<PopoverContent>
-												只有米斯蒂娅使用才有此效果
+												{t('items.cooker.mystiaOnly')}
 											</PopoverContent>
 										</Popover>
 									) : (

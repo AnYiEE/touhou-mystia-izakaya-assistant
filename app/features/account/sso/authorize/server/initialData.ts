@@ -9,6 +9,7 @@ import type {
 } from '@/features/account/contracts';
 import { authenticateAccountFromRequest } from '@/features/account/server/auth/requestAuthentication';
 import { createAccountMeInitialData } from '@/features/account/server/presentation/accountInitialData';
+import { accountMessages } from '@/features/account/client/messages';
 import {
 	SSO_CONTEXT_COOKIE_NAME,
 	getSsoContextCookieValue,
@@ -18,6 +19,9 @@ import { getActiveUserStateSnapshotForSession } from '@/features/account/sync/se
 
 import { createCurrentRequest } from '@/infrastructure/http/server/currentRequest';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
+
+import { type TLocale } from '@/shared/i18n/locale';
+import { translate } from '@/shared/i18n/messages';
 
 interface IMessageInitialData {
 	kind: 'message';
@@ -91,7 +95,8 @@ async function createAccountMeInitialDataForAuthenticatedRequest({
 }
 
 export async function readSsoAuthorizeInitialData(
-	status: string | null
+	status: string | null,
+	locale: TLocale
 ): Promise<TSsoAuthorizeInitialData> {
 	const cookieStore = await cookies();
 	const context = getSsoContextCookieValue(
@@ -149,8 +154,21 @@ export async function readSsoAuthorizeInitialData(
 			account,
 			accountLabel:
 				auth.data.user.nickname === null
-					? `用户名：${auth.data.user.username}`
-					: `用户名：${auth.data.user.username}，昵称：${auth.data.user.nickname}`,
+					? translate(
+							accountMessages,
+							locale,
+							'account.sso.accountLabel.user',
+							{ username: auth.data.user.username }
+						)
+					: translate(
+							accountMessages,
+							locale,
+							'account.sso.accountLabel.userNickname',
+							{
+								nickname: auth.data.user.nickname,
+								username: auth.data.user.username,
+							}
+						),
 			clientName: client.name,
 			kind: 'ready',
 			ssoGrants,

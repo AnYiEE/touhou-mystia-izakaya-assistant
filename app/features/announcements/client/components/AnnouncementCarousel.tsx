@@ -12,9 +12,13 @@ import { type CSSProperties, memo, useMemo } from 'react';
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Button from '@/design/ui/components/button';
 
+import { announcementClientMessages } from '@/features/announcements/client/messages';
 import { ANNOUNCEMENT_LEVEL_PRESENTATION } from '@/features/announcements/client/presentation';
 import { useAnnouncementCarouselController } from '@/features/announcements/client/useAnnouncementCarouselController';
 import { type IAnnouncementPublicItem } from '@/features/announcements/contracts';
+
+import type { TLocale } from '@/shared/i18n/locale';
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import {
 	AnnouncementHtml,
@@ -117,13 +121,16 @@ const AnnouncementBackgroundLayer = memo<IAnnouncementBackgroundLayerProps>(
 
 interface IProps {
 	serverAnnouncements: IAnnouncementPublicItem[];
+	serverAnnouncementLocale: TLocale;
 	serverViewerSignature: string | null;
 }
 
 export default memo<IProps>(function AnnouncementCarousel({
+	serverAnnouncementLocale,
 	serverAnnouncements,
 	serverViewerSignature,
 }) {
+	const { t } = useI18n(announcementClientMessages);
 	const { isHighAppearance } = useDesignPreferences();
 	const {
 		displayedItem,
@@ -146,6 +153,7 @@ export default memo<IProps>(function AnnouncementCarousel({
 		visualItem,
 	} = useAnnouncementCarouselController(
 		serverAnnouncements,
+		serverAnnouncementLocale,
 		serverViewerSignature
 	);
 	const levelMeta =
@@ -180,7 +188,7 @@ export default memo<IProps>(function AnnouncementCarousel({
 	return (
 		<section
 			ref={rootRef}
-			aria-label="站点通知"
+			aria-label={t('announcements.bar.ariaLabel')}
 			role="region"
 			{...rootHandlers}
 			className={cn(
@@ -243,7 +251,7 @@ export default memo<IProps>(function AnnouncementCarousel({
 					<div className="flex shrink-0 items-center gap-1">
 						<Button
 							isIconOnly
-							aria-label="上一条站点通知"
+							aria-label={t('announcements.bar.previous')}
 							className={cn(
 								'h-7 min-h-7 w-7 min-w-7',
 								levelMeta.buttonClassName
@@ -288,7 +296,7 @@ export default memo<IProps>(function AnnouncementCarousel({
 						</div>
 						<Button
 							isIconOnly
-							aria-label="下一条站点通知"
+							aria-label={t('announcements.bar.next')}
 							className={cn(
 								'h-7 min-h-7 w-7 min-w-7',
 								levelMeta.buttonClassName
@@ -308,7 +316,7 @@ export default memo<IProps>(function AnnouncementCarousel({
 				{visualItem.dismissible ? (
 					<Button
 						isIconOnly
-						aria-label="关闭站点通知"
+						aria-label={t('announcements.bar.close')}
 						className={cn(
 							'h-7 min-h-7 w-7 min-w-7 shrink-0',
 							levelMeta.buttonClassName

@@ -1,10 +1,12 @@
 import isNil from 'lodash/isNil.js';
 import isObject from 'lodash/isObject.js';
 
+import { getDlcLabel } from '@/domain/availability/localizedLabels';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
-import { ALL_MAP_LABELS_SET, MAP_FACTS } from '@/domain/data/places/placeFacts';
+import { ALL_MAP_LABELS_SET } from '@/domain/data/places/placeFacts';
 import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
+import { getMapLabel } from '@/domain/places/localizedLabels';
 
 import type {
 	IGlobalSearchFieldCondition,
@@ -15,15 +17,20 @@ import type {
 	TGlobalSearchSection,
 } from '@/features/globalSearch/contracts';
 
+import { DEFAULT_LOCALE, type TLocale } from '@/shared/i18n/locale';
 import { createBoundedRuntimeCache } from '@/shared/utilities/cache/createBoundedRuntimeCache';
 import { getPinyin } from '@/shared/utilities/pinyin/getPinyin';
 import { processPinyin } from '@/shared/utilities/pinyin/processPinyin';
+import {
+	compareLocalizedName,
+	getHangulInitials,
+	normalizeMatchText,
+} from '@/shared/utilities/search/localeNameMatch';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import { checkGlobalSearchSectionMatches } from './constants';
 import { getFieldPrefixGroup, getSectionPrefixGroup } from './parser';
-import { normalizeSearchMatchText } from './text';
 
 const GLOBAL_SEARCH_VALUE_SUGGESTION_FIELD_TYPES = new Set<
 	IGlobalSearchIndexField['fieldType']
@@ -104,23 +111,35 @@ function getMatchPinyin(value: string) {
 
 export function checkGlobalSearchNameMatchesKeyword(
 	name: string,
-	keyword: string
+	keyword: string,
+	locale: TLocale = DEFAULT_LOCALE
 ) {
-	const normalizedKeyword = normalizeSearchMatchText(keyword);
-	const normalizedName = normalizeSearchMatchText(name);
+	const normalizedKeyword = normalizeMatchText(keyword, locale);
+	const normalizedName = normalizeMatchText(name, locale);
 
-	if (
-		normalizedKeyword.length === 0 ||
-		normalizedName.includes(normalizedKeyword)
-	) {
+	if (normalizedKeyword.length === 0) {
+		return true;
+	}
+	if (normalizedName.includes(normalizedKeyword)) {
 		return true;
 	}
 
-	const pinyin = getMatchPinyin(name);
-	return (
-		pinyin.full.includes(normalizedKeyword) ||
-		pinyin.firstLetters.includes(normalizedKeyword)
-	);
+	if (locale.startsWith('zh')) {
+		const pinyin = getMatchPinyin(name);
+		return (
+			pinyin.full.includes(normalizedKeyword) ||
+			pinyin.firstLetters.includes(normalizedKeyword)
+		);
+	}
+	if (locale === 'ko') {
+		const trimmedKeyword = keyword.trim();
+		return (
+			/^[\u3131-\u314E]+$/u.test(trimmedKeyword) &&
+			getHangulInitials(name).includes(trimmedKeyword)
+		);
+	}
+
+	return false;
 }
 
 function getDlcLabelMeta(value: string) {
@@ -132,25 +151,28 @@ function getDlcLabelMeta(value: string) {
 
 export function getGlobalSearchDlcSearchTexts(value: string) {
 	const labelMeta = getDlcLabelMeta(value);
+	const localizedLabel =
+		labelMeta === null ? null : getDlcLabel(Number(value) as TDlc);
 
-	return [value, labelMeta?.label ?? '', labelMeta?.shortLabel ?? ''].filter(
-		Boolean
-	);
+	return [
+		value,
+		labelMeta?.label ?? '',
+		labelMeta?.shortLabel ?? '',
+		localizedLabel ?? '',
+	].filter(Boolean);
 }
 
 export function getGlobalSearchDlcDisplayLabel(value: string) {
-	const directLabel = getDlcLabelMeta(value)?.label;
-	if (directLabel !== undefined) {
-		return directLabel;
+	const directMeta = getDlcLabelMeta(value);
+	if (directMeta !== null) {
+		return getDlcLabel(Number(value) as TDlc);
 	}
 
-	const tokenLabel = value
+	const token = value
 		.split(/\s+/u)
-		.values()
-		.map((token) => getDlcLabelMeta(token)?.label)
-		.find((label) => label !== undefined);
+		.find((candidate) => getDlcLabelMeta(candidate) !== null);
 
-	return tokenLabel ?? value;
+	return token === undefined ? value : getDlcLabel(Number(token) as TDlc);
 }
 
 export function checkGlobalSearchFieldTypeIsDlc(
@@ -161,7 +183,8 @@ export function checkGlobalSearchFieldTypeIsDlc(
 
 export function getGlobalSearchMatchedDlcDisplayText(
 	fieldText: string,
-	keyword: string
+	keyword: string,
+	locale: TLocale = DEFAULT_LOCALE
 ) {
 	const values = fieldText
 		.split(/\s+/u)
@@ -176,7 +199,9 @@ export function getGlobalSearchMatchedDlcDisplayText(
 		...new Set(displayValues.map(getGlobalSearchDlcDisplayLabel)),
 	];
 
-	return labels.length > 0 ? labels.join('、') : fieldText;
+	return labels.length > 0
+		? labels.join(locale.startsWith('zh') ? '、' : ', ')
+		: fieldText;
 }
 
 export function getGlobalSearchFieldValueDisplayText(
@@ -207,7 +232,15 @@ function getFieldValueTokens(
 	value: unknown,
 	text: string
 ) {
-	if (fieldType === 'cooker-type' || fieldType === 'ingredient') {
+	if (
+		[
+			'cooker-type',
+			'ingredient',
+			'moving-speed',
+			'speed',
+			'working-speed',
+		].includes(fieldType)
+	) {
 		return text.split(/\s+/u).filter(Boolean);
 	}
 
@@ -220,12 +253,9 @@ function getFieldValueTokens(
 	if (fieldType === 'place') {
 		return tokens.map((token) =>
 			ALL_MAP_LABELS_SET.has(token)
-				? MAP_FACTS[token as TMapLabel].label
+				? getMapLabel(token as TMapLabel)
 				: token
 		);
-	}
-	if (fieldType === 'speed') {
-		return tokens.map((token) => token.split('：').at(-1) ?? token);
 	}
 
 	return tokens;
@@ -235,11 +265,13 @@ function compareFieldValueSuggestion({
 	aValue,
 	bValue,
 	fieldType,
+	locale,
 	orderMap,
 }: {
 	aValue: string;
 	bValue: string;
 	fieldType: IGlobalSearchIndexField['fieldType'];
+	locale: TLocale;
 	orderMap: Map<string, number> | null;
 }) {
 	if (orderMap !== null) {
@@ -266,53 +298,63 @@ function compareFieldValueSuggestion({
 		}
 	}
 
-	return pinyinSort(aValue, bValue);
+	return locale.startsWith('zh')
+		? pinyinSort(aValue, bValue)
+		: compareLocalizedName(aValue, bValue, locale);
 }
 
 function checkFieldValueMatchesKeyword({
 	fieldType,
 	keyword,
+	locale,
 	value,
 }: {
 	fieldType: IGlobalSearchIndexField['fieldType'];
 	keyword: string;
+	locale: TLocale;
 	value: string;
 }) {
 	if (checkGlobalSearchFieldTypeIsDlc(fieldType)) {
 		return getGlobalSearchDlcSearchTexts(value).some((text) =>
-			checkGlobalSearchNameMatchesKeyword(text, keyword)
+			checkGlobalSearchNameMatchesKeyword(text, keyword, locale)
 		);
 	}
 
-	return checkGlobalSearchNameMatchesKeyword(value, keyword);
+	return checkGlobalSearchNameMatchesKeyword(value, keyword, locale);
 }
 
 function checkFieldValueExactlyMatchesKeyword({
 	fieldType,
 	keyword,
+	locale,
 	value,
 }: {
 	fieldType: IGlobalSearchIndexField['fieldType'];
 	keyword: string;
+	locale: TLocale;
 	value: string;
 }) {
-	const normalizedKeyword = keyword.toLowerCase();
+	const normalizedKeyword = normalizeMatchText(keyword, locale);
 	const texts = checkGlobalSearchFieldTypeIsDlc(fieldType)
 		? getGlobalSearchDlcSearchTexts(value)
 		: [value];
 
-	return texts.some((text) => text.toLowerCase() === normalizedKeyword);
+	return texts.some(
+		(text) => normalizeMatchText(text, locale) === normalizedKeyword
+	);
 }
 
 export function createGlobalSearchFieldValueCache({
 	contextSection,
 	getOrderMap,
 	index,
+	locale = DEFAULT_LOCALE,
 	placeValues,
 }: {
 	contextSection: null | TGlobalSearchSection;
 	getOrderMap: TGetGlobalSearchFieldValueOrderMap;
 	index: ReadonlyArray<IGlobalSearchIndexItem>;
+	locale?: TLocale;
 	placeValues: ReadonlyArray<string>;
 }): TGlobalSearchFieldValueCache {
 	const valueMap = new Map<IGlobalSearchIndexField['fieldType'], Set<string>>(
@@ -380,6 +422,7 @@ export function createGlobalSearchFieldValueCache({
 					aValue,
 					bValue,
 					fieldType,
+					locale,
 					orderMap,
 				})
 			)
@@ -391,9 +434,11 @@ export function createGlobalSearchFieldValueCache({
 
 export function getGlobalSearchFieldValueMatches({
 	fieldCondition,
+	locale = DEFAULT_LOCALE,
 	valueCache,
 }: {
 	fieldCondition: IGlobalSearchFieldCondition | null;
+	locale?: TLocale;
 	valueCache: TGlobalSearchFieldValueCache;
 }) {
 	if (
@@ -407,7 +452,7 @@ export function getGlobalSearchFieldValueMatches({
 
 	const keyword = fieldCondition.keyword.trim();
 	const values = valueCache.get(fieldCondition.fieldType) ?? [];
-	const normalizedKeyword = keyword.toLowerCase();
+	const normalizedKeyword = normalizeMatchText(keyword, locale);
 
 	return values
 		.filter((value) =>
@@ -416,6 +461,7 @@ export function getGlobalSearchFieldValueMatches({
 				: checkFieldValueMatchesKeyword({
 						fieldType: fieldCondition.fieldType,
 						keyword,
+						locale,
 						value,
 					})
 		)
@@ -430,10 +476,14 @@ export function getGlobalSearchFieldValueMatches({
 			);
 			const aStartsWithKeyword =
 				normalizedKeyword.length > 0 &&
-				aDisplayValue.toLowerCase().startsWith(normalizedKeyword);
+				normalizeMatchText(aDisplayValue, locale).startsWith(
+					normalizedKeyword
+				);
 			const bStartsWithKeyword =
 				normalizedKeyword.length > 0 &&
-				bDisplayValue.toLowerCase().startsWith(normalizedKeyword);
+				normalizeMatchText(bDisplayValue, locale).startsWith(
+					normalizedKeyword
+				);
 
 			if (aStartsWithKeyword !== bStartsWithKeyword) {
 				return aStartsWithKeyword ? -1 : 1;
@@ -445,13 +495,16 @@ export function getGlobalSearchFieldValueMatches({
 
 export function getGlobalSearchFieldValueSuggestions({
 	fieldCondition,
+	locale = DEFAULT_LOCALE,
 	valueCache,
 }: {
 	fieldCondition: IGlobalSearchFieldCondition | null;
+	locale?: TLocale;
 	valueCache: TGlobalSearchFieldValueCache;
 }) {
 	const matches = getGlobalSearchFieldValueMatches({
 		fieldCondition,
+		locale,
 		valueCache,
 	});
 	const keyword = fieldCondition?.keyword.trim() ?? '';
@@ -462,6 +515,7 @@ export function getGlobalSearchFieldValueSuggestions({
 			checkFieldValueExactlyMatchesKeyword({
 				fieldType: fieldCondition?.fieldType ?? 'name',
 				keyword,
+				locale,
 				value,
 			})
 		)
@@ -474,25 +528,31 @@ export function getGlobalSearchFieldValueSuggestions({
 
 export function checkGlobalSearchFieldConditionHasExactValue(
 	fieldCondition: IGlobalSearchFieldCondition,
-	valueCache: TGlobalSearchFieldValueCache
+	valueCache: TGlobalSearchFieldValueCache,
+	locale: TLocale = DEFAULT_LOCALE
 ) {
 	return getGlobalSearchFieldValueMatches({
 		fieldCondition,
+		locale,
 		valueCache,
 	}).some((fieldValue) =>
 		checkFieldValueExactlyMatchesKeyword({
 			fieldType: fieldCondition.fieldType,
 			keyword: fieldCondition.keyword.trim(),
+			locale,
 			value: fieldValue,
 		})
 	);
 }
 
-export function createRelaxedGlobalSearchQuery(ast: IGlobalSearchQueryAst) {
+export function createRelaxedGlobalSearchQuery(
+	ast: IGlobalSearchQueryAst,
+	locale: TLocale = DEFAULT_LOCALE
+) {
 	const sectionGroup =
 		ast.resultSection === null
 			? null
-			: getSectionPrefixGroup(ast.resultSection);
+			: getSectionPrefixGroup(ast.resultSection, locale);
 	const tokens = [
 		isNil(sectionGroup) ? '' : `@${sectionGroup.aliases[0]}`,
 		...ast.freeKeywords,

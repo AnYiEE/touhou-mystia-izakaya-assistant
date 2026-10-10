@@ -13,8 +13,11 @@ import Tooltip from '@/design/ui/components/tooltip';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import { useGlobalSearchController } from '@/features/globalSearch/client/useGlobalSearchController';
+import { globalSearchMessages } from '@/features/globalSearch/client/messages';
 import { getFieldPrefixLabel } from '@/features/globalSearch/core/parser';
 import { CoordinatedModal } from '@/features/overlays/client';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import {
 	SPOTLIGHT_CONTENT_TRANSITION,
@@ -40,6 +43,7 @@ const SPOTLIGHT_MODAL_CLASS_NAMES = {
 } as const;
 
 export default function GlobalSpotlightSearch() {
+	const { t } = useI18n(globalSearchMessages);
 	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
 
@@ -77,12 +81,14 @@ export default function GlobalSpotlightSearch() {
 		ast,
 		catalogSuggestionRecordMap,
 		examplePreviewItemMap,
+		exampleQueries,
 		fieldConditionDisplayValues,
 		fieldValueSuggestions: fieldValueSuggestionValues,
 		filterAction,
 		isFieldValueSuggestionOnly,
 		isPrefixSuggestionOnly,
 		isQueryEmpty,
+		locale,
 		nameSuggestionItemMap,
 		parsedSection,
 		prefixSuggestions: prefixSuggestionValues,
@@ -111,6 +117,7 @@ export default function GlobalSpotlightSearch() {
 		<FieldValueSuggestions
 			activeFieldCondition={activeFieldCondition}
 			catalogSuggestionRecordMap={catalogSuggestionRecordMap}
+			locale={locale}
 			nameSuggestionItemMap={nameSuggestionItemMap}
 			resultSection={ast.resultSection}
 			suggestions={fieldValueSuggestionValues}
@@ -167,7 +174,9 @@ export default function GlobalSpotlightSearch() {
 								{parsedSection !== null &&
 									parsedSection !== undefined && (
 										<span className="rounded-small border border-primary/20 bg-primary/10 px-2 py-1 font-medium text-primary-700 dark:text-primary">
-											结果：
+											{t(
+												'spotlight.results.sectionLabel'
+											)}
 											{parsedSection.label}
 										</span>
 									)}
@@ -175,7 +184,8 @@ export default function GlobalSpotlightSearch() {
 									({ fieldType, keyword }, index) => {
 										const fieldLabel = getFieldPrefixLabel(
 											fieldType,
-											ast.resultSection
+											ast.resultSection,
+											locale
 										);
 										const displayValue =
 											fieldConditionDisplayValues[
@@ -188,8 +198,12 @@ export default function GlobalSpotlightSearch() {
 											>
 												{fieldLabel}
 												{keyword
-													? `：${displayValue}`
-													: '：等待关键词'}
+													? `${t(
+															'spotlight.results.fieldSeparator'
+														)}${displayValue}`
+													: t(
+															'spotlight.results.awaitingKeyword'
+														)}
 											</span>
 										);
 									}
@@ -290,6 +304,8 @@ export default function GlobalSpotlightSearch() {
 									examplePreviewItemMap={
 										examplePreviewItemMap
 									}
+									examples={exampleQueries}
+									locale={locale}
 									onApplyQuery={applyQueryPreset}
 									onClearItems={clearRecentItems}
 									onClearQueries={clearRecentQueries}

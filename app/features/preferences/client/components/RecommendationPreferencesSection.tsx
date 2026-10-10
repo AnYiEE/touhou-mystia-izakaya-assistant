@@ -6,8 +6,16 @@ import { useDesignPreferences } from '@/design/preferences/DesignPreferencesCont
 import Heading from '@/design/ui/components/heading';
 import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
 
+import { GUEST_RATING_KEY } from '@/domain/evaluation/labels';
+import { getEvaluationLabelByKey } from '@/domain/evaluation/localizedLabels';
+import { getRecommendationSortProfileLabel } from '@/domain/recommendations/localizedLabels';
+
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
+import { preferencesMessages } from '@/features/preferences/client/messages';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import SwitchItem from './PreferenceSwitchItem';
 import {
@@ -26,6 +34,8 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 }) {
 	const { isHighAppearance } = useDesignPreferences();
 	const selectMotionProps = useMotionProps('select');
+	const { t } = useI18n(preferencesMessages);
+	useCatalogLocalizationRevision();
 
 	const isSuggestEnabled = globalStore.persistence.suggestMeals.enabled.use();
 	const suggestMaxExtraIngredients =
@@ -82,7 +92,7 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 
 	return (
 		<>
-			<Heading as="h3">“猜您想要”推荐</Heading>
+			<Heading as="h3">{t('preferences.section.recommendation')}</Heading>
 			<div
 				{...getPreferenceTargetDataProps('special-guest-suggest-meals')}
 				className={cn(
@@ -98,16 +108,20 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 					onValueChange={
 						globalStore.persistence.suggestMeals.enabled.set
 					}
-					aria-label={`${isSuggestEnabled ? '关闭' : '开启'}稀客页面套餐推荐卡片`}
+					aria-label={t(
+						isSuggestEnabled
+							? 'preferences.recommendation.card.disableAria'
+							: 'preferences.recommendation.card.enableAria'
+					)}
 				>
-					稀客页面套餐推荐卡片
+					{t('preferences.recommendation.card')}
 				</SwitchItem>
 				<p className="text-small text-foreground-500">
-					推荐参数会影响稀客页面套餐推荐卡片和营业预设的自动推荐结果
+					{t('preferences.recommendation.note')}
 				</p>
 				<div className="flex items-center gap-2">
 					<span className="whitespace-nowrap font-medium">
-						默认推荐策略：
+						{t('preferences.recommendation.sortProfile')}
 					</span>
 					<Select
 						disallowEmptySelection
@@ -121,21 +135,27 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 						onSelectionChange={
 							globalStore.suggestMealSortProfile.set
 						}
-						aria-label="选择自动推荐的默认推荐策略"
-						title="选择自动推荐的默认推荐策略"
+						aria-label={t(
+							'preferences.recommendation.sortProfile.aria'
+						)}
+						title={t('preferences.recommendation.sortProfile.aria')}
 						popoverProps={popoverProps}
 						classNames={sortProfileSelectClassNames}
 					>
-						{({ label, value }) => (
-							<SelectItem key={value} textValue={label}>
-								{label}
-							</SelectItem>
-						)}
+						{({ value }) => {
+							const label =
+								getRecommendationSortProfileLabel(value);
+							return (
+								<SelectItem key={value} textValue={label}>
+									{label}
+								</SelectItem>
+							);
+						}}
 					</Select>
 				</div>
 				<div className="flex items-center gap-2">
 					<span className="whitespace-nowrap font-medium">
-						最多推荐：
+						{t('preferences.recommendation.maxResults')}
 					</span>
 					<Select
 						disallowEmptySelection
@@ -148,8 +168,10 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 						onSelectionChange={
 							globalStore.maxSuggestMealResults.set
 						}
-						aria-label="选择自动推荐的最多套餐数量"
-						title="选择自动推荐的最多套餐数量"
+						aria-label={t(
+							'preferences.recommendation.maxResults.aria'
+						)}
+						title={t('preferences.recommendation.maxResults.aria')}
 						popoverProps={popoverProps}
 						classNames={narrowSelectClassNames}
 					>
@@ -165,7 +187,7 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 				</div>
 				<div className="flex items-center gap-2">
 					<span className="whitespace-nowrap font-medium">
-						评级上限：
+						{t('preferences.recommendation.maxRating')}
 					</span>
 					<Select
 						disallowEmptySelection
@@ -176,24 +198,33 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 						size="sm"
 						variant="flat"
 						onSelectionChange={globalStore.maxSuggestMealRating.set}
-						aria-label="选择自动推荐套餐的最高评级"
-						title="选择自动推荐套餐的最高评级"
+						aria-label={t(
+							'preferences.recommendation.maxRating.aria'
+						)}
+						title={t('preferences.recommendation.maxRating.aria')}
 						popoverProps={popoverProps}
 						classNames={ratingSelectClassNames}
 					>
-						{({ label, value }) => (
-							<SelectItem
-								key={value.toString()}
-								textValue={label}
-							>
-								{label}
-							</SelectItem>
-						)}
+						{({ label, value }) => {
+							const ratingKey = GUEST_RATING_KEY[value];
+							const itemLabel =
+								ratingKey === undefined
+									? label
+									: getEvaluationLabelByKey(ratingKey);
+							return (
+								<SelectItem
+									key={value.toString()}
+									textValue={itemLabel}
+								>
+									{itemLabel}
+								</SelectItem>
+							);
+						}}
 					</Select>
 				</div>
 				<div className="flex items-center gap-2">
 					<span className="whitespace-nowrap font-medium">
-						加料上限：
+						{t('preferences.recommendation.maxExtraIngredients')}
 					</span>
 					<Select
 						disableAnimation={isReducedMotion}
@@ -205,19 +236,29 @@ export default memo<IProps>(function RecommendationPreferencesSection({
 						onSelectionChange={
 							globalStore.maxSuggestMealExtraIngredients.set
 						}
-						aria-label="选择自动推荐套餐的额外食材上限"
-						title="选择自动推荐套餐的额外食材上限"
+						aria-label={t(
+							'preferences.recommendation.maxExtraIngredients.aria'
+						)}
+						title={t(
+							'preferences.recommendation.maxExtraIngredients.aria'
+						)}
 						popoverProps={popoverProps}
 						classNames={narrowSelectClassNames}
 					>
-						{({ label, value }) => (
-							<SelectItem
-								key={value === null ? '' : value.toString()}
-								textValue={label}
-							>
-								{label}
-							</SelectItem>
-						)}
+						{({ label, value }) => {
+							const itemLabel =
+								value === null
+									? t('preferences.recommendation.unlimited')
+									: label;
+							return (
+								<SelectItem
+									key={value === null ? '' : value.toString()}
+									textValue={itemLabel}
+								>
+									{itemLabel}
+								</SelectItem>
+							);
+						}}
 					</Select>
 				</div>
 			</div>

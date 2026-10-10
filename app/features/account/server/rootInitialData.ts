@@ -8,6 +8,7 @@ import type {
 	TAccountMeResponse,
 } from '@/features/account/contracts';
 import { getUserStateSnapshotInTransaction } from '@/features/account/sync/server';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { createCurrentRequest } from '@/infrastructure/http/server/currentRequest';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
@@ -46,6 +47,7 @@ export async function readAccountFeatureInitialData(
 ): Promise<IAccountFeatureInitialData | null> {
 	try {
 		const request = await createCurrentRequest(pathname);
+		const contentLocale = readContentLocale(request);
 
 		const accountFeatureResult = await checkAccountFeatureGuard();
 		if (accountFeatureResult.status === 'error') {
@@ -149,7 +151,11 @@ export async function readAccountFeatureInitialData(
 		const sessions = {
 			rendered_at: Date.now(),
 			sessions: sessionRecords.map((session) =>
-				createAccountSessionRecord(session, auth.data.session.id)
+				createAccountSessionRecord(
+					session,
+					auth.data.session.id,
+					contentLocale
+				)
 			),
 			user_id: auth.data.user.id,
 		} satisfies IAccountSessionInitialData;

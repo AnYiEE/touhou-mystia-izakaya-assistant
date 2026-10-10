@@ -1,14 +1,16 @@
-export const SUGGESTED_MEAL_STATUS_MESSAGE_MAP = {
-	failed: '推荐计算失败，请调整条件后重试',
-	loading: '正在计算推荐套餐…',
-	noMatch: '未找到匹配的推荐套餐',
-	refreshFailed: '推荐更新失败，仍显示上次结果',
-	refreshing: '正在更新推荐结果…',
-} as const;
+import { type TCatalogGuestsMessageKey } from '@/features/catalog/guests/shared/messages';
 
-export const SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_MAP = {
-	empty: '无可用替换',
-	failed: '加载失败',
-	loading: '正在查找…',
-	ready: '可替换为',
-} as const;
+export const SUGGESTED_MEAL_STATUS_MESSAGE_KEYS = {
+	failed: 'guests.suggestedMeal.status.failed',
+	loading: 'guests.suggestedMeal.status.loading',
+	noMatch: 'guests.suggestedMeal.status.noMatch',
+	refreshFailed: 'guests.suggestedMeal.status.refreshFailed',
+	refreshing: 'guests.suggestedMeal.status.refreshing',
+} as const satisfies Record<string, TCatalogGuestsMessageKey>;
+
+export const SUGGESTED_MEAL_ALTERNATIVE_STATUS_LABEL_KEYS = {
+	empty: 'guests.suggestedMeal.alternative.empty',
+	failed: 'guests.suggestedMeal.alternative.failed',
+	loading: 'guests.suggestedMeal.alternative.loading',
+	ready: 'guests.suggestedMeal.alternative.ready',
+} as const satisfies Record<string, TCatalogGuestsMessageKey>;

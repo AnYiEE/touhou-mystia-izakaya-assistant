@@ -22,48 +22,63 @@ import {
 	fetchLegacyBackupMetadata,
 	uploadLegacyBackup,
 } from '@/features/legacyBackup/client/api';
+import {
+	type TPreferencesMessageKey,
+	preferencesMessages,
+} from '@/features/preferences/client/messages';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
+import { type TMessageParams } from '@/shared/i18n/messages';
+import { useI18n } from '@/shared/i18n/useI18n';
+
 import {
-	LEGACY_CLOUD_BACKUP_MESSAGE_MAP,
-	LEGACY_CLOUD_DELETE_BUTTON_LABEL_MAP,
-	LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_MAP,
-	LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_MAP,
-	createLegacyCloudBackupRetryMessage,
+	LEGACY_CLOUD_BACKUP_MESSAGE_KEYS,
+	LEGACY_CLOUD_DELETE_BUTTON_LABEL_KEYS,
+	LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_KEYS,
+	LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_KEYS,
 } from './copy';
 import { parseGuestDataImport } from './parseGuestDataImport';
 
 type TCloudState = 'danger' | 'default' | 'success';
 
-const CLOUD_CODE_TOOLTIP_PROPS = {
-	content: '点击以复制备份码',
-	delay: 0,
-	offset: 0,
-	size: 'sm',
-} as const;
+type TCloudLabelSuffix =
+	{ key: TPreferencesMessageKey; params?: TMessageParams } | { text: string };
+
+interface ICloudButtonLabel {
+	key: TPreferencesMessageKey;
+	suffix?: TCloudLabelSuffix;
+}
+
+type TCloudCodeInfo =
+	| { createdAt: number; kind: 'meta'; lastAccessed: number }
+	| { kind: 'empty' }
+	| { key: TPreferencesMessageKey; kind: 'message'; params?: TMessageParams }
+	| null;
+
 const CLOUD_CODE_CLASS_NAMES = {
 	pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
 } as const;
 
 function setErrorState({
 	error,
-	label,
+	labelKey,
 	setLabel,
 	setState,
 	type,
 }: {
 	error: unknown;
-	label: string;
-	setLabel: (label: string) => void;
+	labelKey: TPreferencesMessageKey;
+	setLabel: (label: ICloudButtonLabel) => void;
 	setState: (state: TCloudState) => void;
 	type: 'Delete' | 'Download' | 'Upload';
 }) {
 	setState('danger');
+	const label: ICloudButtonLabel = { key: labelKey };
 	if (Error.isError(error)) {
 		console.error({ errorCode: getLogSafeErrorCode(error) });
-		setLabel(`${label}（网络错误）`);
+		label.suffix = { key: 'preferences.cloud.networkError' };
 		trackEvent(trackEvent.category.error, 'Cloud', type, error.message);
 	} else {
 		const {
@@ -71,29 +86,49 @@ function setErrorState({
 			status,
 		} = error as { data: { message: string }; status: number };
 		console.error({ message, status });
-		const errorMessage =
+		label.suffix =
 			status === 400
-				? LEGACY_CLOUD_BACKUP_MESSAGE_MAP.invalidCode
+				? { key: LEGACY_CLOUD_BACKUP_MESSAGE_KEYS.invalidCode }
 				: status === 404
-					? LEGACY_CLOUD_BACKUP_MESSAGE_MAP.targetNotFound
+					? { key: LEGACY_CLOUD_BACKUP_MESSAGE_KEYS.targetNotFound }
 					: status === 409
-						? LEGACY_CLOUD_BACKUP_MESSAGE_MAP.busy
+						? { key: LEGACY_CLOUD_BACKUP_MESSAGE_KEYS.busy }
 						: status === 429
-							? createLegacyCloudBackupRetryMessage(
-									LEGACY_BACKUP_FREQUENCY_TTL / 1000 / 60
-								)
-							: status;
-		setLabel(`${label}（${errorMessage}）`);
+							? {
+									key: LEGACY_CLOUD_BACKUP_MESSAGE_KEYS.retry,
+									params: {
+										minutes:
+											LEGACY_BACKUP_FREQUENCY_TTL /
+											1000 /
+											60,
+									},
+								}
+							: { text: String(status) };
 		if (type === 'Delete' && status === 404) {
 			globalStore.persistence.cloudCode.set(null);
 		}
 		trackEvent(trackEvent.category.error, 'Cloud', type, status);
 	}
+	setLabel(label);
 }
 
 export default memo(function CloudBackupPanel() {
 	const currentNormalMealData = normalGuestStore.persistence.meals.use();
 	const currentRareMealData = specialGuestStore.persistence.meals.use();
+	const { t } = useI18n(preferencesMessages);
+
+	const renderLabel = useCallback(
+		(label: ICloudButtonLabel) =>
+			label.suffix === undefined
+				? t(label.key)
+				: t('preferences.cloud.format.suffix', {
+						message:
+							'key' in label.suffix
+								? t(label.suffix.key, label.suffix.params)
+								: label.suffix.text,
+					}),
+		[t]
+	);
 
 	const currentMealData = useMemo(
 		() => ({
@@ -105,25 +140,28 @@ export default memo(function CloudBackupPanel() {
 
 	const [isCloudDeleteButtonDisabled, setIsCloudDeleteButtonDisabled] =
 		useState(false);
-	const [cloudDeleteButtonLabel, setCloudDeleteButtonLabel] = useState(
-		LEGACY_CLOUD_DELETE_BUTTON_LABEL_MAP.delete as string
-	);
+	const [cloudDeleteButtonLabel, setCloudDeleteButtonLabel] =
+		useState<ICloudButtonLabel>({
+			key: LEGACY_CLOUD_DELETE_BUTTON_LABEL_KEYS.delete,
+		});
 	const [cloudDeleteState, setCloudDeleteState] =
 		useState<TCloudState>('default');
 
 	const [isCloudDownloadButtonDisabled, setIsCloudDownloadButtonDisabled] =
 		useState(false);
-	const [cloudDownloadButtonLabel, setCloudDownloadButtonLabel] = useState(
-		LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_MAP.download as string
-	);
+	const [cloudDownloadButtonLabel, setCloudDownloadButtonLabel] =
+		useState<ICloudButtonLabel>({
+			key: LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_KEYS.download,
+		});
 	const [cloudDownloadState, setCloudDownloadState] =
 		useState<TCloudState>('default');
 
 	const [isCloudUploadButtonDisabled, setIsCloudUploadButtonDisabled] =
 		useState(false);
-	const [cloudUploadButtonLabel, setCloudUploadButtonLabel] = useState(
-		LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_MAP.upload as string
-	);
+	const [cloudUploadButtonLabel, setCloudUploadButtonLabel] =
+		useState<ICloudButtonLabel>({
+			key: LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_KEYS.upload,
+		});
 	const [cloudUploadState, setCloudUploadState] =
 		useState<TCloudState>('default');
 
@@ -146,8 +184,7 @@ export default memo(function CloudBackupPanel() {
 
 	const isCloudCodeValid = (currentCloudCode?.trim() ?? '').length > 0;
 
-	const [cloudCodeInfo, setCloudCodeInfo] =
-		useState<ReactNodeWithoutBoolean>(null);
+	const [cloudCodeInfo, setCloudCodeInfo] = useState<TCloudCodeInfo>(null);
 	const cloudCodeInfoRequestIdRef = useRef(0);
 
 	const updateCloudCodeInfo = useCallback(
@@ -158,14 +195,7 @@ export default memo(function CloudBackupPanel() {
 			const normalizedCode = cloudCode?.trim() ?? null;
 
 			if (normalizedCode === null || normalizedCode === '') {
-				setCloudCodeInfo(
-					<>
-						无
-						<span className="text-tiny">
-							（下次备份时将自动生成，请自行保存至他处）
-						</span>
-					</>
-				);
+				setCloudCodeInfo({ kind: 'empty' });
 				return;
 			}
 			fetchLegacyBackupMetadata(normalizedCode)
@@ -174,21 +204,11 @@ export default memo(function CloudBackupPanel() {
 						return;
 					}
 
-					setCloudCodeInfo(
-						<span className="text-tiny">
-							（更新于
-							<TimeAgo timestamp={created_at} />，
-							{last_accessed === -1 ? (
-								'尚未被下载过'
-							) : (
-								<>
-									下载于
-									<TimeAgo timestamp={last_accessed} />
-								</>
-							)}
-							）
-						</span>
-					);
+					setCloudCodeInfo({
+						createdAt: created_at,
+						kind: 'meta',
+						lastAccessed: last_accessed,
+					});
 				})
 				.catch((error: unknown) => {
 					if (cloudCodeInfoRequestIdRef.current !== requestId) {
@@ -196,29 +216,39 @@ export default memo(function CloudBackupPanel() {
 					}
 
 					if (isObject(error) && 'status' in error) {
-						const message =
-							error.status === 404
-								? LEGACY_CLOUD_BACKUP_MESSAGE_MAP.codeNotFound
-								: error.status === 409
-									? LEGACY_CLOUD_BACKUP_MESSAGE_MAP.busy
-									: error.status === 429
-										? createLegacyCloudBackupRetryMessage(
-												LEGACY_BACKUP_FREQUENCY_TTL /
-													1000 /
-													60
-											)
-										: LEGACY_CLOUD_BACKUP_MESSAGE_MAP.invalidCode;
+						const status = error.status as number;
 						setCloudCodeInfo(
-							<span className="text-tiny">（{message}）</span>
+							status === 404
+								? {
+										key: LEGACY_CLOUD_BACKUP_MESSAGE_KEYS.codeNotFound,
+										kind: 'message',
+									}
+								: status === 409
+									? {
+											key: LEGACY_CLOUD_BACKUP_MESSAGE_KEYS.busy,
+											kind: 'message',
+										}
+									: status === 429
+										? {
+												key: LEGACY_CLOUD_BACKUP_MESSAGE_KEYS.retry,
+												kind: 'message',
+												params: {
+													minutes:
+														LEGACY_BACKUP_FREQUENCY_TTL /
+														1000 /
+														60,
+												},
+											}
+										: {
+												key: LEGACY_CLOUD_BACKUP_MESSAGE_KEYS.invalidCode,
+												kind: 'message',
+											}
 						);
 					} else {
-						setCloudCodeInfo(
-							<span className="text-tiny">
-								（
-								{LEGACY_CLOUD_BACKUP_MESSAGE_MAP.codeInfoFailed}
-								）
-							</span>
-						);
+						setCloudCodeInfo({
+							key: LEGACY_CLOUD_BACKUP_MESSAGE_KEYS.codeInfoFailed,
+							kind: 'message',
+						});
 					}
 				});
 		},
@@ -240,16 +270,16 @@ export default memo(function CloudBackupPanel() {
 		}
 
 		setIsCloudDeleteButtonDisabled(true);
-		setCloudDeleteButtonLabel(
-			LEGACY_CLOUD_DELETE_BUTTON_LABEL_MAP.deleting
-		);
+		setCloudDeleteButtonLabel({
+			key: LEGACY_CLOUD_DELETE_BUTTON_LABEL_KEYS.deleting,
+		});
 
 		deleteLegacyBackup(normalizedCode)
 			.then(() => {
 				setCloudDeleteState('success');
-				setCloudDeleteButtonLabel(
-					LEGACY_CLOUD_DELETE_BUTTON_LABEL_MAP.success
-				);
+				setCloudDeleteButtonLabel({
+					key: LEGACY_CLOUD_DELETE_BUTTON_LABEL_KEYS.success,
+				});
 				globalStore.persistence.cloudCode.set(null);
 				trackEvent(
 					trackEvent.category.click,
@@ -260,7 +290,7 @@ export default memo(function CloudBackupPanel() {
 			.catch((error: unknown) => {
 				setErrorState({
 					error,
-					label: LEGACY_CLOUD_DELETE_BUTTON_LABEL_MAP.fail,
+					labelKey: LEGACY_CLOUD_DELETE_BUTTON_LABEL_KEYS.fail,
 					setLabel: setCloudDeleteButtonLabel,
 					setState: setCloudDeleteState,
 					type: 'Delete',
@@ -270,9 +300,9 @@ export default memo(function CloudBackupPanel() {
 				const timerId = setTimeout(() => {
 					setCloudDeleteState('default');
 					setIsCloudDeleteButtonDisabled(false);
-					setCloudDeleteButtonLabel(
-						LEGACY_CLOUD_DELETE_BUTTON_LABEL_MAP.delete
-					);
+					setCloudDeleteButtonLabel({
+						key: LEGACY_CLOUD_DELETE_BUTTON_LABEL_KEYS.delete,
+					});
 					cloudTimers.current = cloudTimers.current.filter(
 						(id) => id !== timerId
 					);
@@ -285,7 +315,7 @@ export default memo(function CloudBackupPanel() {
 		const currentNormalizedCode = currentCloudCode?.trim() ?? '';
 		const code =
 			(currentNormalizedCode === ''
-				? prompt('请输入已有备份码')
+				? prompt(t('preferences.cloud.promptCode'))
 				: currentNormalizedCode
 			)?.trim() ?? '';
 
@@ -294,9 +324,9 @@ export default memo(function CloudBackupPanel() {
 		}
 
 		setIsCloudDownloadButtonDisabled(true);
-		setCloudDownloadButtonLabel(
-			LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_MAP.downloading
-		);
+		setCloudDownloadButtonLabel({
+			key: LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_KEYS.downloading,
+		});
 		let didDownload = false;
 
 		downloadLegacyBackup<unknown>(code)
@@ -314,9 +344,9 @@ export default memo(function CloudBackupPanel() {
 				}
 
 				setCloudDownloadState('success');
-				setCloudDownloadButtonLabel(
-					LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_MAP.success
-				);
+				setCloudDownloadButtonLabel({
+					key: LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_KEYS.success,
+				});
 				globalStore.persistence.cloudCode.set(code);
 				didDownload = true;
 				trackEvent(
@@ -328,7 +358,7 @@ export default memo(function CloudBackupPanel() {
 			.catch((error: unknown) => {
 				setErrorState({
 					error,
-					label: LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_MAP.fail,
+					labelKey: LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_KEYS.fail,
 					setLabel: setCloudDownloadButtonLabel,
 					setState: setCloudDownloadState,
 					type: 'Download',
@@ -343,22 +373,22 @@ export default memo(function CloudBackupPanel() {
 				const timerId = setTimeout(() => {
 					setCloudDownloadState('default');
 					setIsCloudDownloadButtonDisabled(false);
-					setCloudDownloadButtonLabel(
-						LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_MAP.download
-					);
+					setCloudDownloadButtonLabel({
+						key: LEGACY_CLOUD_DOWNLOAD_BUTTON_LABEL_KEYS.download,
+					});
 					cloudTimers.current = cloudTimers.current.filter(
 						(id) => id !== timerId
 					);
 				}, 3000);
 				cloudTimers.current.push(timerId);
 			});
-	}, [currentCloudCode, updateCloudCodeInfo]);
+	}, [currentCloudCode, t, updateCloudCodeInfo]);
 
 	const handleCloudUploadButtonPress = useCallback(() => {
 		setIsCloudUploadButtonDisabled(true);
-		setCloudUploadButtonLabel(
-			LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_MAP.uploading
-		);
+		setCloudUploadButtonLabel({
+			key: LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_KEYS.uploading,
+		});
 
 		let cloudCodeToRefresh = currentCloudCode;
 		const cloudCode = currentCloudCode?.trim();
@@ -371,9 +401,9 @@ export default memo(function CloudBackupPanel() {
 			.then(({ code }) => {
 				cloudCodeToRefresh = code;
 				setCloudUploadState('success');
-				setCloudUploadButtonLabel(
-					LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_MAP.success
-				);
+				setCloudUploadButtonLabel({
+					key: LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_KEYS.success,
+				});
 				globalStore.persistence.cloudCode.set(code);
 				trackEvent(
 					trackEvent.category.click,
@@ -384,7 +414,7 @@ export default memo(function CloudBackupPanel() {
 			.catch((error: unknown) => {
 				setErrorState({
 					error,
-					label: LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_MAP.fail,
+					labelKey: LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_KEYS.fail,
 					setLabel: setCloudUploadButtonLabel,
 					setState: setCloudUploadState,
 					type: 'Upload',
@@ -395,9 +425,9 @@ export default memo(function CloudBackupPanel() {
 				const timerId = setTimeout(() => {
 					setCloudUploadState('default');
 					setIsCloudUploadButtonDisabled(false);
-					setCloudUploadButtonLabel(
-						LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_MAP.upload
-					);
+					setCloudUploadButtonLabel({
+						key: LEGACY_CLOUD_UPLOAD_BUTTON_LABEL_KEYS.upload,
+					});
 					cloudTimers.current = cloudTimers.current.filter(
 						(id) => id !== timerId
 					);
@@ -406,10 +436,20 @@ export default memo(function CloudBackupPanel() {
 			});
 	}, [currentCloudCode, currentMealData, updateCloudCodeInfo, userId]);
 
+	const cloudCodeTooltipProps = useMemo(
+		() => ({
+			content: t('preferences.cloud.copyTip'),
+			delay: 0,
+			offset: 0,
+			size: 'sm' as const,
+		}),
+		[t]
+	);
+
 	return (
 		<>
 			<p className="-mt-1 text-small text-foreground-500">
-				当前备份码：
+				{t('preferences.cloud.currentCode')}
 				{isCloudCodeValid && (
 					<Popover shouldCloseOnScroll showArrow>
 						<PopoverTrigger>
@@ -418,7 +458,7 @@ export default memo(function CloudBackupPanel() {
 								variant="light"
 								className="-ml-1 inline-block h-auto w-auto min-w-0 p-1 leading-none text-foreground-500"
 							>
-								点此查看
+								{t('preferences.cloud.viewCode')}
 							</Button>
 						</PopoverTrigger>
 						<PopoverContent>
@@ -430,7 +470,7 @@ export default memo(function CloudBackupPanel() {
 										className="mr-1 !align-middle text-default-700"
 									/>
 								}
-								tooltipProps={CLOUD_CODE_TOOLTIP_PROPS}
+								tooltipProps={cloudCodeTooltipProps}
 								classNames={CLOUD_CODE_CLASS_NAMES}
 							>
 								{currentCloudCode}
@@ -438,10 +478,44 @@ export default memo(function CloudBackupPanel() {
 						</PopoverContent>
 					</Popover>
 				)}
-				{cloudCodeInfo}
+				{cloudCodeInfo !== null &&
+					(cloudCodeInfo.kind === 'empty' ? (
+						<>
+							{t('preferences.cloud.none')}
+							<span className="text-tiny">
+								{t('preferences.cloud.autoGenerateNote')}
+							</span>
+						</>
+					) : cloudCodeInfo.kind === 'meta' ? (
+						<span className="text-tiny">
+							{t('preferences.cloud.updatedAt')}
+							<TimeAgo timestamp={cloudCodeInfo.createdAt} />
+							{t('preferences.cloud.separator')}
+							{cloudCodeInfo.lastAccessed === -1 ? (
+								t('preferences.cloud.neverDownloaded')
+							) : (
+								<>
+									{t('preferences.cloud.downloadedAt')}
+									<TimeAgo
+										timestamp={cloudCodeInfo.lastAccessed}
+									/>
+								</>
+							)}
+							{t('preferences.cloud.closeParen')}
+						</span>
+					) : (
+						<span className="text-tiny">
+							{t('preferences.cloud.format.parens', {
+								message: t(
+									cloudCodeInfo.key,
+									cloudCodeInfo.params
+								),
+							})}
+						</span>
+					))}
 			</p>
 			<p className="mb-2 mt-0.5 text-tiny text-foreground-500">
-				备份码有效期为180天，每次使用后会自动续期，逾期将自动失效
+				{t('preferences.cloud.codeValidity')}
 			</p>
 			<div className="w-full space-y-2 lg:w-1/2">
 				<Button
@@ -456,7 +530,7 @@ export default memo(function CloudBackupPanel() {
 					variant="flat"
 					onPress={handleCloudUploadButtonPress}
 				>
-					{cloudUploadButtonLabel}
+					{renderLabel(cloudUploadButtonLabel)}
 				</Button>
 				<Button
 					fullWidth
@@ -470,7 +544,7 @@ export default memo(function CloudBackupPanel() {
 					variant="flat"
 					onPress={handleCloudDownloadButtonPress}
 				>
-					{cloudDownloadButtonLabel}
+					{renderLabel(cloudDownloadButtonLabel)}
 				</Button>
 				<Button
 					fullWidth
@@ -484,7 +558,7 @@ export default memo(function CloudBackupPanel() {
 					variant="flat"
 					onPress={handleCloudDeleteButtonPress}
 				>
-					{cloudDeleteButtonLabel}
+					{renderLabel(cloudDeleteButtonLabel)}
 				</Button>
 			</div>
 		</>

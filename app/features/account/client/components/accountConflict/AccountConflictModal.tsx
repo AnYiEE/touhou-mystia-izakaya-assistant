@@ -29,17 +29,21 @@ import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
+import {
+	type TAccountMessageKey,
+	accountMessages,
+} from '@/features/account/client/messages';
 import { accountStore } from '@/features/account/client/state/accountStore';
 import {
 	type TSyncConflictResolution,
 	resolveAccountSyncConflict,
 } from '@/features/account/client/sync/conflict';
 import {
-	ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_MAP,
-	ACCOUNT_SYNC_CONFLICT_MESSAGE_MAP,
-	ACCOUNT_SYNC_CONFLICT_READINESS_MESSAGE_MAP,
-	ACCOUNT_SYNC_CONFLICT_RESULT_MESSAGE_MAP,
-	ACCOUNT_SYNC_CONTROL_LABEL_MAP,
+	ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_KEYS,
+	ACCOUNT_SYNC_CONFLICT_MESSAGE_KEYS,
+	ACCOUNT_SYNC_CONFLICT_READINESS_MESSAGE_KEYS,
+	ACCOUNT_SYNC_CONFLICT_RESULT_MESSAGE_KEYS,
+	ACCOUNT_SYNC_CONTROL_LABEL_KEYS,
 } from '@/features/account/client/sync/conflictCopy';
 import { setAccountSyncConflictResolutionReadiness } from '@/features/account/client/sync/syncRuntimeState';
 import type { ISyncConflictItem } from '@/features/account/sync/types';
@@ -49,6 +53,8 @@ import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+
 import ConflictPreview from './ConflictPreview';
 import ConflictVersionCard from './ConflictVersionCard';
 import {
@@ -57,12 +63,8 @@ import {
 	createConflictResolutionPresentationAttempt,
 	createConflictSnapshotKey,
 } from './identity';
-import {
-	SYNC_NAMESPACE_LABEL_MAP,
-	formatFriendlyConflictValue,
-	getConflictDifferences,
-	getConflictResolutionTrackName,
-} from './presentation';
+import { getConflictResolutionTrackName } from './presentation';
+import { useConflictPresentation } from './useConflictPresentation';
 
 const CONFLICT_COLLAPSE_MOTION_TRANSITION = {
 	duration: MOTION_DURATION_S.base,
@@ -129,6 +131,13 @@ export default memo<IProps>(function AccountConflictModal() {
 	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
 	const vibrate = useVibrate();
+	const { locale, t } = useI18n(accountMessages);
+	const {
+		formatValue,
+		getCollisionSourceLabel,
+		getDifferences,
+		getNamespaceLabel,
+	} = useConflictPresentation();
 
 	const conflicts = accountStore.shared.sync.conflicts.use();
 	const hasIsolatedState = accountStore.shared.sync.hasIsolatedState.use();
@@ -143,7 +152,8 @@ export default memo<IProps>(function AccountConflictModal() {
 		useState<TSyncConflictResolution | null>(null);
 	const [displayedConflict, setDisplayedConflict] =
 		useState<ISyncConflictItem | null>(null);
-	const [message, setMessage] = useState<string | null>(null);
+	const [message, setMessage] = useState<TAccountMessageKey | null>(null);
+	const messageText = message === null ? null : t(message);
 	const [pendingResolution, setPendingResolution] =
 		useState<TSyncConflictResolution | null>(null);
 	const [resolutionIntent, setResolutionIntent] =
@@ -259,7 +269,7 @@ export default memo<IProps>(function AccountConflictModal() {
 				) {
 					resolutionIntentSnapshotKeyRef.current = null;
 					setResolutionIntent(null);
-					setMessage(ACCOUNT_SYNC_CONFLICT_MESSAGE_MAP.stale);
+					setMessage(ACCOUNT_SYNC_CONFLICT_MESSAGE_KEYS.stale);
 					return;
 				}
 
@@ -291,7 +301,7 @@ export default memo<IProps>(function AccountConflictModal() {
 					return;
 				}
 				setMessage(
-					ACCOUNT_SYNC_CONFLICT_RESULT_MESSAGE_MAP[result.status]
+					ACCOUNT_SYNC_CONFLICT_RESULT_MESSAGE_KEYS[result.status]
 				);
 				if (result.status === 'busy') {
 					return;
@@ -307,7 +317,7 @@ export default memo<IProps>(function AccountConflictModal() {
 				}
 				resolutionIntentSnapshotKeyRef.current = null;
 				setResolutionIntent(null);
-				setMessage(ACCOUNT_SYNC_CONFLICT_MESSAGE_MAP.unexpected);
+				setMessage(ACCOUNT_SYNC_CONFLICT_MESSAGE_KEYS.unexpected);
 			} finally {
 				if (resolvingTokenRef.current === resolvingToken) {
 					resolvingTokenRef.current = null;
@@ -350,7 +360,7 @@ export default memo<IProps>(function AccountConflictModal() {
 			return;
 		}
 
-		setMessage(ACCOUNT_SYNC_CONFLICT_MESSAGE_MAP.stale);
+		setMessage(ACCOUNT_SYNC_CONFLICT_MESSAGE_KEYS.stale);
 		setAccountSyncConflictResolutionReadiness(
 			user.id,
 			conflict.namespace,
@@ -421,7 +431,7 @@ export default memo<IProps>(function AccountConflictModal() {
 		if (remoteConflictNamespaces.length > 0) {
 			return (
 				<CoordinatedModal
-					aria-label="云同步冲突待处理"
+					aria-label={t('account.conflict.aria.pendingRemote')}
 					coordination={CONFLICT_MODAL_COORDINATION}
 					hideCloseButton
 					isDismissable={false}
@@ -432,18 +442,19 @@ export default memo<IProps>(function AccountConflictModal() {
 						<Heading
 							as="h2"
 							isFirst
-							subTitle="冲突内容保存在另一个标签页中。请回到产生冲突的标签页完成处理；解决后此处会自动恢复。"
+							subTitle={t(
+								'account.conflict.pendingRemote.subTitle'
+							)}
 						>
-							云同步冲突待处理
+							{t('account.conflict.title.pendingRemote')}
 						</Heading>
 						<p className="text-small text-foreground-600">
-							涉及：
+							{t('account.conflict.namespaces')}
 							{remoteConflictNamespaces
-								.map(
-									(namespace) =>
-										SYNC_NAMESPACE_LABEL_MAP[namespace]
+								.map((namespace) =>
+									getNamespaceLabel(namespace)
 								)
-								.join('、')}
+								.join(t('account.conflict.listSeparator'))}
 						</p>
 					</div>
 				</CoordinatedModal>
@@ -451,19 +462,20 @@ export default memo<IProps>(function AccountConflictModal() {
 		}
 		if (hasIsolatedState) {
 			const isolatedStateMessage = getAccountClientErrorMessage(
-				lastError ?? 'sync-client-update-required'
+				lastError ?? 'sync-client-update-required',
+				locale
 			);
 			const isolatedStateCopy =
 				lastError !== null &&
-				lastError in ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_MAP
-					? ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_MAP[
-							lastError as keyof typeof ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_MAP
+				lastError in ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_KEYS
+					? ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_KEYS[
+							lastError as keyof typeof ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_KEYS
 						]
-					: ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_MAP.default;
+					: ACCOUNT_SYNC_CONFLICT_ISOLATED_STATE_COPY_KEYS.default;
 
 			return (
 				<CoordinatedModal
-					aria-label={isolatedStateCopy.title}
+					aria-label={t(isolatedStateCopy.title)}
 					coordination={CONFLICT_MODAL_COORDINATION}
 					hideCloseButton
 					isDismissable={false}
@@ -476,10 +488,10 @@ export default memo<IProps>(function AccountConflictModal() {
 							isFirst
 							subTitle={isolatedStateMessage}
 						>
-							{isolatedStateCopy.title}
+							{t(isolatedStateCopy.title)}
 						</Heading>
 						<p className="text-small text-foreground-600">
-							{isolatedStateCopy.detail}
+							{t(isolatedStateCopy.detail)}
 						</p>
 					</div>
 				</CoordinatedModal>
@@ -487,7 +499,7 @@ export default memo<IProps>(function AccountConflictModal() {
 		}
 		return (
 			<CoordinatedModal
-				aria-label="云同步冲突"
+				aria-label={t('account.conflict.aria.sync')}
 				coordination={CONFLICT_MODAL_COORDINATION}
 				isOpen={false}
 			>
@@ -497,8 +509,8 @@ export default memo<IProps>(function AccountConflictModal() {
 	}
 
 	const { cloud, local, localCollision, merged, namespace } = visibleConflict;
-	const differences = getConflictDifferences(cloud, local, merged);
-	const namespaceLabel = SYNC_NAMESPACE_LABEL_MAP[namespace];
+	const differences = getDifferences(cloud, local, merged);
+	const namespaceLabel = getNamespaceLabel(namespace);
 	const unresolvedConflictCount = conflicts.filter(
 		(item) => item.userId === user?.id
 	).length;
@@ -507,20 +519,31 @@ export default memo<IProps>(function AccountConflictModal() {
 	const isResolving =
 		resolvingResolution !== null || resolutionIntent !== null;
 	const readinessMessage =
-		ACCOUNT_SYNC_CONFLICT_READINESS_MESSAGE_MAP[resolutionReadiness];
+		ACCOUNT_SYNC_CONFLICT_READINESS_MESSAGE_KEYS[resolutionReadiness];
 	const canUseMergedResult = merged !== null;
 	const confirmationText =
 		pendingResolution === 'cloud'
-			? `保留云端版本后，当前设备上的${namespaceLabel}修改将被替换。`
-			: `保留当前设备版本后，它会上传到云端并替换云端的${namespaceLabel}修改。`;
+			? t('account.conflict.confirmation.cloud', {
+					namespace: namespaceLabel,
+				})
+			: t('account.conflict.confirmation.local', {
+					namespace: namespaceLabel,
+				});
 	const technicalDetailsContent = (
 		<div className="grid gap-4 border-t border-default-200/70 p-4 lg:grid-cols-3">
-			<ConflictPreview label="云端原始数据" value={cloud} />
-			<ConflictPreview label="当前设备原始数据" value={local} />
 			<ConflictPreview
-				label="合并后的原始数据"
+				label={t('account.conflict.detail.remote')}
+				value={cloud}
+			/>
+			<ConflictPreview
+				label={t('account.conflict.detail.local')}
+				value={local}
+			/>
+			<ConflictPreview
+				label={t('account.conflict.detail.merged')}
 				value={
-					merged ?? ACCOUNT_SYNC_CONTROL_LABEL_MAP.mergedUnavailable
+					merged ??
+					t(ACCOUNT_SYNC_CONTROL_LABEL_KEYS.mergedUnavailable)
 				}
 			/>
 		</div>
@@ -528,7 +551,7 @@ export default memo<IProps>(function AccountConflictModal() {
 	if (localCollision !== undefined) {
 		return (
 			<CoordinatedModal
-				aria-label="跨标签页同步冲突"
+				aria-label={t('account.conflict.aria.crossTab')}
 				coordination={CONFLICT_MODAL_COORDINATION}
 				hideCloseButton
 				isDismissable={false}
@@ -542,21 +565,25 @@ export default memo<IProps>(function AccountConflictModal() {
 						as="h2"
 						classNames={CONFLICT_HEADING_CLASS_NAMES}
 						isFirst
-						subTitle={`多个标签页同时修改了“${namespaceLabel}”。所有候选都已保留，请明确选择一个版本。`}
+						subTitle={t('account.conflict.candidatesSubtitle', {
+							namespace: namespaceLabel,
+						})}
 					>
-						跨标签页同步冲突
+						{t('account.conflict.title.crossTab')}
 					</Heading>
 					<div className="rounded-medium border border-warning/30 bg-warning/10 px-4 py-3 text-small leading-6 text-warning-800 dark:text-warning-500">
-						选择前不会上传任何候选。选择后，系统会先保存选择结果，再继续与云端版本比较。
+						{t('account.conflict.candidatesIntro')}
 						{localCollision.invalidEvidenceCount > 0 &&
-							`另有${localCollision.invalidEvidenceCount}份无法解析的旧证据仍会保留。`}
+							t('account.conflict.invalidEvidence', {
+								count: localCollision.invalidEvidenceCount,
+							})}
 					</div>
 					{readinessMessage !== null && (
 						<p
 							aria-live="polite"
 							className="rounded-medium bg-warning/10 px-4 py-3 text-small text-warning-800 dark:text-warning-500"
 						>
-							{readinessMessage}
+							{t(readinessMessage)}
 						</p>
 					)}
 					<div className="grid gap-4 md:grid-cols-2">
@@ -570,14 +597,21 @@ export default memo<IProps>(function AccountConflictModal() {
 								>
 									<div>
 										<h3 className="font-medium text-foreground-700">
-											候选 {index + 1}
+											{t(
+												'account.conflict.candidate.label',
+												{ number: index + 1 }
+											)}
 										</h3>
 										<p className="text-small text-foreground-500">
-											{candidate.label}
+											{getCollisionSourceLabel(
+												candidate.label
+											)}
 										</p>
 									</div>
 									<ConflictPreview
-										label="候选原始数据"
+										label={t(
+											'account.conflict.candidate.rawData'
+										)}
 										value={candidate.data}
 									/>
 									<Button
@@ -595,14 +629,14 @@ export default memo<IProps>(function AccountConflictModal() {
 											void resolveConflict(resolution);
 										}}
 									>
-										保留此候选
+										{t('account.conflict.candidate.keep')}
 									</Button>
 								</div>
 							);
 						})}
 					</div>
 					{message !== null && (
-						<p className="text-small text-danger">{message}</p>
+						<p className="text-small text-danger">{messageText}</p>
 					)}
 				</div>
 			</CoordinatedModal>
@@ -611,7 +645,7 @@ export default memo<IProps>(function AccountConflictModal() {
 
 	return (
 		<CoordinatedModal
-			aria-label="云同步冲突"
+			aria-label={t('account.conflict.aria.sync')}
 			coordination={CONFLICT_MODAL_COORDINATION}
 			hideCloseButton
 			isDismissable={false}
@@ -630,13 +664,17 @@ export default memo<IProps>(function AccountConflictModal() {
 							as="h2"
 							classNames={CONFLICT_HEADING_CLASS_NAMES}
 							isFirst
-							subTitle={`当前设备和云端都修改过“${namespaceLabel}”，请选择要保留的内容。`}
+							subTitle={t('account.conflict.syncSubtitle', {
+								namespace: namespaceLabel,
+							})}
 						>
-							云同步冲突
+							{t('account.conflict.title.sync')}
 						</Heading>
 					</div>
 					<span className="shrink-0 rounded-full bg-warning/15 px-2.5 py-1 text-tiny font-medium text-warning-700 dark:text-warning-600">
-						{unresolvedConflictCount}项待处理
+						{t('account.conflict.unresolvedCount', {
+							count: unresolvedConflictCount,
+						})}
 					</span>
 				</div>
 				<div
@@ -649,9 +687,7 @@ export default memo<IProps>(function AccountConflictModal() {
 						icon={faTriangleExclamation}
 						className="mt-1 w-4 shrink-0"
 					/>
-					<p>
-						这部分数据的同步已暂停。完成选择前，两份数据都会保留，不会自动覆盖。
-					</p>
+					<p>{t('account.conflict.syncPausedNote')}</p>
 				</div>
 
 				{readinessMessage !== null && (
@@ -659,7 +695,7 @@ export default memo<IProps>(function AccountConflictModal() {
 						aria-live="polite"
 						className="rounded-medium bg-warning/10 px-4 py-3 text-small text-warning-800 dark:text-warning-500"
 					>
-						{readinessMessage}
+						{t(readinessMessage)}
 					</p>
 				)}
 
@@ -681,14 +717,16 @@ export default memo<IProps>(function AccountConflictModal() {
 								<div>
 									<div className="flex flex-wrap items-center gap-2">
 										<h3 className="font-medium text-foreground-700">
-											合并双方的修改
+											{t('account.conflict.merge.button')}
 										</h3>
 										<span className="rounded-full bg-primary/20 px-2 py-0.5 text-tiny font-medium text-primary-700 dark:text-primary">
-											推荐
+											{t(
+												'account.conflict.merge.recommended'
+											)}
 										</span>
 									</div>
 									<p className="mt-1 text-small leading-5 text-foreground-600">
-										系统已经整理出一份合并结果，可同时保留双方能够兼容的修改。
+										{t('account.conflict.merge.note')}
 									</p>
 								</div>
 							</div>
@@ -700,12 +738,12 @@ export default memo<IProps>(function AccountConflictModal() {
 								variant="solid"
 								onPress={handleUseMerged}
 							>
-								使用此合并结果
+								{t('account.conflict.merge.apply')}
 							</Button>
 						</div>
 						<div className="rounded-small border border-primary/20 bg-background/25 px-3 py-2.5 dark:bg-content1/20">
 							<p className="text-tiny font-medium text-foreground-500">
-								合并后将保留
+								{t('account.conflict.merge.keepNote')}
 							</p>
 							<div className="mt-2 grid gap-x-6 gap-y-2 sm:grid-cols-2">
 								{differences.items.map((difference, index) => (
@@ -717,7 +755,7 @@ export default memo<IProps>(function AccountConflictModal() {
 											{difference.label}
 										</span>
 										<span className="break-words text-right font-medium text-foreground-700">
-											{formatFriendlyConflictValue(
+											{formatValue(
 												difference.merged,
 												difference.path
 											)}
@@ -727,7 +765,7 @@ export default memo<IProps>(function AccountConflictModal() {
 							</div>
 							{differences.hasMore && (
 								<p className="mt-2 text-tiny text-foreground-500">
-									还有更多合并内容，可在技术详情中查看
+									{t('account.conflict.merge.more')}
 								</p>
 							)}
 						</div>
@@ -741,41 +779,49 @@ export default memo<IProps>(function AccountConflictModal() {
 								: 'bg-content1 dark:bg-content1/70'
 						)}
 					>
-						这两份修改无法安全地自动合并，请比较下方差异后选择其中一个版本。
+						{t('account.conflict.unmergeableNote')}
 					</div>
 				)}
 
 				<section className="space-y-3">
 					<div>
 						<h3 className="font-medium text-foreground-700">
-							比较两个版本
+							{t('account.conflict.compare.button')}
 						</h3>
 						<p className="mt-1 text-small text-foreground-500">
-							这里只展示有差异的内容，选择后另一份修改会被替换。
+							{t('account.conflict.compare.note')}
 						</p>
 					</div>
 					<div className="grid gap-4 md:grid-cols-2">
 						<ConflictVersionCard
-							buttonLabel="保留云端版本"
-							description="来自账号云端的数据，将覆盖当前设备上的对应修改。"
+							buttonLabel={t(
+								'account.conflict.resolution.cloud.button'
+							)}
+							description={t(
+								'account.conflict.resolution.cloud.description'
+							)}
 							differences={differences}
 							icon={faCloud}
 							isDisabled={isResolving || !isResolutionReady}
 							isHighAppearance={isHighAppearance}
 							isLoading={resolvingResolution === 'cloud'}
-							title="云端版本"
+							title={t('account.conflict.resolution.cloud.title')}
 							valueKey="cloud"
 							onSelect={handleUseCloud}
 						/>
 						<ConflictVersionCard
-							buttonLabel="保留当前设备版本"
-							description="当前浏览器中尚未同步的数据，将上传并覆盖云端修改。"
+							buttonLabel={t(
+								'account.conflict.resolution.local.button'
+							)}
+							description={t(
+								'account.conflict.resolution.local.description'
+							)}
 							differences={differences}
 							icon={faLaptop}
 							isDisabled={isResolving || !isResolutionReady}
 							isHighAppearance={isHighAppearance}
 							isLoading={resolvingResolution === 'local'}
-							title="当前设备版本"
+							title={t('account.conflict.resolution.local.title')}
 							valueKey="local"
 							onSelect={handleUseLocal}
 						/>
@@ -797,7 +843,7 @@ export default memo<IProps>(function AccountConflictModal() {
 						>
 							<div className="min-w-0">
 								<p className="font-medium text-warning-800 dark:text-warning-500">
-									确认覆盖另一份修改？
+									{t('account.conflict.confirm.title')}
 								</p>
 								<p className="mt-1 text-small leading-5 text-foreground-600">
 									{confirmationText}
@@ -810,7 +856,7 @@ export default memo<IProps>(function AccountConflictModal() {
 									variant="light"
 									onPress={handleCancelResolution}
 								>
-									取消
+									{t('account.conflict.confirm.cancel')}
 								</Button>
 								<Button
 									className="bg-opacity-100 backdrop-blur-none"
@@ -824,7 +870,7 @@ export default memo<IProps>(function AccountConflictModal() {
 									variant="solid"
 									onPress={handleConfirmResolution}
 								>
-									确认保留
+									{t('account.conflict.confirm.confirm')}
 								</Button>
 							</div>
 						</div>
@@ -842,7 +888,7 @@ export default memo<IProps>(function AccountConflictModal() {
 							className="rounded-small bg-danger/10 px-3 py-2 text-small text-danger-700 dark:text-danger"
 							role="alert"
 						>
-							{message}
+							{messageText}
 						</p>
 					</div>
 				</ConflictCollapse>
@@ -864,7 +910,7 @@ export default memo<IProps>(function AccountConflictModal() {
 					>
 						<span className="flex items-center gap-2">
 							<FontAwesomeIcon icon={faCode} className="w-4" />
-							查看技术详情
+							{t('account.conflict.technicalDetails')}
 						</span>
 						<FontAwesomeIcon
 							icon={faChevronDown}

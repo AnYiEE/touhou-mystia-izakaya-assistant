@@ -10,9 +10,10 @@ import {
 	type CurrencyItemCatalog as CurrencyItemCatalogModel,
 } from '@/domain/catalog/items/CurrencyItemCatalog';
 import { PRAYER_LABEL_MAP } from '@/domain/data/labels/prayerFacts';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+import { getMapLabel } from '@/domain/places/localizedLabels';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import ItemCard from '@/features/catalog/shared/client/components/ItemCard';
 import {
 	ItemPopover,
@@ -29,6 +30,8 @@ import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+
 interface IProps {
 	data: TItemData<CurrencyItemCatalogModel>;
 }
@@ -37,6 +40,7 @@ const currencyItemCatalog = CurrencyItemCatalog.getInstance();
 const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 
 export default memo<IProps>(function CurrencyItemsCatalog({ data }) {
+	const { t } = useI18n(catalogItemsMessages);
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
 	const { defaultOpenedPopover, getPopoverOpenChangeProps } =
 		useOpenedItemPopover(popoverCardRef, data);
@@ -99,49 +103,51 @@ export default memo<IProps>(function CurrencyItemsCatalog({ data }) {
 						ref={popoverCardRef}
 					>
 						<p>
-							<span className="font-semibold">来源：</span>
+							<span className="font-semibold">
+								{t('items.source.from')}
+							</span>
 							{from.map((source, fromIndex) => {
 								if ('mapSideTask' in source) {
 									return (
 										<Fragment key={fromIndex}>
-											{fromIndex > 0 && '、'}地区【
-											{
-												MAP_FACTS[
+											{fromIndex > 0 &&
+												t('items.source.listSeparator')}
+											{t('items.source.mapSideTask', {
+												map: getMapLabel(
 													source.mapSideTask.map
-												].label
-											}
-											】支线任务
+												),
+											})}
 										</Fragment>
 									);
 								}
 								if ('mapPrayer' in source) {
 									return (
 										<Fragment key={fromIndex}>
-											{fromIndex > 0 && '、'}地区【
-											{
-												MAP_FACTS[source.mapPrayer.map]
-													.label
-											}
-											】
-											{
-												PRAYER_LABEL_MAP[
+											{fromIndex > 0 &&
+												t('items.source.listSeparator')}
+											{t('items.source.mapPrayer', {
+												map: getMapLabel(
+													source.mapPrayer.map
+												),
+												prayer: PRAYER_LABEL_MAP[
 													source.mapPrayer.label
-												]
-											}
-											处祈愿
+												],
+											})}
 										</Fragment>
 									);
 								}
 								if ('spellCardReward' in source) {
 									return (
 										<Fragment key={fromIndex}>
-											{fromIndex > 0 && '、'}【
-											{specialGuestCatalog.getPropsById(
-												source.spellCardReward
-													.specialGuest,
-												'name'
-											)}
-											】奖励符卡
+											{fromIndex > 0 &&
+												t('items.source.listSeparator')}
+											{t('items.source.rewardSpellCard', {
+												name: specialGuestCatalog.getDisplayPropsById(
+													source.spellCardReward
+														.specialGuest,
+													'name'
+												),
+											})}
 										</Fragment>
 									);
 								}
@@ -149,24 +155,28 @@ export default memo<IProps>(function CurrencyItemsCatalog({ data }) {
 								const { amount, currencyItem } =
 									source.buy.price;
 								const currencyItemName =
-									currencyItemCatalog.getPropsById(
+									currencyItemCatalog.getDisplayPropsById(
 										currencyItem,
 										'name'
 									);
 								return (
 									<Fragment key={fromIndex}>
-										{fromIndex > 0 && '、'}
+										{fromIndex > 0 &&
+											t('items.source.listSeparator')}
 										{formatMerchantReference(
 											source.buy.merchant
 										)}
-										（
+										{t('items.source.parenthesisOpen')}
 										<span className="inline-flex items-center">
 											<Price showSymbol={false}>
 												{amount}×
 											</Price>
 											<Tooltip
 												showArrow
-												content={`点击：在新窗口中查看货币【${currencyItemName}】的详情`}
+												content={t(
+													'items.source.actionCurrency',
+													{ label: currencyItemName }
+												)}
 												offset={1}
 												size="sm"
 											>
@@ -181,12 +191,17 @@ export default memo<IProps>(function CurrencyItemsCatalog({ data }) {
 															currencyItemName
 														);
 													}}
-													aria-label={`点击：在新窗口中查看货币【${currencyItemName}】的详情`}
+													aria-label={t(
+														'items.source.actionCurrency',
+														{
+															label: currencyItemName,
+														}
+													)}
 													role="button"
 												/>
 											</Tooltip>
 										</span>
-										）
+										{t('items.source.parenthesisClose')}
 									</Fragment>
 								);
 							})}

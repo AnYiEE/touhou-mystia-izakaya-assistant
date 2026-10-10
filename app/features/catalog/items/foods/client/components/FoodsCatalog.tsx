@@ -1,7 +1,6 @@
 import { memo, useMemo, useRef } from 'react';
 
 import { type FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
-import { FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { FOOD_TAG_STYLE } from '@/features/catalog/presentation/tagStyles';
@@ -16,6 +15,7 @@ import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import { useItemPopoverState } from '@/features/catalog/shared/client/hooks/useItemPopoverState';
 import { useOpenedItemPopover } from '@/features/catalog/shared/client/hooks/useOpenedItemPopover';
+import { getFoodTagLabel } from '@/features/catalog/shared/client/localization/tagLabels';
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
@@ -49,10 +49,10 @@ export default memo<IProps>(function FoodsCatalog({ data }) {
 				tags: {
 					negative: item.negativeTags
 						.toSorted(numberSort)
-						.map((tag) => FOOD_TAG_MAP[tag]),
+						.map((tag) => getFoodTagLabel(tag)),
 					positive: item.positiveTags
 						.toSorted(numberSort)
-						.map((tag) => FOOD_TAG_MAP[tag]),
+						.map((tag) => getFoodTagLabel(tag)),
 				},
 			})),
 		[data]

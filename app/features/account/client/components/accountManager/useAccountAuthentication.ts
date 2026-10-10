@@ -30,7 +30,6 @@ import {
 } from '@/features/account/client/session';
 import { accountStore } from '@/features/account/client/state/accountStore';
 import {
-	PASSWORD_RULE_DESCRIPTION,
 	WEBAUTHN_BROWSER_CEREMONY_TIMEOUT_MS,
 	checkNicknamePolicy,
 	checkPasswordPolicy,
@@ -48,7 +47,7 @@ import {
 	handleUnauthorizedAccountError,
 } from './controller';
 import {
-	ACCOUNT_MANAGER_MESSAGE_MAP,
+	ACCOUNT_MANAGER_MESSAGE_KEYS,
 	checkAccountLoginCredentialError,
 } from './copy';
 import { type IUseAccountPasskeysResult } from './useAccountPasskeys';
@@ -260,17 +259,17 @@ export function useAccountAuthentication({
 
 		if (normalizedUsername.length === 0 || password.length === 0) {
 			setMessage(
-				ACCOUNT_MANAGER_MESSAGE_MAP.authenticationCredentialsRequired
+				ACCOUNT_MANAGER_MESSAGE_KEYS.authenticationCredentialsRequired
 			);
 			return;
 		}
 		if (!hasAcceptedAuthTerms) {
 			setShouldHighlightAuthTerms(true);
-			setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.termsRequired);
+			setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.termsRequired);
 			return;
 		}
 		if (authMode === 'register' && !checkPasswordPolicy(password)) {
-			setMessage(PASSWORD_RULE_DESCRIPTION);
+			setMessage('invalid-password-rule');
 			return;
 		}
 		if (isRegistrationNicknameInvalid) {
@@ -318,8 +317,8 @@ export function useAccountAuthentication({
 				setPassword('');
 				setMessage(
 					authMode === 'login'
-						? ACCOUNT_MANAGER_MESSAGE_MAP.loginSuccess
-						: ACCOUNT_MANAGER_MESSAGE_MAP.registrationSuccess
+						? ACCOUNT_MANAGER_MESSAGE_KEYS.loginSuccess
+						: ACCOUNT_MANAGER_MESSAGE_KEYS.registrationSuccess
 				);
 
 				void publishAccountRuntimeInvalidation({
@@ -360,7 +359,7 @@ export function useAccountAuthentication({
 				setMessage(
 					Error.isError(error)
 						? error.message
-						: ACCOUNT_MANAGER_MESSAGE_MAP.authenticationFailed
+						: ACCOUNT_MANAGER_MESSAGE_KEYS.authenticationFailed
 				);
 			})
 			.finally(() => {
@@ -428,7 +427,7 @@ export function useAccountAuthentication({
 
 		if (!hasAcceptedAuthTerms) {
 			setShouldHighlightAuthTerms(true);
-			setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.termsRequired);
+			setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.termsRequired);
 			return;
 		}
 
@@ -463,7 +462,8 @@ export function useAccountAuthentication({
 			if (checked) {
 				setShouldHighlightAuthTerms(false);
 				setMessage((currentMessage) =>
-					currentMessage === ACCOUNT_MANAGER_MESSAGE_MAP.termsRequired
+					currentMessage ===
+					ACCOUNT_MANAGER_MESSAGE_KEYS.termsRequired
 						? null
 						: currentMessage
 				);
@@ -536,7 +536,7 @@ export function useAccountAuthentication({
 				return;
 			}
 
-			setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.loginSuccess);
+			setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.loginSuccess);
 
 			void publishAccountRuntimeInvalidation({
 				reason: 'login',
@@ -627,7 +627,7 @@ export function useAccountAuthentication({
 				setMessage(
 					Error.isError(error)
 						? error.message
-						: ACCOUNT_MANAGER_MESSAGE_MAP.authenticationFailed
+						: ACCOUNT_MANAGER_MESSAGE_KEYS.authenticationFailed
 				);
 			});
 	}, [handleWebAuthnLoginResult, isWebauthnAutofillLoginReady, setMessage]);
@@ -679,7 +679,7 @@ export function useAccountAuthentication({
 
 		if (!hasAcceptedAuthTerms) {
 			setShouldHighlightAuthTerms(true);
-			setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.termsRequired);
+			setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.termsRequired);
 			return;
 		}
 
@@ -728,7 +728,7 @@ export function useAccountAuthentication({
 				setMessage(
 					Error.isError(error)
 						? error.message
-						: ACCOUNT_MANAGER_MESSAGE_MAP.authenticationFailed
+						: ACCOUNT_MANAGER_MESSAGE_KEYS.authenticationFailed
 				);
 			})
 			.finally(() => {
@@ -754,7 +754,7 @@ export function useAccountAuthentication({
 
 		if (!hasAcceptedAuthTerms) {
 			setShouldHighlightAuthTerms(true);
-			setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.termsRequired);
+			setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.termsRequired);
 			return;
 		}
 
@@ -801,7 +801,7 @@ export function useAccountAuthentication({
 
 				setPassword('');
 				setIsPasskeyRegistrationPromptVisible(false);
-				setMessage(ACCOUNT_MANAGER_MESSAGE_MAP.registrationSuccess);
+				setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.registrationSuccess);
 
 				void publishAccountRuntimeInvalidation({
 					reason: 'login',
@@ -845,7 +845,7 @@ export function useAccountAuthentication({
 				setMessage(
 					Error.isError(error)
 						? error.message
-						: ACCOUNT_MANAGER_MESSAGE_MAP.registrationFailed
+						: ACCOUNT_MANAGER_MESSAGE_KEYS.registrationFailed
 				);
 			})
 			.finally(() => {

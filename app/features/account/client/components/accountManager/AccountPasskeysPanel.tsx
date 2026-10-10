@@ -17,10 +17,7 @@ import TimeAgo from '@/design/ui/components/timeAgo';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import AccountConfirmButton from '@/features/account/client/components/AccountConfirmButton';
-import {
-	WEBAUTHN_CREDENTIAL_NAME_MAX_LENGTH,
-	WEBAUTHN_CREDENTIAL_NAME_RULE_DESCRIPTION,
-} from '@/features/account/constants';
+import { WEBAUTHN_CREDENTIAL_NAME_MAX_LENGTH } from '@/features/account/constants';
 import type { IWebauthnCredentialSummary } from '@/features/account/contracts';
 
 import {
@@ -30,7 +27,10 @@ import {
 	AccountPanel,
 	formatSessionTimestamp,
 } from './accountPanelLayout';
-import { ACCOUNT_MANAGER_STATUS_LABEL_MAP } from './copy';
+import { ACCOUNT_MANAGER_STATUS_LABEL_KEYS } from './copy';
+import { accountMessages } from '@/features/account/client/messages';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IAccountPasskeysPanelProps {
 	deleteTargetPasskeyId: string | null;
@@ -61,6 +61,7 @@ interface IAccountPasskeysPanelProps {
 
 export default memo<IAccountPasskeysPanelProps>(
 	function AccountPasskeysPanel(props) {
+		const { locale, t } = useI18n(accountMessages);
 		const {
 			deleteTargetPasskeyId,
 			deletingPasskeyId,
@@ -98,7 +99,7 @@ export default memo<IAccountPasskeysPanelProps>(
 									className="w-4 text-primary-600"
 								/>
 								<span className="text-small font-medium text-foreground-700">
-									通行密钥
+									{t('account.manager.field.passkey')}
 								</span>
 							</div>
 							{isWebauthnSupported && !isAddPasskeyFormOpen ? (
@@ -116,7 +117,7 @@ export default memo<IAccountPasskeysPanelProps>(
 									variant="light"
 									onPress={handleOpenAddPasskeyForm}
 								>
-									添加
+									{t('account.manager.passkeys.add')}
 								</Button>
 							) : null}
 						</div>
@@ -126,15 +127,22 @@ export default memo<IAccountPasskeysPanelProps>(
 									<div className="pt-2">
 										<div className="space-y-2 rounded-medium border border-default-200 bg-default-50/40 p-3">
 											<Input
-												description={
-													WEBAUTHN_CREDENTIAL_NAME_RULE_DESCRIPTION
-												}
+												description={t(
+													'account.passkeyNameRule',
+													{
+														max: WEBAUTHN_CREDENTIAL_NAME_MAX_LENGTH,
+													}
+												)}
 												isDisabled={isAddingPasskey}
-												label="通行密钥名称（可选）"
+												label={t(
+													'account.manager.passkeys.nameOptional'
+												)}
 												maxLength={
 													WEBAUTHN_CREDENTIAL_NAME_MAX_LENGTH
 												}
-												placeholder="例如：我的手机、YubiKey"
+												placeholder={t(
+													'account.manager.passkeys.nameExample'
+												)}
 												size="sm"
 												value={newPasskeyName}
 												onValueChange={
@@ -151,7 +159,9 @@ export default memo<IAccountPasskeysPanelProps>(
 														handleCancelAddPasskey
 													}
 												>
-													取消
+													{t(
+														'account.manager.confirm.cancel'
+													)}
 												</Button>
 												<Button
 													color="primary"
@@ -171,7 +181,9 @@ export default memo<IAccountPasskeysPanelProps>(
 													variant="flat"
 													onPress={handleAddPasskey}
 												>
-													确认添加
+													{t(
+														'account.manager.passkeys.confirmAdd'
+													)}
 												</Button>
 											</div>
 										</div>
@@ -185,17 +197,17 @@ export default memo<IAccountPasskeysPanelProps>(
 							isPasskeyListLoading && !isPasskeyListReady ? (
 								<AccountAnimatedListItem key="loading">
 									<p className="text-small leading-5 text-foreground-500">
-										{
-											ACCOUNT_MANAGER_STATUS_LABEL_MAP.readingPasskeys
-										}
+										{t(
+											ACCOUNT_MANAGER_STATUS_LABEL_KEYS.readingPasskeys
+										)}
 									</p>
 								</AccountAnimatedListItem>
 							) : visiblePasskeys.length === 0 ? (
 								<AccountAnimatedListItem key="empty">
 									<p className="text-small leading-5 text-foreground-500">
-										{
-											ACCOUNT_MANAGER_STATUS_LABEL_MAP.noPasskeys
-										}
+										{t(
+											ACCOUNT_MANAGER_STATUS_LABEL_KEYS.noPasskeys
+										)}
 									</p>
 								</AccountAnimatedListItem>
 							) : (
@@ -216,7 +228,9 @@ export default memo<IAccountPasskeysPanelProps>(
 																maxLength={
 																	WEBAUTHN_CREDENTIAL_NAME_MAX_LENGTH
 																}
-																placeholder="通行密钥名称"
+																placeholder={t(
+																	'account.manager.field.passkey'
+																)}
 																size="sm"
 																value={
 																	editingPasskeyName
@@ -227,7 +241,9 @@ export default memo<IAccountPasskeysPanelProps>(
 															/>
 															<Button
 																isIconOnly
-																aria-label="保存名称"
+																aria-label={t(
+																	'account.manager.passkeys.saveName'
+																)}
 																className="h-8 w-8 min-w-8 text-primary-600"
 																isLoading={
 																	renamingPasskeyId ===
@@ -249,7 +265,9 @@ export default memo<IAccountPasskeysPanelProps>(
 															</Button>
 															<Button
 																isIconOnly
-																aria-label="取消重命名"
+																aria-label={t(
+																	'account.manager.passkeys.cancelRename'
+																)}
 																className="h-8 w-8 min-w-8 text-foreground-500"
 																isDisabled={
 																	renamingPasskeyId ===
@@ -274,17 +292,23 @@ export default memo<IAccountPasskeysPanelProps>(
 														<div className="flex min-w-0 flex-1 items-center gap-1">
 															<p className="min-w-0 truncate text-small font-medium text-foreground-700">
 																{passkey.name ??
-																	'通行密钥'}
+																	t(
+																		'account.manager.field.passkey'
+																	)}
 															</p>
 															<Tooltip
 																showArrow
-																content="重命名"
+																content={t(
+																	'account.manager.passkeys.rename'
+																)}
 																placement="left"
 															>
 																<span className="inline-flex shrink-0">
 																	<Button
 																		isIconOnly
-																		aria-label="重命名通行密钥"
+																		aria-label={t(
+																			'account.manager.passkeys.renameAria'
+																		)}
 																		className="h-7 w-7 min-w-7 shrink-0 text-primary-600"
 																		isDisabled={
 																			isSubmitting
@@ -312,16 +336,24 @@ export default memo<IAccountPasskeysPanelProps>(
 													)}
 													<Tooltip
 														showArrow
-														content="删除通行密钥"
+														content={t(
+															'account.manager.passkeys.delete'
+														)}
 														placement="left"
 													>
 														<span className="inline-flex shrink-0">
 															<AccountConfirmButton
-																ariaLabel="删除通行密钥"
-																buttonLabel="删除通行密钥"
+																ariaLabel={t(
+																	'account.manager.passkeys.delete'
+																)}
+																buttonLabel={t(
+																	'account.manager.passkeys.delete'
+																)}
 																className="h-8 w-8 min-w-8 justify-center text-warning-600"
 																color="warning"
-																confirmLabel="确认删除"
+																confirmLabel={t(
+																	'account.manager.passkeys.confirmDelete'
+																)}
 																fullWidth={
 																	false
 																}
@@ -367,19 +399,27 @@ export default memo<IAccountPasskeysPanelProps>(
 													<p
 														className="break-words text-tiny text-foreground-500"
 														title={formatSessionTimestamp(
-															passkey.created_at
+															passkey.created_at,
+															locale
 														)}
 													>
-														添加于
+														{t(
+															'account.manager.passkeys.addedAt'
+														)}
 														{formatSessionTimestamp(
-															passkey.created_at
+															passkey.created_at,
+															locale
 														)}
 													</p>
 													<p className="break-words text-tiny text-foreground-500">
-														最近使用：
+														{t(
+															'account.manager.passkeys.lastUsed'
+														)}
 														{passkey.last_used_at ===
 														null ? (
-															'从未使用'
+															t(
+																'account.manager.passkeys.neverUsed'
+															)
 														) : (
 															<TimeAgo
 																timestamp={
@@ -397,9 +437,9 @@ export default memo<IAccountPasskeysPanelProps>(
 						) : (
 							<AccountAnimatedListItem key="unsupported">
 								<p className="text-small leading-5 text-foreground-500">
-									{
-										ACCOUNT_MANAGER_STATUS_LABEL_MAP.passkeysUnsupported
-									}
+									{t(
+										ACCOUNT_MANAGER_STATUS_LABEL_KEYS.passkeysUnsupported
+									)}
 								</p>
 							</AccountAnimatedListItem>
 						)}

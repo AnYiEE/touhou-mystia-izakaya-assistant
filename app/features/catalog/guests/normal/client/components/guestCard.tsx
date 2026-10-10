@@ -17,7 +17,6 @@ import Tooltip from '@/design/ui/components/tooltip';
 
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
 import type { TNormalGuestName } from '@/domain/data/guests/normal/types';
-import { BEVERAGE_TAG_MAP, FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import { GUEST_RATING_MAP } from '@/domain/evaluation/labels';
 
@@ -28,6 +27,7 @@ import { GuestCardSiteInfo } from '@/features/catalog/guests/shared/client/compo
 import RatingAvatarShell from '@/features/catalog/guests/shared/client/components/ratingAvatarShell';
 import SlidingSprite from '@/features/catalog/guests/shared/client/components/slidingSprite';
 import TagGroup from '@/features/catalog/guests/shared/client/components/tagGroup';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import {
 	buildNormalTagTooltip,
 	isPopularTrendTag,
@@ -36,11 +36,17 @@ import { getNormalGuestDisplayMeta } from '@/features/catalog/presentation/guest
 import { NORMAL_GUEST_TAG_STYLE } from '@/features/catalog/presentation/tagStyles';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import Tags from '@/features/catalog/shared/client/components/Tags';
+import {
+	compareFoodTagLabels,
+	getBeverageTagLabel,
+	getFoodTagLabel,
+} from '@/features/catalog/shared/client/localization/tagLabels';
+import { catalogSharedMessages } from '@/features/catalog/shared/client/messages';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import InfoButton from './infoButton';
 
@@ -48,6 +54,8 @@ const ALICE_ID = 1002;
 const GOBLIN_ID = 12;
 
 export default function NormalGuestCard() {
+	const { locale, t } = useI18n(catalogGuestsMessages);
+	const { t: tShared } = useI18n(catalogSharedMessages);
 	const { isHighAppearance } = useDesignPreferences();
 	const { pushState } = usePathname();
 	const vibrate = useVibrate();
@@ -113,13 +121,13 @@ export default function NormalGuestCard() {
 		() =>
 			currentBeverage === null
 				? ([] as TBeverageTagId[])
-				: beverageCatalog.getPropsById(currentBeverage, 'tags'),
+				: beverageCatalog.getDisplayPropsById(currentBeverage, 'tags'),
 		[beverageCatalog, currentBeverage]
 	);
 
 	const avatarRatingContent =
 		currentRating === null
-			? '请选择点单料理以评级'
+			? t('guests.guestCard.pickFoodToRate')
 			: GUEST_RATING_MAP[currentRating];
 
 	const avatarRatingColor = hasRating
@@ -159,13 +167,16 @@ export default function NormalGuestCard() {
 			tagLabel: string,
 			isPopularTrend: boolean
 		) =>
-			buildNormalTagTooltip({
-				isPopularTrend,
-				selectedTags: { has: () => selectedTags.has(tag) },
-				tag: tagLabel,
-				type,
-			}),
-		[]
+			buildNormalTagTooltip(
+				{
+					isPopularTrend,
+					selectedTags: { has: () => selectedTags.has(tag) },
+					tag: tagLabel,
+					type,
+				},
+				t
+			),
+		[t]
 	);
 
 	if (currentNormalGuest === null) {
@@ -177,12 +188,16 @@ export default function NormalGuestCard() {
 		dlc: currentNormalGuestDlc,
 		name: currentNormalGuestName,
 		positiveTags: currentNormalGuestPositiveTags,
-	} = normalGuestCatalog.getPropsById(currentNormalGuest);
+	} = normalGuestCatalog.getDisplayPropsById(currentNormalGuest);
 	const {
 		hasOtherPlaces,
 		mainPlace: currentNormalGuestMainPlace,
 		placeContent,
-	} = getNormalGuestDisplayMeta(normalGuestCatalog, currentNormalGuest);
+	} = getNormalGuestDisplayMeta(
+		normalGuestCatalog,
+		currentNormalGuest,
+		locale
+	);
 
 	const { label: dlcLabel, shortLabel: dlcShortLabel } =
 		DLC_LABEL_MAP[currentNormalGuestDlc];
@@ -285,18 +300,22 @@ export default function NormalGuestCard() {
 								const isGoblin =
 									currentNormalGuest === GOBLIN_ID;
 								const mainPlace = isGoblin
-									? '符卡幻化'
+									? t(
+											'guests.guestCard.spellCardTransformation'
+										)
 									: currentNormalGuestMainPlace;
 								const otherPlaces = isGoblin ? (
 									<span className="inline-flex items-center">
-										【
+										{tShared('catalog.guestTag.open')}
 										<Sprite
 											target="special_guest"
 											recordId={ALICE_ID}
 											size={1.25}
 											className="mx-0.5 rounded-full"
 										/>
-										爱丽丝】奖励符卡
+										{t('guests.guestCard.aliceName')}
+										{tShared('catalog.guestTag.close')}
+										{t('guests.guestCard.rewardSpellCard')}
 									</span>
 								) : (
 									placeContent
@@ -347,11 +366,9 @@ export default function NormalGuestCard() {
 					{!checkLengthEmpty(currentNormalGuestPositiveTags) && (
 						<TagGroup>
 							{currentNormalGuestPositiveTags
-								.toSorted((a, b) =>
-									pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b])
-								)
+								.toSorted(compareFoodTagLabels)
 								.map((tag) => {
-									const tagLabel = FOOD_TAG_MAP[tag];
+									const tagLabel = getFoodTagLabel(tag);
 									const isPopularTrend =
 										isPopularTrendTag(tag);
 									return (
@@ -386,7 +403,22 @@ export default function NormalGuestCard() {
 																);
 															}
 												}
-												aria-label={`${tagLabel}${isPopularTrend ? '/不会被顾客点单' : ''}${currentFoodTagsWithTrend.includes(tag) ? '/已满足' : ''}`}
+												data-tutorial-food-tag={tag}
+												aria-label={`${tagLabel}${
+													isPopularTrend
+														? t(
+																'guests.tagStatus.notOrdered'
+															)
+														: ''
+												}${
+													currentFoodTagsWithTrend.includes(
+														tag
+													)
+														? t(
+																'guests.tagStatus.satisfied'
+															)
+														: ''
+												}`}
 												tabIndex={
 													isPopularTrend &&
 													isShowTagsTooltip
@@ -418,7 +450,7 @@ export default function NormalGuestCard() {
 					{!checkLengthEmpty(currentNormalGuestBeverageTags) && (
 						<TagGroup>
 							{currentNormalGuestBeverageTags.map((tag) => {
-								const tagLabel = BEVERAGE_TAG_MAP[tag];
+								const tagLabel = getBeverageTagLabel(tag);
 								return (
 									<Tooltip
 										key={tag}
@@ -445,7 +477,14 @@ export default function NormalGuestCard() {
 											onPress={() => {
 												handleBeverageTagPress(tag);
 											}}
-											aria-label={`${tagLabel}${beverageTags.includes(tag) ? '/已满足' : ''}`}
+											data-tutorial-beverage-tag={tag}
+											aria-label={`${tagLabel}${
+												beverageTags.includes(tag)
+													? t(
+															'guests.tagStatus.satisfied'
+														)
+													: ''
+											}`}
 											className={cn(
 												'p-1 font-semibold leading-none data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover',
 												{
@@ -463,7 +502,11 @@ export default function NormalGuestCard() {
 					)}
 				</div>
 				{hasSelected ? (
-					<Tooltip showArrow content="重置当前选定项" offset={4}>
+					<Tooltip
+						showArrow
+						content={t('guests.guestCard.resetSelection')}
+						offset={4}
+					>
 						<FontAwesomeIconButton
 							icon={faArrowsRotate}
 							variant="light"
@@ -472,17 +515,21 @@ export default function NormalGuestCard() {
 									currentNormalGuestName
 								);
 							}}
-							aria-label="重置当前选定项"
+							aria-label={t('guests.guestCard.resetSelection')}
 							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 						/>
 					</Tooltip>
 				) : (
-					<Tooltip showArrow content="取消选择当前顾客" offset={4}>
+					<Tooltip
+						showArrow
+						content={t('guests.guestCard.deselect')}
+						offset={4}
+					>
 						<FontAwesomeIconButton
 							icon={faXmark}
 							variant="light"
 							onPress={handleRefreshGuest}
-							aria-label="取消选择当前顾客"
+							aria-label={t('guests.guestCard.deselect')}
 							className="absolute right-1 top-1 h-4 w-4 min-w-0 text-default-400 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 						/>
 					</Tooltip>

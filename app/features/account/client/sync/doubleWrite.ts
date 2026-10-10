@@ -598,6 +598,13 @@ export function startAccountStoreSyncWatchers() {
 		})
 	);
 	watch(
+		globalStore.persistence.locale.onChange(() => {
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
+		})
+	);
+	watch(
 		globalStore.persistence.dirver.onChange(() => {
 			enqueueAccountSyncLocalSnapshotReconcile(
 				SYNC_NAMESPACE_MAP.tutorialSpecialGuest

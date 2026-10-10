@@ -1,13 +1,20 @@
 import { type Metadata } from 'next';
 import { type PropsWithChildren } from 'react';
 
-import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
+import {
+	getLocalizedPageTitle,
+	readMetadataLocaleContext,
+} from '@/features/appShell/seo/pageMetadata';
 
-export const metadata: Metadata = {
-	title: getPageTitle('/preferences'),
+export async function generateMetadata(): Promise<Metadata> {
+	const { locale } = await readMetadataLocaleContext();
 
-	robots: { index: false },
-};
+	return {
+		title: getLocalizedPageTitle(locale, '/preferences'),
+
+		robots: { index: false },
+	};
+}
 
 export default function PreferencesLayout({
 	children,

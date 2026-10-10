@@ -5,13 +5,13 @@ import { Fragment } from 'react';
 import Heading from '@/design/ui/components/heading';
 import Link from '@/design/ui/components/link';
 
-import {
-	DARK_MATTER_META_MAP,
-	DYNAMIC_TAG_MAP,
-} from '@/domain/data/tags/tagFacts';
-
+import { CHANGELOG_LOCALIZED } from '@/features/about/client/changelogLocalization';
+import { aboutMessages } from '@/features/about/client/messages';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { appShellMessages } from '@/features/appShell/client/messages';
 import { SITE_LINKS } from '@/features/appShell/links';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 const links = SITE_LINKS;
 
@@ -35,7 +35,7 @@ const changelog = [
 	{
 		version: 'v0.4',
 		changes: [
-			`新增：支持设置全局的“${DYNAMIC_TAG_MAP.popularPositive}”或“${DYNAMIC_TAG_MAP.popularNegative}”趋势。`,
+			'新增：支持设置全局的“流行喜爱”或“流行厌恶”趋势。',
 			'新增：作为渐进式网络应用程序安装后，提供常用功能的快捷方式。',
 			'改善：无障碍（键盘导航）支持。',
 			'修复：稀客套餐评级逻辑。',
@@ -72,7 +72,7 @@ const changelog = [
 	{
 		version: 'v0.9',
 		changes: [
-			`新增：稀客套餐评级支持“${DARK_MATTER_META_MAP.name}”。`,
+			'新增：稀客套餐评级支持“黑暗物质”。',
 			'新增：稀客符卡效果数据及其展示界面。',
 			'新增：稀客、米斯蒂娅的角色和衣服立绘。',
 			'新增：部分场景下支持临时唤起新窗口查看料理、酒水或食材详情。',
@@ -91,8 +91,8 @@ const changelog = [
 		changes: [
 			'新增：摆件和衣服页面。',
 			'新增：支持同时导出稀客和普客的套餐搭配数据。',
-			`新增：料理和食材页面中的料理和食材标签将依照已设置的“${DYNAMIC_TAG_MAP.popularPositive}”或“${DYNAMIC_TAG_MAP.popularNegative}”趋势而动态调整。`,
-			`修复：料理页面的部分料理未显示“${DYNAMIC_TAG_MAP.largePartition}”标签。`,
+			'新增：料理和食材页面中的料理和食材标签将依照已设置的“流行喜爱”或“流行厌恶”趋势而动态调整。',
+			'修复：料理页面的部分料理未显示“大份”标签。',
 			'修复：额外食材评分逻辑。',
 		],
 	},
@@ -222,17 +222,25 @@ const changelog = [
 /* eslint-enable sort-keys */
 
 export default function ChangeLog() {
+	const { locale, t } = useI18n(aboutMessages);
+	const { t: tAppShell } = useI18n(appShellMessages);
+
+	const localizedChangelog =
+		locale === 'zh-CN' ? undefined : CHANGELOG_LOCALIZED[locale];
+
 	return (
 		<>
 			<Heading
 				subTitle={
 					<>
-						以下为更新摘要，前往
+						{t('about.changelog.subTitle.prefix')}
 						<Link
 							isExternal
 							showAnchorIcon
 							href={`${links.github.href}/commits`}
-							title={`${links.github.label}提交记录`}
+							title={t('about.changelog.commitsTitle', {
+								source: tAppShell('appShell.links.github'),
+							})}
 							onPress={() => {
 								trackEvent(
 									trackEvent.category.click,
@@ -242,28 +250,32 @@ export default function ChangeLog() {
 							}}
 							className="rounded-small"
 						>
-							GitHub
+							{t('about.changelog.commitsLink')}
 						</Link>
-						可以查看完整的提交记录。
+						{t('about.changelog.subTitle.suffix')}
 					</>
 				}
 			>
-				更新日志
+				{t('about.changelog.title')}
 			</Heading>
 			{changelog
 				.toReversed()
-				.map(({ changes, version }, versionIndex) => (
-					<Fragment key={versionIndex}>
-						<Heading as="h2" isFirst={versionIndex === 0}>
-							{version}
-						</Heading>
-						<ul className="list-inside list-decimal space-y-2 break-all text-justify">
-							{changes.map((change, changeIndex) => (
-								<li key={changeIndex}>{change}</li>
-							))}
-						</ul>
-					</Fragment>
-				))}
+				.map(({ changes, version }, versionIndex) => {
+					const localizedChanges =
+						localizedChangelog?.[version] ?? changes;
+					return (
+						<Fragment key={versionIndex}>
+							<Heading as="h2" isFirst={versionIndex === 0}>
+								{version}
+							</Heading>
+							<ul className="list-inside list-decimal space-y-2 break-all text-justify">
+								{localizedChanges.map((change, changeIndex) => (
+									<li key={changeIndex}>{change}</li>
+								))}
+							</ul>
+						</Fragment>
+					);
+				})}
 		</>
 	);
 }

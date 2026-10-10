@@ -14,9 +14,12 @@ import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import type { IProcessedRecipe } from '@/domain/catalog/food/types';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps {
 	recipes: ReadonlyArray<IProcessedRecipe>;
@@ -26,6 +29,7 @@ const cookerCatalog = CookerCatalog.getInstance();
 
 export default memo<IProps>(function RecipesDetails({ recipes }) {
 	const openWindow = useViewInNewWindow();
+	const { t } = useI18n(catalogItemsMessages);
 	const ingredientCatalog = IngredientCatalog.getInstance();
 	const visibleRecipes = recipes.filter(({ id }) => id !== -1);
 	const maxRecipeIdLength = visibleRecipes.reduce(
@@ -49,14 +53,16 @@ export default memo<IProps>(function RecipesDetails({ recipes }) {
 			})}
 		>
 			{visibleRecipes.map(({ cookTime, cookerType, id, ingredients }) => {
-				const cooker = cookerCatalog.getPropsById(
+				const cooker = cookerCatalog.getDisplayPropsById(
 					cookerCatalog.getIdByTypeAndSeries(cookerType, 0)
 				);
 				return (
 					<div key={id} className="space-y-1">
 						<div className="flex flex-wrap gap-4">
 							<p>
-								<span className="font-semibold">食谱ID：</span>
+								<span className="font-semibold">
+									{t('items.recipes.id')}
+								</span>
 								<span
 									className="inline-block font-mono"
 									style={recipeIdStyle}
@@ -69,7 +75,9 @@ export default memo<IProps>(function RecipesDetails({ recipes }) {
 									<Popover showArrow offset={3} size="sm">
 										<Tooltip
 											showArrow
-											content="随游戏等级提升而降低"
+											content={t(
+												'items.recipes.cookTimeNote'
+											)}
 											offset={1}
 											size="sm"
 										>
@@ -83,20 +91,28 @@ export default memo<IProps>(function RecipesDetails({ recipes }) {
 														)}
 													>
 														<span className="underline-dotted-offset2">
-															烹饪时间
+															{t(
+																'items.recipes.cookTime'
+															)}
 														</span>
-														：
+														{t(
+															'items.recipes.cookTimeSuffix'
+														)}
 													</span>
 												</PopoverTrigger>
 											</span>
 										</Tooltip>
 										<PopoverContent>
-											随游戏等级提升而降低
+											{t('items.recipes.cookTimeNote')}
 										</PopoverContent>
 									</Popover>
-									{cookTime.max}秒
+									{t('items.recipes.seconds', {
+										seconds: cookTime.max,
+									})}
 									<span className="mx-0.5">➞</span>
-									{cookTime.min}秒
+									{t('items.recipes.seconds', {
+										seconds: cookTime.min,
+									})}
 								</p>
 							)}
 						</div>
@@ -116,11 +132,14 @@ export default memo<IProps>(function RecipesDetails({ recipes }) {
 							</Tooltip>
 							{ingredients.map((ingredient, index) => {
 								const ingredientName =
-									ingredientCatalog.getPropsById(
+									ingredientCatalog.getDisplayPropsById(
 										ingredient,
 										'name'
 									);
-								const ingredientLabel = `点击：在新窗口中查看食材【${ingredientName}】的详情`;
+								const ingredientLabel = t(
+									'items.recipes.actionIngredient',
+									{ label: ingredientName }
+								);
 								return (
 									<Tooltip
 										showArrow

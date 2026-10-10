@@ -10,28 +10,23 @@ import Popover, {
 } from '@/design/ui/components/popover';
 import Tooltip from '@/design/ui/components/tooltip';
 
+import { getDlcLabel } from '@/domain/availability/localizedLabels';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
-import { type COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
-import type { TIngredientTypeLabel } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
 import type { TSpriteId, TSpriteTarget } from '@/domain/data/sprites/types';
-import type {
-	TBeverageTagLabel,
-	TFoodTagLabel,
-} from '@/domain/data/tags/types';
 import type { TItemName } from '@/domain/data/types';
 
 import { type ITagStyle } from '@/features/catalog/presentation/tagStyles';
+import { catalogSharedMessages } from '@/features/catalog/shared/client/messages';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 import Price from './Price';
 import Sprite from './Sprite';
 import TagsComponent from './Tags';
 
-type TCookerTypeLabel =
-	(typeof COOKER_TYPE_LABEL_MAP)[keyof typeof COOKER_TYPE_LABEL_MAP];
-type TTagLabel = TBeverageTagLabel | TFoodTagLabel;
+type TTagLabel = string;
 
 interface IItemPopoverCardBase extends RefProps<HTMLDivElement> {
 	// Basic info.
@@ -39,7 +34,7 @@ interface IItemPopoverCardBase extends RefProps<HTMLDivElement> {
 		description: string;
 		level?: number;
 		price?: number;
-		type?: TCookerTypeLabel | TCookerTypeLabel[] | TIngredientTypeLabel;
+		type?: string | string[];
 	};
 	descriptionLabel?: string;
 	details?: ReactNodeWithoutBoolean;
@@ -60,7 +55,7 @@ type TItemPopoverCardProps<T extends TSpriteTarget> = IItemPopoverCardBase & {
 function ItemPopoverCard<T extends TSpriteTarget>({
 	children,
 	description,
-	descriptionLabel = '简介',
+	descriptionLabel,
 	details,
 	displayName,
 	dlc,
@@ -72,6 +67,7 @@ function ItemPopoverCard<T extends TSpriteTarget>({
 	target,
 	...props
 }: PropsWithChildren<TItemPopoverCardProps<T>>) {
+	const { t } = useI18n(catalogSharedMessages);
 	const mergedTags = useMemo<Omit<
 		NonNullable<typeof tags>,
 		'beverage'
@@ -94,7 +90,7 @@ function ItemPopoverCard<T extends TSpriteTarget>({
 		(mergedTags?.negative !== undefined &&
 			!checkLengthEmpty(mergedTags.negative));
 
-	const dlcLabel = dlc === undefined ? '' : DLC_LABEL_MAP[dlc as TDlc].label;
+	const dlcLabel = dlc === undefined ? '' : getDlcLabel(dlc as TDlc);
 	const dlcShortLabel =
 		dlc === undefined ? '' : DLC_LABEL_MAP[dlc as TDlc].shortLabel;
 
@@ -151,7 +147,7 @@ function ItemPopoverCard<T extends TSpriteTarget>({
 											title={dlcLabel}
 											className="opacity-100"
 										>
-											【
+											{t('catalog.dlcTag.open')}
 											<span
 												className={cn({
 													'underline-dotted-linear':
@@ -160,7 +156,7 @@ function ItemPopoverCard<T extends TSpriteTarget>({
 											>
 												{dlcShortLabel || dlcLabel}
 											</span>
-											】
+											{t('catalog.dlcTag.close')}
 										</span>
 									</PopoverTrigger>
 								</span>
@@ -174,25 +170,37 @@ function ItemPopoverCard<T extends TSpriteTarget>({
 			<div className="flex gap-4">
 				{description.price !== undefined && (
 					<p>
-						<span className="font-semibold">售价：</span>
+						<span className="font-semibold">
+							{t('catalog.itemPopover.price')}
+						</span>
 						<Price showSymbol={false}>{description.price}</Price>
 					</p>
 				)}
 				{description.level !== undefined && (
 					<p>
-						<span className="font-semibold">等级：</span>
+						<span className="font-semibold">
+							{t('catalog.itemPopover.level')}
+						</span>
 						<Price showSymbol={false}>{description.level}</Price>
 					</p>
 				)}
 				{description.type !== undefined && (
 					<p>
-						<span className="font-semibold">类别：</span>
-						{[description.type].flat().join('、')}
+						<span className="font-semibold">
+							{t('catalog.itemPopover.category')}
+						</span>
+						{[description.type]
+							.flat()
+							.join(t('catalog.itemPopover.typeSeparator'))}
 					</p>
 				)}
 				<p>
 					<span className="font-semibold">
-						{target === 'food' ? '料理' : ''}ID：
+						{t(
+							target === 'food'
+								? 'catalog.itemPopover.foodId'
+								: 'catalog.itemPopover.id'
+						)}
 					</span>
 					<Price showSymbol={false}>{id}</Price>
 				</p>
@@ -218,7 +226,10 @@ function ItemPopoverCard<T extends TSpriteTarget>({
 					'!mt-1': mergedTags === null,
 				})}
 			>
-				<span className="font-semibold">{descriptionLabel}：</span>
+				<span className="font-semibold">
+					{descriptionLabel ?? t('catalog.itemPopover.description')}
+					{t('catalog.itemPopover.labelSuffix')}
+				</span>
 				{description.description}
 			</p>
 			{children !== undefined && (

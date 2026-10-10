@@ -4,17 +4,19 @@ import { driver } from 'driver.js';
 import { useCallback, useEffect, useRef } from 'react';
 
 import type { TIngredientId } from '@/domain/data/ingredients/types';
-import {
-	DYNAMIC_FOOD_TAG_MAP,
-	FOOD_TAG_MAP,
-} from '@/domain/data/tags/tagFacts';
+import { DYNAMIC_FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 
 import { accountStore } from '@/features/account/client/state/accountStore';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { appShellMessages } from '@/features/appShell/client/messages';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
-import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
 import { GUEST_INFO_QUERY_PARAM } from '@/features/catalog/guests/shared/navigation';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
+import {
+	getBeverageTagLabel,
+	getFoodTagLabel,
+} from '@/features/catalog/shared/client/localization/tagLabels';
+import { preferencesMessages } from '@/features/preferences/client/messages';
 import {
 	consumeSpecialGuestTutorialAllowedPathname,
 	useSpecialGuestTutorialAllowedPathname,
@@ -24,19 +26,32 @@ import {
 	useOverlayIdleForTutorial,
 } from '@/features/overlays/client';
 import type { ITutorialLease } from '@/features/overlays/contracts';
+import { specialGuestTutorialMessages } from '@/features/tutorials/specialGuest/client/messages';
 import {
+	SPECIAL_GUEST_TUTORIAL_BEVERAGE_ID,
 	SPECIAL_GUEST_TUTORIAL_BEVERAGE_POSITION,
+	SPECIAL_GUEST_TUTORIAL_BEVERAGE_SORT_POSITION,
 	SPECIAL_GUEST_TUTORIAL_BEVERAGE_STEP_INDEX,
+	SPECIAL_GUEST_TUTORIAL_BEVERAGE_TAG_ID,
+	SPECIAL_GUEST_TUTORIAL_BEVERAGE_TAG_POSITION,
+	SPECIAL_GUEST_TUTORIAL_EGG_ID,
 	SPECIAL_GUEST_TUTORIAL_EGG_POSITION,
+	SPECIAL_GUEST_TUTORIAL_FOOD_TAG_ID,
+	SPECIAL_GUEST_TUTORIAL_FOOD_TAG_POSITION,
+	SPECIAL_GUEST_TUTORIAL_GUEST_ID,
+	SPECIAL_GUEST_TUTORIAL_GUEST_POSITION,
+	SPECIAL_GUEST_TUTORIAL_HONEY_ID,
 	SPECIAL_GUEST_TUTORIAL_HONEY_POSITION,
+	SPECIAL_GUEST_TUTORIAL_INGREDIENT_TAB_POSITION,
 	SPECIAL_GUEST_TUTORIAL_MOVE_DELAY_MS,
 	SPECIAL_GUEST_TUTORIAL_PATHNAME,
+	SPECIAL_GUEST_TUTORIAL_RECIPE_ID,
 	SPECIAL_GUEST_TUTORIAL_RECIPE_POSITION,
-	SPECIAL_GUEST_TUTORIAL_RESET_LABEL,
 	SPECIAL_GUEST_TUTORIAL_SCROLL_MOVE_DELAY_MS,
 	SPECIAL_GUEST_TUTORIAL_START_DELAY_MS,
 } from '@/features/tutorials/specialGuest/constants';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 import {
@@ -114,11 +129,54 @@ export default function SpecialGuestTutorial() {
 	const shouldSkipCompletionOnDestroy = useRef(false);
 	const allowedGlobalSearchPathname = useRef<null | string>(null);
 	const tutorialLeaseRef = useRef<ITutorialLease | null>(null);
-	const driverRef = useRef(
-		driver({
+	const { t } = useI18n(specialGuestTutorialMessages);
+	const { t: tAppShell } = useI18n(appShellMessages);
+	const { t: tPreferences } = useI18n(preferencesMessages);
+
+	const driverRef = useRef<ReturnType<typeof driver> | null>(null);
+
+	const createDriver = useCallback(() => {
+		const guestCatalog = specialGuestStore.instances.guest.get();
+		const beverageCatalog = specialGuestStore.instances.beverage.get();
+		const foodCatalog = specialGuestStore.instances.recipe.get();
+		const ingredientCatalog = specialGuestStore.instances.ingredient.get();
+		const guestName = guestCatalog.getDisplayPropsById(
+			SPECIAL_GUEST_TUTORIAL_GUEST_ID
+		).name;
+		const beverageName = beverageCatalog.getDisplayPropsById(
+			SPECIAL_GUEST_TUTORIAL_BEVERAGE_ID,
+			'name'
+		);
+		const foodName = foodCatalog.getDisplayPropsById(
+			foodCatalog.getRecipeOwnerById(SPECIAL_GUEST_TUTORIAL_RECIPE_ID)
+				.food.id,
+			'name'
+		);
+		const eggName = ingredientCatalog.getDisplayPropsById(
+			SPECIAL_GUEST_TUTORIAL_EGG_ID,
+			'name'
+		);
+		const honeyName = ingredientCatalog.getDisplayPropsById(
+			SPECIAL_GUEST_TUTORIAL_HONEY_ID,
+			'name'
+		);
+		const beverageTagName = getBeverageTagLabel(
+			SPECIAL_GUEST_TUTORIAL_BEVERAGE_TAG_ID
+		);
+		const foodTagName = getFoodTagLabel(SPECIAL_GUEST_TUTORIAL_FOOD_TAG_ID);
+		const popularPositiveName = getFoodTagLabel(
+			DYNAMIC_FOOD_TAG_MAP.popularPositive
+		);
+		const popularNegativeName = getFoodTagLabel(
+			DYNAMIC_FOOD_TAG_MAP.popularNegative
+		);
+		const preferencesLabel = tAppShell('appShell.nav.preferences');
+		const resetLabel = tPreferences('preferences.reset.tutorial');
+
+		return driver({
 			allowClose: false,
 			popoverClass: '!bg-background dark:!bg-content1 !text-foreground',
-			progressText: '第{{current}}步，共{{total}}步',
+			progressText: t('tutorial.progress'),
 			showButtons: ['close'],
 			showProgress: true,
 
@@ -146,12 +204,12 @@ export default function SpecialGuestTutorial() {
 			steps: [
 				{
 					popover: {
-						description: `<div class="space-y-2"><p>跟随指引，搭配一次“完美”评级的稀客套餐。</p><p class="text-tiny text-foreground-500">注：本教程可随时通过“${getPageTitle('/preferences')}”页面的“${SPECIAL_GUEST_TUTORIAL_RESET_LABEL}”按钮再次进入。</p></div>`,
+						description: `<div class="space-y-2"><p>${t('tutorial.intro.p1')}</p><p class="text-tiny text-foreground-500">${t('tutorial.intro.p2', { preferences: preferencesLabel, reset: resetLabel })}</p></div>`,
 						onPopoverRender(popover) {
 							const skipButton = document.createElement('button');
-							skipButton.textContent = '跳过';
+							skipButton.textContent = t('tutorial.skip');
 							skipButton.addEventListener('click', () => {
-								driverRef.current.destroy();
+								driverRef.current?.destroy();
 								trackEvent(
 									trackEvent.category.click,
 									'Tutorial Button',
@@ -159,9 +217,9 @@ export default function SpecialGuestTutorial() {
 								);
 							});
 							const nextButton = document.createElement('button');
-							nextButton.textContent = '下一步 →';
+							nextButton.textContent = t('tutorial.next');
 							nextButton.addEventListener('click', () => {
-								driverRef.current.moveNext();
+								driverRef.current?.moveNext();
 								trackEvent(
 									trackEvent.category.click,
 									'Tutorial Button',
@@ -173,77 +231,90 @@ export default function SpecialGuestTutorial() {
 								nextButton
 							);
 						},
-						title: '稀客套餐搭配教程',
+						title: t('tutorial.intro.title'),
 					},
 				},
 				{
-					element: '[title="点击：选择【莉格露】"]',
+					element: SPECIAL_GUEST_TUTORIAL_GUEST_POSITION,
 					popover: {
-						description: '点击头像，选择【莉格露】作为目标稀客。',
-						title: '选择稀客',
+						description: t('tutorial.step.guest.desc', {
+							guest: guestName,
+						}),
+						title: t('tutorial.step.guest.title'),
 					},
 				},
 				{
-					element: '[aria-label="可加冰"]',
+					element: SPECIAL_GUEST_TUTORIAL_BEVERAGE_TAG_POSITION,
 					popover: {
-						description:
-							'点击标签，选中“可加冰”标签。此次教程中，假设莉格露的酒水点单需求为“可加冰”。',
-						title: '选择酒水标签',
+						description: t('tutorial.step.beverageTag.desc', {
+							guest: guestName,
+							tag: beverageTagName,
+						}),
+						title: t('tutorial.step.beverageTag.title'),
 					},
 				},
 				{
-					element: '[aria-label="酒水选择表格"] [data-key="price"]',
+					element: SPECIAL_GUEST_TUTORIAL_BEVERAGE_SORT_POSITION,
 					popover: {
-						description: '点击以按售价降序排序酒水。',
-						title: '按售价排序',
+						description: t('tutorial.step.sort.desc'),
+						title: t('tutorial.step.sort.title'),
 					},
 				},
 				{
 					element: SPECIAL_GUEST_TUTORIAL_BEVERAGE_POSITION,
 					popover: {
-						description:
-							'点击加号，选择【水獭祭】。选择酒水时，酒水售价尽量不要超过目标稀客的最大持有金。',
-						title: '选择目标酒水',
+						description: t('tutorial.step.beverage.desc', {
+							beverage: beverageName,
+						}),
+						title: t('tutorial.step.beverage.title'),
 					},
 				},
 				{
-					element: '[aria-label="猎奇"]',
+					element: SPECIAL_GUEST_TUTORIAL_FOOD_TAG_POSITION,
 					popover: {
-						description:
-							'点击标签，选中“猎奇”标签。此次教程中，假设莉格露的料理点单需求为“猎奇”。',
-						title: '选择料理标签',
+						description: t('tutorial.step.foodTag.desc', {
+							guest: guestName,
+							tag: foodTagName,
+						}),
+						title: t('tutorial.step.foodTag.title'),
 					},
 				},
 				{
 					element: SPECIAL_GUEST_TUTORIAL_RECIPE_POSITION,
 					popover: {
-						description:
-							'点击加号，选择【香炸蝉蜕】。选择料理时，料理售价尽量不要超过目标稀客剩余的最大持有金。',
-						title: '选择目标料理',
+						description: t('tutorial.step.food.desc', {
+							food: foodName,
+						}),
+						title: t('tutorial.step.food.title'),
 					},
 				},
 				{
-					element: '[data-key="ingredient"]',
+					element: SPECIAL_GUEST_TUTORIAL_INGREDIENT_TAB_POSITION,
 					popover: {
-						description:
-							'当前套餐评级为绿评“普通”，添加额外食材以提高评级。',
-						title: '选择额外食材',
+						description: t('tutorial.step.ingredient.desc'),
+						title: t('tutorial.step.ingredient.title'),
 					},
 				},
 				{
 					element: SPECIAL_GUEST_TUTORIAL_EGG_POSITION,
 					popover: {
-						description:
-							'点击图标，加入额外食材【鸡蛋】。加入后套餐评级应为橙评“满意”，继续添加额外食材以提高评级。',
-						title: '加入额外食材【鸡蛋】',
+						description: t('tutorial.step.ingredient1.desc', {
+							name: eggName,
+						}),
+						title: t('tutorial.step.ingredient1.title', {
+							name: eggName,
+						}),
 					},
 				},
 				{
 					element: SPECIAL_GUEST_TUTORIAL_HONEY_POSITION,
 					popover: {
-						description:
-							'点击图标，加入额外食材【蜂蜜】。加入后套餐评级应为粉评“完美”。',
-						title: '加入额外食材【蜂蜜】',
+						description: t('tutorial.step.ingredient2.desc', {
+							name: honeyName,
+						}),
+						title: t('tutorial.step.ingredient1.title', {
+							name: honeyName,
+						}),
 					},
 				},
 				{
@@ -261,13 +332,17 @@ export default function SpecialGuestTutorial() {
 						return target;
 					},
 					popover: {
-						description: `在此处可以查看更多信息，如：稀客的羁绊奖励和符卡效果。点击导航栏中的“设置”按钮可以调整更多偏好项，如：设置游戏中现时的${FOOD_TAG_MAP[DYNAMIC_FOOD_TAG_MAP.popularPositive]}或${FOOD_TAG_MAP[DYNAMIC_FOOD_TAG_MAP.popularNegative]}趋势。`,
+						description: t('tutorial.step.more.desc', {
+							popular: popularPositiveName,
+							preferences: preferencesLabel,
+							unpopular: popularNegativeName,
+						}),
 						onPopoverRender(popover) {
 							const completeButton =
 								document.createElement('button');
-							completeButton.textContent = '完成';
+							completeButton.textContent = t('tutorial.complete');
 							completeButton.addEventListener('click', () => {
-								driverRef.current.destroy();
+								driverRef.current?.destroy();
 								trackEvent(
 									trackEvent.category.click,
 									'Tutorial Button',
@@ -276,12 +351,12 @@ export default function SpecialGuestTutorial() {
 							});
 							popover.footerButtons.append(completeButton);
 						},
-						title: '更多信息',
+						title: t('tutorial.step.more.title'),
 					},
 				},
 			],
-		})
-	);
+		});
+	}, [clearMobileScrollMoveHandlers, t, tAppShell, tPreferences]);
 
 	const isGuestSelected = useRef(false);
 
@@ -301,7 +376,7 @@ export default function SpecialGuestTutorial() {
 		delayedMoveNextHandler.current = setTimeout(() => {
 			delayedMoveNextHandler.current = undefined;
 
-			if (driverRef.current.isActive()) {
+			if (driverRef.current?.isActive()) {
 				callback();
 			}
 		}, SPECIAL_GUEST_TUTORIAL_MOVE_DELAY_MS);
@@ -309,9 +384,14 @@ export default function SpecialGuestTutorial() {
 
 	const moveNext = useCallback(
 		(selectors: string, position?: ScrollLogicalPosition) => {
+			const tutorialDriver = driverRef.current;
+			if (tutorialDriver === null) {
+				return;
+			}
+
 			// The `xl` breakpoint is 1280px.
 			if (globalThis.innerWidth >= 1280) {
-				driverRef.current.moveNext();
+				tutorialDriver.moveNext();
 			} else {
 				const element = document.querySelector(selectors);
 				// Some browsers don't support scrollIntoViewOptions
@@ -326,7 +406,7 @@ export default function SpecialGuestTutorial() {
 				// Delay focusing to allow time for scroll animation.
 				scheduleMobileScrollMove(() => {
 					document.querySelector('main').scrollIntoView(true);
-					driverRef.current.moveNext();
+					tutorialDriver.moveNext();
 				});
 			}
 		},
@@ -339,9 +419,14 @@ export default function SpecialGuestTutorial() {
 			selectors: string,
 			position?: ScrollLogicalPosition
 		) => {
+			const tutorialDriver = driverRef.current;
+			if (tutorialDriver === null) {
+				return;
+			}
+
 			// The `xl` breakpoint is 1280px.
 			if (globalThis.innerWidth >= 1280) {
-				driverRef.current.moveTo(index);
+				tutorialDriver.moveTo(index);
 			} else {
 				const element = document.querySelector(selectors);
 				// Some browsers don't support scrollIntoViewOptions
@@ -356,7 +441,7 @@ export default function SpecialGuestTutorial() {
 				// Delay focusing to allow time for scroll animation.
 				scheduleMobileScrollMove(() => {
 					document.querySelector('main').scrollIntoView(true);
-					driverRef.current.moveTo(index);
+					tutorialDriver.moveTo(index);
 				});
 			}
 		},
@@ -364,16 +449,17 @@ export default function SpecialGuestTutorial() {
 	);
 
 	useEffect(() => {
-		if (!driverRef.current.isActive()) {
+		const tutorialDriver = driverRef.current;
+		if (!tutorialDriver?.isActive()) {
 			return;
 		}
 
 		if (currentSpecialGuest !== null && !isGuestSelected.current) {
 			isGuestSelected.current = true;
-			driverRef.current.moveTo(2);
+			tutorialDriver.moveTo(2);
 		} else if (currentBeverage !== null && !isBeverageSelected.current) {
 			isBeverageSelected.current = true;
-			driverRef.current.moveNext();
+			tutorialDriver.moveNext();
 		} else if (
 			currentOrderedBeverageTag !== null &&
 			!hasOrderedBeverageTag.current
@@ -391,7 +477,7 @@ export default function SpecialGuestTutorial() {
 				});
 			} else {
 				delayedMoveNext(() => {
-					driverRef.current.moveNext();
+					tutorialDriver.moveNext();
 				});
 			}
 		} else if (
@@ -402,7 +488,7 @@ export default function SpecialGuestTutorial() {
 			moveNext(SPECIAL_GUEST_TUTORIAL_BEVERAGE_POSITION, 'nearest');
 		} else if (currentMealFood !== null && !isFoodSelected.current) {
 			isFoodSelected.current = true;
-			driverRef.current.moveNext();
+			tutorialDriver.moveNext();
 		} else if (
 			currentExtraIngredients !== undefined &&
 			!checkLengthEmpty(currentExtraIngredients)
@@ -418,7 +504,7 @@ export default function SpecialGuestTutorial() {
 				!hasExtraHoney.current
 			) {
 				hasExtraHoney.current = true;
-				driverRef.current.moveNext();
+				tutorialDriver.moveNext();
 			}
 		} else if (
 			currentOrderedFoodTag !== null &&
@@ -461,13 +547,15 @@ export default function SpecialGuestTutorial() {
 	useEffect(() => {
 		let handler: ReturnType<typeof setTimeout> | undefined;
 
-		if (isCompleted && driverRef.current.isActive()) {
+		const activeDriver = driverRef.current;
+
+		if (isCompleted && activeDriver?.isActive()) {
 			shouldSkipCompletionOnDestroy.current = true;
-			driverRef.current.destroy();
+			activeDriver.destroy();
 		}
 
 		if (!isAccountSyncReady || hasBlockingAccountModal) {
-			if (driverRef.current.isActive()) {
+			if (driverRef.current?.isActive()) {
 				shouldSkipCompletionOnDestroy.current = true;
 				driverRef.current.destroy();
 			}
@@ -505,13 +593,13 @@ export default function SpecialGuestTutorial() {
 			accountBootstrapStatus !== 'unknown' &&
 			isTargetPage &&
 			!isCompleted &&
-			!driverRef.current.isActive()
+			!driverRef.current?.isActive()
 		) {
 			if (currentPathname === SPECIAL_GUEST_TUTORIAL_PATHNAME) {
 				handler = setTimeout(() => {
 					if (
 						!isOverlayIdleForTutorial ||
-						driverRef.current.isActive()
+						(driverRef.current?.isActive() ?? false)
 					) {
 						return;
 					}
@@ -522,7 +610,7 @@ export default function SpecialGuestTutorial() {
 							clearTimeout(delayedMoveNextHandler.current);
 							delayedMoveNextHandler.current = undefined;
 							clearMobileScrollMoveHandlers();
-							driverRef.current.destroy();
+							driverRef.current?.destroy();
 						},
 					});
 					if (tutorialLease === null) {
@@ -530,11 +618,14 @@ export default function SpecialGuestTutorial() {
 					}
 
 					tutorialLeaseRef.current = tutorialLease;
+					const tutorialDriver = createDriver();
+					driverRef.current = tutorialDriver;
 					try {
-						driverRef.current.drive();
+						tutorialDriver.drive();
 					} catch (error) {
 						tutorialLease.release();
 						tutorialLeaseRef.current = null;
+						driverRef.current = null;
 						throw error;
 					}
 					trackEvent(
@@ -552,7 +643,8 @@ export default function SpecialGuestTutorial() {
 		}
 		if (!isTargetPage) {
 			allowedGlobalSearchPathname.current = null;
-			driverRef.current.destroy();
+			driverRef.current?.destroy();
+			driverRef.current = null;
 			tutorialLeaseRef.current?.release();
 			tutorialLeaseRef.current = null;
 		}
@@ -563,6 +655,7 @@ export default function SpecialGuestTutorial() {
 	}, [
 		accountBootstrapStatus,
 		clearMobileScrollMoveHandlers,
+		createDriver,
 		currentPathname,
 		globalSearchSpecialGuestTutorialAllowedPathname,
 		hasBlockingAccountModal,

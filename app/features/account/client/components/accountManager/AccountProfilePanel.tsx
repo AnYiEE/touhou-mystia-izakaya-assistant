@@ -9,10 +9,13 @@ import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
 
 import AccountSyncStatus from '@/features/account/client/components/AccountSyncStatus';
+import { accountMessages } from '@/features/account/client/messages';
 import {
-	NICKNAME_RULE_DESCRIPTION,
-	PASSWORD_RULE_DESCRIPTION,
-	USERNAME_RULE_DESCRIPTION,
+	NICKNAME_MAX_LENGTH,
+	PASSWORD_MAX_LENGTH,
+	PASSWORD_MIN_LENGTH,
+	USERNAME_MAX_LENGTH,
+	USERNAME_MIN_LENGTH,
 } from '@/features/account/constants';
 import type { IAccountUserProfile } from '@/features/account/contracts';
 
@@ -22,6 +25,8 @@ import {
 	AccountPanel,
 	AccountPanelTitle,
 } from './accountPanelLayout';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IAccountProfileSummaryProps {
 	accountStatusDescription: string;
@@ -41,9 +46,13 @@ export const AccountProfileSummary = memo<IAccountProfileSummaryProps>(
 		passwordMustChange,
 		user,
 	}) {
+		const { t } = useI18n(accountMessages);
+
 		return (
 			<AccountPanel className="space-y-4">
-				<AccountPanelTitle icon={faUser}>当前账号</AccountPanelTitle>
+				<AccountPanelTitle icon={faUser}>
+					{t('account.manager.passwordChange.currentAccount')}
+				</AccountPanelTitle>
 				<div className="flex items-center gap-3">
 					<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary-600">
 						<FontAwesomeIcon icon={faUser} className="w-4" />
@@ -56,7 +65,10 @@ export const AccountProfileSummary = memo<IAccountProfileSummaryProps>(
 							{user.nickname === null ? null : (
 								<div className="pt-1">
 									<p className="truncate text-tiny text-foreground-500">
-										用户名：{user.username}
+										{t(
+											'account.manager.profile.usernameDisplay'
+										)}
+										{user.username}
 									</p>
 								</div>
 							)}
@@ -157,16 +169,17 @@ export default memo<IAccountProfilePanelProps>(function AccountProfilePanel({
 	profileUsernameErrorMessage,
 	setNewPassword,
 }) {
+	const { t } = useI18n(accountMessages);
 	const normalizedProfileUsername = profileUsername.trim();
 
 	return (
 		<AccountPanel className="space-y-4">
 			<AccountPanelTitle icon={faKey}>
 				{passwordMustChange
-					? '更新密码'
+					? t('account.manager.profile.titleUpdatePassword')
 					: isInitialPasswordSetup
-						? '设置登录密码'
-						: '账号设置'}
+						? t('account.manager.profile.titleSetupPassword')
+						: t('account.manager.profile.titleAccountSettings')}
 			</AccountPanelTitle>
 			{!passwordMustChange && (
 				<form onSubmit={handleProfileChangeSubmit}>
@@ -174,12 +187,20 @@ export default memo<IAccountProfilePanelProps>(function AccountProfilePanel({
 						autoComplete="username"
 						description={
 							isInitialPasswordSetup
-								? '请先设置登录密码后再修改用户名；昵称可直接修改'
-								: USERNAME_RULE_DESCRIPTION
+								? t(
+										'account.manager.profile.usernameChangeHint'
+									)
+								: t('account.usernameRule', {
+										max: USERNAME_MAX_LENGTH,
+										min: USERNAME_MIN_LENGTH,
+									})
 						}
 						errorMessage={
 							isProfileUsernameInvalid
-								? USERNAME_RULE_DESCRIPTION
+								? t('account.usernameRule', {
+										max: USERNAME_MAX_LENGTH,
+										min: USERNAME_MIN_LENGTH,
+									})
 								: (profileUsernameErrorMessage ?? undefined)
 						}
 						isInvalid={
@@ -187,8 +208,10 @@ export default memo<IAccountProfilePanelProps>(function AccountProfilePanel({
 							profileUsernameErrorMessage !== null
 						}
 						isReadOnly={isProfileUsernameReadOnly}
-						label="用户名"
-						placeholder="输入新用户名"
+						label={t('account.manager.field.username')}
+						placeholder={t(
+							'account.manager.profile.usernamePlaceholder'
+						)}
 						startContent={<AccountInputIcon icon={faUser} />}
 						value={profileUsername}
 						onValueChange={handleProfileUsernameChange}
@@ -198,7 +221,9 @@ export default memo<IAccountProfilePanelProps>(function AccountProfilePanel({
 							<div className="pt-3">
 								<Input
 									autoComplete="current-password"
-									description="修改用户名需要确认当前密码"
+									description={t(
+										'account.manager.profile.currentPasswordRequired'
+									)}
 									errorMessage={
 										profileCurrentPasswordErrorMessage ??
 										undefined
@@ -207,8 +232,12 @@ export default memo<IAccountProfilePanelProps>(function AccountProfilePanel({
 										profileCurrentPasswordErrorMessage !==
 										null
 									}
-									label="当前密码"
-									placeholder="确认当前密码"
+									label={t(
+										'account.manager.field.currentPassword'
+									)}
+									placeholder={t(
+										'account.manager.profile.currentPasswordPlaceholder'
+									)}
 									startContent={
 										<AccountInputIcon icon={faKey} />
 									}
@@ -224,18 +253,22 @@ export default memo<IAccountProfilePanelProps>(function AccountProfilePanel({
 					<div className="mt-3">
 						<Input
 							autoComplete="nickname"
-							description={NICKNAME_RULE_DESCRIPTION}
+							description={t('account.nicknameRule', {
+								max: NICKNAME_MAX_LENGTH,
+							})}
 							errorMessage={
 								isProfileNicknameInvalid
-									? NICKNAME_RULE_DESCRIPTION
+									? t('account.nicknameRule', {
+											max: NICKNAME_MAX_LENGTH,
+										})
 									: (profileNicknameErrorMessage ?? undefined)
 							}
 							isInvalid={
 								isProfileNicknameInvalid ||
 								profileNicknameErrorMessage !== null
 							}
-							label="昵称"
-							placeholder="显示名称"
+							label={t('account.manager.field.nickname')}
+							placeholder={t('account.manager.field.displayName')}
 							startContent={<AccountInputIcon icon={faUser} />}
 							value={profileNickname}
 							onValueChange={handleProfileNicknameChange}
@@ -267,14 +300,14 @@ export default memo<IAccountProfilePanelProps>(function AccountProfilePanel({
 						type="submit"
 						variant="flat"
 					>
-						保存资料
+						{t('account.manager.profile.save')}
 					</Button>
 				</form>
 			)}
 			<form className="space-y-3" onSubmit={handlePasswordChangeSubmit}>
 				{passwordMustChange && (
 					<p className="text-small leading-5 text-danger-600 dark:text-danger">
-						管理员已要求更新密码，完成后才能继续同步。
+						{t('account.manager.profile.passwordMustChangeNotice')}
 					</p>
 				)}
 				<AccountCollapseMotion motionKey="initial-password-hint">
@@ -285,7 +318,9 @@ export default memo<IAccountProfilePanelProps>(function AccountProfilePanel({
 								className="mt-1 w-3.5 shrink-0 text-primary-600"
 							/>
 							<p>
-								设置登录密码后，可在不支持通行密钥的设备上使用用户名密码登录。
+								{t(
+									'account.manager.profile.initialPasswordHint'
+								)}
 							</p>
 						</div>
 					) : null}
@@ -298,8 +333,10 @@ export default memo<IAccountProfilePanelProps>(function AccountProfilePanel({
 								passwordChangeErrorMessage ?? undefined
 							}
 							isInvalid={passwordChangeErrorMessage !== null}
-							label="当前密码"
-							placeholder="输入当前密码"
+							label={t('account.manager.field.currentPassword')}
+							placeholder={t(
+								'account.manager.profile.currentPasswordPlaceholder'
+							)}
 							type="password"
 							value={currentPassword}
 							onValueChange={handleCurrentPasswordChange}
@@ -308,16 +345,32 @@ export default memo<IAccountProfilePanelProps>(function AccountProfilePanel({
 				</AccountCollapseMotion>
 				<Input
 					autoComplete="new-password"
-					description={PASSWORD_RULE_DESCRIPTION}
+					description={t('account.passwordRule', {
+						max: PASSWORD_MAX_LENGTH,
+						min: PASSWORD_MIN_LENGTH,
+					})}
 					errorMessage={
 						isNewPasswordInvalid
-							? PASSWORD_RULE_DESCRIPTION
+							? t('account.passwordRule', {
+									max: PASSWORD_MAX_LENGTH,
+									min: PASSWORD_MIN_LENGTH,
+								})
 							: undefined
 					}
 					isInvalid={isNewPasswordInvalid}
-					label={isInitialPasswordSetup ? '登录密码' : '新密码'}
+					label={
+						isInitialPasswordSetup
+							? t('account.manager.field.loginPassword')
+							: t('account.manager.field.newPassword')
+					}
 					placeholder={
-						isInitialPasswordSetup ? '设置登录密码' : '输入新密码'
+						isInitialPasswordSetup
+							? t(
+									'account.manager.auth.passwordPlaceholderRegister'
+								)
+							: t(
+									'account.manager.profile.newPasswordPlaceholder'
+								)
 					}
 					type="password"
 					value={newPassword}
@@ -343,10 +396,10 @@ export default memo<IAccountProfilePanelProps>(function AccountProfilePanel({
 					variant="flat"
 				>
 					{passwordMustChange
-						? '更新密码后继续'
+						? t('account.manager.profile.updatePasswordAndContinue')
 						: isInitialPasswordSetup
-							? '设置登录密码'
-							: '修改密码'}
+							? t('account.manager.profile.titleSetupPassword')
+							: t('account.manager.profile.changePassword')}
 				</Button>
 			</form>
 		</AccountPanel>

@@ -2,8 +2,11 @@ import { memo } from 'react';
 
 import Heading from '@/design/ui/components/heading';
 
+import { preferencesMessages } from '@/features/preferences/client/messages';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import SwitchItem from './PreferenceSwitchItem';
 import {
@@ -21,10 +24,11 @@ export default memo<IProps>(function ExperiencePreferencesSection({
 	const isShowTagsTooltip =
 		globalStore.persistence.guestCardTagsTooltip.use();
 	const isVibrateEnabled = globalStore.persistence.vibrate.use();
+	const { t } = useI18n(preferencesMessages);
 
 	return (
 		<>
-			<Heading as="h3">体验</Heading>
+			<Heading as="h3">{t('preferences.section.experience')}</Heading>
 			<div className="space-y-2">
 				<div
 					{...getPreferenceTargetDataProps('experience-vibrate')}
@@ -36,11 +40,15 @@ export default memo<IProps>(function ExperiencePreferencesSection({
 					<SwitchItem
 						isSelected={isVibrateEnabled}
 						onValueChange={globalStore.persistence.vibrate.set}
-						aria-label={`${isVibrateEnabled ? '关闭' : '开启'}操作震动反馈`}
+						aria-label={t(
+							isVibrateEnabled
+								? 'preferences.experience.vibrate.disableAria'
+								: 'preferences.experience.vibrate.enableAria'
+						)}
 					>
-						部分操作的震动反馈
+						{t('preferences.experience.vibrate')}
 						<span className="text-tiny text-foreground-500">
-							（需设备和浏览器支持）
+							{t('preferences.experience.vibrate.note')}
 						</span>
 					</SwitchItem>
 				</div>
@@ -56,11 +64,15 @@ export default memo<IProps>(function ExperiencePreferencesSection({
 						onValueChange={
 							globalStore.persistence.guestCardTagsTooltip.set
 						}
-						aria-label={`${isShowTagsTooltip ? '隐藏' : '显示'}标签浮动提示`}
+						aria-label={t(
+							isShowTagsTooltip
+								? 'preferences.experience.tagsTooltip.hideAria'
+								: 'preferences.experience.tagsTooltip.showAria'
+						)}
 					>
-						顾客卡片中标签的浮动提示
+						{t('preferences.experience.tagsTooltip')}
 						<span className="text-tiny text-foreground-500">
-							（鼠标悬停可见）
+							{t('preferences.experience.tagsTooltip.note')}
 						</span>
 					</SwitchItem>
 				</div>

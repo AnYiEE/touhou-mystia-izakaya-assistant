@@ -12,6 +12,7 @@ import {
 } from 'react';
 
 import { ping } from '@/features/analytics/client/ping';
+import { useLocalePreference } from '@/features/preferences/client/state/localeRuntime';
 import type {
 	IDeploymentMaintenancePublicState,
 	ISiteStatusData,
@@ -46,6 +47,7 @@ export function useSiteVisitors() {
 }
 
 export default function SiteStatusProvider({ children }: PropsWithChildren) {
+	const localePreference = useLocalePreference();
 	const [maintenance, setMaintenance] =
 		useState<IDeploymentMaintenancePublicState | null>(null);
 	const [visitors, setVisitors] = useState<number | null>(null);
@@ -128,7 +130,7 @@ export default function SiteStatusProvider({ children }: PropsWithChildren) {
 			inFlightControllerRef.current?.abort();
 			inFlightControllerRef.current = null;
 		};
-	}, [fetchSiteStatus]);
+	}, [fetchSiteStatus, localePreference]);
 
 	useEffect(() => {
 		if (maintenance === null) {

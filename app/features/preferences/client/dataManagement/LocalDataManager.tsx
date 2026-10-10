@@ -24,10 +24,15 @@ import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
+import {
+	type TPreferencesMessageKey,
+	preferencesMessages,
+} from '@/features/preferences/client/messages';
 import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/state/store';
 
 import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { useThrottle } from '@/shared/react/useThrottle';
 
 import { getClosestModalScrollContainer } from './dataManagerScroll';
@@ -38,13 +43,11 @@ import {
 } from './parseGuestDataImport';
 import { downloadJson, parseJsonFromInput } from './processJsonFile';
 
-const exportButtonLabelMap = {
-	download: '导出',
-	downloading: '尝试唤起下载器',
-	downloadingTip: '如无响应，请检查浏览器权限、设置和浏览器扩展程序',
-} as const;
-
-type TExportButtonLabel = ExtractCollectionValue<typeof exportButtonLabelMap>;
+const EXPORT_BUTTON_LABEL_KEYS = {
+	download: 'preferences.local.export',
+	downloading: 'preferences.local.exporting',
+	downloadingTip: 'preferences.local.exportTip',
+} as const satisfies Record<string, TPreferencesMessageKey>;
 
 interface IProps {
 	isFullWidth?: boolean | undefined;
@@ -53,6 +56,7 @@ interface IProps {
 export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
+	const { t } = useI18n(preferencesMessages);
 
 	const currentNormalMealData = normalGuestStore.persistence.meals.use();
 	const currentRareMealData = specialGuestStore.persistence.meals.use();
@@ -72,12 +76,12 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 	);
 	const exportSnippetTooltipProps = useMemo(
 		() => ({
-			content: '点击以复制当前的顾客套餐和营业预设数据',
+			content: t('preferences.local.copyTip'),
 			delay: 0,
 			offset: 0,
 			showArrow: !isHighAppearance,
 		}),
-		[isHighAppearance]
+		[isHighAppearance, t]
 	);
 	const exportSnippetClassNames = useMemo(
 		() => ({
@@ -111,8 +115,8 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 	const importInputRef = useRef<HTMLInputElement | null>(null);
 
 	const [isExportButtonDisabled, setIsExportButtonDisabled] = useState(false);
-	const [exportButtonLabel, setExportButtonLabel] =
-		useState<TExportButtonLabel>(exportButtonLabelMap.download);
+	const [exportButtonLabelKey, setExportButtonLabelKey] =
+		useState<TPreferencesMessageKey>(EXPORT_BUTTON_LABEL_KEYS.download);
 	const exportTimers = useRef<Array<ReturnType<typeof setTimeout>>>([]);
 
 	const [isSaveButtonDisabled, setIsSaveButtonDisabled] = useState(true);
@@ -133,10 +137,10 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 
 	const handleExportButtonPress = useCallback(() => {
 		setIsExportButtonDisabled(true);
-		setExportButtonLabel(exportButtonLabelMap.downloading);
+		setExportButtonLabelKey(EXPORT_BUTTON_LABEL_KEYS.downloading);
 		const timerId = setTimeout(() => {
 			setIsExportButtonDisabled(false);
-			setExportButtonLabel(exportButtonLabelMap.download);
+			setExportButtonLabelKey(EXPORT_BUTTON_LABEL_KEYS.download);
 			exportTimers.current = exportTimers.current.filter(
 				(id) => id !== timerId
 			);
@@ -281,7 +285,7 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 				<Textarea
 					isClearable
 					disableAnimation={isReducedMotion}
-					placeholder="从本地文件导入或输入顾客套餐和营业预设数据"
+					placeholder={t('preferences.local.importPlaceholder')}
 					value={importValue}
 					onValueChange={handleImportValueChange}
 					classNames={importTextareaClassNames}
@@ -299,7 +303,7 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 					variant="flat"
 					onPress={handleImportButtonPress}
 				>
-					选择本地文件
+					{t('preferences.local.selectFile')}
 				</Button>
 				<Popover
 					shouldBlockScroll
@@ -315,7 +319,7 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 							variant="flat"
 							onClick={toggleSavePopoverOpened}
 						>
-							应用到本设备
+							{t('preferences.local.apply')}
 						</Button>
 					</PopoverTrigger>
 					<PopoverContent className="space-y-1 p-1">
@@ -326,7 +330,7 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 							variant="ghost"
 							onPress={handleImportData}
 						>
-							确认应用
+							{t('preferences.local.confirmApply')}
 						</Button>
 						<Button
 							fullWidth
@@ -335,7 +339,7 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 							variant="ghost"
 							onPress={toggleSavePopoverOpened}
 						>
-							取消
+							{t('preferences.local.cancel')}
 						</Button>
 					</PopoverContent>
 				</Popover>
@@ -356,7 +360,7 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 					isOpen
 					showArrow
 					color="success"
-					content={exportButtonLabelMap.downloadingTip}
+					content={t(EXPORT_BUTTON_LABEL_KEYS.downloadingTip)}
 					isDisabled={!isExportButtonDisabled}
 				>
 					<Button
@@ -367,7 +371,7 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 						variant="flat"
 						onPress={handleExportButtonPress}
 					>
-						{exportButtonLabel}
+						{t(exportButtonLabelKey)}
 					</Button>
 				</Tooltip>
 			</div>

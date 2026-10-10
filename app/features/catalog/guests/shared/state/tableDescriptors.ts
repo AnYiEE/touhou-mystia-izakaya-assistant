@@ -1,8 +1,10 @@
 import { type SortDescriptor } from '@heroui/table';
 
+import { type TCatalogGuestsMessageKey } from '@/features/catalog/guests/shared/messages';
+
 export interface ITableColumn<T extends string> {
 	key: T;
-	label: string;
+	labelKey: TCatalogGuestsMessageKey;
 	sortable: boolean;
 }
 
@@ -32,18 +34,38 @@ export type TFoodTableColumnKey =
 	| 'time';
 
 export const beverageTableColumns = [
-	{ key: 'beverage', label: '酒水', sortable: true },
-	{ key: 'price', label: '售价', sortable: true },
-	{ key: 'suitability', label: '匹配度', sortable: true },
-	{ key: 'action', label: '操作', sortable: false },
+	{
+		key: 'beverage',
+		labelKey: 'guests.table.column.beverage',
+		sortable: true,
+	},
+	{ key: 'price', labelKey: 'guests.table.column.price', sortable: true },
+	{
+		key: 'suitability',
+		labelKey: 'guests.table.column.suitability',
+		sortable: true,
+	},
+	{ key: 'action', labelKey: 'guests.table.column.action', sortable: false },
 ] as const satisfies ReadonlyArray<ITableColumn<TBeverageTableColumnKey>>;
 
 export const foodTableColumns = [
-	{ key: 'food', label: '料理', sortable: true },
-	{ key: 'cookerType', label: '厨具', sortable: false },
-	{ key: 'ingredient', label: '食材', sortable: false },
-	{ key: 'price', label: '售价', sortable: true },
-	{ key: 'suitability', label: '匹配度', sortable: true },
-	{ key: 'time', label: '烹饪时间', sortable: true },
-	{ key: 'action', label: '操作', sortable: false },
+	{ key: 'food', labelKey: 'guests.table.column.food', sortable: true },
+	{
+		key: 'cookerType',
+		labelKey: 'guests.table.column.cookerType',
+		sortable: false,
+	},
+	{
+		key: 'ingredient',
+		labelKey: 'guests.table.column.ingredient',
+		sortable: false,
+	},
+	{ key: 'price', labelKey: 'guests.table.column.price', sortable: true },
+	{
+		key: 'suitability',
+		labelKey: 'guests.table.column.suitability',
+		sortable: true,
+	},
+	{ key: 'time', labelKey: 'guests.table.column.time', sortable: true },
+	{ key: 'action', labelKey: 'guests.table.column.action', sortable: false },
 ] as const satisfies ReadonlyArray<ITableColumn<TFoodTableColumnKey>>;

@@ -4,6 +4,8 @@ import {
 	type TAnnouncementVersionAction,
 } from '@/domain/announcements/contracts';
 
+import type { TLocale } from '@/shared/i18n/locale';
+
 export const ANNOUNCEMENT_COMPUTED_STATUSES = [
 	'active',
 	'archived',
@@ -30,6 +32,21 @@ export interface IAnnouncementPublicItem {
 	updated_at: number;
 }
 
+export interface IAnnouncementLocalizedContent {
+	html: string;
+	title: string;
+}
+
+/**
+ * @description Localized content of one announcement. Simplified Chinese
+ * always lives in the legacy `title`/`html` columns; other locales are stored
+ * here and are only complete entries (missing content means "not shown in
+ * this language").
+ */
+export type TAnnouncementTranslations = Partial<
+	Record<TLocale, IAnnouncementLocalizedContent>
+>;
+
 export interface IAnnouncementVisibleListData {
 	active: boolean;
 	announcements: IAnnouncementPublicItem[];
@@ -46,11 +63,13 @@ export interface IAdminAnnouncementProfile {
 	html: string;
 	id: string;
 	level: TAnnouncementLevel;
+	locales: TLocale[];
 	priority: number;
 	revision: number;
 	starts_at: number | null;
 	target_user_ids: string[];
 	title: string;
+	translations: TAnnouncementTranslations;
 	updated_at: number;
 }
 
@@ -93,6 +112,8 @@ export interface IAdminAnnouncementVersionListData {
 export interface IAdminAnnouncementPreviewData {
 	computed_status: TAnnouncementComputedStatus;
 	html: string;
+	is_visible: boolean;
+	locale: TLocale;
 	visible_text_length: number;
 }
 
@@ -105,8 +126,11 @@ export interface IAdminAnnouncementBody {
 	html: string;
 	id?: string;
 	level: TAnnouncementLevel;
+	locales: TLocale[];
 	priority: number;
+	preview_locale?: TLocale;
 	starts_at: number | null;
 	target_user_ids: string[];
 	title: string;
+	translations: TAnnouncementTranslations;
 }

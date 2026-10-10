@@ -13,6 +13,7 @@ const GLOBAL_PREFERENCE_ATOMIC_GROUP_PATHS = [
 	['guestCardTagsTooltip'],
 	['famousShop'],
 	['highAppearance'],
+	['locale'],
 	['popularTrend'],
 	['suggestMeals', 'enabled'],
 	['suggestMeals', 'maxExtraIngredients'],

@@ -15,8 +15,12 @@ import { ACCOUNT_SYNC_STATUS_MAP } from '@/domain/account/contracts';
 
 import LegalStatement from '@/features/about/client/components/LegalStatement';
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
+import { accountMessages } from '@/features/account/client/messages';
 import { accountStore } from '@/features/account/client/state/accountStore';
-import { PASSWORD_RULE_DESCRIPTION } from '@/features/account/constants';
+import {
+	PASSWORD_MAX_LENGTH,
+	PASSWORD_MIN_LENGTH,
+} from '@/features/account/constants';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import {
 	CoordinatedModal,
@@ -25,6 +29,8 @@ import {
 } from '@/features/overlays/client';
 import LocalDataManager from '@/features/preferences/client/dataManagement/LocalDataManager';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import AccountAuthPanel from './AccountAuthPanel';
 import AccountDangerZone from './AccountDangerZone';
@@ -37,8 +43,8 @@ import AccountSessionsPanel from './AccountSessionsPanel';
 import AccountSsoGrantsPanel from './AccountSsoGrantsPanel';
 import { type IAccountActionController } from './controller';
 import {
-	ACCOUNT_MANAGER_STATUS_LABEL_MAP,
-	ACCOUNT_MANAGER_SUCCESS_MESSAGE_SET,
+	ACCOUNT_MANAGER_STATUS_LABEL_KEYS,
+	ACCOUNT_MANAGER_SUCCESS_MESSAGE_KEY_SET,
 	getAccountBootstrapErrorMessage,
 	getAccountLoginSupportMessage,
 } from './copy';
@@ -59,6 +65,7 @@ interface IProps {}
 
 export default memo<IProps>(function AccountManager() {
 	const vibrate = useVibrate();
+	const { locale, t } = useI18n(accountMessages);
 	const bootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const hasPassword = accountStore.shared.hasPassword.use();
@@ -209,10 +216,10 @@ export default memo<IProps>(function AccountManager() {
 		return (
 			<div className="space-y-4">
 				<Heading as="h2" isFirst>
-					账号
+					{t('account.manager.ui.title')}
 				</Heading>
 				<p className="text-small leading-5 text-danger-600 dark:text-danger">
-					{getAccountBootstrapErrorMessage(lastError)}
+					{getAccountBootstrapErrorMessage(lastError, t)}
 				</p>
 			</div>
 		);
@@ -227,9 +234,10 @@ export default memo<IProps>(function AccountManager() {
 	}
 
 	const isMessageSuccess =
-		message !== null && ACCOUNT_MANAGER_SUCCESS_MESSAGE_SET.has(message);
+		message !== null &&
+		ACCOUNT_MANAGER_SUCCESS_MESSAGE_KEY_SET.has(message);
 	const messageText =
-		message === null ? null : getAccountClientErrorMessage(message);
+		message === null ? null : getAccountClientErrorMessage(message, locale);
 	const authErrorMessage =
 		user === null && messageText !== null && !isMessageSuccess
 			? messageText
@@ -241,28 +249,32 @@ export default memo<IProps>(function AccountManager() {
 	const authCredentialErrorMessage =
 		registrationNicknameErrorMessage === null ? authErrorMessage : null;
 	const accountLoginSupportMessage =
-		authMode === 'login' ? getAccountLoginSupportMessage(message) : null;
+		authMode === 'login' ? getAccountLoginSupportMessage(message, t) : null;
 	const accountStatusMessage =
 		messageText !== null && authErrorMessage === null ? messageText : null;
 	const isAccountSyncPaused =
 		user?.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty;
 	const accountStatusDescription = isAccountSyncPaused
-		? ACCOUNT_MANAGER_STATUS_LABEL_MAP.paused
-		: (accountStatusMessage ?? ACCOUNT_MANAGER_STATUS_LABEL_MAP.connected);
+		? t(ACCOUNT_MANAGER_STATUS_LABEL_KEYS.paused)
+		: (accountStatusMessage ??
+			t(ACCOUNT_MANAGER_STATUS_LABEL_KEYS.connected));
 	const passwordDescription =
 		authCredentialErrorMessage === null
 			? authMode === 'register'
-				? PASSWORD_RULE_DESCRIPTION
-				: '使用账号密码登录'
+				? t('account.passwordRule', {
+						max: PASSWORD_MAX_LENGTH,
+						min: PASSWORD_MIN_LENGTH,
+					})
+				: t('account.manager.ui.passwordSignInDescription')
 			: undefined;
 	const passwordChangeErrorMessage =
 		passwordChangeError === null
 			? null
-			: getAccountClientErrorMessage(passwordChangeError);
+			: getAccountClientErrorMessage(passwordChangeError, locale);
 	const profileErrorMessage =
 		profileError === null
 			? null
-			: getAccountClientErrorMessage(profileError);
+			: getAccountClientErrorMessage(profileError, locale);
 	const profileNicknameErrorMessage =
 		profileError === 'invalid-nickname' ? profileErrorMessage : null;
 	const profileUsernameErrorMessage =
@@ -281,7 +293,11 @@ export default memo<IProps>(function AccountManager() {
 	return (
 		<section
 			ref={accountManagerRootRef}
-			aria-label={user === null ? '账号登录' : '账号管理'}
+			aria-label={
+				user === null
+					? t('account.manager.ui.ariaSignIn')
+					: t('account.manager.ui.ariaManage')
+			}
 			tabIndex={-1}
 			className="space-y-4 rounded-small p-1.5 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 		>
@@ -291,13 +307,15 @@ export default memo<IProps>(function AccountManager() {
 				subTitle={
 					user === null
 						? isSsoContext
-							? '登录小助手账号以授权给外部应用'
-							: '登录后可在不同设备间同步此浏览器保存的数据'
-						: '管理当前账号、同步状态和云端数据'
+							? t('account.manager.ui.descriptionSsoSignIn')
+							: t('account.manager.ui.descriptionSyncSignIn')
+						: t('account.manager.ui.descriptionManage')
 				}
 				classNames={ACCOUNT_HEADING_CLASS_NAMES}
 			>
-				{isSsoContext && user === null ? 'SSO登录' : '账号'}
+				{isSsoContext && user === null
+					? t('account.manager.ui.ssoSignInAction')
+					: t('account.manager.ui.title')}
 			</Heading>
 			{user === null ? (
 				<AccountAuthPanel
@@ -353,7 +371,7 @@ export default memo<IProps>(function AccountManager() {
 						<AccountPanel className="space-y-4">
 							<div>
 								<AccountPanelTitle icon={faDatabase}>
-									数据与会话
+									{t('account.manager.ui.dataAndSessions')}
 								</AccountPanelTitle>
 								<div className="flex flex-col gap-2">
 									<Button
@@ -369,7 +387,7 @@ export default memo<IProps>(function AccountManager() {
 										variant="flat"
 										onClick={handleOpenDataManagerModal}
 									>
-										数据管理
+										{t('account.manager.ui.dataManagement')}
 									</Button>
 									<Button
 										fullWidth
@@ -391,7 +409,7 @@ export default memo<IProps>(function AccountManager() {
 										variant="flat"
 										onPress={handleLogout}
 									>
-										退出登录
+										{t('account.manager.ui.logout')}
 									</Button>
 									<Button
 										fullWidth
@@ -411,7 +429,7 @@ export default memo<IProps>(function AccountManager() {
 										variant="flat"
 										onPress={handleLogoutAll}
 									>
-										退出全部设备
+										{t('account.manager.ui.logoutAll')}
 									</Button>
 								</div>
 								<AccountSessionsPanel
@@ -450,7 +468,7 @@ export default memo<IProps>(function AccountManager() {
 			>
 				<div className="space-y-4">
 					<Heading as="h2" isFirst>
-						数据管理
+						{t('account.manager.ui.dataManagement')}
 					</Heading>
 					<LocalDataManager isFullWidth />
 				</div>

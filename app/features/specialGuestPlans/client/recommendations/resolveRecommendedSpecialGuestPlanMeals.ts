@@ -8,15 +8,13 @@ import type { TFoodId } from '@/domain/data/foods/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
-import {
-	DYNAMIC_FOOD_TAG_MAP,
-	FOOD_TAG_MAP,
-} from '@/domain/data/tags/tagFacts';
+import { DYNAMIC_FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';
 import type { ISuggestedMeal } from '@/domain/recommendations/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
+import { compareFoodTagLabels } from '@/features/catalog/shared/client/localization/tagLabels';
 import {
 	type ISuggestMealsOptions,
 	suggestMealsBatch,
@@ -84,7 +82,7 @@ export function createRecommendedSpecialGuestPlanMealSession({
 				tag !== DYNAMIC_FOOD_TAG_MAP.popularNegative &&
 				tag !== DYNAMIC_FOOD_TAG_MAP.popularPositive
 		)
-		.toSorted((a, b) => pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b]));
+		.toSorted(compareFoodTagLabels);
 	const beverageTags = specialGuestRecord.beverageTags.toSorted(numberSort);
 	const cookers = currentCookerCatalog.data
 		.filter(

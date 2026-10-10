@@ -6,8 +6,11 @@ import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import LegacyBackupImport from '@/features/account/client/components/LegacyBackupImport';
 import { accountStore } from '@/features/account/client/state/accountStore';
+import { preferencesMessages } from '@/features/preferences/client/messages';
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import CloudBackupPanel from './CloudBackupPanel';
 import { getClosestModalScrollContainer } from './dataManagerScroll';
@@ -18,7 +21,9 @@ const { isAccountFeatureClientEnabled } = PUBLIC_RUNTIME_CONFIG;
 
 type TResetTarget = 'meals' | 'plans';
 
-const DATA_MANAGER_TAB_CLASS_NAMES = { base: '-ml-3' } as const;
+const DATA_MANAGER_TAB_CLASS_NAMES = {
+	base: '-ml-3 min-w-0 max-w-full',
+} as const;
 
 interface IProps {
 	onModalClose?: (() => void) | undefined;
@@ -26,6 +31,7 @@ interface IProps {
 
 export default memo<IProps>(function DataManager({ onModalClose }) {
 	const isReducedMotion = useReducedMotion();
+	const { t } = useI18n(preferencesMessages);
 
 	const [resetTarget, setResetTarget] = useState<TResetTarget | null>(null);
 	const isResetPopoverOpened = resetTarget !== null;
@@ -75,8 +81,8 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 
 	return (
 		<div ref={dataManagerRef}>
-			<Heading subTitle="备份/还原/重置顾客套餐和营业预设数据">
-				数据管理
+			<Heading subTitle={t('preferences.dataManager.subTitle')}>
+				{t('preferences.dataManager.title')}
 			</Heading>
 			<div className="-mt-2">
 				<Tabs
@@ -86,14 +92,20 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 					isDisabled={isResetPopoverOpened}
 					variant="underlined"
 					onSelectionChange={handleSelectionChange}
-					aria-label="数据管理选项卡"
+					aria-label={t('preferences.dataManager.tabsAria')}
 					classNames={DATA_MANAGER_TAB_CLASS_NAMES}
 				>
-					<Tab key="backup-local" title="本地导入/导出">
+					<Tab
+						key="backup-local"
+						title={t('preferences.dataManager.tab.local')}
+					>
 						<LocalDataManager key={localDataManagerKey} />
 					</Tab>
 					{shouldShowLegacyBackupImport && (
-						<Tab key="legacy-backup-import" title="旧备份码导入">
+						<Tab
+							key="legacy-backup-import"
+							title={t('preferences.dataManager.tab.legacy')}
+						>
 							<div className="w-full space-y-2 lg:w-1/2">
 								<LegacyBackupImport
 									onOpenAccountModal={handleOpenAccountModal}
@@ -102,11 +114,17 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 						</Tab>
 					)}
 					{shouldShowLegacyCloud && (
-						<Tab key="backup-cloud" title="云端备份/还原">
+						<Tab
+							key="backup-cloud"
+							title={t('preferences.dataManager.tab.cloud')}
+						>
 							<CloudBackupPanel />
 						</Tab>
 					)}
-					<Tab key="reset" title="重置">
+					<Tab
+						key="reset"
+						title={t('preferences.dataManager.tab.reset')}
+					>
 						<ResetSavedDataPanel
 							isReducedMotion={isReducedMotion}
 							onModalClose={onModalClose}

@@ -10,8 +10,10 @@ import {
 	type TCollectionProductType,
 	getCollectionPointYieldProducts,
 } from '@/domain/data/places/collectionYieldFacts';
-import { MERCHANT_LABEL_MAP } from '@/domain/data/places/merchantFacts';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
+import {
+	MERCHANT_LABEL_MAP,
+	type TMerchantLabel,
+} from '@/domain/data/places/merchantFacts';
 import type {
 	IPrayerReference,
 	ITaskReference,
@@ -19,6 +21,15 @@ import type {
 	TMapLabel,
 	TMerchantReference,
 } from '@/domain/data/places/types';
+import { getMapLabel, getMerchantLabel } from '@/domain/places/localizedLabels';
+
+import {
+	type TCatalogItemsMessageKey,
+	catalogItemsMessages,
+} from '@/features/catalog/items/shared/messages';
+
+import { type TLocale } from '@/shared/i18n/locale';
+import { type TMessageParams, translate } from '@/shared/i18n/messages';
 
 export type TSourceReference =
 	| ITaskReference
@@ -29,40 +40,78 @@ export type TSourceReference =
 
 const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 
-export function formatSourceReference(reference: TSourceReference) {
+function t(
+	locale: TLocale,
+	key: TCatalogItemsMessageKey,
+	params?: TMessageParams
+) {
+	return translate(catalogItemsMessages, locale, key, params);
+}
+
+export function formatSourceReference(
+	reference: TSourceReference,
+	locale: TLocale,
+	options: { omitMap?: boolean } = {}
+) {
 	if (typeof reference === 'string') {
-		return MAP_FACTS[reference].label;
+		return getMapLabel(reference);
 	}
 	if ('task' in reference) {
 		return formatSchedulerLabels(reference.task);
 	}
 	if ('specialGuest' in reference) {
-		const specialGuestName = specialGuestCatalog.getPropsById(
+		const specialGuestName = specialGuestCatalog.getDisplayPropsById(
 			reference.specialGuest,
 			'name'
 		);
 		return 'map' in reference
-			? `【${MAP_FACTS[reference.map].label}】${specialGuestName}`
-			: `【${specialGuestName}】${reference.label}`;
+			? t(locale, 'items.source.mapGuest', {
+					guest: specialGuestName,
+					map: getMapLabel(reference.map),
+				})
+			: t(locale, 'items.source.guestLabel', {
+					guest: specialGuestName,
+					label: reference.label,
+				});
 	}
 	if ('excludedMaps' in reference) {
-		return `非【${reference.excludedMaps.map((map) => MAP_FACTS[map].label).join('、')}】${getCollectionPointFact(reference)?.displayLabel ?? ''}`;
+		return t(locale, 'items.source.excludedMaps', {
+			label: getCollectionPointFact(reference)?.displayLabel ?? '',
+			maps: reference.excludedMaps
+				.map((map) => getMapLabel(map))
+				.join(t(locale, 'items.source.listSeparator')),
+		});
 	}
 	if ('labels' in reference) {
-		return `【${MAP_FACTS[reference.map].label}】${getCollectionPointFact(reference)?.displayLabel ?? reference.labels.join('、')}`;
+		return t(locale, 'items.source.mapCollection', {
+			label:
+				getCollectionPointFact(reference)?.displayLabel ??
+				reference.labels.join(t(locale, 'items.source.listSeparator')),
+			map: getMapLabel(reference.map),
+		});
 	}
 	if (reference.label in PRAYER_LABEL_MAP) {
-		return `【${MAP_FACTS[reference.map].label}】${PRAYER_LABEL_MAP[reference.label as keyof typeof PRAYER_LABEL_MAP]}`;
+		return t(locale, 'items.source.mapCollection', {
+			label: PRAYER_LABEL_MAP[
+				reference.label as keyof typeof PRAYER_LABEL_MAP
+			],
+			map: getMapLabel(reference.map),
+		});
 	}
 
 	const label =
 		reference.label in MERCHANT_LABEL_MAP
-			? MERCHANT_LABEL_MAP[
-					reference.label as keyof typeof MERCHANT_LABEL_MAP
-				]
+			? getMerchantLabel(reference.label as TMerchantLabel)
 			: (getCollectionPointFact(reference as TCollectionPointReference)
 					?.displayLabel ?? reference.label);
-	return `【${MAP_FACTS[reference.map].label}】${label}`;
+	if (options.omitMap === true) {
+		return label;
+	}
+
+	return t(locale, 'items.source.mapCollection', {
+		label,
+		map: getMapLabel(reference.map),
+	});
 }
 
 export function getCollectionPointRefreshTimeHours(
@@ -85,7 +134,8 @@ export function getCollectionPointRefreshTimeHours(
 }
 
 function formatCollectionYieldProducts(
-	products: ReadonlyArray<ICollectionPointYieldProduct>
+	products: ReadonlyArray<ICollectionPointYieldProduct>,
+	locale: TLocale
 ) {
 	const fixedAmount = products.reduce(
 		(total, product) =>
@@ -126,20 +176,33 @@ function formatCollectionYieldProducts(
 		}
 	}
 
-	const content = fixedAmount === 0 ? [] : [`固定产出${fixedAmount}`];
+	const content =
+		fixedAmount === 0
+			? []
+			: [t(locale, 'items.source.yieldFixed', { amount: fixedAmount })];
 	content.push(
-		...secondaryProductGroups.map(
-			(group) =>
-				`${group.probability}%概率${fixedAmount === 0 ? '产出' : '追加'}${group.amount}${group.count === 1 ? '' : `×${group.count}`}`
+		...secondaryProductGroups.map((group) =>
+			t(locale, 'items.source.yieldProbability', {
+				amount: group.amount,
+				count: group.count === 1 ? '' : `×${group.count}`,
+				probability: group.probability,
+				verb: t(
+					locale,
+					fixedAmount === 0
+						? 'items.source.yieldVerbProduce'
+						: 'items.source.yieldVerbAppend'
+				),
+			})
 		)
 	);
-	return content.join('，');
+	return content.join(t(locale, 'items.source.yieldSeparator'));
 }
 
 export function formatCollectionPointYield(
 	reference: TCollectionPointReference,
 	productType: TCollectionProductType,
-	productId: number
+	productId: number,
+	locale: TLocale
 ) {
 	if ('excludedMaps' in reference) {
 		return null;
@@ -149,7 +212,8 @@ export function formatCollectionPointYield(
 
 	for (const label of labels) {
 		const content = formatCollectionYieldProducts(
-			getCollectionPointYieldProducts(label, productType, productId)
+			getCollectionPointYieldProducts(label, productType, productId),
+			locale
 		);
 		if (content !== null) {
 			return content;
@@ -162,7 +226,8 @@ export function formatCollectionPointYield(
 export function formatPrayerYield(
 	reference: IPrayerReference,
 	productType: TCollectionProductType,
-	productId: number
+	productId: number,
+	locale: TLocale
 ) {
 	const reward = PRAYER_REWARD_FACTS[reference.label].find(
 		(candidate) =>
@@ -171,5 +236,8 @@ export function formatPrayerYield(
 	);
 	return reward === undefined
 		? null
-		: `${reward.probability}%概率产出${reward.amount}`;
+		: t(locale, 'items.source.prayerYield', {
+				amount: reward.amount,
+				probability: reward.probability,
+			});
 }
