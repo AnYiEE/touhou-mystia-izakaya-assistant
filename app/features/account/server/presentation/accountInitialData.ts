@@ -1,5 +1,5 @@
 import type { IAccountMeSuccessResponse } from '@/features/account/contracts';
-import { createAccountCsrfToken } from '@/features/account/server/auth/accountCsrf';
+import { createCsrfToken } from '@/features/account/server/auth/csrf';
 
 import type {
 	TUser,
@@ -29,7 +29,7 @@ export function createAccountMeInitialData({
 	);
 
 	return {
-		csrf_token: createAccountCsrfToken(sessionTokenHash),
+		csrf_token: createCsrfToken(sessionTokenHash),
 		featureEnabled: true,
 		has_password: credential.password_set === 1,
 		isLoggedIn: true,

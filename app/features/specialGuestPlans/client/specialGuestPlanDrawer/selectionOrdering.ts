@@ -1,4 +1,6 @@
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
+import { getActiveLocalizationLocale } from '@/features/catalog/shared/client/localization/activeLocalizationLocale';
+
+import { compareLocalizedName } from '@/shared/utilities/search/localeNameMatch';
 
 interface ISelectionOption<T extends number | string> {
 	name: string;
@@ -13,9 +15,10 @@ export function createPlanSelectionComparator<T extends number | string>(
 	);
 
 	return (left: T, right: T) => {
-		const nameComparison = pinyinSort(
+		const nameComparison = compareLocalizedName(
 			namesByValue.get(left) ?? '',
-			namesByValue.get(right) ?? ''
+			namesByValue.get(right) ?? '',
+			getActiveLocalizationLocale()
 		);
 		if (nameComparison !== 0) {
 			return nameComparison;

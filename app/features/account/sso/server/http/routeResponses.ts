@@ -9,16 +9,12 @@ import { checkSecretEqual } from '@/infrastructure/security/server/checkSecretEq
 
 const SSO_RATE_LIMIT_OPTIONS = { limit: 20, windowMs: 60 * 1000 } as const;
 
-function createRateLimitKey(parts: ReadonlyArray<string>) {
-	return JSON.stringify(parts);
-}
-
 function createRateLimitHash(value: string) {
 	return createHash('sha256').update(value).digest('base64url');
 }
 
 function createRateLimitCapacityGroup(scope: string, dimension: string) {
-	return createRateLimitKey([scope, dimension]);
+	return JSON.stringify([scope, dimension]);
 }
 
 export function checkSsoRateLimitRouteResponse(
@@ -34,12 +30,12 @@ export function checkSsoRateLimitRouteResponse(
 				scope,
 				'no-trusted-ip-gate'
 			),
-			key: createRateLimitKey([scope, 'no-trusted-ip-gate']),
+			key: JSON.stringify([scope, 'no-trusted-ip-gate']),
 		});
 	} else {
 		keys.push({
 			capacityGroup: createRateLimitCapacityGroup(scope, 'request'),
-			key: createRateLimitKey([scope, 'request', trustedRequestIp]),
+			key: JSON.stringify([scope, 'request', trustedRequestIp]),
 		});
 	}
 
@@ -50,7 +46,7 @@ export function checkSsoRateLimitRouteResponse(
 		const hashedValue = createRateLimitHash(value);
 		keys.push({
 			capacityGroup: createRateLimitCapacityGroup(scope, name),
-			key: createRateLimitKey([scope, name, hashedValue]),
+			key: JSON.stringify([scope, name, hashedValue]),
 		});
 		if (trustedRequestIp !== null) {
 			keys.push({
@@ -58,7 +54,7 @@ export function checkSsoRateLimitRouteResponse(
 					scope,
 					`${name}-request`
 				),
-				key: createRateLimitKey([
+				key: JSON.stringify([
 					scope,
 					`${name}-request`,
 					hashedValue,

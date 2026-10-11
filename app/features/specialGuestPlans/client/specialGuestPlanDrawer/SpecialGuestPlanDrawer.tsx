@@ -14,6 +14,7 @@ import SiteInfo from '@/design/ui/components/siteInfo';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
+import { appShellMessages } from '@/features/appShell/client/messages';
 import { SITE_LINKS } from '@/features/appShell/links';
 import {
 	SPECIAL_GUEST_PLAN_DRAWER_EXIT_DURATION_MS,
@@ -21,11 +22,13 @@ import {
 } from '@/features/overlays/client';
 import { openPreferencesModal } from '@/features/preferences/client/overlayCommands';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
+import { specialGuestPlansMessages } from '@/features/specialGuestPlans/client/messages';
 import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/state/store';
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
-import { SITE_METADATA } from '@/shared/site/metadata';
+import { useI18n } from '@/shared/i18n/useI18n';
+import { siteMessages } from '@/shared/site/messages';
 
 import { getFocusableElements } from './dom';
 import { getDrawerLayoutClassName } from './drawerLayout';
@@ -49,6 +52,10 @@ const DRAWER_PANEL_TRANSITION = {
 } as const;
 
 export default function SpecialGuestPlanDrawer() {
+	const { locale, t } = useI18n(specialGuestPlansMessages);
+	const { t: tAppShell } = useI18n(appShellMessages);
+	const { t: tSite } = useI18n(siteMessages);
+	const isEnglish = locale === 'en';
 	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
 	const vibrate = useVibrate();
@@ -325,7 +332,7 @@ export default function SpecialGuestPlanDrawer() {
 			>
 				<Button
 					color="default"
-					aria-label="打开营业预设"
+					aria-label={t('plans.drawer.open')}
 					aria-haspopup="dialog"
 					aria-expanded={isDrawerPresentationOpen}
 					radius="none"
@@ -340,7 +347,7 @@ export default function SpecialGuestPlanDrawer() {
 							icon={faBookmark}
 						/>
 						<span className="text-[10px] leading-none [writing-mode:vertical-rl] xl:text-tiny">
-							营业预设
+							{t('plans.drawer.title')}
 						</span>
 					</span>
 				</Button>
@@ -361,7 +368,7 @@ export default function SpecialGuestPlanDrawer() {
 						}
 					>
 						<button
-							aria-label="关闭营业预设"
+							aria-label={t('plans.drawer.close')}
 							className={cn(
 								'absolute inset-0 h-full w-full cursor-default',
 								isHighAppearance
@@ -376,7 +383,7 @@ export default function SpecialGuestPlanDrawer() {
 						/>
 						<aside
 							ref={setDrawerPanelRef}
-							aria-label="稀客营业预设"
+							aria-label={t('plans.drawer.aria')}
 							aria-modal="true"
 							className={cn(
 								'absolute inset-0 flex flex-col border-r border-divider shadow-2xl ring-1 ring-default-100/70 dark:ring-default-50/10',
@@ -411,31 +418,41 @@ export default function SpecialGuestPlanDrawer() {
 											animationUnderline={false}
 											color="foreground"
 											href={SITE_LINKS.index.href}
-											aria-label={SITE_LINKS.index.label}
+											aria-label={tAppShell(
+												'appShell.links.index'
+											)}
 											className="flex min-w-0 select-none items-center justify-start gap-1 rounded-small hover:brightness-100 active:opacity-disabled"
 										>
 											<span
 												aria-hidden
-												title={SITE_METADATA.shortName}
+												title={tSite('site.shortName')}
 												className="image-rendering-pixelated h-10 w-10 shrink-0 rounded-full bg-logo bg-cover bg-no-repeat"
 											/>
-											<p className="hidden truncate font-bold lg:inline-block">
-												{SITE_METADATA.name}
-											</p>
-											<SiteInfo
-												baseUrl={
-													PUBLIC_RUNTIME_CONFIG.baseURL
-												}
-												aria-hidden="false"
-												fontSize={16}
-												name={SITE_METADATA.shortName}
-												className="pointer-events-auto h-full select-auto font-bold text-foreground lg:hidden"
-											/>
+											{!isEnglish && (
+												<>
+													<p className="hidden truncate font-bold lg:inline-block">
+														{tSite('site.name')}
+													</p>
+													<SiteInfo
+														baseUrl={
+															PUBLIC_RUNTIME_CONFIG.baseURL
+														}
+														aria-hidden="false"
+														fontSize={16}
+														name={tSite(
+															'site.shortName'
+														)}
+														className="pointer-events-auto h-full max-w-[13rem] select-auto font-bold text-foreground lg:hidden"
+													/>
+												</>
+											)}
 										</Link>
-										<span
-											aria-hidden
-											className="h-8 w-px shrink-0 bg-divider"
-										/>
+										{!isEnglish && (
+											<span
+												aria-hidden
+												className="h-8 w-px shrink-0 bg-divider"
+											/>
+										)}
 										<div className="flex min-w-0 items-center gap-1.5">
 											<FontAwesomeIcon
 												className="shrink-0 text-primary"
@@ -443,7 +460,7 @@ export default function SpecialGuestPlanDrawer() {
 												size="sm"
 											/>
 											<h2 className="min-w-0 truncate font-bold">
-												营业预设
+												{t('plans.drawer.title')}
 											</h2>
 										</div>
 									</div>
@@ -469,7 +486,7 @@ export default function SpecialGuestPlanDrawer() {
 										<FontAwesomeIconButton
 											icon={faXmark}
 											variant="light"
-											aria-label="关闭营业预设"
+											aria-label={t('plans.drawer.close')}
 											onPress={handleClose}
 										/>
 									</div>

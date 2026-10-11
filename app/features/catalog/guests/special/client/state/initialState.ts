@@ -60,6 +60,7 @@ export const specialGuestInitialState = {
 				selectableRows: [] as Array<ValueCollection<number>>,
 			},
 		},
+		catalogLocalizationRevision: 0,
 		drawer: specialGuestPlansStateDefinition.shared.drawer,
 		guest: {
 			id: null as TSpecialGuestId | null,

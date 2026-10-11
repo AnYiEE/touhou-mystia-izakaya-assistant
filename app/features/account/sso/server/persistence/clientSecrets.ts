@@ -41,10 +41,6 @@ export interface ISsoClientSecretUpdateInput {
 	label?: string | null;
 }
 
-function serializeStringArray(value: string[]) {
-	return JSON.stringify(value);
-}
-
 function createSsoClientSecretRecord(
 	clientId: TSsoClient['id'],
 	secretHash: string,
@@ -138,10 +134,7 @@ async function syncSsoClientLegacySecretHashesInTransaction(
 
 	await trx
 		.updateTable(CLIENT_TABLE_NAME)
-		.set({
-			secret_hashes: serializeStringArray(secretHashes),
-			updated_at: now,
-		})
+		.set({ secret_hashes: JSON.stringify(secretHashes), updated_at: now })
 		.where('id', '=', clientId)
 		.execute();
 

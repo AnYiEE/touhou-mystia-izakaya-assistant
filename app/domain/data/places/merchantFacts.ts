@@ -9,7 +9,7 @@ export const MERCHANT_LABEL_MAP = {
 	Merchant_Seiran: '清兰',
 	Rinnosuke: '香霖堂',
 	WineMerchant_HakureiShrine: '河童商人',
-	Merchant_Maid: '妖精女仆',
+	Merchant_Maid: '卖剩货的妖精女仆',
 	Merchant_Goblin: '地精商人',
 	Yousei_Tired: '匿名妖精女仆',
 	Koakuma: '小恶魔',
@@ -25,6 +25,7 @@ export const MERCHANT_LABEL_MAP = {
 	Merchant_LunarCapital_MoonRabbit: '月兔',
 	DLC5_Makai_Merchant_Ellen_MagicShop: '蓬松松爱莲♡魔法店',
 	Merchant_Makai_Clown: '小丑',
+	SpecialGuestShop_Tewi: '“强买强卖”商店',
 } as const;
 /* eslint-enable sort-keys */
 

@@ -159,10 +159,6 @@ export function parseDirtyQueueEvidence(
 	return value as unknown as IDirtyQueueEvidence;
 }
 
-export function createDirtyQueueIntentHash(intent: TDirtyQueueIntentPayload) {
-	return createSnapshotHash(intent);
-}
-
 export function parseDirtyQueueIntent(
 	value: string,
 	userId: string,
@@ -235,7 +231,7 @@ export function parseDirtyQueueIntent(
 		userId,
 		version: 1,
 	} satisfies TDirtyQueueIntentPayload;
-	if (createDirtyQueueIntentHash(payload) !== intentHash) {
+	if (createSnapshotHash(payload) !== intentHash) {
 		return null;
 	}
 

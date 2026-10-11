@@ -68,6 +68,7 @@ const SSO_TABLE_COLUMNS_MAP = {
 	[TABLE_NAME_MAP.ssoClient]: [
 		'id',
 		'name',
+		'name_translations_json',
 		'secret_hashes',
 		'loopback_redirect_paths',
 		'custom_scheme_redirect_uris',
@@ -188,6 +189,11 @@ const SSO_TABLE_COLUMN_DEFINITION_MAP = {
 			notNull: true,
 		},
 		name: { dataType: 'text', defaultTo: '', notNull: true },
+		name_translations_json: {
+			dataType: 'text',
+			defaultTo: '{}',
+			notNull: true,
+		},
 		secret_hashes: { dataType: 'text', defaultTo: '[]', notNull: true },
 		status_callback_url: { dataType: 'text' },
 		updated_at: { dataType: 'integer', defaultTo: 0, notNull: true },

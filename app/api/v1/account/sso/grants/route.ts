@@ -8,6 +8,7 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
@@ -62,7 +63,8 @@ export async function GET(request: NextRequest) {
 		await import('@/features/account/sso/server/grants');
 	const grants = await listSsoUserClientGrantsForActiveUserSession(
 		auth.data.user.id,
-		{ id: auth.data.session.id, token_hash: auth.data.session.token_hash }
+		{ id: auth.data.session.id, token_hash: auth.data.session.token_hash },
+		readContentLocale(request)
 	);
 	if (grants.status === 'unauthorized') {
 		return createNoStoreErrorResponse(

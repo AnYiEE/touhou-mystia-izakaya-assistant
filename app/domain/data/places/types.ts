@@ -1,5 +1,5 @@
-import type { TSchedulerLabel } from '@/domain/data/labels/schedulerFacts';
 import type { TPrayerLabel } from '@/domain/data/labels/prayerFacts';
+import type { TSchedulerLabel } from '@/domain/data/labels/schedulerFacts';
 import type { TCollectableLabel } from '@/domain/data/places/collectableLabels';
 import type { TMerchantLabel } from '@/domain/data/places/merchantFacts';
 
@@ -54,7 +54,7 @@ export interface ISpecialGuestMapMerchantReference {
 }
 
 export interface ISpecialGuestShopReference {
-	label: '“强买强卖”商店';
+	label: 'SpecialGuestShop_Tewi';
 	map?: never;
 	specialGuest: 29;
 }

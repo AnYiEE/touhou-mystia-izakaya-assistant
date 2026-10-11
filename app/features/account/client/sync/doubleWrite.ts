@@ -606,6 +606,14 @@ export function startAccountStoreSyncWatchers() {
 	);
 
 	watch(
+		globalStore.persistence.locale.onChange(() => {
+			enqueueAccountSyncLocalSnapshotReconcile(
+				SYNC_NAMESPACE_MAP.globalPreferences
+			);
+		})
+	);
+
+	watch(
 		addThemePersistenceChangeListener(() => {
 			enqueueAccountSyncLocalSnapshotReconcile(SYNC_NAMESPACE_MAP.theme);
 		})

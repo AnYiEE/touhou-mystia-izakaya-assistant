@@ -5,13 +5,20 @@ import {
 	type IAnnouncementPublicItem,
 	type IAnnouncementVisibleListData,
 } from '@/features/announcements/contracts';
-import { createAnnouncementDismissalToken } from '@/features/announcements/dismissals';
+import {
+	createAnnouncementDismissalToken,
+	createLegacyAnnouncementDismissalToken,
+} from '@/features/announcements/dismissals';
 import type { TAnnouncementServiceResult } from '@/features/announcements/server/contracts';
 import {
 	getAnnouncementVisibleText,
 	renderAnnouncementHtmlTemplate,
 	sanitizeAnnouncementHtml,
 } from '@/features/announcements/server/html';
+import {
+	getAnnouncementLocaleUpdatedAt,
+	getVisibleAnnouncementLocalizedContent,
+} from '@/features/announcements/server/localization';
 import {
 	checkAnnouncementIsActive,
 	checkAnnouncementMatchesRequestContext,
@@ -33,6 +40,7 @@ import type {
 	TUser,
 } from '@/infrastructure/database/schema';
 
+import { DEFAULT_LOCALE, type TLocale, isLocale } from '@/shared/i18n/locale';
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 
 const DEFAULT_VISIBLE_ANNOUNCEMENT_LIMIT = 5;
@@ -47,6 +55,7 @@ const activeCandidateCache = new Map<
 export interface IAnnouncementRequestContext {
 	dismissedTokens: string[];
 	isAuthenticated: boolean;
+	locale: TLocale;
 	nickname?: TUser['nickname'];
 	now?: number;
 	userId?: TUser['id'];
@@ -68,13 +77,15 @@ function createVisibleAudienceList(isAuthenticated: boolean) {
 function createActiveCandidateCacheKey({
 	audiences,
 	limit,
+	locale,
 	offset = 0,
 }: {
 	audiences: ReadonlyArray<TAnnouncement['audience']>;
 	limit: number;
+	locale: TLocale;
 	offset?: number;
 }) {
-	return `${[...new Set(audiences)].sort().join(',')}:${limit}:${offset}`;
+	return `${[...new Set(audiences)].sort().join(',')}:${locale}:${limit}:${offset}`;
 }
 
 export function invalidateActiveAnnouncementCandidateCache() {
@@ -84,19 +95,28 @@ export function invalidateActiveAnnouncementCandidateCache() {
 async function listCachedActiveAnnouncementCandidates({
 	audiences,
 	limit,
+	locale,
 	now,
 	offset = 0,
 }: {
 	audiences: Array<TAnnouncement['audience']>;
 	limit: number;
+	locale: TLocale;
 	now: number;
 	offset?: number;
 }) {
-	const key = createActiveCandidateCacheKey({ audiences, limit, offset });
+	const key = createActiveCandidateCacheKey({
+		audiences,
+		limit,
+		locale,
+		offset,
+	});
 	const cached = activeCandidateCache.get(key);
 	if (cached !== undefined && cached.expiresAt > Date.now()) {
-		return cached.records.filter((record) =>
-			checkAnnouncementIsActive(record, now)
+		return cached.records.filter(
+			(record) =>
+				checkAnnouncementIsActive(record, now) &&
+				getVisibleAnnouncementLocalizedContent(record, locale) !== null
 		);
 	}
 
@@ -117,6 +137,7 @@ async function listCachedActiveAnnouncementCandidates({
 export async function getVisibleAnnouncementsForRequestContext({
 	dismissedTokens,
 	isAuthenticated,
+	locale,
 	nickname,
 	now = Date.now(),
 	userId,
@@ -131,6 +152,7 @@ export async function getVisibleAnnouncementsForRequestContext({
 		const batch = await listCachedActiveAnnouncementCandidates({
 			audiences: [...audiences],
 			limit: ACTIVE_CANDIDATE_BATCH_SIZE,
+			locale,
 			now,
 			offset,
 		});
@@ -161,18 +183,34 @@ export async function getVisibleAnnouncementsForRequestContext({
 		) {
 			throw new Error('invalid-announcement-dismissal');
 		}
-		const databaseDismissalTokenSet = new Set(
-			databaseDismissals.map((dismissal) =>
+		const databaseDismissalTokenSet = new Set<string>();
+		for (const dismissal of databaseDismissals) {
+			const dismissalLocale =
+				dismissal.locale === '' ? DEFAULT_LOCALE : dismissal.locale;
+			if (!isLocale(dismissalLocale)) {
+				continue;
+			}
+
+			databaseDismissalTokenSet.add(
 				createAnnouncementDismissalToken(
 					dismissal.announcement_id,
+					dismissalLocale,
 					dismissal.announcement_updated_at
 				)
-			)
-		);
+			);
+		}
 
 		for (const announcement of visibleCandidates) {
+			const localized = getVisibleAnnouncementLocalizedContent(
+				announcement,
+				locale
+			);
+			if (localized === null) {
+				continue;
+			}
+
 			const sanitizedHtml = sanitizeAnnouncementHtml(
-				renderAnnouncementHtmlTemplate(announcement.html, {
+				renderAnnouncementHtmlTemplate(localized.html, {
 					nickname: nickname ?? null,
 					userId: userId ?? null,
 					username: username ?? null,
@@ -182,9 +220,16 @@ export async function getVisibleAnnouncementsForRequestContext({
 				continue;
 			}
 
+			const localeUpdatedAt = getAnnouncementLocaleUpdatedAt(
+				announcement,
+				locale
+			);
 			const item = createPublicAnnouncementItem(
 				announcement,
-				sanitizedHtml
+				locale,
+				localized,
+				sanitizedHtml,
+				localeUpdatedAt
 			);
 			if (item === null) {
 				continue;
@@ -193,7 +238,14 @@ export async function getVisibleAnnouncementsForRequestContext({
 			const isDismissed =
 				item.dismissible &&
 				(dismissedTokenSet.has(item.dismissed_token) ||
-					databaseDismissalTokenSet.has(item.dismissed_token));
+					databaseDismissalTokenSet.has(item.dismissed_token) ||
+					(locale === DEFAULT_LOCALE &&
+						dismissedTokenSet.has(
+							createLegacyAnnouncementDismissalToken(
+								announcement.id,
+								localeUpdatedAt
+							)
+						)));
 			if (isDismissed) {
 				continue;
 			}
@@ -212,7 +264,8 @@ export async function getVisibleAnnouncementsForRequestContext({
 
 export async function dismissAnnouncementForUser(
 	announcementId: string,
-	announcementUpdatedAt: number,
+	locale: TLocale,
+	submitted: { token?: string; updatedAt?: number },
 	userId: TUser['id'],
 	session: TAuthenticatedSessionIdentity,
 	lockAnnouncementDismissalSession: TLockAnnouncementDismissalSession
@@ -243,8 +296,19 @@ export async function dismissAnnouncementForUser(
 				status: 'error' as const,
 			};
 		}
+		const localeUpdatedAt = getAnnouncementLocaleUpdatedAt(
+			announcement,
+			locale
+		);
+		const dismissalToken = createAnnouncementDismissalToken(
+			announcement.id,
+			locale,
+			localeUpdatedAt
+		);
 		if (
-			announcement.updated_at !== announcementUpdatedAt ||
+			(submitted.token === undefined
+				? submitted.updatedAt !== localeUpdatedAt
+				: submitted.token !== dismissalToken) ||
 			announcement.dismissible !== 1
 		) {
 			return {
@@ -268,8 +332,9 @@ export async function dismissAnnouncementForUser(
 		await upsertAnnouncementDismissal(
 			{
 				announcement_id: announcement.id,
-				announcement_updated_at: announcement.updated_at,
+				announcement_updated_at: localeUpdatedAt,
 				dismissed_at: Date.now(),
+				locale,
 				user_id: userId,
 			},
 			database

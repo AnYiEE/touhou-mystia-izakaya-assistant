@@ -12,9 +12,13 @@ import ScrollMask from '@/design/ui/components/scrollMask';
 import Tooltip from '@/design/ui/components/tooltip';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
+import { useCatalogLocalizationReady } from '@/features/catalog/shared/client/localization/useCatalogLocalizationReady';
+import { globalSearchMessages } from '@/features/globalSearch/client/messages';
 import { useGlobalSearchController } from '@/features/globalSearch/client/useGlobalSearchController';
 import { getFieldPrefixLabel } from '@/features/globalSearch/core/parser';
 import { CoordinatedModal } from '@/features/overlays/client';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import {
 	SPOTLIGHT_CONTENT_TRANSITION,
@@ -40,7 +44,9 @@ const SPOTLIGHT_MODAL_CLASS_NAMES = {
 } as const;
 
 export default function GlobalSpotlightSearch() {
+	const isLocalizationReady = useCatalogLocalizationReady();
 	const { isHighAppearance } = useDesignPreferences();
+	const { t } = useI18n(globalSearchMessages);
 	const isReducedMotion = useReducedMotion();
 
 	const controller = useGlobalSearchController();
@@ -77,12 +83,14 @@ export default function GlobalSpotlightSearch() {
 		ast,
 		catalogSuggestionRecordMap,
 		examplePreviewItemMap,
+		exampleQueries,
 		fieldConditionDisplayValues,
 		fieldValueSuggestions: fieldValueSuggestionValues,
 		filterAction,
 		isFieldValueSuggestionOnly,
 		isPrefixSuggestionOnly,
 		isQueryEmpty,
+		locale,
 		nameSuggestionItemMap,
 		parsedSection,
 		prefixSuggestions: prefixSuggestionValues,
@@ -111,6 +119,7 @@ export default function GlobalSpotlightSearch() {
 		<FieldValueSuggestions
 			activeFieldCondition={activeFieldCondition}
 			catalogSuggestionRecordMap={catalogSuggestionRecordMap}
+			locale={locale}
 			nameSuggestionItemMap={nameSuggestionItemMap}
 			resultSection={ast.resultSection}
 			suggestions={fieldValueSuggestionValues}
@@ -147,7 +156,7 @@ export default function GlobalSpotlightSearch() {
 				/>
 
 				<AnimatePresence initial={false}>
-					{shouldShowQueryMeta && (
+					{isLocalizationReady && shouldShowQueryMeta && (
 						<motion.div
 							key="query-meta"
 							animate={SPOTLIGHT_COLLAPSIBLE_ANIMATE}
@@ -167,7 +176,9 @@ export default function GlobalSpotlightSearch() {
 								{parsedSection !== null &&
 									parsedSection !== undefined && (
 										<span className="rounded-small border border-primary/20 bg-primary/10 px-2 py-1 font-medium text-primary-700 dark:text-primary">
-											结果：
+											{t(
+												'spotlight.results.sectionLabel'
+											)}
 											{parsedSection.label}
 										</span>
 									)}
@@ -175,7 +186,8 @@ export default function GlobalSpotlightSearch() {
 									({ fieldType, keyword }, index) => {
 										const fieldLabel = getFieldPrefixLabel(
 											fieldType,
-											ast.resultSection
+											ast.resultSection,
+											locale
 										);
 										const displayValue =
 											fieldConditionDisplayValues[
@@ -188,8 +200,12 @@ export default function GlobalSpotlightSearch() {
 											>
 												{fieldLabel}
 												{keyword
-													? `：${displayValue}`
-													: '：等待关键词'}
+													? `${t(
+															'spotlight.results.fieldSeparator'
+														)}${displayValue}`
+													: t(
+															'spotlight.results.awaitingKeyword'
+														)}
 											</span>
 										);
 									}
@@ -232,7 +248,8 @@ export default function GlobalSpotlightSearch() {
 				</AnimatePresence>
 
 				<AnimatePresence initial={false}>
-					{prefixSuggestionValues.length > 0 &&
+					{isLocalizationReady &&
+						prefixSuggestionValues.length > 0 &&
 						fieldValueSuggestionValues.length === 0 &&
 						!isPrefixSuggestionOnly && (
 							<motion.div
@@ -251,7 +268,8 @@ export default function GlobalSpotlightSearch() {
 				</AnimatePresence>
 
 				<AnimatePresence initial={false}>
-					{fieldValueSuggestionValues.length > 0 &&
+					{isLocalizationReady &&
+						fieldValueSuggestionValues.length > 0 &&
 						!isFieldValueSuggestionOnly && (
 							<motion.div
 								key="field-value-suggestions"
@@ -269,101 +287,105 @@ export default function GlobalSpotlightSearch() {
 				</AnimatePresence>
 
 				<AnimatePresence mode="popLayout" initial={false}>
-					{isQueryEmpty ? (
-						<motion.div
-							key="empty-query"
-							{...(isReducedMotion
-								? {}
-								: {
-										animate: 'animate',
-										exit: 'exit',
-										initial: 'initial',
-										transition:
-											SPOTLIGHT_CONTENT_TRANSITION,
-										variants:
-											SPOTLIGHT_MAIN_CONTENT_VARIANTS,
-									})}
-							className="min-h-0 flex-1"
-						>
-							<div className="p-4 sm:p-5 md:h-[30rem] md:overflow-y-auto md:overflow-x-hidden md:scrollbar-hide">
-								<SearchHome
-									examplePreviewItemMap={
-										examplePreviewItemMap
-									}
-									onApplyQuery={applyQueryPreset}
-									onClearItems={clearRecentItems}
-									onClearQueries={clearRecentQueries}
-									onOpenItem={handleOpenItem}
-									recentItems={recentItems}
-									recentState={recentState}
-								/>
-							</div>
-						</motion.div>
-					) : isPrefixSuggestionOnly ? (
-						<motion.div
-							key="prefix-only"
-							{...(isReducedMotion
-								? {}
-								: {
-										animate: 'animate',
-										exit: 'exit',
-										initial: 'initial',
-										transition:
-											SPOTLIGHT_CONTENT_TRANSITION,
-										variants:
-											SPOTLIGHT_MAIN_CONTENT_VARIANTS,
-									})}
-							className="min-h-0 flex-1"
-						>
-							<ScrollMask className="max-h-[calc(var(--safe-h-dvh)-9rem)] p-4 sm:p-5 md:h-[30rem] md:max-h-none">
-								<SpotlightMotionBlock
-									motionKey="prefix-suggestion-only"
-									className="px-0.5 py-0.5"
-								>
-									{prefixSuggestions}
-								</SpotlightMotionBlock>
-							</ScrollMask>
-						</motion.div>
-					) : isFieldValueSuggestionOnly ? (
-						<motion.div
-							key="field-value-only"
-							{...(isReducedMotion
-								? {}
-								: {
-										animate: 'animate',
-										exit: 'exit',
-										initial: 'initial',
-										transition:
-											SPOTLIGHT_CONTENT_TRANSITION,
-										variants:
-											SPOTLIGHT_MAIN_CONTENT_VARIANTS,
-									})}
-							className="min-h-0 flex-1"
-						>
-							<ScrollMask className="max-h-[calc(var(--safe-h-dvh)-9rem)] p-4 sm:p-5 md:h-[30rem] md:max-h-none">
-								<SpotlightMotionBlock
-									motionKey="field-value-suggestion-only"
-									className="px-0.5 py-0.5"
-								>
-									{fieldValueSuggestions}
-								</SpotlightMotionBlock>
-							</ScrollMask>
-						</motion.div>
-					) : (
-						<SearchResults
-							key="search-results"
-							baseId={baseId}
-							isHighAppearance={isHighAppearance}
-							isReducedMotion={isReducedMotion}
-							model={model}
-							onApplyQuery={applyQueryPreset}
-							onOpenItem={handleOpenItem}
-							onOpenNewWindow={handleOpenNewWindow}
-							onSelect={setSelectedIndex}
-							onShareItem={handleShareItem}
-							query={query}
-						/>
-					)}
+					{isLocalizationReady ? (
+						isQueryEmpty ? (
+							<motion.div
+								key="empty-query"
+								{...(isReducedMotion
+									? {}
+									: {
+											animate: 'animate',
+											exit: 'exit',
+											initial: 'initial',
+											transition:
+												SPOTLIGHT_CONTENT_TRANSITION,
+											variants:
+												SPOTLIGHT_MAIN_CONTENT_VARIANTS,
+										})}
+								className="min-h-0 flex-1"
+							>
+								<div className="p-4 sm:p-5 md:h-[30rem] md:overflow-y-auto md:overflow-x-hidden md:scrollbar-hide">
+									<SearchHome
+										examplePreviewItemMap={
+											examplePreviewItemMap
+										}
+										examples={exampleQueries}
+										locale={locale}
+										onApplyQuery={applyQueryPreset}
+										onClearItems={clearRecentItems}
+										onClearQueries={clearRecentQueries}
+										onOpenItem={handleOpenItem}
+										recentItems={recentItems}
+										recentState={recentState}
+									/>
+								</div>
+							</motion.div>
+						) : isPrefixSuggestionOnly ? (
+							<motion.div
+								key="prefix-only"
+								{...(isReducedMotion
+									? {}
+									: {
+											animate: 'animate',
+											exit: 'exit',
+											initial: 'initial',
+											transition:
+												SPOTLIGHT_CONTENT_TRANSITION,
+											variants:
+												SPOTLIGHT_MAIN_CONTENT_VARIANTS,
+										})}
+								className="min-h-0 flex-1"
+							>
+								<ScrollMask className="max-h-[calc(var(--safe-h-dvh)-9rem)] p-4 sm:p-5 md:h-[30rem] md:max-h-none">
+									<SpotlightMotionBlock
+										motionKey="prefix-suggestion-only"
+										className="px-0.5 py-0.5"
+									>
+										{prefixSuggestions}
+									</SpotlightMotionBlock>
+								</ScrollMask>
+							</motion.div>
+						) : isFieldValueSuggestionOnly ? (
+							<motion.div
+								key="field-value-only"
+								{...(isReducedMotion
+									? {}
+									: {
+											animate: 'animate',
+											exit: 'exit',
+											initial: 'initial',
+											transition:
+												SPOTLIGHT_CONTENT_TRANSITION,
+											variants:
+												SPOTLIGHT_MAIN_CONTENT_VARIANTS,
+										})}
+								className="min-h-0 flex-1"
+							>
+								<ScrollMask className="max-h-[calc(var(--safe-h-dvh)-9rem)] p-4 sm:p-5 md:h-[30rem] md:max-h-none">
+									<SpotlightMotionBlock
+										motionKey="field-value-suggestion-only"
+										className="px-0.5 py-0.5"
+									>
+										{fieldValueSuggestions}
+									</SpotlightMotionBlock>
+								</ScrollMask>
+							</motion.div>
+						) : (
+							<SearchResults
+								key="search-results"
+								baseId={baseId}
+								isHighAppearance={isHighAppearance}
+								isReducedMotion={isReducedMotion}
+								model={model}
+								onApplyQuery={applyQueryPreset}
+								onOpenItem={handleOpenItem}
+								onOpenNewWindow={handleOpenNewWindow}
+								onSelect={setSelectedIndex}
+								onShareItem={handleShareItem}
+								query={query}
+							/>
+						)
+					) : null}
 				</AnimatePresence>
 			</div>
 		</CoordinatedModal>

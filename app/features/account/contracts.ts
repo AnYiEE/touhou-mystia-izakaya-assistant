@@ -7,10 +7,14 @@ import {
 	type TUserStatus,
 } from '@/domain/account/contracts';
 
+import type { TLocale } from '@/shared/i18n/locale';
+
 import { type ACCOUNT_COOKIE_NAME_MAP } from './constants';
 import type { IAccountSyncMeta } from './sync/contracts';
 
 export type TAccountCookieNameMap = typeof ACCOUNT_COOKIE_NAME_MAP;
+
+export type TSsoClientNameTranslations = Partial<Record<TLocale, string>>;
 
 export interface IAuthRegisterBody {
 	nickname?: string | null;
@@ -135,6 +139,7 @@ export interface IAdminSsoClientProfile {
 	id: string;
 	loopback_redirect_paths: string[];
 	name: string;
+	name_translations: TSsoClientNameTranslations;
 	status_callback_url: string | null;
 	updated_at: number;
 }
@@ -176,6 +181,7 @@ export interface IAdminSsoClientCreateBody {
 	id: string;
 	loopback_redirect_paths: string[];
 	name: string;
+	name_translations: TSsoClientNameTranslations;
 	status_callback_url: string | null;
 }
 

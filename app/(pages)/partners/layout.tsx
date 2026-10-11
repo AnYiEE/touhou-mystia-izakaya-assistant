@@ -1,21 +1,22 @@
 import { type Metadata } from 'next';
 
-import { PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
+import {
+	buildCatalogPageMetadata,
+	readLocalizedCatalogNames,
+	readMetadataLocaleContext,
+} from '@/features/appShell/seo/pageMetadata';
 
-import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
+export async function generateMetadata(): Promise<Metadata> {
+	const { isPrefixed, locale } = await readMetadataLocaleContext();
+	const names = await readLocalizedCatalogNames('/partners', locale, 10);
 
-import { SITE_METADATA } from '@/shared/site/metadata';
-
-const { description, keywords } = SITE_METADATA;
-
-const partners = PartnerCatalog.getInstance().getNames(10);
-const title = getPageTitle('/partners');
-
-export const metadata: Metadata = {
-	title,
-
-	description: `本页面可以查询${partners.join('、')}等${title}的详情。${description}`,
-	keywords: keywords.toSpliced(18, Infinity, ...partners),
-};
+	return buildCatalogPageMetadata({
+		descriptionKey: 'site.seo.description.details',
+		href: '/partners',
+		isPrefixed,
+		locale,
+		names,
+	});
+}
 
 export { default } from '@/features/preferences/client/components/PreferencesModalLayout';

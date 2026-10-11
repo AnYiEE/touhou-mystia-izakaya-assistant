@@ -603,6 +603,37 @@ export const GLOBAL_SEARCH_FIELD_PREFIX_GROUPS = [
 		key: 'availability-dlc',
 		label: '可获取于',
 		order: 201,
+		sectionAliases: {
+			guests: [
+				'可出现于',
+				'可获取于',
+				'可获取DLC',
+				'DLC',
+				'dlc',
+				'availability-dlc',
+			],
+			'normal-guests': [
+				'可出现于',
+				'可获取于',
+				'可获取DLC',
+				'DLC',
+				'dlc',
+				'availability-dlc',
+			],
+			'special-guests': [
+				'可出现于',
+				'可获取于',
+				'可获取DLC',
+				'DLC',
+				'dlc',
+				'availability-dlc',
+			],
+		},
+		sectionLabels: {
+			guests: '可出现于',
+			'normal-guests': '可出现于',
+			'special-guests': '可出现于',
+		},
 		sections: [
 			'badges',
 			'beverages',

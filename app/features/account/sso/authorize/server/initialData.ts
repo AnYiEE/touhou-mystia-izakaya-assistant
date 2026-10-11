@@ -3,6 +3,7 @@ import { unstable_rethrow } from 'next/navigation';
 
 import { USER_STATUS_MAP } from '@/domain/account/contracts';
 
+import { accountMessages } from '@/features/account/client/messages';
 import type {
 	IAccountMeSuccessResponse,
 	IAccountSsoGrantInitialData,
@@ -13,11 +14,17 @@ import {
 	SSO_CONTEXT_COOKIE_NAME,
 	getSsoContextCookieValue,
 } from '@/features/account/sso/server/context';
-import { checkSsoClientEnabled } from '@/features/account/sso/server/validation';
+import {
+	checkSsoClientEnabled,
+	getLocalizedSsoClientName,
+} from '@/features/account/sso/server/validation';
 import { getActiveUserStateSnapshotForSession } from '@/features/account/sync/server';
 
 import { createCurrentRequest } from '@/infrastructure/http/server/currentRequest';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
+
+import { type TLocale } from '@/shared/i18n/locale';
+import { translate } from '@/shared/i18n/messages';
 
 interface IMessageInitialData {
 	kind: 'message';
@@ -50,12 +57,14 @@ export type TSsoAuthorizeInitialData =
 
 async function createAccountSsoGrantInitialDataForUser(
 	userId: string,
-	session: { id: string; token_hash: string }
+	session: { id: string; token_hash: string },
+	locale: TLocale
 ): Promise<IAccountSsoGrantInitialData | null> {
 	const ssoModule = await import('@/features/account/sso/server/grants');
 	const grants = await ssoModule.listSsoUserClientGrantsForActiveUserSession(
 		userId,
-		session
+		session,
+		locale
 	);
 	if (grants.status === 'unauthorized') {
 		return null;
@@ -91,7 +100,8 @@ async function createAccountMeInitialDataForAuthenticatedRequest({
 }
 
 export async function readSsoAuthorizeInitialData(
-	status: string | null
+	status: string | null,
+	locale: TLocale
 ): Promise<TSsoAuthorizeInitialData> {
 	const cookieStore = await cookies();
 	const context = getSsoContextCookieValue(
@@ -139,7 +149,11 @@ export async function readSsoAuthorizeInitialData(
 
 		const ssoGrants = await createAccountSsoGrantInitialDataForUser(
 			auth.data.user.id,
-			{ id: auth.data.session.id, token_hash: auth.data.sessionTokenHash }
+			{
+				id: auth.data.session.id,
+				token_hash: auth.data.sessionTokenHash,
+			},
+			locale
 		);
 		if (ssoGrants === null) {
 			return { kind: 'message', status: 'invalid' };
@@ -149,9 +163,22 @@ export async function readSsoAuthorizeInitialData(
 			account,
 			accountLabel:
 				auth.data.user.nickname === null
-					? `用户名：${auth.data.user.username}`
-					: `用户名：${auth.data.user.username}，昵称：${auth.data.user.nickname}`,
-			clientName: client.name,
+					? translate(
+							accountMessages,
+							locale,
+							'account.sso.accountLabel.user',
+							{ username: auth.data.user.username }
+						)
+					: translate(
+							accountMessages,
+							locale,
+							'account.sso.accountLabel.userNickname',
+							{
+								nickname: auth.data.user.nickname,
+								username: auth.data.user.username,
+							}
+						),
+			clientName: getLocalizedSsoClientName(client, locale),
 			kind: 'ready',
 			ssoGrants,
 			transactionId: context.transaction_id,

@@ -10,6 +10,10 @@ export const SITE_LINKS = {
 	china: { href: getShortUrl('tiXDNm'), label: '国内线路' },
 	donate: { href: getShortUrl('HI9lxP'), label: '支付宝收款链接' },
 	github: { href: PACKAGE_METADATA.repositoryUrl, label: '本项目代码仓库' },
+	githubIssues: {
+		href: `${PACKAGE_METADATA.repositoryUrl}/issues`,
+		label: 'GitHub Issues',
+	},
 	gnuLicense: {
 		href: 'https://www.gnu.org/licenses/agpl-3.0-standalone.html',
 		label: 'GNU Affero General Public License v3.0',

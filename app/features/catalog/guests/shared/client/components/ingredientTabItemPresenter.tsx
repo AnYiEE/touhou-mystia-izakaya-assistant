@@ -10,6 +10,8 @@ import type { TIngredientId } from '@/domain/data/ingredients/types';
 
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 
+import { useCurrentLocale } from '@/shared/i18n/useI18n';
+
 type TIngredientTabItemColor = 'danger' | 'default' | 'secondary' | 'success';
 
 interface IInteractiveProps {
@@ -43,7 +45,10 @@ const InteractiveIngredientTabItem = memo<IInteractiveProps>(
 		scoreChange,
 		tooltipContent,
 	}) {
-		const name = ingredientCatalog.getPropsById(ingredient, 'name');
+		const locale = useCurrentLocale();
+
+		const name = ingredientCatalog.getDisplayPropsById(ingredient, 'name');
+
 		const badgeClassNames = useMemo(
 			() => ({
 				badge: cn('font-mono', {
@@ -67,6 +72,7 @@ const InteractiveIngredientTabItem = memo<IInteractiveProps>(
 			>
 				<PressElement
 					as="div"
+					data-tutorial-ingredient={ingredient}
 					onPress={onPress}
 					role="button"
 					tabIndex={0}
@@ -93,7 +99,15 @@ const InteractiveIngredientTabItem = memo<IInteractiveProps>(
 							className="transition group-hover:scale-105 group-data-[pressed=true]:scale-105 motion-reduce:transition-none"
 						/>
 					</Badge>
-					<span className="whitespace-nowrap text-center text-tiny text-default-800 transition-colors group-hover:text-default-900 group-data-[pressed=true]:text-default-900 motion-reduce:transition-none">
+					<span
+						className={cn(
+							'w-full text-center text-tiny leading-tight text-default-800 transition-colors group-hover:text-default-900 group-data-[pressed=true]:text-default-900 motion-reduce:transition-none',
+							{
+								'break-keep [overflow-wrap:break-word]':
+									locale === 'ko',
+							}
+						)}
+					>
 						{name}
 					</span>
 				</PressElement>
@@ -103,9 +117,12 @@ const InteractiveIngredientTabItem = memo<IInteractiveProps>(
 );
 
 export default memo<TProps>(function IngredientTabItemPresenter(props) {
+	const locale = useCurrentLocale();
+
 	if (props.kind === 'static') {
 		const { className, ingredient } = props;
-		const name = ingredientCatalog.getPropsById(ingredient, 'name');
+
+		const name = ingredientCatalog.getDisplayPropsById(ingredient, 'name');
 
 		return (
 			<div
@@ -115,7 +132,15 @@ export default memo<TProps>(function IngredientTabItemPresenter(props) {
 				)}
 			>
 				<Sprite target="ingredient" recordId={ingredient} size={3} />
-				<span className="whitespace-nowrap text-center text-tiny">
+				<span
+					className={cn(
+						'w-full text-center text-tiny leading-tight',
+						{
+							'break-keep [overflow-wrap:break-word]':
+								locale === 'ko',
+						}
+					)}
+				>
 					{name}
 				</span>
 			</div>

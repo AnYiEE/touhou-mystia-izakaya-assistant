@@ -4,6 +4,9 @@ import { memo } from 'react';
 import Button from '@/design/ui/components/button';
 
 import { MoveButton } from '@/features/catalog/guests/shared/client/components/moveButton';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps {
 	className?: HTMLDivElementAttributes['className'];
@@ -32,6 +35,8 @@ export default memo<IProps>(function SavedMealActionRail({
 	reorderButtonsClassName,
 	selectButtonClassName,
 }) {
+	const { t } = useI18n(catalogGuestsMessages);
+
 	return (
 		<div
 			className={cn(
@@ -66,7 +71,7 @@ export default memo<IProps>(function SavedMealActionRail({
 				onPress={onSelect}
 				className={cn('md:w-auto', selectButtonClassName)}
 			>
-				选择
+				{t('guests.savedMeal.select')}
 			</Button>
 			<Button
 				fullWidth
@@ -76,7 +81,7 @@ export default memo<IProps>(function SavedMealActionRail({
 				onPress={onRemove}
 				className={cn('md:w-auto', removeButtonClassName)}
 			>
-				删除
+				{t('guests.savedMeal.delete')}
 			</Button>
 		</div>
 	);

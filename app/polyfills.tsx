@@ -1,7 +1,21 @@
 /* eslint-disable func-names, @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, require-unicode-regexp */
 // @ts-nocheck
 
-const script = () => {
+const script = (messages: {
+	errorTemplate: string;
+	storageWarning: string;
+}) => {
+	const applyTemplate = (
+		template: string,
+		values: Record<string, string>
+	) => {
+		let result = template;
+		for (const key of Object.keys(values)) {
+			result = result.split(`{${key}}`).join(values[key]);
+		}
+		return result;
+	};
+
 	/**
 	 * @description Add `globalThis` polyfill for Chrome < 71.
 	 * @see {@link https://mathiasbynens.be/notes/globalthis}
@@ -64,7 +78,13 @@ const script = () => {
 		}
 
 		alert(
-			`错误：${message}\n文件：${filename}\n行号：${lineno}，列号：${colno}${errorStack ? `\n\n${errorStack}` : ''}`
+			applyTemplate(messages.errorTemplate, {
+				colno,
+				filename,
+				lineno,
+				message,
+				stack: errorStack ? `\n\n${errorStack}` : '',
+			})
 		);
 	});
 
@@ -73,17 +93,27 @@ const script = () => {
 		localStorage.setItem(testKey, '');
 		localStorage.removeItem(testKey);
 	} catch {
-		alert(
-			'警告：本地存储（localStorage）不可用。\n这可能是因为您正处于无痕或隐身模式下，或浏览器开启了“不允许网站将数据保存在设备上”等类似设置。\n\n本次标签页将改用临时存储。关闭标签页后数据会丢失；如果浏览器也不允许会话存储，刷新页面后数据也会丢失。'
-		);
+		alert(messages.storageWarning);
 	}
 };
 
-export default function Polyfills() {
+export default function Polyfills({
+	errorTemplate,
+	storageWarning,
+}: {
+	errorTemplate: string;
+	storageWarning: string;
+}) {
+	const scriptArgs = JSON.stringify([
+		{ errorTemplate, storageWarning },
+	]).slice(1, -1);
+
 	return (
 		<script
 			suppressHydrationWarning
-			dangerouslySetInnerHTML={{ __html: `(${script.toString()})()` }}
+			dangerouslySetInnerHTML={{
+				__html: `(${script.toString()})(${scriptArgs})`,
+			}}
 		/>
 	);
 }

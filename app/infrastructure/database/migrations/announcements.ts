@@ -43,6 +43,8 @@ const ANNOUNCEMENT_TABLE_COLUMNS_MAP = {
 		'id',
 		'title',
 		'level',
+		'locale_updated_at_json',
+		'locales_json',
 		'audience',
 		'html',
 		'enabled',
@@ -51,6 +53,7 @@ const ANNOUNCEMENT_TABLE_COLUMNS_MAP = {
 		'starts_at',
 		'ends_at',
 		'target_user_ids_json',
+		'translations_json',
 		'revision',
 		'created_at',
 		'updated_at',
@@ -59,6 +62,7 @@ const ANNOUNCEMENT_TABLE_COLUMNS_MAP = {
 	[TABLE_NAME_MAP.announcementDismissal]: [
 		'user_id',
 		'announcement_id',
+		'locale',
 		'announcement_updated_at',
 		'dismissed_at',
 	],
@@ -93,6 +97,12 @@ const ANNOUNCEMENT_TABLE_COLUMN_DEFINITION_MAP = {
 			defaultTo: ANNOUNCEMENT_DEFAULT_LEVEL,
 			notNull: true,
 		},
+		locale_updated_at_json: {
+			dataType: 'text',
+			defaultTo: '{}',
+			notNull: true,
+		},
+		locales_json: { dataType: 'text', defaultTo: '[]', notNull: true },
 		priority: { dataType: 'integer', defaultTo: 0, notNull: true },
 		revision: { dataType: 'integer', defaultTo: 1, notNull: true },
 		starts_at: { dataType: 'integer' },
@@ -102,12 +112,14 @@ const ANNOUNCEMENT_TABLE_COLUMN_DEFINITION_MAP = {
 			notNull: true,
 		},
 		title: { dataType: 'text', defaultTo: '', notNull: true },
+		translations_json: { dataType: 'text', defaultTo: '{}', notNull: true },
 		updated_at: { dataType: 'integer', defaultTo: 0, notNull: true },
 	},
 	[TABLE_NAME_MAP.announcementDismissal]: {
 		announcement_id: { dataType: 'text', structural: true },
 		announcement_updated_at: { dataType: 'integer', structural: true },
 		dismissed_at: { dataType: 'integer', defaultTo: 0, notNull: true },
+		locale: { dataType: 'text', defaultTo: '', notNull: true },
 		user_id: { dataType: 'text', structural: true },
 	},
 	[TABLE_NAME_MAP.announcementVersion]: {
@@ -175,6 +187,64 @@ async function ensureTableColumns(
 			`${SERVER_MISCONFIGURED_MESSAGE}: announcement table ${tableName} is missing columns after migration: ${stillMissingColumns.join(', ')}`
 		);
 	}
+}
+
+async function createAnnouncementDismissalTable(database: Kysely<TDatabase>) {
+	const dismissalTableName = sql.raw(TABLE_NAME_MAP.announcementDismissal);
+	const announcementTableName = sql.raw(TABLE_NAME_MAP.announcement);
+	const userTableName = sql.raw(TABLE_NAME_MAP.user);
+
+	await sql`
+		create table if not exists ${dismissalTableName} (
+			user_id text not null references ${userTableName}(id) on delete cascade,
+			announcement_id text not null references ${announcementTableName}(id) on delete cascade,
+			locale text not null default '',
+			announcement_updated_at integer not null,
+			dismissed_at integer not null,
+			primary key (user_id, announcement_id, locale, announcement_updated_at)
+		)
+	`.execute(database);
+}
+
+async function rebuildAnnouncementDismissalTableForLocale(
+	database: Kysely<TDatabase>
+) {
+	const primaryKeyColumns = await getPrimaryKeyColumns(
+		database,
+		TABLE_NAME_MAP.announcementDismissal
+	);
+	const primaryKeyColumnNames = primaryKeyColumns.map(
+		(column) => column.name
+	);
+	if (
+		primaryKeyColumnNames.join(',') ===
+		'user_id,announcement_id,locale,announcement_updated_at'
+	) {
+		return;
+	}
+
+	const dismissalTableName = sql.raw(TABLE_NAME_MAP.announcementDismissal);
+	const legacyTableName = sql.raw(
+		`${TABLE_NAME_MAP.announcementDismissal}_legacy`
+	);
+
+	await sql`drop table if exists ${legacyTableName}`.execute(database);
+	await sql`
+		alter table ${dismissalTableName} rename to ${legacyTableName}
+	`.execute(database);
+	await createAnnouncementDismissalTable(database);
+	await sql`
+		insert into ${dismissalTableName} (
+			user_id,
+			announcement_id,
+			locale,
+			announcement_updated_at,
+			dismissed_at
+		)
+		select user_id, announcement_id, '', announcement_updated_at, dismissed_at
+		from ${legacyTableName}
+	`.execute(database);
+	await sql`drop table ${legacyTableName}`.execute(database);
 }
 
 async function hasIndex(
@@ -274,7 +344,7 @@ async function ensureAnnouncementTableStructure(database: Kysely<TDatabase>) {
 			database,
 			TABLE_NAME_MAP.announcementDismissal
 		),
-		['user_id', 'announcement_id', 'announcement_updated_at']
+		['user_id', 'announcement_id', 'locale', 'announcement_updated_at']
 	);
 	assertPrimaryKeyColumns(
 		TABLE_NAME_MAP.announcementVersion,
@@ -322,7 +392,12 @@ async function ensureAnnouncementTableStructure(database: Kysely<TDatabase>) {
 		{ columns: ['updated_at'], tableName: TABLE_NAME_MAP.announcement },
 		{ columns: ['id', 'revision'], tableName: TABLE_NAME_MAP.announcement },
 		{
-			columns: ['user_id', 'announcement_id', 'announcement_updated_at'],
+			columns: [
+				'user_id',
+				'announcement_id',
+				'locale',
+				'announcement_updated_at',
+			],
 			tableName: TABLE_NAME_MAP.announcementDismissal,
 		},
 		{
@@ -383,24 +458,20 @@ export async function migrateAnnouncementTables(database: Kysely<TDatabase>) {
 		.addColumn('target_user_ids_json', 'text', (col) =>
 			col.notNull().defaultTo('[]')
 		)
+		.addColumn('translations_json', 'text', (col) =>
+			col.notNull().defaultTo('{}')
+		)
+		.addColumn('locales_json', 'text', (col) =>
+			col.notNull().defaultTo('[]')
+		)
 		.addColumn('revision', 'integer', (col) => col.notNull().defaultTo(1))
 		.addColumn('created_at', 'integer', (col) => col.notNull())
 		.addColumn('updated_at', 'integer', (col) => col.notNull())
 		.addColumn('deleted_at', 'integer')
 		.execute();
 
-	const dismissalTableName = sql.raw(TABLE_NAME_MAP.announcementDismissal);
-	const announcementTableName = sql.raw(TABLE_NAME_MAP.announcement);
-	const userTableName = sql.raw(TABLE_NAME_MAP.user);
-	await sql`
-		create table if not exists ${dismissalTableName} (
-			user_id text not null references ${userTableName}(id) on delete cascade,
-			announcement_id text not null references ${announcementTableName}(id) on delete cascade,
-			announcement_updated_at integer not null,
-			dismissed_at integer not null,
-			primary key (user_id, announcement_id, announcement_updated_at)
-		)
-	`.execute(database);
+	await createAnnouncementDismissalTable(database);
+	await rebuildAnnouncementDismissalTableForLocale(database);
 
 	await database.schema
 		.createTable(TABLE_NAME_MAP.announcementVersion)
@@ -459,7 +530,12 @@ export async function migrateAnnouncementTables(database: Kysely<TDatabase>) {
 			tableName: TABLE_NAME_MAP.announcement,
 		},
 		{
-			columns: ['user_id', 'announcement_id', 'announcement_updated_at'],
+			columns: [
+				'user_id',
+				'announcement_id',
+				'locale',
+				'announcement_updated_at',
+			],
 			indexName: 'announcement_dismissals_user_index',
 			tableName: TABLE_NAME_MAP.announcementDismissal,
 		},
@@ -531,7 +607,12 @@ export async function migrateAnnouncementTables(database: Kysely<TDatabase>) {
 		.createIndex('announcement_dismissals_user_index')
 		.ifNotExists()
 		.on(TABLE_NAME_MAP.announcementDismissal)
-		.columns(['user_id', 'announcement_id', 'announcement_updated_at'])
+		.columns([
+			'user_id',
+			'announcement_id',
+			'locale',
+			'announcement_updated_at',
+		])
 		.execute();
 
 	await database.schema

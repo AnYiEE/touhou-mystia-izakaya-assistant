@@ -1,8 +1,5 @@
-import { SITE_METADATA } from '@/shared/site/metadata';
-
 import { ITEM_SHARE_PARAM_NAME } from './contracts';
 
-const { name: siteName } = SITE_METADATA;
 const ITEM_SHARE_RECORD_ID_PATTERN = /^(?:0|[1-9]\d*|-[1-9]\d*)$/u;
 
 export interface ICreateItemShareUrlOptions {
@@ -27,9 +24,7 @@ export function createItemShareUrl({
 	return `${resolvedOrigin}${pathname}?${newParams.toString()}`;
 }
 
-export function createItemShareData(name: string, url: string): ShareData {
-	const text = `在${siteName}上查看【${name}】的详情`;
-
+export function createItemShareData(text: string, url: string): ShareData {
 	return { text, title: text, url };
 }
 

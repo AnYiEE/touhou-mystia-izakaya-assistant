@@ -7,9 +7,14 @@ import type {
 	TGlobalSearchSection,
 } from '@/features/globalSearch/contracts';
 
+import { DEFAULT_LOCALE, type TLocale } from '@/shared/i18n/locale';
 import { createBoundedRuntimeCache } from '@/shared/utilities/cache/createBoundedRuntimeCache';
 import { getPinyin } from '@/shared/utilities/pinyin/getPinyin';
 import { processPinyin } from '@/shared/utilities/pinyin/processPinyin';
+import {
+	compareLocalizedName,
+	getHangulInitials,
+} from '@/shared/utilities/search/localeNameMatch';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
@@ -30,6 +35,7 @@ const MATCH_SCORE = {
 } as const;
 const CONTEXT_SECTION_SCORE = 120;
 const PINYIN_KEYWORD_PATTERN = /^[a-z]+$/u;
+const CHOSEONG_KEYWORD_PATTERN = /^[\u3131-\u314E]+$/u;
 const textPinyinCache = createBoundedRuntimeCache<
 	string,
 	{ firstLetters: string; full: string }
@@ -70,9 +76,9 @@ function getTextPinyin(value: string) {
 	return pinyin;
 }
 
-function getBaseMatchScore(keyword: string, text: string) {
-	const normalizedKeyword = normalizeSearchMatchText(keyword);
-	const normalizedText = normalizeSearchMatchText(text);
+function getBaseMatchScore(keyword: string, text: string, locale: TLocale) {
+	const normalizedKeyword = normalizeSearchMatchText(keyword, locale);
+	const normalizedText = normalizeSearchMatchText(text, locale);
 
 	if (normalizedKeyword.length === 0 || normalizedText.length === 0) {
 		return 0;
@@ -88,7 +94,10 @@ function getBaseMatchScore(keyword: string, text: string) {
 		return MATCH_SCORE.contains;
 	}
 
-	if (PINYIN_KEYWORD_PATTERN.test(normalizedKeyword)) {
+	if (
+		locale.startsWith('zh') &&
+		PINYIN_KEYWORD_PATTERN.test(normalizedKeyword)
+	) {
 		const pinyin = getTextPinyin(text);
 		if (pinyin.full.includes(normalizedKeyword)) {
 			return MATCH_SCORE.pinyin;
@@ -96,6 +105,13 @@ function getBaseMatchScore(keyword: string, text: string) {
 		if (pinyin.firstLetters.includes(normalizedKeyword)) {
 			return MATCH_SCORE.pinyinInitial;
 		}
+	}
+	if (
+		locale === 'ko' &&
+		CHOSEONG_KEYWORD_PATTERN.test(keyword.trim()) &&
+		getHangulInitials(text).includes(keyword.trim())
+	) {
+		return MATCH_SCORE.pinyinInitial;
 	}
 	if (isSubsequence(normalizedKeyword, normalizedText)) {
 		return MATCH_SCORE.fuzzy;
@@ -123,11 +139,12 @@ function createSnippet(keyword: string, text: string) {
 
 function matchFields(
 	fields: ReadonlyArray<IGlobalSearchIndexField>,
-	keyword: string
+	keyword: string,
+	locale: TLocale
 ): IGlobalSearchMatchedField[] {
 	return fields
 		.flatMap<IGlobalSearchMatchedField>((field) => {
-			const baseScore = getBaseMatchScore(keyword, field.text);
+			const baseScore = getBaseMatchScore(keyword, field.text, locale);
 			if (baseScore === 0) {
 				return [];
 			}
@@ -160,11 +177,13 @@ export function searchGlobalIndex({
 	contextSection,
 	index,
 	limit = GLOBAL_SEARCH_MAX_RESULTS,
+	locale = DEFAULT_LOCALE,
 }: {
 	ast: IGlobalSearchQueryAst;
 	contextSection?: null | TGlobalSearchSection;
 	index: ReadonlyArray<IGlobalSearchIndexItem>;
 	limit?: number;
+	locale?: TLocale;
 }): IGlobalSearchResult[] {
 	const hasQuery =
 		ast.resultSection !== null ||
@@ -201,7 +220,11 @@ export function searchGlobalIndex({
 						fieldType
 					)
 				);
-				const fieldMatches = matchFields(fields, condition.keyword);
+				const fieldMatches = matchFields(
+					fields,
+					condition.keyword,
+					locale
+				);
 				const [bestMatch] = fieldMatches;
 				if (bestMatch === undefined) {
 					return [];
@@ -211,7 +234,7 @@ export function searchGlobalIndex({
 			}
 
 			for (const keyword of ast.freeKeywords) {
-				const fieldMatches = matchFields(item.fields, keyword);
+				const fieldMatches = matchFields(item.fields, keyword, locale);
 				const [bestMatch] = fieldMatches;
 				if (bestMatch === undefined) {
 					return [];
@@ -249,7 +272,9 @@ export function searchGlobalIndex({
 		.sort(
 			(a, b) =>
 				numberSort(b.score, a.score) ||
-				pinyinSort(a.item.name, b.item.name)
+				(locale.startsWith('zh')
+					? pinyinSort(a.item.name, b.item.name)
+					: compareLocalizedName(a.item.name, b.item.name, locale))
 		)
 		.slice(0, limit);
 }

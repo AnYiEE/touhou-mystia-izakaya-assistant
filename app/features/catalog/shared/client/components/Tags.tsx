@@ -10,11 +10,6 @@ import {
 	type IPressProp,
 } from '@/design/ui/components/pressElement';
 
-import type {
-	TBeverageTagLabel,
-	TFoodTagLabel,
-} from '@/domain/data/tags/types';
-
 import { type ITagStyleConfig } from '@/features/catalog/presentation/tagStyles';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
@@ -25,7 +20,7 @@ interface ITagPropsBase {
 	tagType?: 'negative' | 'positive' | null | undefined;
 }
 
-type TTagLabel = TBeverageTagLabel | TFoodTagLabel;
+type TTagLabel = string;
 
 interface ITagProps
 	extends

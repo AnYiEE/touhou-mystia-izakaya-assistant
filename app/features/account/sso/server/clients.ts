@@ -1,5 +1,6 @@
 import { type Transaction } from 'kysely';
 
+import type { TSsoClientNameTranslations } from '@/features/account/contracts';
 import { checkFixedLengthEqual } from '@/features/account/server/auth/crypto';
 import { getAccountDatabase } from '@/features/account/server/persistence/database';
 
@@ -11,6 +12,7 @@ import {
 	checkSsoClientSecret,
 	checkSsoRedirectUriFormat,
 	normalizeNullableString,
+	readSsoClientNameTranslations,
 	validateSsoClientConfig,
 } from './validation';
 
@@ -19,11 +21,13 @@ export interface ISsoClient extends Omit<
 	| 'custom_scheme_redirect_uris'
 	| 'https_redirect_uris'
 	| 'loopback_redirect_paths'
+	| 'name_translations_json'
 	| 'secret_hashes'
 > {
 	custom_scheme_redirect_uris: string[];
 	https_redirect_uris: string[];
 	loopback_redirect_paths: string[];
+	name_translations: TSsoClientNameTranslations;
 	secret_hashes: string[];
 }
 
@@ -89,6 +93,9 @@ export function parseSsoClient(
 		custom_scheme_redirect_uris: customSchemeRedirectUris,
 		https_redirect_uris: httpsRedirectUris,
 		loopback_redirect_paths: loopbackRedirectPaths,
+		name_translations: readSsoClientNameTranslations(
+			record.name_translations_json
+		),
 		secret_hashes: secretHashes,
 		status_callback_url: normalizeNullableString(
 			record.status_callback_url

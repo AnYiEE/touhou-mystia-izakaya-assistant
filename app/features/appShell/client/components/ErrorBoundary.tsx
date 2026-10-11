@@ -6,16 +6,36 @@ import {
 	type PropsWithChildren,
 	memo,
 	useCallback,
+	useMemo,
 } from 'react';
 
 import {
 	trackEvent,
 	trackEventWithoutInteractionCount,
 } from '@/features/analytics/client/trackEvent';
+import {
+	type TAppShellMessageKey,
+	appShellMessages,
+} from '@/features/appShell/client/messages';
 import { SITE_LINKS } from '@/features/appShell/links';
+import {
+	readLocaleMirrorPreference,
+	resolveEffectiveLocale,
+} from '@/features/preferences/client/state/localeMirror';
 import { clearSavedLocalDataBeforeReload } from '@/features/recommendations/client/cache/clearSavedData';
 
+import { DEFAULT_LOCALE, type TLocale } from '@/shared/i18n/locale';
+import { type TMessageParams, translate } from '@/shared/i18n/messages';
+import { isChinaSurfaceLocale } from '@/shared/site/chinaSurfaces';
+
 const links = SITE_LINKS;
+
+function resolveErrorLocale(): TLocale {
+	const preference = readLocaleMirrorPreference();
+	return preference === null
+		? DEFAULT_LOCALE
+		: resolveEffectiveLocale(preference);
+}
 
 interface IErrorFallbackProps {
 	error: Error | null;
@@ -26,6 +46,15 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 	error,
 	info,
 }) {
+	const locale = useMemo(resolveErrorLocale, []);
+	const shouldShowChinaSurfaces = isChinaSurfaceLocale(locale);
+
+	const t = useCallback(
+		(key: TAppShellMessageKey, params?: TMessageParams) =>
+			translate(appShellMessages, locale, key, params),
+		[locale]
+	);
+
 	const handleButtonPress = useCallback(async (shouldClear: boolean) => {
 		if (shouldClear) {
 			await clearSavedLocalDataBeforeReload();
@@ -58,51 +87,65 @@ export const ErrorFallback = memo<IErrorFallbackProps>(function ErrorFallback({
 		[handleButtonPress]
 	);
 
-	const handleLinkPress = useCallback((number: number) => {
-		trackEvent(
-			trackEvent.category.click,
-			'Link',
-			`error:QQ group ${number}`
-		);
+	const handleLinkPress = useCallback((target: string) => {
+		trackEvent(trackEvent.category.click, 'Link', `error:${target}`);
 	}, []);
 
 	return (
 		<div className="space-y-3 p-4">
-			<h1 className="text-2xl font-bold">出错啦！以下是错误信息：</h1>
+			<h1 className="text-2xl font-bold">{t('appShell.error.title')}</h1>
 			<p className="text-large">{error?.toString()}</p>
 			<pre className="space-y-2 whitespace-pre-wrap break-all font-mono">
 				<code>{error?.stack}</code>
 				<code>{info?.componentStack}</code>
 			</pre>
-			<Button>点此重试（仅刷新页面）</Button>
-			<Button shouldClear>点此重试（将清空已保存的数据）</Button>
-			<p className="text-center text-small">
-				请完整复制或截图上方的错误信息，点击加入
-				<a
-					href={links.qqGroup1.href}
-					referrerPolicy="same-origin"
-					target="_blank"
-					onClick={() => {
-						handleLinkPress(1);
-					}}
-					className="font-medium text-primary hover:underline hover:underline-offset-2 active:underline active:underline-offset-2"
-				>
-					{links.qqGroup1.label}
-				</a>
-				或
-				<a
-					href={links.qqGroup2.href}
-					referrerPolicy="same-origin"
-					target="_blank"
-					onClick={() => {
-						handleLinkPress(2);
-					}}
-					className="font-medium text-primary hover:underline hover:underline-offset-2 active:underline active:underline-offset-2"
-				>
-					{links.qqGroup2.label}
-				</a>
-				以反馈问题。
-			</p>
+			<Button>{t('appShell.error.retry')}</Button>
+			<Button shouldClear>{t('appShell.error.retryAndClear')}</Button>
+			{shouldShowChinaSurfaces ? (
+				<p className="text-center text-small">
+					{t('appShell.error.feedbackPrefix')}
+					<a
+						href={links.qqGroup1.href}
+						referrerPolicy="same-origin"
+						target="_blank"
+						onClick={() => {
+							handleLinkPress('QQ group 1');
+						}}
+						className="font-medium text-primary hover:underline hover:underline-offset-2 active:underline active:underline-offset-2"
+					>
+						{t('appShell.links.qqGroup1')}
+					</a>
+					{t('appShell.error.feedbackMiddle')}
+					<a
+						href={links.qqGroup2.href}
+						referrerPolicy="same-origin"
+						target="_blank"
+						onClick={() => {
+							handleLinkPress('QQ group 2');
+						}}
+						className="font-medium text-primary hover:underline hover:underline-offset-2 active:underline active:underline-offset-2"
+					>
+						{t('appShell.links.qqGroup2')}
+					</a>
+					{t('appShell.error.feedbackSuffix')}
+				</p>
+			) : (
+				<p className="text-center text-small">
+					{t('appShell.error.feedbackGithubPrefix')}
+					<a
+						href={links.githubIssues.href}
+						referrerPolicy="same-origin"
+						target="_blank"
+						onClick={() => {
+							handleLinkPress('GitHub issues');
+						}}
+						className="font-medium text-primary hover:underline hover:underline-offset-2 active:underline active:underline-offset-2"
+					>
+						{t('appShell.links.githubIssues')}
+					</a>
+					{t('appShell.error.feedbackGithubSuffix')}
+				</p>
+			)}
 		</div>
 	);
 });

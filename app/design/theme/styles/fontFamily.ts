@@ -4,7 +4,7 @@ import type { TThemeConfig } from '../types';
 export const fontFamily = {
 	mono: [
 		'var(--font-noto-sans-mono)',
-		'var(--font-noto-sans-sc)',
+		'var(--font-cjk-sans)',
 		'"DejaVu Sans Code"',
 		'"Source Code Pro"',
 		'"JetBrains Mono"',
@@ -41,7 +41,7 @@ export const fontFamily = {
 	],
 	sans: [
 		'var(--font-noto-sans)',
-		'var(--font-noto-sans-sc)',
+		'var(--font-cjk-sans)',
 		'-apple-system',
 		'BlinkMacSystemFont',
 		'"Helvetica Neue"',

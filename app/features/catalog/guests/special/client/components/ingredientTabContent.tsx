@@ -3,14 +3,15 @@ import { memo, useCallback, useMemo } from 'react';
 import Placeholder from '@/design/ui/components/placeholder';
 
 import type { TIngredientId } from '@/domain/data/ingredients/types';
-import { DARK_MATTER_META_MAP } from '@/domain/data/tags/tagFacts';
 
 import IngredientTabContentSkeleton from '@/features/catalog/guests/shared/client/components/ingredientTabContentSkeleton';
 import IngredientTabItemPresenter from '@/features/catalog/guests/shared/client/components/ingredientTabItemPresenter';
 import type { IIngredientTabContentProps } from '@/features/catalog/guests/shared/ingredientTabContracts';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 interface IProps extends IIngredientTabContentProps {}
@@ -19,6 +20,7 @@ export default memo<IProps>(function IngredientTabContent({
 	ingredientTabStyle,
 	sortedData,
 }) {
+	const { t } = useI18n(catalogGuestsMessages);
 	const vibrate = useVibrate();
 
 	const currentSpecialGuest = specialGuestStore.shared.guest.id.use();
@@ -60,7 +62,7 @@ export default memo<IProps>(function IngredientTabContent({
 	if (checkLengthEmpty(sortedData)) {
 		return (
 			<Placeholder className="pt-4 md:min-h-40 md:pt-0">
-				数据为空
+				{t('guests.table.empty')}
 			</Placeholder>
 		);
 	}
@@ -121,7 +123,26 @@ export default memo<IProps>(function IngredientTabContent({
 							: isNoChange
 								? ''
 								: score;
-				const tooltipContent = `点击：加入额外食材【${name}】${isNoChange ? '' : `，${isDarkIngredient ? `制作【${DARK_MATTER_META_MAP.name}】` : isLowestRestricted ? '最低评级受限' : isHighestRestricted ? '最高评级受限' : `匹配度${score}${isOrderTag ? '（点单需求）' : ''}`}`}`;
+				const tooltipSuffix = isNoChange
+					? ''
+					: isDarkIngredient
+						? t('guests.ingredient.craftDarkMatter', {
+								name: t('guests.ingredient.darkMatter'),
+							})
+						: isLowestRestricted
+							? t('guests.ingredient.lowestRestricted')
+							: isHighestRestricted
+								? t('guests.ingredient.highestRestricted')
+								: `${t('guests.ingredient.score', { score })}${
+										isOrderTag
+											? t(
+													'guests.ingredient.orderTagSuffix'
+												)
+											: ''
+									}`;
+				const tooltipContent = `${t('guests.ingredient.addTipPrefix', {
+					name,
+				})}${tooltipSuffix}`;
 
 				return (
 					<IngredientTabItemPresenter

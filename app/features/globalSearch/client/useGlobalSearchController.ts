@@ -283,10 +283,12 @@ export function useGlobalSearchController() {
 				'Select Prefix Suggestion',
 				`${suggestion.kind}:${suggestion.key}`
 			);
-			setQuery((value) => insertPrefixSuggestion(value, suggestion));
+			setQuery((value) =>
+				insertPrefixSuggestion(value, suggestion, model.locale)
+			);
 			inputRef.current?.focus();
 		},
-		[trackGlobalSearchAction, vibrate]
+		[model.locale, trackGlobalSearchAction, vibrate]
 	);
 
 	const handleFieldValueSuggestionPress = useCallback(
@@ -384,7 +386,8 @@ export function useGlobalSearchController() {
 					hasExactMatch: (fieldCondition) =>
 						checkGlobalSearchFieldConditionHasExactValue(
 							fieldCondition,
-							model.fieldValueCache
+							model.fieldValueCache,
+							model.locale
 						),
 					value: query,
 				}) ?? getPrefixTokenDeletionRange(query, selectionStart);

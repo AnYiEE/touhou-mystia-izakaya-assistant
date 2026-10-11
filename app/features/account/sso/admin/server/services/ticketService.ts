@@ -52,16 +52,14 @@ export interface IAdminSsoTicketMutationInput {
 	userAgent?: string | null;
 }
 
-function checkPagination(options: IAdminSsoTicketListOptions) {
-	return checkAdminPagination(options);
-}
-
 function checkTicketStatusFilter(value: TAdminSsoTicketStatus | undefined) {
 	return [undefined, 'expired', 'pending', 'revoked', 'used'].includes(value);
 }
 
 function checkListOptions(options: IAdminSsoTicketListOptions) {
-	return checkPagination(options) && checkTicketStatusFilter(options.status);
+	return (
+		checkAdminPagination(options) && checkTicketStatusFilter(options.status)
+	);
 }
 
 function normalizeReason(value: string | undefined) {

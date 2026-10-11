@@ -26,6 +26,10 @@ export class CookerCatalog extends RecordCatalog<TCookers> {
 		TSpecialGuestId,
 		TCookerId | null
 	>();
+	private static readonly _cookerIdByTypeCache = new Map<
+		TCookerTypeId,
+		TCookerId | undefined
+	>();
 
 	public static getInstance() {
 		if (CookerCatalog._instance !== undefined) {
@@ -51,8 +55,23 @@ export class CookerCatalog extends RecordCatalog<TCookers> {
 		return COOKER_SERIES_LABEL_MAP[series];
 	}
 
-	public getTypeLabelById(type: keyof typeof COOKER_TYPE_LABEL_MAP) {
-		return COOKER_TYPE_LABEL_MAP[type];
+	public getTypeLabelById(type: TCookerTypeId) {
+		const cookerId = CookerCatalog._cookerIdByTypeCache.getOrInsertComputed(
+			type,
+			() =>
+				COOKER_LIST.find(({ availableTypes }) =>
+					// eslint-disable-next-line unicorn/prefer-includes -- The record tuple union gives includes() a never parameter.
+					availableTypes.some(
+						(availableType) => availableType === type
+					)
+				)?.id
+		);
+		const name =
+			cookerId === undefined
+				? null
+				: this.getDisplayPropsById(cookerId, 'name');
+
+		return name ?? COOKER_TYPE_LABEL_MAP[type];
 	}
 
 	public getIdByTypeAndSeries(

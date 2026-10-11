@@ -55,10 +55,6 @@ export interface IAdminSsoGrantEventListOptions {
 	userId?: string;
 }
 
-function checkPagination(options: IAdminSsoGrantEventListOptions) {
-	return checkAdminPagination(options);
-}
-
 function checkGrantEvent(value: TAdminSsoGrantEvent | undefined) {
 	return [
 		undefined,
@@ -76,7 +72,7 @@ function checkActorType(value: TSsoActorType | undefined) {
 
 function checkListOptions(options: IAdminSsoGrantEventListOptions) {
 	return (
-		checkPagination(options) &&
+		checkAdminPagination(options) &&
 		checkGrantEvent(options.event) &&
 		checkActorType(options.actorType) &&
 		checkAdminTimeRange(options)

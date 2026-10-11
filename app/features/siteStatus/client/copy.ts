@@ -1,8 +1,13 @@
-export const SITE_VISITOR_STATUS_MESSAGE_MAP = {
-	failed: '获取在线人数失败',
-	loading: '正在获取在线人数',
+import type { TSiteTranslate } from './messages';
+
+export const SITE_VISITOR_STATUS_MESSAGE_KEYS = {
+	failed: 'siteStatus.failed',
+	loading: 'siteStatus.loading',
 } as const;
 
-export function createSiteVisitorCountMessage(visitorCount: number) {
-	return `实时${visitorCount}人在线`;
+export function createSiteVisitorCountMessage(
+	visitorCount: number,
+	t: TSiteTranslate
+) {
+	return t('siteStatus.visitors', { count: visitorCount });
 }

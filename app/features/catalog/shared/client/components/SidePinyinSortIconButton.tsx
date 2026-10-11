@@ -9,12 +9,15 @@ import FontAwesomeIconButton, {
 } from '@/design/ui/components/fontAwesomeIconButton';
 import Tooltip from '@/design/ui/components/tooltip';
 
+import { catalogSharedMessages } from '@/features/catalog/shared/client/messages';
 import {
 	type IPinyinSortConfig,
 	PINYIN_SORT_STATE_MAP,
 	type TPinyinSortState,
 } from '@/features/catalog/shared/state/pinyinSort';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps extends Omit<
 	IFontAwesomeIconButtonProps,
@@ -32,6 +35,7 @@ export default memo<IProps>(function SidePinyinSortIconButton({
 	pinyinSortConfig: { pinyinSortState, setPinyinSortState },
 	...props
 }) {
+	const { t } = useI18n(catalogSharedMessages);
 	const vibrate = useVibrate();
 
 	const handlePress = useCallback(() => {
@@ -39,13 +43,13 @@ export default memo<IProps>(function SidePinyinSortIconButton({
 		setPinyinSortState(getNextPinyinSortState(pinyinSortState));
 	}, [pinyinSortState, setPinyinSortState, vibrate]);
 
-	const label = `拼音排序（${
+	const label = t(
 		pinyinSortState === PINYIN_SORT_STATE_MAP.none
-			? '未激活'
+			? 'catalog.pinyinSort.none'
 			: pinyinSortState === PINYIN_SORT_STATE_MAP.ascending
-				? '已激活：升序'
-				: '已激活：降序'
-	}）`;
+				? 'catalog.pinyinSort.ascending'
+				: 'catalog.pinyinSort.descending'
+	);
 
 	return (
 		<Tooltip showArrow content={label} placement="left">

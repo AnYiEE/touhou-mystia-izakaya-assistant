@@ -1,5 +1,5 @@
-import type { TCollectionPointReference } from '@/domain/data/places/types';
 import { getCollectionPointReferenceKey } from '@/domain/data/places/collectionFacts';
+import type { TCollectionPointReference } from '@/domain/data/places/types';
 
 import type { IAvailabilityAcquisitionSource } from './types';
 

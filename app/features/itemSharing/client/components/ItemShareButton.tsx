@@ -15,6 +15,7 @@ import Tooltip from '@/design/ui/components/tooltip';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { useParams } from '@/features/appShell/client/navigation/useParams';
+import { itemSharingMessages } from '@/features/itemSharing/client/messages';
 import {
 	type TShareableItemId,
 	type TShareableItemName,
@@ -25,6 +26,9 @@ import {
 } from '@/features/itemSharing/shareUrl';
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
+
+import { useI18n } from '@/shared/i18n/useI18n';
+import { siteMessages } from '@/shared/site/messages';
 
 const SHARE_SNIPPET_CLASS_NAMES = {
 	pre: 'flex max-w-screen-p-60 items-center whitespace-normal break-all',
@@ -37,6 +41,8 @@ interface IItemShareButtonProps {
 
 export const ItemShareButton = memo<IItemShareButtonProps>(
 	function ItemShareButton({ name, recordId }) {
+		const { t } = useI18n(itemSharingMessages);
+		const { t: tSite } = useI18n(siteMessages);
 		const { params } = useParams();
 
 		const generatedUrl = useMemo(
@@ -50,8 +56,15 @@ export const ItemShareButton = memo<IItemShareButtonProps>(
 		);
 
 		const shareObject = useMemo<ShareData>(
-			() => createItemShareData(name, generatedUrl),
-			[generatedUrl, name]
+			() =>
+				createItemShareData(
+					t('itemSharing.shareText', {
+						name,
+						site: tSite('site.name'),
+					}),
+					generatedUrl
+				),
+			[generatedUrl, name, t, tSite]
 		);
 
 		const isCanShare = useMemo(() => {
@@ -70,7 +83,7 @@ export const ItemShareButton = memo<IItemShareButtonProps>(
 			trackEvent(trackEvent.category.click, 'Share Button', name);
 		}, [isCanShare, name, shareObject]);
 
-		const label = '点击：分享到当前选中项的链接';
+		const label = t('itemSharing.shareLabel');
 
 		return (
 			<>
@@ -101,7 +114,7 @@ export const ItemShareButton = memo<IItemShareButtonProps>(
 					</Tooltip>
 					<PopoverContent>
 						<p className="mr-4 cursor-default select-none self-end text-right text-tiny text-default-500">
-							点击以复制到当前选中项的链接↓
+							{t('itemSharing.copyHint')}
 						</p>
 						<Snippet
 							disableTooltip

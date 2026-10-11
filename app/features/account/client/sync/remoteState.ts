@@ -37,7 +37,6 @@ import {
 	pauseDirtyEntryWithConflict,
 	restoreAccountSyncConflict,
 	routePausedConflictMergeResult,
-	setAccountSyncConflict,
 } from './conflictOrchestration';
 import {
 	readAccountSyncConflictResolutionJournal,
@@ -114,6 +113,7 @@ import {
 	replaceAccountSyncConflicts,
 	setAccountSyncConflictResolutionReadinesses,
 	setAccountSyncFutureStateIsolated,
+	upsertAccountSyncConflict,
 } from './syncRuntimeState';
 
 export function checkBroadcastStateEpoch(
@@ -289,7 +289,7 @@ function applyRemoteStatePreservingDirtyUnlocked({
 					userId
 				);
 				if (restoredConflict !== null) {
-					setAccountSyncConflict(restoredConflict);
+					upsertAccountSyncConflict(restoredConflict);
 					preserveNamespaceSet.add(entry.namespace);
 				}
 				return;

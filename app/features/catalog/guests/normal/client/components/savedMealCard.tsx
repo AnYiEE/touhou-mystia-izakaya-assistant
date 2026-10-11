@@ -12,7 +12,7 @@ import { PopoverTrigger } from '@/design/ui/components/popover';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
-import { GUEST_RATING_MAP } from '@/domain/evaluation/labels';
+import { getEvaluationLabelByKey } from '@/domain/evaluation/localizedLabels';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
@@ -31,10 +31,13 @@ import {
 	removeFirstMatchingMeal,
 } from '@/features/catalog/guests/shared/mealPlanning/savedMealEquality';
 import { swapSavedMeals } from '@/features/catalog/guests/shared/mealPlanning/swapSavedMeals';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import { usePictureInPicture } from '@/features/itemSharing/client/hooks/usePictureInPicture';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 const cookerCatalog = CookerCatalog.getInstance();
 const RATING_AVATAR_CLASS_NAMES = {
@@ -43,6 +46,7 @@ const RATING_AVATAR_CLASS_NAMES = {
 
 export default function NormalGuestSavedMealCard() {
 	const { isHighAppearance } = useDesignPreferences();
+	const { t } = useI18n(catalogGuestsMessages);
 	const {
 		CLASSNAME_EXCLUDE_FROM_PIP,
 		PipButton,
@@ -50,15 +54,14 @@ export default function NormalGuestSavedMealCard() {
 		isOpen: isPipOpen,
 		isSupported: isPipSupported,
 	} = usePictureInPicture({ offset: { height: 32 }, width: 468 });
-	const openWindow = useViewInNewWindow();
-	const vibrate = useVibrate();
-
 	const {
 		animateSavedMealRemove,
 		animateSavedMealSwap,
 		registerSavedMealContent,
 		registerSavedMealRow,
 	} = useSavedMealReorderAnimation();
+	const openWindow = useViewInNewWindow();
+	const vibrate = useVibrate();
 
 	const cardClassNames = useMemo(
 		() => ({
@@ -94,7 +97,10 @@ export default function NormalGuestSavedMealCard() {
 	const currentGuestName =
 		currentNormalGuest === null
 			? null
-			: normalGuestCatalog.getPropsById(currentNormalGuest, 'name');
+			: normalGuestCatalog.getDisplayPropsById(
+					currentNormalGuest,
+					'name'
+				);
 
 	let content: IFadeMotionDivProps['children'];
 	let contentTarget: IFadeMotionDivProps['target'];
@@ -188,10 +194,10 @@ export default function NormalGuestSavedMealCard() {
 			const beverageName =
 				beverage === null
 					? null
-					: beverageCatalog.getPropsById(beverage, 'name');
+					: beverageCatalog.getDisplayPropsById(beverage, 'name');
 			const extraIngredientNames = foodData.extraIngredients.map(
 				(ingredient) =>
-					ingredientCatalog.getPropsById(ingredient, 'name')
+					ingredientCatalog.getDisplayPropsById(ingredient, 'name')
 			);
 			trackEvent(
 				trackEvent.category.click,
@@ -225,7 +231,9 @@ export default function NormalGuestSavedMealCard() {
 									>
 										{(() => {
 											const rating =
-												GUEST_RATING_MAP[ratingKey];
+												getEvaluationLabelByKey(
+													ratingKey
+												);
 											return (
 												<RatingAvatarShell
 													color={ratingKey}
@@ -270,7 +278,10 @@ export default function NormalGuestSavedMealCard() {
 														recipe.cookerType,
 														0
 													);
-												const cookerLabel = `点击：在新窗口中查看厨具【${cookerTypeLabel}】的详情`;
+												const cookerLabel = t(
+													'guests.savedMeal.viewCookerTip',
+													{ name: cookerTypeLabel }
+												);
 												return (
 													<Tooltip
 														showArrow
@@ -304,7 +315,10 @@ export default function NormalGuestSavedMealCard() {
 														foodData.recipeId
 													);
 												const foodName = food.name;
-												const foodLabel = `点击：在新窗口中查看料理【${foodName}】的详情`;
+												const foodLabel = t(
+													'guests.table.viewFoodTip',
+													{ name: foodName }
+												);
 												return (
 													<Tooltip
 														showArrow
@@ -333,11 +347,14 @@ export default function NormalGuestSavedMealCard() {
 											{beverage !== null &&
 												(() => {
 													const beverageName =
-														beverageCatalog.getPropsById(
+														beverageCatalog.getDisplayPropsById(
 															beverage,
 															'name'
 														);
-													const beverageLabel = `点击：在新窗口中查看酒水【${beverageName}】的详情`;
+													const beverageLabel = t(
+														'guests.table.viewBeverageTip',
+														{ name: beverageName }
+													);
 													return (
 														<>
 															<Plus size={0.75} />
@@ -380,7 +397,7 @@ export default function NormalGuestSavedMealCard() {
 												openWindow(
 													'ingredients',
 													ingredient,
-													ingredientCatalog.getPropsById(
+													ingredientCatalog.getDisplayPropsById(
 														ingredient,
 														'name'
 													)
@@ -459,14 +476,14 @@ export default function NormalGuestSavedMealCard() {
 											const beverageName =
 												beverage === null
 													? null
-													: beverageCatalog.getPropsById(
+													: beverageCatalog.getDisplayPropsById(
 															beverage,
 															'name'
 														);
 											const extraIngredientNames =
 												foodData.extraIngredients.map(
 													(ingredient) =>
-														ingredientCatalog.getPropsById(
+														ingredientCatalog.getDisplayPropsById(
 															ingredient,
 															'name'
 														)

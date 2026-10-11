@@ -31,7 +31,6 @@ import { createSnapshotHash } from './snapshotHash';
 import {
 	type IDirtyQueueIntent,
 	type TDirtyQueueIntentPayload,
-	createDirtyQueueIntentHash,
 } from './validation';
 
 function checkDirtyQueueEntriesSameGeneration(
@@ -133,7 +132,7 @@ function commitDirtyQueueStorageTransition({
 	} satisfies TDirtyQueueIntentPayload;
 	const intent = {
 		...intentPayload,
-		intentHash: createDirtyQueueIntentHash(intentPayload),
+		intentHash: createSnapshotHash(intentPayload),
 	} satisfies IDirtyQueueIntent;
 	writeDirtyQueueIntent(intent);
 	if (!checkGeneration()) {
@@ -252,7 +251,7 @@ export function replaceDirtyQueueCollisionIfCurrent({
 	} satisfies TDirtyQueueIntentPayload;
 	const intent = {
 		...intentPayload,
-		intentHash: createDirtyQueueIntentHash(intentPayload),
+		intentHash: createSnapshotHash(intentPayload),
 	} satisfies IDirtyQueueIntent;
 	writeDirtyQueueIntent(intent);
 	if (!checkGeneration()) {

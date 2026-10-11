@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
 	const [authModule, csrfModule] = await Promise.all([
 		import('@/features/account/server/auth/requestAuthentication'),
-		import('@/features/account/server/auth/accountCsrf'),
+		import('@/features/account/server/auth/csrf'),
 	]);
 	const auth = await authModule.authenticateAccountFromRequest(request);
 	if (auth.status === 'error') {
@@ -95,10 +95,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	if (
-		!csrfModule.verifyAccountCsrfToken(
-			body.csrf_token,
-			auth.data.sessionTokenHash
-		)
+		!csrfModule.verifyCsrfToken(body.csrf_token, auth.data.sessionTokenHash)
 	) {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.forbidden,

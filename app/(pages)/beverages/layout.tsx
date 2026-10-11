@@ -1,21 +1,22 @@
 import { type Metadata } from 'next';
 
-import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
+import {
+	buildCatalogPageMetadata,
+	readLocalizedCatalogNames,
+	readMetadataLocaleContext,
+} from '@/features/appShell/seo/pageMetadata';
 
-import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
+export async function generateMetadata(): Promise<Metadata> {
+	const { isPrefixed, locale } = await readMetadataLocaleContext();
+	const names = await readLocalizedCatalogNames('/beverages', locale, 10);
 
-import { SITE_METADATA } from '@/shared/site/metadata';
-
-const { description, keywords } = SITE_METADATA;
-
-const beverages = BeverageCatalog.getInstance().getNames(10);
-const title = getPageTitle('/beverages');
-
-export const metadata: Metadata = {
-	title,
-
-	description: `本页面可以查询${beverages.join('、')}等${title}的详情。${description}`,
-	keywords: keywords.toSpliced(18, Infinity, ...beverages),
-};
+	return buildCatalogPageMetadata({
+		descriptionKey: 'site.seo.description.details',
+		href: '/beverages',
+		isPrefixed,
+		locale,
+		names,
+	});
+}
 
 export { default } from '@/features/preferences/client/components/PreferencesModalLayout';

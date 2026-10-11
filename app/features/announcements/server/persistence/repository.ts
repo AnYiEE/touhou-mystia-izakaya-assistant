@@ -326,6 +326,7 @@ export async function upsertAnnouncementDismissal(
 				.columns([
 					'user_id',
 					'announcement_id',
+					'locale',
 					'announcement_updated_at',
 				])
 				.doUpdateSet({

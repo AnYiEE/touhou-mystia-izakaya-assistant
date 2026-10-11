@@ -14,8 +14,8 @@ import { clothesStore } from '@/features/catalog/items/clothes/client/state/stor
 import { cookersStore } from '@/features/catalog/items/cookers/client/state/store';
 import { currencyItemsStore } from '@/features/catalog/items/currencyItems/client/state/store';
 import { decorationsStore } from '@/features/catalog/items/decorations/client/state/store';
-import { foodsStore } from '@/features/catalog/items/foods/client/state/store';
 import { fishingCollectiblesStore } from '@/features/catalog/items/fishingCollectibles/client/state/store';
+import { foodsStore } from '@/features/catalog/items/foods/client/state/store';
 import { generalItemsStore } from '@/features/catalog/items/generalItems/client/state/store';
 import { ingredientsStore } from '@/features/catalog/items/ingredients/client/state/store';
 import { partnersStore } from '@/features/catalog/items/partners/client/state/store';

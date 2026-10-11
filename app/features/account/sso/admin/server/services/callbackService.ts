@@ -104,10 +104,6 @@ interface IAdminSsoCallbackMutationInput {
 	userAgent?: string | null;
 }
 
-function checkPagination(options: { page: number; pageSize: number }) {
-	return checkAdminPagination(options);
-}
-
 function checkCallbackEvent(value: TAdminSsoCallbackEvent | undefined) {
 	return value === undefined || SSO_CALLBACK_EVENT_LIST.includes(value);
 }
@@ -174,7 +170,7 @@ function checkQueueStatus(value: TAdminSsoCallbackQueueStatus | undefined) {
 
 function checkListOptions(options: IAdminSsoCallbackDeliveryListOptions) {
 	return (
-		checkPagination(options) &&
+		checkAdminPagination(options) &&
 		checkCallbackEvent(options.event) &&
 		checkDeliveryStatus(options.status) &&
 		checkAdminTimeRange(options)
@@ -183,7 +179,7 @@ function checkListOptions(options: IAdminSsoCallbackDeliveryListOptions) {
 
 function checkQueueListOptions(options: IAdminSsoCallbackQueueListOptions) {
 	return (
-		checkPagination(options) &&
+		checkAdminPagination(options) &&
 		checkCallbackEvent(options.event) &&
 		checkQueueStatus(options.status) &&
 		checkAdminTimeRange(options)

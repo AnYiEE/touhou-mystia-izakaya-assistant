@@ -1,5 +1,5 @@
-import type { IGuestBase } from '@/domain/data/shared/guestSchema';
 import type { TCollaborationLabel } from '@/domain/data/labels/collaborationFacts';
+import type { IGuestBase } from '@/domain/data/shared/guestSchema';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 
 interface ISpellCard {

@@ -8,11 +8,11 @@ import {
 	compareIngredientTypes,
 } from '@/domain/data/ingredients/ingredientFacts';
 import type { TIngredientTypeId } from '@/domain/data/ingredients/types';
-import { FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import { compareMapCanonicalOrder } from '@/domain/places/mapOrdering';
 
 import { filterIngredientData } from '@/features/catalog/items/ingredients/client/queries/filterIngredientData';
 import { ingredientsStore } from '@/features/catalog/items/ingredients/client/state/store';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import ItemPage from '@/features/catalog/shared/client/components/ItemPage';
 import SideButtonGroup from '@/features/catalog/shared/client/components/SideButtonGroup';
 import SideFilterIconButton, {
@@ -21,10 +21,12 @@ import SideFilterIconButton, {
 import SidePinyinSortIconButton from '@/features/catalog/shared/client/components/SidePinyinSortIconButton';
 import { useFilteredData } from '@/features/catalog/shared/client/hooks/useFilteredData';
 import { useSortedData } from '@/features/catalog/shared/client/hooks/useSortedData';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
+import { compareFoodTagLabels } from '@/features/catalog/shared/client/localization/tagLabels';
 import { type IPinyinSortConfig } from '@/features/catalog/shared/state/pinyinSort';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import IngredientCatalog from './IngredientCatalog';
 
@@ -37,6 +39,9 @@ function parseIngredientTypeKeys(keys: string[]) {
 }
 
 export default function IngredientsCatalogPage() {
+	const catalogLocalizationRevision = useCatalogLocalizationRevision();
+	const { t } = useI18n(catalogItemsMessages);
+
 	const currentPopularTrend = ingredientsStore.shared.popularTrend.use();
 	const isFamousShop = ingredientsStore.shared.famousShop.use();
 
@@ -96,22 +101,24 @@ export default function IngredientsCatalogPage() {
 	const filterPlaces = ingredientsStore.persistence.filters.places.use();
 	const filterNoPlaces = ingredientsStore.persistence.filters.noPlaces.use();
 
-	const dataWithTrend = useMemo(
-		() =>
-			instance.data.map((data) => ({
-				...data,
-				tags: instance
-					.calculateIngredientTagsWithTrend(
-						data.tags,
-						currentPopularTrend,
-						isFamousShop
-					)
-					.sort((a, b) =>
-						pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b])
-					),
-			})) as unknown as typeof instance.data,
-		[currentPopularTrend, instance, isFamousShop]
-	);
+	const dataWithTrend = useMemo(() => {
+		void catalogLocalizationRevision;
+		return instance.data.map((data) => ({
+			...data,
+			tags: instance
+				.calculateIngredientTagsWithTrend(
+					data.tags,
+					currentPopularTrend,
+					isFamousShop
+				)
+				.sort(compareFoodTagLabels),
+		})) as unknown as typeof instance.data;
+	}, [
+		catalogLocalizationRevision,
+		currentPopularTrend,
+		instance,
+		isFamousShop,
+	]);
 
 	const filterData = useCallback(
 		() =>
@@ -161,7 +168,7 @@ export default function IngredientsCatalogPage() {
 		() => [
 			{
 				items: availableContentDlcs,
-				label: '内容归属',
+				label: t('items.filter.contentDlc'),
 				selectedKeys: filterContentDlcs,
 				setSelectedKeys:
 					ingredientsStore.persistence.filters.contentDlcs.set,
@@ -172,7 +179,7 @@ export default function IngredientsCatalogPage() {
 				: [
 						{
 							items: availableAvailabilityDlcs,
-							label: '可获取于',
+							label: t('items.filter.acquirableAt'),
 							selectedKeys: filterAvailabilityDlcs,
 							setSelectedKeys:
 								ingredientsStore.persistence.filters
@@ -182,14 +189,14 @@ export default function IngredientsCatalogPage() {
 					]),
 			{
 				items: availableTags,
-				label: '食材标签（包含）',
+				label: t('items.filter.ingredientTagInclude'),
 				selectedKeys: filterTags,
 				setSelectedKeys: ingredientsStore.persistence.filters.tags.set,
 				valueType: 'foodTag',
 			},
 			{
 				items: availableTags,
-				label: '食材标签（排除）',
+				label: t('items.filter.ingredientTagExclude'),
 				selectedKeys: filterNoTags,
 				setSelectedKeys:
 					ingredientsStore.persistence.filters.noTags.set,
@@ -197,28 +204,28 @@ export default function IngredientsCatalogPage() {
 			},
 			{
 				items: availableTypeOptions,
-				label: '食材类别（包含）',
+				label: t('items.filter.ingredientTypeInclude'),
 				selectedKeys: filterTypeKeys,
 				setSelectedKeys: setFilterTypeKeys,
 				valueType: 'ingredientType',
 			},
 			{
 				items: availableTypeOptions,
-				label: '食材类别（排除）',
+				label: t('items.filter.ingredientTypeExclude'),
 				selectedKeys: filterNoTypeKeys,
 				setSelectedKeys: setFilterNoTypeKeys,
 				valueType: 'ingredientType',
 			},
 			{
 				items: availableLevels,
-				label: '等级',
+				label: t('items.filter.level'),
 				selectedKeys: filterLevels,
 				setSelectedKeys:
 					ingredientsStore.persistence.filters.levels.set,
 			},
 			{
 				items: canonicalAvailableMaps,
-				label: '地区（包含）',
+				label: t('items.filter.mapInclude'),
 				selectedKeys: filterPlaces,
 				setSelectedKeys:
 					ingredientsStore.persistence.filters.places.set,
@@ -226,7 +233,7 @@ export default function IngredientsCatalogPage() {
 			},
 			{
 				items: canonicalAvailableMaps,
-				label: '地区（排除）',
+				label: t('items.filter.mapExclude'),
 				selectedKeys: filterNoPlaces,
 				setSelectedKeys:
 					ingredientsStore.persistence.filters.noPlaces.set,
@@ -252,6 +259,7 @@ export default function IngredientsCatalogPage() {
 			isAvailabilityDlcFilterRedundant,
 			setFilterNoTypeKeys,
 			setFilterTypeKeys,
+			t,
 		]
 	);
 

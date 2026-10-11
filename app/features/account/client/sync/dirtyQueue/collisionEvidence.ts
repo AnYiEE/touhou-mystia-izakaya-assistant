@@ -45,7 +45,6 @@ import {
 	checkDirtyQueueConflict,
 	checkFutureSchemaDirtyQueueEntry,
 	checkSyncRevision,
-	createDirtyQueueIntentHash,
 	parseDirtyQueueEvidence,
 	parseDirtyQueueIntent,
 } from './validation';
@@ -559,7 +558,7 @@ export function migrateLegacySpecialGuestPlansDirtyQueueEntry(
 	} satisfies TDirtyQueueIntentPayload;
 	const intent = {
 		...intentPayload,
-		intentHash: createDirtyQueueIntentHash(intentPayload),
+		intentHash: createSnapshotHash(intentPayload),
 	} satisfies IDirtyQueueIntent;
 	try {
 		writeDirtyQueueIntent(intent);

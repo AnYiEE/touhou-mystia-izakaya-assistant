@@ -3,11 +3,15 @@ import isObject from 'lodash/isObject.js';
 import type {
 	IAdminSsoClientCreateBody,
 	IAdminSsoClientUpdateBody,
+	TSsoClientNameTranslations,
 } from '@/features/account/contracts';
 import {
 	normalizeSsoOptionalUri,
 	validateSsoClientConfig,
 } from '@/features/account/sso/server/validation';
+
+import { DEFAULT_LOCALE, isLocale } from '@/shared/i18n/locale';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 const DUMMY_SECRET_HASH = '0'.repeat(64);
 const MAX_SSO_CLIENT_ARRAY_ITEMS = 20;
@@ -43,6 +47,32 @@ function normalizeOptionalUri(value: unknown) {
 	return normalizeSsoOptionalUri(value);
 }
 
+function normalizeNameTranslations(value: unknown) {
+	if (value === undefined) {
+		return {};
+	}
+	if (!checkIsRecord(value)) {
+		return null;
+	}
+
+	const result: TSsoClientNameTranslations = {};
+	for (const [key, entry] of Object.entries(value)) {
+		if (
+			!isLocale(key) ||
+			key === DEFAULT_LOCALE ||
+			typeof entry !== 'string'
+		) {
+			return null;
+		}
+		const normalized = normalizeString(entry);
+		if (normalized !== '') {
+			result[key] = normalized;
+		}
+	}
+
+	return result;
+}
+
 function normalizeInputObject(value: unknown) {
 	return isObject(value) ? (value as Record<string, unknown>) : null;
 }
@@ -72,12 +102,16 @@ function parseBaseClientBody(data: unknown) {
 	const cancelRedirectUri = normalizeOptionalUri(
 		input['cancel_redirect_uri']
 	);
+	const nameTranslations = normalizeNameTranslations(
+		input['name_translations']
+	);
 	if (
 		loopbackRedirectPaths === null ||
 		customSchemeRedirectUris === null ||
 		httpsRedirectUris === null ||
 		statusCallbackUrl === undefined ||
-		cancelRedirectUri === undefined
+		cancelRedirectUri === undefined ||
+		nameTranslations === null
 	) {
 		return null;
 	}
@@ -89,6 +123,7 @@ function parseBaseClientBody(data: unknown) {
 		id: normalizeString(input['id']),
 		loopback_redirect_paths: loopbackRedirectPaths,
 		name: normalizeString(input['name']),
+		name_translations: nameTranslations,
 		status_callback_url: statusCallbackUrl,
 	} satisfies IAdminSsoClientCreateBody;
 }

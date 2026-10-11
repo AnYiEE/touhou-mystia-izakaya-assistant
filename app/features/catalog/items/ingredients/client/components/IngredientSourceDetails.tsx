@@ -17,6 +17,7 @@ import type {
 } from '@/domain/data/places/types';
 
 import { renderSourceReference } from '@/features/catalog/items/shared/client/renderSourceReference';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import {
 	formatCollectionPointYield,
 	formatPrayerYield,
@@ -24,6 +25,7 @@ import {
 	getCollectionPointRefreshTimeHours,
 } from '@/features/catalog/items/shared/sourceReferenceFormatting';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkObjectOrStringEmpty } from '@/shared/utilities/collections/check';
 
 interface IProps {
@@ -32,6 +34,8 @@ interface IProps {
 }
 
 export default function IngredientSourceDetails({ from, id }: IProps) {
+	const { locale, t } = useI18n(catalogItemsMessages);
+
 	if (checkObjectOrStringEmpty(from)) {
 		return null;
 	}
@@ -50,19 +54,30 @@ export default function IngredientSourceDetails({ from, id }: IProps) {
 				const isFishingAdvanced = method === 'fishingAdvanced';
 				const isPrayer = method === 'prayer';
 				const isTask = method === 'task';
-				const probability = `概率${isBuy ? '出售' : '掉落'}`;
+				const probability = t(
+					isBuy
+						? 'items.source.probabilitySell'
+						: 'items.source.probabilityDrop'
+				);
 				const way = isBuy
-					? '购买'
+					? t('items.source.way.buy')
 					: isFishing
-						? '垂钓'
+						? t('items.source.way.fishing')
 						: isFishingAdvanced
-							? '高级垂钓'
+							? t('items.source.way.fishingAdvanced')
 							: isPrayer
-								? '祈愿'
+								? t('items.source.way.prayer')
 								: isTask
-									? '任务'
-									: '采集';
-				const label = `${probability}，使用摆件【${isFishing ? '普通的' : '超级'}钓鱼竿】`;
+									? t('items.source.way.task')
+									: t('items.source.way.collect');
+				const label = t('items.source.fishingRodTooltip', {
+					probability,
+					rod: t(
+						isFishing
+							? 'items.source.fishingRod.normal'
+							: 'items.source.fishingRod.super'
+					),
+				});
 				return (
 					<Fragment key={fromIndex}>
 						<p
@@ -115,7 +130,14 @@ export default function IngredientSourceDetails({ from, id }: IProps) {
 														? null
 														: typeof item[1] ===
 															  'number'
-															? `${item[1]}%${probability}`
+															? t(
+																	'items.source.itemProbability',
+																	{
+																		label: probability,
+																		probability:
+																			item[1],
+																	}
+																)
 															: item[1]
 																? probability
 																: null
@@ -136,7 +158,13 @@ export default function IngredientSourceDetails({ from, id }: IProps) {
 													collectableTimeRange ===
 													null
 														? null
-														: `采集点出现时间：${collectableTimeRange[0]}-${collectableTimeRange[1]}点`;
+														: t(
+																'items.source.spotTime',
+																{
+																	end: collectableTimeRange[1],
+																	start: collectableTimeRange[0],
+																}
+															);
 												const refreshTime = isCollect
 													? getCollectionPointRefreshTimeHours(
 															reference
@@ -145,30 +173,38 @@ export default function IngredientSourceDetails({ from, id }: IProps) {
 												const refreshTimeContent =
 													refreshTime === null
 														? null
-														: `采集点刷新周期：${refreshTime}小时`;
+														: t(
+																'items.source.spotRefresh',
+																{
+																	hours: refreshTime,
+																}
+															);
 												const timingContent =
 													collectableTimeRangeContent !==
 														null &&
 													refreshTimeContent !== null
-														? `${collectableTimeRangeContent}，${refreshTimeContent}`
+														? `${collectableTimeRangeContent}${t('items.source.timingSeparator')}${refreshTimeContent}`
 														: (collectableTimeRangeContent ??
 															refreshTimeContent);
 												const yieldContent = isCollect
 													? formatCollectionPointYield(
 															reference as TCollectionPointReference,
 															1,
-															id
+															id,
+															locale
 														)
 													: isPrayer
 														? formatPrayerYield(
 																reference as IPrayerReference,
 																1,
-																id
+																id,
+																locale
 															)
 														: null;
 												const itemContent =
 													formatSourceReference(
-														reference
+														reference,
+														locale
 													);
 												const tooltipText = [
 													itemProbability,
@@ -181,7 +217,11 @@ export default function IngredientSourceDetails({ from, id }: IProps) {
 														): content is string =>
 															content !== null
 													)
-													.join('；');
+													.join(
+														t(
+															'items.source.tooltipSeparator'
+														)
+													);
 												const tooltipContent =
 													tooltipText ===
 													'' ? null : (
@@ -226,7 +266,7 @@ export default function IngredientSourceDetails({ from, id }: IProps) {
 													</Popover>
 												);
 											})()
-										: renderSourceReference(item)}
+										: renderSourceReference(item, locale)}
 								</Ol.Li>
 							))}
 						</Ol>

@@ -15,11 +15,12 @@ import {
 	type ITableSortDescriptor,
 	type TFoodTableSortKey,
 } from '@/features/catalog/guests/shared/state/tableDescriptors';
+import { getActiveLocalizationLocale } from '@/features/catalog/shared/client/localization/activeLocalizationLocale';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
+import { compareLocalizedName } from '@/shared/utilities/search/localeNameMatch';
 import { type TSearchMatcher } from '@/shared/utilities/search/matchPinyinName';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import {
 	buildPaginateRows,
@@ -33,6 +34,17 @@ function sortFoodRows(
 ) {
 	const { column, direction } = sortDescriptor;
 	const isAscending = direction === 'ascending';
+
+	const compareNames = (
+		left: TFoodSuitabilityRow,
+		right: TFoodSuitabilityRow
+	) =>
+		compareLocalizedName(
+			left.name,
+			right.name,
+			getActiveLocalizationLocale()
+		);
+
 	const compareWithStableFallback = (
 		left: TFoodSuitabilityRow,
 		right: TFoodSuitabilityRow,
@@ -42,7 +54,7 @@ function sortFoodRows(
 			return primaryComparison;
 		}
 
-		const nameComparison = pinyinSort(left.name, right.name);
+		const nameComparison = compareNames(left, right);
 		if (nameComparison !== 0) {
 			return isAscending ? nameComparison : -nameComparison;
 		}
@@ -58,8 +70,8 @@ function sortFoodRows(
 					left,
 					right,
 					isAscending
-						? pinyinSort(left.name, right.name)
-						: pinyinSort(right.name, left.name)
+						? compareNames(left, right)
+						: compareNames(right, left)
 				)
 			);
 		case 'price':

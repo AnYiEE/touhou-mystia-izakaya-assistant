@@ -1,8 +1,11 @@
 import type { GeneralItemCatalog } from '@/domain/catalog/items/GeneralItemCatalog';
 
 import CollectibleCatalog from '@/features/catalog/items/collectibles/client/components/CollectibleCatalog';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import GeneralItemSourceDetails from './GeneralItemSourceDetails';
 
@@ -11,6 +14,7 @@ export default function GeneralItemsCatalog({
 }: {
 	data: TItemData<GeneralItemCatalog>;
 }) {
+	const { t } = useI18n(catalogItemsMessages);
 	const openWindow = useViewInNewWindow();
 
 	return (
@@ -23,7 +27,9 @@ export default function GeneralItemsCatalog({
 					/>
 					{effects.length > 0 && (
 						<p>
-							<span className="font-semibold">效果：</span>
+							<span className="font-semibold">
+								{t('items.source.effect')}
+							</span>
 							{effects.join('；')}
 						</p>
 					)}

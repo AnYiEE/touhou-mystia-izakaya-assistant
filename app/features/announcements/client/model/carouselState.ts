@@ -18,7 +18,8 @@ export interface IAnnouncementTransition {
 }
 
 export function createMaintenanceAnnouncement(
-	maintenance: IDeploymentMaintenancePublicState | null
+	maintenance: IDeploymentMaintenancePublicState | null,
+	title: string
 ): IAnnouncementPublicItem | null {
 	if (maintenance === null) {
 		return null;
@@ -37,7 +38,7 @@ export function createMaintenanceAnnouncement(
 		priority: Number.MAX_SAFE_INTEGER,
 		revision: 1,
 		starts_at: maintenance.started_at,
-		title: '系统维护',
+		title,
 		updated_at: maintenance.started_at,
 	};
 }

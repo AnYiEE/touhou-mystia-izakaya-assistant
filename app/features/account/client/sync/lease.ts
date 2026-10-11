@@ -1,4 +1,3 @@
-import { createAccountClientId } from '@/features/account/client/clientId';
 import {
 	ACCOUNT_STORAGE_KEY_MAP,
 	createAccountStorageKey,
@@ -30,10 +29,6 @@ export interface IAccountSyncLease {
 type TAccountSyncLeaseAcquireResult =
 	| { acquired: true; status: 'acquired' }
 	| { acquired: false; status: 'busy' };
-
-export function createAccountTabId() {
-	return createAccountClientId();
-}
 
 export function createAccountSyncLeaseKey(userId: string) {
 	return createAccountStorageKey(ACCOUNT_STORAGE_KEY_MAP.lease, userId);

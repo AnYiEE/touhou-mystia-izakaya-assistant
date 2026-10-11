@@ -7,7 +7,7 @@ import {
 	writeAccountAuditLogBestEffort,
 	writeAccountAuditLogInTransaction,
 } from '@/features/account/server/audit/service';
-import { createAccountCsrfToken } from '@/features/account/server/auth/accountCsrf';
+import { createCsrfToken } from '@/features/account/server/auth/csrf';
 import { verifyPassword } from '@/features/account/server/auth/password';
 import { type IAuthenticatedAccount } from '@/features/account/server/auth/requestAuthentication';
 import {
@@ -187,7 +187,7 @@ export async function updateProfile({
 		});
 		return isSessionCurrent
 			? {
-					csrfToken: createAccountCsrfToken(account.sessionTokenHash),
+					csrfToken: createCsrfToken(account.sessionTokenHash),
 					status: 'ok',
 					user: account.user,
 				}
@@ -374,7 +374,7 @@ export async function updateProfile({
 		}
 
 		return {
-			csrfToken: createAccountCsrfToken(account.sessionTokenHash),
+			csrfToken: createCsrfToken(account.sessionTokenHash),
 			status: 'ok',
 			user: result.user,
 		};

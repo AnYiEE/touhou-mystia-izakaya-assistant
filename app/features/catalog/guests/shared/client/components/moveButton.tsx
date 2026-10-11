@@ -5,6 +5,10 @@ import { type MouseEventHandler, memo } from 'react';
 
 import Tooltip from '@/design/ui/components/tooltip';
 
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
+
+import { useI18n } from '@/shared/i18n/useI18n';
+
 const moveButtonDirectionMap = { down: 0, up: 1 } as const;
 
 type TMoveButtonDirection = ExtractCollectionValue<
@@ -22,14 +26,15 @@ const MoveButtonComponent = memo<IMoveButtonProps>(function MoveButton({
 	isDisabled,
 	onClick,
 }) {
+	const { t } = useI18n(catalogGuestsMessages);
 	const label =
 		direction === moveButtonDirectionMap.down
 			? isDisabled
-				? '已是末项'
-				: '下移此项'
+				? t('guests.move.last')
+				: t('guests.move.down')
 			: isDisabled
-				? '已是首项'
-				: '上移此项';
+				? t('guests.move.first')
+				: t('guests.move.up');
 
 	return (
 		<Tooltip

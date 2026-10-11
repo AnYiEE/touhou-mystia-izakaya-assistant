@@ -1,17 +1,7 @@
-import {
-	createItemShareData,
-	createItemShareUrl,
-} from '@/features/itemSharing/shareUrl';
+import { createItemShareData } from '@/features/itemSharing/shareUrl';
 
-export function createShareableItemUrl(options: {
-	pathname: string;
-	recordId: number;
-}) {
-	return createItemShareUrl(options);
-}
-
-export function shareItem(name: string, url: string) {
-	const shareObject = createItemShareData(name, url);
+export function shareItem(shareText: string, url: string) {
+	const shareObject = createItemShareData(shareText, url);
 	if (
 		typeof navigator === 'undefined' ||
 		typeof navigator.canShare !== 'function' ||

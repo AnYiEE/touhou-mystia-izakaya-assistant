@@ -2,6 +2,8 @@ import type { IAccountSessionRecord } from '@/features/account/contracts';
 
 import type { TSession } from '@/infrastructure/database/schema';
 
+import type { TLocale } from '@/shared/i18n/locale';
+
 import { createIpSummary, createUserAgentSummary } from './request';
 
 export function createAccountSessionRecord(
@@ -9,14 +11,15 @@ export function createAccountSessionRecord(
 		TSession,
 		'created_at' | 'id' | 'ip_address' | 'last_seen_at' | 'user_agent'
 	>,
-	currentSessionId: string
+	currentSessionId: string,
+	locale: TLocale
 ): IAccountSessionRecord {
 	return {
 		created_at: session.created_at,
 		id: session.id,
-		ip_summary: createIpSummary(session.ip_address),
+		ip_summary: createIpSummary(session.ip_address, locale),
 		is_current: session.id === currentSessionId,
 		last_seen_at: session.last_seen_at,
-		user_agent_summary: createUserAgentSummary(session.user_agent),
+		user_agent_summary: createUserAgentSummary(session.user_agent, locale),
 	};
 }

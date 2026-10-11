@@ -371,13 +371,9 @@ export function normalizeMealSnapshot<TNormalizedMeal>(
 	return result;
 }
 
-function getMealSignature(meal: unknown) {
-	return stableJson(meal);
-}
-
 function createMealSignatureCountMap(meals: unknown[]) {
 	return meals.reduce<Map<string, number>>((result, meal) => {
-		const signature = getMealSignature(meal);
+		const signature = stableJson(meal);
 		result.set(signature, (result.get(signature) ?? 0) + 1);
 
 		return result;
@@ -403,22 +399,16 @@ function hasDeletedBaseMeal(baseMeals: unknown[], targetMeals: unknown[]) {
 
 	return baseMeals.some(
 		(meal) =>
-			!consumeMealSignature(
-				targetSignatureCountMap,
-				getMealSignature(meal)
-			)
+			!consumeMealSignature(targetSignatureCountMap, stableJson(meal))
 	);
 }
 
 function hasReorderedBaseMeal(baseMeals: unknown[], targetMeals: unknown[]) {
-	const targetSignatures = targetMeals.map(getMealSignature);
+	const targetSignatures = targetMeals.map(stableJson);
 	let searchStart = 0;
 
 	return baseMeals.some((meal) => {
-		const index = targetSignatures.indexOf(
-			getMealSignature(meal),
-			searchStart
-		);
+		const index = targetSignatures.indexOf(stableJson(meal), searchStart);
 		if (index === -1) {
 			return true;
 		}
@@ -432,10 +422,7 @@ function getMealAdditions<TMeal>(sourceMeals: TMeal[], targetMeals: TMeal[]) {
 
 	return sourceMeals.filter(
 		(meal) =>
-			!consumeMealSignature(
-				targetSignatureCountMap,
-				getMealSignature(meal)
-			)
+			!consumeMealSignature(targetSignatureCountMap, stableJson(meal))
 	);
 }
 

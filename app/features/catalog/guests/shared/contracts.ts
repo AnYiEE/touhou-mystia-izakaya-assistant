@@ -2,10 +2,11 @@ import { type TFoodSuitabilityRowData } from '@/domain/catalog/food/FoodCatalog'
 import type { TBeverage } from '@/domain/catalog/food/types';
 import type { TBeverageTagId } from '@/domain/data/tags/types';
 
+import { type TCatalogGuestsMessageKey } from './messages';
 import { type TTabVisibilityState } from './state/tabVisibility';
 
 export interface IGuestTabStyle {
-	ariaLabel: string;
+	ariaLabelKey: TCatalogGuestsMessageKey;
 	buttonNode: ReactNodeWithoutBoolean;
 	classNames: { content: string; sideButtonGroup: string };
 }
@@ -13,7 +14,7 @@ export interface IGuestTabStyle {
 export type TGuestTabStyleMap = Record<TTabVisibilityState, IGuestTabStyle>;
 
 export interface IIngredientsTabStyle {
-	ariaLabel: string;
+	ariaLabelKey: TCatalogGuestsMessageKey;
 	buttonNode: ReactNodeWithoutBoolean;
 	classNames: { content: string; sideButtonGroup: string };
 }

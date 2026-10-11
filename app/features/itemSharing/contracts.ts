@@ -10,11 +10,11 @@ import type {
 	TDecorationId,
 	TDecorationName,
 } from '@/domain/data/decorations/types';
-import type { TFoodId, TFoodName } from '@/domain/data/foods/types';
 import type {
 	TFishingCollectibleId,
 	TFishingCollectibleName,
 } from '@/domain/data/fishingCollectibles/types';
+import type { TFoodId, TFoodName } from '@/domain/data/foods/types';
 import type {
 	TGeneralItemId,
 	TGeneralItemName,

@@ -65,12 +65,7 @@ const OlComponent = memo<PropsWithChildren<IOlProps>>(function Ol({
 	className,
 }) {
 	return (
-		<ol
-			className={cn(
-				'list-inside list-disc break-all text-justify',
-				className
-			)}
-		>
+		<ol className={cn('text-cjk-flow list-inside list-disc', className)}>
 			{children}
 		</ol>
 	);

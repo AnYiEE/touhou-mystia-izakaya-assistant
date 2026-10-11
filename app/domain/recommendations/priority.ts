@@ -285,13 +285,6 @@ function createPathMetrics(
 	};
 }
 
-function compareSelectedPaths(
-	left: ISelectedRecommendationAvailabilityPath,
-	right: ISelectedRecommendationAvailabilityPath
-) {
-	return compareRecommendationPriorityMetrics(left, right);
-}
-
 export function selectRecommendationAvailabilityPath({
 	allowFishingFallback,
 	availabilityPaths,
@@ -315,7 +308,10 @@ export function selectRecommendationAvailabilityPath({
 	let bestPath: ISelectedRecommendationAvailabilityPath | null = null;
 	for (const path of candidatePaths) {
 		const selected = createPathMetrics(path, { guestDlc, guestPlaces });
-		if (bestPath === null || compareSelectedPaths(selected, bestPath) < 0) {
+		if (
+			bestPath === null ||
+			compareRecommendationPriorityMetrics(selected, bestPath) < 0
+		) {
 			bestPath = selected;
 		}
 	}

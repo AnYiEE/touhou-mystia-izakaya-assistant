@@ -10,7 +10,7 @@ import type {
 
 export const guestTabStyleMap = {
 	collapse: {
-		ariaLabel: '展开',
+		ariaLabelKey: 'guests.tab.expand',
 		buttonNode: (
 			<FontAwesomeIcon
 				icon={faCaretDown}
@@ -24,7 +24,7 @@ export const guestTabStyleMap = {
 		},
 	},
 	expand: {
-		ariaLabel: '收起',
+		ariaLabelKey: 'guests.tab.collapse',
 		buttonNode: (
 			<FontAwesomeIcon
 				icon={faCaretUp}
@@ -38,7 +38,7 @@ export const guestTabStyleMap = {
 
 export const ingredientTabStyleMap = {
 	collapse: {
-		ariaLabel: '展开',
+		ariaLabelKey: 'guests.tab.expand',
 		buttonNode: (
 			<FontAwesomeIcon
 				icon={faCaretDown}
@@ -52,7 +52,7 @@ export const ingredientTabStyleMap = {
 		},
 	},
 	expand: {
-		ariaLabel: '收起',
+		ariaLabelKey: 'guests.tab.collapse',
 		buttonNode: (
 			<FontAwesomeIcon
 				icon={faCaretUp}

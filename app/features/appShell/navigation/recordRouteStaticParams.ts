@@ -1,4 +1,4 @@
-import { checkEnvironmentFlag } from '@/infrastructure/environment/flags';
+import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
 interface IRecordRouteIdentity {
 	readonly id: number;
@@ -17,8 +17,5 @@ export function createOptionalRecordRouteStaticParams(
 }
 
 export function shouldPrerenderRecordRoutes() {
-	return (
-		checkEnvironmentFlag(process.env.OFFLINE) ||
-		!checkEnvironmentFlag(process.env.SELF_HOSTED)
-	);
+	return PUBLIC_RUNTIME_CONFIG.isExportMode;
 }

@@ -7,15 +7,19 @@ import { memo } from 'react';
 
 import Button from '@/design/ui/components/button';
 
+import { accountMessages } from '@/features/account/client/messages';
+
+import { useI18n } from '@/shared/i18n/useI18n';
+
 import {
-	type IConflictDifferenceResult,
-	formatFriendlyConflictValue,
-} from './presentation';
+	type IConflictPresentedDifferences,
+	useConflictPresentation,
+} from './useConflictPresentation';
 
 interface IConflictVersionCardProps {
 	buttonLabel: string;
 	description: string;
-	differences: IConflictDifferenceResult;
+	differences: IConflictPresentedDifferences;
 	icon: FontAwesomeIconProps['icon'];
 	isDisabled: boolean;
 	isHighAppearance: boolean;
@@ -38,6 +42,9 @@ const ConflictVersionCard = memo<IConflictVersionCardProps>(
 		title,
 		valueKey,
 	}) {
+		const { t } = useI18n(accountMessages);
+		const { formatValue } = useConflictPresentation();
+
 		return (
 			<div
 				className={cn(
@@ -74,7 +81,7 @@ const ConflictVersionCard = memo<IConflictVersionCardProps>(
 				>
 					{differences.items.length === 0 ? (
 						<p className="px-3 py-4 text-small text-foreground-500">
-							未检测到可展示的差异
+							{t('account.conflict.card.empty')}
 						</p>
 					) : (
 						differences.items.map((difference, index) => (
@@ -86,7 +93,7 @@ const ConflictVersionCard = memo<IConflictVersionCardProps>(
 									{difference.label}
 								</span>
 								<span className="break-words text-right font-medium text-foreground-700">
-									{formatFriendlyConflictValue(
+									{formatValue(
 										difference[valueKey],
 										difference.path
 									)}
@@ -96,7 +103,7 @@ const ConflictVersionCard = memo<IConflictVersionCardProps>(
 					)}
 					{differences.hasMore && (
 						<p className="px-3 py-2 text-tiny text-foreground-500">
-							还有更多差异，可在技术详情中查看
+							{t('account.conflict.card.more')}
 						</p>
 					)}
 				</div>

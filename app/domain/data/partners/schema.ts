@@ -1,6 +1,6 @@
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
-import type { TMapLabel, TPlaceLabel } from '@/domain/data/places/types';
 import type { TSpeedLabel } from '@/domain/data/partners/speedFacts';
+import type { TMapLabel, TPlaceLabel } from '@/domain/data/places/types';
 import type { IItemBase } from '@/domain/data/shared/itemSchema';
 
 type TPartnerDialogueOptionLabel = '重修「第二次试炼」';

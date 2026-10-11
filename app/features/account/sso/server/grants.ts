@@ -13,6 +13,13 @@ import type {
 } from '@/infrastructure/database/schema';
 import { TABLE_NAME_MAP } from '@/infrastructure/database/tableNames';
 
+import { type TLocale } from '@/shared/i18n/locale';
+
+import {
+	getLocalizedSsoClientName,
+	readSsoClientNameTranslations,
+} from './validation';
+
 const CLIENT_TABLE_NAME = TABLE_NAME_MAP.ssoClient;
 const GRANT_TABLE_NAME = TABLE_NAME_MAP.ssoUserClientGrant;
 const USER_TABLE_NAME = TABLE_NAME_MAP.user;
@@ -46,16 +53,31 @@ export async function hasSsoUserClientGrant(
 export function createSsoUserClientGrant(
 	record: Awaited<
 		ReturnType<typeof listSsoUserClientGrantsForUserInTransaction>
-	>[number]
+	>[number],
+	locale: TLocale
 ) {
 	return {
-		client: { id: record.client_id, name: record.client_name },
+		client: {
+			id: record.client_id,
+			name: getLocalizedSsoClientName(
+				{
+					name: record.client_name,
+					name_translations: readSsoClientNameTranslations(
+						record.client_name_translations
+					),
+				},
+				locale
+			),
+		},
 		created_at: record.created_at,
 		updated_at: record.updated_at,
 	};
 }
 
-export async function listSsoUserClientGrantsForUser(userId: TUser['id']) {
+export async function listSsoUserClientGrantsForUser(
+	userId: TUser['id'],
+	locale: TLocale
+) {
 	const db = await getAccountDatabase();
 	const records = await db
 		.selectFrom(GRANT_TABLE_NAME)
@@ -67,6 +89,7 @@ export async function listSsoUserClientGrantsForUser(userId: TUser['id']) {
 		.select([
 			`${CLIENT_TABLE_NAME}.id as client_id`,
 			`${CLIENT_TABLE_NAME}.name as client_name`,
+			`${CLIENT_TABLE_NAME}.name_translations_json as client_name_translations`,
 			`${GRANT_TABLE_NAME}.created_at`,
 			`${GRANT_TABLE_NAME}.updated_at`,
 		])
@@ -75,7 +98,7 @@ export async function listSsoUserClientGrantsForUser(userId: TUser['id']) {
 		.orderBy(`${CLIENT_TABLE_NAME}.id`, 'asc')
 		.execute();
 
-	return records.map(createSsoUserClientGrant);
+	return records.map((record) => createSsoUserClientGrant(record, locale));
 }
 
 export async function listSsoUserClientGrantsForUserInTransaction(
@@ -92,6 +115,7 @@ export async function listSsoUserClientGrantsForUserInTransaction(
 		.select([
 			`${CLIENT_TABLE_NAME}.id as client_id`,
 			`${CLIENT_TABLE_NAME}.name as client_name`,
+			`${CLIENT_TABLE_NAME}.name_translations_json as client_name_translations`,
 			`${GRANT_TABLE_NAME}.created_at`,
 			`${GRANT_TABLE_NAME}.updated_at`,
 		])
@@ -103,7 +127,8 @@ export async function listSsoUserClientGrantsForUserInTransaction(
 
 export async function listSsoUserClientGrantsForActiveUserSession(
 	userId: TUser['id'],
-	session: TAuthenticatedSessionIdentity
+	session: TAuthenticatedSessionIdentity,
+	locale: TLocale
 ) {
 	const db = await getAccountDatabase();
 
@@ -125,7 +150,9 @@ export async function listSsoUserClientGrantsForActiveUserSession(
 	}
 
 	return {
-		grants: result.records.map(createSsoUserClientGrant),
+		grants: result.records.map((record) =>
+			createSsoUserClientGrant(record, locale)
+		),
 		status: 'ok' as const,
 	};
 }

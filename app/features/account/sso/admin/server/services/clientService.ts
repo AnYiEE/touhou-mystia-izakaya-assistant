@@ -15,6 +15,7 @@ import {
 } from '@/features/account/sso/server/persistence/clients';
 import {
 	createSsoClientPublicProfile,
+	readSsoClientNameTranslations,
 	validateSsoClientConfig,
 } from '@/features/account/sso/server/validation';
 import {
@@ -70,13 +71,9 @@ export const ADMIN_SSO_CLIENT_SERVICE_ERROR_STATUS_MAP: Record<
 	'sso-client-not-found': 404,
 };
 
-function checkPagination(options: IAdminSsoClientListOptions) {
-	return checkAdminPagination(options);
-}
-
 function checkListOptions(options: IAdminSsoClientListOptions) {
 	return (
-		checkPagination(options) &&
+		checkAdminPagination(options) &&
 		[undefined, 'active', 'disabled'].includes(options.status) &&
 		[undefined, 'configured', 'missing'].includes(options.callback)
 	);
@@ -131,6 +128,9 @@ export async function listAdminSsoClients(
 				client.loopback_redirect_paths
 			) as string[],
 			name: client.name,
+			name_translations: readSsoClientNameTranslations(
+				client.name_translations_json
+			),
 			pending_callback_count: client.pending_callback_count,
 			pending_ticket_count: client.pending_ticket_count,
 			status_callback_url: client.status_callback_url,
@@ -277,6 +277,7 @@ export async function updateAdminSsoClient(
 			id: body.id,
 			loopback_redirect_paths: body.loopback_redirect_paths,
 			name: body.name,
+			name_translations: body.name_translations,
 			secret_hashes: [DUMMY_SECRET_HASH],
 			status_callback_url: body.status_callback_url,
 		})
@@ -292,6 +293,7 @@ export async function updateAdminSsoClient(
 		id: body.id,
 		loopback_redirect_paths: body.loopback_redirect_paths,
 		name: body.name,
+		name_translations: body.name_translations,
 		status_callback_url: body.status_callback_url,
 	};
 	const auditModule =

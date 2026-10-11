@@ -60,10 +60,6 @@ export interface IAdminAuditLogListOptions {
 	targetType?: string;
 }
 
-function checkPagination(options: IAdminAuditLogListOptions) {
-	return checkAdminPagination(options);
-}
-
 function checkSearchQuery(value: string | undefined) {
 	return (
 		value === undefined ||
@@ -77,7 +73,7 @@ function checkActorType(value: TSsoActorType | undefined) {
 
 function checkListOptions(options: IAdminAuditLogListOptions) {
 	return (
-		checkPagination(options) &&
+		checkAdminPagination(options) &&
 		checkActorType(options.actorType) &&
 		checkSearchQuery(options.query) &&
 		checkAdminTimeRange(options)

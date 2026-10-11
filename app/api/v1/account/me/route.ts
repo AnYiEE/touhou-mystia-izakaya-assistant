@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 	const [authModule, csrfModule, userModule, userStateModule] =
 		await Promise.all([
 			import('@/features/account/server/auth/requestAuthentication'),
-			import('@/features/account/server/auth/accountCsrf'),
+			import('@/features/account/server/auth/csrf'),
 			import('@/features/account/server/presentation/user'),
 			import('@/features/account/sync/server'),
 		]);
@@ -87,9 +87,7 @@ export async function GET(request: NextRequest) {
 	);
 
 	return createNoStoreJsonResponse({
-		csrf_token: csrfModule.createAccountCsrfToken(
-			auth.data.sessionTokenHash
-		),
+		csrf_token: csrfModule.createCsrfToken(auth.data.sessionTokenHash),
 		featureEnabled: true,
 		has_password: stateSnapshot.credential.password_set === 1,
 		isLoggedIn: true,

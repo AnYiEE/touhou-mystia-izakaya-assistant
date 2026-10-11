@@ -1,21 +1,22 @@
 import { type Metadata } from 'next';
 
-import { RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog';
+import {
+	buildCatalogPageMetadata,
+	readLocalizedCatalogNames,
+	readMetadataLocaleContext,
+} from '@/features/appShell/seo/pageMetadata';
 
-import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
+export async function generateMetadata(): Promise<Metadata> {
+	const { isPrefixed, locale } = await readMetadataLocaleContext();
+	const names = await readLocalizedCatalogNames('/records', locale, 10);
 
-import { SITE_METADATA } from '@/shared/site/metadata';
-
-const { description, keywords } = SITE_METADATA;
-
-const records = RecordItemCatalog.getInstance().getNames(10);
-const title = getPageTitle('/records');
-
-export const metadata: Metadata = {
-	title,
-
-	description: `本页面可以查询${records.join('、')}等${title}的详情。${description}`,
-	keywords: keywords.toSpliced(18, Infinity, ...records),
-};
+	return buildCatalogPageMetadata({
+		descriptionKey: 'site.seo.description.details',
+		href: '/records',
+		isPrefixed,
+		locale,
+		names,
+	});
+}
 
 export { default } from '@/features/preferences/client/components/PreferencesModalLayout';

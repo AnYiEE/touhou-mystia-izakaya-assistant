@@ -22,7 +22,6 @@ import {
 	pauseDirtyEntryWithConflict,
 	restoreAccountSyncConflict,
 	routePausedConflictMergeResult,
-	setAccountSyncConflict,
 } from './conflictOrchestration';
 import { withAccountSyncNamespaceTransitionLock } from './conflicts/transitionLock';
 import {
@@ -69,7 +68,10 @@ import {
 	checkAccountSyncOperationOwnedByCurrentTab,
 	withAccountSyncOperationLease,
 } from './syncOperationLease';
-import { removeAccountSyncConflict } from './syncRuntimeState';
+import {
+	removeAccountSyncConflict,
+	upsertAccountSyncConflict,
+} from './syncRuntimeState';
 
 export async function takeOverLocalAccountData(
 	resetOperationId?: string,
@@ -306,7 +308,7 @@ export async function takeOverLocalAccountData(
 								context.user.id
 							);
 							if (restoredConflict !== null) {
-								setAccountSyncConflict(restoredConflict);
+								upsertAccountSyncConflict(restoredConflict);
 							}
 							return true;
 						}
@@ -353,7 +355,7 @@ export async function takeOverLocalAccountData(
 							context.user.id
 						);
 						if (restoredConflict !== null) {
-							setAccountSyncConflict(restoredConflict);
+							upsertAccountSyncConflict(restoredConflict);
 						}
 						return true;
 					}

@@ -43,6 +43,26 @@
 		text-spacing-trim: normal;
 	}
 
+	.text-cjk-flow {
+		overflow-wrap: break-word;
+
+		&:lang(ja),
+		&:lang(ko),
+		&:lang(zh) {
+			overflow-wrap: normal;
+			text-align: justify;
+			word-break: break-all;
+		}
+	}
+
+	.text-cjk-justify {
+		&:lang(ja),
+		&:lang(ko),
+		&:lang(zh) {
+			text-align: justify;
+		}
+	}
+
 	.selection-custom {
 		@apply selection:bg-focus/80 selection:text-background dark:selection:text-foreground;
 	}

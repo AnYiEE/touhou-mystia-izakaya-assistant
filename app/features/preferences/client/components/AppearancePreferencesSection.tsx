@@ -1,10 +1,15 @@
+import { cn } from '@heroui/theme';
 import { memo, useCallback } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Heading from '@/design/ui/components/heading';
 
+import { preferencesMessages } from '@/features/preferences/client/messages';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
+
+import { isChineseLocale } from '@/shared/i18n/locale';
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import SwitchItem from './PreferenceSwitchItem';
 import {
@@ -27,6 +32,10 @@ export default memo<IProps>(function AppearancePreferencesSection({
 	onModalClose,
 }) {
 	const { isHighAppearance } = useDesignPreferences();
+	const { locale, t } = useI18n(preferencesMessages);
+	const isChinese = isChineseLocale(locale);
+	const isJapanese = locale === 'ja';
+
 	const isShowTachie = globalStore.persistence.tachie.use();
 
 	const handleIsHighAppearanceChange = useCallback(
@@ -52,7 +61,7 @@ export default memo<IProps>(function AppearancePreferencesSection({
 
 	return (
 		<>
-			<Heading as="h3">外观</Heading>
+			<Heading as="h3">{t('preferences.section.appearance')}</Heading>
 			<div className="space-y-2">
 				<div
 					{...getPreferenceTargetDataProps(
@@ -66,14 +75,33 @@ export default memo<IProps>(function AppearancePreferencesSection({
 					<SwitchItem
 						isSelected={isHighAppearance}
 						onValueChange={handleIsHighAppearanceChange}
-						aria-label={`${isHighAppearance ? '关闭' : '开启'}平滑滚动和磨砂效果`}
+						aria-label={t(
+							isHighAppearance
+								? 'preferences.appearance.highAppearance.disableAria'
+								: 'preferences.appearance.highAppearance.enableAria'
+						)}
 					>
-						<span className="flex w-min flex-wrap items-center break-keep md:flex-nowrap">
-							<span>平滑滚动和磨砂效果</span>
+						<span
+							className={cn(
+								'flex items-center',
+								isChinese
+									? 'w-min flex-wrap break-keep md:flex-nowrap'
+									: isJapanese
+										? 'min-w-0 flex-wrap gap-x-1 md:w-min md:break-keep'
+										: 'min-w-0 flex-wrap gap-x-1'
+							)}
+						>
+							<span>
+								{t('preferences.appearance.highAppearance')}
+							</span>
 							<span className="text-tiny text-foreground-500">
-								（如因浏览器性能受限而感卡顿可关闭）
+								{t(
+									'preferences.appearance.highAppearance.notePerf'
+								)}
 								<br />
-								（开启或关闭平滑滚动需刷新页面生效）
+								{t(
+									'preferences.appearance.highAppearance.noteReload'
+								)}
 							</span>
 						</span>
 					</SwitchItem>
@@ -88,11 +116,15 @@ export default memo<IProps>(function AppearancePreferencesSection({
 					<SwitchItem
 						isSelected={isShowTachie}
 						onValueChange={globalStore.persistence.tachie.set}
-						aria-label={`${isShowTachie ? '隐藏' : '显示'}顾客页面立绘`}
+						aria-label={t(
+							isShowTachie
+								? 'preferences.appearance.tachie.hideAria'
+								: 'preferences.appearance.tachie.showAria'
+						)}
 					>
-						顾客页面右下角的立绘
+						{t('preferences.appearance.tachie')}
 						<span className="text-tiny text-foreground-500">
-							（宽屏可见）
+							{t('preferences.appearance.tachie.note')}
 						</span>
 					</SwitchItem>
 				</div>

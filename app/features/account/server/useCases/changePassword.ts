@@ -6,7 +6,7 @@ import {
 	writeAccountAuditLogBestEffort,
 	writeAccountAuditLogInTransaction,
 } from '@/features/account/server/audit/service';
-import { createAccountCsrfToken } from '@/features/account/server/auth/accountCsrf';
+import { createCsrfToken } from '@/features/account/server/auth/csrf';
 import {
 	hashPassword,
 	verifyPassword,
@@ -160,7 +160,7 @@ export async function changePassword({
 	}
 
 	return {
-		csrfToken: createAccountCsrfToken(account.sessionTokenHash),
+		csrfToken: createCsrfToken(account.sessionTokenHash),
 		status: 'ok',
 	};
 }

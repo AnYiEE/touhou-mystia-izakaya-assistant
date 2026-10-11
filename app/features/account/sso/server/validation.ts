@@ -1,5 +1,9 @@
 import { SSO_CALLBACK_EVENT_LIST } from '@/domain/account/contracts';
 
+import type { TSsoClientNameTranslations } from '@/features/account/contracts';
+
+import { DEFAULT_LOCALE, type TLocale, isLocale } from '@/shared/i18n/locale';
+import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 import { hasAsciiControlCharacter } from '@/shared/utilities/strings/check';
 
 export const SSO_FIELD_MAX_LENGTH = 2048;
@@ -31,6 +35,7 @@ interface ISsoClientPublicProfileInput extends ISsoClientStatusInput {
 	id: string;
 	loopback_redirect_paths: string[];
 	name: string;
+	name_translations: TSsoClientNameTranslations;
 	secret_hashes: string[];
 	status_callback_url: string | null;
 	updated_at: number;
@@ -64,6 +69,50 @@ export function checkSsoClientId(value: string) {
 
 export function checkSsoClientName(value: string) {
 	return value.trim().length > 0 && value.length <= 80;
+}
+
+export function checkSsoClientNameTranslations(
+	value: unknown
+): value is TSsoClientNameTranslations {
+	if (!checkIsRecord(value)) {
+		return false;
+	}
+
+	for (const [key, entry] of Object.entries(value)) {
+		if (
+			!isLocale(key) ||
+			key === DEFAULT_LOCALE ||
+			typeof entry !== 'string' ||
+			!checkSsoClientName(entry)
+		) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+export function readSsoClientNameTranslations(
+	value: string
+): TSsoClientNameTranslations {
+	if (value === '') {
+		return {};
+	}
+
+	try {
+		const parsed: unknown = JSON.parse(value);
+
+		return checkSsoClientNameTranslations(parsed) ? parsed : {};
+	} catch {
+		return {};
+	}
+}
+
+export function getLocalizedSsoClientName(
+	client: { name: string; name_translations: TSsoClientNameTranslations },
+	locale: TLocale
+) {
+	return client.name_translations[locale] ?? client.name;
 }
 
 export function checkSsoSecretHash(value: string) {
@@ -209,10 +258,15 @@ export function validateSsoClientConfig(input: {
 	id: string;
 	loopback_redirect_paths: string[];
 	name: string;
+	name_translations: unknown;
 	secret_hashes: string[];
 	status_callback_url: string | null;
 }) {
-	if (!checkSsoClientId(input.id) || !checkSsoClientName(input.name)) {
+	if (
+		!checkSsoClientId(input.id) ||
+		!checkSsoClientName(input.name) ||
+		!checkSsoClientNameTranslations(input.name_translations)
+	) {
 		return false;
 	}
 	if (
@@ -271,6 +325,7 @@ export function createSsoClientPublicProfile(
 		id: client.id,
 		loopback_redirect_paths: client.loopback_redirect_paths,
 		name: client.name,
+		name_translations: client.name_translations,
 		status_callback_url: client.status_callback_url,
 		updated_at: client.updated_at,
 	};

@@ -1,9 +1,9 @@
 import type { TCookerTypeId } from '@/domain/data/cookers/types';
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TCollaborationLabel } from '@/domain/data/labels/collaborationFacts';
 import type { TSchedulerLabel } from '@/domain/data/labels/schedulerFacts';
-import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TMapLabel, TMerchantReference } from '@/domain/data/places/types';
 import type { IFoodBase } from '@/domain/data/shared/foodSchema';
 import type { TFoodTagId } from '@/domain/data/tags/types';

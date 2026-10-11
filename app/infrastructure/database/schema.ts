@@ -31,11 +31,14 @@ interface ITableAnnouncement {
 	html: string;
 	id: string;
 	level: TAnnouncementLevel;
+	locale_updated_at_json: string;
+	locales_json: string;
 	priority: number;
 	revision: number;
 	starts_at: number | null;
 	target_user_ids_json: string;
 	title: string;
+	translations_json: string;
 	updated_at: number;
 }
 
@@ -43,6 +46,7 @@ interface ITableAnnouncementDismissal {
 	announcement_id: string;
 	announcement_updated_at: number;
 	dismissed_at: number;
+	locale: string;
 	user_id: string;
 }
 
@@ -152,6 +156,7 @@ interface ITableSsoClient {
 	id: string;
 	loopback_redirect_paths: string;
 	name: string;
+	name_translations_json: string;
 	secret_hashes: string;
 	status_callback_url: string | null;
 	updated_at: number;

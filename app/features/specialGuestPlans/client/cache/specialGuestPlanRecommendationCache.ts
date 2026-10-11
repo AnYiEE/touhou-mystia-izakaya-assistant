@@ -76,10 +76,6 @@ export function buildSpecialGuestPlanRecommendationCacheKey({
 	});
 }
 
-export function getSpecialGuestPlanRecommendationCacheStats() {
-	return specialGuestPlanRecommendationCache.getStats();
-}
-
 export function peekSpecialGuestPlanRecommendationCache(cacheKey: string) {
 	const meals = specialGuestPlanRecommendationCache.peek(cacheKey);
 	return meals === undefined ? undefined : [...meals];

@@ -23,6 +23,10 @@ import Link from '@/design/ui/components/link';
 import SiteInfo from '@/design/ui/components/siteInfo';
 import Tooltip from '@/design/ui/components/tooltip';
 
+import {
+	APP_SHELL_NAV_LABEL_KEYS,
+	appShellMessages,
+} from '@/features/appShell/client/messages';
 import { SITE_LINKS } from '@/features/appShell/links';
 import { NAV_ITEMS } from '@/features/appShell/navigation/config';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
@@ -30,7 +34,8 @@ import ThemeSwitcher from '@/features/preferences/client/components/ThemeSwitche
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
-import { SITE_METADATA } from '@/shared/site/metadata';
+import { useI18n } from '@/shared/i18n/useI18n';
+import { siteMessages } from '@/shared/site/messages';
 import { checkA11yConfirmKey } from '@/shared/utilities/interaction/checkA11yConfirmKey';
 
 import AccountThemeMenu from './AccountThemeMenu';
@@ -42,13 +47,19 @@ import {
 	NAVIGATION_ICON_FRAME_CLASS_NAME,
 	NAVIGATION_ICON_FRAME_INACTIVE_CLASS_NAME,
 } from './navigationCardStyles';
+import {
+	NAVBAR_BRAND_LG_UP_ONLY_LOCALES,
+	NAVBAR_BROWSE_WIDE_COLUMN_LOCALES,
+	NAVBAR_COMPACT_BELOW_XL_LOCALES,
+	NAVBAR_HOME_LG_UP_ONLY_LOCALES,
+} from './navigationLocaleRules';
 import type { INavbarPaletteItem } from './themeItems';
 
 const { baseURL } = PUBLIC_RUNTIME_CONFIG;
 const links = SITE_LINKS;
-const { name, shortName } = SITE_METADATA;
 const navItems = NAV_ITEMS;
-
+/** Keep the narrow-viewport URL line clearly smaller than the name, e.g. for the long English brand name. */
+const NAVBAR_URL_MAX_FONT_SCALE = 0.7;
 const NAVIGATION_MENU_ITEM_CLASSES = {
 	base: 'p-0 data-[hover=true]:bg-transparent data-[selectable=true]:focus:bg-transparent',
 } as const;
@@ -118,6 +129,17 @@ export default function DesktopNavigation({
 	shouldShowAccountAction,
 	shouldShowPreferences,
 }: IProps) {
+	const { locale, t } = useI18n(appShellMessages);
+	const { t: tSite } = useI18n(siteMessages);
+
+	const brandName = tSite('site.brandName');
+	const fullBrandName = tSite('site.name');
+	const hasWiderBrandName = fullBrandName !== brandName;
+	const isCompactNavBelowXl =
+		NAVBAR_COMPACT_BELOW_XL_LOCALES.includes(locale);
+	const hasWideBrowseColumns =
+		NAVBAR_BROWSE_WIDE_COLUMN_LOCALES.includes(locale);
+
 	const handleMenuAction = useCallback(
 		(key: Key) => {
 			if (typeof key === 'string') {
@@ -141,7 +163,9 @@ export default function DesktopNavigation({
 			<NavbarContent
 				as="div"
 				justify="start"
-				className="basis-full md:basis-1/5"
+				className={cn('basis-full md:basis-1/5', {
+					'gap-2 xl:gap-4': isCompactNavBelowXl,
+				})}
 			>
 				<NavbarBrand className="max-w-fit">
 					<Link
@@ -152,37 +176,66 @@ export default function DesktopNavigation({
 						onPress={() => {
 							onNavigate();
 						}}
-						aria-label={links.index.label}
+						aria-label={t('appShell.links.index')}
 						role="button"
 						className="flex select-none items-center justify-start gap-1 rounded-small hover:brightness-100 active:opacity-disabled"
 					>
 						<span
 							aria-hidden
-							title={shortName}
+							title={tSite('site.shortName')}
 							className="image-rendering-pixelated h-10 w-10 rounded-full bg-logo bg-cover bg-no-repeat"
 						/>
-						<p className="hidden font-bold lg:inline-block">
-							{name}
+						<p
+							className={cn('hidden font-bold lg:inline-block', {
+								'xl:hidden': hasWiderBrandName,
+							})}
+						>
+							{brandName}
 						</p>
+						{hasWiderBrandName && (
+							<p className="hidden font-bold xl:inline-block">
+								{fullBrandName}
+							</p>
+						)}
 						<SiteInfo
 							baseUrl={baseURL}
 							aria-hidden="false"
 							fontSize={16}
-							name={shortName}
-							className="pointer-events-auto h-full select-auto font-bold text-foreground lg:hidden"
+							maxUrlFontScale={NAVBAR_URL_MAX_FONT_SCALE}
+							name={tSite('site.shortName')}
+							className={cn(
+								'pointer-events-auto h-full max-w-[13rem] select-auto font-bold text-foreground lg:hidden',
+								{
+									'md:hidden':
+										NAVBAR_BRAND_LG_UP_ONLY_LOCALES.includes(
+											locale
+										),
+								}
+							)}
 						/>
 					</Link>
 				</NavbarBrand>
-				<ul className="hidden justify-start gap-4 pl-2 md:flex">
+				<ul
+					className={cn('hidden justify-start gap-4 pl-2 md:flex', {
+						'gap-2 pl-0 xl:gap-4 xl:pl-2': isCompactNavBelowXl,
+					})}
+				>
 					{navItems.map((navItem, navItemIndex) => {
 						if ('href' in navItem) {
-							const { href, label } = navItem;
+							const { href } = navItem;
 							const isActivated = href === basePathname;
 							return href === '/preferences' &&
 								!shouldShowPreferences ? null : (
 								<NavbarItem
 									key={navItemIndex}
 									isActive={isActivated}
+									className={cn({
+										'md:hidden lg:flex':
+											href === '/' &&
+											NAVBAR_HOME_LG_UP_ONLY_LOCALES.includes(
+												locale
+											),
+									})}
 								>
 									<NavbarButtonLink
 										isActivated={isActivated}
@@ -190,13 +243,14 @@ export default function DesktopNavigation({
 											onNavigate(href);
 										}}
 									>
-										{label}
+										{t(APP_SHELL_NAV_LABEL_KEYS[href])}
 									</NavbarButtonLink>
 								</NavbarItem>
 							);
 						}
 						return Object.entries(navItem).map(
-							([dropdownLabel, dropdownItems], dropdownIndex) => {
+							([, dropdownItems], dropdownIndex) => {
+								const queryLabel = t('appShell.nav.query');
 								const isDropdownActivated = dropdownItems.some(
 									({ href }) => href === basePathname
 								);
@@ -224,17 +278,25 @@ export default function DesktopNavigation({
 													}
 													className="text-base"
 												>
-													{dropdownLabel}
+													{queryLabel}
 												</Button>
 											</DropdownTrigger>
 										</NavbarItem>
 										<DropdownMenu
 											items={dropdownItems}
 											onAction={handleMenuAction}
-											aria-label={`${dropdownLabel}列表`}
+											aria-label={t(
+												'appShell.search.listLabel',
+												{ label: queryLabel }
+											)}
 											classNames={{
 												base: 'min-w-0 p-1',
-												list: 'grid grid-cols-[repeat(3,6.75rem)] gap-1',
+												list: cn('grid gap-1', {
+													'grid-cols-[repeat(3,6.75rem)]':
+														!hasWideBrowseColumns,
+													'grid-cols-[repeat(3,7.5rem)]':
+														hasWideBrowseColumns,
+												}),
 											}}
 											itemClasses={
 												NAVIGATION_MENU_ITEM_CLASSES
@@ -242,17 +304,21 @@ export default function DesktopNavigation({
 										>
 											{({
 												href,
-												label,
 												sprite,
 												spriteRecordId,
 											}) => {
 												const isActivated =
 													href === basePathname;
+												const itemLabel = t(
+													APP_SHELL_NAV_LABEL_KEYS[
+														href
+													]
+												);
 
 												return (
 													<DropdownItem
 														key={href}
-														textValue={label}
+														textValue={itemLabel}
 													>
 														<Button
 															fullWidth
@@ -304,8 +370,8 @@ export default function DesktopNavigation({
 																	)}
 																/>
 															</span>
-															<span className="min-w-0 truncate text-tiny font-medium leading-5">
-																{label}
+															<span className="min-w-0 whitespace-normal break-words text-tiny font-medium leading-4">
+																{itemLabel}
 															</span>
 														</Button>
 													</DropdownItem>
@@ -323,7 +389,9 @@ export default function DesktopNavigation({
 
 			<NavbarContent
 				justify="end"
-				className="hidden basis-full md:flex md:basis-1/5"
+				className={cn('hidden basis-full md:flex md:basis-1/5', {
+					'gap-2 xl:gap-4': isCompactNavBelowXl,
+				})}
 			>
 				<NavbarItem>
 					<Tooltip
@@ -331,12 +399,12 @@ export default function DesktopNavigation({
 						placement="left"
 						content={
 							<span className="flex items-center gap-1">
-								搜索
+								{t('appShell.search.button')}
 								<kbd className="rounded-small bg-default/40 px-1 py-0.5 text-tiny">
 									{searchShortcutLabel}
 								</kbd>
 								<span className="text-tiny text-foreground-400">
-									或
+									{t('appShell.search.hintSeparator')}
 								</span>
 								<kbd className="rounded-small bg-default/40 px-1 py-0.5 text-tiny">
 									/
@@ -348,7 +416,7 @@ export default function DesktopNavigation({
 							isIconOnly
 							size="sm"
 							variant="light"
-							aria-label="搜索"
+							aria-label={t('appShell.search.button')}
 							onPress={() => {
 								onSearchPress();
 							}}

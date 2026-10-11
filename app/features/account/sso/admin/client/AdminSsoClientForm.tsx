@@ -31,6 +31,7 @@ import type {
 	IAdminSsoClientSecretMutationData,
 	IAdminSsoClientSecretRecord,
 	IAdminSsoClientUpdateBody,
+	TSsoClientNameTranslations,
 } from '@/features/account/contracts';
 import type {
 	IAdminSsoClientFormInitialData,
@@ -120,6 +121,50 @@ function normalizeOptionalUri(value: string) {
 	return trimmed === '' ? null : trimmed;
 }
 
+const SSO_CLIENT_NAME_TRANSLATION_FIELDS = [
+	{ label: '繁体中文名称', locale: 'zh-TW' },
+	{ label: '英文名称', locale: 'en' },
+	{ label: '日文名称', locale: 'ja' },
+	{ label: '韩文名称', locale: 'ko' },
+] as const;
+
+type TNameTranslationLocale =
+	(typeof SSO_CLIENT_NAME_TRANSLATION_FIELDS)[number]['locale'];
+
+function createNameTranslationDraft(
+	translations: TSsoClientNameTranslations
+): Record<TNameTranslationLocale, string> {
+	const draft = {} as Record<TNameTranslationLocale, string>;
+	for (const { locale } of SSO_CLIENT_NAME_TRANSLATION_FIELDS) {
+		draft[locale] = translations[locale] ?? '';
+	}
+
+	return draft;
+}
+
+function collectNameTranslations(
+	draft: Record<TNameTranslationLocale, string>
+): TSsoClientNameTranslations {
+	const result: TSsoClientNameTranslations = {};
+	for (const { locale } of SSO_CLIENT_NAME_TRANSLATION_FIELDS) {
+		const value = draft[locale].trim();
+		if (value !== '') {
+			result[locale] = value;
+		}
+	}
+
+	return result;
+}
+
+function checkNameTranslationsEqual(
+	left: TSsoClientNameTranslations,
+	right: TSsoClientNameTranslations
+) {
+	return SSO_CLIENT_NAME_TRANSLATION_FIELDS.every(
+		({ locale }) => (left[locale] ?? '') === (right[locale] ?? '')
+	);
+}
+
 function createUpdateBodyFromClient(
 	client: IAdminSsoClientProfile,
 	disabled: boolean
@@ -132,6 +177,7 @@ function createUpdateBodyFromClient(
 		id: client.id,
 		loopback_redirect_paths: client.loopback_redirect_paths,
 		name: client.name,
+		name_translations: client.name_translations,
 		status_callback_url: client.status_callback_url,
 	};
 }
@@ -157,6 +203,10 @@ function checkClientBodyMatchesClient(
 			client.loopback_redirect_paths
 		) &&
 		body.name === client.name &&
+		checkNameTranslationsEqual(
+			body.name_translations,
+			client.name_translations
+		) &&
 		body.status_callback_url === client.status_callback_url
 	);
 }
@@ -247,6 +297,9 @@ export default memo<IProps>(function AdminSsoClientForm({
 
 	const [id, setId] = useState(initialData.client?.id ?? clientId ?? '');
 	const [name, setName] = useState(initialData.client?.name ?? '');
+	const [nameTranslations, setNameTranslations] = useState(() =>
+		createNameTranslationDraft(initialData.client?.name_translations ?? {})
+	);
 	const [loopbackRedirectPaths, setLoopbackRedirectPaths] = useState(
 		initialData.client === null
 			? ''
@@ -280,6 +333,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 			id: id.trim(),
 			loopback_redirect_paths: parseLines(loopbackRedirectPaths),
 			name: name.trim(),
+			name_translations: collectNameTranslations(nameTranslations),
 			status_callback_url: normalizeOptionalUri(statusCallbackUrl),
 		}),
 		[
@@ -289,6 +343,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 			id,
 			loopbackRedirectPaths,
 			name,
+			nameTranslations,
 			statusCallbackUrl,
 		]
 	);
@@ -329,6 +384,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 		setSecretLabelDrafts({});
 		setId(isEditMode ? (clientId ?? '') : '');
 		setName('');
+		setNameTranslations(createNameTranslationDraft({}));
 		setLoopbackRedirectPaths('');
 		setCustomSchemeRedirectUris('');
 		setHttpsRedirectUris('');
@@ -347,6 +403,9 @@ export default memo<IProps>(function AdminSsoClientForm({
 		setClient(value);
 		setId(value.id);
 		setName(value.name);
+		setNameTranslations(
+			createNameTranslationDraft(value.name_translations)
+		);
 		setLoopbackRedirectPaths(joinLines(value.loopback_redirect_paths));
 		setCustomSchemeRedirectUris(
 			joinLines(value.custom_scheme_redirect_uris)
@@ -1434,6 +1493,26 @@ export default memo<IProps>(function AdminSsoClientForm({
 						value={name}
 						onValueChange={setName}
 					/>
+					{SSO_CLIENT_NAME_TRANSLATION_FIELDS.map(
+						({ label, locale }) => (
+							<Input
+								key={locale}
+								isDisabled={isCreatedClient || isSaving}
+								label={label}
+								maxLength={80}
+								startContent={
+									<AdminInputIcon icon={faServer} />
+								}
+								value={nameTranslations[locale]}
+								onValueChange={(value) => {
+									setNameTranslations((current) => ({
+										...current,
+										[locale]: value,
+									}));
+								}}
+							/>
+						)
+					)}
 					<Input
 						isDisabled={isCreatedClient || isSaving}
 						label="Status Callback URL"

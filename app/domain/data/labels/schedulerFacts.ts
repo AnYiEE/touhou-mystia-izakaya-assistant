@@ -1,5 +1,9 @@
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TDlc } from '@/domain/data/shared/types';
+import {
+	getSchedulerLabelSeparator,
+	getSchedulerLabelText,
+} from '@/domain/labels/localizedSchedulerLabels';
 
 interface ISchedulerFact {
 	dialogueGuestLabel?: string;
@@ -140,18 +144,16 @@ export function getSchedulerSpecialGuestBonds(
 	return bonds;
 }
 
-export function formatTaskLabel(label: string) {
-	return label.startsWith('【') && label.endsWith('】')
-		? label
-		: `【${label}】`;
-}
-
 export function formatSchedulerLabels(
 	labels: TSchedulerLabel | ReadonlyArray<TSchedulerLabel>
 ) {
 	const values: ReadonlyArray<TSchedulerLabel> =
 		typeof labels === 'string' ? [labels] : labels;
 	return [
-		...new Set(values.map((label) => SCHEDULER_FACTS[label].label)),
-	].join('、');
+		...new Set(
+			values.map((label) =>
+				getSchedulerLabelText(SCHEDULER_FACTS[label].label)
+			)
+		),
+	].join(getSchedulerLabelSeparator());
 }

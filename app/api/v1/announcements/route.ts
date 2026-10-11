@@ -13,6 +13,7 @@ import {
 	parseAnnouncementDismissedCookieValue,
 } from '@/features/announcements/dismissals';
 import { ANNOUNCEMENT_SERVICE_ERROR_STATUS_MAP } from '@/features/announcements/server/http/serviceErrorStatus';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
@@ -29,7 +30,8 @@ export const dynamic = 'force-dynamic';
 
 interface IAnnouncementDismissBody {
 	id: string;
-	updatedAt: number;
+	token?: string;
+	updatedAt?: number;
 }
 
 export async function GET(request: NextRequest) {
@@ -67,11 +69,13 @@ export async function GET(request: NextRequest) {
 			request,
 			true
 		);
+		const locale = readContentLocale(request);
 		const data =
 			auth.status === 'ok'
 				? await serviceModule.getVisibleAnnouncementsForRequestContext({
 						dismissedTokens,
 						isAuthenticated: true,
+						locale,
 						nickname: auth.data.user.nickname,
 						userId: auth.data.user.id,
 						username: auth.data.user.username,
@@ -79,6 +83,7 @@ export async function GET(request: NextRequest) {
 				: await serviceModule.getVisibleAnnouncementsForRequestContext({
 						dismissedTokens,
 						isAuthenticated: false,
+						locale,
 					});
 
 		return createNoStoreJsonResponse(data);
@@ -112,7 +117,10 @@ export async function POST(request: NextRequest) {
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
 	if (
 		typeof body?.id !== 'string' ||
-		!isNonNegativeSafeInteger(body.updatedAt)
+		(body.token !== undefined && typeof body.token !== 'string') ||
+		(body.updatedAt !== undefined &&
+			!isNonNegativeSafeInteger(body.updatedAt)) ||
+		(body.token === undefined && body.updatedAt === undefined)
 	) {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
@@ -153,7 +161,12 @@ export async function POST(request: NextRequest) {
 	]);
 	const result = await announcementModule.dismissAnnouncementForUser(
 		body.id,
-		body.updatedAt,
+		readContentLocale(request),
+		body.token === undefined
+			? body.updatedAt === undefined
+				? {}
+				: { updatedAt: body.updatedAt }
+			: { token: body.token },
 		auth.data.user.id,
 		{ id: auth.data.session.id, token_hash: auth.data.sessionTokenHash },
 		sessionsModule.lockActiveUserSessionInTransaction

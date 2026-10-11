@@ -2,7 +2,6 @@ import { cn } from '@heroui/theme';
 import { memo, useMemo, useRef } from 'react';
 
 import { type BeverageCatalog as BeverageCatalogModel } from '@/domain/catalog/food/BeverageCatalog';
-import { BEVERAGE_TAG_MAP } from '@/domain/data/tags/tagFacts';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { BEVERAGE_TAG_STYLE } from '@/features/catalog/presentation/tagStyles';
@@ -17,6 +16,7 @@ import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import { useItemPopoverState } from '@/features/catalog/shared/client/hooks/useItemPopoverState';
 import { useOpenedItemPopover } from '@/features/catalog/shared/client/hooks/useOpenedItemPopover';
+import { getBeverageTagLabel } from '@/features/catalog/shared/client/localization/tagLabels';
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
@@ -43,7 +43,7 @@ export default memo<IProps>(function BeverageCatalog({ data }) {
 				},
 				item,
 				tags: {
-					beverage: item.tags.map((tag) => BEVERAGE_TAG_MAP[tag]),
+					beverage: item.tags.map((tag) => getBeverageTagLabel(tag)),
 				},
 			})),
 		[data]

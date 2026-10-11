@@ -1,3 +1,5 @@
+import type { TLocale } from '@/shared/i18n/locale';
+
 export const ANNOUNCEMENT_DISMISSED_COOKIE_NAME = 'announcement.dismissed';
 export const MAX_ANNOUNCEMENT_DISMISSAL_COOKIE_TOKENS = 50;
 
@@ -22,6 +24,14 @@ function normalizeDismissalTokens(tokens: string[]) {
 }
 
 export function createAnnouncementDismissalToken(
+	id: string,
+	locale: TLocale,
+	updatedAt: number
+) {
+	return `${encodeURIComponent(id)}:${locale}:${updatedAt}`;
+}
+
+export function createLegacyAnnouncementDismissalToken(
 	id: string,
 	updatedAt: number
 ) {

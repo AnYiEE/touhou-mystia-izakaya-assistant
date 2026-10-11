@@ -11,15 +11,16 @@ export function selectCatalogGuest(
 	recordId: number
 ) {
 	if (section === 'normal-guests') {
-		const normalGuest = NormalGuestCatalog.getInstance().getPropsById(
-			recordId as TNormalGuestId,
-			'id'
-		);
+		const normalGuest =
+			NormalGuestCatalog.getInstance().getDisplayPropsById(
+				recordId as TNormalGuestId,
+				'id'
+			);
 		normalGuestStore.onGuestSelectedChange(normalGuest);
 		return;
 	}
 
-	const specialGuest = SpecialGuestCatalog.getInstance().getPropsById(
+	const specialGuest = SpecialGuestCatalog.getInstance().getDisplayPropsById(
 		recordId as TSpecialGuestId,
 		'id'
 	);

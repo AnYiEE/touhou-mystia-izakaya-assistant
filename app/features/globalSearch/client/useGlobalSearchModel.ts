@@ -7,14 +7,12 @@ import { getCatalogSearchFilterAction } from '@/features/catalog/globalSearch/cl
 import { useCatalogSearchContributor } from '@/features/catalog/globalSearch/client/useCatalogSearchContributor';
 import { getCatalogSearchFieldValueOrderMap } from '@/features/catalog/globalSearch/fieldValueOrdering';
 import { createCatalogSearchSuggestionRecordMap } from '@/features/catalog/globalSearch/suggestionRecords';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import type {
 	IGlobalSearchIndexItem,
-	TGlobalSearchIndexSection,
+	TGlobalSearchSection,
 } from '@/features/globalSearch/contracts';
-import {
-	GLOBAL_SEARCH_EXAMPLE_QUERIES,
-	checkGlobalSearchSectionMatches,
-} from '@/features/globalSearch/core/constants';
+import { checkGlobalSearchSectionMatches } from '@/features/globalSearch/core/constants';
 import { getGlobalSearchSectionFromPathname } from '@/features/globalSearch/core/context';
 import {
 	createGlobalSearchFieldValueCache,
@@ -23,6 +21,7 @@ import {
 	getGlobalSearchFieldValueMatches,
 	getGlobalSearchFieldValueSuggestions,
 } from '@/features/globalSearch/core/fieldValueSuggestions';
+import { getGlobalSearchExamples } from '@/features/globalSearch/core/localizedSyntax';
 import {
 	getGlobalSearchPrefixSuggestions,
 	getSectionPrefixGroup,
@@ -30,21 +29,31 @@ import {
 } from '@/features/globalSearch/core/parser';
 import { searchGlobalIndex } from '@/features/globalSearch/core/search';
 import { buildPreferenceSearchIndex } from '@/features/preferences/client/globalSearch/searchItems';
+import { useLocale } from '@/features/preferences/client/state/localeRuntime';
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
+import type { TLocale } from '@/shared/i18n/locale';
+
 function getExamplePreviewItem({
 	index,
+	locale,
 	previewSection,
 	query,
 }: {
 	index: ReadonlyArray<IGlobalSearchIndexItem>;
-	previewSection?: TGlobalSearchIndexSection;
+	locale: TLocale;
+	previewSection?: TGlobalSearchSection;
 	query: string;
 }) {
-	const ast = parseGlobalSearchQuery(query);
+	const ast = parseGlobalSearchQuery(query, locale);
 	const representativeSection = previewSection ?? ast.resultSection;
-	const results = searchGlobalIndex({ ast, contextSection: null, index });
+	const results = searchGlobalIndex({
+		ast,
+		contextSection: null,
+		index,
+		locale,
+	});
 	const [firstResult] = results;
 
 	if (representativeSection === null) {
@@ -67,33 +76,53 @@ function getExamplePreviewItem({
 }
 
 export function useGlobalSearchModel(query: string, selectedIndex: number) {
-	const { pathname } = usePathname();
+	const catalogLocalizationRevision = useCatalogLocalizationRevision();
 	const catalogContributor = useCatalogSearchContributor();
+	const locale = useLocale();
+	const { pathname } = usePathname();
+
 	const preferenceIndex = useMemo(
 		() =>
-			buildPreferenceSearchIndex({
-				includeAccountItems:
-					PUBLIC_RUNTIME_CONFIG.isAccountFeatureClientEnabled,
-			}),
-		[]
+			buildPreferenceSearchIndex(
+				{
+					includeAccountItems:
+						PUBLIC_RUNTIME_CONFIG.isAccountFeatureClientEnabled,
+				},
+				locale
+			),
+		[locale]
 	);
+
 	const index = useMemo(
 		() => [...catalogContributor.index, ...preferenceIndex],
 		[catalogContributor.index, preferenceIndex]
 	);
+
+	const ast = useMemo(
+		() => parseGlobalSearchQuery(query, locale),
+		[locale, query]
+	);
+
 	const currentSection = getGlobalSearchSectionFromPathname(pathname);
-	const ast = useMemo(() => parseGlobalSearchQuery(query), [query]);
 	const searchContextSection = ast.resultSection ?? currentSection;
+
 	const fieldValueCache = useMemo(
 		() =>
 			createGlobalSearchFieldValueCache({
 				contextSection: searchContextSection,
 				getOrderMap: getCatalogSearchFieldValueOrderMap,
 				index,
+				locale,
 				placeValues: catalogContributor.visiblePlaceValues,
 			}),
-		[index, searchContextSection, catalogContributor.visiblePlaceValues]
+		[
+			catalogContributor.visiblePlaceValues,
+			index,
+			locale,
+			searchContextSection,
+		]
 	);
+
 	const nameSuggestionItemMap = useMemo(() => {
 		const itemMap = new Map<string, IGlobalSearchIndexItem[]>();
 		index.forEach((item) => {
@@ -115,35 +144,43 @@ export function useGlobalSearchModel(query: string, selectedIndex: number) {
 		});
 		return itemMap;
 	}, [index, searchContextSection]);
+
 	const catalogSuggestionRecordMap = useMemo(
 		() => createCatalogSearchSuggestionRecordMap(index),
 		[index]
 	);
+
 	const results = useMemo(
 		() =>
 			searchGlobalIndex({
 				ast,
 				contextSection: searchContextSection,
 				index,
+				locale,
 			}),
-		[ast, index, searchContextSection]
+		[ast, index, locale, searchContextSection]
 	);
+
 	const prefixSuggestions = useMemo(
-		() => getGlobalSearchPrefixSuggestions(query),
-		[query]
+		() => getGlobalSearchPrefixSuggestions(query, locale),
+		[locale, query]
 	);
-	const filterAction = useMemo(
-		() => getCatalogSearchFilterAction(ast, currentSection),
-		[ast, currentSection]
-	);
+
+	const filterAction = useMemo(() => {
+		void catalogLocalizationRevision;
+		return getCatalogSearchFilterAction(ast, currentSection);
+	}, [ast, catalogLocalizationRevision, currentSection]);
+
 	const relaxedQuery = useMemo(
-		() => createRelaxedGlobalSearchQuery(ast),
-		[ast]
+		() => createRelaxedGlobalSearchQuery(ast, locale),
+		[ast, locale]
 	);
+
 	const activeFieldCondition = useMemo(
 		() => ast.fieldConditions.at(-1) ?? null,
 		[ast.fieldConditions]
 	);
+
 	const fieldConditionDisplayValues = useMemo(
 		() =>
 			ast.fieldConditions.map((fieldCondition) => {
@@ -154,6 +191,7 @@ export function useGlobalSearchModel(query: string, selectedIndex: number) {
 				const matchedValue =
 					getGlobalSearchFieldValueMatches({
 						fieldCondition,
+						locale,
 						valueCache: fieldValueCache,
 					})[0] ?? keyword;
 				return getGlobalSearchFieldValueDisplayText(
@@ -161,16 +199,19 @@ export function useGlobalSearchModel(query: string, selectedIndex: number) {
 					matchedValue
 				);
 			}),
-		[ast.fieldConditions, fieldValueCache]
+		[ast.fieldConditions, fieldValueCache, locale]
 	);
+
 	const fieldValueSuggestions = useMemo(
 		() =>
 			getGlobalSearchFieldValueSuggestions({
 				fieldCondition: activeFieldCondition,
+				locale,
 				valueCache: fieldValueCache,
 			}),
-		[activeFieldCondition, fieldValueCache]
+		[activeFieldCondition, fieldValueCache, locale]
 	);
+
 	const isQueryEmpty = query.trim().length === 0;
 	const resolvedSelectedIndex = Math.min(
 		selectedIndex,
@@ -180,7 +221,7 @@ export function useGlobalSearchModel(query: string, selectedIndex: number) {
 	const parsedSection =
 		ast.resultSection === null
 			? null
-			: getSectionPrefixGroup(ast.resultSection);
+			: getSectionPrefixGroup(ast.resultSection, locale);
 	const shouldShowQueryMeta =
 		(parsedSection !== null && parsedSection !== undefined) ||
 		ast.fieldConditions.length > 0 ||
@@ -198,13 +239,20 @@ export function useGlobalSearchModel(query: string, selectedIndex: number) {
 		ast.freeKeywords.length === 0 &&
 		ast.fieldConditions.length > 0 &&
 		ast.fieldConditions.every(({ keyword }) => keyword.length === 0);
+
+	const exampleQueries = useMemo(
+		() => getGlobalSearchExamples(locale),
+		[locale]
+	);
+
 	const examplePreviewItemMap = useMemo(
 		() =>
 			new Map(
-				GLOBAL_SEARCH_EXAMPLE_QUERIES.map((example) => [
+				exampleQueries.map((example) => [
 					example.query,
 					getExamplePreviewItem({
 						index,
+						locale,
 						...('previewSection' in example
 							? { previewSection: example.previewSection }
 							: {}),
@@ -212,7 +260,7 @@ export function useGlobalSearchModel(query: string, selectedIndex: number) {
 					}),
 				])
 			),
-		[index]
+		[exampleQueries, index, locale]
 	);
 
 	return {
@@ -221,6 +269,7 @@ export function useGlobalSearchModel(query: string, selectedIndex: number) {
 		catalogSuggestionRecordMap,
 		currentSection,
 		examplePreviewItemMap,
+		exampleQueries,
 		fieldConditionDisplayValues,
 		fieldValueCache,
 		fieldValueSuggestions,
@@ -229,6 +278,7 @@ export function useGlobalSearchModel(query: string, selectedIndex: number) {
 		isFieldValueSuggestionOnly,
 		isPrefixSuggestionOnly,
 		isQueryEmpty,
+		locale,
 		nameSuggestionItemMap,
 		parsedSection,
 		prefixSuggestions,

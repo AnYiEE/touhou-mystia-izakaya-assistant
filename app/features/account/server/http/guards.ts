@@ -36,12 +36,8 @@ export type TAccountGuardResult<T = undefined> =
 			status: 'error';
 	  };
 
-function createAccountRateLimitKey(parts: ReadonlyArray<string>) {
-	return JSON.stringify(parts);
-}
-
 function createAccountRateLimitCapacityGroup(scope: string, dimension: string) {
-	return createAccountRateLimitKey([scope, dimension]);
+	return JSON.stringify([scope, dimension]);
 }
 
 function createAccountRateLimitCookieHash(value: string) {
@@ -136,11 +132,7 @@ export function checkAccountRateLimitGuard(
 				scope,
 				'request'
 			),
-			key: createAccountRateLimitKey([
-				scope,
-				'request',
-				trustedRequestIp,
-			]),
+			key: JSON.stringify([scope, 'request', trustedRequestIp]),
 		});
 	}
 	if (trustedRequestIp === null && options.noTrustedIpGate === true) {
@@ -149,7 +141,7 @@ export function checkAccountRateLimitGuard(
 				scope,
 				'no-trusted-ip-gate'
 			),
-			key: createAccountRateLimitKey([scope, 'no-trusted-ip-gate']),
+			key: JSON.stringify([scope, 'no-trusted-ip-gate']),
 		});
 	}
 
@@ -159,11 +151,7 @@ export function checkAccountRateLimitGuard(
 				scope,
 				'username'
 			),
-			key: createAccountRateLimitKey([
-				scope,
-				'username',
-				usernameNormalized,
-			]),
+			key: JSON.stringify([scope, 'username', usernameNormalized]),
 		});
 		if (trustedRequestIp !== null) {
 			keys.push({
@@ -171,7 +159,7 @@ export function checkAccountRateLimitGuard(
 					scope,
 					'username-request'
 				),
-				key: createAccountRateLimitKey([
+				key: JSON.stringify([
 					scope,
 					'username-request',
 					usernameNormalized,
@@ -188,7 +176,7 @@ export function checkAccountRateLimitGuard(
 		const hashedValue = createAccountRateLimitCookieHash(value);
 		keys.push({
 			capacityGroup: createAccountRateLimitCapacityGroup(scope, name),
-			key: createAccountRateLimitKey([scope, name, hashedValue]),
+			key: JSON.stringify([scope, name, hashedValue]),
 		});
 		if (trustedRequestIp !== null) {
 			keys.push({
@@ -196,7 +184,7 @@ export function checkAccountRateLimitGuard(
 					scope,
 					`${name}-request`
 				),
-				key: createAccountRateLimitKey([
+				key: JSON.stringify([
 					scope,
 					`${name}-request`,
 					hashedValue,
@@ -215,7 +203,7 @@ export function checkAccountRateLimitGuard(
 				scope,
 				'session'
 			),
-			key: createAccountRateLimitKey([
+			key: JSON.stringify([
 				scope,
 				'session',
 				createAccountRateLimitCookieHash(accountSession),
@@ -232,7 +220,7 @@ export function checkAccountRateLimitGuard(
 				scope,
 				'admin-session'
 			),
-			key: createAccountRateLimitKey([
+			key: JSON.stringify([
 				scope,
 				'admin-session',
 				createAccountRateLimitCookieHash(adminSession),

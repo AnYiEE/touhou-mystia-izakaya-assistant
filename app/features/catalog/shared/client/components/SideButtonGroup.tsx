@@ -7,8 +7,11 @@ import { type PropsWithChildren, memo, useCallback } from 'react';
 import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
 import Tooltip from '@/design/ui/components/tooltip';
 
+import { appShellMessages } from '@/features/appShell/client/messages';
 import { openPreferencesModal } from '@/features/preferences/client/overlayCommands';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps extends Pick<HTMLDivElementAttributes, 'className'> {}
 
@@ -16,6 +19,7 @@ export default memo<PropsWithChildren<IProps>>(function SideButtonGroup({
 	children,
 	className,
 }) {
+	const { t } = useI18n(appShellMessages);
 	const vibrate = useVibrate();
 
 	const handleClick = useCallback(() => {
@@ -23,7 +27,7 @@ export default memo<PropsWithChildren<IProps>>(function SideButtonGroup({
 		openPreferencesModal({ openSource: 'sideButton' });
 	}, [vibrate]);
 
-	const preferencesLabel = '设置';
+	const preferencesLabel = t('appShell.nav.preferences');
 
 	return (
 		<div className="absolute">

@@ -146,10 +146,6 @@ function checkStoredSyncRevision(value: unknown): value is number {
 	return isNonNegativeSafeInteger(value) && value < Number.MAX_SAFE_INTEGER;
 }
 
-function checkStoredClearedStateEpoch(value: unknown): value is number {
-	return isNonNegativeSafeInteger(value);
-}
-
 export function readAccountSyncMeta(userId: string) {
 	const meta = readAccountJsonStorage<TStoredAccountSyncMeta | null>(
 		createAccountSyncMetaStorageKey(userId),
@@ -168,9 +164,7 @@ export function readAccountSyncMeta(userId: string) {
 	const syncStatus = checkAccountSyncStatus(meta.sync_status)
 		? meta.sync_status
 		: ACCOUNT_SYNC_STATUS_MAP.active;
-	const clearedStateEpoch = checkStoredClearedStateEpoch(
-		meta.clearedStateEpoch
-	)
+	const clearedStateEpoch = isNonNegativeSafeInteger(meta.clearedStateEpoch)
 		? meta.clearedStateEpoch
 		: undefined;
 	const sanitizedMeta: IAccountSyncMeta = {
@@ -276,7 +270,7 @@ export function applyRemoteAccountRecords({
 	);
 	const previousClearedStateEpochCandidate =
 		previousStoredMeta?.clearedStateEpoch;
-	const previousClearedStateEpoch = checkStoredClearedStateEpoch(
+	const previousClearedStateEpoch = isNonNegativeSafeInteger(
 		previousClearedStateEpochCandidate
 	)
 		? previousClearedStateEpochCandidate

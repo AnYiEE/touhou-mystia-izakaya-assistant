@@ -20,9 +20,12 @@ import { fetchServiceApi } from '@/infrastructure/http/client/fetchServiceApi';
 import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
+import type { TLocale } from '@/shared/i18n/locale';
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkOrderedArrayEqual } from '@/shared/utilities/collections/check';
 
 import { type IAnnouncementMarqueeMetrics } from './components/AnnouncementHtml';
+import { announcementClientMessages } from './messages';
 import {
 	type IAnnouncementTransition,
 	type TAnnouncementTransitionDirection,
@@ -60,12 +63,16 @@ interface IDisplayedMarqueeMetrics extends IAnnouncementMarqueeMetrics {
 
 export function useAnnouncementCarouselController(
 	serverAnnouncements: IAnnouncementPublicItem[],
+	serverAnnouncementLocale: TLocale,
 	serverViewerSignature: string | null
 ) {
+	const { locale, t } = useI18n(announcementClientMessages);
 	const isReducedMotion = useReducedMotion();
 	const maintenance = useSiteMaintenance();
+
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const accountUser = accountStore.shared.user.use();
+
 	const rootRef = useRef<HTMLElement>(null);
 	const isMouseHoveringRef = useRef(false);
 	const lastPointerInteractionAtRef = useRef(0);
@@ -106,7 +113,9 @@ export function useAnnouncementCarouselController(
 	}, [serverAnnouncements]);
 
 	useAnnouncementViewerSync({
+		locale,
 		onAnnouncements: setAnnouncementSource,
+		renderedLocale: serverAnnouncementLocale,
 		serverViewerSignature,
 	});
 
@@ -142,9 +151,14 @@ export function useAnnouncementCarouselController(
 		marqueeDuration
 	);
 	const maintenanceItem = useMemo(
-		() => createMaintenanceAnnouncement(maintenance),
-		[maintenance]
+		() =>
+			createMaintenanceAnnouncement(
+				maintenance,
+				t('announcements.maintenance.title')
+			),
+		[maintenance, t]
 	);
+
 	const writeAnnouncementBarOffset = useCallback(
 		(rootElement: HTMLElement | null) => {
 			const rect = rootElement?.getBoundingClientRect();
@@ -618,6 +632,7 @@ export function useAnnouncementCarouselController(
 			void fetchServiceApi('/api/v1/announcements', {
 				body: JSON.stringify({
 					id: dismissedItem.id,
+					token: dismissedItem.dismissed_token,
 					updatedAt: dismissedItem.updated_at,
 				}),
 				headers: {

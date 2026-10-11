@@ -19,14 +19,14 @@ import { normalGuestMealsShape } from '@/features/account/sync/shapes/normalGues
 import { specialGuestMealsShape } from '@/features/account/sync/shapes/specialGuestMeals';
 import { specialGuestPlansShape } from '@/features/account/sync/shapes/specialGuestPlans';
 import {
-	type TTabVisibilityState,
-	tabVisibilityStateMap,
-} from '@/features/catalog/guests/shared/state/tabVisibility';
-import type {
 	ITableSortDescriptor,
 	TBeverageTableSortKey,
 	TFoodTableSortKey,
 } from '@/features/catalog/guests/shared/state/tableDescriptors';
+import {
+	type TTabVisibilityState,
+	tabVisibilityStateMap,
+} from '@/features/catalog/guests/shared/state/tabVisibility';
 import {
 	normalizeAllowedArray,
 	toAllowedValueSet,

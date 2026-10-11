@@ -21,6 +21,10 @@ import { Sprite as SpriteClass } from '@/features/catalog/presentation/SpriteMod
 import Sprite, {
 	type ISpriteProps,
 } from '@/features/catalog/shared/client/components/Sprite';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
+
+import { DEFAULT_LOCALE } from '@/shared/i18n/locale';
+import { useCurrentLocale } from '@/shared/i18n/useI18n';
 
 interface ISpriteState {
 	fallback?: ReactNode;
@@ -68,8 +72,12 @@ function SlidingSprite<T extends TSpriteTarget>({
 	width,
 	...props
 }: IProps<T>) {
+	const catalogLocalizationRevision = useCatalogLocalizationRevision();
+	const currentLocale = useCurrentLocale();
 	const isReducedMotion = useReducedMotion();
+
 	const instance = SpriteClass.getInstance(target);
+
 	const calculatedIndex = useMemo(() => {
 		if (isFallback) {
 			return 0;
@@ -81,9 +89,18 @@ function SlidingSprite<T extends TSpriteTarget>({
 		}
 		return instance.findIndexById(recordId);
 	}, [instance, isFallback, recordId]);
+
+	const localizedName = useMemo(() => {
+		void catalogLocalizationRevision;
+		return currentLocale === DEFAULT_LOCALE
+			? instance.findNameByIndex(calculatedIndex)
+			: instance.getDisplayPropsByIndex(calculatedIndex, 'name');
+	}, [calculatedIndex, catalogLocalizationRevision, currentLocale, instance]);
+
 	const targetKey = isFallback
 		? `${target}:fallback:${fallbackKey}`
 		: `${target}:sprite:${calculatedIndex}:${recordId ?? ''}`;
+
 	const currentSprite = useMemo<ISpriteState>(
 		() => ({
 			fallback,
@@ -93,15 +110,18 @@ function SlidingSprite<T extends TSpriteTarget>({
 		}),
 		[calculatedIndex, fallback, isFallback, targetKey]
 	);
+
 	const currentSpriteRef = useRef(currentSprite);
-	const isTargetChanged = currentSpriteRef.current.key !== targetKey;
 	const [previousSprite, setPreviousSprite] = useState<ISpriteState | null>(
 		null
 	);
+
+	const isTargetChanged = currentSpriteRef.current.key !== targetKey;
 	const activePreviousSprite = isTargetChanged
 		? currentSpriteRef.current
 		: previousSprite;
 	const isAsButton = role === 'button';
+
 	const spriteSizeProps = useMemo(
 		() => ({
 			...(height === undefined ? {} : { height }),
@@ -110,10 +130,12 @@ function SlidingSprite<T extends TSpriteTarget>({
 		}),
 		[height, size, width]
 	);
+
 	const visibleSpriteStyle = useMemo(
 		() => ({ ...style, display: 'block' as const }),
 		[style]
 	);
+
 	const hiddenSpriteStyle = useMemo(
 		() => ({
 			...style,
@@ -122,6 +144,7 @@ function SlidingSprite<T extends TSpriteTarget>({
 		}),
 		[style]
 	);
+
 	const handleAnimationComplete = useCallback(() => {
 		setPreviousSprite(null);
 	}, []);
@@ -153,12 +176,7 @@ function SlidingSprite<T extends TSpriteTarget>({
 			onPress={onPress}
 			role={role ?? 'img'}
 			tabIndex={tabIndex ?? (isAsButton ? 0 : undefined)}
-			title={
-				title ??
-				(isFallback
-					? undefined
-					: instance.findNameByIndex(calculatedIndex))
-			}
+			title={title ?? (isFallback ? undefined : localizedName)}
 			className={cn(
 				'relative inline-block overflow-hidden text-[0px] leading-none',
 				{

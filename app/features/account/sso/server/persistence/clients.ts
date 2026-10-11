@@ -1,5 +1,6 @@
 import { type Transaction, sql } from 'kysely';
 
+import type { TSsoClientNameTranslations } from '@/features/account/contracts';
 import { getAccountDatabase } from '@/features/account/server/persistence/database';
 import { createSsoClientSecret } from '@/features/account/sso/server/crypto';
 
@@ -13,6 +14,8 @@ import type {
 } from '@/infrastructure/database/schema';
 import { escapeSqliteLikePattern } from '@/infrastructure/database/sqlite/queryValues';
 import { TABLE_NAME_MAP } from '@/infrastructure/database/tableNames';
+
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/shared/i18n/locale';
 
 import {
 	type ISsoCallbackMetadataInput,
@@ -47,6 +50,7 @@ export interface ISsoClientInput {
 	id: string;
 	loopback_redirect_paths: string[];
 	name: string;
+	name_translations: TSsoClientNameTranslations;
 	secret_hashes: string[];
 	status_callback_url: string | null;
 }
@@ -117,8 +121,16 @@ export interface ISsoClientDeleteOptions {
 	actor?: ISsoGrantActorInput;
 }
 
-function serializeStringArray(value: string[]) {
-	return JSON.stringify(value);
+function serializeNameTranslations(value: TSsoClientNameTranslations) {
+	const entries: Array<[string, string]> = [];
+	for (const locale of SUPPORTED_LOCALES) {
+		const translation = value[locale];
+		if (locale !== DEFAULT_LOCALE && translation !== undefined) {
+			entries.push([locale, translation]);
+		}
+	}
+
+	return JSON.stringify(Object.fromEntries(entries));
 }
 
 function normalizeNullableTotalCount(value: number | string | bigint | null) {
@@ -134,17 +146,18 @@ function createSsoClientRecord(
 	return {
 		cancel_redirect_uri: input.cancel_redirect_uri,
 		created_at: now,
-		custom_scheme_redirect_uris: serializeStringArray(
+		custom_scheme_redirect_uris: JSON.stringify(
 			input.custom_scheme_redirect_uris
 		),
 		disabled_at: input.disabled_at,
-		https_redirect_uris: serializeStringArray(input.https_redirect_uris),
+		https_redirect_uris: JSON.stringify(input.https_redirect_uris),
 		id: input.id,
-		loopback_redirect_paths: serializeStringArray(
-			input.loopback_redirect_paths
-		),
+		loopback_redirect_paths: JSON.stringify(input.loopback_redirect_paths),
 		name: input.name,
-		secret_hashes: serializeStringArray(input.secret_hashes),
+		name_translations_json: serializeNameTranslations(
+			input.name_translations
+		),
+		secret_hashes: JSON.stringify(input.secret_hashes),
 		status_callback_url: input.status_callback_url,
 		updated_at: now,
 	};
@@ -190,15 +203,16 @@ function createSsoClientConfigUpdate(
 ) {
 	return {
 		cancel_redirect_uri: input.cancel_redirect_uri,
-		custom_scheme_redirect_uris: serializeStringArray(
+		custom_scheme_redirect_uris: JSON.stringify(
 			input.custom_scheme_redirect_uris
 		),
 		disabled_at: input.disabled_at,
-		https_redirect_uris: serializeStringArray(input.https_redirect_uris),
-		loopback_redirect_paths: serializeStringArray(
-			input.loopback_redirect_paths
-		),
+		https_redirect_uris: JSON.stringify(input.https_redirect_uris),
+		loopback_redirect_paths: JSON.stringify(input.loopback_redirect_paths),
 		name: input.name,
+		name_translations_json: serializeNameTranslations(
+			input.name_translations
+		),
 		status_callback_url: input.status_callback_url,
 		updated_at: now,
 	} satisfies TSsoClientUpdate;

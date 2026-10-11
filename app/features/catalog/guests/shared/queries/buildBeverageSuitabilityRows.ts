@@ -12,11 +12,12 @@ import {
 	type ITableSortDescriptor,
 	type TBeverageTableSortKey,
 } from '@/features/catalog/guests/shared/state/tableDescriptors';
+import { getActiveLocalizationLocale } from '@/features/catalog/shared/client/localization/activeLocalizationLocale';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
+import { compareLocalizedName } from '@/shared/utilities/search/localeNameMatch';
 import { type TSearchMatcher } from '@/shared/utilities/search/matchPinyinName';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 import {
 	buildPaginateRows,
@@ -34,7 +35,9 @@ function sortBeverageRows(
 	switch (column) {
 		case 'beverage':
 			return rows.toSorted(({ name: a }, { name: b }) =>
-				isAscending ? pinyinSort(a, b) : pinyinSort(b, a)
+				isAscending
+					? compareLocalizedName(a, b, getActiveLocalizationLocale())
+					: compareLocalizedName(b, a, getActiveLocalizationLocale())
 			);
 		case 'price':
 			return rows.toSorted(({ price: a }, { price: b }) =>

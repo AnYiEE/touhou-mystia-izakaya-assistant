@@ -4,6 +4,11 @@ import { type PropsWithChildren, memo, useMemo } from 'react';
 import Switch, { type ISwitchProps } from '@/design/ui/components/switch';
 import Tooltip from '@/design/ui/components/tooltip';
 
+import { preferencesMessages } from '@/features/preferences/client/messages';
+
+import { isChineseLocale } from '@/shared/i18n/locale';
+import { useI18n } from '@/shared/i18n/useI18n';
+
 interface IProps extends Pick<
 	ISwitchProps,
 	'color' | 'className' | 'isDisabled' | 'title'
@@ -22,14 +27,33 @@ export default memo<PropsWithChildren<IProps>>(function SwitchItem({
 	title,
 	...props
 }) {
+	const { locale, t } = useI18n(preferencesMessages);
+
+	const isCompactSwitchTrack = isChineseLocale(locale);
+	const isShortStateLabel = locale === 'en';
+
 	const classNames = useMemo(
 		() => ({
 			base: cn(isDisabled && 'pointer-events-auto cursor-not-allowed'),
-			endContent: 'leading-none',
+			endContent: isCompactSwitchTrack
+				? 'leading-none'
+				: 'leading-none group-data-[selected=true]:opacity-0',
 			hiddenInput: cn(isDisabled && 'pointer-events-none'),
-			startContent: 'leading-none',
+			startContent: isCompactSwitchTrack
+				? 'leading-none'
+				: 'leading-none opacity-0 group-data-[selected=true]:opacity-100',
+			thumb: isCompactSwitchTrack
+				? undefined
+				: isShortStateLabel
+					? 'group-data-[selected=true]:ms-6'
+					: 'group-data-[selected=true]:ms-8',
+			wrapper: isCompactSwitchTrack
+				? undefined
+				: isShortStateLabel
+					? 'w-12'
+					: 'w-14',
 		}),
-		[isDisabled]
+		[isCompactSwitchTrack, isDisabled, isShortStateLabel]
 	);
 
 	return (
@@ -44,8 +68,8 @@ export default memo<PropsWithChildren<IProps>>(function SwitchItem({
 				size="sm"
 			>
 				<Switch
-					endContent={<span>关</span>}
-					startContent={<span>开</span>}
+					endContent={<span>{t('preferences.switch.off')}</span>}
+					startContent={<span>{t('preferences.switch.on')}</span>}
 					isDisabled={Boolean(isDisabled)}
 					isSelected={isSelected}
 					size="sm"

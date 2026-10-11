@@ -1,5 +1,6 @@
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
+import { getCookerTypeLabel } from '@/domain/catalog/localizedCategoryLabels';
 import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
 import type { TCookerTypeId } from '@/domain/data/cookers/types';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
@@ -80,7 +81,7 @@ export function createCatalogSearchSuggestionRecordMap(
 					}
 					addRecord(
 						fieldType,
-						ingredientCatalog.getPropsById(recordId, 'name'),
+						ingredientCatalog.getDisplayPropsById(recordId, 'name'),
 						{ recordId, spriteTarget: 'ingredient' }
 					);
 				});
@@ -91,7 +92,7 @@ export function createCatalogSearchSuggestionRecordMap(
 					if (!checkCookerType(type)) {
 						return;
 					}
-					addRecord(fieldType, COOKER_TYPE_LABEL_MAP[type], {
+					addRecord(fieldType, getCookerTypeLabel(type), {
 						recordId: cookerCatalog.getIdByTypeAndSeries(type, 0),
 						spriteTarget: 'cooker',
 					});

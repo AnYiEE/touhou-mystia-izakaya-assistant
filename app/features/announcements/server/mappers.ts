@@ -1,5 +1,6 @@
 import {
 	type IAdminAnnouncementProfile,
+	type IAnnouncementLocalizedContent,
 	type IAnnouncementPublicItem,
 } from '@/features/announcements/contracts';
 import { createAnnouncementDismissalToken } from '@/features/announcements/dismissals';
@@ -10,6 +11,7 @@ import {
 
 import type { TAnnouncement, TUser } from '@/infrastructure/database/schema';
 
+import type { TLocale } from '@/shared/i18n/locale';
 import {
 	isNonNegativeSafeInteger,
 	isNullableNonNegativeSafeInteger,
@@ -17,6 +19,10 @@ import {
 } from '@/shared/utilities/numbers/check';
 
 import { sanitizeAnnouncementHtml } from './html';
+import {
+	parseAnnouncementLocales,
+	parseAnnouncementTranslations,
+} from './localization';
 
 export function checkAnnouncementNumericState(announcement: TAnnouncement) {
 	return (
@@ -112,10 +118,16 @@ export function createAdminAnnouncementProfile(
 	const targetUserIds = parseAnnouncementTargetUserIds(
 		announcement.target_user_ids_json
 	);
+	const locales = parseAnnouncementLocales(announcement.locales_json);
+	const translations = parseAnnouncementTranslations(
+		announcement.translations_json
+	);
 	if (
 		!checkAnnouncementLevel(announcement.level) ||
 		!checkAnnouncementAudience(announcement.audience) ||
 		!checkAnnouncementNumericState(announcement) ||
+		locales === null ||
+		translations === null ||
 		targetUserIds === null
 	) {
 		return null;
@@ -132,18 +144,23 @@ export function createAdminAnnouncementProfile(
 		html: sanitizeAnnouncementHtml(announcement.html),
 		id: announcement.id,
 		level: announcement.level,
+		locales,
 		priority: announcement.priority,
 		revision: announcement.revision,
 		starts_at: announcement.starts_at,
 		target_user_ids: targetUserIds,
 		title: announcement.title,
+		translations,
 		updated_at: announcement.updated_at,
 	};
 }
 
 export function createPublicAnnouncementItem(
 	announcement: TAnnouncement,
-	sanitizedHtml: string
+	locale: TLocale,
+	localized: IAnnouncementLocalizedContent,
+	sanitizedHtml: string,
+	localeUpdatedAt: number
 ): IAnnouncementPublicItem | null {
 	if (
 		!checkAnnouncementLevel(announcement.level) ||
@@ -157,7 +174,8 @@ export function createPublicAnnouncementItem(
 		audience: announcement.audience,
 		dismissed_token: createAnnouncementDismissalToken(
 			announcement.id,
-			announcement.updated_at
+			locale,
+			localeUpdatedAt
 		),
 		dismissible: normalizeAnnouncementBoolean(announcement.dismissible),
 		ends_at: announcement.ends_at,
@@ -167,7 +185,7 @@ export function createPublicAnnouncementItem(
 		priority: announcement.priority,
 		revision: announcement.revision,
 		starts_at: announcement.starts_at,
-		title: announcement.title,
+		title: localized.title,
 		updated_at: announcement.updated_at,
 	};
 }

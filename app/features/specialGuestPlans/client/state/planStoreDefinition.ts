@@ -61,6 +61,7 @@ interface ISpecialGuestPlansStoreContext {
 	};
 	shared: {
 		beverage: { table: { hiddenBeverages: State<Set<TBeverageId>> } };
+		catalogLocalizationRevision: State<number>;
 		drawer: State<
 			(typeof specialGuestPlansStateDefinition)['shared']['drawer']
 		>;
@@ -114,6 +115,11 @@ export function createSpecialGuestPlansComputedDefinition(
 ) {
 	const resolvedGroups = createComputedAccessor((getOrUse) => {
 		const shouldGet = getOrUse === 'get';
+		if (shouldGet) {
+			currentStore.shared.catalogLocalizationRevision.get();
+		} else {
+			currentStore.shared.catalogLocalizationRevision.use();
+		}
 		const plans = shouldGet
 			? currentStore.persistence.plans.get()
 			: currentStore.persistence.plans.use();

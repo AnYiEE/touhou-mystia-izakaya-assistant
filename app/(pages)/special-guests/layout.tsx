@@ -1,21 +1,26 @@
 import { type Metadata } from 'next';
 
-import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import {
+	buildCatalogPageMetadata,
+	readLocalizedCatalogNames,
+	readMetadataLocaleContext,
+} from '@/features/appShell/seo/pageMetadata';
 
-import { getPageTitle } from '@/features/appShell/navigation/getPageTitle';
+export async function generateMetadata(): Promise<Metadata> {
+	const { isPrefixed, locale } = await readMetadataLocaleContext();
+	const names = await readLocalizedCatalogNames(
+		'/special-guests',
+		locale,
+		10
+	);
 
-import { SITE_METADATA } from '@/shared/site/metadata';
-
-const { description, keywords } = SITE_METADATA;
-
-const specialGuests = SpecialGuestCatalog.getInstance().getNames(10);
-const title = getPageTitle('/special-guests');
-
-export const metadata: Metadata = {
-	title,
-
-	description: `本页面可以为${specialGuests.join('、')}等${title}搭配料理套餐或查询羁绊奖励和符卡效果。${description}`,
-	keywords: keywords.toSpliced(18, Infinity, ...specialGuests),
-};
+	return buildCatalogPageMetadata({
+		descriptionKey: 'site.seo.description.specialGuests',
+		href: '/special-guests',
+		isPrefixed,
+		locale,
+		names,
+	});
+}
 
 export { default } from '@/features/preferences/client/components/PreferencesModalLayout';

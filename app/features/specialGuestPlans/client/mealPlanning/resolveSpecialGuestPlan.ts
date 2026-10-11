@@ -15,7 +15,6 @@ import type {
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import type { TMapLabel } from '@/domain/data/places/types';
 import type { TDlc } from '@/domain/data/shared/types';
-import { FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import { evaluateSpecialGuestSavedMeal } from '@/domain/evaluation/evaluateSavedMeal';
 import type { TRatingKey } from '@/domain/evaluation/types';
@@ -24,6 +23,8 @@ import type { IMealFood, ISpecialGuestSavedMeal } from '@/domain/meals/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import { getVisibleSavedMeals } from '@/features/catalog/guests/shared/mealPlanning/getVisibleSavedMeals';
+import { getActiveLocalizationLocale } from '@/features/catalog/shared/client/localization/activeLocalizationLocale';
+import { compareFoodTagLabels } from '@/features/catalog/shared/client/localization/tagLabels';
 import type {
 	IResolvedSpecialGuestPlanGroup,
 	IResolvedSpecialGuestPlanMeal,
@@ -31,6 +32,8 @@ import type {
 	TSpecialGuestPlanGuestSort,
 } from '@/features/specialGuestPlans/contracts';
 
+import { type TLocale } from '@/shared/i18n/locale';
+import { compareLocalizedName } from '@/shared/utilities/search/localeNameMatch';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
@@ -65,9 +68,15 @@ const RATING_SORT_SCORE_MAP = {
 	good: 3,
 	norm: 2,
 } satisfies Record<TRatingKey, number>;
+
+type TSpecialGuestPlanSortMeta = Map<
+	TSpecialGuestId,
+	{ dlc: TDlc; index: number; name: TSpecialGuestName }
+>;
+
 const specialGuestPlanSortMetaCache = new WeakMap<
 	SpecialGuestCatalog,
-	Map<TSpecialGuestId, { dlc: TDlc; index: number; name: TSpecialGuestName }>
+	{ locale: TLocale; sortMeta: TSpecialGuestPlanSortMeta }
 >();
 
 function getRatingSortScore(rating: TRatingKey | null) {
@@ -150,15 +159,27 @@ function getManualPlanSpecialGuests({
 function getSpecialGuestPlanSortMetaMap(
 	currentSpecialGuestCatalog: SpecialGuestCatalog
 ) {
-	return specialGuestPlanSortMetaCache.getOrInsertComputed(
-		currentSpecialGuestCatalog,
-		() =>
-			new Map(
-				currentSpecialGuestCatalog.data.map(
-					({ dlc, id, name }, index) => [id, { dlc, index, name }]
-				)
-			)
+	const locale = getActiveLocalizationLocale();
+	const cached = specialGuestPlanSortMetaCache.get(
+		currentSpecialGuestCatalog
 	);
+	if (cached?.locale === locale) {
+		return cached.sortMeta;
+	}
+
+	const sortMeta: TSpecialGuestPlanSortMeta = new Map(
+		currentSpecialGuestCatalog.data.map(({ dlc, id, name }, index) => [
+			id,
+			{ dlc, index, name },
+		])
+	);
+
+	specialGuestPlanSortMetaCache.set(currentSpecialGuestCatalog, {
+		locale,
+		sortMeta,
+	});
+
+	return sortMeta;
 }
 
 function sortSpecialGuests({
@@ -181,8 +202,16 @@ function sortSpecialGuests({
 			const aName = sortMetaMap.get(a)?.name ?? '';
 			const bName = sortMetaMap.get(b)?.name ?? '';
 			return specialGuestSort === 'pinyin-asc-flat'
-				? pinyinSort(aName, bName)
-				: pinyinSort(bName, aName);
+				? compareLocalizedName(
+						aName,
+						bName,
+						getActiveLocalizationLocale()
+					)
+				: compareLocalizedName(
+						bName,
+						aName,
+						getActiveLocalizationLocale()
+					);
 		});
 	}
 
@@ -200,9 +229,20 @@ function sortSpecialGuests({
 				return dlcSort;
 			}
 
+			const aName = aMeta?.name ?? '';
+			const bName = bMeta?.name ?? '';
+
 			return specialGuestSort === 'pinyin-asc'
-				? pinyinSort(aMeta?.name ?? '', bMeta?.name ?? '')
-				: pinyinSort(bMeta?.name ?? '', aMeta?.name ?? '');
+				? compareLocalizedName(
+						aName,
+						bName,
+						getActiveLocalizationLocale()
+					)
+				: compareLocalizedName(
+						bName,
+						aName,
+						getActiveLocalizationLocale()
+					);
 		});
 	}
 
@@ -271,7 +311,7 @@ function sortResolvedSpecialGuestPlanMeals({
 		const foodTagSort = compareOptionalTags(
 			a.meal.order.foodTag,
 			b.meal.order.foodTag,
-			(a, b) => pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b])
+			compareFoodTagLabels
 		);
 		if (foodTagSort !== 0) {
 			return foodTagSort;

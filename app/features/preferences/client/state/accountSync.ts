@@ -9,6 +9,8 @@ import {
 	type TFoodTableColumnKey,
 } from '@/features/catalog/guests/shared/state/tableDescriptors';
 
+import type { TLocalePreference } from '@/shared/i18n/locale';
+
 import { globalStore } from './globalPersistenceStore';
 
 export interface IGlobalPreferencesPersistenceSource {
@@ -17,6 +19,7 @@ export interface IGlobalPreferencesPersistenceSource {
 	guestCardTagsTooltip: unknown;
 	hiddenItems: unknown;
 	highAppearance: unknown;
+	locale: unknown;
 	popularTrend: unknown;
 	suggestMeals: unknown;
 	table: unknown;
@@ -34,6 +37,7 @@ export interface IGlobalPreferencesPersistenceSnapshot {
 	guestCardTagsTooltip: boolean;
 	hiddenItems: { dlcs: string[] };
 	highAppearance: boolean;
+	locale: TLocalePreference;
 	popularTrend: IPopularTrend;
 	suggestMeals: {
 		enabled: boolean;
@@ -67,6 +71,7 @@ export function readGlobalPreferencesPersistenceSource(): IGlobalPreferencesPers
 		guestCardTagsTooltip: persistence.guestCardTagsTooltip,
 		hiddenItems: persistence.hiddenItems,
 		highAppearance: persistence.highAppearance,
+		locale: persistence.locale,
 		popularTrend: persistence.popularTrend,
 		suggestMeals: persistence.suggestMeals,
 		table: persistence.table,
@@ -84,6 +89,7 @@ export function replaceGlobalPreferencesPersistenceSnapshot(
 		guestCardTagsTooltip: snapshot.guestCardTagsTooltip,
 		hiddenItems: snapshot.hiddenItems,
 		highAppearance: snapshot.highAppearance,
+		locale: snapshot.locale,
 		popularTrend: snapshot.popularTrend,
 		suggestMeals: snapshot.suggestMeals,
 		table: snapshot.table,

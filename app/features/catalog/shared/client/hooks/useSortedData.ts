@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import type {
 	TItemData,
 	TItemInstance,
@@ -16,9 +17,11 @@ export function useSortedData<T extends TItemInstance>(
 	filteredData: TItemData<T>,
 	pinyinSortState: TPinyinSortState
 ) {
+	const revision = useCatalogLocalizationRevision();
 	const shouldSkipProcessData = useSkipProcessItemData();
 
 	const sortData = useCallback(() => {
+		void revision;
 		switch (pinyinSortState) {
 			case PINYIN_SORT_STATE_MAP.ascending:
 				return instance.getPinyinSortedData(filteredData as never);
@@ -29,12 +32,12 @@ export function useSortedData<T extends TItemInstance>(
 			default:
 				return filteredData;
 		}
-	}, [instance, filteredData, pinyinSortState]);
+	}, [instance, filteredData, pinyinSortState, revision]);
 
-	const sortedData = useMemo(
-		() => (shouldSkipProcessData ? filteredData : sortData()),
-		[filteredData, shouldSkipProcessData, sortData]
-	);
+	const sortedData = useMemo(() => {
+		void revision;
+		return shouldSkipProcessData ? filteredData : sortData();
+	}, [filteredData, revision, shouldSkipProcessData, sortData]);
 
 	return sortedData as TItemData<T>;
 }

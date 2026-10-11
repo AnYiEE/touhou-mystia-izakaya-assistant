@@ -6,7 +6,7 @@ import {
 	writeAccountAuditLogBestEffort,
 	writeAccountAuditLogInTransaction,
 } from '@/features/account/server/audit/service';
-import { createAccountCsrfToken } from '@/features/account/server/auth/accountCsrf';
+import { createCsrfToken } from '@/features/account/server/auth/csrf';
 import { hashPassword } from '@/features/account/server/auth/password';
 import { type IAuthenticatedAccount } from '@/features/account/server/auth/requestAuthentication';
 import { updateCredentialAndKeepCurrentSession } from '@/features/account/server/persistence/repositories/credentials';
@@ -97,7 +97,7 @@ export async function setInitialPassword({
 	}
 
 	return {
-		csrfToken: createAccountCsrfToken(account.sessionTokenHash),
+		csrfToken: createCsrfToken(account.sessionTokenHash),
 		status: 'ok',
 	};
 }

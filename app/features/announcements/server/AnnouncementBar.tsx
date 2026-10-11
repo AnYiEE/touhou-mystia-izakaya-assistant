@@ -12,6 +12,8 @@ import {
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
+import { DEFAULT_LOCALE, type TLocale } from '@/shared/i18n/locale';
+
 interface IProps {
 	viewer?: TAccountFeatureViewer | null;
 }
@@ -40,6 +42,7 @@ export default async function AnnouncementBar({ viewer = null }: IProps) {
 	}
 
 	let announcements: IAnnouncementPublicItem[] = [];
+	let serverAnnouncementLocale: TLocale = DEFAULT_LOCALE;
 	let serverViewerSignature: string | null = null;
 
 	try {
@@ -48,6 +51,11 @@ export default async function AnnouncementBar({ viewer = null }: IProps) {
 		const status = await featureStatusModule.getAccountFeatureStatus();
 		if (status.enabled) {
 			const serviceModule = await import('./public/service');
+			const requestLocaleModule =
+				await import('@/features/preferences/server/requestLocale');
+			const { locale } =
+				await requestLocaleModule.readRequestLocaleContext();
+			serverAnnouncementLocale = locale;
 			const cookieStore = await cookies();
 			const dismissedTokens = parseAnnouncementDismissedCookieValue(
 				cookieStore.get(ANNOUNCEMENT_DISMISSED_COOKIE_NAME)?.value ??
@@ -61,6 +69,7 @@ export default async function AnnouncementBar({ viewer = null }: IProps) {
 				await serviceModule.getVisibleAnnouncementsForRequestContext({
 					...requestViewer,
 					dismissedTokens,
+					locale,
 				});
 			if (visible.active) {
 				announcements = visible.announcements;
@@ -79,6 +88,7 @@ export default async function AnnouncementBar({ viewer = null }: IProps) {
 	return (
 		<AnnouncementCarousel
 			serverAnnouncements={announcements}
+			serverAnnouncementLocale={serverAnnouncementLocale}
 			serverViewerSignature={serverViewerSignature}
 		/>
 	);

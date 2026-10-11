@@ -3,11 +3,14 @@ import type {
 	IGlobalSearchPrefixSuggestion,
 } from '@/features/globalSearch/contracts';
 
+import { DEFAULT_LOCALE, type TLocale } from '@/shared/i18n/locale';
+
 import { parseGlobalSearchQuery } from './parser';
 
 export function insertPrefixSuggestion(
 	value: string,
-	suggestion: Pick<IGlobalSearchPrefixSuggestion, 'insertText' | 'kind'>
+	suggestion: Pick<IGlobalSearchPrefixSuggestion, 'insertText' | 'kind'>,
+	locale: TLocale = DEFAULT_LOCALE
 ) {
 	const trimmedValue = value.trimEnd();
 	const appendSuggestion = () =>
@@ -23,7 +26,7 @@ export function insertPrefixSuggestion(
 
 	const tokenCount =
 		trimmedValue.length === 0 ? 0 : trimmedValue.split(/\s+/u).length;
-	const ast = parseGlobalSearchQuery(value);
+	const ast = parseGlobalSearchQuery(value, locale);
 
 	if (
 		suggestion.kind === 'field' &&

@@ -17,6 +17,7 @@ import Tooltip from '@/design/ui/components/tooltip';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import { useParams } from '@/features/appShell/client/navigation/useParams';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { GUEST_INFO_QUERY_PARAM } from '@/features/catalog/guests/shared/navigation';
 import {
 	CoordinatedModal,
@@ -27,18 +28,14 @@ import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+
 const EMPTY_ACCORDION_KEYS: ReadonlyArray<never> = [];
 const INFO_ACCORDION_ITEM_CLASSES = {
 	base: 'mb-1 mt-3',
 	title: 'text-xl font-bold',
 	trigger: 'p-0',
 } as const;
-
-function getGuestCardSiteInfoStyle(name: string, fontSize: number) {
-	return {
-		transform: `rotate(-90deg) translateX(${fontSize * name.length - 17}px) translateY(20px)`,
-	};
-}
 
 export function SiteInfo() {
 	return (
@@ -55,8 +52,7 @@ export function GuestCardSiteInfo() {
 		<SiteInfoBase
 			baseUrl={PUBLIC_RUNTIME_CONFIG.baseURL}
 			fontSize={7}
-			className="absolute -bottom-[18px] right-px"
-			style={getGuestCardSiteInfoStyle}
+			className="absolute bottom-1 left-[calc(100%-0.25rem)] origin-bottom-left -rotate-90"
 		/>
 	);
 }
@@ -94,10 +90,13 @@ export default memo<IProps>(function InfoButtonBase({
 	overlayId,
 	showMobileTextTrigger = false,
 }) {
+	const { t } = useI18n(catalogGuestsMessages);
 	const isReducedMotion = useReducedMotion();
 	const { params, replaceState } = useParams();
-	const [isOpened, setOpened] = useState(false);
 	const vibrate = useVibrate();
+
+	const [isOpened, setOpened] = useState(false);
+
 	const coordination = useMemo(() => ({ id: overlayId }), [overlayId]);
 
 	const handleClose = useCallback(() => {
@@ -124,9 +123,14 @@ export default memo<IProps>(function InfoButtonBase({
 		setOpened(params.has(GUEST_INFO_QUERY_PARAM));
 	}, [params]);
 
-	const buttonLabel = '更多信息';
+	const buttonLabel = t('guests.infoButton.label');
 	const iconButton = (
-		<Tooltip showArrow content="查看更多资料" offset={1} size="sm">
+		<Tooltip
+			showArrow
+			content={t('guests.infoButton.tooltip')}
+			offset={1}
+			size="sm"
+		>
 			<Button
 				isIconOnly
 				size="sm"

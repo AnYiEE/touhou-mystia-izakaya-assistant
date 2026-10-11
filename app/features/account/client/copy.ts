@@ -1,47 +1,47 @@
 import type { IAccountUserProfile } from '@/features/account/contracts';
 
+import { type TAccountMessageKey } from './messages';
 import { type TAccountBootstrapStatus } from './state/accountStore';
 
-export const ACCOUNT_CLIENT_MESSAGE_MAP = {
-	accountStateRefreshFailed: '账号状态刷新失败，请稍后重试',
-	logoutFailed: '退出失败',
-	operationBusy: '账号数据操作正在其他标签页进行，请稍后重试',
-	passwordChangeFailed: '改密失败',
+export const ACCOUNT_CLIENT_MESSAGE_KEYS = {
+	accountStateRefreshFailed: 'account.client.accountStateRefreshFailed',
+	logoutFailed: 'account.client.logoutFailed',
+	operationBusy: 'account.client.operationBusy',
+	passwordChangeFailed: 'account.client.passwordChangeFailed',
 	passwordMustChangeAccountPaused:
-		'密码更新前，账号同步、云端数据操作和冲突处理会暂时暂停。',
+		'account.client.passwordMustChangeAccountPaused',
 	passwordMustChangeAuthorizePaused:
-		'密码更新前无法完成SSO授权，也不会签发登录票据。',
+		'account.client.passwordMustChangeAuthorizePaused',
 	passwordMustChangeLogoutAccount:
-		'如果暂时不处理，可以退出当前账号；本设备未完成的同步队列会留在本地，之后重新登录再继续。',
+		'account.client.passwordMustChangeLogoutAccount',
 	passwordMustChangeLogoutAuthorize:
-		'如果暂时不处理，可以退出当前账号返回首页。',
-} as const;
+		'account.client.passwordMustChangeLogoutAuthorize',
+} as const satisfies Record<string, TAccountMessageKey>;
 
-const ACCOUNT_ACTION_STATUS_LABEL_MAP = {
-	signedOut: '未登录',
-	unavailable: '账号不可用',
-	welcome: '欢迎您',
-} as const;
+const ACCOUNT_ACTION_STATUS_LABEL_KEYS = {
+	signedOut: 'account.action.signedOut',
+	unavailable: 'account.action.unavailable',
+	welcome: 'account.action.welcome',
+} as const satisfies Record<string, TAccountMessageKey>;
 
 export function getAccountActionLabel(
 	bootstrapStatus: TAccountBootstrapStatus,
-	user: IAccountUserProfile | null
+	user: IAccountUserProfile | null,
+	t: (key: TAccountMessageKey) => string
 ) {
 	if (bootstrapStatus === 'error') {
-		return ACCOUNT_ACTION_STATUS_LABEL_MAP.unavailable;
+		return t(ACCOUNT_ACTION_STATUS_LABEL_KEYS.unavailable);
 	}
 	if (bootstrapStatus === 'unknown') {
-		return ACCOUNT_ACTION_STATUS_LABEL_MAP.welcome;
+		return t(ACCOUNT_ACTION_STATUS_LABEL_KEYS.welcome);
 	}
 	if (user === null) {
-		return ACCOUNT_ACTION_STATUS_LABEL_MAP.signedOut;
+		return t(ACCOUNT_ACTION_STATUS_LABEL_KEYS.signedOut);
 	}
 	return user.nickname ?? user.username;
 }
 
-export const LEGACY_BACKUP_IMPORT_MESSAGE_MAP = {
-	failed: '导入失败，请稍后重试',
-	localTakeoverFailed: '本地数据接管失败，请刷新页面后重试',
-	success: '导入成功，可继续导入下一个旧备份码',
-	syncPending: '当前账号同步尚未完成，请稍后重试',
-} as const;
+export const LEGACY_BACKUP_IMPORT_MESSAGE_KEYS = {
+	failed: 'account.legacyImport.failed',
+	success: 'account.legacyImport.success',
+} as const satisfies Record<string, TAccountMessageKey>;

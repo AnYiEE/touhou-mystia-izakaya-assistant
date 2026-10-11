@@ -7,7 +7,6 @@ import { filterAvailableItemsByHiddenDlcs } from '@/domain/availability';
 import type { TBeverage, TFood } from '@/domain/catalog/food/types';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { resolveLegacyTagLabel } from '@/domain/catalog/legacy/resolveLegacyTagLabel';
-import { MAP_FACTS } from '@/domain/data/places/placeFacts';
 import {
 	BEVERAGE_TAG_MAP,
 	DYNAMIC_FOOD_TAG_MAP,
@@ -17,18 +16,26 @@ import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import { evaluateNormalGuestSavedMeal } from '@/domain/evaluation/evaluateSavedMeal';
 import { getIngredientScoreChanges } from '@/domain/evaluation/getIngredientScoreChanges';
 import { checkNormalGuestFoodEasterEgg } from '@/domain/evaluation/normalGuestMeal';
+import {
+	compareMapLabelText,
+	getMapLabel,
+} from '@/domain/places/localizedLabels';
 
 import { getVisibleSavedMeals } from '@/features/catalog/guests/shared/mealPlanning/getVisibleSavedMeals';
 import { buildBeverageSuitabilityRows } from '@/features/catalog/guests/shared/queries/buildBeverageSuitabilityRows';
 import { buildFoodSuitabilityRows } from '@/features/catalog/guests/shared/queries/buildFoodSuitabilityRows';
 import { cookerTypeSelectionAdapter } from '@/features/catalog/guests/shared/state/cookerTypeSelectionAdapter';
+import { getActiveLocalizationLocale } from '@/features/catalog/shared/client/localization/activeLocalizationLocale';
+import { compareFoodTagLabels } from '@/features/catalog/shared/client/localization/tagLabels';
 import { PINYIN_SORT_STATE_MAP } from '@/features/catalog/shared/state/pinyinSort';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
-import { matchPinyinName } from '@/shared/utilities/search/matchPinyinName';
+import {
+	compareLocalizedName,
+	createCatalogNameMatcher,
+} from '@/shared/utilities/search/localeNameMatch';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
-import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 import { createComputedAccessor } from '@/shared/utilities/state/createComputedAccessor';
 
 import {
@@ -77,6 +84,11 @@ export const createNormalGuestComputedState = (
 	currentStore: StoreApi<typeof normalGuestInitialState>
 ) => {
 	const beverageTableRows = createComputedAccessor((getOrUse) => {
+		if (getOrUse === 'get') {
+			currentStore.shared.catalogLocalizationRevision.get();
+		} else {
+			currentStore.shared.catalogLocalizationRevision.use();
+		}
 		const shouldGet = getOrUse === 'get';
 		const currentNormalGuest = shouldGet
 			? currentStore.shared.guest.id.get()
@@ -84,7 +96,7 @@ export const createNormalGuestComputedState = (
 		const guestBeverageTags =
 			currentNormalGuest === null
 				? null
-				: normalGuestCatalog.getPropsById(
+				: normalGuestCatalog.getDisplayPropsById(
 						currentNormalGuest,
 						'beverageTags'
 					);
@@ -100,7 +112,7 @@ export const createNormalGuestComputedState = (
 				: currentStore.shared.hiddenItems.dlcs.use()) as ReadonlySet<
 				TBeverage['dlc']
 			>,
-			matchSearch: matchPinyinName,
+			matchSearch: createCatalogNameMatcher(beverageCatalog),
 			page: shouldGet
 				? currentStore.shared.beverage.table.page.get()
 				: currentStore.shared.beverage.table.page.use(),
@@ -125,6 +137,11 @@ export const createNormalGuestComputedState = (
 	});
 
 	const foodTableRows = createComputedAccessor((getOrUse) => {
+		if (getOrUse === 'get') {
+			currentStore.shared.catalogLocalizationRevision.get();
+		} else {
+			currentStore.shared.catalogLocalizationRevision.use();
+		}
 		const shouldGet = getOrUse === 'get';
 		const currentNormalGuest = shouldGet
 			? currentStore.shared.guest.id.get()
@@ -138,7 +155,7 @@ export const createNormalGuestComputedState = (
 		const guestPositiveTags =
 			currentNormalGuest === null
 				? null
-				: normalGuestCatalog.getPropsById(
+				: normalGuestCatalog.getDisplayPropsById(
 						currentNormalGuest,
 						'positiveTags'
 					);
@@ -171,7 +188,7 @@ export const createNormalGuestComputedState = (
 				? currentStore.shared.recipe.table.hiddenIngredients.get()
 				: currentStore.shared.recipe.table.hiddenIngredients.use(),
 			isFamousShop,
-			matchSearch: matchPinyinName,
+			matchSearch: createCatalogNameMatcher(foodCatalog),
 			page: shouldGet
 				? currentStore.shared.recipe.table.page.get()
 				: currentStore.shared.recipe.table.page.use(),
@@ -200,6 +217,11 @@ export const createNormalGuestComputedState = (
 	});
 
 	const ingredientScoreChanges = createComputedAccessor((getOrUse) => {
+		if (getOrUse === 'get') {
+			currentStore.shared.catalogLocalizationRevision.get();
+		} else {
+			currentStore.shared.catalogLocalizationRevision.use();
+		}
 		const shouldGet = getOrUse === 'get';
 		const currentNormalGuest = shouldGet
 			? currentStore.shared.guest.id.get()
@@ -218,7 +240,7 @@ export const createNormalGuestComputedState = (
 			return { changesById: {}, darkIngredients: [] };
 		}
 
-		const guestPositiveTags = normalGuestCatalog.getPropsById(
+		const guestPositiveTags = normalGuestCatalog.getDisplayPropsById(
 			currentNormalGuest,
 			'positiveTags'
 		);
@@ -270,6 +292,11 @@ export const createNormalGuestComputedState = (
 	});
 
 	const savedGuestMealsWithEvaluation = createComputedAccessor((getOrUse) => {
+		if (getOrUse === 'get') {
+			currentStore.shared.catalogLocalizationRevision.get();
+		} else {
+			currentStore.shared.catalogLocalizationRevision.use();
+		}
 		const shouldGet = getOrUse === 'get';
 		const currentNormalGuest = shouldGet
 			? currentStore.shared.guest.id.get()
@@ -316,14 +343,14 @@ export const createNormalGuestComputedState = (
 						beveragePaths:
 							meal.beverage === null
 								? null
-								: beverageCatalog.getPropsById(
+								: beverageCatalog.getDisplayPropsById(
 										meal.beverage,
 										'availabilityPaths'
 									),
 						foodPaths: food.availabilityPaths,
 						ingredientPaths: meal.food.extraIngredients.map(
 							(ingredient) =>
-								ingredientCatalog.getPropsById(
+								ingredientCatalog.getDisplayPropsById(
 									ingredient,
 									'availabilityPaths'
 								)
@@ -384,13 +411,20 @@ export const createNormalGuestComputedState = (
 				.sort(numberSort);
 		},
 		availableBeverages: () => {
+			currentStore.shared.catalogLocalizationRevision.use();
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 			return filterAvailableItemsByHiddenDlcs(
 				beverageCatalog.data,
 				hiddenDlcs
 			)
 				.map(({ id, name }) => ({ id, name }))
-				.sort((a, b) => pinyinSort(a.name, b.name));
+				.sort((a, b) =>
+					compareLocalizedName(
+						a.name,
+						b.name,
+						getActiveLocalizationLocale()
+					)
+				);
 		},
 		availableBeverageTags: () => {
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
@@ -420,6 +454,7 @@ export const createNormalGuestComputedState = (
 				.sort(numberSort);
 		},
 		availableFoodCookers: () => {
+			currentStore.shared.catalogLocalizationRevision.use();
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 			return [
 				...new Set(
@@ -439,12 +474,19 @@ export const createNormalGuestComputedState = (
 					return {
 						cookerType,
 						id,
-						name: cookerCatalog.getPropsById(id, 'name'),
+						name: cookerCatalog.getDisplayPropsById(id, 'name'),
 					};
 				})
-				.sort((a, b) => pinyinSort(a.name, b.name));
+				.sort((a, b) =>
+					compareLocalizedName(
+						a.name,
+						b.name,
+						getActiveLocalizationLocale()
+					)
+				);
 		},
 		availableFoods: () => {
+			currentStore.shared.catalogLocalizationRevision.use();
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 			return filterAvailableItemsByHiddenDlcs(
 				foodCatalog.data,
@@ -452,9 +494,16 @@ export const createNormalGuestComputedState = (
 			)
 				.filter(({ id }) => !foodCatalog.blockedFoods.has(id))
 				.map(({ id, name }) => ({ id, name }))
-				.sort((a, b) => pinyinSort(a.name, b.name));
+				.sort((a, b) =>
+					compareLocalizedName(
+						a.name,
+						b.name,
+						getActiveLocalizationLocale()
+					)
+				);
 		},
 		availableFoodTags: () => {
+			currentStore.shared.catalogLocalizationRevision.use();
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 			return [
 				...foodCatalog.getValuesByProp(
@@ -473,7 +522,7 @@ export const createNormalGuestComputedState = (
 				DYNAMIC_FOOD_TAG_MAP.popularNegative,
 				DYNAMIC_FOOD_TAG_MAP.popularPositive,
 			]
-				.sort((a, b) => pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b]))
+				.sort(compareFoodTagLabels)
 				.map(toGetValueCollection);
 		},
 		availableGuestAvailabilityDlcs: () => {
@@ -490,6 +539,7 @@ export const createNormalGuestComputedState = (
 				.sort(numberSort);
 		},
 		availableGuestMaps: () => {
+			currentStore.shared.catalogLocalizationRevision.use();
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 			return normalGuestCatalog
 				.getValuesByProp(
@@ -500,8 +550,8 @@ export const createNormalGuestComputedState = (
 						hiddenDlcs
 					)
 				)
-				.map(({ value }) => ({ name: MAP_FACTS[value].label, value }))
-				.sort((a, b) => pinyinSort(a.name, b.name));
+				.map(({ value }) => ({ name: getMapLabel(value), value }))
+				.sort((a, b) => compareMapLabelText(a.name, b.name));
 		},
 		availableIngredientAvailabilityDlcs: () => {
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
@@ -533,6 +583,7 @@ export const createNormalGuestComputedState = (
 				.sort(numberSort);
 		},
 		availableIngredientTags: () => {
+			currentStore.shared.catalogLocalizationRevision.use();
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 			return [
 				...ingredientCatalog.getValuesByProp(
@@ -551,10 +602,11 @@ export const createNormalGuestComputedState = (
 				DYNAMIC_FOOD_TAG_MAP.popularNegative,
 				DYNAMIC_FOOD_TAG_MAP.popularPositive,
 			]
-				.sort((a, b) => pinyinSort(FOOD_TAG_MAP[a], FOOD_TAG_MAP[b]))
+				.sort(compareFoodTagLabels)
 				.map(toGetValueCollection);
 		},
 		availableNormalGuests: () => {
+			currentStore.shared.catalogLocalizationRevision.use();
 			const hiddenDlcs = currentStore.shared.hiddenItems.dlcs.use();
 			const sortState =
 				currentStore.persistence.guest.pinyinSortState.use();

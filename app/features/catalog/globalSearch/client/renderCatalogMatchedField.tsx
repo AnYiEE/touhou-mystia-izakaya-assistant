@@ -3,16 +3,17 @@ import isObject from 'lodash/isObject.js';
 
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
-import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
+import { getCookerTypeLabel } from '@/domain/catalog/localizedCategoryLabels';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
-import { ALL_MAP_LABELS_SET, MAP_FACTS } from '@/domain/data/places/placeFacts';
+import { ALL_MAP_LABELS_SET } from '@/domain/data/places/placeFacts';
 import type { TMapLabel } from '@/domain/data/places/types';
 import type { TSpriteTarget } from '@/domain/data/sprites/types';
-import type {
-	TBeverageTagLabel,
-	TFoodTagLabel,
-} from '@/domain/data/tags/types';
+import { getMapLabel } from '@/domain/places/localizedLabels';
 
+import {
+	type TCatalogItemsMessageKey,
+	catalogItemsMessages,
+} from '@/features/catalog/items/shared/messages';
 import {
 	BEVERAGE_TAG_STYLE,
 	FOOD_TAG_STYLE,
@@ -32,7 +33,17 @@ import {
 	getGlobalSearchMatchedDlcDisplayText,
 } from '@/features/globalSearch/core/fieldValueSuggestions';
 
+import type { TLocale } from '@/shared/i18n/locale';
+import { type TMessageParams, translate } from '@/shared/i18n/messages';
 import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+
+function tItems(
+	key: TCatalogItemsMessageKey,
+	locale: TLocale,
+	params?: TMessageParams
+): string {
+	return translate(catalogItemsMessages, locale, key, params);
+}
 
 const MATCH_FIELD_SPRITE_TARGET_MAP: Partial<
 	Record<IGlobalSearchIndexField['fieldType'], TSpriteTarget>
@@ -86,10 +97,8 @@ function getMatchedFieldSpriteTokens(match: IGlobalSearchMatchedField) {
 	return ids.map((id) => {
 		const name =
 			target === 'ingredient'
-				? ingredientCatalog.getPropsById(id as never, 'name')
-				: COOKER_TYPE_LABEL_MAP[
-						id as keyof typeof COOKER_TYPE_LABEL_MAP
-					];
+				? ingredientCatalog.getDisplayPropsById(id as never, 'name')
+				: getCookerTypeLabel(id);
 		const recordId =
 			target === 'ingredient'
 				? id
@@ -235,7 +244,10 @@ function getMatchedFieldTagTokens(
 	});
 }
 
-function renderMatchedFieldSourceContent(match: IGlobalSearchMatchedField) {
+function renderMatchedFieldSourceContent(
+	match: IGlobalSearchMatchedField,
+	locale: TLocale
+) {
 	if (match.field.fieldType !== 'from') {
 		return null;
 	}
@@ -273,17 +285,23 @@ function renderMatchedFieldSourceContent(match: IGlobalSearchMatchedField) {
 
 		const mapDisplayLabel =
 			typeof map === 'string' && ALL_MAP_LABELS_SET.has(map)
-				? MAP_FACTS[map as TMapLabel].label
+				? getMapLabel(map as TMapLabel)
 				: null;
 
 		return (
 			<span className="inline-flex min-h-6 max-w-full flex-wrap items-center">
-				<span className="mr-1">游戏等级</span>
+				<span className="mr-1">
+					{tItems('items.source.gameLevel', locale)}
+				</span>
 				<span>Lv.{level - 1}</span>
 				<span className="mx-0.5">➞</span>
 				<span>Lv.{level}</span>
 				{mapDisplayLabel !== null && (
-					<span className="ml-0.5">{`且已解锁地区【${mapDisplayLabel}】`}</span>
+					<span className="ml-0.5">
+						{tItems('items.source.andUnlockedMap', locale, {
+							map: mapDisplayLabel,
+						})}
+					</span>
 				)}
 			</span>
 		);
@@ -294,20 +312,22 @@ function renderMatchedFieldSourceContent(match: IGlobalSearchMatchedField) {
 
 export function renderCatalogMatchedField(
 	item: IGlobalSearchIndexItem,
-	match: IGlobalSearchMatchedField
+	match: IGlobalSearchMatchedField,
+	locale: TLocale
 ) {
 	if (checkGlobalSearchFieldTypeIsDlc(match.field.fieldType)) {
 		return (
 			<span className="min-w-0 break-words">
 				{getGlobalSearchMatchedDlcDisplayText(
 					flattenFieldValue(match.field.value).join(' '),
-					match.keyword
+					match.keyword,
+					locale
 				)}
 			</span>
 		);
 	}
 
-	const sourceContent = renderMatchedFieldSourceContent(match);
+	const sourceContent = renderMatchedFieldSourceContent(match, locale);
 	if (sourceContent !== null) {
 		return sourceContent;
 	}
@@ -317,7 +337,7 @@ export function renderCatalogMatchedField(
 		return tagTokens.map(({ isMatched, tag, tagStyle, tagType }) => (
 			<TagsComponent.Tag
 				key={`${tagType}:${tag}`}
-				tag={tag as TBeverageTagLabel | TFoodTagLabel}
+				tag={tag}
 				tagStyle={tagStyle}
 				tagType={tagType}
 				className={cn(

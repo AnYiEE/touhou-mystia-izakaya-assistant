@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 
 import { checkAccountRuntimeEnabled } from '@/features/account/server/featureStatus';
 import { checkAccountRateLimitRouteResponse } from '@/features/account/server/http/routeGuards';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 import type { ISiteStatusData } from '@/features/siteStatus/contracts';
 import { SITE_STATUS_RATE_LIMIT_OPTIONS } from '@/features/siteStatus/server/httpPolicy';
 import { readDeploymentMaintenance } from '@/features/siteStatus/server/service';
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
 	const [visitorResult, maintenanceResult] = await Promise.allSettled([
 		readVisitorCount(),
 		checkAccountRuntimeEnabled()
-			? readDeploymentMaintenance()
+			? readDeploymentMaintenance(readContentLocale(request))
 			: Promise.resolve(null),
 	]);
 	if (maintenanceResult.status === 'rejected') {

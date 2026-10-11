@@ -3,7 +3,9 @@ import {
 	type TAccountSyncStatus,
 } from '@/domain/account/contracts';
 
-import { ACCOUNT_SYNC_STATUS_MESSAGE_MAP } from './conflictCopy';
+import { type TAccountMessageKey } from '@/features/account/client/messages';
+
+import { ACCOUNT_SYNC_STATUS_MESSAGE_KEYS } from './conflictCopy';
 
 export function getAccountSyncPauseIndicator(
 	syncStatus: TAccountSyncStatus | null | undefined
@@ -12,6 +14,8 @@ export function getAccountSyncPauseIndicator(
 
 	return {
 		isPaused,
-		label: isPaused ? ACCOUNT_SYNC_STATUS_MESSAGE_MAP.paused : null,
+		labelKey: isPaused
+			? ACCOUNT_SYNC_STATUS_MESSAGE_KEYS.paused
+			: (null as TAccountMessageKey | null),
 	};
 }

@@ -123,10 +123,6 @@ function createGrantRevokeAuditLogInput(
 	} satisfies Parameters<typeof auditModule.writeAdminAuditLog>[0];
 }
 
-function checkPagination(options: IAdminSsoGrantListOptions) {
-	return checkAdminPagination(options);
-}
-
 function createRepositoryListOptions({
 	page,
 	pageSize,
@@ -148,7 +144,7 @@ function checkClientStatusFilter(
 
 function checkGlobalGrantListOptions(options: IAdminSsoGrantGlobalListOptions) {
 	return (
-		checkPagination(options) &&
+		checkAdminPagination(options) &&
 		checkClientStatusFilter(options.clientStatus) &&
 		(options.userStatus === undefined ||
 			checkUserStatus(options.userStatus))
@@ -219,7 +215,7 @@ export async function listAdminSsoClientUsers(
 	clientId: string,
 	options: IAdminSsoGrantListOptions
 ): Promise<TAdminSsoGrantServiceResult<IAdminSsoClientUsersData>> {
-	if (!checkPagination(options)) {
+	if (!checkAdminPagination(options)) {
 		return { error: 'invalid-object-structure', status: 'error' };
 	}
 
@@ -269,7 +265,7 @@ export async function listAdminSsoUserGrants(
 	userId: string,
 	options: IAdminSsoGrantListOptions
 ): Promise<TAdminSsoGrantServiceResult<IAdminSsoUserGrantsData>> {
-	if (!checkPagination(options)) {
+	if (!checkAdminPagination(options)) {
 		return { error: 'invalid-object-structure', status: 'error' };
 	}
 

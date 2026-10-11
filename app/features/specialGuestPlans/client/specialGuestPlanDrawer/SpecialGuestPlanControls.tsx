@@ -42,7 +42,7 @@ import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TMapLabel } from '@/domain/data/places/types';
 import { compareMapCanonicalOrder } from '@/domain/places/mapOrdering';
-import { RECOMMENDATION_SORT_PROFILE_LABEL_MAP } from '@/domain/recommendations/labels';
+import { getRecommendationSortProfileLabel } from '@/domain/recommendations/localizedLabels';
 import {
 	RECOMMENDATION_SORT_PROFILES,
 	type TRecommendationSortProfile,
@@ -52,6 +52,10 @@ import { specialGuestPlanCatalogPort } from '@/features/catalog/guests/special/c
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import { recommendationPreferencesFacade } from '@/features/preferences/client/recommendationPreferencesFacade';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
+import {
+	type TSpecialGuestPlansMessageKey,
+	specialGuestPlansMessages,
+} from '@/features/specialGuestPlans/client/messages';
 import {
 	checkSpecialGuestPlansStateVirtual,
 	getDisplayedSpecialGuestPlan,
@@ -64,18 +68,23 @@ import type {
 	TSpecialGuestPlanMode,
 } from '@/features/specialGuestPlans/contracts';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+
 import { guardGuestGroupToggleDuringControlsAnimation } from './dom';
 import { getDrawerControlsClassName } from './drawerLayout';
 import { createPlanSelectionComparator } from './selectionOrdering';
 import SpecialGuestPlanSummaryText from './SpecialGuestPlanSummaryText';
 
 const SPECIAL_GUEST_PLAN_GUEST_SORT_OPTIONS = [
-	{ label: '默认排序', value: 'default' },
-	{ label: '拼音A-Z（按DLC分组）', value: 'pinyin-asc' },
-	{ label: '拼音Z-A（按DLC分组）', value: 'pinyin-desc' },
-	{ label: '拼音A-Z（不按DLC分组）', value: 'pinyin-asc-flat' },
-	{ label: '拼音Z-A（不按DLC分组）', value: 'pinyin-desc-flat' },
-] satisfies Array<{ label: string; value: TSpecialGuestPlanGuestSort }>;
+	{ labelKey: 'plans.sort.default', value: 'default' },
+	{ labelKey: 'plans.sort.pinyinAscGrouped', value: 'pinyin-asc' },
+	{ labelKey: 'plans.sort.pinyinDescGrouped', value: 'pinyin-desc' },
+	{ labelKey: 'plans.sort.pinyinAscFlat', value: 'pinyin-asc-flat' },
+	{ labelKey: 'plans.sort.pinyinDescFlat', value: 'pinyin-desc-flat' },
+] satisfies Array<{
+	labelKey: TSpecialGuestPlansMessageKey;
+	value: TSpecialGuestPlanGuestSort;
+}>;
 
 const SPECIAL_GUEST_PLAN_GUEST_SORT_BY_KEY: ReadonlyMap<
 	string,
@@ -94,9 +103,13 @@ const SPECIAL_GUEST_PLAN_MEAL_SOURCE_BY_KEY: ReadonlyMap<
 
 const FOLLOW_SETTINGS_SORT_PROFILE_KEY = 'follow-settings';
 const SPECIAL_GUEST_PLAN_SORT_PROFILE_OPTIONS = [
-	{ label: '跟随全局设置', value: FOLLOW_SETTINGS_SORT_PROFILE_KEY },
+	{
+		labelKey:
+			'plans.sort.followSettings' as TSpecialGuestPlansMessageKey | null,
+		value: FOLLOW_SETTINGS_SORT_PROFILE_KEY,
+	},
 	...RECOMMENDATION_SORT_PROFILES.map((value) => ({
-		label: RECOMMENDATION_SORT_PROFILE_LABEL_MAP[value],
+		labelKey: null as TSpecialGuestPlansMessageKey | null,
 		value,
 	})),
 ];
@@ -151,6 +164,7 @@ export default function SpecialGuestPlanControls({
 }: {
 	portalContainerProps: Pick<IPopoverProps, 'portalContainer'>;
 }) {
+	const { t } = useI18n(specialGuestPlansMessages);
 	const manualModePanelRef = useRef<HTMLDivElement>(null);
 	const regionModePanelRef = useRef<HTMLDivElement>(null);
 	const { isHighAppearance } = useDesignPreferences();
@@ -541,7 +555,9 @@ export default function SpecialGuestPlanControls({
 									'md:[writing-mode:vertical-rl]'
 							)}
 						>
-							{isControlsCollapsed ? activePlan.name : '预设管理'}
+							{isControlsCollapsed
+								? activePlan.name
+								: t('plans.controls.planManagement')}
 						</p>
 						<p
 							className={cn(
@@ -553,7 +569,7 @@ export default function SpecialGuestPlanControls({
 							{isControlsCollapsed ? (
 								<SpecialGuestPlanSummaryText />
 							) : (
-								'配置地区与稀客范围'
+								t('plans.controls.scopeTooltip')
 							)}
 						</p>
 					</div>
@@ -564,8 +580,8 @@ export default function SpecialGuestPlanControls({
 						variant={isControlsCollapsed ? 'flat' : 'light'}
 						aria-label={
 							isControlsCollapsed
-								? '展开预设管理'
-								: '收起预设管理'
+								? t('plans.controls.expand')
+								: t('plans.controls.collapse')
 						}
 						onPress={handleToggleControls}
 					>
@@ -607,7 +623,7 @@ export default function SpecialGuestPlanControls({
 						<div className="space-y-2">
 							<Select
 								disableAnimation={isReducedMotion}
-								label="当前预设"
+								label={t('plans.controls.currentPlan')}
 								selectedKeys={activePlanKeys}
 								size="sm"
 								onSelectionChange={handlePlanSelect}
@@ -622,7 +638,7 @@ export default function SpecialGuestPlanControls({
 								<Button
 									size="sm"
 									variant="flat"
-									aria-label="新建预设"
+									aria-label={t('plans.controls.newAria')}
 									className={cn('w-full min-w-0 px-0', {
 										'backdrop-blur': isHighAppearance,
 									})}
@@ -631,12 +647,12 @@ export default function SpecialGuestPlanControls({
 										<FontAwesomeIcon icon={faPlus} />
 									}
 								>
-									新建
+									{t('plans.controls.new')}
 								</Button>
 								<Button
 									size="sm"
 									variant="flat"
-									aria-label="复制当前预设"
+									aria-label={t('plans.controls.copyAria')}
 									className={cn('w-full min-w-0 px-0', {
 										'backdrop-blur': isHighAppearance,
 									})}
@@ -646,7 +662,7 @@ export default function SpecialGuestPlanControls({
 										<FontAwesomeIcon icon={faCopy} />
 									}
 								>
-									复制
+									{t('plans.controls.copy')}
 								</Button>
 								<Popover
 									shouldBlockScroll
@@ -662,7 +678,9 @@ export default function SpecialGuestPlanControls({
 											color="danger"
 											size="sm"
 											variant="flat"
-											aria-label="删除当前预设"
+											aria-label={t(
+												'plans.controls.deleteAria'
+											)}
 											className={cn(
 												'w-full min-w-0 px-0',
 												{
@@ -677,7 +695,7 @@ export default function SpecialGuestPlanControls({
 												/>
 											}
 										>
-											删除
+											{t('plans.controls.delete')}
 										</Button>
 									</PopoverTrigger>
 									<PopoverContent className="space-y-1 p-1">
@@ -688,7 +706,7 @@ export default function SpecialGuestPlanControls({
 											variant="ghost"
 											onPress={handleConfirmDeletePlan}
 										>
-											确认删除
+											{t('plans.controls.confirmDelete')}
 										</Button>
 										<Button
 											fullWidth
@@ -697,7 +715,7 @@ export default function SpecialGuestPlanControls({
 											variant="ghost"
 											onPress={handleCancelDeletePlan}
 										>
-											取消删除
+											{t('plans.controls.cancelDelete')}
 										</Button>
 									</PopoverContent>
 								</Popover>
@@ -705,7 +723,9 @@ export default function SpecialGuestPlanControls({
 									color="primary"
 									size="sm"
 									variant="flat"
-									aria-label="保存预设名"
+									aria-label={t(
+										'plans.controls.saveNameAria'
+									)}
 									className={cn('w-full min-w-0 px-0', {
 										'backdrop-blur': isHighAppearance,
 									})}
@@ -715,18 +735,18 @@ export default function SpecialGuestPlanControls({
 										<FontAwesomeIcon icon={faCheck} />
 									}
 								>
-									保存
+									{t('plans.controls.save')}
 								</Button>
 							</div>
 							<Input
-								label="预设名"
+								label={t('plans.controls.nameLabel')}
 								size="sm"
 								value={draftName}
 								onValueChange={setDraftName}
 							/>
 							<div className="space-y-1.5">
 								<p className="px-1 text-tiny font-medium text-foreground-500">
-									套餐来源
+									{t('plans.controls.sourceLabel')}
 								</p>
 								<Tabs
 									fullWidth
@@ -747,8 +767,14 @@ export default function SpecialGuestPlanControls({
 									}}
 									classNames={tabsClassNames}
 								>
-									<Tab key="saved" title="已保存套餐" />
-									<Tab key="recommended" title="自动推荐" />
+									<Tab
+										key="saved"
+										title={t('plans.controls.savedTab')}
+									/>
+									<Tab
+										key="recommended"
+										title={t('plans.recommended.automatic')}
+									/>
 								</Tabs>
 								{activePlanMealSource === 'recommended' && (
 									<Select
@@ -758,7 +784,9 @@ export default function SpecialGuestPlanControls({
 										items={
 											SPECIAL_GUEST_PLAN_SORT_PROFILE_OPTIONS
 										}
-										label="推荐策略"
+										label={t(
+											'plans.controls.strategyLabel'
+										)}
 										selectedKeys={
 											recommendationSortProfileKeys
 										}
@@ -767,19 +795,37 @@ export default function SpecialGuestPlanControls({
 										onSelectionChange={
 											handleRecommendationSortProfileChange
 										}
-										aria-label="选择营业预设自动推荐的推荐策略；跟随全局设置时实时使用默认推荐策略"
-										title={`选择营业预设自动推荐的推荐策略；当前生效：${RECOMMENDATION_SORT_PROFILE_LABEL_MAP[effectiveRecommendationSortProfile]}`}
+										aria-label={t(
+											'plans.controls.strategyAria'
+										)}
+										title={t(
+											'plans.controls.strategyTitle',
+											{
+												profile:
+													getRecommendationSortProfileLabel(
+														effectiveRecommendationSortProfile
+													),
+											}
+										)}
 										popoverProps={selectPopoverProps}
 										classNames={selectClassNames}
 									>
-										{({ label, value }) => (
-											<SelectItem
-												key={value}
-												textValue={label}
-											>
-												{label}
-											</SelectItem>
-										)}
+										{({ labelKey, value }) => {
+											const label =
+												labelKey === null
+													? getRecommendationSortProfileLabel(
+															value as TRecommendationSortProfile
+														)
+													: t(labelKey);
+											return (
+												<SelectItem
+													key={value}
+													textValue={label}
+												>
+													{label}
+												</SelectItem>
+											);
+										}}
 									</Select>
 								)}
 							</div>
@@ -804,8 +850,14 @@ export default function SpecialGuestPlanControls({
 							}}
 							classNames={tabsClassNames}
 						>
-							<Tab key="region" title="按地区" />
-							<Tab key="manual" title="手动" />
+							<Tab
+								key="region"
+								title={t('plans.controls.regionTab')}
+							/>
+							<Tab
+								key="manual"
+								title={t('plans.controls.manualTab')}
+							/>
 						</Tabs>
 
 						<motion.div
@@ -840,7 +892,9 @@ export default function SpecialGuestPlanControls({
 									disableAnimation={isReducedMotion}
 									isVirtualized={false}
 									items={availableSpecialGuests}
-									label="手动选择稀客"
+									label={t(
+										'plans.controls.manualGuestsLabel'
+									)}
 									selectedKeys={activePlanManualGuestKeys}
 									selectionMode="multiple"
 									size="sm"
@@ -881,7 +935,7 @@ export default function SpecialGuestPlanControls({
 									disableAnimation={isReducedMotion}
 									isVirtualized={false}
 									items={canonicalAvailableGuestMaps}
-									label="出没地区"
+									label={t('plans.controls.placesLabel')}
 									selectedKeys={activePlanMapKeys}
 									selectionMode="multiple"
 									size="sm"
@@ -913,7 +967,7 @@ export default function SpecialGuestPlanControls({
 									disableAnimation={isReducedMotion}
 									isVirtualized={false}
 									items={availableSpecialGuests}
-									label="额外包含"
+									label={t('plans.controls.includesLabel')}
 									selectedKeys={activePlanIncludeKeys}
 									selectionMode="multiple"
 									size="sm"
@@ -938,7 +992,7 @@ export default function SpecialGuestPlanControls({
 									disableAnimation={isReducedMotion}
 									isVirtualized={false}
 									items={availableSpecialGuests}
-									label="额外排除"
+									label={t('plans.controls.excludesLabel')}
 									selectedKeys={activePlanExcludeKeys}
 									selectionMode="multiple"
 									size="sm"
@@ -965,7 +1019,7 @@ export default function SpecialGuestPlanControls({
 							disableAnimation={isReducedMotion}
 							disallowEmptySelection
 							items={SPECIAL_GUEST_PLAN_GUEST_SORT_OPTIONS}
-							label="稀客排序"
+							label={t('plans.controls.guestSortLabel')}
 							selectedKeys={activePlanGuestSortKeys}
 							selectionMode="single"
 							size="sm"
@@ -973,8 +1027,10 @@ export default function SpecialGuestPlanControls({
 							popoverProps={selectPopoverProps}
 							classNames={selectClassNames}
 						>
-							{({ label, value }) => (
-								<SelectItem key={value}>{label}</SelectItem>
+							{({ labelKey, value }) => (
+								<SelectItem key={value}>
+									{t(labelKey)}
+								</SelectItem>
 							)}
 						</Select>
 					</div>

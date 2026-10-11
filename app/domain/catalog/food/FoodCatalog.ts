@@ -15,6 +15,7 @@ import type { TFoodTagId } from '@/domain/data/tags/types';
 import type { IMealFood, IResolvedMealFood } from '@/domain/meals/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
+import type { TLocale } from '@/shared/i18n/locale';
 import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 
@@ -117,7 +118,12 @@ export class FoodCatalog extends TaggedRecordCatalog<
 		super(clonedData as unknown as TProcessedFood[], 'food');
 
 		this._recipeOwnerById = new Map();
-		for (const food of this.data) {
+		this.rebuildRecipeOwnerIndex(this.data);
+	}
+
+	private rebuildRecipeOwnerIndex(data: ReadonlyArray<TFood>) {
+		this._recipeOwnerById.clear();
+		for (const food of data) {
 			for (const recipe of food.recipes) {
 				if (this._recipeOwnerById.has(recipe.id)) {
 					throw new Error(
@@ -128,6 +134,15 @@ export class FoodCatalog extends TaggedRecordCatalog<
 				this._recipeOwnerById.set(recipe.id, { food, recipe });
 			}
 		}
+	}
+
+	public override setActiveLocalizedData(
+		locale: TLocale | null,
+		data: ReadonlyArray<TFood> | null
+	) {
+		super.setActiveLocalizedData(locale, data);
+
+		this.rebuildRecipeOwnerIndex(data ?? this.canonicalData);
 	}
 
 	public static getInstance() {

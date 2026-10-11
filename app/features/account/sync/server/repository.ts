@@ -84,10 +84,6 @@ function canIncrementSyncRevision(value: unknown): value is number {
 	return canAddNonNegativeSafeIntegers(value, 2);
 }
 
-function canIncrementSyncTimestamp(value: unknown): value is number {
-	return canIncrementNonNegativeSafeInteger(value);
-}
-
 function checkNewUserStateEntryCounters(entry: TUserStateNew) {
 	return (
 		canIncrementNonNegativeSafeInteger(entry.revision) &&
@@ -401,7 +397,7 @@ export async function putUserStateEntriesIfRevision(
 				current !== null &&
 				(!isNonNegativeSafeInteger(current.schema_version) ||
 					!canIncrementSyncRevision(current.revision) ||
-					!canIncrementSyncTimestamp(current.updated_at))
+					!canIncrementNonNegativeSafeInteger(current.updated_at))
 			) {
 				return { status: 'corrupt-user-state' };
 			}

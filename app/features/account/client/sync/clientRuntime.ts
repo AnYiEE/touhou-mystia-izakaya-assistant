@@ -1,4 +1,4 @@
-import { createAccountTabId } from './lease';
+import { createAccountClientId } from '@/features/account/client/clientId';
 
 interface IActiveFlushRun {
 	generation: number;
@@ -21,7 +21,7 @@ let syncClientGeneration = 0;
 
 let visibilityOperationId: string | null = null;
 
-const tabId = createAccountTabId();
+const tabId = createAccountClientId();
 
 export function clearActiveFlushRun({
 	generation,

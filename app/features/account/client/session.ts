@@ -58,10 +58,6 @@ function checkCurrentAccountStateRequest(generation: number) {
 	return generation === accountStateRequestGeneration;
 }
 
-export function invalidateAccountStateRequests() {
-	advanceAccountStateRequestGeneration();
-}
-
 export function resetAccountSyncRuntime() {
 	accountStore.shared.sync.canRetry.set(false);
 	clearAccountSyncRuntimeConflicts();
@@ -104,7 +100,7 @@ function checkRestoredAccountSyncCanBootstrap(user: {
 
 export function resetAccountState() {
 	resetPostLoginBootstrapState();
-	invalidateAccountStateRequests();
+	advanceAccountStateRequestGeneration();
 	getAccountSyncLifecyclePort().invalidateRuns();
 	resetAccountSyncRuntime();
 	accountStore.shared.bootstrapStatus.set('anonymous');

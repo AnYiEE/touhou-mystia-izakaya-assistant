@@ -742,7 +742,7 @@ export const INGREDIENT_LIST = [
 					label: 'Merchant_DivineSpiritMausoleum_Taoist',
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
-				[{ label: '“强买强卖”商店', specialGuest: 29 }, 15],
+				[{ label: 'SpecialGuestShop_Tewi', specialGuest: 29 }, 15],
 			],
 			collect: [
 				{
@@ -867,7 +867,7 @@ export const INGREDIENT_LIST = [
 					label: 'Merchant_ShiningNeedleCastle_FuRyouShounenn',
 					map: 'DLC4_ShiningNeedleCastle',
 				},
-				[{ label: '“强买强卖”商店', specialGuest: 29 }, 15],
+				[{ label: 'SpecialGuestShop_Tewi', specialGuest: 29 }, 15],
 			],
 			collect: [
 				[{ label: 'HakureiShrine_Mushroom', map: 'HakureiShrine' }, 5],
@@ -905,7 +905,7 @@ export const INGREDIENT_LIST = [
 				[{ label: 'Merchant_Maid', map: 'HakureiShrine' }, 80],
 				{ label: 'Merchant_Goblin', map: 'ScarletMansion' },
 				{ label: 'Merchant_YokaiRabbitDelicacy', map: 'BambooForest' },
-				[{ label: '“强买强卖”商店', specialGuest: 29 }, 15],
+				[{ label: 'SpecialGuestShop_Tewi', specialGuest: 29 }, 15],
 			],
 			collect: [
 				[{ label: 'ScarletMansion_Tuna', map: 'ScarletMansion' }, 40],
@@ -987,7 +987,7 @@ export const INGREDIENT_LIST = [
 					label: 'Merchant_DivineSpiritMausoleum_Taoist',
 					map: 'DLC3_DivineSpiritMausoleum',
 				},
-				[{ label: '“强买强卖”商店', specialGuest: 29 }, 15],
+				[{ label: 'SpecialGuestShop_Tewi', specialGuest: 29 }, 15],
 			],
 			collect: [
 				[{ label: 'ScarletMansion_Shrimp', map: 'ScarletMansion' }, 40],
@@ -1283,7 +1283,7 @@ export const INGREDIENT_LIST = [
 		level: 5,
 		price: 70,
 		from: {
-			buy: [[{ label: '“强买强卖”商店', specialGuest: 29 }, 15]],
+			buy: [[{ label: 'SpecialGuestShop_Tewi', specialGuest: 29 }, 15]],
 			collect: [
 				[
 					{ label: 'BeastForest_Plant_Gendonka', map: 'BeastForest' },
@@ -1555,7 +1555,7 @@ export const INGREDIENT_LIST = [
 					label: 'Merchant_EarthSpiritsPalace_HellCrow',
 					map: 'DLC2_EarthSpiritsPalace',
 				},
-				[{ label: '“强买强卖”商店', specialGuest: 29 }, 15],
+				[{ label: 'SpecialGuestShop_Tewi', specialGuest: 29 }, 15],
 			],
 			collect: [
 				[
@@ -2412,7 +2412,9 @@ export const INGREDIENT_LIST = [
 		dlc: 0,
 		level: 10,
 		price: 530000,
-		from: { buy: [[{ label: '“强买强卖”商店', specialGuest: 29 }, 15]] },
+		from: {
+			buy: [[{ label: 'SpecialGuestShop_Tewi', specialGuest: 29 }, 15]],
+		},
 	},
 	{
 		id: 11000,

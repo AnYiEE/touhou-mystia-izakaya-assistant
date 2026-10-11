@@ -222,13 +222,9 @@ function normalizeLegacyBackupMealData(
 	}
 }
 
-function createMealSignature(meal: object) {
-	return stableJson(meal);
-}
-
 function createMealSignatureCountMap(meals: object[]) {
 	return meals.reduce<Map<string, number>>((result, meal) => {
-		const signature = createMealSignature(meal);
+		const signature = stableJson(meal);
 		result.set(signature, (result.get(signature) ?? 0) + 1);
 
 		return result;
@@ -245,7 +241,7 @@ function mergeMealRecord(
 		const cloudMeals = result[guestKey] ?? [];
 		const signatureCountMap = createMealSignatureCountMap(cloudMeals);
 		const additions = importedMeals.filter((meal) => {
-			const signature = createMealSignature(meal);
+			const signature = stableJson(meal);
 			const remainingCount = signatureCountMap.get(signature) ?? 0;
 			if (remainingCount > 0) {
 				if (remainingCount === 1) {

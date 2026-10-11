@@ -7,7 +7,10 @@ import Loading from '@/design/ui/components/loading';
 import Placeholder from '@/design/ui/components/placeholder';
 
 import { useSkipProcessItemData } from '@/features/catalog/shared/client/hooks/useSkipProcessItemData';
+import { useCatalogLocalizationReady } from '@/features/catalog/shared/client/localization/useCatalogLocalizationReady';
+import { catalogSharedMessages } from '@/features/catalog/shared/client/messages';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { useHydrated } from '@/shared/react/useHydrated';
 
 interface IProps {
@@ -20,10 +23,12 @@ export default memo<PropsWithChildren<IProps>>(function ItemPage({
 	isEmpty,
 	sideButton,
 }) {
+	const isLocalizationReady = useCatalogLocalizationReady();
 	const isMounted = useHydrated();
+	const { t } = useI18n(catalogSharedMessages);
 	const shouldSkipProcessData = useSkipProcessItemData();
 
-	if (!isMounted) {
+	if (!isMounted || !isLocalizationReady) {
 		return <Loading />;
 	}
 
@@ -37,7 +42,11 @@ export default memo<PropsWithChildren<IProps>>(function ItemPage({
 			)}
 		>
 			{!shouldSkipProcessData && sideButton}
-			{isEmpty ? <Placeholder>数据为空</Placeholder> : children}
+			{isEmpty ? (
+				<Placeholder>{t('catalog.itemPage.empty')}</Placeholder>
+			) : (
+				children
+			)}
 		</div>
 	);
 });

@@ -31,5 +31,33 @@
 :root {
 	--font-noto-sans: 'Noto Sans', 'Noto Sans Fallback';
 	--font-noto-sans-mono: 'Noto Sans Mono', 'Noto Sans Mono Fallback';
+	--font-noto-sans-jp: 'Noto Sans JP';
+	--font-noto-sans-kr: 'Noto Sans KR';
 	--font-noto-sans-sc: 'Noto Sans SC', 'Noto Sans SC Fallback';
+	--font-noto-sans-tc: 'Noto Sans TC';
+	--font-cjk-sans: var(--font-noto-sans-sc);
+}
+
+/*
+ * Han unification note: the CJK locales share most codepoints but prefer
+ * different glyph forms. The `lang` attribute selects which CJK face wins: the
+ * root layout and the pre-hydration script keep it in sync with the active
+ * locale, while elements that carry another language (such as the native
+ * language names in the language menus) override it locally.
+ *
+ * Simplified Chinese (`zh`, `zh-CN`, `zh-Hans`, `zh-SG`, …) keeps the root
+ * default; only Traditional Chinese is listed, because the locale layer
+ * normalizes every Chinese variant (`zh-Hans`, `zh-Hant`, `zh-HK`, `zh-MO`, …)
+ * to `zh-CN`/`zh-TW` before it reaches `lang`.
+ */
+:lang(ja) {
+	--font-cjk-sans: var(--font-noto-sans-jp), var(--font-noto-sans-sc);
+}
+
+:lang(ko) {
+	--font-cjk-sans: var(--font-noto-sans-kr), var(--font-noto-sans-sc);
+}
+
+:lang(zh-TW) {
+	--font-cjk-sans: var(--font-noto-sans-tc), var(--font-noto-sans-sc);
 }

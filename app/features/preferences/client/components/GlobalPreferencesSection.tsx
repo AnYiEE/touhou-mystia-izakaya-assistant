@@ -8,14 +8,25 @@ import Heading from '@/design/ui/components/heading';
 import Switch from '@/design/ui/components/switch';
 import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
 
-import { DLC_LABEL_MAP } from '@/domain/availability/messages';
+import { getDlcLabel } from '@/domain/availability/localizedLabels';
+import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
-import { DYNAMIC_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import { DYNAMIC_FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
+import {
+	compareFoodTagLabels,
+	getFoodTagLabel,
+} from '@/features/catalog/shared/client/localization/tagLabels';
+import { catalogSharedMessages } from '@/features/catalog/shared/client/messages';
+import { preferencesMessages } from '@/features/preferences/client/messages';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
+
+import { isChineseLocale } from '@/shared/i18n/locale';
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import SwitchItem from './PreferenceSwitchItem';
 import {
@@ -24,8 +35,9 @@ import {
 } from './preferenceTarget';
 
 const SHAMEIMARU_AYA_ID: TSpecialGuestId = 4000;
+const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 const POPULAR_TREND_SWITCH_CLASS_NAMES = {
-	base: 'mx-2',
+	base: 'mx-2 align-middle',
 	wrapper: 'bg-primary',
 } as const;
 
@@ -42,7 +54,10 @@ export default memo<IProps>(function GlobalPreferencesSection({
 	isReducedMotion,
 	onModalClose,
 }) {
+	const catalogLocalizationRevision = useCatalogLocalizationRevision();
 	const { isHighAppearance } = useDesignPreferences();
+	const { locale, t } = useI18n(preferencesMessages);
+	const { t: tShared } = useI18n(catalogSharedMessages);
 	const selectMotionProps = useMotionProps('select');
 	const vibrate = useVibrate();
 
@@ -51,9 +66,19 @@ export default memo<IProps>(function GlobalPreferencesSection({
 
 	const isFamousShop = globalStore.persistence.famousShop.use();
 	const popularTags = globalStore.popularTags.get();
+
 	const isPopularTrendNegative =
 		globalStore.persistence.popularTrend.isNegative.use();
 	const selectedPopularTag = globalStore.selectedPopularTag.use();
+
+	const isChinese = isChineseLocale(locale);
+
+	const sortedPopularTags = useMemo(() => {
+		void catalogLocalizationRevision;
+		return [...popularTags].sort((a, b) =>
+			compareFoodTagLabels(a.tag, b.tag)
+		);
+	}, [popularTags, catalogLocalizationRevision]);
 
 	const popularTagPopoverProps = useMemo(
 		() => ({ motionProps: selectMotionProps }),
@@ -61,7 +86,13 @@ export default memo<IProps>(function GlobalPreferencesSection({
 	);
 	const popularTagSelectClassNames = useMemo(
 		() => ({
-			base: 'w-28',
+			base: isChinese
+				? 'w-28'
+				: locale === 'en'
+					? 'w-44'
+					: locale === 'ja'
+						? 'w-36'
+						: 'w-32',
 			listboxWrapper: cn(
 				'[&_li]:transition-background motion-reduce:[&_li]:transition-none',
 				{
@@ -81,7 +112,7 @@ export default memo<IProps>(function GlobalPreferencesSection({
 					!isHighAppearance && onModalClose === undefined,
 			}),
 		}),
-		[isHighAppearance, onModalClose]
+		[isChinese, isHighAppearance, locale, onModalClose]
 	);
 
 	const onClearPopularTrendButtonPress = useCallback(() => {
@@ -90,22 +121,28 @@ export default memo<IProps>(function GlobalPreferencesSection({
 		globalStore.selectedPopularTag.set(new Set());
 	}, [vibrate]);
 
+	const popularTrendTagLabel = t('preferences.global.popularTrend.tag');
+	const shouldPadPopularTrendTagLabel = popularTrendTagLabel.endsWith(' ');
+
 	return (
 		<>
 			<Heading as="h2" className="mt-0">
-				全局设置
+				{t('preferences.section.global')}
 			</Heading>
 			<Heading
 				as="h3"
-				subTitle="关闭未拥有的数据集以隐藏仅在对应数据集中出现或可以获取的内容"
+				subTitle={t('preferences.global.dataset.subTitle')}
 			>
-				数据集
+				{t('preferences.global.dataset.title')}
 			</Heading>
 			<div
 				{...getPreferenceTargetDataProps('global-hidden-dlcs')}
 				className={cn(
-					'grid h-min w-full grid-cols-2 content-start justify-items-start gap-2 md:grid-cols-3 md:gap-x-12',
-					{ 'lg:w-1/2': !isPreferencesModalOpen },
+					'grid h-min w-full grid-cols-2 content-start gap-2 md:grid-cols-3 md:gap-x-12',
+					{
+						'justify-items-start': isChinese,
+						'lg:w-1/2': !isPreferencesModalOpen,
+					},
 					getPreferenceTargetClassName(
 						'global-hidden-dlcs',
 						highlightedPreferenceKey
@@ -114,6 +151,7 @@ export default memo<IProps>(function GlobalPreferencesSection({
 			>
 				{allDlcs.map(({ value: dlc }, index) => {
 					const isHidden = hiddenDlcs.has(dlc);
+					const dlcLabel = getDlcLabel(dlc);
 					return (
 						<SwitchItem
 							key={index}
@@ -128,10 +166,15 @@ export default memo<IProps>(function GlobalPreferencesSection({
 								}
 								globalStore.hiddenDlcs.set(newHiddenDlcs);
 							}}
-							aria-label={`${isHidden ? '显示' : '隐藏'}${DLC_LABEL_MAP[dlc].label}数据集`}
+							aria-label={t(
+								isHidden
+									? 'preferences.global.dataset.showAria'
+									: 'preferences.global.dataset.hideAria',
+								{ label: dlcLabel }
+							)}
 						>
 							<span className="inline-block min-w-16">
-								{DLC_LABEL_MAP[dlc].label}
+								{dlcLabel}
 							</span>
 						</SwitchItem>
 					);
@@ -139,9 +182,9 @@ export default memo<IProps>(function GlobalPreferencesSection({
 			</div>
 			<Heading
 				as="h3"
-				subTitle="正确设置游戏中现时的流行趋势可以使套餐评级更为准确"
+				subTitle={t('preferences.global.popularTrend.subTitle')}
 			>
-				流行趋势
+				{t('preferences.global.popularTrend.title')}
 			</Heading>
 			<div
 				{...getPreferenceTargetDataProps('global-popular-trend')}
@@ -153,41 +196,64 @@ export default memo<IProps>(function GlobalPreferencesSection({
 					)
 				)}
 			>
-				<div className="flex items-center">
-					<span className="font-medium">类别：</span>
-					{DYNAMIC_TAG_MAP.popularPositive}
+				<div>
+					<span className="font-medium">
+						{t('preferences.global.popularTrend.category')}
+					</span>
+					{getFoodTagLabel(DYNAMIC_FOOD_TAG_MAP.popularPositive)}
 					<Switch
 						isSelected={isPopularTrendNegative}
 						size="sm"
 						onValueChange={
 							globalStore.persistence.popularTrend.isNegative.set
 						}
-						aria-label={`设置为${isPopularTrendNegative ? DYNAMIC_TAG_MAP.popularPositive : DYNAMIC_TAG_MAP.popularNegative}`}
+						aria-label={t(
+							'preferences.global.popularTrend.switchAria',
+							{
+								tag: getFoodTagLabel(
+									isPopularTrendNegative
+										? DYNAMIC_FOOD_TAG_MAP.popularPositive
+										: DYNAMIC_FOOD_TAG_MAP.popularNegative
+								),
+							}
+						)}
 						classNames={POPULAR_TREND_SWITCH_CLASS_NAMES}
 					/>
-					{DYNAMIC_TAG_MAP.popularNegative}
+					{getFoodTagLabel(DYNAMIC_FOOD_TAG_MAP.popularNegative)}
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
 					<div className="flex items-center">
-						<span className="font-medium">标签：</span>
+						<span
+							className={cn('font-medium', {
+								'pe-1': shouldPadPopularTrendTagLabel,
+							})}
+						>
+							{popularTrendTagLabel}
+						</span>
 						<Select
+							/* 本地化变化后重建集合，避免选项标签停留在旧语言 */
+							key={catalogLocalizationRevision}
 							disableAnimation={isReducedMotion}
 							isVirtualized={false}
-							items={popularTags}
+							items={sortedPopularTags}
 							selectedKeys={selectedPopularTag}
 							size="sm"
 							variant="flat"
 							onSelectionChange={
 								globalStore.selectedPopularTag.set
 							}
-							aria-label="选择游戏中现时流行的标签"
-							title="选择游戏中现时流行的标签"
+							aria-label={t(
+								'preferences.global.popularTrend.selectAria'
+							)}
+							title={t(
+								'preferences.global.popularTrend.selectAria'
+							)}
 							popoverProps={popularTagPopoverProps}
 							classNames={popularTagSelectClassNames}
 						>
-							{({ tag, value }) => (
+							{({ tag }) => (
 								<SelectItem key={tag.toString()}>
-									{value}
+									{getFoodTagLabel(tag)}
 								</SelectItem>
 							)}
 						</Select>
@@ -199,25 +265,34 @@ export default memo<IProps>(function GlobalPreferencesSection({
 						variant="flat"
 						onPress={onClearPopularTrendButtonPress}
 					>
-						清除选择
+						{t('preferences.global.popularTrend.clear')}
 					</Button>
 				</div>
 				<SwitchItem
 					isSelected={isFamousShop}
 					onValueChange={globalStore.persistence.famousShop.set}
-					aria-label={`${isFamousShop ? '关闭' : '开启'}“明星店”效果`}
+					aria-label={t(
+						isFamousShop
+							? 'preferences.global.famousShop.disableAria'
+							: 'preferences.global.famousShop.enableAria'
+					)}
 					className="!mt-4"
 				>
-					“明星店”效果
+					{t('preferences.global.famousShop')}
 					<span className="text-tiny text-foreground-500">
-						【
+						{tShared('catalog.guestTag.open')}
 						<Sprite
 							target="special_guest"
 							recordId={SHAMEIMARU_AYA_ID}
 							size={1}
 							className="mx-0.5 rounded-full align-text-top"
 						/>
-						射命丸文】奖励符卡
+						{specialGuestCatalog.getDisplayPropsById(
+							SHAMEIMARU_AYA_ID,
+							'name'
+						)}
+						{tShared('catalog.guestTag.close')}
+						{t('preferences.global.famousShop.rewardSuffix')}
 					</span>
 				</SwitchItem>
 			</div>

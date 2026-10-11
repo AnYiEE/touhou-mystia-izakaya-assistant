@@ -5,6 +5,9 @@ import Button from '@/design/ui/components/button';
 import ScrollShadow from '@/design/ui/components/scrollShadow';
 
 import type { IIngredientsTabStyle } from '@/features/catalog/guests/shared/contracts';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps {
 	afterMainGrid?: ReactNode;
@@ -19,6 +22,8 @@ export default memo<PropsWithChildren<IProps>>(
 		ingredientTabStyle,
 		onToggle,
 	}) {
+		const { t } = useI18n(catalogGuestsMessages);
+
 		return (
 			<>
 				<ScrollShadow
@@ -38,7 +43,7 @@ export default memo<PropsWithChildren<IProps>>(
 						size="sm"
 						variant="flat"
 						onClick={onToggle}
-						aria-label={ingredientTabStyle.ariaLabel}
+						aria-label={t(ingredientTabStyle.ariaLabelKey)}
 						className="h-4 w-4/5 text-default-400"
 					>
 						{ingredientTabStyle.buttonNode}

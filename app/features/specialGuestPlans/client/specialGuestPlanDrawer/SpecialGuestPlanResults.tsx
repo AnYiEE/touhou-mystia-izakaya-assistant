@@ -21,9 +21,11 @@ import { specialGuestPlanCatalogPort } from '@/features/catalog/guests/special/c
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import { recommendationPreferencesFacade } from '@/features/preferences/client/recommendationPreferencesFacade';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
+import { specialGuestPlansMessages } from '@/features/specialGuestPlans/client/messages';
 import { getDisplayedSpecialGuestPlan } from '@/features/specialGuestPlans/client/state/planState';
 import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/state/store';
 
+import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 import { getDrawerResultsClassName } from './drawerLayout';
@@ -42,6 +44,7 @@ export default function SpecialGuestPlanResults({
 	isHighAppearance: boolean;
 	popoverPortalProps: Pick<IPopoverProps, 'portalContainer'>;
 }) {
+	const { t } = useI18n(specialGuestPlansMessages);
 	const { pushState } = usePathname();
 	const openWindow = useViewInNewWindow();
 	const isReducedMotion = useReducedMotion();
@@ -94,14 +97,18 @@ export default function SpecialGuestPlanResults({
 			openWindow(
 				'beverages',
 				id,
-				beverageCatalog.getPropsById(id, 'name')
+				beverageCatalog.getDisplayPropsById(id, 'name')
 			);
 		},
 		[openWindow]
 	);
 	const handleOpenCooker = useCallback(
 		(id: TCookerId) => {
-			openWindow('cookers', id, cookerCatalog.getPropsById(id, 'name'));
+			openWindow(
+				'cookers',
+				id,
+				cookerCatalog.getDisplayPropsById(id, 'name')
+			);
 		},
 		[openWindow]
 	);
@@ -110,14 +117,18 @@ export default function SpecialGuestPlanResults({
 			openWindow(
 				'ingredients',
 				id,
-				ingredientCatalog.getPropsById(id, 'name')
+				ingredientCatalog.getDisplayPropsById(id, 'name')
 			);
 		},
 		[openWindow]
 	);
 	const handleOpenFood = useCallback(
 		(id: TFoodId) => {
-			openWindow('foods', id, foodCatalog.getPropsById(id, 'name'));
+			openWindow(
+				'foods',
+				id,
+				foodCatalog.getDisplayPropsById(id, 'name')
+			);
 		},
 		[openWindow]
 	);
@@ -215,7 +226,7 @@ export default function SpecialGuestPlanResults({
 									transition={emptyTransition}
 								>
 									<Placeholder className="min-h-full rounded-small border border-dashed border-default-200/80 bg-content1/35 p-6 text-small dark:bg-content1/15">
-										当前预设还没有可展示的稀客套餐
+										{t('plans.results.empty')}
 									</Placeholder>
 								</motion.div>
 							)}

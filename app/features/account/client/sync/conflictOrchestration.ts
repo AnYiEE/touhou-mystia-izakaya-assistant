@@ -46,10 +46,6 @@ export const REMOTE_CONFLICT_NOTICE_REASONS: ReadonlySet<
 	IAccountSyncBroadcastMessage['runtimeReason']
 > = new Set(['conflict-changed', 'conflict-created', 'conflict-heartbeat']);
 
-export function setAccountSyncConflict(conflict: ISyncConflictItem) {
-	upsertAccountSyncConflict(conflict);
-}
-
 function normalizeGlobalPreferencesDonationModal(
 	data: TGlobalPreferencesSnapshot,
 	donationModal: TGlobalPreferencesSnapshot['donationModal']
@@ -425,7 +421,7 @@ export function pauseDirtyEntryWithConflict({
 	) {
 		return false;
 	}
-	setAccountSyncConflict(conflict);
+	upsertAccountSyncConflict(conflict);
 	const user = accountStore.shared.user.get();
 	if (user?.id === userId) {
 		void postAccountSyncBroadcastMessage({
