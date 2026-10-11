@@ -1,5 +1,6 @@
 import { memo, useRef } from 'react';
 
+import type { TDlc } from '@/domain/data/shared/types';
 import type { TSpriteId, TSpriteTarget } from '@/domain/data/sprites/types';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
@@ -14,6 +15,7 @@ import ItemPopoverCard from '@/features/catalog/shared/client/components/ItemPop
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import { useItemPopoverState } from '@/features/catalog/shared/client/hooks/useItemPopoverState';
 import { useOpenedItemPopover } from '@/features/catalog/shared/client/hooks/useOpenedItemPopover';
+import { renderContentDlcSections } from '@/features/catalog/shared/client/renderContentDlcSections';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
 import type {
@@ -23,7 +25,7 @@ import type {
 
 interface ICollectibleItem<TTarget extends TSpriteTarget> {
 	description: string;
-	dlc: number;
+	dlc: TDlc;
 	id: TSpriteId<TTarget> & TShareableItemId;
 	name: TShareableItemName;
 }
@@ -61,55 +63,63 @@ function CollectibleCatalog<
 	const { checkDefaultOpen, checkShouldEffect, getPopoverKey } =
 		useItemPopoverState(defaultOpenedPopover);
 
-	return data.map((item, dataIndex) => {
-		const { description, dlc, id, name } = item;
-		return (
-			<ItemPopover
-				key={getPopoverKey(dataIndex, id)}
-				showArrow
-				defaultOpen={checkDefaultOpen(id)}
-				{...getPopoverOpenChangeProps(id)}
-			>
-				<ItemPopoverTrigger>
-					<ItemCard
-						isHoverable={checkShouldEffect(id)}
-						isPressable={checkShouldEffect(id)}
-						name={name}
-						description={cardDescription?.(item)}
-						image={
-							<Sprite target={target} recordId={id} size={3} />
-						}
-						onPress={() => {
-							trackEvent(
-								trackEvent.category.click,
-								trackingLabel,
-								name
-							);
-						}}
-					/>
-				</ItemPopoverTrigger>
-				<ItemPopoverContent>
-					<ItemPopoverCloseButton />
-					<ItemShareButton name={name} recordId={id} />
-					<ItemPopoverCard
-						target={target}
-						id={id}
-						name={name}
-						description={{ description }}
-						{...(descriptionLabel === undefined
-							? {}
-							: { descriptionLabel })}
-						details={details?.(item)}
-						summaryDetails={summaryDetails?.(item)}
-						dlc={dlc}
-						ref={popoverCardRef}
-					>
-						{children?.(item)}
-					</ItemPopoverCard>
-				</ItemPopoverContent>
-			</ItemPopover>
-		);
-	});
+	return renderContentDlcSections(
+		data,
+		({ dlc }) => dlc,
+		(item, dataIndex) => {
+			const { description, dlc, id, name } = item;
+			return (
+				<ItemPopover
+					key={getPopoverKey(dataIndex, id)}
+					showArrow
+					defaultOpen={checkDefaultOpen(id)}
+					{...getPopoverOpenChangeProps(id)}
+				>
+					<ItemPopoverTrigger>
+						<ItemCard
+							isHoverable={checkShouldEffect(id)}
+							isPressable={checkShouldEffect(id)}
+							name={name}
+							description={cardDescription?.(item)}
+							image={
+								<Sprite
+									target={target}
+									recordId={id}
+									size={3}
+								/>
+							}
+							onPress={() => {
+								trackEvent(
+									trackEvent.category.click,
+									trackingLabel,
+									name
+								);
+							}}
+						/>
+					</ItemPopoverTrigger>
+					<ItemPopoverContent>
+						<ItemPopoverCloseButton />
+						<ItemShareButton name={name} recordId={id} />
+						<ItemPopoverCard
+							target={target}
+							id={id}
+							name={name}
+							description={{ description }}
+							{...(descriptionLabel === undefined
+								? {}
+								: { descriptionLabel })}
+							details={details?.(item)}
+							summaryDetails={summaryDetails?.(item)}
+							dlc={dlc}
+							ref={popoverCardRef}
+						>
+							{children?.(item)}
+						</ItemPopoverCard>
+					</ItemPopoverContent>
+				</ItemPopover>
+			);
+		}
+	);
 }
 
 export default memo(CollectibleCatalog) as unknown as typeof CollectibleCatalog;

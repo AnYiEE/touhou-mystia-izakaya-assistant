@@ -105,7 +105,8 @@ const CATALOG_GUESTS_MESSAGES_ZH_CN = {
 	'guests.infoButton.tooltip': '查看更多资料',
 	'guests.ingredient.addTipPrefix': '点击：加入额外食材【{name}】',
 	'guests.ingredient.craftDarkMatter': '，制作【{name}】',
-	'guests.ingredient.craftDarkMatterQuestion': '制作{name}？',
+	'guests.ingredient.craftDarkMatterWarning':
+		'会制作成{name}，不建议为普客添加',
 	'guests.ingredient.darkMatter': '黑暗物质',
 	'guests.ingredient.highestRestricted': '，最高评级受限',
 	'guests.ingredient.lowestRestricted': '，最低评级受限',
@@ -383,7 +384,8 @@ export const catalogGuestsMessages = {
 		'guests.ingredient.addTipPrefix':
 			'Click: add extra ingredient “{name}”',
 		'guests.ingredient.craftDarkMatter': ', craft “{name}”',
-		'guests.ingredient.craftDarkMatterQuestion': 'Craft {name}?',
+		'guests.ingredient.craftDarkMatterWarning':
+			'Turns into {name}, not recommended for normal guests',
 		'guests.ingredient.darkMatter': 'Dark Matter',
 		'guests.ingredient.highestRestricted': ', highest rating restricted',
 		'guests.ingredient.lowestRestricted': ', lowest rating restricted',
@@ -671,7 +673,8 @@ export const catalogGuestsMessages = {
 		'guests.infoButton.tooltip': '詳細を表示',
 		'guests.ingredient.addTipPrefix': 'クリック：追加食材【{name}】を追加',
 		'guests.ingredient.craftDarkMatter': '、【{name}】を制作',
-		'guests.ingredient.craftDarkMatterQuestion': '{name}を作成？',
+		'guests.ingredient.craftDarkMatterWarning':
+			'{name}になるため、一般客への追加は非推奨',
 		'guests.ingredient.darkMatter': 'ダークマター',
 		'guests.ingredient.highestRestricted': '、最高評価制限',
 		'guests.ingredient.lowestRestricted': '、最低評価制限',
@@ -956,7 +959,8 @@ export const catalogGuestsMessages = {
 		'guests.infoButton.tooltip': '자세히 보기',
 		'guests.ingredient.addTipPrefix': '클릭: 추가 재료 “{name}” 추가',
 		'guests.ingredient.craftDarkMatter': ', “{name}” 제작',
-		'guests.ingredient.craftDarkMatterQuestion': '{name} 제작?',
+		'guests.ingredient.craftDarkMatterWarning':
+			'{name}가 되므로 일반 손님에게 추가하는 것은 권장하지 않음',
 		'guests.ingredient.darkMatter': '어둠의 요리',
 		'guests.ingredient.highestRestricted': ', 최고 평가 제한',
 		'guests.ingredient.lowestRestricted': ', 최저 평가 제한',
@@ -1234,7 +1238,8 @@ export const catalogGuestsMessages = {
 		'guests.infoButton.tooltip': '檢視更多資料',
 		'guests.ingredient.addTipPrefix': '點擊：加入額外食材【{name}】',
 		'guests.ingredient.craftDarkMatter': '，製作【{name}】',
-		'guests.ingredient.craftDarkMatterQuestion': '製作{name}？',
+		'guests.ingredient.craftDarkMatterWarning':
+			'會製作成{name}，不建議為普客加入',
 		'guests.ingredient.darkMatter': '黑暗物質',
 		'guests.ingredient.highestRestricted': '，最高評級受限',
 		'guests.ingredient.lowestRestricted': '，最低評級受限',

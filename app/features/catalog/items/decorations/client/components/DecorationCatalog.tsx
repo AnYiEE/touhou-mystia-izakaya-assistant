@@ -24,6 +24,7 @@ import SpecialGuestBondReference from '@/features/catalog/shared/client/componen
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import { useItemPopoverState } from '@/features/catalog/shared/client/hooks/useItemPopoverState';
 import { useOpenedItemPopover } from '@/features/catalog/shared/client/hooks/useOpenedItemPopover';
+import { renderContentDlcSections } from '@/features/catalog/shared/client/renderContentDlcSections';
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
@@ -111,7 +112,9 @@ export default memo<IProps>(function DecorationCatalog({ data }) {
 		[data]
 	);
 
-	return presentationData.map(
+	return renderContentDlcSections(
+		presentationData,
+		({ dlc }) => dlc,
 		({ dlc, effect, from, id, name, presentationDescription }, index) => (
 			<ItemPopover
 				key={getPopoverKey(index, id)}

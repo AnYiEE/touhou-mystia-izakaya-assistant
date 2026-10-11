@@ -17,6 +17,7 @@ import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import { useItemPopoverState } from '@/features/catalog/shared/client/hooks/useItemPopoverState';
 import { useOpenedItemPopover } from '@/features/catalog/shared/client/hooks/useOpenedItemPopover';
 import { getBeverageTagLabel } from '@/features/catalog/shared/client/localization/tagLabels';
+import { renderContentDlcSections } from '@/features/catalog/shared/client/renderContentDlcSections';
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
@@ -49,7 +50,9 @@ export default memo<IProps>(function BeverageCatalog({ data }) {
 		[data]
 	);
 
-	return presentationData.map(
+	return renderContentDlcSections(
+		presentationData,
+		({ item }) => item.dlc,
 		(
 			{ description, item: { dlc, from, id, name, price }, tags },
 			dataIndex

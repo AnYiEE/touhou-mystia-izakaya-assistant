@@ -1,7 +1,12 @@
-import { memo, useCallback, useMemo } from 'react';
+import { faBan } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Fragment, type ReactNode, memo, useCallback, useMemo } from 'react';
 
+import LabeledDivider from '@/design/ui/components/labeledDivider';
 import Placeholder from '@/design/ui/components/placeholder';
 
+import { groupItemsByContentDlc } from '@/domain/availability/contentDlc';
+import { type IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 
 import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
@@ -9,6 +14,9 @@ import IngredientTabContentSkeleton from '@/features/catalog/guests/shared/clien
 import IngredientTabItemPresenter from '@/features/catalog/guests/shared/client/components/ingredientTabItemPresenter';
 import type { IIngredientTabContentProps } from '@/features/catalog/guests/shared/ingredientTabContracts';
 import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
+import ContentDlcDivider from '@/features/catalog/shared/client/components/ContentDlcDivider';
+import OfficialContentDivider from '@/features/catalog/shared/client/components/OfficialContentDivider';
+import { type TItemDataItem } from '@/features/catalog/shared/contracts';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { useI18n } from '@/shared/i18n/useI18n';
@@ -54,6 +62,11 @@ export default memo<IProps>(function IngredientTabContent({
 		[darkIngredientSet, sortedData]
 	);
 
+	const { mainItems, modSections } = useMemo(
+		() => groupItemsByContentDlc(data, ({ dlc }) => dlc),
+		[data]
+	);
+
 	const handleButtonPress = useCallback(() => {
 		vibrate();
 		normalGuestStore.toggleIngredientTabVisibilityState();
@@ -89,19 +102,71 @@ export default memo<IProps>(function IngredientTabContent({
 		currentRecipeIngredients.length +
 			currentMealFoodData.extraIngredients.length >=
 		5;
+	const renderIngredient = ({
+		id,
+		name,
+	}: TItemDataItem<IngredientCatalog>): ReactNode => {
+		const ingredientScoreChange = changesById[id];
+		const scoreChange = ingredientScoreChange?.scoreChange ?? 0;
+
+		if (isFullFilled) {
+			return (
+				<IngredientTabItemPresenter
+					key={id}
+					className="opacity-40 brightness-50 dark:opacity-80"
+					ingredient={id}
+					kind="static"
+				/>
+			);
+		}
+
+		const isDown = scoreChange < 0;
+		const isUp = scoreChange > 0;
+		const isNoChange = scoreChange === 0;
+
+		const color = isUp ? 'success' : isDown ? 'danger' : 'default';
+		const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
+
+		const badgeContent = isNoChange ? '' : score;
+		const tooltipContent = `${t('guests.ingredient.addTipPrefix', {
+			name,
+		})}${isNoChange ? '' : t('guests.ingredient.score', { score })}`;
+
+		return (
+			<IngredientTabItemPresenter
+				key={id}
+				badgeContent={badgeContent}
+				color={color}
+				ingredient={id}
+				isNoChange={isNoChange}
+				kind="interactive"
+				onPress={() => {
+					handleSelect(id);
+				}}
+				scoreChange={scoreChange}
+				tooltipContent={tooltipContent}
+			/>
+		);
+	};
+
 	const darkIngredientSection = checkLengthEmpty(
 		darkIngredientRows
 	) ? null : (
 		<>
-			<div className="my-4 flex items-center">
-				<div className="h-px w-full bg-foreground-300" />
-				<div className="select-none whitespace-nowrap text-small font-light text-foreground-500">
-					{t('guests.ingredient.craftDarkMatterQuestion', {
-						name: t('guests.ingredient.darkMatter'),
-					})}
-				</div>
-				<div className="h-px w-full bg-foreground-300" />
-			</div>
+			<LabeledDivider
+				className="mx-2 my-4 gap-1.5"
+				icon={
+					<FontAwesomeIcon
+						aria-hidden
+						className="!h-3.5 !w-3.5 shrink-0 text-danger-600"
+						icon={faBan}
+					/>
+				}
+			>
+				{t('guests.ingredient.craftDarkMatterWarning', {
+					name: t('guests.ingredient.darkMatter'),
+				})}
+			</LabeledDivider>
 			<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
 				{darkIngredientRows.map(({ id }) => (
 					<IngredientTabItemPresenter
@@ -113,58 +178,35 @@ export default memo<IProps>(function IngredientTabContent({
 			</div>
 		</>
 	);
+	const modSectionsNode = modSections.map(({ dlc, items }, sectionIndex) => (
+		<Fragment key={dlc}>
+			{(mainItems.length > 0 || sectionIndex > 0) && (
+				<ContentDlcDivider className="mx-2 my-4" dlc={dlc} />
+			)}
+			<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
+				{items.map(renderIngredient)}
+			</div>
+		</Fragment>
+	));
 
 	return (
 		<IngredientTabContentSkeleton
-			afterMainGrid={darkIngredientSection}
+			afterMainGrid={
+				<>
+					{modSectionsNode}
+					{darkIngredientSection}
+				</>
+			}
 			ingredientTabStyle={ingredientTabStyle}
 			onToggle={handleButtonPress}
 		>
-			{data.map(({ id, name }) => {
-				const ingredientScoreChange = changesById[id];
-				const scoreChange = ingredientScoreChange?.scoreChange ?? 0;
-
-				if (isFullFilled) {
-					return (
-						<IngredientTabItemPresenter
-							key={id}
-							className="opacity-40 brightness-50 dark:opacity-80"
-							ingredient={id}
-							kind="static"
-						/>
-					);
-				}
-
-				const isDown = scoreChange < 0;
-				const isUp = scoreChange > 0;
-				const isNoChange = scoreChange === 0;
-
-				const color = isUp ? 'success' : isDown ? 'danger' : 'default';
-				const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
-
-				const badgeContent = isNoChange ? '' : score;
-				const tooltipContent = `${t('guests.ingredient.addTipPrefix', {
-					name,
-				})}${
-					isNoChange ? '' : t('guests.ingredient.score', { score })
-				}`;
-
-				return (
-					<IngredientTabItemPresenter
-						key={id}
-						badgeContent={badgeContent}
-						color={color}
-						ingredient={id}
-						isNoChange={isNoChange}
-						kind="interactive"
-						onPress={() => {
-							handleSelect(id);
-						}}
-						scoreChange={scoreChange}
-						tooltipContent={tooltipContent}
-					/>
-				);
-			})}
+			{modSections.length > 0 && mainItems.length > 0 && (
+				<OfficialContentDivider
+					key="content-official"
+					className="col-span-full w-full"
+				/>
+			)}
+			{mainItems.map(renderIngredient)}
 		</IngredientTabContentSkeleton>
 	);
 });

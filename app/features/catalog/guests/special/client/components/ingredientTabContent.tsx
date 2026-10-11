@@ -1,7 +1,9 @@
-import { memo, useCallback, useMemo } from 'react';
+import { Fragment, type ReactNode, memo, useCallback, useMemo } from 'react';
 
 import Placeholder from '@/design/ui/components/placeholder';
 
+import { groupItemsByContentDlc } from '@/domain/availability/contentDlc';
+import { type IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 
 import IngredientTabContentSkeleton from '@/features/catalog/guests/shared/client/components/ingredientTabContentSkeleton';
@@ -9,6 +11,9 @@ import IngredientTabItemPresenter from '@/features/catalog/guests/shared/client/
 import type { IIngredientTabContentProps } from '@/features/catalog/guests/shared/ingredientTabContracts';
 import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
+import ContentDlcDivider from '@/features/catalog/shared/client/components/ContentDlcDivider';
+import OfficialContentDivider from '@/features/catalog/shared/client/components/OfficialContentDivider';
+import { type TItemDataItem } from '@/features/catalog/shared/contracts';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { useI18n } from '@/shared/i18n/useI18n';
@@ -28,6 +33,11 @@ export default memo<IProps>(function IngredientTabContent({
 	const { changesById } = specialGuestStore.ingredientScoreChanges.use();
 
 	const foodCatalog = specialGuestStore.instances.recipe.get();
+
+	const { mainItems, modSections } = useMemo(
+		() => groupItemsByContentDlc(sortedData, ({ dlc }) => dlc),
+		[sortedData]
+	);
 
 	const currentRecipe = useMemo(
 		() =>
@@ -73,93 +83,110 @@ export default memo<IProps>(function IngredientTabContent({
 		currentRecipeIngredients.length +
 			currentMealFood.extraIngredients.length >=
 		5;
+	const renderIngredient = ({
+		id,
+		name,
+	}: TItemDataItem<IngredientCatalog>): ReactNode => {
+		const ingredientScoreChange = changesById[id] ?? null;
+		const restriction = ingredientScoreChange?.restriction ?? 'none';
+		const scoreChange = ingredientScoreChange?.scoreChange ?? 0;
+		const isDarkIngredient =
+			ingredientScoreChange?.isDarkIngredient ?? false;
+		const isOrderTag = ingredientScoreChange?.isOrderTag ?? false;
+		const isHighestRestricted = restriction === 'highestRestricted';
+		const isLowestRestricted = restriction === 'lowestRestricted';
+
+		if (isFullFilled) {
+			return (
+				<IngredientTabItemPresenter
+					key={id}
+					className="opacity-40 brightness-50 dark:opacity-80"
+					ingredient={id}
+					kind="static"
+				/>
+			);
+		}
+
+		const isDown = scoreChange < 0;
+		const isUp = scoreChange > 0;
+		const isNoChange = scoreChange === 0;
+
+		const color = isOrderTag
+			? 'secondary'
+			: isUp
+				? 'success'
+				: isDown
+					? 'danger'
+					: 'default';
+		const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
+
+		const badgeContent = isDarkIngredient
+			? '!!'
+			: isLowestRestricted
+				? '++'
+				: isHighestRestricted
+					? '--'
+					: isNoChange
+						? ''
+						: score;
+		const tooltipSuffix = isNoChange
+			? ''
+			: isDarkIngredient
+				? t('guests.ingredient.craftDarkMatter', {
+						name: t('guests.ingredient.darkMatter'),
+					})
+				: isLowestRestricted
+					? t('guests.ingredient.lowestRestricted')
+					: isHighestRestricted
+						? t('guests.ingredient.highestRestricted')
+						: `${t('guests.ingredient.score', { score })}${
+								isOrderTag
+									? t('guests.ingredient.orderTagSuffix')
+									: ''
+							}`;
+		const tooltipContent = `${t('guests.ingredient.addTipPrefix', {
+			name,
+		})}${tooltipSuffix}`;
+
+		return (
+			<IngredientTabItemPresenter
+				key={id}
+				badgeContent={badgeContent}
+				color={color}
+				ingredient={id}
+				isNoChange={isNoChange}
+				kind="interactive"
+				onPress={() => {
+					handleSelect(id);
+				}}
+				scoreChange={scoreChange}
+				tooltipContent={tooltipContent}
+			/>
+		);
+	};
 
 	return (
 		<IngredientTabContentSkeleton
+			afterMainGrid={modSections.map(({ dlc, items }, sectionIndex) => (
+				<Fragment key={dlc}>
+					{(mainItems.length > 0 || sectionIndex > 0) && (
+						<ContentDlcDivider className="mx-2 my-4" dlc={dlc} />
+					)}
+					<div className="m-2 grid grid-cols-fill-12 justify-around gap-4">
+						{items.map(renderIngredient)}
+					</div>
+				</Fragment>
+			))}
 			ingredientTabStyle={ingredientTabStyle}
 			onToggle={handleButtonPress}
 		>
-			{sortedData.map(({ id, name }) => {
-				const ingredientScoreChange = changesById[id] ?? null;
-				const restriction =
-					ingredientScoreChange?.restriction ?? 'none';
-				const scoreChange = ingredientScoreChange?.scoreChange ?? 0;
-				const isDarkIngredient =
-					ingredientScoreChange?.isDarkIngredient ?? false;
-				const isOrderTag = ingredientScoreChange?.isOrderTag ?? false;
-				const isHighestRestricted = restriction === 'highestRestricted';
-				const isLowestRestricted = restriction === 'lowestRestricted';
-
-				if (isFullFilled) {
-					return (
-						<IngredientTabItemPresenter
-							key={id}
-							className="opacity-40 brightness-50 dark:opacity-80"
-							ingredient={id}
-							kind="static"
-						/>
-					);
-				}
-
-				const isDown = scoreChange < 0;
-				const isUp = scoreChange > 0;
-				const isNoChange = scoreChange === 0;
-
-				const color = isOrderTag
-					? 'secondary'
-					: isUp
-						? 'success'
-						: isDown
-							? 'danger'
-							: 'default';
-				const score = isUp ? `+${scoreChange}` : `${scoreChange}`;
-
-				const badgeContent = isDarkIngredient
-					? '!!'
-					: isLowestRestricted
-						? '++'
-						: isHighestRestricted
-							? '--'
-							: isNoChange
-								? ''
-								: score;
-				const tooltipSuffix = isNoChange
-					? ''
-					: isDarkIngredient
-						? t('guests.ingredient.craftDarkMatter', {
-								name: t('guests.ingredient.darkMatter'),
-							})
-						: isLowestRestricted
-							? t('guests.ingredient.lowestRestricted')
-							: isHighestRestricted
-								? t('guests.ingredient.highestRestricted')
-								: `${t('guests.ingredient.score', { score })}${
-										isOrderTag
-											? t(
-													'guests.ingredient.orderTagSuffix'
-												)
-											: ''
-									}`;
-				const tooltipContent = `${t('guests.ingredient.addTipPrefix', {
-					name,
-				})}${tooltipSuffix}`;
-
-				return (
-					<IngredientTabItemPresenter
-						key={id}
-						badgeContent={badgeContent}
-						color={color}
-						ingredient={id}
-						isNoChange={isNoChange}
-						kind="interactive"
-						onPress={() => {
-							handleSelect(id);
-						}}
-						scoreChange={scoreChange}
-						tooltipContent={tooltipContent}
-					/>
-				);
-			})}
+			{modSections.length > 0 && mainItems.length > 0 && (
+				<OfficialContentDivider
+					key="content-official"
+					className="col-span-full w-full"
+				/>
+			)}
+			{mainItems.map(renderIngredient)}
 		</IngredientTabContentSkeleton>
 	);
 });

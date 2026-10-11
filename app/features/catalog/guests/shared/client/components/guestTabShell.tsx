@@ -1,10 +1,12 @@
 import { cn } from '@heroui/theme';
 import {
+	Fragment,
 	type Key,
 	type ReactNode,
 	memo,
 	useCallback,
 	useLayoutEffect,
+	useMemo,
 	useRef,
 	useState,
 } from 'react';
@@ -13,10 +15,20 @@ import Button from '@/design/ui/components/button';
 import PressElement from '@/design/ui/components/pressElement';
 import ScrollShadow from '@/design/ui/components/scrollShadow';
 
+import { groupItemsByContentDlc } from '@/domain/availability/contentDlc';
+import type { TDlc } from '@/domain/data/shared/types';
+
 import type { IGuestTabStyle } from '@/features/catalog/guests/shared/contracts';
 import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
+import ContentDlcDivider from '@/features/catalog/shared/client/components/ContentDlcDivider';
 
 import { useI18n } from '@/shared/i18n/useI18n';
+
+interface IGuestTabItem<TItemId extends Key, TItemName extends string> {
+	dlc: TDlc;
+	id: TItemId;
+	name: TItemName;
+}
 
 interface IProps<TItemId extends Key, TItemName extends string> {
 	currentGuest: TItemId | null;
@@ -25,7 +37,7 @@ interface IProps<TItemId extends Key, TItemName extends string> {
 	onSelect: (id: TItemId, name: TItemName) => void;
 	onToggleVisibility: () => void;
 	renderAvatar: (id: TItemId, name: TItemName) => ReactNode;
-	sortedData: ReadonlyArray<{ id: TItemId; name: TItemName }>;
+	sortedData: ReadonlyArray<IGuestTabItem<TItemId, TItemName>>;
 }
 
 export default memo(function GuestTabShell<
@@ -48,6 +60,11 @@ export default memo(function GuestTabShell<
 	const animationFrameIdRef = useRef<number | null>(null);
 	const hasMeasuredRef = useRef(false);
 	const previousIsVisibleRef = useRef(isVisible);
+
+	const { mainItems, modSections } = useMemo(
+		() => groupItemsByContentDlc(sortedData, ({ dlc }) => dlc),
+		[sortedData]
+	);
 
 	const updateViewportHeight = useCallback(() => {
 		const contentElement = contentRef.current;
@@ -144,6 +161,36 @@ export default memo(function GuestTabShell<
 		updateViewportHeight,
 	]);
 
+	const renderGuestItem = useCallback(
+		({ id, name }: IGuestTabItem<TItemId, TItemName>) => (
+			<PressElement
+				key={id}
+				as="div"
+				data-tutorial-guest={id}
+				onPress={() => {
+					onSelect(id, name);
+				}}
+				title={t('guests.guestTab.selectTip', { name })}
+				className="group flex cursor-pointer flex-col items-center gap-1"
+			>
+				{renderAvatar(id, name)}
+				<span
+					className={cn(
+						'w-full text-center text-tiny leading-tight text-default-800 transition-colors group-hover:text-default-900 group-data-[pressed=true]:text-default-900 motion-reduce:transition-none',
+						{
+							'break-keep [overflow-wrap:break-word]':
+								locale === 'ko',
+							'text-default-900': id === currentGuest,
+						}
+					)}
+				>
+					{name}
+				</span>
+			</PressElement>
+		),
+		[currentGuest, locale, onSelect, renderAvatar, t]
+	);
+
 	return (
 		<>
 			<div className="relative">
@@ -156,37 +203,24 @@ export default memo(function GuestTabShell<
 					className="overflow-y-auto transition-[height] duration-300 ease-in-out motion-reduce:transition-none"
 				>
 					<div ref={contentRef} className="p-2">
-						<div className="grid grid-cols-fill-16 justify-around gap-4 lg:grid-cols-fill-20">
-							{sortedData.map(({ id, name }) => (
-								<PressElement
-									key={id}
-									as="div"
-									data-tutorial-guest={id}
-									onPress={() => {
-										onSelect(id, name);
-									}}
-									title={t('guests.guestTab.selectTip', {
-										name,
-									})}
-									className="group flex cursor-pointer flex-col items-center gap-1"
-								>
-									{renderAvatar(id, name)}
-									<span
-										className={cn(
-											'w-full text-center text-tiny leading-tight text-default-800 transition-colors group-hover:text-default-900 group-data-[pressed=true]:text-default-900 motion-reduce:transition-none',
-											{
-												'break-keep [overflow-wrap:break-word]':
-													locale === 'ko',
-												'text-default-900':
-													id === currentGuest,
-											}
-										)}
-									>
-										{name}
-									</span>
-								</PressElement>
-							))}
-						</div>
+						{mainItems.length > 0 && (
+							<div className="grid grid-cols-fill-16 justify-around gap-4 lg:grid-cols-fill-20">
+								{mainItems.map(renderGuestItem)}
+							</div>
+						)}
+						{modSections.map(({ dlc, items }, sectionIndex) => (
+							<Fragment key={dlc}>
+								{(mainItems.length > 0 || sectionIndex > 0) && (
+									<ContentDlcDivider
+										className="my-6"
+										dlc={dlc}
+									/>
+								)}
+								<div className="grid grid-cols-fill-16 justify-around gap-4 lg:grid-cols-fill-20">
+									{items.map(renderGuestItem)}
+								</div>
+							</Fragment>
+						))}
 					</div>
 				</ScrollShadow>
 				<div

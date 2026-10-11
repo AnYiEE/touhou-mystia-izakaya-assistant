@@ -24,6 +24,7 @@ import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import Tachie from '@/features/catalog/shared/client/components/Tachie';
 import { useItemPopoverState } from '@/features/catalog/shared/client/hooks/useItemPopoverState';
 import { useOpenedItemPopover } from '@/features/catalog/shared/client/hooks/useOpenedItemPopover';
+import { renderContentDlcSections } from '@/features/catalog/shared/client/renderContentDlcSections';
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
@@ -58,7 +59,9 @@ export default memo<IProps>(function ClothesCatalog({ data }) {
 		[data]
 	);
 
-	return presentationData.map(
+	return renderContentDlcSections(
+		presentationData,
+		({ dlc }) => dlc,
 		(
 			{ dlc, from, id, izakaya, name, presentationDescription },
 			dataIndex
