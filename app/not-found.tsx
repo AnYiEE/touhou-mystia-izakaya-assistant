@@ -5,6 +5,7 @@ import Button from './design/ui/components/button';
 import Link from './design/ui/components/link';
 import { appShellMessages } from './features/appShell/client/messages';
 import { SITE_LINKS } from './features/appShell/links';
+import PreferencesModal from './features/preferences/client/components/PreferencesModal';
 import { PUBLIC_RUNTIME_CONFIG } from './infrastructure/environment/publicRuntimeConfig';
 import { DEFAULT_LOCALE, type TLocale } from './shared/i18n/locale';
 import { translate } from './shared/i18n/messages';
@@ -39,25 +40,28 @@ export default async function NotFound() {
 	);
 
 	return (
-		<div className="flex min-h-main-content items-center justify-center gap-4">
-			<h1 className="text-6xl font-bold">404</h1>
-			<Divider orientation="vertical" className="h-12" />
-			<p className="hidden text-xl md:inline">
-				{translate(siteMessages, locale, 'site.notFound.title')}
-			</p>
-			<Button
-				as={Link}
-				animationUnderline={false}
-				color="primary"
-				size="sm"
-				variant="flat"
-				href={links.index.href}
-				role="link"
-			>
-				{translate(siteMessages, locale, 'site.notFound.back', {
-					target: backTarget,
-				})}
-			</Button>
-		</div>
+		<>
+			<div className="flex min-h-main-content items-center justify-center gap-4">
+				<h1 className="text-6xl font-bold">404</h1>
+				<Divider orientation="vertical" className="h-12" />
+				<p className="hidden text-xl md:inline">
+					{translate(siteMessages, locale, 'site.notFound.title')}
+				</p>
+				<Button
+					as={Link}
+					animationUnderline={false}
+					color="primary"
+					size="sm"
+					variant="flat"
+					href={links.index.href}
+					role="link"
+				>
+					{translate(siteMessages, locale, 'site.notFound.back', {
+						target: backTarget,
+					})}
+				</Button>
+			</div>
+			<PreferencesModal />
+		</>
 	);
 }
