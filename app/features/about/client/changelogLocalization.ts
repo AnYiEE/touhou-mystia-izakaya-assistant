@@ -132,6 +132,10 @@ const CHANGELOG_EN: Readonly<Record<string, ReadonlyArray<string>>> = {
 	'v2.10': [
 		'Added: items, records, fishing collectibles, and badges lookup pages.',
 	],
+	'v3.0': [
+		'Added: the whole site now supports Simplified Chinese, Traditional Chinese, English, Japanese, and Korean.',
+		'Improved: catalog section titles now separate base game and mod content.',
+	],
 };
 
 const CHANGELOG_JA: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -262,6 +266,10 @@ const CHANGELOG_JA: Readonly<Record<string, ReadonlyArray<string>>> = {
 	'v2.10': [
 		'追加：アイテム、レコード、釣りコレクション、バッジの検索ページ。',
 	],
+	'v3.0': [
+		'追加：サイト全体が簡体字中国語・繁体字中国語・英語・日本語・韓国語の5言語に対応。',
+		'改善：図鑑ページにゲーム本編とModコンテンツの区切り見出しを追加。',
+	],
 };
 
 const CHANGELOG_KO: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -388,6 +396,10 @@ const CHANGELOG_KO: Readonly<Record<string, ReadonlyArray<string>>> = {
 		'개선: 모바일 요리·음료 표의 레이아웃과 조작감 최적화.',
 	],
 	'v2.10': ['추가: 아이템, 레코드, 낚시 컬렉션, 배지 검색 페이지.'],
+	'v3.0': [
+		'추가: 사이트 전체가 중국어 간체·번체, 영어, 일본어, 한국어 5개 언어를 지원.',
+		'개선: 자료 페이지에 본편과 모드 콘텐츠를 구분하는 제목을 추가.',
+	],
 };
 
 const CHANGELOG_ZH_TW: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -506,6 +518,10 @@ const CHANGELOG_ZH_TW: Readonly<Record<string, ReadonlyArray<string>>> = {
 		'改善：最佳化行動端料理和酒水表格的佈局和操作體驗。',
 	],
 	'v2.10': ['新增：道具、唱片、垂釣收藏和徽章查詢頁面。'],
+	'v3.0': [
+		'新增：全站支援簡體中文、繁體中文、英文、日文和韓文五種語言。',
+		'改善：查詢頁面的分區標題，區分遊戲本體與模組內容。',
+	],
 };
 
 export const CHANGELOG_LOCALIZED: Readonly<

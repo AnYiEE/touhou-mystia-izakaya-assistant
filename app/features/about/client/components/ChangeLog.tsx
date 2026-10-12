@@ -215,6 +215,13 @@ const changelog = [
 		version: 'v2.10',
 		changes: ['新增：道具、唱片、垂钓收藏和徽章查询页面。'],
 	},
+	{
+		version: 'v3.0',
+		changes: [
+			'新增：全站支持简体中文、繁体中文、英语、日语和韩语五种语言。',
+			'改善：资料页的分区标题，区分游戏本体与模组内容。',
+		],
+	},
 ] as const satisfies Array<{
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
 	version: `v${string}`;
