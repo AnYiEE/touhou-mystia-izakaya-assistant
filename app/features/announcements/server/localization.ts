@@ -188,6 +188,25 @@ export function getAnnouncementLocaleUpdatedAt(
 	);
 }
 
+export function createAnnouncementVisibleLocaleSnapshot(
+	announcement: TAnnouncementLocalizationSource &
+		Pick<TAnnouncement, 'locale_updated_at_json' | 'updated_at'>
+) {
+	const snapshot: Partial<Record<TLocale, number>> = {};
+	for (const locale of SUPPORTED_LOCALES) {
+		if (
+			getVisibleAnnouncementLocalizedContent(announcement, locale) ===
+			null
+		) {
+			continue;
+		}
+
+		snapshot[locale] = getAnnouncementLocaleUpdatedAt(announcement, locale);
+	}
+
+	return snapshot;
+}
+
 export function createInitialAnnouncementLocaleUpdatedAtJson(now: number) {
 	return JSON.stringify(
 		Object.fromEntries(SUPPORTED_LOCALES.map((locale) => [locale, now]))

@@ -11,3 +11,4 @@ export {
 	SsoAuthorizeNotice,
 	authorizePanelIcons,
 } from './client/AuthorizePanel';
+export { default as SsoAuthorizeRenderedLocaleRefresh } from './client/RenderedLocaleRefresh';

@@ -6,8 +6,9 @@ import {
 	type IAnnouncementVisibleListData,
 } from '@/features/announcements/contracts';
 import {
-	createAnnouncementDismissalToken,
-	createLegacyAnnouncementDismissalToken,
+	checkAnnouncementDismissalTokensCoverLocale,
+	parseAnnouncementDismissalToken,
+	parseAnnouncementDismissalTokens,
 } from '@/features/announcements/dismissals';
 import type { TAnnouncementServiceResult } from '@/features/announcements/server/contracts';
 import {
@@ -16,6 +17,7 @@ import {
 	sanitizeAnnouncementHtml,
 } from '@/features/announcements/server/html';
 import {
+	createAnnouncementVisibleLocaleSnapshot,
 	getAnnouncementLocaleUpdatedAt,
 	getVisibleAnnouncementLocalizedContent,
 } from '@/features/announcements/server/localization';
@@ -31,16 +33,21 @@ import {
 	listActiveAnnouncementCandidates,
 	listAnnouncementDismissalsForUser,
 	runAnnouncementTransaction,
-	upsertAnnouncementDismissal,
+	upsertAnnouncementDismissals,
 } from '@/features/announcements/server/persistence/repository';
 
 import type {
 	TAnnouncement,
+	TAnnouncementDismissalNew,
 	TDatabase,
 	TUser,
 } from '@/infrastructure/database/schema';
 
-import { DEFAULT_LOCALE, type TLocale, isLocale } from '@/shared/i18n/locale';
+import {
+	SUPPORTED_LOCALES,
+	type TLocale,
+	isLocale,
+} from '@/shared/i18n/locale';
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 
 const DEFAULT_VISIBLE_ANNOUNCEMENT_LIMIT = 5;
@@ -86,6 +93,25 @@ function createActiveCandidateCacheKey({
 	offset?: number;
 }) {
 	return `${[...new Set(audiences)].sort().join(',')}:${locale}:${limit}:${offset}`;
+}
+
+interface IAnnouncementDatabaseDismissal {
+	locale: TLocale;
+	updatedAt: number;
+}
+
+function checkDatabaseDismissalCoversLocale(
+	dismissals: ReadonlyArray<IAnnouncementDatabaseDismissal> | undefined,
+	locale: TLocale,
+	localeUpdatedAt: number
+) {
+	return (
+		dismissals?.some(
+			(dismissal) =>
+				dismissal.locale === locale &&
+				dismissal.updatedAt === localeUpdatedAt
+		) === true
+	);
 }
 
 export function invalidateActiveAnnouncementCandidateCache() {
@@ -145,7 +171,8 @@ export async function getVisibleAnnouncementsForRequestContext({
 }: IAnnouncementRequestContext): Promise<IAnnouncementVisibleListData> {
 	const audiences = createVisibleAudienceList(isAuthenticated);
 	const announcements: IAnnouncementPublicItem[] = [];
-	const dismissedTokenSet = new Set(dismissedTokens);
+	const cookieDismissalsByAnnouncement =
+		parseAnnouncementDismissalTokens(dismissedTokens);
 	let offset = 0;
 
 	while (announcements.length < DEFAULT_VISIBLE_ANNOUNCEMENT_LIMIT) {
@@ -183,20 +210,26 @@ export async function getVisibleAnnouncementsForRequestContext({
 		) {
 			throw new Error('invalid-announcement-dismissal');
 		}
-		const databaseDismissalTokenSet = new Set<string>();
+		const databaseDismissalsByAnnouncement = new Map<
+			string,
+			IAnnouncementDatabaseDismissal[]
+		>();
 		for (const dismissal of databaseDismissals) {
-			const dismissalLocale =
-				dismissal.locale === '' ? DEFAULT_LOCALE : dismissal.locale;
-			if (!isLocale(dismissalLocale)) {
+			if (!isLocale(dismissal.locale)) {
 				continue;
 			}
 
-			databaseDismissalTokenSet.add(
-				createAnnouncementDismissalToken(
-					dismissal.announcement_id,
-					dismissalLocale,
-					dismissal.announcement_updated_at
-				)
+			const announcementDismissals =
+				databaseDismissalsByAnnouncement.get(
+					dismissal.announcement_id
+				) ?? [];
+			announcementDismissals.push({
+				locale: dismissal.locale,
+				updatedAt: dismissal.announcement_updated_at,
+			});
+			databaseDismissalsByAnnouncement.set(
+				dismissal.announcement_id,
+				announcementDismissals
 			);
 		}
 
@@ -226,10 +259,8 @@ export async function getVisibleAnnouncementsForRequestContext({
 			);
 			const item = createPublicAnnouncementItem(
 				announcement,
-				locale,
 				localized,
-				sanitizedHtml,
-				localeUpdatedAt
+				sanitizedHtml
 			);
 			if (item === null) {
 				continue;
@@ -237,15 +268,16 @@ export async function getVisibleAnnouncementsForRequestContext({
 
 			const isDismissed =
 				item.dismissible &&
-				(dismissedTokenSet.has(item.dismissed_token) ||
-					databaseDismissalTokenSet.has(item.dismissed_token) ||
-					(locale === DEFAULT_LOCALE &&
-						dismissedTokenSet.has(
-							createLegacyAnnouncementDismissalToken(
-								announcement.id,
-								localeUpdatedAt
-							)
-						)));
+				(checkAnnouncementDismissalTokensCoverLocale(
+					cookieDismissalsByAnnouncement.get(announcement.id),
+					locale,
+					localeUpdatedAt
+				) ||
+					checkDatabaseDismissalCoversLocale(
+						databaseDismissalsByAnnouncement.get(announcement.id),
+						locale,
+						localeUpdatedAt
+					));
 			if (isDismissed) {
 				continue;
 			}
@@ -265,7 +297,7 @@ export async function getVisibleAnnouncementsForRequestContext({
 export async function dismissAnnouncementForUser(
 	announcementId: string,
 	locale: TLocale,
-	submitted: { token?: string; updatedAt?: number },
+	token: string,
 	userId: TUser['id'],
 	session: TAuthenticatedSessionIdentity,
 	lockAnnouncementDismissalSession: TLockAnnouncementDismissalSession
@@ -296,19 +328,16 @@ export async function dismissAnnouncementForUser(
 				status: 'error' as const,
 			};
 		}
+		const localesUpdatedAt =
+			createAnnouncementVisibleLocaleSnapshot(announcement);
 		const localeUpdatedAt = getAnnouncementLocaleUpdatedAt(
 			announcement,
 			locale
 		);
-		const dismissalToken = createAnnouncementDismissalToken(
-			announcement.id,
-			locale,
-			localeUpdatedAt
-		);
+		const submittedToken = parseAnnouncementDismissalToken(token);
 		if (
-			(submitted.token === undefined
-				? submitted.updatedAt !== localeUpdatedAt
-				: submitted.token !== dismissalToken) ||
+			submittedToken?.announcementId !== announcement.id ||
+			submittedToken.localesUpdatedAt[locale] !== localeUpdatedAt ||
 			announcement.dismissible !== 1
 		) {
 			return {
@@ -329,16 +358,24 @@ export async function dismissAnnouncementForUser(
 			};
 		}
 
-		await upsertAnnouncementDismissal(
-			{
+		const dismissedAt = Date.now();
+		const dismissalRows: TAnnouncementDismissalNew[] = [];
+		for (const dismissalLocale of SUPPORTED_LOCALES) {
+			const updatedAt = localesUpdatedAt[dismissalLocale];
+			if (updatedAt === undefined) {
+				continue;
+			}
+
+			dismissalRows.push({
 				announcement_id: announcement.id,
-				announcement_updated_at: localeUpdatedAt,
-				dismissed_at: Date.now(),
-				locale,
+				announcement_updated_at: updatedAt,
+				dismissed_at: dismissedAt,
+				locale: dismissalLocale,
 				user_id: userId,
-			},
-			database
-		);
+			});
+		}
+
+		await upsertAnnouncementDismissals(dismissalRows, database);
 
 		return {
 			data: { message: 'announcement-dismissed' as const },

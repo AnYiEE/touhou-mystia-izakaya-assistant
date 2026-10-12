@@ -23,15 +23,12 @@ import {
 } from '@/infrastructure/http/server/responses';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
-import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
-
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 interface IAnnouncementDismissBody {
 	id: string;
-	token?: string;
-	updatedAt?: number;
+	token: string;
 }
 
 export async function GET(request: NextRequest) {
@@ -115,13 +112,7 @@ export async function POST(request: NextRequest) {
 	const bodyResult =
 		await readJsonBodyResult<IAnnouncementDismissBody>(request);
 	const body = bodyResult.status === 'ok' ? bodyResult.data : null;
-	if (
-		typeof body?.id !== 'string' ||
-		(body.token !== undefined && typeof body.token !== 'string') ||
-		(body.updatedAt !== undefined &&
-			!isNonNegativeSafeInteger(body.updatedAt)) ||
-		(body.token === undefined && body.updatedAt === undefined)
-	) {
+	if (typeof body?.id !== 'string' || typeof body.token !== 'string') {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.invalidObjectStructure,
 			400
@@ -162,11 +153,7 @@ export async function POST(request: NextRequest) {
 	const result = await announcementModule.dismissAnnouncementForUser(
 		body.id,
 		readContentLocale(request),
-		body.token === undefined
-			? body.updatedAt === undefined
-				? {}
-				: { updatedAt: body.updatedAt }
-			: { token: body.token },
+		body.token,
 		auth.data.user.id,
 		{ id: auth.data.session.id, token_hash: auth.data.sessionTokenHash },
 		sessionsModule.lockActiveUserSessionInTransaction

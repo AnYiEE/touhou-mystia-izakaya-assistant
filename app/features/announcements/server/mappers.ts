@@ -11,7 +11,6 @@ import {
 
 import type { TAnnouncement, TUser } from '@/infrastructure/database/schema';
 
-import type { TLocale } from '@/shared/i18n/locale';
 import {
 	isNonNegativeSafeInteger,
 	isNullableNonNegativeSafeInteger,
@@ -20,6 +19,7 @@ import {
 
 import { sanitizeAnnouncementHtml } from './html';
 import {
+	createAnnouncementVisibleLocaleSnapshot,
 	parseAnnouncementLocales,
 	parseAnnouncementTranslations,
 } from './localization';
@@ -157,10 +157,8 @@ export function createAdminAnnouncementProfile(
 
 export function createPublicAnnouncementItem(
 	announcement: TAnnouncement,
-	locale: TLocale,
 	localized: IAnnouncementLocalizedContent,
-	sanitizedHtml: string,
-	localeUpdatedAt: number
+	sanitizedHtml: string
 ): IAnnouncementPublicItem | null {
 	if (
 		!checkAnnouncementLevel(announcement.level) ||
@@ -174,8 +172,7 @@ export function createPublicAnnouncementItem(
 		audience: announcement.audience,
 		dismissed_token: createAnnouncementDismissalToken(
 			announcement.id,
-			locale,
-			localeUpdatedAt
+			createAnnouncementVisibleLocaleSnapshot(announcement)
 		),
 		dismissible: normalizeAnnouncementBoolean(announcement.dismissible),
 		ends_at: announcement.ends_at,

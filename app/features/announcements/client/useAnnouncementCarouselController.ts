@@ -449,7 +449,7 @@ export function useAnnouncementCarouselController(
 
 	useEffect(() => {
 		setDisplayedMarqueeMetrics(null);
-	}, [displayedToken]);
+	}, [displayedItem]);
 
 	useEffect(() => {
 		if (displayToken === activeToken) {
@@ -633,7 +633,6 @@ export function useAnnouncementCarouselController(
 				body: JSON.stringify({
 					id: dismissedItem.id,
 					token: dismissedItem.dismissed_token,
-					updatedAt: dismissedItem.updated_at,
 				}),
 				headers: {
 					'Content-Type': FILE_TYPE_JSON,

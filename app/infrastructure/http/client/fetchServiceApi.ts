@@ -1,6 +1,7 @@
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
 
+import { type TLocale, isLocale } from '@/shared/i18n/locale';
 import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 import { ServiceApiError } from './serviceApiError';
@@ -40,10 +41,26 @@ function readRetryAfterData(data: unknown) {
 	return normalizeServiceRetryAfterSeconds(retryAfter);
 }
 
+function readDocumentContentLocale(): TLocale | null {
+	if (typeof document === 'undefined') {
+		return null;
+	}
+
+	const { locale } = document.documentElement.dataset;
+
+	return isLocale(locale) ? locale : null;
+}
+
 function createServiceApiHeaders(headersInit: HeadersInit | undefined) {
 	const headers = new Headers(headersInit);
 	if (!headers.has('Accept')) {
 		headers.set('Accept', FILE_TYPE_JSON);
+	}
+	if (!headers.has('Accept-Language')) {
+		const contentLocale = readDocumentContentLocale();
+		if (contentLocale !== null) {
+			headers.set('Accept-Language', contentLocale);
+		}
 	}
 
 	return headers;

@@ -3,6 +3,7 @@ import {
 	ANNOUNCEMENT_DISMISSED_COOKIE_NAME,
 	appendAnnouncementDismissalToken,
 	parseAnnouncementDismissedCookieValue,
+	readAnnouncementDismissedCookieValue,
 	serializeAnnouncementDismissedCookieTokens,
 } from '@/features/announcements/dismissals';
 import type { IDeploymentMaintenancePublicState } from '@/features/siteStatus/contracts';
@@ -191,13 +192,7 @@ export function createAnnouncementDismissedCookieAssignment({
 	protocol: string;
 	token: string;
 }) {
-	const cookieValue =
-		cookie
-			.split('; ')
-			.find((item) =>
-				item.startsWith(`${ANNOUNCEMENT_DISMISSED_COOKIE_NAME}=`)
-			)
-			?.split('=', 2)[1] ?? null;
+	const cookieValue = readAnnouncementDismissedCookieValue(cookie);
 	const tokens = parseAnnouncementDismissedCookieValue(cookieValue);
 	const nextValue = serializeAnnouncementDismissedCookieTokens(
 		appendAnnouncementDismissalToken(tokens, token)

@@ -6,6 +6,7 @@ import {
 } from '@/domain/announcements/contracts';
 
 import { type TAnnouncementComputedStatus } from '@/features/announcements/contracts';
+import { getAnnouncementLocaleUpdatedAt } from '@/features/announcements/server/localization';
 
 import { getApplicationDatabase } from '@/infrastructure/database/applicationDatabase';
 import { normalizeDatabaseCount } from '@/infrastructure/database/queryValues';
@@ -21,6 +22,8 @@ import type {
 } from '@/infrastructure/database/schema';
 import { escapeSqliteLikePattern } from '@/infrastructure/database/sqlite/queryValues';
 import { TABLE_NAME_MAP } from '@/infrastructure/database/tableNames';
+
+import { SUPPORTED_LOCALES } from '@/shared/i18n/locale';
 
 const ANNOUNCEMENT_TABLE_NAME = TABLE_NAME_MAP.announcement;
 const DISMISSAL_TABLE_NAME = TABLE_NAME_MAP.announcementDismissal;
@@ -312,15 +315,19 @@ export async function listAnnouncementDismissalsForUser(
 		.execute();
 }
 
-export async function upsertAnnouncementDismissal(
-	dismissal: TAnnouncementDismissalNew,
+export async function upsertAnnouncementDismissals(
+	dismissals: TAnnouncementDismissalNew[],
 	database?: TAnnouncementDatabase
 ) {
+	if (dismissals.length === 0) {
+		return;
+	}
+
 	const db = await getAnnouncementDatabase(database);
 
 	await db
 		.insertInto(DISMISSAL_TABLE_NAME)
-		.values(dismissal)
+		.values(dismissals)
 		.onConflict((oc) =>
 			oc
 				.columns([
@@ -369,29 +376,48 @@ export async function cleanupAnnouncementRecords({
 	const db = await getAnnouncementDatabase();
 
 	return db.transaction().execute(async (database) => {
-		const dismissalResult = await database
-			.deleteFrom(DISMISSAL_TABLE_NAME)
+		const staleAnnouncementIds = await database
+			.selectFrom(DISMISSAL_TABLE_NAME)
+			.select('announcement_id')
+			.distinct()
 			.where('dismissed_at', '<', dismissalBefore)
-			.where((eb) =>
-				eb.not(
-					eb.exists(
-						eb
-							.selectFrom(ANNOUNCEMENT_TABLE_NAME)
-							.select('id')
-							.whereRef(
-								`${ANNOUNCEMENT_TABLE_NAME}.id`,
-								'=',
-								`${DISMISSAL_TABLE_NAME}.announcement_id`
-							)
-							.whereRef(
-								`${ANNOUNCEMENT_TABLE_NAME}.updated_at`,
-								'=',
-								`${DISMISSAL_TABLE_NAME}.announcement_updated_at`
-							)
+			.execute();
+		let deletedDismissals = 0;
+		for (const {
+			announcement_id: announcementId,
+		} of staleAnnouncementIds) {
+			const announcement = await database
+				.selectFrom(ANNOUNCEMENT_TABLE_NAME)
+				.select(['locale_updated_at_json', 'updated_at'])
+				.where('id', '=', announcementId)
+				.executeTakeFirst();
+			if (announcement === undefined) {
+				continue;
+			}
+
+			for (const locale of SUPPORTED_LOCALES) {
+				const result = await database
+					.deleteFrom(DISMISSAL_TABLE_NAME)
+					.where('announcement_id', '=', announcementId)
+					.where('dismissed_at', '<', dismissalBefore)
+					.where(
+						'announcement_updated_at',
+						'!=',
+						getAnnouncementLocaleUpdatedAt(announcement, locale)
 					)
-				)
-			)
-			.executeTakeFirst();
+					.where('locale', '=', locale)
+					.executeTakeFirst();
+				deletedDismissals += Number(result.numDeletedRows);
+			}
+
+			const unsupportedLocaleResult = await database
+				.deleteFrom(DISMISSAL_TABLE_NAME)
+				.where('announcement_id', '=', announcementId)
+				.where('dismissed_at', '<', dismissalBefore)
+				.where('locale', 'not in', [...SUPPORTED_LOCALES])
+				.executeTakeFirst();
+			deletedDismissals += Number(unsupportedLocaleResult.numDeletedRows);
+		}
 		const versionRows = await database
 			.selectFrom(VERSION_TABLE_NAME)
 			.select(['id', 'announcement_id', 'revision', 'changed_at'])
@@ -427,10 +453,7 @@ export async function cleanupAnnouncementRecords({
 			deletedVersions = Number(versionResult.numDeletedRows);
 		}
 
-		const result = {
-			deletedDismissals: Number(dismissalResult.numDeletedRows),
-			deletedVersions,
-		};
+		const result = { deletedDismissals, deletedVersions };
 
 		return result;
 	});

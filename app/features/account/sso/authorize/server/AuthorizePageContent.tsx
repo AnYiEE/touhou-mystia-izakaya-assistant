@@ -14,6 +14,7 @@ import {
 	SsoAuthorizeDetailRow,
 	SsoAuthorizeNotice,
 	SsoAuthorizePanel,
+	SsoAuthorizeRenderedLocaleRefresh,
 	authorizePanelIcons,
 } from '@/features/account/sso/authorize/client';
 import { readRequestLocale } from '@/features/preferences/server/requestLocale';
@@ -143,6 +144,7 @@ export default async function SsoAuthorizePageContent({
 			<SsoAuthorizeAccountContextRefresh
 				initialUser={initialData.account.user}
 			/>
+			<SsoAuthorizeRenderedLocaleRefresh renderedLocale={locale} />
 			<SsoAuthorizePanel
 				subtitle={t(locale, 'account.sso.confirmSubtitle')}
 			>

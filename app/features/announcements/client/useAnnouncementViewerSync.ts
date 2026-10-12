@@ -8,6 +8,13 @@ import type {
 	IAnnouncementPublicItem,
 	IAnnouncementVisibleListData,
 } from '@/features/announcements/contracts';
+import {
+	checkAnnouncementDismissalTokensCoverLocale,
+	parseAnnouncementDismissalToken,
+	parseAnnouncementDismissalTokens,
+	parseAnnouncementDismissedCookieValue,
+	readAnnouncementDismissedCookieValue,
+} from '@/features/announcements/dismissals';
 
 import { fetchServiceApi } from '@/infrastructure/http/client/fetchServiceApi';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
@@ -28,6 +35,40 @@ function readCurrentViewerSignature() {
 		bootstrapStatus: accountStore.shared.bootstrapStatus.get(),
 		isLoggedIn: accountStore.shared.isLoggedIn.get(),
 		user: accountStore.shared.user.get(),
+	});
+}
+
+function filterLocallyDismissedAnnouncements(
+	announcements: IAnnouncementPublicItem[],
+	locale: TLocale
+) {
+	const dismissalsByAnnouncement = parseAnnouncementDismissalTokens(
+		parseAnnouncementDismissedCookieValue(
+			readAnnouncementDismissedCookieValue(document.cookie)
+		)
+	);
+	if (dismissalsByAnnouncement.size === 0) {
+		return announcements;
+	}
+
+	return announcements.filter((item) => {
+		if (!item.dismissible) {
+			return true;
+		}
+
+		const currentToken = parseAnnouncementDismissalToken(
+			item.dismissed_token
+		);
+		const localeUpdatedAt = currentToken?.localesUpdatedAt[locale];
+		if (localeUpdatedAt === undefined) {
+			return true;
+		}
+
+		return !checkAnnouncementDismissalTokensCoverLocale(
+			dismissalsByAnnouncement.get(item.id),
+			locale,
+			localeUpdatedAt
+		);
 	});
 }
 
@@ -107,7 +148,12 @@ export function useAnnouncementViewerSync({
 
 					renderedViewerSignatureRef.current = currentViewerSignature;
 					renderedLocaleRef.current = locale;
-					onAnnouncements(data.announcements);
+					onAnnouncements(
+						filterLocallyDismissedAnnouncements(
+							data.announcements,
+							locale
+						)
+					);
 				} catch (error) {
 					console.warn('announcement viewer sync failed', {
 						errorCode: getLogSafeErrorCode(error),
