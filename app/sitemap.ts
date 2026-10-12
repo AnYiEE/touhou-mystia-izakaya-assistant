@@ -8,6 +8,7 @@ import {
 	buildAbsoluteSiteUrl,
 	buildLocaleAlternateLanguages,
 } from './features/appShell/seo/pageMetadata';
+import { DERIVATIVE_PROJECTS_PAGE_PATH } from './features/derivativeProjects/links';
 import { META_MYSTIA_PAGE_PATH } from './features/metaMystia/links';
 import { PUBLIC_RUNTIME_CONFIG } from './infrastructure/environment/publicRuntimeConfig';
 import { SUPPORTED_LOCALES } from './shared/i18n/locale';
@@ -19,7 +20,10 @@ const { isExportMode } = PUBLIC_RUNTIME_CONFIG;
 export const dynamic = 'force-static';
 
 /** Public pages that are intentionally absent from the navigation menu. */
-const EXTRA_SITEMAP_PATHS = [META_MYSTIA_PAGE_PATH] as const;
+const EXTRA_SITEMAP_PATHS = [
+	DERIVATIVE_PROJECTS_PAGE_PATH,
+	META_MYSTIA_PAGE_PATH,
+] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
 	const lastModified = new Date();

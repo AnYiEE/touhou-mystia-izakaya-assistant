@@ -34,6 +34,8 @@ import {
 	appShellMessages,
 } from '@/features/appShell/client/messages';
 import type { TSitePath } from '@/features/appShell/navigation/config';
+import { derivativeProjectsMessages } from '@/features/derivativeProjects/client/messages';
+import { DERIVATIVE_PROJECTS_PAGE_PATH } from '@/features/derivativeProjects/links';
 import {
 	META_MYSTIA_GUESTS,
 	META_MYSTIA_SHOWCASE_GROUPS,
@@ -311,6 +313,37 @@ export function buildMetaMystiaPageMetadata({
 
 		description,
 		keywords,
+		...(alternates === undefined ? {} : { alternates }),
+	};
+}
+
+export function buildDerivativeProjectsPageMetadata({
+	isPrefixed,
+	locale,
+}: {
+	isPrefixed: boolean;
+	locale: TLocale;
+}): Metadata {
+	const title = translate(
+		derivativeProjectsMessages,
+		locale,
+		'derivativeProjects.title'
+	);
+	const description = translate(
+		derivativeProjectsMessages,
+		locale,
+		'derivativeProjects.meta.description'
+	);
+	const alternates = buildPageAlternates(
+		DERIVATIVE_PROJECTS_PAGE_PATH,
+		locale,
+		isPrefixed
+	);
+
+	return {
+		title,
+
+		description,
 		...(alternates === undefined ? {} : { alternates }),
 	};
 }

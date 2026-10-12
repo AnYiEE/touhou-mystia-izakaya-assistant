@@ -7,6 +7,8 @@ import { aboutMessages } from '@/features/about/client/messages';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { appShellMessages } from '@/features/appShell/client/messages';
 import { SITE_LINKS } from '@/features/appShell/links';
+import { derivativeProjectsMessages } from '@/features/derivativeProjects/client/messages';
+import { DERIVATIVE_PROJECTS_PAGE_PATH } from '@/features/derivativeProjects/links';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 import { siteMessages } from '@/shared/site/messages';
@@ -16,6 +18,7 @@ const links = SITE_LINKS;
 export default function LegalStatement() {
 	const { t } = useI18n(aboutMessages);
 	const { t: tAppShell } = useI18n(appShellMessages);
+	const { t: tDerivativeProjects } = useI18n(derivativeProjectsMessages);
 	const { t: tSite } = useI18n(siteMessages);
 
 	const shortName = tSite('site.shortName');
@@ -170,6 +173,26 @@ export default function LegalStatement() {
 						{t('about.legal.securityLink')}
 					</Link>
 					{t('about.legal.license.p5.suffix')}
+				</p>
+				<p className="indent-8">
+					{t('about.legal.license.derivative.prefix')}
+					<Link
+						showAnchorIcon
+						href={DERIVATIVE_PROJECTS_PAGE_PATH}
+						target="_blank"
+						title={tDerivativeProjects('derivativeProjects.title')}
+						onPress={() => {
+							trackEvent(
+								trackEvent.category.click,
+								'Link',
+								'about:DerivativeProjects'
+							);
+						}}
+						className="rounded-small indent-0"
+					>
+						{tDerivativeProjects('derivativeProjects.title')}
+					</Link>
+					{t('about.legal.license.derivative.suffix')}
 				</p>
 			</div>
 		</>

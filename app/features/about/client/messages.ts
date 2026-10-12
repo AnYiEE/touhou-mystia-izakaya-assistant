@@ -58,6 +58,9 @@ const ABOUT_MESSAGES_ZH_CN = {
 	'about.legal.liability.p3':
 		'本网站仅作为个人兴趣项目，不提供任何有偿服务或附加权益。',
 	'about.legal.liability.title': '责任限制与免责',
+	'about.legal.license.derivative.prefix':
+		'此外，关于衍生项目的许可证要求、素材授权边界与AI开发责任，另见',
+	'about.legal.license.derivative.suffix': '。',
 	'about.legal.license.p1':
 		'作为开发者，我在此向您授予一项可撤销、不可转让、非独占的使用许可，仅用于合法访问、浏览本网站和基于本网站公开内容的非商业性参考用途。除非取得另行书面许可或内容另有明确标注，本声明未明示授权的权利均由我保留，未行使权利并不构成对该权利的放弃或默示许可。{shortName}开发和运营过程中产生的原创内容，包括页面设计、数据库结构、数据整理成果、原创文本、程序代码及其他数字资产的知识产权，除另有说明外，均归我所有或依法享有合法使用权。',
 	'about.legal.license.p2':
@@ -148,6 +151,9 @@ export const aboutMessages = {
 			'This website is a personal hobby project and provides no paid services or additional benefits.',
 		'about.legal.liability.title':
 			'Limitation of liability and disclaimers',
+		'about.legal.license.derivative.prefix':
+			'For license requirements, asset authorization boundaries, and AI development responsibility in derivative projects, see ',
+		'about.legal.license.derivative.suffix': '.',
 		'about.legal.license.p1':
 			'As the developer, I grant you a revocable, non-transferable, non-exclusive license solely for lawful access to and browsing of this website and non-commercial reference based on its public content. Unless separately licensed in writing or explicitly marked otherwise, all rights not expressly granted by this statement are reserved by me, and failure to exercise a right does not constitute a waiver or implied license. The original content produced during the development and operation of {shortName}, including page designs, database structures, data compilation results, original text, program code, and other digital assets, is owned by me or lawfully used by me unless otherwise stated.',
 		'about.legal.license.p2':
@@ -231,6 +237,9 @@ export const aboutMessages = {
 		'about.legal.liability.p3':
 			'本サイトは個人の趣味プロジェクトであり、有償サービスや付加的な権益は提供しません。',
 		'about.legal.liability.title': '責任の制限と免責',
+		'about.legal.license.derivative.prefix':
+			'また、派生プロジェクトにおけるライセンス要件、素材許諾の範囲、AIを用いた開発の責任については、',
+		'about.legal.license.derivative.suffix': 'をご覧ください。',
 		'about.legal.license.p1':
 			'開発者として、私はあなたに対し、本サイトへの合法的なアクセスと閲覧、および本サイトの公開コンテンツに基づく非商業的な参考利用に限り、取消可能・譲渡不能・非独占的な使用許諾を付与します。別途書面による許諾がある場合またはコンテンツに明確な表示がある場合を除き、本声明で明示的に許諾されていない権利はすべて私が留保し、権利を行使しないことは権利の放棄や黙示的許諾を構成しません。{shortName}の開発・運営過程で生じたオリジナルコンテンツ（ページデザイン、データベース構造、データ整理成果、オリジナルテキスト、プログラムコードその他のデジタル資産を含む）の知的財産権は、別段の説明がない限り、私に帰属するか私が適法に使用権を有します。',
 		'about.legal.license.p2':
@@ -313,6 +322,9 @@ export const aboutMessages = {
 		'about.legal.liability.p3':
 			'본 사이트는 개인 취미 프로젝트로서 유료 서비스나 추가 권익을 제공하지 않습니다.',
 		'about.legal.liability.title': '책임 제한과 면책',
+		'about.legal.license.derivative.prefix':
+			'또한 파생 프로젝트의 라이선스 요건, 소재 허가 범위, AI 개발 책임에 대해서는 ',
+		'about.legal.license.derivative.suffix': '를 참고해 주세요.',
 		'about.legal.license.p1':
 			'개발자로서 저는 귀하에게 본 사이트에 대한 합법적 접속과 열람, 그리고 본 사이트의 공개 콘텐츠에 기반한 비상업적 참고 용도로만 사용할 수 있는, 철회 가능하고 양도 불가능하며 비독점적인 사용 허가를 부여합니다. 별도의 서면 허가가 있거나 콘텐츠에 명확한 표시가 있는 경우를 제외하고, 본 고지에서 명시적으로 허가하지 않은 권리는 모두 제가 보유하며, 권리를 행사하지 않는 것이 권리 포기나 묵시적 허가를 구성하지 않습니다. {shortName}의 개발·운영 과정에서 생산된 창작 콘텐츠(페이지 디자인, 데이터베이스 구조, 데이터 정리 성과, 창작 텍스트, 프로그램 코드 및 기타 디지털 자산 포함)의 지식재산권은 별도 설명이 없는 한 저에게 귀속되거나 제가 적법하게 사용권을 가집니다.',
 		'about.legal.license.p2':
@@ -395,6 +407,9 @@ export const aboutMessages = {
 		'about.legal.liability.p3':
 			'本網站僅作為個人興趣專案，不提供任何有償服務或附加權益。',
 		'about.legal.liability.title': '責任限制與免責',
+		'about.legal.license.derivative.prefix':
+			'此外，關於衍生專案的授權條款要求、素材授權邊界與 AI 開發責任，另見',
+		'about.legal.license.derivative.suffix': '。',
 		'about.legal.license.p1':
 			'作為開發者，我在此向您授予一項可撤銷、不可轉讓、非獨佔的使用許可，僅用於合法訪問、瀏覽本網站和基於本網站公開內容的非商業性參考用途。除非取得另行書面許可或內容另有明確標註，本聲明未明示授權的權利均由我保留，未行使權利並不構成對該權利的放棄或默示許可。{shortName}開發和營運過程中產生的原創內容，包括頁面設計、資料庫結構、資料整理成果、原創文本、程式碼及其他數位資產的智慧財產權，除另有說明外，均歸我所有或依法享有合法使用權。',
 		'about.legal.license.p2':
