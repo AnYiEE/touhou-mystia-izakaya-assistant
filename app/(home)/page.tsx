@@ -20,6 +20,7 @@ import Rednote from '@/design/ui/icons/Rednote';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { appShellMessages } from '@/features/appShell/client/messages';
 import { SITE_LINKS } from '@/features/appShell/links';
+import InstallEntry from '@/features/pwa/client/components/InstallEntry';
 
 import { isChineseLocale } from '@/shared/i18n/locale';
 import { useI18n } from '@/shared/i18n/useI18n';
@@ -142,30 +143,15 @@ export default function Home() {
 							</span>
 							{t('appShell.home.hintMenuSuffix')}
 						</p>
-						{shouldShowChinaSurfaces ? (
-							<p>
-								<Link
-									isExternal
-									showAnchorIcon
-									href={links.appQA.href}
-									title={t('appShell.links.appQA')}
-									onPress={() => {
-										trackEvent(
-											trackEvent.category.click,
-											'Link',
-											'APP QA'
-										);
-									}}
-									className="rounded-small text-small text-foreground-500 md:text-base lg:text-large"
-								>
-									{t('appShell.links.appQA')}
-								</Link>
-							</p>
-						) : (
-							<p className="hidden text-small text-foreground-500 lg:block lg:text-large">
-								{tSite('site.tagline')}
-							</p>
-						)}
+						<p
+							className={cn(
+								'text-small text-foreground-500 lg:text-large',
+								{ 'hidden lg:block': isChinese }
+							)}
+						>
+							{tSite('site.tagline')}
+						</p>
+						{isChinese && <InstallEntry />}
 					</div>
 					{shouldShowChinaSurfaces && (
 						<div className="mt-1 flex flex-wrap items-end leading-none">

@@ -44,6 +44,7 @@ type TAction =
 	| 'Info'
 	| 'OpenWindow'
 	| 'PIP'
+	| 'PWA Install'
 	| 'Remove'
 	| 'Reset'
 	| 'Save'
@@ -73,7 +74,7 @@ export type TItemAlone = 'Customer' | 'Customer Tag' | 'MystiaCooker';
 export type TItemCard = `${TItem} Card`;
 export type TAdminSelect = 'Admin User Status';
 export type TError = 'Cloud' | 'Global' | 'SSO' | 'Update';
-export type TShow = 'Modal' | 'Popover' | 'Tooltip';
+export type TShow = 'Banner' | 'Modal' | 'Popover' | 'Tooltip';
 
 export type TTrackAction =
 	TActions | TAdminSelect | TError | TItem | TItemAlone | TItemCard | TShow;

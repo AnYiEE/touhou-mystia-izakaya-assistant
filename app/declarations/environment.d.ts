@@ -44,6 +44,18 @@ declare global {
 
 	// eslint-disable-next-line vars-on-top
 	var _paq: unknown[] | undefined;
+
+	interface IPwaDeferredInstallPromptUserChoice {
+		outcome: 'accepted' | 'dismissed';
+	}
+
+	interface IPwaDeferredInstallPromptEvent extends Event {
+		prompt(): Promise<IPwaDeferredInstallPromptUserChoice> | undefined;
+		readonly userChoice?: Promise<IPwaDeferredInstallPromptUserChoice>;
+	}
+
+	// eslint-disable-next-line vars-on-top
+	var __pwaDeferredInstallPrompt: IPwaDeferredInstallPromptEvent | undefined;
 }
 
 export {};

@@ -17,6 +17,7 @@ import {
 } from './features/appShell/seo/pageMetadata';
 import Footer from './features/appShell/server/Footer';
 import LocaleScript from './features/preferences/client/localeScript';
+import InstallScript from './features/pwa/client/installScript';
 import { PUBLIC_RUNTIME_CONFIG } from './infrastructure/environment/publicRuntimeConfig';
 import Polyfills from './polyfills';
 import Providers, { AddHighAppearance } from './providers';
@@ -114,6 +115,7 @@ export default async function RootLayout({
 				/>
 				<ThemeScript />
 				<LocaleScript />
+				<InstallScript />
 				{
 					// Register service worker. The `sha` is the commit SHA of the current commit, used to bypass browser caching.
 					isProduction && !isOffline && (

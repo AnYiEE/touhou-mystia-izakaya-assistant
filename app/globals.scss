@@ -349,6 +349,13 @@
 	}
 }
 
+// PWA: hide the install entry before hydration when the page is already installed.
+html[data-pwa-mode='installed'] {
+	[data-pwa-install-entry] {
+		display: none;
+	}
+}
+
 :root {
 	--announcement-bar-offset: 0px;
 	--navbar-height: 4rem;

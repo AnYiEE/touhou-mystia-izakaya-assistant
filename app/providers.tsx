@@ -36,6 +36,7 @@ import {
 	startLocaleClient,
 	useHydratedLocale,
 } from './features/preferences/client/state/localeRuntime';
+import PwaInstallClient from './features/pwa/client/PwaInstallClient';
 import { startRecommendationClient } from './features/recommendations/client';
 import SiteStatusProvider from './features/siteStatus/client/SiteStatusProvider';
 import SpecialGuestTutorial from './features/tutorials/specialGuest/client/SpecialGuestTutorial';
@@ -156,6 +157,7 @@ export default function Providers({
 			<AccountFeatureModals />
 			<SpecialGuestTutorial />
 			<DonationModal />
+			<PwaInstallClient />
 		</ProviderStack>
 	);
 }
