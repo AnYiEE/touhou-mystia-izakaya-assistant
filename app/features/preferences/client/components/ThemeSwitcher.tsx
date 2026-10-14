@@ -173,6 +173,11 @@ export default memo<IProps>(function ThemeSwitcher({ className, isMenu }) {
 			const nextLocalePreference = resolveLocaleMenuPreference(key);
 			if (nextLocalePreference !== null) {
 				setLocalePreference(nextLocalePreference);
+				trackEvent(
+					trackEvent.category.click,
+					'Language Button',
+					nextLocalePreference
+				);
 				return;
 			}
 

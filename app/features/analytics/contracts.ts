@@ -42,6 +42,7 @@ type TAction =
 	| 'Global Search'
 	| 'Import'
 	| 'Info'
+	| 'Language'
 	| 'OpenWindow'
 	| 'PIP'
 	| 'PWA Install'

@@ -13,6 +13,7 @@ import Button from '@/design/ui/components/button';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import MobileAccountActionButton from '@/features/account/client/components/MobileAccountActionButton';
+import { trackEvent } from '@/features/analytics/client/trackEvent';
 import {
 	APP_SHELL_NAV_LABEL_KEYS,
 	appShellMessages,
@@ -327,6 +328,11 @@ export default function MobileNavigationMenu({
 				variant="light"
 				onPress={() => {
 					setLocalePreference(preference);
+					trackEvent(
+						trackEvent.category.click,
+						'Language Button',
+						preference
+					);
 				}}
 				className={cn(
 					'flex h-auto min-h-12 w-full min-w-0 flex-col items-center justify-center gap-0.5 px-2 py-1.5 text-center',

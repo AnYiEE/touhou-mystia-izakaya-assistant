@@ -26,6 +26,7 @@ import Dropdown, {
 } from '@/design/ui/components/dropdown';
 import { toSelectionKeySet } from '@/design/ui/components/selectionKeys';
 
+import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { appShellMessages } from '@/features/appShell/client/messages';
 import {
 	LOCALE_MENU_ITEMS,
@@ -145,6 +146,11 @@ export default function AccountThemeMenu({
 			const nextLocalePreference = resolveLocaleMenuPreference(key);
 			if (nextLocalePreference !== null) {
 				setLocalePreference(nextLocalePreference);
+				trackEvent(
+					trackEvent.category.click,
+					'Language Button',
+					nextLocalePreference
+				);
 				return;
 			}
 			if (String(key) !== 'account') {
