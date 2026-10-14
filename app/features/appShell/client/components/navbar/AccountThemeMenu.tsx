@@ -1,9 +1,15 @@
 import {
 	faChevronDown,
+	faCircleHalfStroke,
 	faGlobe,
+	faMoon,
+	faSun,
 	faUser,
 } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+	FontAwesomeIcon,
+	type FontAwesomeIconProps,
+} from '@fortawesome/react-fontawesome';
 import { NavbarItem } from '@heroui/navbar';
 import { cn } from '@heroui/theme';
 import debounce from 'lodash/debounce.js';
@@ -24,7 +30,9 @@ import Dropdown, {
 	DropdownSection,
 	DropdownTrigger,
 } from '@/design/ui/components/dropdown';
+import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
 import { toSelectionKeySet } from '@/design/ui/components/selectionKeys';
+import Tooltip from '@/design/ui/components/tooltip';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { appShellMessages } from '@/features/appShell/client/messages';
@@ -90,6 +98,14 @@ const PANEL_PALETTE_SECTION_CLASS_NAMES = {
 	group: 'grid grid-cols-[repeat(2,minmax(0,1fr))] gap-1',
 };
 
+const THEME_TRIGGER_ICON_MAP: Readonly<
+	Record<string, FontAwesomeIconProps['icon']>
+> = {
+	'theme:dark': faMoon,
+	'theme:light': faSun,
+	'theme:system': faCircleHalfStroke,
+};
+
 interface IProps {
 	accountActionLabel: string;
 	accountMenuDisabledKeys: ReadonlyArray<string>;
@@ -101,6 +117,7 @@ interface IProps {
 	paletteItems: ReadonlyArray<INavbarPaletteItem>;
 	selectedPaletteKey: string;
 	selectedThemeKeys: ReadonlyArray<string>;
+	shouldShowAccountAction: boolean;
 }
 
 export default function AccountThemeMenu({
@@ -114,6 +131,7 @@ export default function AccountThemeMenu({
 	paletteItems,
 	selectedPaletteKey,
 	selectedThemeKeys,
+	shouldShowAccountAction,
 }: IProps) {
 	const { locale, t: tAppShell } = useI18n(appShellMessages);
 	const { t: tPreferences } = useI18n(preferencesMessages);
@@ -234,52 +252,65 @@ export default function AccountThemeMenu({
 			onAction={handleMenuAction}
 			selectedKeys={selectedKeys}
 			selectionMode="multiple"
-			aria-label={tAppShell('appShell.accountTheme.aria')}
+			aria-label={
+				shouldShowAccountAction
+					? tAppShell('appShell.accountTheme.aria')
+					: tTheme('theme.list')
+			}
 			itemClasses={PANEL_MENU_ITEM_CLASSES}
 		>
 			{[
-				<DropdownSection
-					key="account"
-					title={
-						/* HeroUI intersects its collection title with the DOM title string. */
-						(
-							<span className="inline-flex w-full items-center justify-between gap-2">
-								<span>
-									{tAppShell('appShell.accountTheme.account')}
-								</span>
-								{accountSyncPauseLabel !== null && (
-									<span className="rounded-full bg-warning/15 px-1.5 py-0.5 text-[10px] font-normal leading-none text-warning-700 dark:text-warning">
-										{accountSyncPauseLabel}
+				...(shouldShowAccountAction
+					? [
+							<DropdownSection
+								key="account"
+								title={
+									/* HeroUI intersects its collection title with the DOM title string. */
+									(
+										<span className="inline-flex w-full items-center justify-between gap-2">
+											<span>
+												{tAppShell(
+													'appShell.accountTheme.account'
+												)}
+											</span>
+											{accountSyncPauseLabel !== null && (
+												<span className="rounded-full bg-warning/15 px-1.5 py-0.5 text-[10px] font-normal leading-none text-warning-700 dark:text-warning">
+													{accountSyncPauseLabel}
+												</span>
+											)}
+										</span>
+									) as unknown as string
+								}
+								hideSelectedIcon
+								showDivider
+								classNames={PANEL_SINGLE_SECTION_CLASS_NAMES}
+							>
+								<DropdownItem
+									key="account"
+									closeOnSelect={false}
+									data-account-action="true"
+									onKeyDown={accountActionKeyDown}
+									textValue={accountActionLabel}
+								>
+									<span
+										className={cn(
+											NAVIGATION_ICON_FRAME_CLASS_NAME,
+											'h-7 w-7',
+											PANEL_ICON_FRAME_INACTIVE_CLASS_NAME
+										)}
+									>
+										<FontAwesomeIcon
+											icon={faUser}
+											className="w-3.5"
+										/>
 									</span>
-								)}
-							</span>
-						) as unknown as string
-					}
-					hideSelectedIcon
-					showDivider
-					classNames={PANEL_SINGLE_SECTION_CLASS_NAMES}
-				>
-					<DropdownItem
-						key="account"
-						closeOnSelect={false}
-						data-account-action="true"
-						onKeyDown={accountActionKeyDown}
-						textValue={accountActionLabel}
-					>
-						<span
-							className={cn(
-								NAVIGATION_ICON_FRAME_CLASS_NAME,
-								'h-7 w-7',
-								PANEL_ICON_FRAME_INACTIVE_CLASS_NAME
-							)}
-						>
-							<FontAwesomeIcon icon={faUser} className="w-3.5" />
-						</span>
-						<span className="min-w-0 truncate text-tiny font-medium leading-4">
-							{accountActionLabel}
-						</span>
-					</DropdownItem>
-				</DropdownSection>,
+									<span className="min-w-0 truncate text-tiny font-medium leading-4">
+										{accountActionLabel}
+									</span>
+								</DropdownItem>
+							</DropdownSection>,
+						]
+					: []),
 				<DropdownSection
 					key="themes"
 					showDivider
@@ -404,47 +435,69 @@ export default function AccountThemeMenu({
 				onOpenChange={handleOpenChange}
 				classNames={dropdownClassNames}
 			>
-				<DropdownTrigger>
-					<Button
-						size="sm"
-						variant="light"
-						aria-label={tAppShell('appShell.accountTheme.aria')}
-						title={tAppShell('appShell.accountTheme.aria')}
-						className="gap-1 text-base"
-					>
-						<FontAwesomeIcon icon={faUser} className="w-3.5" />
-						<span className="relative">
-							<span
-								className={cn('mr-1', {
-									'hidden lg:inline':
-										NAVBAR_ICON_ONLY_ACCOUNT_LOCALES.includes(
-											locale
-										) &&
-										!NAVBAR_ICON_ONLY_ACCOUNT_BELOW_XL_LOCALES.includes(
-											locale
-										),
-									'hidden xl:inline':
-										NAVBAR_ICON_ONLY_ACCOUNT_BELOW_XL_LOCALES.includes(
-											locale
-										),
-								})}
-							>
-								{tAppShell('appShell.accountTheme.account')}
-							</span>
-							{isAccountSyncPaused && (
-								<span
-									aria-hidden="true"
-									className="absolute -right-2 top-0 h-2 w-2 rounded-full bg-warning"
-								/>
-							)}
-						</span>
-						<FontAwesomeIcon
-							icon={faChevronDown}
+				{shouldShowAccountAction ? (
+					<DropdownTrigger>
+						<Button
 							size="sm"
-							className="w-3 opacity-70"
-						/>
-					</Button>
-				</DropdownTrigger>
+							variant="light"
+							aria-label={tAppShell('appShell.accountTheme.aria')}
+							title={tAppShell('appShell.accountTheme.aria')}
+							className="gap-1 text-base"
+						>
+							<FontAwesomeIcon icon={faUser} className="w-3.5" />
+							<span className="relative">
+								<span
+									className={cn('mr-1', {
+										'hidden lg:inline':
+											NAVBAR_ICON_ONLY_ACCOUNT_LOCALES.includes(
+												locale
+											) &&
+											!NAVBAR_ICON_ONLY_ACCOUNT_BELOW_XL_LOCALES.includes(
+												locale
+											),
+										'hidden xl:inline':
+											NAVBAR_ICON_ONLY_ACCOUNT_BELOW_XL_LOCALES.includes(
+												locale
+											),
+									})}
+								>
+									{tAppShell('appShell.accountTheme.account')}
+								</span>
+								{isAccountSyncPaused && (
+									<span
+										aria-hidden="true"
+										className="absolute -right-2 top-0 h-2 w-2 rounded-full bg-warning"
+									/>
+								)}
+							</span>
+							<FontAwesomeIcon
+								icon={faChevronDown}
+								size="sm"
+								className="w-3 opacity-70"
+							/>
+						</Button>
+					</DropdownTrigger>
+				) : (
+					<Tooltip
+						showArrow
+						content={tTheme('theme.switcher')}
+						placement="bottom"
+					>
+						<span className="flex">
+							<DropdownTrigger>
+								<FontAwesomeIconButton
+									icon={
+										THEME_TRIGGER_ICON_MAP[
+											selectedThemeKeys[0] ?? ''
+										] ?? faCircleHalfStroke
+									}
+									aria-label={tTheme('theme.switcher')}
+									className="h-5 w-5 min-w-min bg-transparent !text-medium text-primary-600 dark:text-default-foreground"
+								/>
+							</DropdownTrigger>
+						</span>
+					</Tooltip>
+				)}
 				{menu}
 			</Dropdown>
 		</NavbarItem>

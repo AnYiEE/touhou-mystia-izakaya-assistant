@@ -30,7 +30,6 @@ import {
 import { SITE_LINKS } from '@/features/appShell/links';
 import { NAV_ITEMS } from '@/features/appShell/navigation/config';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
-import ThemeSwitcher from '@/features/preferences/client/components/ThemeSwitcher';
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
@@ -429,24 +428,19 @@ export default function DesktopNavigation({
 						</Button>
 					</Tooltip>
 				</NavbarItem>
-				{shouldShowAccountAction ? (
-					<AccountThemeMenu
-						accountActionLabel={accountActionLabel}
-						accountMenuDisabledKeys={accountMenuDisabledKeys}
-						accountSyncPauseLabel={accountSyncPauseLabel}
-						isAccountSyncPaused={isAccountSyncPaused}
-						isHighAppearance={isHighAppearance}
-						onAction={onAccountThemeAction}
-						onOpenChange={onDropdownOpenChange}
-						paletteItems={paletteItems}
-						selectedPaletteKey={selectedPaletteKey}
-						selectedThemeKeys={selectedThemeKeys}
-					/>
-				) : (
-					<NavbarItem>
-						<ThemeSwitcher />
-					</NavbarItem>
-				)}
+				<AccountThemeMenu
+					accountActionLabel={accountActionLabel}
+					accountMenuDisabledKeys={accountMenuDisabledKeys}
+					accountSyncPauseLabel={accountSyncPauseLabel}
+					isAccountSyncPaused={isAccountSyncPaused}
+					isHighAppearance={isHighAppearance}
+					onAction={onAccountThemeAction}
+					onOpenChange={onDropdownOpenChange}
+					paletteItems={paletteItems}
+					selectedPaletteKey={selectedPaletteKey}
+					selectedThemeKeys={selectedThemeKeys}
+					shouldShowAccountAction={shouldShowAccountAction}
+				/>
 			</NavbarContent>
 		</>
 	);
