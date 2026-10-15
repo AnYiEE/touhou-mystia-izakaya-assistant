@@ -20,6 +20,8 @@ import { getCharacterEntityId, getMapsPageHref } from '@/features/maps/links';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
+import { useMapLinksHidden } from './MapLinks';
+
 interface IProps {
 	className?: string;
 	guest: TSpecialGuestId;
@@ -59,11 +61,12 @@ export default memo<IProps>(function SpecialGuestMapLinks({
 	const { t } = useI18n(mapsMessages);
 	const { t: tItems } = useI18n(catalogItemsMessages);
 	const { isMapVisible } = useDayMapVisibility();
+	const isHidden = useMapLinksHidden();
 
 	const places = (SPECIAL_GUEST_PLACES.get(guest) ?? []).filter(({ map }) =>
 		isMapVisible(map)
 	);
-	if (places.length === 0) {
+	if (isHidden || places.length === 0) {
 		return null;
 	}
 
@@ -75,7 +78,6 @@ export default memo<IProps>(function SpecialGuestMapLinks({
 					{index > 0 && tItems('items.source.listSeparator')}
 					<Link
 						animationUnderline={false}
-						color="foreground"
 						href={href}
 						onPress={() => {
 							trackMapEvent(
@@ -83,7 +85,8 @@ export default memo<IProps>(function SpecialGuestMapLinks({
 								`Special Guest:${guest}/${map}`
 							);
 						}}
-						className="underline-dotted-offset2 inline-flex items-center gap-0.5"
+						// Same colour as the text around it, like the portrait link beside it.
+						className="underline-dotted-offset2 inline-flex items-center gap-0.5 text-inherit"
 					>
 						<FontAwesomeIcon icon={faMapLocationDot} size="xs" />
 						{getDayMapLabel(map)}

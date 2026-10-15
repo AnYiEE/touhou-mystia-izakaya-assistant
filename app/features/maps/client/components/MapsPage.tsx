@@ -26,6 +26,7 @@ import type { TDayMapLabel, TDayMapPoint } from '@/domain/data/maps/types';
 import { WORLD_MAP_FACTS } from '@/domain/data/maps/worldMapFacts';
 
 import { appShellMessages } from '@/features/appShell/client/messages';
+import { replaceHistoryEntryUrl } from '@/features/appShell/client/navigation/historyEntryState';
 import { useParams } from '@/features/appShell/client/navigation/useParams';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { SITE_LINKS } from '@/features/appShell/links';
@@ -51,6 +52,13 @@ import {
 	MAP_FADE_HIDDEN,
 	getMapTransition,
 } from '@/features/maps/client/model/motion';
+import {
+	type IMapsVisit,
+	type IOpenedMapItem,
+	readMapsVisit,
+	takeOpenedMapItem,
+	writeMapsVisit,
+} from '@/features/maps/client/model/mapsHistory';
 import {
 	filterVisibleDayMapEntities,
 	useDayMapVisibility,
@@ -153,7 +161,7 @@ function revealLayer(
 	return next;
 }
 
-/** @description Whether the previous history entry is another page of this site, for the back button. */
+/** @description Whether the history entry before the map is another page of this site, for the close button. */
 function checkCanGoBack() {
 	if (globalThis.history.length <= 1) {
 		return false;
@@ -185,7 +193,7 @@ export default function MapsPage() {
 	const isReducedMotion = useReducedMotion();
 	const isLocalizationReady = useCatalogLocalizationReady();
 	const vibrate = useVibrate();
-	const { pathname, replaceState } = usePathname();
+	const { pathname } = usePathname();
 	const { params } = useParams();
 	const visibility = useDayMapVisibility();
 	const { isMapVisible } = visibility;
@@ -216,7 +224,11 @@ export default function MapsPage() {
 	);
 	const [arrival, setArrival] = useState<TDayMapPoint | null>(null);
 	const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+	const [restoredItem, setRestoredItem] = useState<IOpenedMapItem | null>(
+		null
+	);
 	const focusKeyRef = useRef(0);
+	const visitRef = useRef<IMapsVisit | null>(null);
 	/** @description Last URL the page state was read from or written to. */
 	const syncedHrefRef = useRef(routeHref);
 	const isPopoverOpenRef = useRef(false);
@@ -248,6 +260,38 @@ export default function MapsPage() {
 		[]
 	);
 
+	// Number the map entries of this visit, so closing the map returns to the
+	// page it was opened from however many map links were followed.
+	useEffect(() => {
+		const stored = readMapsVisit();
+		if (stored !== null) {
+			visitRef.current = stored;
+			return;
+		}
+
+		const previous = visitRef.current;
+		const visit =
+			previous === null
+				? { depth: 0, hasOrigin: checkCanGoBack() }
+				: { depth: previous.depth + 1, hasOrigin: previous.hasOrigin };
+		visitRef.current = visit;
+		writeMapsVisit(visit);
+	}, [routeHref]);
+
+	// Back to an entry left through a link in an item popover: open it again.
+	useEffect(() => {
+		const item = takeOpenedMapItem();
+		if (item !== null) {
+			setRestoredItem(item);
+		}
+	}, [routeHref]);
+
+	useEffect(() => {
+		if (restoredItem !== null && restoredItem.entityId !== selectedId) {
+			setRestoredItem(null);
+		}
+	}, [restoredItem, selectedId]);
+
 	// Follow links to another map or entity while the page stays mounted.
 	useEffect(() => {
 		if (syncedHrefRef.current === routeHref) {
@@ -272,8 +316,8 @@ export default function MapsPage() {
 	useEffect(() => {
 		const href = getMapsPageHref(map, map === null ? null : selectedId);
 		syncedHrefRef.current = href;
-		replaceState(href);
-	}, [map, replaceState, selectedId]);
+		replaceHistoryEntryUrl(href);
+	}, [map, selectedId]);
 
 	// A map from a dataset the player turned off falls back to the world map.
 	useEffect(() => {
@@ -347,11 +391,12 @@ export default function MapsPage() {
 
 	const handleClose = useCallback(() => {
 		vibrate();
-		const canGoBack = checkCanGoBack();
-		trackMapEvent('Map Navigation Button', canGoBack ? 'Back' : 'Home');
-		if (canGoBack) {
-			router.back();
+		const visit = visitRef.current;
+		if (visit?.hasOrigin === true) {
+			trackMapEvent('Map Navigation Button', 'Back');
+			globalThis.history.go(-(visit.depth + 1));
 		} else {
+			trackMapEvent('Map Navigation Button', 'Home');
 			router.push(SITE_LINKS.index.href);
 		}
 	}, [router, vibrate]);
@@ -462,13 +507,9 @@ export default function MapsPage() {
 		isPopoverOpenRef.current = isOpen;
 		if (!isOpen) {
 			popoverClosedAtRef.current = performance.now();
+			setRestoredItem(null);
 		}
 	}, []);
-
-	// Popovers unmount with the card without reporting that they closed.
-	useEffect(() => {
-		isPopoverOpenRef.current = false;
-	}, [selectedId]);
 
 	/**
 	 * @description A press that only dismisses an item popover must not also
@@ -666,6 +707,11 @@ export default function MapsPage() {
 						onOpenWorldMap={handleOpenWorldMapFromTeleport}
 						onPopoverOpenChange={handlePopoverOpenChange}
 						onShowCharacter={handleShowCharacter}
+						restoredItemKey={
+							restoredItem?.entityId === selectedEntity.id
+								? restoredItem.itemKey
+								: null
+						}
 						visibility={visibility}
 					/>
 				) : null}

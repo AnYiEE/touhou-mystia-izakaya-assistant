@@ -6,6 +6,11 @@ import {
 	useState,
 } from 'react';
 
+import {
+	readHistoryEntryValue,
+	removeHistoryEntryValue,
+	writeHistoryEntryValue,
+} from '@/features/appShell/client/navigation/historyEntryState';
 import { useParams } from '@/features/appShell/client/navigation/useParams';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { setGlobalSearchTransientTarget } from '@/features/globalSearch/client/commands';
@@ -17,7 +22,18 @@ import { parseItemShareRecord } from '@/features/itemSharing/shareUrl';
 export interface IDefaultOpenedPopover {
 	recordId: number;
 	requestId: number;
-	source: 'spotlight' | 'url';
+	source: 'history' | 'spotlight' | 'url';
+}
+
+/** @description History entry key of the item whose popover was open when the page was left. */
+const OPENED_ITEM_POPOVER_HISTORY_KEY = 'openedItemPopover';
+
+/**
+ * @description Remembers the open item popover on the current history entry
+ * before a link leaves the page, so going back opens it again.
+ */
+export function rememberOpenedItemPopover(recordId: number) {
+	writeHistoryEntryValue(OPENED_ITEM_POPOVER_HISTORY_KEY, recordId);
 }
 
 interface IItemRecord {
@@ -77,6 +93,20 @@ export function useOpenedItemPopover(
 
 		openDefaultPopover(recordId, 'url');
 	}, [data, openDefaultPopover, params, pathname, replaceState]);
+
+	// Back from a page left through a link in an open popover.
+	useEffect(() => {
+		const recordId = readHistoryEntryValue(OPENED_ITEM_POPOVER_HISTORY_KEY);
+		if (
+			typeof recordId !== 'number' ||
+			!data.some((record) => record.id === recordId)
+		) {
+			return;
+		}
+
+		removeHistoryEntryValue(OPENED_ITEM_POPOVER_HISTORY_KEY);
+		openDefaultPopover(recordId, 'history');
+	}, [data, openDefaultPopover]);
 
 	useEffect(() => {
 		if (defaultOpenedPopover === null) {

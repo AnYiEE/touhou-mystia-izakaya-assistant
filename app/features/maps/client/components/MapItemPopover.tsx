@@ -1,6 +1,13 @@
 'use client';
 
-import { type ReactNode, memo, useCallback, useMemo } from 'react';
+import {
+	type ReactNode,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+} from 'react';
 
 import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -13,7 +20,6 @@ import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { getIngredientTypeLabel } from '@/domain/catalog/localizedCategoryLabels';
-import { type ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import BeverageSourceDetails from '@/features/catalog/items/beverages/client/components/BeverageSourceDetails';
@@ -39,17 +45,28 @@ import {
 	checkBeverageId,
 	checkIngredientId,
 } from '@/features/maps/client/model/dayMapEntities';
+import {
+	type TMapItemProduct,
+	getMapItemKey,
+	rememberOpenedMapItem,
+} from '@/features/maps/client/model/mapsHistory';
 import { getMapSurfaceClassName } from '@/features/maps/client/model/mapStyles';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 
+import { MapLinkLeaveContext } from './MapLinks';
+
 interface IProps {
 	children: ReactNode;
 	className?: string;
-	/** @description Lets the map ignore the press that only dismisses this popover. */
+	/** @description Opens on mount, when going back to the entry it was left from. */
+	defaultOpen?: boolean;
+	/** @description Map entity whose card holds the popover. */
+	entityId: string;
+	/** @description Lets the map ignore the press that only dismisses this popover; also reported on unmount. */
 	onOpenChange: (isOpen: boolean) => void;
-	product: Pick<ICollectionPointYieldProduct, 'productId' | 'productType'>;
+	product: TMapItemProduct;
 }
 
 const beverageCatalog = BeverageCatalog.getInstance();
@@ -148,15 +165,37 @@ function ItemDetails({
 export default memo<IProps>(function MapItemPopover({
 	children,
 	className,
+	defaultOpen = false,
+	entityId,
 	onOpenChange,
 	product,
 }) {
 	const { isHighAppearance } = useDesignPreferences();
 	const { productId, productType } = product;
+	const isOpenRef = useRef(defaultOpen);
+
+	// The card unmounts its popovers without them reporting that they closed.
+	useEffect(() => {
+		if (isOpenRef.current) {
+			onOpenChange(true);
+		}
+		return () => {
+			if (isOpenRef.current) {
+				onOpenChange(false);
+			}
+		};
+	}, [onOpenChange]);
+
+	// A map link in the popover leaves this entry; going back opens it again.
+	const itemKey = getMapItemKey(product);
+	const handleLinkLeave = useCallback(() => {
+		rememberOpenedMapItem({ entityId, itemKey });
+	}, [entityId, itemKey]);
 
 	// Tracked like opening the item's card in the catalog.
 	const handleOpenChange = useCallback(
 		(isOpen: boolean) => {
+			isOpenRef.current = isOpen;
 			if (isOpen) {
 				if (productType === 1 && checkIngredientId(productId)) {
 					trackEvent(
@@ -186,6 +225,7 @@ export default memo<IProps>(function MapItemPopover({
 	return (
 		<ItemPopover
 			showArrow
+			defaultOpen={defaultOpen}
 			placement="right"
 			onOpenChange={handleOpenChange}
 			classNames={classNames}
@@ -203,7 +243,9 @@ export default memo<IProps>(function MapItemPopover({
 				</button>
 			</ItemPopoverTrigger>
 			<ItemPopoverContent>
-				<ItemDetails product={product} />
+				<MapLinkLeaveContext value={handleLinkLeave}>
+					<ItemDetails product={product} />
+				</MapLinkLeaveContext>
 			</ItemPopoverContent>
 		</ItemPopover>
 	);

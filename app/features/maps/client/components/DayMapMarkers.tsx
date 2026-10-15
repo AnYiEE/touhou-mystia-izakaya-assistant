@@ -66,9 +66,13 @@ const AREA_VISIBLE_PX_PER_UNIT = 10;
 const CHARACTER_MIN_HEIGHT_PX = 30;
 const CHARACTER_MAX_HEIGHT_PX = 84;
 
-/** @description Labels sit inside their marker button, so they are part of its hit area. */
+/**
+ * @description Labels sit inside their marker button, so they are part of its
+ * hit area. Their colours switch at once: fading from the selected orange to
+ * the dark pill reads as a flash when a selection is closed.
+ */
 const LABEL_CLASS_NAME = cn(
-	'absolute -translate-x-1/2 px-2 py-0.5 text-tiny font-medium leading-tight transition-colors duration-150 motion-reduce:transition-none',
+	'absolute -translate-x-1/2 px-2 py-0.5 text-tiny font-medium leading-tight',
 	MAP_PILL_CLASS_NAME
 );
 
@@ -191,7 +195,9 @@ const CharacterMarker = memo<ICharacterMarkerProps>(function CharacterMarker({
 						aria-hidden
 						className={cn(
 							'h-1.5 w-1.5 shrink-0 rounded-full',
-							DAY_MAP_LAYER_COLORS[kind].dot
+							DAY_MAP_LAYER_COLORS[kind].dot,
+							// Special guests share the selection orange; the ring keeps the dot apart.
+							isSelected && 'ring-[1.5px] ring-black/70'
 						)}
 					/>
 					{name}
@@ -248,7 +254,7 @@ const CollectableMarker = memo<ICollectableMarkerProps>(
 			>
 				<span
 					className={cn(
-						'flex h-full w-full items-center justify-center rounded-full border-2 bg-[radial-gradient(circle_at_50%_35%,#5b4630,#211810)] shadow-[0_2px_6px_rgba(0,0,0,0.5)] transition duration-150 group-hover:scale-110 group-hover:shadow-[0_0_0_3px_rgba(255,168,0,0.45)] motion-reduce:transition-none',
+						'flex h-full w-full items-center justify-center rounded-full border-2 bg-[radial-gradient(circle_at_50%_35%,#5b4630,#211810)] shadow-[0_2px_6px_rgba(0,0,0,0.5)] transition-[transform,box-shadow] duration-150 group-hover:scale-110 group-hover:shadow-[0_0_0_3px_rgba(255,168,0,0.45)] motion-reduce:transition-none',
 						isOffByDefault && 'border-dashed',
 						isSelected
 							? 'scale-110 border-[#ffa800] shadow-[0_0_0_3px_rgba(255,168,0,0.55)]'
@@ -324,7 +330,7 @@ const ChipMarker = memo<IChipMarkerProps>(function ChipMarker({
 			type="button"
 			onClick={handleClick}
 			className={cn(
-				'absolute left-0 top-0 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 text-tiny font-semibold transition duration-150 hover:scale-105 motion-reduce:transition-none',
+				'absolute left-0 top-0 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 text-tiny font-semibold transition-transform duration-150 hover:scale-105 motion-reduce:transition-none',
 				MAP_PILL_CLASS_NAME,
 				CLASSNAME_FOCUS_VISIBLE_OUTLINE,
 				isLabelVisible || isSelected

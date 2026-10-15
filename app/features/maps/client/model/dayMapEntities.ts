@@ -25,6 +25,7 @@ import { type TMerchantLabel } from '@/domain/data/places/merchantFacts';
 import {
 	getCharacterEntityId,
 	getCollectableEntityId,
+	getFishingEntityId,
 } from '@/features/maps/links';
 
 export type TDayMapLayer =
@@ -184,7 +185,7 @@ export function buildDayMapEntities(map: TDayMapLabel): TDayMapEntity[] {
 	layout.fishingAreas.forEach(({ area }, index) => {
 		entities.push({
 			area,
-			id: `fishing:${index}`,
+			id: getFishingEntityId(index),
 			layer: 'fishing',
 			position: [(area[0] + area[2]) / 2, (area[1] + area[3]) / 2],
 		});

@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { createContext, memo, useContext } from 'react';
 
 import { faMapLocationDot } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -11,14 +11,19 @@ import Tooltip from '@/design/ui/components/tooltip';
 import { type TMerchantLabel } from '@/domain/data/places/merchantFacts';
 import type {
 	TCollectionPointReference,
+	TMapLabel,
 	TMerchantReference,
 } from '@/domain/data/places/types';
 
+import { useParams } from '@/features/appShell/client/navigation/useParams';
+import { rememberOpenedItemPopover } from '@/features/catalog/shared/client/hooks/useOpenedItemPopover';
+import { ITEM_PREVIEW_PARAM_NAME } from '@/features/itemSharing/contracts';
 import { mapsMessages } from '@/features/maps/client/messages';
 import { trackMapEvent } from '@/features/maps/client/model/analytics';
 import { useDayMapVisibility } from '@/features/maps/client/model/useDayMapVisibility';
 import {
 	getCollectableEntityId,
+	getFishingEntityId,
 	getMapsPageHref,
 	getMerchantReference,
 } from '@/features/maps/links';
@@ -34,12 +39,36 @@ const UNPLACED_MERCHANTS: ReadonlySet<TMerchantLabel> = new Set([
 	'ThreeFairies',
 ]);
 
-function MapIconLink({ href, trackName }: { href: string; trackName: string }) {
+/**
+ * @description Runs before a map link leaves the page, with the item whose
+ * popover holds the link, so going back can open that popover again. Catalog
+ * pages remember the item on the history entry; the map page provides its own.
+ */
+export const MapLinkLeaveContext = createContext<(itemId: number) => void>(
+	rememberOpenedItemPopover
+);
+
+/** @description The small catalog preview window stays on its item. */
+export function useMapLinksHidden() {
+	const { params } = useParams();
+
+	return params.has(ITEM_PREVIEW_PARAM_NAME);
+}
+
+interface IMapIconLinkProps {
+	href: string;
+	itemId: number;
+	trackName: string;
+}
+
+function MapIconLink({ href, itemId, trackName }: IMapIconLinkProps) {
 	const { t } = useI18n(mapsMessages);
+	const onLeave = useContext(MapLinkLeaveContext);
 
 	const text = t('maps.link.viewOnMap');
 	const handlePress = () => {
 		trackMapEvent('Map Link Button', trackName);
+		onLeave(itemId);
 	};
 
 	return (
@@ -51,7 +80,8 @@ function MapIconLink({ href, trackName }: { href: string; trackName: string }) {
 				href={href}
 				size="sm"
 				onPress={handlePress}
-				className="ml-1 align-baseline text-default-500"
+				// Centred on the text line rather than its baseline.
+				className="ml-1 align-middle text-default-600"
 			>
 				<FontAwesomeIcon icon={faMapLocationDot} size="sm" />
 			</Link>
@@ -64,11 +94,17 @@ function MapIconLink({ href, trackName }: { href: string; trackName: string }) {
  * to every map but a few name no single point and get no link.
  */
 export const CollectionPointMapLink = memo<{
+	itemId: number;
 	reference: TCollectionPointReference;
-}>(function CollectionPointMapLink({ reference }) {
+}>(function CollectionPointMapLink({ itemId, reference }) {
 	const { isMapVisible } = useDayMapVisibility();
+	const isHidden = useMapLinksHidden();
 
-	if ('excludedMaps' in reference || !isMapVisible(reference.map)) {
+	if (
+		isHidden ||
+		'excludedMaps' in reference ||
+		!isMapVisible(reference.map)
+	) {
 		return null;
 	}
 
@@ -79,32 +115,58 @@ export const CollectionPointMapLink = memo<{
 	return (
 		<MapIconLink
 			href={getMapsPageHref(reference.map, getCollectableEntityId(label))}
+			itemId={itemId}
 			trackName={`Collectable:${reference.map}/${label}`}
 		/>
 	);
 });
 
 /** @description Opens the map with the merchant selected, for merchants with a fixed spot. */
-export const MerchantMapLink = memo<{ reference: TMerchantReference }>(
-	function MerchantMapLink({ reference }) {
-		const { isMapVisible } = useDayMapVisibility();
+export const MerchantMapLink = memo<{
+	itemId: number;
+	reference: TMerchantReference;
+}>(function MerchantMapLink({ itemId, reference }) {
+	const { isMapVisible } = useDayMapVisibility();
+	const isHidden = useMapLinksHidden();
 
-		if (
-			reference.label === undefined ||
-			reference.map === undefined ||
-			UNPLACED_MERCHANTS.has(reference.label) ||
-			!isMapVisible(reference.map)
-		) {
+	if (
+		isHidden ||
+		reference.label === undefined ||
+		reference.map === undefined ||
+		UNPLACED_MERCHANTS.has(reference.label) ||
+		!isMapVisible(reference.map)
+	) {
+		return null;
+	}
+
+	return (
+		<MapIconLink
+			href={getMapsPageHref(
+				reference.map,
+				getMerchantReference(reference.label)
+			)}
+			itemId={itemId}
+			trackName={`Merchant:${reference.map}/${reference.label}`}
+		/>
+	);
+});
+
+/** @description Opens the map with its fishing spot selected. */
+export const FishingMapLink = memo<{ itemId: number; map: TMapLabel }>(
+	function FishingMapLink({ itemId, map }) {
+		const { isMapVisible } = useDayMapVisibility();
+		const isHidden = useMapLinksHidden();
+
+		if (isHidden || !isMapVisible(map)) {
 			return null;
 		}
 
 		return (
 			<MapIconLink
-				href={getMapsPageHref(
-					reference.map,
-					getMerchantReference(reference.label)
-				)}
-				trackName={`Merchant:${reference.map}/${reference.label}`}
+				// Every map with fish has exactly one fishing spot.
+				href={getMapsPageHref(map, getFishingEntityId(0))}
+				itemId={itemId}
+				trackName={`Fishing:${map}`}
 			/>
 		);
 	}

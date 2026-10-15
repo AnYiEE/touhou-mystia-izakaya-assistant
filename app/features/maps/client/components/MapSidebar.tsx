@@ -1,6 +1,14 @@
 'use client';
 
-import { memo, useCallback, useMemo, useState } from 'react';
+import {
+	type RefObject,
+	memo,
+	useCallback,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 
 import {
 	faChevronDown,
@@ -21,6 +29,7 @@ import Button from '@/design/ui/components/button';
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
 import FadeMotionDiv from '@/design/ui/components/fadeMotionDiv';
 import Input from '@/design/ui/components/input';
+import ScrollShadow from '@/design/ui/components/scrollShadow';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
@@ -54,6 +63,8 @@ import { useDayMapEntityName } from '@/features/maps/client/model/useDayMapEntit
 import { getDrawerControlsClassName } from '@/features/specialGuestPlans/client/specialGuestPlanDrawer/drawerLayout';
 
 import { useI18n } from '@/shared/i18n/useI18n';
+import { getPinyin } from '@/shared/utilities/pinyin/getPinyin';
+import { matchNameByLocale } from '@/shared/utilities/search/localeNameMatch';
 
 import DayMapEntityIcon from './DayMapEntityIcon';
 
@@ -310,17 +321,17 @@ interface IMapPanelProps extends Omit<
 	map: TDayMapLabel;
 }
 
+/** @description Search, layer filters and the entity list; only the list scrolls. */
 function MapPanel({
 	entities,
 	hiddenLayers,
-	map,
 	onQueryChange,
 	onSelect,
 	onToggleLayer,
 	query,
 	selectedId,
 }: IMapPanelProps) {
-	const { t } = useI18n(mapsMessages);
+	const { locale, t } = useI18n(mapsMessages);
 	const isReducedMotion = useReducedMotion();
 	const getName = useDayMapEntityName();
 
@@ -353,46 +364,34 @@ function MapPanel({
 		return counts;
 	}, [entities]);
 
-	const normalizedQuery = query.trim().toLowerCase();
+	const trimmedQuery = query.trim();
 	const groups = useMemo(
 		() =>
 			DAY_MAP_LAYERS.map((layer) => ({
-				items: entities.filter(
-					(entity) =>
-						entity.layer === layer &&
-						!hiddenLayers.has(layer) &&
-						(normalizedQuery === '' ||
-							getName(entity)
-								.toLowerCase()
-								.includes(normalizedQuery))
-				),
+				items: entities.filter((entity) => {
+					if (entity.layer !== layer || hiddenLayers.has(layer)) {
+						return false;
+					}
+					if (trimmedQuery === '') {
+						return true;
+					}
+					// The catalog's name search: pinyin and initials in Chinese, folded text elsewhere.
+					const name = getName(entity);
+					return matchNameByLocale(
+						trimmedQuery,
+						{ name, pinyin: getPinyin(name) },
+						locale
+					);
+				}),
 				layer,
 			})).filter(({ items }) => items.length > 0),
-		[entities, getName, hiddenLayers, normalizedQuery]
+		[entities, getName, hiddenLayers, locale, trimmedQuery]
 	);
 
-	const extraFact = checkExtraDayMapLabel(map)
-		? DAY_MAP_EXTRA_FACTS[map]
-		: null;
-	const note =
-		map === 'DLC3_HakureiFestival'
-			? t('maps.note.DLC3_HakureiFestival', { map: getDayMapLabel(map) })
-			: map === 'PartyStage'
-				? t('maps.note.PartyStage')
-				: extraFact?.parent
-					? t('maps.note.parent', {
-							map: getDayMapLabel(extraFact.parent),
-						})
-					: null;
 	const transition = getMapTransition(isReducedMotion);
 
 	return (
-		<>
-			{note !== null && (
-				<p className="-mt-1 rounded-medium bg-default-100 px-2 py-1 text-tiny text-default-700">
-					{note}
-				</p>
-			)}
+		<div className="flex min-h-0 flex-1 flex-col gap-3">
 			<Input
 				isClearable
 				aria-label={t('maps.search.placeholder')}
@@ -406,8 +405,9 @@ function MapPanel({
 				}
 				value={query}
 				onValueChange={onQueryChange}
+				className="shrink-0"
 			/>
-			<div>
+			<div className="shrink-0">
 				<p className="mb-1 text-tiny font-semibold text-default-600">
 					{t('maps.layers')}
 				</p>
@@ -455,7 +455,7 @@ function MapPanel({
 					})}
 				</div>
 			</div>
-			<div>
+			<ScrollShadow className="-mx-1 min-h-0 flex-1 px-1">
 				<AnimatePresence initial={false}>
 					{groups.map(({ items, layer }) => (
 						<motion.div
@@ -481,8 +481,58 @@ function MapPanel({
 						{t('maps.list.empty')}
 					</p>
 				)}
-			</div>
-		</>
+			</ScrollShadow>
+		</div>
+	);
+}
+
+/**
+ * @description The world list keeps its own scroll position, so going back
+ * from a map shows the card that was used to enter it.
+ */
+function WorldMapScroller({
+	isMapVisible,
+	onEnterMap,
+	scrollTopRef,
+}: Pick<IProps, 'isMapVisible' | 'onEnterMap'> & {
+	scrollTopRef: RefObject<number>;
+}) {
+	const scrollRef = useRef<HTMLDivElement>(null);
+
+	useLayoutEffect(() => {
+		if (scrollRef.current !== null) {
+			scrollRef.current.scrollTop = scrollTopRef.current;
+		}
+	}, [scrollTopRef]);
+
+	const handleScroll = useCallback(() => {
+		if (scrollRef.current !== null) {
+			scrollTopRef.current = scrollRef.current.scrollTop;
+		}
+	}, [scrollTopRef]);
+
+	// Read when a card is pressed, before the list starts to leave.
+	const handleEnterMap = useCallback(
+		(map: TDayMapLabel) => {
+			if (scrollRef.current !== null) {
+				scrollTopRef.current = scrollRef.current.scrollTop;
+			}
+			onEnterMap(map);
+		},
+		[onEnterMap, scrollTopRef]
+	);
+
+	return (
+		<ScrollShadow
+			ref={scrollRef}
+			onScroll={handleScroll}
+			className="min-h-0 flex-1"
+		>
+			<WorldMapList
+				isMapVisible={isMapVisible}
+				onEnterMap={handleEnterMap}
+			/>
+		</ScrollShadow>
 	);
 }
 
@@ -498,6 +548,7 @@ export default memo<IProps>(function MapSidebar({
 	const { t } = useI18n(mapsMessages);
 	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
+	const worldScrollTopRef = useRef(0);
 
 	const title = map === null ? t('maps.world.title') : getDayMapLabel(map);
 	const dlc = map === null ? 0 : getDayMapDlc(map);
@@ -533,13 +584,15 @@ export default memo<IProps>(function MapSidebar({
 					isControlsCollapsed: isCollapsed,
 					isHighAppearance,
 				}),
+				// The header stays put and only the list below scrolls.
+				'flex flex-col overflow-hidden',
 				// Leaves most of a phone screen to the map below.
-				'max-md:max-h-[40dvh] max-md:shrink-0'
+				'max-md:max-h-[50dvh] max-md:shrink-0'
 			)}
 		>
 			<div
 				className={cn(
-					'relative flex min-h-9 items-center justify-between gap-2',
+					'relative flex min-h-9 shrink-0 items-center justify-between gap-2',
 					isCollapsed && 'md:h-9 md:min-h-9 md:justify-center'
 				)}
 			>
@@ -615,24 +668,27 @@ export default memo<IProps>(function MapSidebar({
 				initial={false}
 				transition={contentMotionTransition}
 				inert={isCollapsed ? true : undefined}
-				className="overflow-hidden md:!h-auto md:w-[19rem] md:min-w-[19rem] md:overflow-visible md:!opacity-100"
+				className="flex min-h-0 flex-1 flex-col overflow-hidden md:!h-auto md:w-[19rem] md:min-w-[19rem] md:!opacity-100"
 			>
 				<div
 					className={cn(
-						'pt-4 motion-reduce:transition-none md:w-[19rem] md:min-w-[19rem] md:transition-[transform,opacity] md:duration-200 md:ease-linear md:will-change-transform',
+						'flex min-h-0 flex-1 flex-col pt-4 motion-reduce:transition-none md:w-[19rem] md:min-w-[19rem] md:transition-[transform,opacity] md:duration-200 md:ease-linear md:will-change-transform',
 						isCollapsed
 							? 'md:-translate-x-[calc(100%+1rem)] md:opacity-0'
 							: 'md:translate-x-0 md:opacity-100'
 					)}
 				>
+					{/* Keyed by map: each list starts at its top, and only fades in place. */}
 					<FadeMotionDiv
 						target={map ?? 'world'}
-						className="flex flex-col gap-3"
+						variant="placeholder"
+						className="flex min-h-0 flex-1 flex-col"
 					>
 						{map === null ? (
-							<WorldMapList
+							<WorldMapScroller
 								isMapVisible={isMapVisible}
 								onEnterMap={onEnterMap}
+								scrollTopRef={worldScrollTopRef}
 							/>
 						) : (
 							<MapPanel map={map} {...props} />

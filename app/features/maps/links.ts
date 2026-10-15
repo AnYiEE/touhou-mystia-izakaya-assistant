@@ -11,6 +11,10 @@ export function getCollectableEntityId(label: string) {
 	return `collectable:${label}`;
 }
 
+export function getFishingEntityId(index: number) {
+	return `fishing:${index}`;
+}
+
 const MERCHANT_REFERENCE_PREFIX = 'merchant:';
 
 /**

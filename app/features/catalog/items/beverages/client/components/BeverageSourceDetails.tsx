@@ -14,6 +14,7 @@ import type { IBeverage } from '@/domain/data/beverages/schema';
 import type {
 	IPrayerReference,
 	TCollectionPointReference,
+	TMapLabel,
 	TMerchantReference,
 } from '@/domain/data/places/types';
 
@@ -27,6 +28,7 @@ import {
 } from '@/features/catalog/items/shared/sourceReferenceFormatting';
 import {
 	CollectionPointMapLink,
+	FishingMapLink,
 	MerchantMapLink,
 } from '@/features/maps/client/components/MapLinks';
 
@@ -275,6 +277,7 @@ export default function BeverageSourceDetails({ from, id }: IProps) {
 												)}
 										{isCollect && (
 											<CollectionPointMapLink
+												itemId={id}
 												reference={
 													(Array.isArray(item)
 														? item[0]
@@ -284,11 +287,18 @@ export default function BeverageSourceDetails({ from, id }: IProps) {
 										)}
 										{isBuy && (
 											<MerchantMapLink
+												itemId={id}
 												reference={
 													(Array.isArray(item)
 														? item[0]
 														: item) as TMerchantReference
 												}
+											/>
+										)}
+										{isFishingAdvanced && (
+											<FishingMapLink
+												itemId={id}
+												map={item as TMapLabel}
 											/>
 										)}
 									</Ol.Li>

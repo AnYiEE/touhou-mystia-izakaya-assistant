@@ -14,6 +14,7 @@ import type { IIngredient } from '@/domain/data/ingredients/schema';
 import type {
 	IPrayerReference,
 	TCollectionPointReference,
+	TMapLabel,
 	TMerchantReference,
 } from '@/domain/data/places/types';
 
@@ -27,6 +28,7 @@ import {
 } from '@/features/catalog/items/shared/sourceReferenceFormatting';
 import {
 	CollectionPointMapLink,
+	FishingMapLink,
 	MerchantMapLink,
 } from '@/features/maps/client/components/MapLinks';
 
@@ -274,6 +276,7 @@ export default function IngredientSourceDetails({ from, id }: IProps) {
 										: renderSourceReference(item, locale)}
 									{isCollect && (
 										<CollectionPointMapLink
+											itemId={id}
 											reference={
 												(Array.isArray(item)
 													? item[0]
@@ -283,11 +286,18 @@ export default function IngredientSourceDetails({ from, id }: IProps) {
 									)}
 									{isBuy && (
 										<MerchantMapLink
+											itemId={id}
 											reference={
 												(Array.isArray(item)
 													? item[0]
 													: item) as TMerchantReference
 											}
+										/>
+									)}
+									{(isFishing || isFishingAdvanced) && (
+										<FishingMapLink
+											itemId={id}
+											map={item as TMapLabel}
 										/>
 									)}
 								</Ol.Li>

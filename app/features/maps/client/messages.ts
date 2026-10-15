@@ -52,10 +52,6 @@ const MAPS_MESSAGES_ZH_CN = {
 	'maps.list.empty': '没有符合条件的条目',
 	'maps.meta.description':
 		'东方夜雀食堂白天地图攻略：在游戏原版地图上查看采集点、商人、稀客与居民的站位，以及地图出入口和世界地图。',
-	'maps.note.DLC3_HakureiFestival':
-		'{map}期间的会场，人物为活动期间的摆放位置。',
-	'maps.note.parent': '从{map}进入',
-	'maps.note.PartyStage': '演唱会舞台，人物为演唱会时的站位。',
 	'maps.search.placeholder': '搜索本地图的采集点或人物',
 	'maps.sidebar.collapse': '收起侧栏',
 	'maps.sidebar.expand': '展开侧栏',
@@ -129,11 +125,6 @@ export const mapsMessages = {
 		'maps.list.empty': 'Nothing matches',
 		'maps.meta.description':
 			"Touhou Mystia's Izakaya daytime map guide: gathering spots, merchants, special guests and residents on the original maps, plus exits and the world map.",
-		'maps.note.DLC3_HakureiFestival':
-			'The festival grounds; characters stand where they are during the {map}.',
-		'maps.note.parent': 'Entered from {map}',
-		'maps.note.PartyStage':
-			'The concert stage; characters stand where they are during concerts.',
 		'maps.search.placeholder': 'Search spots or characters on this map',
 		'maps.sidebar.collapse': 'Collapse sidebar',
 		'maps.sidebar.expand': 'Expand sidebar',
@@ -203,11 +194,6 @@ export const mapsMessages = {
 		'maps.list.empty': '条件に合う項目はありません',
 		'maps.meta.description':
 			'東方夜雀食堂の昼マップ攻略：原作のマップ上で採取ポイント、商人、レア客や住人の位置、マップの出入口とワールドマップを確認できます。',
-		'maps.note.DLC3_HakureiFestival':
-			'{map}の会場です。人物は開催期間中の配置です。',
-		'maps.note.parent': '{map}から入ります',
-		'maps.note.PartyStage':
-			'ライブのステージです。人物はライブ中の立ち位置です。',
 		'maps.search.placeholder': 'このマップの採取ポイントや人物を検索',
 		'maps.sidebar.collapse': 'サイドバーを折りたたむ',
 		'maps.sidebar.expand': 'サイドバーを展開',
@@ -276,11 +262,6 @@ export const mapsMessages = {
 		'maps.list.empty': '조건에 맞는 항목이 없습니다',
 		'maps.meta.description':
 			'동방 야작식당 낮 지도 공략: 원작 지도에서 채집 지점, 상인, 희귀 손님과 주민의 위치, 지도 출입구와 월드맵을 확인하세요.',
-		'maps.note.DLC3_HakureiFestival':
-			'{map} 행사장입니다. 인물은 행사 기간의 배치입니다.',
-		'maps.note.parent': '{map}에서 들어갑니다',
-		'maps.note.PartyStage':
-			'콘서트 무대입니다. 인물은 콘서트 중의 위치입니다.',
 		'maps.search.placeholder': '이 지도의 채집 지점이나 인물 검색',
 		'maps.sidebar.collapse': '사이드바 접기',
 		'maps.sidebar.expand': '사이드바 펼치기',
@@ -349,10 +330,6 @@ export const mapsMessages = {
 		'maps.list.empty': '沒有符合條件的項目',
 		'maps.meta.description':
 			'東方夜雀食堂白天地圖攻略：在遊戲原版地圖上查看採集點、商人、稀客與居民的站位，以及地圖出入口和世界地圖。',
-		'maps.note.DLC3_HakureiFestival':
-			'{map}期間的會場，人物為活動期間的擺放位置。',
-		'maps.note.parent': '從{map}進入',
-		'maps.note.PartyStage': '演唱會舞台，人物為演唱會時的站位。',
 		'maps.search.placeholder': '搜尋本地圖的採集點或人物',
 		'maps.sidebar.collapse': '收起側欄',
 		'maps.sidebar.expand': '展開側欄',

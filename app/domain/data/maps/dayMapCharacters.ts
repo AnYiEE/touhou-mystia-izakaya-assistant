@@ -84,23 +84,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		},
 	},
 	{
-		destinations: [{ map: 'BeastForest', position: [-4.95, 2.69] }],
-		id: 'special-41',
-		isOffByDefault: false,
-		kind: 'specialGuest',
-		merchant: null,
-		name: '秦心',
-		showTime: [10, 18],
-		specialGuest: 41,
-		sprite: {
-			file: 'special-41.png',
-			height: 58,
-			pivot: [23.98, 58],
-			pixelsPerUnit: 48,
-			width: 45,
-		},
-	},
-	{
 		destinations: [{ map: 'BeastForest', position: [-33.585, -7.815] }],
 		id: 'normal-33',
 		isOffByDefault: true,
@@ -761,23 +744,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		},
 	},
 	{
-		destinations: [{ map: 'ScarletMansion', position: [-10.25, -32.75] }],
-		id: 'special-4007',
-		isOffByDefault: false,
-		kind: 'specialGuest',
-		merchant: null,
-		name: '若鹭姬',
-		showTime: [10, 18],
-		specialGuest: null,
-		sprite: {
-			file: 'special-4007.png',
-			height: 47,
-			pivot: [32, 47],
-			pixelsPerUnit: 48,
-			width: 64,
-		},
-	},
-	{
 		destinations: [{ map: 'ScarletMansion', position: [20.722, -34.74] }],
 		id: 'normal-18',
 		isOffByDefault: true,
@@ -952,6 +918,23 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 			pivot: [18.97, 48],
 			pixelsPerUnit: 48,
 			width: 38,
+		},
+	},
+	{
+		destinations: [{ map: 'ScarletMansion', position: [-10.25, -32.75] }],
+		id: 'special-4007',
+		isOffByDefault: false,
+		kind: 'resident',
+		merchant: null,
+		name: '若鹭姬',
+		showTime: [10, 18],
+		specialGuest: null,
+		sprite: {
+			file: 'special-4007.png',
+			height: 47,
+			pivot: [32, 47],
+			pixelsPerUnit: 48,
+			width: 64,
 		},
 	},
 	{
@@ -1134,6 +1117,23 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		},
 	},
 	{
+		destinations: [{ map: 'DLC1_MagicForest', position: [-28, -4] }],
+		id: 'special-10',
+		isOffByDefault: false,
+		kind: 'specialGuest',
+		merchant: null,
+		name: '雾雨魔理沙',
+		showTime: [10, 18],
+		specialGuest: 10,
+		sprite: {
+			file: 'special-10.png',
+			height: 64,
+			pivot: [27.94, 64],
+			pixelsPerUnit: 48,
+			width: 57,
+		},
+	},
+	{
 		destinations: [{ map: 'DLC1_MagicForest', position: [-6.78, 12.79] }],
 		id: 'normal-1003',
 		isOffByDefault: false,
@@ -1151,11 +1151,7 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		},
 	},
 	{
-		destinations: [
-			{ map: 'DLC1_MagicForest', position: [-24.69, 28.54] },
-			{ map: 'DLC1_MagicForest', position: [-24.69, 28.54] },
-			{ map: 'DLC1_MagicForest', position: [-24.69, 28.54] },
-		],
+		destinations: [{ map: 'DLC1_MagicForest', position: [-24.69, 28.54] }],
 		id: 'normal-1009',
 		isOffByDefault: false,
 		kind: 'resident',
@@ -1172,11 +1168,7 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		},
 	},
 	{
-		destinations: [
-			{ map: 'DLC1_MagicForest', position: [-10.86, 3.18] },
-			{ map: 'DLC1_MagicForest', position: [-10.86, 3.18] },
-			{ map: 'DLC1_MagicForest', position: [-10.86, 3.18] },
-		],
+		destinations: [{ map: 'DLC1_MagicForest', position: [-10.86, 3.18] }],
 		id: 'normal-1010',
 		isOffByDefault: false,
 		kind: 'resident',
@@ -1193,11 +1185,7 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		},
 	},
 	{
-		destinations: [
-			{ map: 'DLC1_MagicForest', position: [-1.83, -20.18] },
-			{ map: 'DLC1_MagicForest', position: [-1.83, -20.18] },
-			{ map: 'DLC1_MagicForest', position: [-1.83, -20.18] },
-		],
+		destinations: [{ map: 'DLC1_MagicForest', position: [-1.83, -20.18] }],
 		id: 'normal-1011',
 		isOffByDefault: false,
 		kind: 'resident',
@@ -1214,11 +1202,7 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		},
 	},
 	{
-		destinations: [
-			{ map: 'DLC1_MagicForest', position: [-20.54, -8.82] },
-			{ map: 'DLC1_MagicForest', position: [-20.54, -8.82] },
-			{ map: 'DLC1_MagicForest', position: [-20.54, -8.82] },
-		],
+		destinations: [{ map: 'DLC1_MagicForest', position: [-20.54, -8.82] }],
 		id: 'normal-1012',
 		isOffByDefault: false,
 		kind: 'resident',
@@ -1235,11 +1219,7 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		},
 	},
 	{
-		destinations: [
-			{ map: 'DLC1_MagicForest', position: [0.02, -9.51] },
-			{ map: 'DLC1_MagicForest', position: [0.02, -9.51] },
-			{ map: 'DLC1_MagicForest', position: [0.02, -9.51] },
-		],
+		destinations: [{ map: 'DLC1_MagicForest', position: [0.02, -9.51] }],
 		id: 'normal-1013',
 		isOffByDefault: false,
 		kind: 'resident',
@@ -1599,7 +1579,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 	{
 		destinations: [
 			{ map: 'DLC2_EarthSpiritsPalace', position: [15.86, 13.72] },
-			{ map: 'DLC2_EarthSpiritsPalace', position: [16.86, 13.72] },
 			{ map: 'DLC2_EarthSpiritsPalace', position: [16.86, 13.72] },
 		],
 		id: 'normal-2010',
@@ -2518,23 +2497,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		},
 	},
 	{
-		destinations: [{ map: 'DLC5_Makai', position: [2, 30.75] }],
-		id: 'special-5009',
-		isOffByDefault: false,
-		kind: 'specialGuest',
-		merchant: null,
-		name: '神绮',
-		showTime: [10, 18],
-		specialGuest: null,
-		sprite: {
-			file: 'special-5009.png',
-			height: 62,
-			pivot: [32, 62],
-			pixelsPerUnit: 48,
-			width: 64,
-		},
-	},
-	{
 		destinations: [{ map: 'DLC5_Makai', position: [22.75, -7] }],
 		id: 'normal-5000',
 		isOffByDefault: false,
@@ -2678,6 +2640,23 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		},
 	},
 	{
+		destinations: [{ map: 'DLC5_Makai', position: [2, 30.75] }],
+		id: 'special-5009',
+		isOffByDefault: false,
+		kind: 'resident',
+		merchant: null,
+		name: '神绮',
+		showTime: [10, 18],
+		specialGuest: null,
+		sprite: {
+			file: 'special-5009.png',
+			height: 62,
+			pivot: [32, 62],
+			pixelsPerUnit: 48,
+			width: 64,
+		},
+	},
+	{
 		destinations: [{ map: 'Hakugyokurou', position: [-4.35, 2.05] }],
 		id: 'special-39',
 		isOffByDefault: false,
@@ -2717,7 +2696,7 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		],
 		id: 'special-4006',
 		isOffByDefault: false,
-		kind: 'specialGuest',
+		kind: 'resident',
 		merchant: null,
 		name: '芙兰朵露',
 		showTime: [10, 18],
@@ -3293,4 +3272,4 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 ];
 
 /** @description Content hash of the published sprites; part of their URL. */
-export const DAY_MAP_CHARACTER_SPRITE_HASH = '31febf79dc4b';
+export const DAY_MAP_CHARACTER_SPRITE_HASH = '477ac9765f1c';

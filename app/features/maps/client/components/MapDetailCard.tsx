@@ -53,6 +53,7 @@ import {
 	checkDayMapLabel,
 	getDayMapLabel,
 } from '@/features/maps/client/model/dayMapLabels';
+import { getMapItemKey } from '@/features/maps/client/model/mapsHistory';
 import { getMapSurfaceClassName } from '@/features/maps/client/model/mapStyles';
 import { getProductName } from '@/features/maps/client/model/productNames';
 import { useDayMapEntityName } from '@/features/maps/client/model/useDayMapEntityName';
@@ -77,6 +78,8 @@ interface IProps {
 		entityId: string,
 		point: TDayMapPoint
 	) => void;
+	/** @description Item popover to open again, after going back to this entry. */
+	restoredItemKey: string | null;
 	visibility: IDayMapVisibility;
 }
 
@@ -151,21 +154,32 @@ function groupProducts(products: ReadonlyArray<ICollectionPointYieldProduct>) {
 function CollectableDetail({
 	entity,
 	onPopoverOpenChange,
-}: Pick<IProps, 'onPopoverOpenChange'> & { entity: IDayMapCollectableEntity }) {
+	restoredItemKey,
+}: Pick<IProps, 'onPopoverOpenChange' | 'restoredItemKey'> & {
+	entity: IDayMapCollectableEntity;
+}) {
 	const { t } = useI18n(mapsMessages);
 	useCatalogLocalizationRevision();
 
-	const { products } = entity;
+	const { id, products } = entity;
 	if (products.length === 0) {
 		return null;
 	}
 
+	const rows = groupProducts(products);
+	// A product may have several rows; its first one stands for it.
+	const restoredIndex = rows.findIndex(
+		({ product }) => getMapItemKey(product) === restoredItemKey
+	);
+
 	return (
 		<Section label={t('maps.detail.products')}>
 			<ul className="-mx-1">
-				{groupProducts(products).map(({ count, key, product }) => (
+				{rows.map(({ count, key, product }, index) => (
 					<li key={key}>
 						<MapItemPopover
+							defaultOpen={index === restoredIndex}
+							entityId={id}
 							product={product}
 							onOpenChange={onPopoverOpenChange}
 							className="flex w-full items-center gap-2 px-1 py-0.5 text-left"
@@ -280,6 +294,7 @@ function CharacterDetail({
 	onFocusPoint,
 	onPopoverOpenChange,
 	onShowCharacter,
+	restoredItemKey,
 	visibility,
 }: Pick<
 	IProps,
@@ -287,6 +302,7 @@ function CharacterDetail({
 	| 'onFocusPoint'
 	| 'onPopoverOpenChange'
 	| 'onShowCharacter'
+	| 'restoredItemKey'
 	| 'visibility'
 > & { entity: IDayMapCharacterEntity }) {
 	const { t } = useI18n(mapsMessages);
@@ -355,7 +371,11 @@ function CharacterDetail({
 					<div className="-mx-0.5 flex flex-wrap">
 						{goodsProducts.map((product) => (
 							<MapItemPopover
-								key={`${product.productType}:${product.productId}`}
+								key={getMapItemKey(product)}
+								defaultOpen={
+									getMapItemKey(product) === restoredItemKey
+								}
+								entityId={id}
 								product={product}
 								onOpenChange={onPopoverOpenChange}
 								// A flex box drops the line box, so the button stays square.
@@ -509,6 +529,7 @@ export default memo<IProps>(function MapDetailCard({
 	onOpenWorldMap,
 	onPopoverOpenChange,
 	onShowCharacter,
+	restoredItemKey,
 	visibility,
 }) {
 	const { t } = useI18n(mapsMessages);
@@ -565,6 +586,7 @@ export default memo<IProps>(function MapDetailCard({
 				<CollectableDetail
 					entity={entity}
 					onPopoverOpenChange={onPopoverOpenChange}
+					restoredItemKey={restoredItemKey}
 				/>
 			)}
 			{'character' in entity && (
@@ -574,6 +596,7 @@ export default memo<IProps>(function MapDetailCard({
 					onFocusPoint={onFocusPoint}
 					onPopoverOpenChange={onPopoverOpenChange}
 					onShowCharacter={onShowCharacter}
+					restoredItemKey={restoredItemKey}
 					visibility={visibility}
 				/>
 			)}
