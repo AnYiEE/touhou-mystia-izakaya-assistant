@@ -1,11 +1,12 @@
 'use client';
 
-import { type ReactNode, memo } from 'react';
+import { type ReactNode, memo, useMemo } from 'react';
 
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
 
+import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
 import Link from '@/design/ui/components/link';
 
@@ -36,6 +37,7 @@ import {
 	checkBeverageId,
 	checkIngredientId,
 } from '@/features/maps/client/model/dayMapEntities';
+import { getMapSurfaceClassName } from '@/features/maps/client/model/mapStyles';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
@@ -43,13 +45,10 @@ import { numberSort } from '@/shared/utilities/sort/numberSort';
 interface IProps {
 	children: ReactNode;
 	className?: string;
+	/** @description Lets the map ignore the press that only dismisses this popover. */
+	onOpenChange: (isOpen: boolean) => void;
 	product: Pick<ICollectionPointYieldProduct, 'productId' | 'productType'>;
 }
-
-// The site's translucent popover surface is unreadable over the dark game art.
-const POPOVER_CLASS_NAMES = {
-	content: 'bg-content1/95 dark:bg-content1/95',
-} as const;
 
 const beverageCatalog = BeverageCatalog.getInstance();
 const ingredientCatalog = IngredientCatalog.getInstance();
@@ -138,13 +137,23 @@ function ItemDetails({
 export default memo<IProps>(function MapItemPopover({
 	children,
 	className,
+	onOpenChange,
 	product,
 }) {
+	const { isHighAppearance } = useDesignPreferences();
+
+	// Same surface as the detail card: the site popover is too translucent over the game art.
+	const classNames = useMemo(
+		() => ({ content: getMapSurfaceClassName(isHighAppearance) }),
+		[isHighAppearance]
+	);
+
 	return (
 		<ItemPopover
 			showArrow
 			placement="right"
-			classNames={POPOVER_CLASS_NAMES}
+			onOpenChange={onOpenChange}
+			classNames={classNames}
 		>
 			<ItemPopoverTrigger>
 				<button

@@ -20,8 +20,9 @@ export const WORLD_MAP_FACTS: IWorldMapFacts = {
 		['DLC1_YoukaiMountain', 'ScarletMansion'],
 		['DLC3_MyourenTemple', 'DLC3_DivineSpiritMausoleum'],
 	],
+	hash: '1defb6490793',
 	height: 1104,
-	image: 'world.webp',
+	image: 'world',
 	spots: [
 		{ place: 'BeastForest', position: [1263, 650] },
 		{ place: 'HumanVillage', position: [1042, 652] },

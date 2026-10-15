@@ -3,8 +3,6 @@ import type { TCollectableLabel } from '@/domain/data/places/collectableLabels';
 import type { TMerchantLabel } from '@/domain/data/places/merchantFacts';
 import type { TMapLabel, TPlaceLabel } from '@/domain/data/places/types';
 
-import type { TLocale } from '@/shared/i18n/locale';
-
 /** @description Day-scene places outside the fifteen regions (interiors and event scenes). */
 export type TExtraDayMapLabel =
 	| 'Basement'
@@ -20,8 +18,8 @@ export interface IDayMapExtraFact {
 	dlc: 0 | 3 | 4;
 	/** @description `event` scenes only exist during story or concert events. */
 	kind: 'event' | 'interior' | 'place';
-	names: Readonly<Partial<Record<TLocale, string>>> &
-		Readonly<Record<'zh-CN', string>>;
+	/** @description Simplified Chinese game name; other languages are in `localization/`. */
+	name: string;
 	/** @description Region whose world-map spot also covers this place. */
 	parent: TMapLabel | null;
 }
@@ -51,6 +49,8 @@ export interface IDayMapArtLevel {
 
 export interface IDayMapArt {
 	bounds: TDayMapRect;
+	/** @description Content hash of the published tiles; part of their URL, so they can be cached for good. */
+	hash: string;
 	height: number;
 	/** @description Level 0 is the sharpest; each next level halves the size. */
 	levels: ReadonlyArray<IDayMapArtLevel>;
@@ -131,7 +131,10 @@ export interface IWorldMapSpot {
 
 export interface IWorldMapFacts {
 	connections: ReadonlyArray<readonly [TPlaceLabel, TPlaceLabel]>;
+	/** @description Content hash of the published image; part of its URL. */
+	hash: string;
 	height: number;
+	/** @description File name without extension; WebP and PNG copies are published. */
 	image: string;
 	spots: ReadonlyArray<IWorldMapSpot>;
 	width: number;

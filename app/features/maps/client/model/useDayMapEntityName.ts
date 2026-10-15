@@ -3,26 +3,27 @@
 import { useCallback } from 'react';
 
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import {
+	getDayMapCharacterName,
+	getDayMapPlaceName,
+} from '@/domain/maps/localizedLabels';
 import { getMerchantLabel } from '@/domain/places/localizedLabels';
 import { getPointLabel } from '@/domain/places/localizedPointLabels';
 
 import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import { mapsMessages } from '@/features/maps/client/messages';
-import type {
-	IDayMapCharacterEntity,
-	TDayMapEntity,
-} from '@/features/maps/client/model/dayMapEntities';
-import {
-	checkDayMapLabel,
-	getDayMapLabel,
-} from '@/features/maps/client/model/dayMapLabels';
 
 import { useI18n } from '@/shared/i18n/useI18n';
+
+import type { IDayMapCharacterEntity, TDayMapEntity } from './dayMapEntities';
+import { checkDayMapLabel, getDayMapLabel } from './dayMapLabels';
 
 const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 
 export function getTransitionTargetName(target: string, fallback: string) {
-	return checkDayMapLabel(target) ? getDayMapLabel(target) : fallback;
+	return checkDayMapLabel(target)
+		? getDayMapLabel(target)
+		: getDayMapPlaceName(target, fallback);
 }
 
 export function getCharacterName({ character }: IDayMapCharacterEntity) {
@@ -36,7 +37,7 @@ export function getCharacterName({ character }: IDayMapCharacterEntity) {
 		return getMerchantLabel(character.merchant);
 	}
 
-	return character.name;
+	return getDayMapCharacterName(character);
 }
 
 /** @description Localized display name of a map entity. */

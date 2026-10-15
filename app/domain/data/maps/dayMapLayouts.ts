@@ -8,6 +8,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	BambooForest: {
 		art: {
 			bounds: [-58, -25, 69, 40],
+			hash: '0c6347f539b1',
 			height: 2080,
 			levels: [
 				{
@@ -90,6 +91,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 					],
 					width: 1016,
 				},
+				{
+					columns: 1,
+					height: 260,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 508,
+				},
 			],
 			pixelsPerUnit: 32,
 			tileSize: 512,
@@ -163,6 +171,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	Basement: {
 		art: {
 			bounds: [-14, -12, 15, 16],
+			hash: '512f71f31aad',
 			height: 896,
 			levels: [
 				{
@@ -191,6 +200,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 					tiles: [[0, 0]],
 					width: 232,
 				},
+				{
+					columns: 1,
+					height: 112,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 116,
+				},
 			],
 			pixelsPerUnit: 32,
 			tileSize: 512,
@@ -213,6 +229,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	BeastForest: {
 		art: {
 			bounds: [-65, -45, 70, 25],
+			hash: 'e898dc3a12b1',
 			height: 2240,
 			levels: [
 				{
@@ -296,6 +313,16 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 						[1, 1],
 					],
 					width: 1080,
+				},
+				{
+					columns: 2,
+					height: 280,
+					rows: 1,
+					tiles: [
+						[0, 0],
+						[1, 0],
+					],
+					width: 540,
 				},
 			],
 			pixelsPerUnit: 32,
@@ -514,6 +541,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	DLC1_MagicForest: {
 		art: {
 			bounds: [-59, -51, 41, 47],
+			hash: '741b2d3ccd32',
 			height: 3136,
 			levels: [
 				{
@@ -608,6 +636,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 						[1, 1],
 					],
 					width: 800,
+				},
+				{
+					columns: 1,
+					height: 392,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 400,
 				},
 			],
 			pixelsPerUnit: 32,
@@ -710,6 +745,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	DLC1_YoukaiMountain: {
 		art: {
 			bounds: [-43, -31, 34, 37],
+			hash: '3a6d9c833a74',
 			height: 2176,
 			levels: [
 				{
@@ -773,6 +809,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 						[1, 1],
 					],
 					width: 616,
+				},
+				{
+					columns: 1,
+					height: 272,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 308,
 				},
 			],
 			pixelsPerUnit: 32,
@@ -861,6 +904,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	DLC2_EarthSpiritsPalace: {
 		art: {
 			bounds: [-47, -50, 74, 44],
+			hash: '173a0ea3097f',
 			height: 3008,
 			levels: [
 				{
@@ -935,6 +979,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 						[1, 1],
 					],
 					width: 968,
+				},
+				{
+					columns: 1,
+					height: 376,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 484,
 				},
 			],
 			pixelsPerUnit: 32,
@@ -1036,6 +1087,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	DLC2_FormerHell: {
 		art: {
 			bounds: [-65, -54, 98, 70],
+			hash: 'f6ce7f2b9583',
 			height: 3968,
 			levels: [
 				{
@@ -1140,6 +1192,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 					],
 					width: 1304,
 				},
+				{
+					columns: 2,
+					height: 496,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 652,
+				},
 			],
 			pixelsPerUnit: 32,
 			tileSize: 512,
@@ -1227,6 +1286,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	DLC3_DivineSpiritMausoleum: {
 		art: {
 			bounds: [-52, -25, 53, 45],
+			hash: 'fdf2f3d0045f',
 			height: 2240,
 			levels: [
 				{
@@ -1303,6 +1363,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 						[1, 1],
 					],
 					width: 840,
+				},
+				{
+					columns: 1,
+					height: 280,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 420,
 				},
 			],
 			pixelsPerUnit: 32,
@@ -1425,6 +1492,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	DLC3_HakureiFestival: {
 		art: {
 			bounds: [-27, -50, 67, 28],
+			hash: '04876daf1747',
 			height: 2496,
 			levels: [
 				{
@@ -1488,6 +1556,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 					],
 					width: 752,
 				},
+				{
+					columns: 1,
+					height: 312,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 376,
+				},
 			],
 			pixelsPerUnit: 32,
 			tileSize: 512,
@@ -1501,6 +1576,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	DLC3_MyourenTemple: {
 		art: {
 			bounds: [-48, -54, 53, 35],
+			hash: 'c58d8ca14237',
 			height: 2848,
 			levels: [
 				{
@@ -1584,6 +1660,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 						[1, 1],
 					],
 					width: 808,
+				},
+				{
+					columns: 1,
+					height: 356,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 404,
 				},
 			],
 			pixelsPerUnit: 32,
@@ -1672,6 +1755,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	DLC4_GardenOfTheSun: {
 		art: {
 			bounds: [-40, -39, 42, 35],
+			hash: '6c8f7fef2750',
 			height: 2368,
 			levels: [
 				{
@@ -1736,6 +1820,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 						[0, 1],
 					],
 					width: 656,
+				},
+				{
+					columns: 1,
+					height: 296,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 328,
 				},
 			],
 			pixelsPerUnit: 32,
@@ -1879,6 +1970,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	DLC4_ScarletMansionBasement: {
 		art: {
 			bounds: [-17, -11, 17, 12],
+			hash: '8bafca82a24d',
 			height: 736,
 			levels: [
 				{
@@ -1907,6 +1999,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 					tiles: [[0, 0]],
 					width: 272,
 				},
+				{
+					columns: 1,
+					height: 92,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 136,
+				},
 			],
 			pixelsPerUnit: 32,
 			tileSize: 512,
@@ -1929,6 +2028,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	DLC4_ShiningNeedleCastle: {
 		art: {
 			bounds: [-40, -26, 42, 41],
+			hash: 'cf7ec706ed57',
 			height: 2144,
 			levels: [
 				{
@@ -1994,6 +2094,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 						[1, 1],
 					],
 					width: 656,
+				},
+				{
+					columns: 1,
+					height: 268,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 328,
 				},
 			],
 			pixelsPerUnit: 32,
@@ -2065,6 +2172,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	DLC5_LunarCapital: {
 		art: {
 			bounds: [-41, -41, 41, 41],
+			hash: '1e8564b1cf20',
 			height: 2624,
 			levels: [
 				{
@@ -2137,6 +2245,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 					],
 					width: 656,
 				},
+				{
+					columns: 1,
+					height: 328,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 328,
+				},
 			],
 			pixelsPerUnit: 32,
 			tileSize: 512,
@@ -2186,6 +2301,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	DLC5_Makai: {
 		art: {
 			bounds: [-41, -41, 41, 41],
+			hash: '07f2fdf6d001',
 			height: 2624,
 			levels: [
 				{
@@ -2260,6 +2376,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 						[1, 1],
 					],
 					width: 656,
+				},
+				{
+					columns: 1,
+					height: 328,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 328,
 				},
 			],
 			pixelsPerUnit: 32,
@@ -2403,6 +2526,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	Hakugyokurou: {
 		art: {
 			bounds: [-18, -15, 24, 13],
+			hash: '5815cdd04e0b',
 			height: 896,
 			levels: [
 				{
@@ -2431,6 +2555,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 					tiles: [[0, 0]],
 					width: 336,
 				},
+				{
+					columns: 1,
+					height: 112,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 168,
+				},
 			],
 			pixelsPerUnit: 32,
 			tileSize: 512,
@@ -2444,6 +2575,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	HakureiShrine: {
 		art: {
 			bounds: [-27, -50, 62, 30],
+			hash: '2b7db75adddd',
 			height: 2560,
 			levels: [
 				{
@@ -2507,6 +2639,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 						[0, 1],
 					],
 					width: 712,
+				},
+				{
+					columns: 1,
+					height: 320,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 356,
 				},
 			],
 			pixelsPerUnit: 32,
@@ -2590,6 +2729,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	Home: {
 		art: {
 			bounds: [-13, -11, 15, 14],
+			hash: 'd5a6ea18d47d',
 			height: 800,
 			levels: [
 				{
@@ -2617,6 +2757,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 					rows: 1,
 					tiles: [[0, 0]],
 					width: 224,
+				},
+				{
+					columns: 1,
+					height: 100,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 112,
 				},
 			],
 			pixelsPerUnit: 32,
@@ -2648,6 +2795,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	HumanVillage: {
 		art: {
 			bounds: [-74, -64, 87, 15],
+			hash: '5efce7c51e96',
 			height: 2528,
 			levels: [
 				{
@@ -2746,6 +2894,16 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 						[2, 1],
 					],
 					width: 1288,
+				},
+				{
+					columns: 2,
+					height: 316,
+					rows: 1,
+					tiles: [
+						[0, 0],
+						[1, 0],
+					],
+					width: 644,
 				},
 			],
 			pixelsPerUnit: 32,
@@ -2858,6 +3016,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	PartyStage: {
 		art: {
 			bounds: [-28, -15, 35, 17],
+			hash: '7c438b0f84db',
 			height: 1024,
 			levels: [
 				{
@@ -2893,6 +3052,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 					tiles: [[0, 0]],
 					width: 504,
 				},
+				{
+					columns: 1,
+					height: 128,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 252,
+				},
 			],
 			pixelsPerUnit: 32,
 			tileSize: 512,
@@ -2906,6 +3072,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	ScarletMansion: {
 		art: {
 			bounds: [-37, -75, 62, 21],
+			hash: '66b33ba86857',
 			height: 3072,
 			levels: [
 				{
@@ -2987,6 +3154,13 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 						[1, 1],
 					],
 					width: 792,
+				},
+				{
+					columns: 1,
+					height: 384,
+					rows: 1,
+					tiles: [[0, 0]],
+					width: 396,
 				},
 			],
 			pixelsPerUnit: 32,

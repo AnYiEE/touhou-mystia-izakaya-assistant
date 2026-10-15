@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback } from 'react';
+import { type ReactNode, memo, useCallback } from 'react';
 
 import {
 	faClock,
@@ -11,26 +11,37 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import type { IDayMapArt, TDayMapPoint } from '@/domain/data/maps/types';
 
 import { mapsMessages } from '@/features/maps/client/messages';
 import { getCharacterSpriteUrl } from '@/features/maps/client/model/assets';
 import {
+	DAY_MAP_LAYERS,
 	type IDayMapCharacterEntity,
 	type IDayMapCollectableEntity,
 	type TDayMapEntity,
 	type TDayMapLayer,
+	checkTimeLimited,
+	getPrimaryProduct,
 	toContentPoint,
 	toContentRect,
 } from '@/features/maps/client/model/dayMapEntities';
 import {
+	DAY_MAP_LAYER_COLORS,
 	MAP_GOLD_RING_CLASS_NAME,
 	MAP_PILL_ACTIVE_CLASS_NAME,
 	MAP_PILL_CLASS_NAME,
 } from '@/features/maps/client/model/mapStyles';
+import {
+	MAP_FADE_ANIMATE,
+	MAP_FADE_HIDDEN,
+	getMapTransition,
+} from '@/features/maps/client/model/motion';
 import { useDayMapEntityName } from '@/features/maps/client/model/useDayMapEntityName';
 
 import { useI18n } from '@/shared/i18n/useI18n';
@@ -54,16 +65,11 @@ const AREA_VISIBLE_PX_PER_UNIT = 10;
 const CHARACTER_MIN_HEIGHT_PX = 30;
 const CHARACTER_MAX_HEIGHT_PX = 84;
 
+/** @description Labels sit inside their marker button, so they are part of its hit area. */
 const LABEL_CLASS_NAME = cn(
-	'pointer-events-none absolute left-0 px-2 py-0.5 text-tiny font-medium leading-tight',
+	'absolute -translate-x-1/2 px-2 py-0.5 text-tiny font-medium leading-tight transition-colors duration-150 motion-reduce:transition-none',
 	MAP_PILL_CLASS_NAME
 );
-
-const CHARACTER_DOT_CLASS_NAMES = {
-	merchant: 'bg-success',
-	resident: 'bg-default-400',
-	specialGuest: 'bg-[#ffa800]',
-} as const;
 
 interface IAnchorProps {
 	children: ReactNodeWithoutBoolean;
@@ -121,76 +127,68 @@ const CharacterMarker = memo<ICharacterMarkerProps>(function CharacterMarker({
 					)
 				);
 	const scale = sprite === null ? 1 : height / sprite.height;
+	const [feetX, feetY] =
+		sprite === null
+			? [height / 2, height]
+			: [sprite.pivot[0] * scale, sprite.pivot[1] * scale];
 
 	return (
-		<>
-			<button
-				aria-label={name}
-				aria-pressed={isSelected}
-				title={name}
-				type="button"
-				onClick={handleClick}
-				className={cn(
-					'group absolute transition-transform duration-150 hover:-translate-y-0.5 motion-reduce:transition-none',
-					CLASSNAME_FOCUS_VISIBLE_OUTLINE,
-					{ 'opacity-80': isRandomSpot && !isSelected }
-				)}
-				style={
-					sprite === null
-						? {
-								height,
-								left: -height / 2,
-								top: -height,
-								width: height,
-							}
-						: {
-								height: sprite.height * scale,
-								left: -sprite.pivot[0] * scale,
-								top: -sprite.pivot[1] * scale,
-								width: sprite.width * scale,
-							}
-				}
-			>
+		<button
+			aria-label={name}
+			aria-pressed={isSelected}
+			title={name}
+			type="button"
+			onClick={handleClick}
+			className={cn('group absolute', CLASSNAME_FOCUS_VISIBLE_OUTLINE, {
+				'opacity-80': isRandomSpot && !isSelected,
+			})}
+			style={
+				sprite === null
+					? { height, left: -feetX, top: -feetY, width: height }
+					: {
+							height: sprite.height * scale,
+							left: -feetX,
+							top: -feetY,
+							width: sprite.width * scale,
+						}
+			}
+		>
+			<span
+				aria-hidden
+				className="absolute h-1.5 w-3/5 -translate-x-1/2 rounded-[50%] bg-black/35 blur-[1px]"
+				style={{ left: feetX, top: feetY - 3 }}
+			/>
+			{sprite === null ? (
+				<span className="block h-full w-full rounded-full bg-default-300" />
+			) : (
 				<span
 					aria-hidden
-					className="absolute left-1/2 h-1.5 w-3/5 -translate-x-1/2 rounded-[50%] bg-black/35 blur-[1px]"
+					className={cn(
+						'image-rendering-pixelated relative block h-full w-full bg-[length:100%_100%] bg-no-repeat transition-transform duration-150 group-hover:-translate-y-0.5 motion-reduce:transition-none',
+						isSelected
+							? '[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_3px_#ffa800)]'
+							: '[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.9))] group-hover:[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_2px_#ffa800)]'
+					)}
 					style={{
-						top:
-							sprite === null
-								? height - 3
-								: sprite.pivot[1] * scale - 3,
+						backgroundImage: `url('${getCharacterSpriteUrl(sprite.file)}')`,
 					}}
 				/>
-				{sprite === null ? (
-					<span className="block h-full w-full rounded-full bg-default-300" />
-				) : (
-					<span
-						aria-hidden
-						className={cn(
-							'image-rendering-pixelated relative block h-full w-full bg-[length:100%_100%] bg-no-repeat',
-							isSelected
-								? '[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_3px_#ffa800)]'
-								: '[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.9))] group-hover:[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_2px_#ffa800)]'
-						)}
-						style={{
-							backgroundImage: `url('${getCharacterSpriteUrl(sprite.file)}')`,
-						}}
-					/>
-				)}
-			</button>
+			)}
 			{(isLabelVisible || isSelected) && (
 				<span
+					aria-hidden
 					className={cn(
 						LABEL_CLASS_NAME,
-						'top-1 inline-flex -translate-x-1/2 items-center gap-1',
+						'inline-flex items-center gap-1 group-hover:bg-black/85',
 						{ [MAP_PILL_ACTIVE_CLASS_NAME]: isSelected }
 					)}
+					style={{ left: feetX, top: feetY + 4 }}
 				>
 					<span
 						aria-hidden
 						className={cn(
 							'h-1.5 w-1.5 shrink-0 rounded-full',
-							CHARACTER_DOT_CLASS_NAMES[kind]
+							DAY_MAP_LAYER_COLORS[kind].dot
 						)}
 					/>
 					{name}
@@ -202,7 +200,7 @@ const CharacterMarker = memo<ICharacterMarkerProps>(function CharacterMarker({
 					)}
 				</span>
 			)}
-		</>
+		</button>
 	);
 });
 
@@ -225,27 +223,29 @@ const CollectableMarker = memo<ICollectableMarkerProps>(
 		const {
 			collectable: { isOffByDefault, showTime },
 			id,
-			products,
 		} = entity;
-		const primaryProduct =
-			products.find(({ kind }) => kind === 'primary') ?? products[0];
-		const isTimeLimited = showTime[0] !== 10 || showTime[1] !== 18;
+		const primaryProduct = getPrimaryProduct(entity);
+		const isTimeLimited = checkTimeLimited(showTime);
 
 		const handleClick = useCallback(() => {
 			onSelect(id);
 		}, [id, onSelect]);
 
 		return (
-			<>
-				<button
-					aria-label={name}
-					aria-pressed={isSelected}
-					title={name}
-					type="button"
-					onClick={handleClick}
+			<button
+				aria-label={name}
+				aria-pressed={isSelected}
+				title={name}
+				type="button"
+				onClick={handleClick}
+				className={cn(
+					'group absolute -left-[0.9375rem] -top-[0.9375rem] h-[1.875rem] w-[1.875rem] rounded-full',
+					CLASSNAME_FOCUS_VISIBLE_OUTLINE
+				)}
+			>
+				<span
 					className={cn(
-						'absolute -left-[0.9375rem] -top-[0.9375rem] flex h-[1.875rem] w-[1.875rem] items-center justify-center rounded-full border-2 bg-[radial-gradient(circle_at_50%_35%,#5b4630,#211810)] shadow-[0_2px_6px_rgba(0,0,0,0.5)] transition duration-150 hover:scale-110 hover:shadow-[0_0_0_3px_rgba(255,168,0,0.45)] motion-reduce:transition-none',
-						CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+						'flex h-full w-full items-center justify-center rounded-full border-2 bg-[radial-gradient(circle_at_50%_35%,#5b4630,#211810)] shadow-[0_2px_6px_rgba(0,0,0,0.5)] transition duration-150 group-hover:scale-110 group-hover:shadow-[0_0_0_3px_rgba(255,168,0,0.45)] motion-reduce:transition-none',
 						isOffByDefault && 'border-dashed',
 						isSelected
 							? 'scale-110 border-[#ffa800] shadow-[0_0_0_3px_rgba(255,168,0,0.55)]'
@@ -270,19 +270,20 @@ const CollectableMarker = memo<ICollectableMarkerProps>(
 							<FontAwesomeIcon icon={faClock} />
 						</span>
 					)}
-				</button>
+				</span>
 				{(isLabelVisible || isSelected) && (
 					<span
+						aria-hidden
 						className={cn(
 							LABEL_CLASS_NAME,
-							'top-5 -translate-x-1/2',
+							'left-1/2 top-[calc(100%+0.25rem)] group-hover:bg-black/85',
 							{ [MAP_PILL_ACTIVE_CLASS_NAME]: isSelected }
 						)}
 					>
 						{name}
 					</span>
 				)}
-			</>
+			</button>
 		);
 	}
 );
@@ -346,14 +347,24 @@ export default memo<IProps>(function DayMapMarkers({
 	zoom,
 }) {
 	const { t } = useI18n(mapsMessages);
+	const isReducedMotion = useReducedMotion();
 	const getName = useDayMapEntityName();
 
+	const transition = getMapTransition(isReducedMotion);
 	const pxPerUnit = art.pixelsPerUnit * zoom;
 	const isLabelVisible = pxPerUnit >= LABEL_VISIBLE_PX_PER_UNIT;
 	const isAreaVisible = pxPerUnit >= AREA_VISIBLE_PX_PER_UNIT;
 
-	const areas = [];
-	const markers = [];
+	// Grouped per layer so a layer fades in and out as a whole when toggled.
+	const layerNodes = new Map<TDayMapLayer, ReactNode[]>();
+	const pushNode = (layer: TDayMapLayer, node: ReactNode) => {
+		const nodes = layerNodes.get(layer);
+		if (nodes === undefined) {
+			layerNodes.set(layer, [node]);
+		} else {
+			nodes.push(node);
+		}
+	};
 
 	for (const entity of entities) {
 		if (hiddenLayers.has(entity.layer)) {
@@ -365,9 +376,10 @@ export default memo<IProps>(function DayMapMarkers({
 		switch (entity.layer) {
 			case 'fishing': {
 				const rect = toContentRect(art, entity.area);
-				areas.push(
+				pushNode(
+					entity.layer,
 					<div
-						key={entity.id}
+						key={`area:${entity.id}`}
 						aria-hidden
 						className={cn(
 							'pointer-events-none absolute rounded-lg border-2 border-dashed bg-sky-400/15',
@@ -383,7 +395,8 @@ export default memo<IProps>(function DayMapMarkers({
 						}}
 					/>
 				);
-				markers.push(
+				pushNode(
+					entity.layer,
 					<Anchor
 						key={entity.id}
 						point={toContentPoint(art, entity.position)}
@@ -392,7 +405,7 @@ export default memo<IProps>(function DayMapMarkers({
 					>
 						<ChipMarker
 							icon={faFish}
-							iconClassName="text-sky-300"
+							iconClassName={DAY_MAP_LAYER_COLORS.fishing.icon}
 							id={entity.id}
 							isLabelVisible={isLabelVisible}
 							isSelected={isSelected}
@@ -404,7 +417,8 @@ export default memo<IProps>(function DayMapMarkers({
 				break;
 			}
 			case 'teleport':
-				markers.push(
+				pushNode(
+					entity.layer,
 					<Anchor
 						key={entity.id}
 						point={toContentPoint(art, entity.position)}
@@ -413,7 +427,7 @@ export default memo<IProps>(function DayMapMarkers({
 					>
 						<ChipMarker
 							icon={faWandMagicSparkles}
-							iconClassName="text-fuchsia-300"
+							iconClassName={DAY_MAP_LAYER_COLORS.teleport.icon}
 							id={entity.id}
 							isLabelVisible={isLabelVisible}
 							isSelected={isSelected}
@@ -427,15 +441,16 @@ export default memo<IProps>(function DayMapMarkers({
 				const { area } = entity.transition;
 				if (area !== null && isAreaVisible) {
 					const rect = toContentRect(art, area);
-					areas.push(
+					pushNode(
+						entity.layer,
 						<div
-							key={entity.id}
+							key={`area:${entity.id}`}
 							aria-hidden
 							className={cn(
-								'pointer-events-none absolute rounded-md border-2 border-dashed bg-[#f3d28b]/10',
+								'pointer-events-none absolute rounded-md border-2 border-dashed bg-indigo-400/10',
 								isSelected
 									? 'border-[#ffa800]'
-									: 'border-[#f3d28b]/70'
+									: 'border-indigo-300/70'
 							)}
 							style={{
 								height: rect.height * zoom,
@@ -446,7 +461,8 @@ export default memo<IProps>(function DayMapMarkers({
 						/>
 					);
 				}
-				markers.push(
+				pushNode(
+					entity.layer,
 					<Anchor
 						key={entity.id}
 						point={toContentPoint(art, entity.position)}
@@ -455,7 +471,7 @@ export default memo<IProps>(function DayMapMarkers({
 					>
 						<ChipMarker
 							icon={faDoorOpen}
-							iconClassName="text-[#f3d28b]"
+							iconClassName={DAY_MAP_LAYER_COLORS.transition.icon}
 							id={entity.id}
 							isLabelVisible
 							isSelected={isSelected}
@@ -468,7 +484,8 @@ export default memo<IProps>(function DayMapMarkers({
 			}
 			case 'collectable': {
 				const point = toContentPoint(art, entity.position);
-				markers.push(
+				pushNode(
+					entity.layer,
 					<Anchor
 						key={entity.id}
 						point={point}
@@ -491,7 +508,8 @@ export default memo<IProps>(function DayMapMarkers({
 			default:
 				entity.spots.forEach((spot, spotIndex) => {
 					const point = toContentPoint(art, spot);
-					markers.push(
+					pushNode(
+						entity.layer,
 						<Anchor
 							key={`${entity.id}:${spotIndex}`}
 							point={point}
@@ -522,8 +540,23 @@ export default memo<IProps>(function DayMapMarkers({
 
 	return (
 		<div className="absolute left-0 top-0">
-			{areas}
-			{markers}
+			<AnimatePresence initial={false}>
+				{DAY_MAP_LAYERS.filter((layer) => layerNodes.has(layer)).map(
+					(layer) => (
+						// Unpositioned and fully opaque at rest, so markers of all
+						// layers still share one stacking context for `zIndex`.
+						<motion.div
+							key={layer}
+							animate={MAP_FADE_ANIMATE}
+							exit={MAP_FADE_HIDDEN}
+							initial={MAP_FADE_HIDDEN}
+							transition={transition}
+						>
+							{layerNodes.get(layer)}
+						</motion.div>
+					)
+				)}
+			</AnimatePresence>
 			{arrival !== null && (
 				<Anchor
 					point={toContentPoint(art, arrival)}
@@ -537,7 +570,7 @@ export default memo<IProps>(function DayMapMarkers({
 					<span
 						className={cn(
 							LABEL_CLASS_NAME,
-							'top-3 -translate-x-1/2',
+							'pointer-events-none left-0 top-3',
 							MAP_PILL_ACTIVE_CLASS_NAME
 						)}
 					>

@@ -5,8 +5,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { faChevronRight, faEarthAsia } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
+import { motion } from 'framer-motion';
 
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
+import FadeMotionDiv from '@/design/ui/components/fadeMotionDiv';
 import Loading from '@/design/ui/components/loading';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
@@ -27,6 +29,15 @@ import {
 	checkDayMapLabel,
 	getDayMapLabel,
 } from '@/features/maps/client/model/dayMapLabels';
+import {
+	MAP_FADE_ANIMATE,
+	MAP_FADE_HIDDEN,
+	getMapTransition,
+} from '@/features/maps/client/model/motion';
+import {
+	filterVisibleDayMapEntities,
+	useDayMapVisibility,
+} from '@/features/maps/client/model/useDayMapVisibility';
 import { MAPS_PAGE_PATH } from '@/features/maps/links';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
@@ -51,6 +62,7 @@ const WORLD_MAP_MAX_ZOOM = 2;
 /** @description Keeps world-map labels legible on phones; wider screens fit as usual. */
 const WORLD_MAP_MIN_FIT_ZOOM = 0.45;
 const ARRIVAL_HIGHLIGHT_MS = 4000;
+const POPOVER_DISMISS_WINDOW_MS = 100;
 
 export default function MapsPage() {
 	const { t } = useI18n(mapsMessages);
@@ -59,6 +71,8 @@ export default function MapsPage() {
 	const isLocalizationReady = useCatalogLocalizationReady();
 	const vibrate = useVibrate();
 	const { pathname, replaceState } = usePathname();
+	const visibility = useDayMapVisibility();
+	const { isMapVisible } = visibility;
 
 	const [, , routeMapSegment] = pathname.split('/');
 	const [map, setMap] = useState<TDayMapLabel | null>(() =>
@@ -75,16 +89,21 @@ export default function MapsPage() {
 		null
 	);
 	const [arrival, setArrival] = useState<TDayMapPoint | null>(null);
-	const [lastVisitedMap, setLastVisitedMap] = useState<TDayMapLabel | null>(
-		null
-	);
 	const focusKeyRef = useRef(0);
+	const isPopoverOpenRef = useRef(false);
+	const popoverClosedAtRef = useRef(Number.NEGATIVE_INFINITY);
 	const viewportSectionRef = useRef<HTMLDivElement>(null);
 
 	const layout = map === null ? null : DAY_MAP_LAYOUTS[map];
 	const entities = useMemo(
-		() => (map === null ? [] : buildDayMapEntities(map)),
-		[map]
+		() =>
+			map === null
+				? []
+				: filterVisibleDayMapEntities(
+						buildDayMapEntities(map),
+						visibility
+					),
+		[map, visibility]
 	);
 	const selectedEntity = useMemo(
 		() => entities.find(({ id }) => id === selectedId) ?? null,
@@ -94,6 +113,14 @@ export default function MapsPage() {
 	useEffect(() => {
 		replaceState(MAPS_PAGE_PATH, map ?? '');
 	}, [map, replaceState]);
+
+	// A map from a dataset the player turned off falls back to the world map.
+	useEffect(() => {
+		if (map !== null && !isMapVisible(map)) {
+			setMap(null);
+			setSelectedId(null);
+		}
+	}, [isMapVisible, map]);
 
 	useEffect(() => {
 		if (arrival === null) {
@@ -137,12 +164,11 @@ export default function MapsPage() {
 
 	const openWorldMap = useCallback(() => {
 		vibrate();
-		setLastVisitedMap(map);
 		setSelectedId(null);
 		setArrival(null);
 		setFocusRequest(null);
 		setMap(null);
-	}, [map, vibrate]);
+	}, [vibrate]);
 
 	const handleGoTo = useCallback(
 		(targetMap: TDayMapLabel, point: TDayMapPoint | null) => {
@@ -212,6 +238,31 @@ export default function MapsPage() {
 		setSelectedId(null);
 	}, []);
 
+	const handlePopoverOpenChange = useCallback((isOpen: boolean) => {
+		isPopoverOpenRef.current = isOpen;
+		if (!isOpen) {
+			popoverClosedAtRef.current = performance.now();
+		}
+	}, []);
+
+	// Popovers unmount with the card without reporting that they closed.
+	useEffect(() => {
+		isPopoverOpenRef.current = false;
+	}, [selectedId]);
+
+	/**
+	 * @description A press that only dismisses an item popover must not also
+	 * close the detail card. The popover may close before the map sees the
+	 * press (its outside-press listener runs first), hence the short window.
+	 */
+	const checkPopoverDismissPress = useCallback(
+		() =>
+			isPopoverOpenRef.current ||
+			performance.now() - popoverClosedAtRef.current <
+				POPOVER_DISMISS_WINDOW_MS,
+		[]
+	);
+
 	const handleToggleLayer = useCallback((layer: TDayMapLayer) => {
 		setHiddenLayers((previous) => {
 			const next = new Set(previous);
@@ -222,46 +273,54 @@ export default function MapsPage() {
 		});
 	}, []);
 
+	const mapTransition = getMapTransition(isReducedMotion);
 	const renderView = useCallback(
-		(view: IMapView) => {
-			if (map === null || layout === null) {
-				return (
+		(view: IMapView) => (
+			// Zero-sized so empty map space still reaches the viewport's background press.
+			<motion.div
+				key={map ?? 'world'}
+				animate={MAP_FADE_ANIMATE}
+				initial={MAP_FADE_HIDDEN}
+				transition={mapTransition}
+				className="absolute left-0 top-0"
+			>
+				{map === null || layout === null ? (
 					<WorldMapLayer
-						currentMap={lastVisitedMap}
+						isMapVisible={isMapVisible}
 						onEnter={enterMap}
 						view={view}
 					/>
-				);
-			}
-			return (
-				<div
-					className="absolute left-0 top-0"
-					style={{
-						transform: `translate3d(${view.x}px, ${view.y}px, 0)`,
-					}}
-				>
-					<DayMapTiles art={layout.art} map={map} view={view} />
-					<DayMapMarkers
-						arrival={arrival}
-						art={layout.art}
-						entities={entities}
-						hiddenLayers={hiddenLayers}
-						onSelect={handleSelect}
-						selectedId={selectedId}
-						zoom={view.zoom}
-					/>
-				</div>
-			);
-		},
+				) : (
+					<div
+						className="absolute left-0 top-0"
+						style={{
+							transform: `translate3d(${view.x}px, ${view.y}px, 0)`,
+						}}
+					>
+						<DayMapTiles art={layout.art} map={map} view={view} />
+						<DayMapMarkers
+							arrival={arrival}
+							art={layout.art}
+							entities={entities}
+							hiddenLayers={hiddenLayers}
+							onSelect={handleSelect}
+							selectedId={selectedId}
+							zoom={view.zoom}
+						/>
+					</div>
+				)}
+			</motion.div>
+		),
 		[
 			arrival,
 			enterMap,
 			entities,
 			handleSelect,
 			hiddenLayers,
-			lastVisitedMap,
+			isMapVisible,
 			layout,
 			map,
+			mapTransition,
 			selectedId,
 		]
 	);
@@ -300,19 +359,26 @@ export default function MapsPage() {
 					</>
 				)}
 			</nav>
-			{selectedEntity !== null && map !== null && (
-				<div className="pointer-events-none absolute bottom-3 left-3 top-14 flex w-[min(23rem,calc(100%-4.5rem))] flex-col justify-end">
-					<MapDetailCard
-						entity={selectedEntity}
-						map={map}
-						onClose={handleCloseDetail}
-						onFocusPoint={handleFocusPoint}
-						onGoTo={handleGoTo}
-						onOpenWorldMap={openWorldMap}
-						onShowCharacter={handleShowCharacter}
-					/>
-				</div>
-			)}
+			<div className="pointer-events-none absolute bottom-3 left-3 top-14 flex w-[min(23rem,calc(100%-4.5rem))] flex-col justify-end">
+				<FadeMotionDiv
+					target={selectedEntity?.id ?? ''}
+					className="flex max-h-full min-h-0 flex-col"
+				>
+					{selectedEntity !== null && map !== null ? (
+						<MapDetailCard
+							entity={selectedEntity}
+							map={map}
+							onClose={handleCloseDetail}
+							onFocusPoint={handleFocusPoint}
+							onGoTo={handleGoTo}
+							onOpenWorldMap={openWorldMap}
+							onPopoverOpenChange={handlePopoverOpenChange}
+							onShowCharacter={handleShowCharacter}
+							visibility={visibility}
+						/>
+					) : null}
+				</FadeMotionDiv>
+			</div>
 		</>
 	);
 
@@ -341,6 +407,7 @@ export default function MapsPage() {
 					onBackgroundPress={handleCloseDetail}
 					overlay={overlay}
 					resetKey={map ?? 'world'}
+					shouldIgnoreBackgroundPress={checkPopoverDismissPress}
 					className="h-full rounded-large bg-[#14110d] shadow-medium"
 				>
 					{renderView}
@@ -349,6 +416,7 @@ export default function MapsPage() {
 			<MapSidebar
 				entities={entities}
 				hiddenLayers={hiddenLayers}
+				isMapVisible={isMapVisible}
 				map={map}
 				onEnterMap={enterMap}
 				onOpenWorldMap={openWorldMap}

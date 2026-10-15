@@ -58,6 +58,13 @@ export interface ICollaborationLocalization {
 	labels: Readonly<Partial<Record<string, TLocalizedText>>>;
 }
 
+export interface IDayMapLocalization {
+	/** @description Keyed by `IDayMapCharacter['id']`. */
+	characters: Readonly<Partial<Record<string, TLocalizedText>>>;
+	/** @description Extra day-map places and exit targets without a place label. */
+	places: Readonly<Partial<Record<string, TLocalizedText>>>;
+}
+
 export type TItemLocalizationLoader = Partial<
 	Record<
 		TLocale,
@@ -112,4 +119,8 @@ export type TPlaceLocalizationLoader = Partial<
 
 export type TCollaborationLocalizationLoader = Partial<
 	Record<TLocale, () => Promise<ICollaborationLocalization>>
+>;
+
+export type TDayMapLocalizationLoader = Partial<
+	Record<TLocale, () => Promise<IDayMapLocalization>>
 >;

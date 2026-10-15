@@ -6,77 +6,26 @@ import type { IDayMapExtraFact, TExtraDayMapLabel } from './types';
  */
 /* eslint-disable sort-keys -- Insertion order defines the display order. */
 export const DAY_MAP_EXTRA_FACTS = {
-	Home: {
-		dlc: 0,
-		kind: 'interior',
-		parent: 'BeastForest',
-		names: {
-			en: 'Sparrow Hut',
-			ja: '夜雀の部屋',
-			ko: '밤참새의 집',
-			'zh-CN': '夜雀小屋',
-			'zh-TW': '夜雀小屋',
-		},
-	},
+	Home: { dlc: 0, kind: 'interior', parent: 'BeastForest', name: '夜雀小屋' },
 	Basement: {
 		dlc: 0,
 		kind: 'interior',
 		parent: 'BeastForest',
-		names: {
-			en: 'Basement',
-			ja: '地下室',
-			ko: '지하실',
-			'zh-CN': '地下室',
-			'zh-TW': '地下室',
-		},
+		name: '地下室',
 	},
-	Hakugyokurou: {
-		dlc: 0,
-		kind: 'place',
-		parent: null,
-		names: {
-			en: 'Hakugyokurou',
-			ja: '白玉楼',
-			ko: '백옥루',
-			'zh-CN': '白玉楼',
-			'zh-TW': '白玉樓',
-		},
-	},
+	Hakugyokurou: { dlc: 0, kind: 'place', parent: null, name: '白玉楼' },
 	DLC4_ScarletMansionBasement: {
 		dlc: 4,
 		kind: 'interior',
 		parent: 'ScarletMansion',
-		names: {
-			en: 'Scarlet Devil Mansion Basement',
-			ja: '紅魔館の地下室',
-			ko: '홍마관 지하실',
-			'zh-CN': '红魔馆地下室',
-			'zh-TW': '紅魔館地下室',
-		},
+		name: '红魔馆地下室',
 	},
 	DLC3_HakureiFestival: {
 		dlc: 3,
 		kind: 'event',
 		parent: 'HakureiShrine',
-		names: {
-			en: 'Hakurei Grand Festival',
-			ja: '博麗大祭',
-			ko: '하쿠레이 예대제',
-			'zh-CN': '博丽大祭',
-			'zh-TW': '博麗大祭',
-		},
+		name: '博丽大祭',
 	},
-	PartyStage: {
-		dlc: 0,
-		kind: 'event',
-		parent: null,
-		names: {
-			en: 'The Party Stage',
-			ja: 'ステージ',
-			ko: '무대',
-			'zh-CN': '舞台',
-			'zh-TW': '舞台',
-		},
-	},
+	PartyStage: { dlc: 0, kind: 'event', parent: null, name: '舞台' },
 } as const satisfies Record<TExtraDayMapLabel, IDayMapExtraFact>;
 /* eslint-enable sort-keys */

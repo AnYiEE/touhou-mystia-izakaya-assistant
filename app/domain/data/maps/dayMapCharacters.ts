@@ -3291,3 +3291,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		},
 	},
 ];
+
+/** @description Content hash of the published sprites; part of their URL. */
+export const DAY_MAP_CHARACTER_SPRITE_HASH = '31febf79dc4b';

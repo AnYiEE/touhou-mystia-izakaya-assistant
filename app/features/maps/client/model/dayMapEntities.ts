@@ -9,6 +9,7 @@ import type {
 	IDayMapCharacter,
 	IDayMapCollectable,
 	IDayMapTransition,
+	TDayMapHourRange,
 	TDayMapLabel,
 	TDayMapPoint,
 	TDayMapRect,
@@ -116,6 +117,16 @@ export function toContentRect(art: IDayMapArt, area: TDayMapRect) {
 	const [right, bottom] = toContentPoint(art, [area[2], area[1]]);
 
 	return { height: bottom - top, left, top, width: right - left };
+}
+
+/** @description The product shown on the marker: the primary yield, else the first one. */
+export function getPrimaryProduct({ products }: IDayMapCollectableEntity) {
+	return products.find(({ kind }) => kind === 'primary') ?? products[0];
+}
+
+/** @description Showtime outside the default 10:00–18:00 window. */
+export function checkTimeLimited([from, to]: TDayMapHourRange) {
+	return from !== 10 || to !== 18;
 }
 
 export function buildDayMapEntities(map: TDayMapLabel): TDayMapEntity[] {

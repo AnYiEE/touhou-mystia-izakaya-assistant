@@ -15,17 +15,14 @@ import { getPlaceLabel } from '@/domain/places/localizedLabels';
 import { mapsMessages } from '@/features/maps/client/messages';
 import { getWorldMapImageUrl } from '@/features/maps/client/model/assets';
 import { checkDayMapLabel } from '@/features/maps/client/model/dayMapLabels';
-import {
-	MAP_PILL_ACTIVE_CLASS_NAME,
-	MAP_PILL_CLASS_NAME,
-} from '@/features/maps/client/model/mapStyles';
+import { MAP_PILL_CLASS_NAME } from '@/features/maps/client/model/mapStyles';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
 import type { IMapView } from './MapViewport';
 
 interface IProps {
-	currentMap: TDayMapLabel | null;
+	isMapVisible: (map: TDayMapLabel) => boolean;
 	onEnter: (map: TDayMapLabel) => void;
 	view: IMapView;
 }
@@ -131,7 +128,6 @@ function placeLabels(
 }
 
 interface ISpotProps {
-	isCurrent: boolean;
 	labelPlacement: ILabelPlacement;
 	onEnter: (map: TDayMapLabel) => void;
 	spot: IWorldMapSpot;
@@ -139,7 +135,6 @@ interface ISpotProps {
 }
 
 const WorldMapSpot = memo<ISpotProps>(function WorldMapSpot({
-	isCurrent,
 	labelPlacement,
 	onEnter,
 	spot,
@@ -187,8 +182,7 @@ const WorldMapSpot = memo<ISpotProps>(function WorldMapSpot({
 				<span
 					aria-hidden
 					className={cn(
-						'block h-4 w-4 rounded-full border-2 border-white bg-[#ffa800] shadow-[0_0_0_3px_rgba(0,0,0,0.35)] transition-transform duration-150 group-hover:scale-125 group-focus-visible:scale-125 motion-reduce:transition-none',
-						{ 'scale-125 ring-4 ring-[#ffa800]/60': isCurrent }
+						'block h-4 w-4 rounded-full border-2 border-white bg-[#ffa800] shadow-[0_0_0_3px_rgba(0,0,0,0.35)] transition-transform duration-150 group-hover:scale-125 group-focus-visible:scale-125 motion-reduce:transition-none'
 					)}
 				/>
 				<span
@@ -196,9 +190,7 @@ const WorldMapSpot = memo<ISpotProps>(function WorldMapSpot({
 						'absolute flex h-6 items-center gap-1 px-2 text-small font-semibold transition-colors duration-150 motion-reduce:transition-none',
 						MAP_PILL_CLASS_NAME,
 						'group-hover:bg-[#ffa800] group-hover:text-black group-focus-visible:bg-[#ffa800] group-focus-visible:text-black',
-						isCurrent && MAP_PILL_ACTIVE_CLASS_NAME,
 						labelPlacement.isCollapsed &&
-							!isCurrent &&
 							'z-10 hidden group-hover:flex group-focus-visible:flex'
 					)}
 					style={{
@@ -217,23 +209,30 @@ const WorldMapSpot = memo<ISpotProps>(function WorldMapSpot({
 });
 
 export default memo<IProps>(function WorldMapLayer({
-	currentMap,
+	isMapVisible,
 	onEnter,
 	view,
 }) {
 	const { x: offsetX, y: offsetY, zoom } = view;
 
+	const spots = useMemo(
+		() =>
+			WORLD_MAP_FACTS.spots.filter(
+				({ place }) => !checkDayMapLabel(place) || isMapVisible(place)
+			),
+		[isMapVisible]
+	);
 	const labelPlacements = useMemo(
 		() =>
 			placeLabels(
-				WORLD_MAP_FACTS.spots.map(({ place, position: [x, y] }) => ({
+				spots.map(({ place, position: [x, y] }) => ({
 					hasIcon: !CONNECTED_PLACES.has(place),
 					name: getPlaceLabel(place),
 					x: x * zoom,
 					y: y * zoom,
 				}))
 			),
-		[zoom]
+		[spots, zoom]
 	);
 
 	return (
@@ -243,17 +242,16 @@ export default memo<IProps>(function WorldMapLayer({
 		>
 			<span
 				aria-hidden
-				className="pointer-events-none absolute left-0 top-0 bg-[length:100%_100%] bg-no-repeat"
+				className="image-rendering-pixelated pointer-events-none absolute left-0 top-0 bg-[length:100%_100%] bg-no-repeat"
 				style={{
-					backgroundImage: `url('${getWorldMapImageUrl(WORLD_MAP_FACTS.image)}')`,
+					backgroundImage: `url('${getWorldMapImageUrl()}')`,
 					height: WORLD_MAP_FACTS.height * zoom,
 					width: WORLD_MAP_FACTS.width * zoom,
 				}}
 			/>
-			{WORLD_MAP_FACTS.spots.map((spot, index) => (
+			{spots.map((spot, index) => (
 				<WorldMapSpot
 					key={spot.place}
-					isCurrent={spot.place === currentMap}
 					labelPlacement={
 						labelPlacements[index] ?? DEFAULT_LABEL_PLACEMENT
 					}

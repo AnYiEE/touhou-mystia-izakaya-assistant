@@ -63,6 +63,10 @@ import {
 	deactivateSchedulerLabels,
 } from '@/domain/labels/localizedSchedulerLabels';
 import {
+	activateDayMapLabels,
+	deactivateDayMapLabels,
+} from '@/domain/maps/localizedLabels';
+import {
 	activatePlaceLabels,
 	deactivatePlaceLabels,
 } from '@/domain/places/localizedLabels';
@@ -586,6 +590,14 @@ export const CATALOG_LOCALIZATION_TARGETS: ReadonlyArray<ICatalogLocalizationTar
 			},
 			deactivate: () => {
 				deactivatePointLabels();
+			},
+		},
+		{
+			activate: async (locale) => {
+				await activateDayMapLabels(locale);
+			},
+			deactivate: () => {
+				deactivateDayMapLabels();
 			},
 		},
 		{

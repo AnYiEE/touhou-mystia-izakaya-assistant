@@ -2,10 +2,7 @@ import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import type { ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
 
-import {
-	checkBeverageId,
-	checkIngredientId,
-} from '@/features/maps/client/model/dayMapEntities';
+import { checkBeverageId, checkIngredientId } from './dayMapEntities';
 
 const beverageCatalog = BeverageCatalog.getInstance();
 const ingredientCatalog = IngredientCatalog.getInstance();

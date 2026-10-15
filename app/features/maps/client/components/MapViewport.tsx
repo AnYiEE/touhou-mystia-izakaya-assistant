@@ -7,6 +7,7 @@ import {
 	memo,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useRef,
 	useState,
 } from 'react';
@@ -55,6 +56,11 @@ interface IProps {
 	overlay?: ReactNode;
 	/** @description Changing it refits the content into the viewport. */
 	resetKey: string;
+	/**
+	 * @description Checked when a press starts; `true` keeps that press from
+	 * reaching `onBackgroundPress`, e.g. while it only dismisses a popover.
+	 */
+	shouldIgnoreBackgroundPress?: () => boolean;
 }
 
 const DRAG_THRESHOLD_PX = 5;
@@ -83,6 +89,7 @@ export default memo<IProps>(function MapViewport({
 	onBackgroundPress,
 	overlay,
 	resetKey,
+	shouldIgnoreBackgroundPress,
 }) {
 	const { t } = useI18n(mapsMessages);
 	const isReducedMotion = useReducedMotion();
@@ -96,6 +103,8 @@ export default memo<IProps>(function MapViewport({
 		zoom: 1,
 	});
 	const viewRef = useRef(view);
+	/** @description `resetKey` the current view was fitted for; children wait until it matches. */
+	const [fittedKey, setFittedKey] = useState<string | null>(null);
 	const animationFrameRef = useRef<number | null>(null);
 	const pointersRef = useRef(new Map<number, { x: number; y: number }>());
 	const gestureRef = useRef<{
@@ -105,6 +114,7 @@ export default memo<IProps>(function MapViewport({
 		startY: number;
 	} | null>(null);
 	const isClickSuppressedRef = useRef(false);
+	const isBackgroundPressIgnoredRef = useRef(false);
 
 	/** @description Zoom limits for a viewport size; the content may shrink to 80% of the fitted size. */
 	const getZoomLimits = useCallback(
@@ -177,6 +187,47 @@ export default memo<IProps>(function MapViewport({
 		[cancelAnimation, commit, isReducedMotion]
 	);
 
+	/** @description Zooms while the content point under the anchor stays under it. */
+	const animateZoomAt = useCallback(
+		(screenX: number, screenY: number, nextZoom: number) => {
+			cancelAnimation();
+			const { current: from } = viewRef;
+			const limits = getZoomLimits(from.width, from.height);
+			const targetZoom = clamp(nextZoom, limits.minZoom, limits.maxZoom);
+			if (targetZoom === from.zoom) {
+				return;
+			}
+			const contentX = (screenX - from.x) / from.zoom;
+			const contentY = (screenY - from.y) / from.zoom;
+			const apply = (zoom: number) => {
+				// The viewport may resize mid-animation; keep its latest size.
+				const { current } = viewRef;
+				commit({
+					...current,
+					x: screenX - contentX * zoom,
+					y: screenY - contentY * zoom,
+					zoom,
+				});
+			};
+			if (isReducedMotion) {
+				apply(targetZoom);
+				return;
+			}
+			const startTime = performance.now();
+			const step = (now: number) => {
+				const progress = easeOutCubic(
+					Math.min(1, (now - startTime) / FOCUS_DURATION_MS)
+				);
+				// Interpolate geometrically so every frame scales by the same ratio.
+				apply(from.zoom * (targetZoom / from.zoom) ** progress);
+				animationFrameRef.current =
+					progress < 1 ? requestAnimationFrame(step) : null;
+			};
+			animationFrameRef.current = requestAnimationFrame(step);
+		},
+		[cancelAnimation, commit, getZoomLimits, isReducedMotion]
+	);
+
 	const getFitView = useCallback(
 		(width: number, height: number) => {
 			// On narrow screens the fitted content can be too small to read; start
@@ -222,6 +273,7 @@ export default memo<IProps>(function MapViewport({
 			const { current } = viewRef;
 			if (current.width === 0 || current.height === 0) {
 				commit({ height, width, ...getFitView(width, height) });
+				setFittedKey(resetKey);
 				return;
 			}
 			if (current.width === width && current.height === height) {
@@ -253,16 +305,18 @@ export default memo<IProps>(function MapViewport({
 			resizeObserver.disconnect();
 			globalThis.removeEventListener('resize', handleResize);
 		};
-	}, [commit, getFitView]);
+	}, [commit, getFitView, resetKey]);
 
-	// Refit when the content changes.
-	useEffect(() => {
+	// Refit when the content changes, before paint: a frame drawn with the
+	// previous content's view would request tiles that are never shown.
+	useLayoutEffect(() => {
 		cancelAnimation();
 		const { height, width } = viewRef.current;
 		if (width === 0 || height === 0) {
 			return;
 		}
 		commit({ ...viewRef.current, ...getFitView(width, height) });
+		setFittedKey(resetKey);
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- Only a new `resetKey` refits.
 	}, [resetKey]);
 
@@ -323,6 +377,10 @@ export default memo<IProps>(function MapViewport({
 				return;
 			}
 			cancelAnimation();
+			if (pointersRef.current.size === 0) {
+				isBackgroundPressIgnoredRef.current =
+					shouldIgnoreBackgroundPress?.() ?? false;
+			}
 			pointersRef.current.set(event.pointerId, {
 				x: event.clientX,
 				y: event.clientY,
@@ -339,7 +397,7 @@ export default memo<IProps>(function MapViewport({
 				startY: event.clientY,
 			};
 		},
-		[cancelAnimation]
+		[cancelAnimation, shouldIgnoreBackgroundPress]
 	);
 
 	const handlePointerMove = useCallback(
@@ -439,7 +497,10 @@ export default memo<IProps>(function MapViewport({
 
 	const handleClick = useCallback(
 		(event: { currentTarget: EventTarget; target: EventTarget }) => {
-			if (event.target === event.currentTarget) {
+			if (
+				event.target === event.currentTarget &&
+				!isBackgroundPressIgnoredRef.current
+			) {
 				onBackgroundPress?.();
 			}
 		},
@@ -489,15 +550,13 @@ export default memo<IProps>(function MapViewport({
 	const zoomBy = useCallback(
 		(factor: number) => {
 			const { current } = viewRef;
-			animateTo({
-				x: current.width / 2 - (current.width / 2 - current.x) * factor,
-				y:
-					current.height / 2 -
-					(current.height / 2 - current.y) * factor,
-				zoom: current.zoom * factor,
-			});
+			animateZoomAt(
+				current.width / 2,
+				current.height / 2,
+				current.zoom * factor
+			);
 		},
-		[animateTo]
+		[animateZoomAt]
 	);
 
 	const handleZoomIn = useCallback(() => {
@@ -527,7 +586,7 @@ export default memo<IProps>(function MapViewport({
 				onPointerUp={handlePointerEnd}
 				className="absolute inset-0 touch-none select-none outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus"
 			>
-				{view.width > 0 && children(view)}
+				{view.width > 0 && fittedKey === resetKey && children(view)}
 			</div>
 			{overlay}
 			<div className="absolute bottom-3 right-3 flex flex-col gap-1.5">

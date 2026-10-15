@@ -1,16 +1,9 @@
 import { DAY_MAP_EXTRA_FACTS } from '@/domain/data/maps/dayMapExtraFacts';
-import type {
-	IDayMapExtraFact,
-	TDayMapLabel,
-	TExtraDayMapLabel,
-} from '@/domain/data/maps/types';
+import type { TDayMapLabel, TExtraDayMapLabel } from '@/domain/data/maps/types';
 import { ALL_MAP_LABELS, MAP_FACTS } from '@/domain/data/places/placeFacts';
 import type { TDlc } from '@/domain/data/shared/types';
-import {
-	getActivePlaceLabelLocale,
-	getMapLabel,
-	getPlaceLabel,
-} from '@/domain/places/localizedLabels';
+import { getDayMapPlaceName } from '@/domain/maps/localizedLabels';
+import { getMapLabel, getPlaceLabel } from '@/domain/places/localizedLabels';
 
 export const EXTRA_DAY_MAP_LABELS = Object.keys(
 	DAY_MAP_EXTRA_FACTS
@@ -44,9 +37,8 @@ export function getDayMapLabel(map: TDayMapLabel) {
 	if (map === 'Hakugyokurou') {
 		return getPlaceLabel(map);
 	}
-	const names: IDayMapExtraFact['names'] = DAY_MAP_EXTRA_FACTS[map].names;
 
-	return names[getActivePlaceLabelLocale()] ?? names['zh-CN'];
+	return getDayMapPlaceName(map, DAY_MAP_EXTRA_FACTS[map].name);
 }
 
 export function getDayMapDlc(map: TDayMapLabel): TDlc {
