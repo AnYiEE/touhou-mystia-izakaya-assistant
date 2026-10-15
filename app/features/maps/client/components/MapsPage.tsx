@@ -2,25 +2,42 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { faChevronRight, faEarthAsia } from '@fortawesome/free-solid-svg-icons';
+import {
+	faChevronRight,
+	faEarthAsia,
+	faXmark,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
+import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
 import FadeMotionDiv from '@/design/ui/components/fadeMotionDiv';
+import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
+import Link from '@/design/ui/components/link';
 import Loading from '@/design/ui/components/loading';
+import SiteInfo from '@/design/ui/components/siteInfo';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import { DAY_MAP_LAYOUTS } from '@/domain/data/maps/dayMapLayouts';
 import type { TDayMapLabel, TDayMapPoint } from '@/domain/data/maps/types';
 import { WORLD_MAP_FACTS } from '@/domain/data/maps/worldMapFacts';
 
+import { appShellMessages } from '@/features/appShell/client/messages';
+import { useParams } from '@/features/appShell/client/navigation/useParams';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
+import { SITE_LINKS } from '@/features/appShell/links';
 import { useCatalogLocalizationReady } from '@/features/catalog/shared/client/localization/useCatalogLocalizationReady';
 import { mapsMessages } from '@/features/maps/client/messages';
 import {
+	getMapEntityTrackName,
+	trackMapEvent,
+} from '@/features/maps/client/model/analytics';
+import {
 	DEFAULT_HIDDEN_DAY_MAP_LAYERS,
+	type TDayMapEntity,
 	type TDayMapLayer,
 	buildDayMapEntities,
 	toContentPoint,
@@ -38,11 +55,23 @@ import {
 	filterVisibleDayMapEntities,
 	useDayMapVisibility,
 } from '@/features/maps/client/model/useDayMapVisibility';
-import { MAPS_PAGE_PATH } from '@/features/maps/links';
+import {
+	MAPS_PAGE_PATH,
+	MAP_SELECT_PARAM_NAME,
+	getMapsPageHref,
+	parseMerchantReference,
+} from '@/features/maps/links';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
+import {
+	getDrawerLayoutClassName,
+	getDrawerResultsClassName,
+} from '@/features/specialGuestPlans/client/specialGuestPlanDrawer/drawerLayout';
+
+import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 import { useHydrated } from '@/shared/react/useHydrated';
+import { siteMessages } from '@/shared/site/messages';
 
 import DayMapMarkers from './DayMapMarkers';
 import DayMapTiles from './DayMapTiles';
@@ -64,35 +93,134 @@ const WORLD_MAP_MIN_FIT_ZOOM = 0.45;
 const ARRIVAL_HIGHLIGHT_MS = 4000;
 const POPOVER_DISMISS_WINDOW_MS = 100;
 
+interface IMapRoute {
+	entity: TDayMapEntity | null;
+	map: TDayMapLabel | null;
+}
+
+function findRouteEntity(map: TDayMapLabel, entityId: string) {
+	const entities = buildDayMapEntities(map);
+	const merchant = parseMerchantReference(entityId);
+
+	return (
+		entities.find((entity) =>
+			merchant === null
+				? entity.id === entityId
+				: 'character' in entity &&
+					entity.character.merchant === merchant
+		) ?? null
+	);
+}
+
+/** @description Map and entity named by the URL; unknown names are dropped. */
+function resolveMapRoute(
+	mapSegment: string | undefined,
+	entityId: string | null
+): IMapRoute {
+	if (mapSegment === undefined || !checkDayMapLabel(mapSegment)) {
+		return { entity: null, map: null };
+	}
+
+	return {
+		entity:
+			entityId === null ? null : findRouteEntity(mapSegment, entityId),
+		map: mapSegment,
+	};
+}
+
+function createFocusRequest(
+	map: TDayMapLabel,
+	point: TDayMapPoint,
+	key: number
+): IMapFocusRequest {
+	const { art } = DAY_MAP_LAYOUTS[map];
+	const [x, y] = toContentPoint(art, point);
+
+	return { key, minZoom: FOCUS_PX_PER_UNIT / art.pixelsPerUnit, x, y };
+}
+
+/** @description An entity opened from a link must be visible even if its layer is off. */
+function revealLayer(
+	hiddenLayers: ReadonlySet<TDayMapLayer>,
+	entity: TDayMapEntity | null
+) {
+	if (entity === null || !hiddenLayers.has(entity.layer)) {
+		return hiddenLayers;
+	}
+
+	const next = new Set(hiddenLayers);
+	next.delete(entity.layer);
+	return next;
+}
+
+/** @description Whether the previous history entry is another page of this site, for the back button. */
+function checkCanGoBack() {
+	if (globalThis.history.length <= 1) {
+		return false;
+	}
+	const mapsSegment = MAPS_PAGE_PATH.slice(1);
+	const [entry] = performance.getEntriesByType('navigation');
+	// The document was loaded on another page, so this one was reached in-app.
+	if (
+		entry !== undefined &&
+		!new URL(entry.name).pathname.split('/').includes(mapsSegment)
+	) {
+		return true;
+	}
+
+	return (
+		document.referrer !== '' &&
+		new URL(document.referrer).origin === location.origin
+	);
+}
+
 export default function MapsPage() {
-	const { t } = useI18n(mapsMessages);
+	const { locale, t } = useI18n(mapsMessages);
+	const { t: tAppShell } = useI18n(appShellMessages);
+	const { t: tSite } = useI18n(siteMessages);
+	const isEnglish = locale === 'en';
+	const { isHighAppearance } = useDesignPreferences();
+	const router = useRouter();
 	const isHydrated = useHydrated();
 	const isReducedMotion = useReducedMotion();
 	const isLocalizationReady = useCatalogLocalizationReady();
 	const vibrate = useVibrate();
 	const { pathname, replaceState } = usePathname();
+	const { params } = useParams();
 	const visibility = useDayMapVisibility();
 	const { isMapVisible } = visibility;
 
 	const [, , routeMapSegment] = pathname.split('/');
-	const [map, setMap] = useState<TDayMapLabel | null>(() =>
-		routeMapSegment !== undefined && checkDayMapLabel(routeMapSegment)
-			? routeMapSegment
-			: null
+	const routeEntityId = params.get(MAP_SELECT_PARAM_NAME);
+	const routeHref = getMapsPageHref(routeMapSegment ?? null, routeEntityId);
+
+	const [initialRoute] = useState(() =>
+		resolveMapRoute(routeMapSegment, routeEntityId)
 	);
-	const [selectedId, setSelectedId] = useState<string | null>(null);
-	const [hiddenLayers, setHiddenLayers] = useState<ReadonlySet<TDayMapLayer>>(
-		DEFAULT_HIDDEN_DAY_MAP_LAYERS
+	const [map, setMap] = useState(initialRoute.map);
+	const [selectedId, setSelectedId] = useState(
+		initialRoute.entity?.id ?? null
+	);
+	const [hiddenLayers, setHiddenLayers] = useState(() =>
+		revealLayer(DEFAULT_HIDDEN_DAY_MAP_LAYERS, initialRoute.entity)
 	);
 	const [query, setQuery] = useState('');
-	const [focusRequest, setFocusRequest] = useState<IMapFocusRequest | null>(
-		null
+	const [focusRequest, setFocusRequest] = useState(() =>
+		initialRoute.map === null || initialRoute.entity === null
+			? null
+			: createFocusRequest(
+					initialRoute.map,
+					initialRoute.entity.position,
+					0
+				)
 	);
 	const [arrival, setArrival] = useState<TDayMapPoint | null>(null);
+	const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 	const focusKeyRef = useRef(0);
+	/** @description Last URL the page state was read from or written to. */
+	const syncedHrefRef = useRef(routeHref);
 	const isPopoverOpenRef = useRef(false);
 	const popoverClosedAtRef = useRef(Number.NEGATIVE_INFINITY);
-	const viewportSectionRef = useRef<HTMLDivElement>(null);
 
 	const layout = map === null ? null : DAY_MAP_LAYOUTS[map];
 	const entities = useMemo(
@@ -110,9 +238,42 @@ export default function MapsPage() {
 		[entities, selectedId]
 	);
 
+	const requestFocus = useCallback(
+		(targetMap: TDayMapLabel, point: TDayMapPoint) => {
+			focusKeyRef.current += 1;
+			setFocusRequest(
+				createFocusRequest(targetMap, point, focusKeyRef.current)
+			);
+		},
+		[]
+	);
+
+	// Follow links to another map or entity while the page stays mounted.
 	useEffect(() => {
-		replaceState(MAPS_PAGE_PATH, map ?? '');
-	}, [map, replaceState]);
+		if (syncedHrefRef.current === routeHref) {
+			return;
+		}
+		syncedHrefRef.current = routeHref;
+
+		const route = resolveMapRoute(routeMapSegment, routeEntityId);
+		setMap(route.map);
+		setSelectedId(route.entity?.id ?? null);
+		setQuery('');
+		setArrival(null);
+		setHiddenLayers((previous) => revealLayer(previous, route.entity));
+		if (route.map === null || route.entity === null) {
+			setFocusRequest(null);
+		} else {
+			requestFocus(route.map, route.entity.position);
+		}
+	}, [requestFocus, routeEntityId, routeHref, routeMapSegment]);
+
+	// Keep the URL on the current map and selection, so it can be shared.
+	useEffect(() => {
+		const href = getMapsPageHref(map, map === null ? null : selectedId);
+		syncedHrefRef.current = href;
+		replaceState(href);
+	}, [map, replaceState, selectedId]);
 
 	// A map from a dataset the player turned off falls back to the world map.
 	useEffect(() => {
@@ -135,24 +296,13 @@ export default function MapsPage() {
 		};
 	}, [arrival]);
 
-	const requestFocus = useCallback(
-		(targetMap: TDayMapLabel, point: TDayMapPoint) => {
-			const { art } = DAY_MAP_LAYOUTS[targetMap];
-			const [x, y] = toContentPoint(art, point);
-			focusKeyRef.current += 1;
-			setFocusRequest({
-				key: focusKeyRef.current,
-				minZoom: FOCUS_PX_PER_UNIT / art.pixelsPerUnit,
-				x,
-				y,
-			});
-		},
-		[]
-	);
-
 	const enterMap = useCallback(
-		(nextMap: TDayMapLabel) => {
+		(nextMap: TDayMapLabel, source: 'List' | 'World Map') => {
 			vibrate();
+			trackMapEvent(
+				'Map Navigation Button',
+				`Enter:${nextMap}:${source}`
+			);
 			setMap(nextMap);
 			setSelectedId(null);
 			setQuery('');
@@ -161,18 +311,63 @@ export default function MapsPage() {
 		},
 		[vibrate]
 	);
+	const handleEnterFromList = useCallback(
+		(nextMap: TDayMapLabel) => {
+			enterMap(nextMap, 'List');
+		},
+		[enterMap]
+	);
+	const handleEnterFromWorldMap = useCallback(
+		(nextMap: TDayMapLabel) => {
+			enterMap(nextMap, 'World Map');
+		},
+		[enterMap]
+	);
 
-	const openWorldMap = useCallback(() => {
+	const openWorldMap = useCallback(
+		(source: 'Header' | 'Sidebar' | 'Teleport') => {
+			vibrate();
+			trackMapEvent('Map Navigation Button', `World:${source}`);
+			setSelectedId(null);
+			setArrival(null);
+			setFocusRequest(null);
+			setMap(null);
+		},
+		[vibrate]
+	);
+	const handleOpenWorldMapFromHeader = useCallback(() => {
+		openWorldMap('Header');
+	}, [openWorldMap]);
+	const handleOpenWorldMapFromSidebar = useCallback(() => {
+		openWorldMap('Sidebar');
+	}, [openWorldMap]);
+	const handleOpenWorldMapFromTeleport = useCallback(() => {
+		openWorldMap('Teleport');
+	}, [openWorldMap]);
+
+	const handleClose = useCallback(() => {
 		vibrate();
-		setSelectedId(null);
-		setArrival(null);
-		setFocusRequest(null);
-		setMap(null);
-	}, [vibrate]);
+		const canGoBack = checkCanGoBack();
+		trackMapEvent('Map Navigation Button', canGoBack ? 'Back' : 'Home');
+		if (canGoBack) {
+			router.back();
+		} else {
+			router.push(SITE_LINKS.index.href);
+		}
+	}, [router, vibrate]);
+	const handleLogoPress = useCallback(() => {
+		trackMapEvent('Map Navigation Button', 'Logo');
+	}, []);
 
 	const handleGoTo = useCallback(
 		(targetMap: TDayMapLabel, point: TDayMapPoint | null) => {
 			vibrate();
+			if (map !== null) {
+				trackMapEvent(
+					'Map Navigation Button',
+					`Go:${map}->${targetMap}`
+				);
+			}
 			setMap(targetMap);
 			setSelectedId(null);
 			setQuery('');
@@ -181,15 +376,21 @@ export default function MapsPage() {
 				requestFocus(targetMap, point);
 			}
 		},
-		[requestFocus, vibrate]
+		[map, requestFocus, vibrate]
 	);
 
 	const handleSelect = useCallback(
 		(id: string) => {
 			vibrate();
+			if (map !== null) {
+				trackMapEvent(
+					'Map Entity Button',
+					`Select:${getMapEntityTrackName(map, id)}:Marker`
+				);
+			}
 			setSelectedId(id);
 		},
-		[vibrate]
+		[map, vibrate]
 	);
 
 	const handleListSelect = useCallback(
@@ -199,18 +400,14 @@ export default function MapsPage() {
 				return;
 			}
 			vibrate();
+			trackMapEvent(
+				'Map Entity Button',
+				`Select:${getMapEntityTrackName(map, id)}:${query.trim() === '' ? 'List' : 'Search'}`
+			);
 			setSelectedId(id);
 			requestFocus(map, entity.position);
-			// On narrow screens the list sits below the map; bring the map back.
-			const section = viewportSectionRef.current;
-			if (section !== null && section.getBoundingClientRect().top < 0) {
-				section.scrollIntoView({
-					behavior: isReducedMotion ? 'auto' : 'smooth',
-					block: 'start',
-				});
-			}
 		},
-		[entities, isReducedMotion, map, requestFocus, vibrate]
+		[entities, map, query, requestFocus, vibrate]
 	);
 
 	const handleFocusPoint = useCallback(
@@ -225,6 +422,10 @@ export default function MapsPage() {
 	const handleShowCharacter = useCallback(
 		(targetMap: TDayMapLabel, entityId: string, point: TDayMapPoint) => {
 			vibrate();
+			trackMapEvent(
+				'Map Navigation Button',
+				`Character:${getMapEntityTrackName(targetMap, entityId)}`
+			);
 			setMap(targetMap);
 			setQuery('');
 			setArrival(null);
@@ -235,8 +436,27 @@ export default function MapsPage() {
 	);
 
 	const handleCloseDetail = useCallback(() => {
+		if (map !== null && selectedId !== null) {
+			trackMapEvent(
+				'Map Entity Button',
+				`Close:${getMapEntityTrackName(map, selectedId)}:Button`
+			);
+		}
 		setSelectedId(null);
-	}, []);
+	}, [map, selectedId]);
+
+	const handleBackgroundPress = useCallback(() => {
+		if (selectedId === null) {
+			return;
+		}
+		if (map !== null) {
+			trackMapEvent(
+				'Map Entity Button',
+				`Close:${getMapEntityTrackName(map, selectedId)}:Background`
+			);
+		}
+		setSelectedId(null);
+	}, [map, selectedId]);
 
 	const handlePopoverOpenChange = useCallback((isOpen: boolean) => {
 		isPopoverOpenRef.current = isOpen;
@@ -263,15 +483,32 @@ export default function MapsPage() {
 		[]
 	);
 
-	const handleToggleLayer = useCallback((layer: TDayMapLayer) => {
-		setHiddenLayers((previous) => {
-			const next = new Set(previous);
-			if (!next.delete(layer)) {
-				next.add(layer);
-			}
-			return next;
-		});
-	}, []);
+	const handleToggleSidebar = useCallback(() => {
+		vibrate();
+		trackMapEvent(
+			'Map Sidebar Button',
+			isSidebarCollapsed ? 'Expand' : 'Collapse'
+		);
+		setIsSidebarCollapsed((previous) => !previous);
+	}, [isSidebarCollapsed, vibrate]);
+
+	const handleToggleLayer = useCallback(
+		(layer: TDayMapLayer) => {
+			vibrate();
+			trackMapEvent(
+				'Map Layer Button',
+				`${hiddenLayers.has(layer) ? 'Show' : 'Hide'}:${layer}`
+			);
+			setHiddenLayers((previous) => {
+				const next = new Set(previous);
+				if (!next.delete(layer)) {
+					next.add(layer);
+				}
+				return next;
+			});
+		},
+		[hiddenLayers, vibrate]
+	);
 
 	const mapTransition = getMapTransition(isReducedMotion);
 	const renderView = useCallback(
@@ -287,7 +524,7 @@ export default function MapsPage() {
 				{map === null || layout === null ? (
 					<WorldMapLayer
 						isMapVisible={isMapVisible}
-						onEnter={enterMap}
+						onEnter={handleEnterFromWorldMap}
 						view={view}
 					/>
 				) : (
@@ -313,8 +550,8 @@ export default function MapsPage() {
 		),
 		[
 			arrival,
-			enterMap,
 			entities,
+			handleEnterFromWorldMap,
 			handleSelect,
 			hiddenLayers,
 			isMapVisible,
@@ -325,108 +562,182 @@ export default function MapsPage() {
 		]
 	);
 
-	if (!isHydrated || !isLocalizationReady) {
-		return <Loading />;
-	}
+	const isReady = isHydrated && isLocalizationReady;
+
+	const header = (
+		<header
+			className={cn(
+				'flex min-h-16 shrink-0 items-center justify-between gap-3 border-b border-divider px-4 py-3',
+				isHighAppearance
+					? 'bg-content1/50 backdrop-blur-lg'
+					: 'bg-content1 dark:bg-content1/70'
+			)}
+		>
+			<div className="flex min-w-0 items-center gap-3">
+				<Link
+					animationUnderline={false}
+					color="foreground"
+					href={SITE_LINKS.index.href}
+					onPress={handleLogoPress}
+					aria-label={tAppShell('appShell.links.index')}
+					className="flex min-w-0 shrink-0 select-none items-center justify-start gap-1 rounded-small hover:brightness-100 active:opacity-disabled"
+				>
+					<span
+						aria-hidden
+						title={tSite('site.shortName')}
+						className="image-rendering-pixelated h-10 w-10 shrink-0 rounded-full bg-logo bg-cover bg-no-repeat"
+					/>
+					{!isEnglish && (
+						<>
+							<p className="hidden truncate font-bold lg:inline-block">
+								{tSite('site.name')}
+							</p>
+							<SiteInfo
+								baseUrl={PUBLIC_RUNTIME_CONFIG.baseURL}
+								aria-hidden="false"
+								fontSize={16}
+								name={tSite('site.shortName')}
+								className="pointer-events-auto h-full max-w-[13rem] select-auto font-bold text-foreground lg:hidden"
+							/>
+						</>
+					)}
+				</Link>
+				<span aria-hidden className="h-8 w-px shrink-0 bg-divider" />
+				<nav
+					aria-label={t('maps.title')}
+					className="flex min-w-0 items-center gap-1.5"
+				>
+					<FontAwesomeIcon
+						icon={faEarthAsia}
+						size="sm"
+						className="shrink-0 text-primary"
+					/>
+					{map === null || !isReady ? (
+						<h2 className="min-w-0 truncate font-bold">
+							{t('maps.world.title')}
+						</h2>
+					) : (
+						<>
+							<button
+								type="button"
+								onClick={handleOpenWorldMapFromHeader}
+								className={cn(
+									'shrink-0 rounded-small font-bold text-default-500 transition-colors hover:text-foreground motion-reduce:transition-none',
+									CLASSNAME_FOCUS_VISIBLE_OUTLINE
+								)}
+							>
+								{t('maps.world.title')}
+							</button>
+							<FontAwesomeIcon
+								icon={faChevronRight}
+								size="xs"
+								className="shrink-0 text-default-400"
+							/>
+							<h2 className="min-w-0 truncate font-bold">
+								{getDayMapLabel(map)}
+							</h2>
+						</>
+					)}
+				</nav>
+			</div>
+			<FontAwesomeIconButton
+				icon={faXmark}
+				variant="light"
+				aria-label={t('maps.close')}
+				onPress={handleClose}
+				className="shrink-0"
+			/>
+		</header>
+	);
 
 	const overlay = (
-		<>
-			<nav
-				aria-label={t('maps.title')}
-				className="pointer-events-none absolute left-3 top-3 flex items-center gap-1 text-small"
+		<div className="pointer-events-none absolute bottom-3 left-3 top-3 flex w-[min(23rem,calc(100%-4.5rem))] flex-col justify-end">
+			<FadeMotionDiv
+				target={selectedEntity?.id ?? ''}
+				className="flex max-h-full min-h-0 flex-col"
 			>
-				<button
-					type="button"
-					onClick={openWorldMap}
-					className={cn(
-						'pointer-events-auto flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1 font-medium text-white shadow-md backdrop-blur transition-colors hover:bg-black/75 motion-reduce:transition-none',
-						CLASSNAME_FOCUS_VISIBLE_OUTLINE
-					)}
-				>
-					<FontAwesomeIcon icon={faEarthAsia} />
-					{t('maps.world.title')}
-				</button>
-				{map !== null && (
-					<>
-						<FontAwesomeIcon
-							icon={faChevronRight}
-							size="xs"
-							className="text-white/80 drop-shadow"
-						/>
-						<span className="rounded-full bg-black/60 px-3 py-1 font-semibold text-white shadow-md backdrop-blur">
-							{getDayMapLabel(map)}
-						</span>
-					</>
-				)}
-			</nav>
-			<div className="pointer-events-none absolute bottom-3 left-3 top-14 flex w-[min(23rem,calc(100%-4.5rem))] flex-col justify-end">
-				<FadeMotionDiv
-					target={selectedEntity?.id ?? ''}
-					className="flex max-h-full min-h-0 flex-col"
-				>
-					{selectedEntity !== null && map !== null ? (
-						<MapDetailCard
-							entity={selectedEntity}
-							map={map}
-							onClose={handleCloseDetail}
-							onFocusPoint={handleFocusPoint}
-							onGoTo={handleGoTo}
-							onOpenWorldMap={openWorldMap}
-							onPopoverOpenChange={handlePopoverOpenChange}
-							onShowCharacter={handleShowCharacter}
-							visibility={visibility}
-						/>
-					) : null}
-				</FadeMotionDiv>
-			</div>
-		</>
+				{selectedEntity !== null && map !== null ? (
+					<MapDetailCard
+						entity={selectedEntity}
+						map={map}
+						onClose={handleCloseDetail}
+						onFocusPoint={handleFocusPoint}
+						onGoTo={handleGoTo}
+						onOpenWorldMap={handleOpenWorldMapFromTeleport}
+						onPopoverOpenChange={handlePopoverOpenChange}
+						onShowCharacter={handleShowCharacter}
+						visibility={visibility}
+					/>
+				) : null}
+			</FadeMotionDiv>
+		</div>
 	);
 
 	return (
-		<div className="flex flex-col gap-4 lg:grid lg:h-[calc(var(--safe-h-dvh)-8rem)] lg:min-h-[32rem] lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_22rem]">
-			<div
-				ref={viewportSectionRef}
-				className="h-[65dvh] min-h-80 scroll-mt-20 lg:h-full"
-			>
-				<MapViewport
-					contentHeight={
-						layout === null
-							? WORLD_MAP_FACTS.height
-							: layout.art.height
-					}
-					contentWidth={
-						layout === null
-							? WORLD_MAP_FACTS.width
-							: layout.art.width
-					}
-					focusRequest={focusRequest}
-					maxZoom={
-						layout === null ? WORLD_MAP_MAX_ZOOM : DAY_MAP_MAX_ZOOM
-					}
-					minFitZoom={layout === null ? WORLD_MAP_MIN_FIT_ZOOM : 0}
-					onBackgroundPress={handleCloseDetail}
-					overlay={overlay}
-					resetKey={map ?? 'world'}
-					shouldIgnoreBackgroundPress={checkPopoverDismissPress}
-					className="h-full rounded-large bg-[#14110d] shadow-medium"
-				>
-					{renderView}
-				</MapViewport>
-			</div>
-			<MapSidebar
-				entities={entities}
-				hiddenLayers={hiddenLayers}
-				isMapVisible={isMapVisible}
-				map={map}
-				onEnterMap={enterMap}
-				onOpenWorldMap={openWorldMap}
-				onQueryChange={setQuery}
-				onSelect={handleListSelect}
-				onToggleLayer={handleToggleLayer}
-				query={query}
-				selectedId={selectedId}
-				className="lg:h-full"
-			/>
+		// A full-screen view like the plan drawer; the root layout hides the
+		// site navbar and footer while it is shown.
+		<div
+			data-fullscreen-page
+			className={cn(
+				'fixed inset-0 z-[45] flex flex-col',
+				isHighAppearance
+					? 'bg-blend-mystia'
+					: 'bg-background dark:bg-content1'
+			)}
+		>
+			{header}
+			{isReady ? (
+				<div className={getDrawerLayoutClassName()}>
+					<MapSidebar
+						entities={entities}
+						hiddenLayers={hiddenLayers}
+						isCollapsed={isSidebarCollapsed}
+						isMapVisible={isMapVisible}
+						map={map}
+						onEnterMap={handleEnterFromList}
+						onOpenWorldMap={handleOpenWorldMapFromSidebar}
+						onQueryChange={setQuery}
+						onSelect={handleListSelect}
+						onToggleCollapsed={handleToggleSidebar}
+						onToggleLayer={handleToggleLayer}
+						query={query}
+						selectedId={selectedId}
+					/>
+					<MapViewport
+						contentHeight={
+							layout === null
+								? WORLD_MAP_FACTS.height
+								: layout.art.height
+						}
+						contentWidth={
+							layout === null
+								? WORLD_MAP_FACTS.width
+								: layout.art.width
+						}
+						focusRequest={focusRequest}
+						maxZoom={
+							layout === null
+								? WORLD_MAP_MAX_ZOOM
+								: DAY_MAP_MAX_ZOOM
+						}
+						minFitZoom={
+							layout === null ? WORLD_MAP_MIN_FIT_ZOOM : 0
+						}
+						onBackgroundPress={handleBackgroundPress}
+						overlay={overlay}
+						resetKey={map ?? 'world'}
+						shouldIgnoreBackgroundPress={checkPopoverDismissPress}
+						className={cn(
+							getDrawerResultsClassName(isHighAppearance),
+							'bg-[#14110d] dark:bg-[#14110d]'
+						)}
+					>
+						{renderView}
+					</MapViewport>
+				</div>
+			) : (
+				<Loading />
+			)}
 		</div>
 	);
 }

@@ -1,6 +1,6 @@
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
-import type { TCollectableLabel } from '@/domain/data/places/collectableLabels';
-import type { TMerchantLabel } from '@/domain/data/places/merchantFacts';
+import { type TCollectableLabel } from '@/domain/data/places/collectableLabels';
+import { type TMerchantLabel } from '@/domain/data/places/merchantFacts';
 import type { TMapLabel, TPlaceLabel } from '@/domain/data/places/types';
 
 /** @description Day-scene places outside the fifteen regions (interiors and event scenes). */

@@ -10,6 +10,9 @@ export const MAP_PILL_CLASS_NAME =
 
 export const MAP_PILL_ACTIVE_CLASS_NAME = 'bg-[#ffa800] text-black';
 
+/** @description For pills inside a `group` button; selected pills keep the active colours. */
+export const MAP_PILL_HOVER_CLASS_NAME = 'group-hover:bg-black/85';
+
 export const MAP_GOLD_RING_CLASS_NAME = 'border-[#f3d28b]';
 
 /**

@@ -137,7 +137,7 @@ export default async function RootLayout({
 						locale={locale}
 						routeLocale={isPrefixed ? locale : null}
 					>
-						<div className="flex min-h-dvh-safe flex-col">
+						<div className="flex min-h-dvh-safe flex-col [&:has([data-fullscreen-page])>:not(main)]:hidden">
 							<AnnouncementBar
 								viewer={
 									accountFeatureInitialData?.viewer ?? null

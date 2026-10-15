@@ -14,13 +14,18 @@ import type {
 	TDayMapPoint,
 	TDayMapRect,
 } from '@/domain/data/maps/types';
-import type { TCollectableLabel } from '@/domain/data/places/collectableLabels';
+import { type TCollectableLabel } from '@/domain/data/places/collectableLabels';
 import { COLLECTION_POINT_REFRESH_FACTS } from '@/domain/data/places/collectionFacts';
 import {
 	COLLECTION_POINT_YIELD_FACTS,
 	type ICollectionPointYieldProduct,
 } from '@/domain/data/places/collectionYieldFacts';
-import type { TMerchantLabel } from '@/domain/data/places/merchantFacts';
+import { type TMerchantLabel } from '@/domain/data/places/merchantFacts';
+
+import {
+	getCharacterEntityId,
+	getCollectableEntityId,
+} from '@/features/maps/links';
 
 export type TDayMapLayer =
 	| 'collectable'
@@ -124,7 +129,7 @@ export function getPrimaryProduct({ products }: IDayMapCollectableEntity) {
 	return products.find(({ kind }) => kind === 'primary') ?? products[0];
 }
 
-/** @description Showtime outside the default 10:00–18:00 window. */
+/** @description Showtime outside the default 10:00–18:00 window, which is the whole day. */
 export function checkTimeLimited([from, to]: TDayMapHourRange) {
 	return from !== 10 || to !== 18;
 }
@@ -143,7 +148,7 @@ export function buildDayMapEntities(map: TDayMapLabel): TDayMapEntity[] {
 		}
 		entities.push({
 			character,
-			id: `character:${character.id}`,
+			id: getCharacterEntityId(character.id),
 			layer: character.kind,
 			position: firstSpot,
 			spots,
@@ -156,7 +161,7 @@ export function buildDayMapEntities(map: TDayMapLabel): TDayMapEntity[] {
 			displayLabel:
 				COLLECTABLE_DISPLAY_LABEL_MAP.get(collectable.key) ??
 				collectable.key,
-			id: `collectable:${collectable.key}`,
+			id: getCollectableEntityId(collectable.key),
 			layer: 'collectable',
 			position: collectable.position,
 			products: COLLECTABLE_PRODUCTS_MAP.get(collectable.key) ?? [],

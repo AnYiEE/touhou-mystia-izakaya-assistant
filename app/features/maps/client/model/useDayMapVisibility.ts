@@ -8,7 +8,7 @@ import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TDayMapLabel } from '@/domain/data/maps/types';
-import type { ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
+import { type ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
 
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 

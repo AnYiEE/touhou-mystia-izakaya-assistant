@@ -4,6 +4,7 @@ import { type ReactNode, memo, useCallback } from 'react';
 
 import {
 	faArrowRight,
+	faArrowUpRightFromSquare,
 	faEarthAsia,
 	faLocationCrosshairs,
 	faXmark,
@@ -18,7 +19,12 @@ import Link from '@/design/ui/components/link';
 
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
-import type { TDayMapLabel, TDayMapPoint } from '@/domain/data/maps/types';
+import type {
+	TDayMapHourRange,
+	TDayMapLabel,
+	TDayMapPoint,
+} from '@/domain/data/maps/types';
+import { type ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
 
 import { GUEST_INFO_QUERY_PARAM } from '@/features/catalog/guests/shared/navigation';
 import { SPECIAL_GUEST_TAG_STYLE } from '@/features/catalog/presentation/tagStyles';
@@ -32,10 +38,15 @@ import {
 import { catalogSharedMessages } from '@/features/catalog/shared/client/messages';
 import { mapsMessages } from '@/features/maps/client/messages';
 import {
+	getMapEntityTrackName,
+	trackMapEvent,
+} from '@/features/maps/client/model/analytics';
+import {
 	type IDayMapCharacterEntity,
 	type IDayMapCollectableEntity,
 	type IDayMapTransitionEntity,
 	type TDayMapEntity,
+	checkTimeLimited,
 	getMerchantGoods,
 } from '@/features/maps/client/model/dayMapEntities';
 import {
@@ -45,7 +56,7 @@ import {
 import { getMapSurfaceClassName } from '@/features/maps/client/model/mapStyles';
 import { getProductName } from '@/features/maps/client/model/productNames';
 import { useDayMapEntityName } from '@/features/maps/client/model/useDayMapEntityName';
-import type { IDayMapVisibility } from '@/features/maps/client/model/useDayMapVisibility';
+import { type IDayMapVisibility } from '@/features/maps/client/model/useDayMapVisibility';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
@@ -100,6 +111,43 @@ function Section({ children, label }: { children: ReactNode; label: string }) {
 	);
 }
 
+function ShowTime({ showTime }: { showTime: TDayMapHourRange }) {
+	const { t } = useI18n(mapsMessages);
+
+	return (
+		<Field label={t('maps.detail.showTime')}>
+			{checkTimeLimited(showTime)
+				? t('maps.detail.timeRange', {
+						from: showTime[0],
+						to: showTime[1],
+					})
+				: t('maps.detail.allDay')}
+		</Field>
+	);
+}
+
+interface IProductRow {
+	/** @description Identical entries are separate rolls in the game. */
+	count: number;
+	key: string;
+	product: ICollectionPointYieldProduct;
+}
+
+function groupProducts(products: ReadonlyArray<ICollectionPointYieldProduct>) {
+	const rows = new Map<string, IProductRow>();
+	for (const product of products) {
+		const key = `${product.kind}:${product.productType}:${product.productId}:${product.amount}:${product.probability ?? ''}`;
+		const row = rows.get(key);
+		if (row === undefined) {
+			rows.set(key, { count: 1, key, product });
+		} else {
+			row.count += 1;
+		}
+	}
+
+	return [...rows.values()];
+}
+
 function CollectableDetail({
 	entity,
 	onPopoverOpenChange,
@@ -115,26 +163,43 @@ function CollectableDetail({
 	return (
 		<Section label={t('maps.detail.products')}>
 			<ul className="-mx-1">
-				{products.map((product) => (
-					<li
-						key={`${product.kind}:${product.productType}:${product.productId}:${product.amount}`}
-					>
+				{groupProducts(products).map(({ count, key, product }) => (
+					<li key={key}>
 						<MapItemPopover
 							product={product}
 							onOpenChange={onPopoverOpenChange}
 							className="flex w-full items-center gap-2 px-1 py-0.5 text-left"
 						>
-							<ProductSprite product={product} size={1.5} />
+							<ProductSprite
+								product={product}
+								size={1.5}
+								className="shrink-0"
+							/>
 							<span className="text-foreground">
 								{getProductName(product)}
 							</span>
-							<span>×{product.amount}</span>
+							<span>
+								×
+								{product.kind === 'primary'
+									? product.amount * count
+									: product.amount}
+							</span>
 							{product.kind === 'secondary' &&
 								product.probability !== undefined && (
 									<span>
-										{t('maps.detail.probability', {
-											probability: product.probability,
-										})}
+										{count === 1
+											? t('maps.detail.probability', {
+													probability:
+														product.probability,
+												})
+											: t(
+													'maps.detail.probabilityRolls',
+													{
+														count,
+														probability:
+															product.probability,
+													}
+												)}
 									</span>
 								)}
 						</MapItemPopover>
@@ -147,6 +212,10 @@ function CollectableDetail({
 }
 
 function SpecialGuestDetail({ guest }: { guest: TSpecialGuestId }) {
+	const handleViewGuest = useCallback(() => {
+		trackMapEvent('Map Entity Button', `View Guest:${guest}`);
+	}, [guest]);
+
 	const { t } = useI18n(mapsMessages);
 	useCatalogLocalizationRevision();
 
@@ -189,13 +258,15 @@ function SpecialGuestDetail({ guest }: { guest: TSpecialGuestId }) {
 			<Button
 				as={Link}
 				fullWidth
+				isExternal
 				animationUnderline={false}
 				color="primary"
-				endContent={<FontAwesomeIcon icon={faArrowRight} />}
+				endContent={<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}
 				href={`/special-guests/${guest}?${GUEST_INFO_QUERY_PARAM}`}
 				role="link"
 				size="sm"
 				variant="flat"
+				onPress={handleViewGuest}
 			>
 				{t('maps.detail.viewGuest')}
 			</Button>
@@ -265,6 +336,10 @@ function CharacterDetail({
 									/>
 								}
 								onPress={() => {
+									trackMapEvent(
+										'Map Entity Button',
+										`Spot ${index + 1}:${getMapEntityTrackName(map, id)}`
+									);
 									onFocusPoint(spot);
 								}}
 								className="h-7 min-w-0 px-2 text-tiny"
@@ -283,7 +358,8 @@ function CharacterDetail({
 								key={`${product.productType}:${product.productId}`}
 								product={product}
 								onOpenChange={onPopoverOpenChange}
-								className="p-0.5"
+								// A flex box drops the line box, so the button stays square.
+								className="flex p-0.5"
 							>
 								<ProductSprite product={product} size={1.75} />
 							</MapItemPopover>
@@ -378,12 +454,7 @@ function EntityFields({ entity }: { entity: TDayMapEntity }) {
 			return (
 				<div className="flex flex-wrap gap-x-4 gap-y-1">
 					{kind}
-					<Field label={t('maps.detail.showTime')}>
-						{t('maps.detail.timeRange', {
-							from: showTime[0],
-							to: showTime[1],
-						})}
-					</Field>
+					<ShowTime showTime={showTime} />
 					<Field label={t('maps.detail.refresh')}>
 						{t('maps.detail.refreshValue', {
 							hours: regenerateHours,
@@ -404,12 +475,7 @@ function EntityFields({ entity }: { entity: TDayMapEntity }) {
 			return (
 				<div className="flex flex-wrap gap-x-4 gap-y-1">
 					{kind}
-					<Field label={t('maps.detail.showTime')}>
-						{t('maps.detail.timeRange', {
-							from: showTime[0],
-							to: showTime[1],
-						})}
-					</Field>
+					<ShowTime showTime={showTime} />
 					{isOffByDefault && (
 						<Field label={t('maps.detail.condition')}>
 							{t('maps.detail.offByDefault')}
@@ -452,8 +518,12 @@ export default memo<IProps>(function MapDetailCard({
 	const name = getName(entity);
 
 	const handleLocate = useCallback(() => {
+		trackMapEvent(
+			'Map Entity Button',
+			`Locate:${getMapEntityTrackName(map, entity.id)}`
+		);
 		onFocusPoint(entity.position);
-	}, [entity.position, onFocusPoint]);
+	}, [entity.id, entity.position, map, onFocusPoint]);
 
 	return (
 		<section

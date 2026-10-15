@@ -1,6 +1,6 @@
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
-import type { ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
+import { type ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
 
 import { checkBeverageId, checkIngredientId } from './dayMapEntities';
 

@@ -1,7 +1,9 @@
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const MAPS_MESSAGES_ZH_CN = {
 	'maps.arrival': '到达点',
+	'maps.close': '关闭地图',
+	'maps.detail.allDay': '全天',
 	'maps.detail.arrival': '到达后位于{map}的入口处',
 	'maps.detail.close': '关闭',
 	'maps.detail.condition': '出现条件',
@@ -18,6 +20,7 @@ const MAPS_MESSAGES_ZH_CN = {
 	'maps.detail.otherPlaces': '其他出现地点',
 	'maps.detail.passage': '通行',
 	'maps.detail.probability': '（{probability}%）',
+	'maps.detail.probabilityRolls': '（每次{probability}%，共{count}次）',
 	'maps.detail.products': '产出',
 	'maps.detail.randomSpots': '每天随机出现在以下{count}个位置之一',
 	'maps.detail.refresh': '刷新周期',
@@ -43,6 +46,8 @@ const MAPS_MESSAGES_ZH_CN = {
 	'maps.kind.teleport': '隙间传送',
 	'maps.kind.transition': '出入口',
 	'maps.layers': '图层',
+	'maps.link.guestPlaces': '地图位置：',
+	'maps.link.viewOnMap': '在地图中查看',
 	'maps.list.count': '{count}项',
 	'maps.list.empty': '没有符合条件的条目',
 	'maps.meta.description':
@@ -52,6 +57,8 @@ const MAPS_MESSAGES_ZH_CN = {
 	'maps.note.parent': '从{map}进入',
 	'maps.note.PartyStage': '演唱会舞台，人物为演唱会时的站位。',
 	'maps.search.placeholder': '搜索本地图的采集点或人物',
+	'maps.sidebar.collapse': '收起侧栏',
+	'maps.sidebar.expand': '展开侧栏',
 	'maps.title': '地图',
 	'maps.toTarget': '通往{map}',
 	'maps.world.enter': '进入{map}',
@@ -70,6 +77,8 @@ export type TMapsMessageKey = keyof typeof MAPS_MESSAGES_ZH_CN;
 export const mapsMessages = {
 	en: {
 		'maps.arrival': 'Arrival',
+		'maps.close': 'Close map',
+		'maps.detail.allDay': 'All day',
 		'maps.detail.arrival': 'You arrive at the entrance of {map}',
 		'maps.detail.close': 'Close',
 		'maps.detail.condition': 'Condition',
@@ -87,6 +96,7 @@ export const mapsMessages = {
 		'maps.detail.otherPlaces': 'Also appears in',
 		'maps.detail.passage': 'Passage',
 		'maps.detail.probability': '({probability}%)',
+		'maps.detail.probabilityRolls': '({probability}% each, {count} rolls)',
 		'maps.detail.products': 'Yields',
 		'maps.detail.randomSpots':
 			'Appears at one of these {count} spots, chosen at random each day',
@@ -113,6 +123,8 @@ export const mapsMessages = {
 		'maps.kind.teleport': 'Gap teleport',
 		'maps.kind.transition': 'Exit',
 		'maps.layers': 'Layers',
+		'maps.link.guestPlaces': 'On the map: ',
+		'maps.link.viewOnMap': 'View on map',
 		'maps.list.count': '{count}',
 		'maps.list.empty': 'Nothing matches',
 		'maps.meta.description':
@@ -123,6 +135,8 @@ export const mapsMessages = {
 		'maps.note.PartyStage':
 			'The concert stage; characters stand where they are during concerts.',
 		'maps.search.placeholder': 'Search spots or characters on this map',
+		'maps.sidebar.collapse': 'Collapse sidebar',
+		'maps.sidebar.expand': 'Expand sidebar',
 		'maps.title': 'Maps',
 		'maps.toTarget': 'To {map}',
 		'maps.world.enter': 'Enter {map}',
@@ -137,6 +151,8 @@ export const mapsMessages = {
 	},
 	ja: {
 		'maps.arrival': '到着地点',
+		'maps.close': '地図を閉じる',
+		'maps.detail.allDay': '終日',
 		'maps.detail.arrival': '移動後は{map}の入口に出ます',
 		'maps.detail.close': '閉じる',
 		'maps.detail.condition': '出現条件',
@@ -154,6 +170,7 @@ export const mapsMessages = {
 		'maps.detail.otherPlaces': 'ほかの出現場所',
 		'maps.detail.passage': '通行',
 		'maps.detail.probability': '（{probability}%）',
+		'maps.detail.probabilityRolls': '（各{probability}%、{count}回）',
 		'maps.detail.products': '産出',
 		'maps.detail.randomSpots':
 			'毎日、次の{count}か所のいずれかにランダムで出現',
@@ -180,6 +197,8 @@ export const mapsMessages = {
 		'maps.kind.teleport': 'スキマワープ',
 		'maps.kind.transition': '出入口',
 		'maps.layers': 'レイヤー',
+		'maps.link.guestPlaces': 'マップ上の位置：',
+		'maps.link.viewOnMap': 'マップで見る',
 		'maps.list.count': '{count}件',
 		'maps.list.empty': '条件に合う項目はありません',
 		'maps.meta.description':
@@ -190,6 +209,8 @@ export const mapsMessages = {
 		'maps.note.PartyStage':
 			'ライブのステージです。人物はライブ中の立ち位置です。',
 		'maps.search.placeholder': 'このマップの採取ポイントや人物を検索',
+		'maps.sidebar.collapse': 'サイドバーを折りたたむ',
+		'maps.sidebar.expand': 'サイドバーを展開',
 		'maps.title': 'マップ',
 		'maps.toTarget': '{map}へ',
 		'maps.world.enter': '{map}に入る',
@@ -204,6 +225,8 @@ export const mapsMessages = {
 	},
 	ko: {
 		'maps.arrival': '도착 지점',
+		'maps.close': '지도 닫기',
+		'maps.detail.allDay': '종일',
 		'maps.detail.arrival': '이동하면 {map} 입구에 도착합니다',
 		'maps.detail.close': '닫기',
 		'maps.detail.condition': '출현 조건',
@@ -220,6 +243,7 @@ export const mapsMessages = {
 		'maps.detail.otherPlaces': '다른 출현 장소',
 		'maps.detail.passage': '통행',
 		'maps.detail.probability': '({probability}%)',
+		'maps.detail.probabilityRolls': '(각 {probability}%, {count}회)',
 		'maps.detail.products': '산출',
 		'maps.detail.randomSpots':
 			'매일 다음 {count}곳 중 한 곳에 무작위로 출현',
@@ -246,6 +270,8 @@ export const mapsMessages = {
 		'maps.kind.teleport': '스키마 이동',
 		'maps.kind.transition': '출입구',
 		'maps.layers': '레이어',
+		'maps.link.guestPlaces': '지도 위치: ',
+		'maps.link.viewOnMap': '지도에서 보기',
 		'maps.list.count': '{count}개',
 		'maps.list.empty': '조건에 맞는 항목이 없습니다',
 		'maps.meta.description':
@@ -256,6 +282,8 @@ export const mapsMessages = {
 		'maps.note.PartyStage':
 			'콘서트 무대입니다. 인물은 콘서트 중의 위치입니다.',
 		'maps.search.placeholder': '이 지도의 채집 지점이나 인물 검색',
+		'maps.sidebar.collapse': '사이드바 접기',
+		'maps.sidebar.expand': '사이드바 펼치기',
 		'maps.title': '지도',
 		'maps.toTarget': '{map} 방면',
 		'maps.world.enter': '{map} 들어가기',
@@ -271,6 +299,8 @@ export const mapsMessages = {
 	'zh-CN': MAPS_MESSAGES_ZH_CN,
 	'zh-TW': {
 		'maps.arrival': '到達點',
+		'maps.close': '關閉地圖',
+		'maps.detail.allDay': '全天',
 		'maps.detail.arrival': '到達後位於{map}的入口處',
 		'maps.detail.close': '關閉',
 		'maps.detail.condition': '出現條件',
@@ -287,6 +317,7 @@ export const mapsMessages = {
 		'maps.detail.otherPlaces': '其他出現地點',
 		'maps.detail.passage': '通行',
 		'maps.detail.probability': '（{probability}%）',
+		'maps.detail.probabilityRolls': '（每次{probability}%，共{count}次）',
 		'maps.detail.products': '產出',
 		'maps.detail.randomSpots': '每天隨機出現在以下{count}個位置之一',
 		'maps.detail.refresh': '刷新週期',
@@ -312,6 +343,8 @@ export const mapsMessages = {
 		'maps.kind.teleport': '隙間傳送',
 		'maps.kind.transition': '出入口',
 		'maps.layers': '圖層',
+		'maps.link.guestPlaces': '地圖位置：',
+		'maps.link.viewOnMap': '在地圖中查看',
 		'maps.list.count': '{count}項',
 		'maps.list.empty': '沒有符合條件的項目',
 		'maps.meta.description':
@@ -321,6 +354,8 @@ export const mapsMessages = {
 		'maps.note.parent': '從{map}進入',
 		'maps.note.PartyStage': '演唱會舞台，人物為演唱會時的站位。',
 		'maps.search.placeholder': '搜尋本地圖的採集點或人物',
+		'maps.sidebar.collapse': '收起側欄',
+		'maps.sidebar.expand': '展開側欄',
 		'maps.title': '地圖',
 		'maps.toTarget': '通往{map}',
 		'maps.world.enter': '進入{map}',

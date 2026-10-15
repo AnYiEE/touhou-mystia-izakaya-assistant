@@ -38,6 +38,7 @@ import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import Tachie from '@/features/catalog/shared/client/components/Tachie';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
+import SpecialGuestMapLinks from '@/features/maps/client/components/SpecialGuestMapLinks';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
@@ -211,7 +212,7 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 				title={<InfoSectionTitle title={currentSpecialGuestName} />}
 				classNames={DESCRIPTION_CLASS_NAMES}
 			>
-				<div className="flex items-center gap-4">
+				<div className="flex flex-wrap items-center gap-x-4 gap-y-1">
 					<p>
 						<span className="font-semibold">
 							{t('guests.info.idLabel')}
@@ -259,6 +260,7 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 							</PopoverContent>
 						</Popover>
 					</p>
+					<SpecialGuestMapLinks guest={currentSpecialGuest} />
 				</div>
 				<div className="text-small">
 					<p>

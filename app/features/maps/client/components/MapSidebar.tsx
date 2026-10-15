@@ -4,6 +4,8 @@ import { memo, useCallback, useMemo, useState } from 'react';
 
 import {
 	faChevronDown,
+	faChevronLeft,
+	faChevronRight,
 	faEarthAsia,
 	faEye,
 	faEyeSlash,
@@ -19,8 +21,8 @@ import Button from '@/design/ui/components/button';
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
 import FadeMotionDiv from '@/design/ui/components/fadeMotionDiv';
 import Input from '@/design/ui/components/input';
-import ScrollShadow from '@/design/ui/components/scrollShadow';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 import { getDlcLabel } from '@/domain/availability/localizedLabels';
 import { DAY_MAP_EXTRA_FACTS } from '@/domain/data/maps/dayMapExtraFacts';
@@ -28,6 +30,7 @@ import type { TDayMapLabel } from '@/domain/data/maps/types';
 import { ALL_MAP_LABELS } from '@/domain/data/places/placeFacts';
 
 import { mapsMessages } from '@/features/maps/client/messages';
+import { trackMapEvent } from '@/features/maps/client/model/analytics';
 import { getDayMapPreviewUrl } from '@/features/maps/client/model/assets';
 import {
 	DAY_MAP_LAYERS,
@@ -48,21 +51,24 @@ import {
 	getMapTransition,
 } from '@/features/maps/client/model/motion';
 import { useDayMapEntityName } from '@/features/maps/client/model/useDayMapEntityName';
+import { getDrawerControlsClassName } from '@/features/specialGuestPlans/client/specialGuestPlanDrawer/drawerLayout';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
 import DayMapEntityIcon from './DayMapEntityIcon';
 
 interface IProps {
-	className?: string;
 	entities: ReadonlyArray<TDayMapEntity>;
 	hiddenLayers: ReadonlySet<TDayMapLayer>;
+	/** @description A narrow strip on wide screens; only the title row on narrow ones. */
+	isCollapsed: boolean;
 	isMapVisible: (map: TDayMapLabel) => boolean;
 	map: TDayMapLabel | null;
 	onEnterMap: (map: TDayMapLabel) => void;
 	onOpenWorldMap: () => void;
 	onQueryChange: (query: string) => void;
 	onSelect: (id: string) => void;
+	onToggleCollapsed: () => void;
 	onToggleLayer: (layer: TDayMapLayer) => void;
 	query: string;
 	selectedId: string | null;
@@ -140,7 +146,7 @@ const WorldMapList = memo<Pick<IProps, 'isMapVisible' | 'onEnterMap'>>(
 						<h2 className="mb-1.5 px-0.5 text-tiny font-semibold text-default-600">
 							{t(title)}
 						</h2>
-						<ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-2">
+						<ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-2">
 							{maps.filter(isMapVisible).map((map) => (
 								<li key={map}>
 									<MapCard
@@ -293,7 +299,14 @@ const EntityGroup = memo<IEntityGroupProps>(function EntityGroup({
 	);
 });
 
-interface IMapPanelProps extends Omit<IProps, 'className' | 'isMapVisible'> {
+interface IMapPanelProps extends Omit<
+	IProps,
+	| 'isCollapsed'
+	| 'isMapVisible'
+	| 'onEnterMap'
+	| 'onOpenWorldMap'
+	| 'onToggleCollapsed'
+> {
 	map: TDayMapLabel;
 }
 
@@ -301,7 +314,6 @@ function MapPanel({
 	entities,
 	hiddenLayers,
 	map,
-	onOpenWorldMap,
 	onQueryChange,
 	onSelect,
 	onToggleLayer,
@@ -316,15 +328,22 @@ function MapPanel({
 		ReadonlySet<TDayMapLayer>
 	>(() => new Set());
 
-	const handleToggleExpanded = useCallback((layer: TDayMapLayer) => {
-		setCollapsedLayers((previous) => {
-			const next = new Set(previous);
-			if (!next.delete(layer)) {
-				next.add(layer);
-			}
-			return next;
-		});
-	}, []);
+	const handleToggleExpanded = useCallback(
+		(layer: TDayMapLayer) => {
+			trackMapEvent(
+				'Map Layer Button',
+				`${collapsedLayers.has(layer) ? 'Expand' : 'Collapse'} Group:${layer}`
+			);
+			setCollapsedLayers((previous) => {
+				const next = new Set(previous);
+				if (!next.delete(layer)) {
+					next.add(layer);
+				}
+				return next;
+			});
+		},
+		[collapsedLayers]
+	);
 
 	const layerCounts = useMemo(() => {
 		const counts = new Map<TDayMapLayer, number>();
@@ -352,7 +371,6 @@ function MapPanel({
 		[entities, getName, hiddenLayers, normalizedQuery]
 	);
 
-	const dlc = getDayMapDlc(map);
 	const extraFact = checkExtraDayMapLabel(map)
 		? DAY_MAP_EXTRA_FACTS[map]
 		: null;
@@ -370,26 +388,6 @@ function MapPanel({
 
 	return (
 		<>
-			<header className="flex items-start gap-2">
-				<div className="min-w-0 flex-1">
-					<h1 className="truncate text-large font-semibold">
-						{getDayMapLabel(map)}
-					</h1>
-					{dlc !== 0 && (
-						<p className="text-tiny text-default-600">
-							{getDlcLabel(dlc)}
-						</p>
-					)}
-				</div>
-				<Button
-					size="sm"
-					variant="flat"
-					startContent={<FontAwesomeIcon icon={faEarthAsia} />}
-					onPress={onOpenWorldMap}
-				>
-					{t('maps.world.title')}
-				</Button>
-			</header>
 			{note !== null && (
 				<p className="-mt-1 rounded-medium bg-default-100 px-2 py-1 text-tiny text-default-700">
 					{note}
@@ -457,7 +455,7 @@ function MapPanel({
 					})}
 				</div>
 			</div>
-			<ScrollShadow className="-mx-1 min-h-40 flex-1 px-1">
+			<div>
 				<AnimatePresence initial={false}>
 					{groups.map(({ items, layer }) => (
 						<motion.div
@@ -483,56 +481,165 @@ function MapPanel({
 						{t('maps.list.empty')}
 					</p>
 				)}
-			</ScrollShadow>
+			</div>
 		</>
 	);
 }
 
 export default memo<IProps>(function MapSidebar({
-	className,
+	isCollapsed,
 	isMapVisible,
 	map,
 	onEnterMap,
+	onOpenWorldMap,
+	onToggleCollapsed,
 	...props
 }) {
 	const { t } = useI18n(mapsMessages);
 	const { isHighAppearance } = useDesignPreferences();
+	const isReducedMotion = useReducedMotion();
+
+	const title = map === null ? t('maps.world.title') : getDayMapLabel(map);
+	const dlc = map === null ? 0 : getDayMapDlc(map);
+	const subtitle =
+		map === null
+			? t('maps.world.hint')
+			: dlc === 0
+				? null
+				: getDlcLabel(dlc);
+
+	// The plan drawer's controls panel: a strip on wide screens, the title row
+	// on narrow ones.
+	const contentMotionAnimate = useMemo(
+		() => ({
+			height: isCollapsed ? 0 : 'auto',
+			opacity: isCollapsed ? 0 : 1,
+		}),
+		[isCollapsed]
+	);
+	const contentMotionTransition = useMemo(
+		() => ({
+			duration: isReducedMotion ? 0 : MOTION_DURATION_S.base,
+			ease: MOTION_EASE.linear,
+			type: 'tween' as const,
+		}),
+		[isReducedMotion]
+	);
 
 	return (
 		<aside
 			className={cn(
-				'relative flex min-h-0 flex-col rounded-large p-3 shadow-medium',
-				isHighAppearance
-					? 'bg-content1/70 backdrop-blur-lg'
-					: 'bg-content1',
-				className
+				getDrawerControlsClassName({
+					isControlsCollapsed: isCollapsed,
+					isHighAppearance,
+				}),
+				// Leaves most of a phone screen to the map below.
+				'max-md:max-h-[40dvh] max-md:shrink-0'
 			)}
 		>
-			<FadeMotionDiv
-				target={map ?? 'world'}
-				className="flex min-h-0 flex-1 flex-col gap-3"
+			<div
+				className={cn(
+					'relative flex min-h-9 items-center justify-between gap-2',
+					isCollapsed && 'md:h-9 md:min-h-9 md:justify-center'
+				)}
 			>
-				{map === null ? (
-					<>
-						<header className="px-1">
-							<h1 className="text-large font-semibold">
-								{t('maps.world.title')}
-							</h1>
-							<p className="text-small text-default-600">
-								{t('maps.world.hint')}
-							</p>
-						</header>
-						<ScrollShadow className="min-h-0 flex-1">
+				<div
+					className={cn(
+						'min-w-0 flex-1',
+						isCollapsed &&
+							'md:pointer-events-none md:absolute md:left-1/2 md:top-12 md:z-10 md:flex md:max-h-[calc(100dvh-12rem)] md:w-8 md:-translate-x-1/2 md:flex-col md:items-center md:gap-2 md:overflow-hidden'
+					)}
+				>
+					<h1
+						className={cn(
+							'truncate text-small font-medium',
+							isCollapsed && 'md:[writing-mode:vertical-rl]'
+						)}
+					>
+						{title}
+					</h1>
+					{subtitle !== null && (
+						<p
+							className={cn(
+								'truncate text-tiny text-foreground-500',
+								isCollapsed && 'md:[writing-mode:vertical-rl]'
+							)}
+						>
+							{subtitle}
+						</p>
+					)}
+				</div>
+				{map !== null && (
+					<Button
+						size="sm"
+						variant="flat"
+						startContent={<FontAwesomeIcon icon={faEarthAsia} />}
+						onPress={onOpenWorldMap}
+						className={cn('shrink-0', isCollapsed && 'md:hidden')}
+					>
+						{t('maps.world.title')}
+					</Button>
+				)}
+				<Button
+					isIconOnly
+					radius="full"
+					size="sm"
+					variant={isCollapsed ? 'flat' : 'light'}
+					aria-expanded={!isCollapsed}
+					aria-label={t(
+						isCollapsed
+							? 'maps.sidebar.expand'
+							: 'maps.sidebar.collapse'
+					)}
+					onPress={onToggleCollapsed}
+					className="shrink-0"
+				>
+					<span
+						className={cn(
+							'inline-flex transition-transform duration-200 ease-linear motion-reduce:transition-none md:hidden',
+							{ 'rotate-180': !isCollapsed }
+						)}
+					>
+						<FontAwesomeIcon icon={faChevronDown} />
+					</span>
+					<span className="hidden md:inline-flex">
+						<FontAwesomeIcon
+							icon={isCollapsed ? faChevronRight : faChevronLeft}
+						/>
+					</span>
+				</Button>
+			</div>
+			<motion.div
+				aria-hidden={isCollapsed}
+				animate={contentMotionAnimate}
+				initial={false}
+				transition={contentMotionTransition}
+				inert={isCollapsed ? true : undefined}
+				className="overflow-hidden md:!h-auto md:w-[19rem] md:min-w-[19rem] md:overflow-visible md:!opacity-100"
+			>
+				<div
+					className={cn(
+						'pt-4 motion-reduce:transition-none md:w-[19rem] md:min-w-[19rem] md:transition-[transform,opacity] md:duration-200 md:ease-linear md:will-change-transform',
+						isCollapsed
+							? 'md:-translate-x-[calc(100%+1rem)] md:opacity-0'
+							: 'md:translate-x-0 md:opacity-100'
+					)}
+				>
+					<FadeMotionDiv
+						target={map ?? 'world'}
+						className="flex flex-col gap-3"
+					>
+						{map === null ? (
 							<WorldMapList
 								isMapVisible={isMapVisible}
 								onEnterMap={onEnterMap}
 							/>
-						</ScrollShadow>
-					</>
-				) : (
-					<MapPanel map={map} onEnterMap={onEnterMap} {...props} />
-				)}
-			</FadeMotionDiv>
+						) : (
+							<MapPanel map={map} {...props} />
+						)}
+					</FadeMotionDiv>
+				</div>
+			</motion.div>
 		</aside>
 	);
 });

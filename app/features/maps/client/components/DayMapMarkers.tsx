@@ -36,6 +36,7 @@ import {
 	MAP_GOLD_RING_CLASS_NAME,
 	MAP_PILL_ACTIVE_CLASS_NAME,
 	MAP_PILL_CLASS_NAME,
+	MAP_PILL_HOVER_CLASS_NAME,
 } from '@/features/maps/client/model/mapStyles';
 import {
 	MAP_FADE_ANIMATE,
@@ -179,8 +180,10 @@ const CharacterMarker = memo<ICharacterMarkerProps>(function CharacterMarker({
 					aria-hidden
 					className={cn(
 						LABEL_CLASS_NAME,
-						'inline-flex items-center gap-1 group-hover:bg-black/85',
-						{ [MAP_PILL_ACTIVE_CLASS_NAME]: isSelected }
+						'inline-flex items-center gap-1',
+						isSelected
+							? MAP_PILL_ACTIVE_CLASS_NAME
+							: MAP_PILL_HOVER_CLASS_NAME
 					)}
 					style={{ left: feetX, top: feetY + 4 }}
 				>
@@ -276,8 +279,10 @@ const CollectableMarker = memo<ICollectableMarkerProps>(
 						aria-hidden
 						className={cn(
 							LABEL_CLASS_NAME,
-							'left-1/2 top-[calc(100%+0.25rem)] group-hover:bg-black/85',
-							{ [MAP_PILL_ACTIVE_CLASS_NAME]: isSelected }
+							'left-1/2 top-[calc(100%+0.25rem)]',
+							isSelected
+								? MAP_PILL_ACTIVE_CLASS_NAME
+								: MAP_PILL_HOVER_CLASS_NAME
 						)}
 					>
 						{name}

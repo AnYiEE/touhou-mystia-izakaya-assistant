@@ -1,20 +1,21 @@
 'use client';
 
-import { type ReactNode, memo, useMemo } from 'react';
+import { type ReactNode, memo, useCallback, useMemo } from 'react';
 
-import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
+import Button from '@/design/ui/components/button';
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
-import Link from '@/design/ui/components/link';
 
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { getIngredientTypeLabel } from '@/domain/catalog/localizedCategoryLabels';
-import type { ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
+import { type ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
 
+import { trackEvent } from '@/features/analytics/client/trackEvent';
 import BeverageSourceDetails from '@/features/catalog/items/beverages/client/components/BeverageSourceDetails';
 import IngredientSourceDetails from '@/features/catalog/items/ingredients/client/components/IngredientSourceDetails';
 import {
@@ -32,6 +33,7 @@ import {
 	getBeverageTagLabel,
 	getFoodTagLabel,
 } from '@/features/catalog/shared/client/localization/tagLabels';
+import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import { mapsMessages } from '@/features/maps/client/messages';
 import {
 	checkBeverageId,
@@ -53,23 +55,30 @@ interface IProps {
 const beverageCatalog = BeverageCatalog.getInstance();
 const ingredientCatalog = IngredientCatalog.getInstance();
 
-function CatalogLink({ href, label }: { href: string; label: string }) {
+/** @description Opens the catalog page in the small preview window, like other cross-page item links. */
+function CatalogButton({ onPress }: { onPress: () => void }) {
+	const { t } = useI18n(mapsMessages);
+
 	return (
-		<Link
-			href={href}
-			size="sm"
-			className="mt-1 gap-1 px-2 pb-1 font-medium"
-		>
-			{label}
-			<FontAwesomeIcon icon={faArrowRight} size="xs" />
-		</Link>
+		<div className="self-stretch px-2 pb-2">
+			<Button
+				fullWidth
+				color="primary"
+				size="sm"
+				variant="flat"
+				endContent={<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}
+				onPress={onPress}
+			>
+				{t('maps.detail.viewInCatalog')}
+			</Button>
+		</div>
 	);
 }
 
 function ItemDetails({
 	product: { productId, productType },
 }: Pick<IProps, 'product'>) {
-	const { t } = useI18n(mapsMessages);
+	const openWindow = useViewInNewWindow();
 	useCatalogLocalizationRevision();
 
 	if (productType === 1 && checkIngredientId(productId)) {
@@ -97,9 +106,10 @@ function ItemDetails({
 				>
 					<IngredientSourceDetails from={from} id={productId} />
 				</ItemPopoverCard>
-				<CatalogLink
-					href={`/ingredients?select=${productId}`}
-					label={t('maps.detail.viewInCatalog')}
+				<CatalogButton
+					onPress={() => {
+						openWindow('ingredients', productId, name);
+					}}
 				/>
 			</>
 		);
@@ -122,9 +132,10 @@ function ItemDetails({
 				>
 					<BeverageSourceDetails from={from} id={productId} />
 				</ItemPopoverCard>
-				<CatalogLink
-					href={`/beverages?select=${productId}`}
-					label={t('maps.detail.viewInCatalog')}
+				<CatalogButton
+					onPress={() => {
+						openWindow('beverages', productId, name);
+					}}
 				/>
 			</>
 		);
@@ -133,7 +144,7 @@ function ItemDetails({
 	return null;
 }
 
-/** @description Opens the catalogue card of an ingredient or beverage in place. */
+/** @description Opens the catalog card of an ingredient or beverage in place. */
 export default memo<IProps>(function MapItemPopover({
 	children,
 	className,
@@ -141,6 +152,30 @@ export default memo<IProps>(function MapItemPopover({
 	product,
 }) {
 	const { isHighAppearance } = useDesignPreferences();
+	const { productId, productType } = product;
+
+	// Tracked like opening the item's card in the catalog.
+	const handleOpenChange = useCallback(
+		(isOpen: boolean) => {
+			if (isOpen) {
+				if (productType === 1 && checkIngredientId(productId)) {
+					trackEvent(
+						trackEvent.category.click,
+						'Ingredient Card',
+						ingredientCatalog.getPropsById(productId, 'name')
+					);
+				} else if (productType === 2 && checkBeverageId(productId)) {
+					trackEvent(
+						trackEvent.category.click,
+						'Beverage Card',
+						beverageCatalog.getPropsById(productId, 'name')
+					);
+				}
+			}
+			onOpenChange(isOpen);
+		},
+		[onOpenChange, productId, productType]
+	);
 
 	// Same surface as the detail card: the site popover is too translucent over the game art.
 	const classNames = useMemo(
@@ -152,7 +187,7 @@ export default memo<IProps>(function MapItemPopover({
 		<ItemPopover
 			showArrow
 			placement="right"
-			onOpenChange={onOpenChange}
+			onOpenChange={handleOpenChange}
 			classNames={classNames}
 		>
 			<ItemPopoverTrigger>

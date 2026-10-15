@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 
-import type { ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
+import { type ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
 
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import {

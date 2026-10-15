@@ -14,6 +14,7 @@ import type { IIngredient } from '@/domain/data/ingredients/schema';
 import type {
 	IPrayerReference,
 	TCollectionPointReference,
+	TMerchantReference,
 } from '@/domain/data/places/types';
 
 import { renderSourceReference } from '@/features/catalog/items/shared/client/renderSourceReference';
@@ -24,6 +25,10 @@ import {
 	formatSourceReference,
 	getCollectionPointRefreshTimeHours,
 } from '@/features/catalog/items/shared/sourceReferenceFormatting';
+import {
+	CollectionPointMapLink,
+	MerchantMapLink,
+} from '@/features/maps/client/components/MapLinks';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 import { checkObjectOrStringEmpty } from '@/shared/utilities/collections/check';
@@ -267,6 +272,24 @@ export default function IngredientSourceDetails({ from, id }: IProps) {
 												);
 											})()
 										: renderSourceReference(item, locale)}
+									{isCollect && (
+										<CollectionPointMapLink
+											reference={
+												(Array.isArray(item)
+													? item[0]
+													: item) as TCollectionPointReference
+											}
+										/>
+									)}
+									{isBuy && (
+										<MerchantMapLink
+											reference={
+												(Array.isArray(item)
+													? item[0]
+													: item) as TMerchantReference
+											}
+										/>
+									)}
 								</Ol.Li>
 							))}
 						</Ol>
