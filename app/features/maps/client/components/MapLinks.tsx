@@ -81,7 +81,7 @@ function MapIconLink({ href, itemId, trackName }: IMapIconLinkProps) {
 				size="sm"
 				onPress={handlePress}
 				// Centred on the text line rather than its baseline.
-				className="ml-1 align-middle text-default-600"
+				className="-mt-px ml-0.5 align-middle text-default-600"
 			>
 				<FontAwesomeIcon icon={faMapLocationDot} size="sm" />
 			</Link>
