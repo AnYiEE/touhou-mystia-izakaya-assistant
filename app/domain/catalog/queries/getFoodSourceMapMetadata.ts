@@ -93,6 +93,6 @@ export function getFoodSourceMapMetadata(
 	}
 
 	return createMetadata(
-		punishmentSpecialGuests.flatMap(({ maps }) => maps.slice(0, 1))
+		punishmentSpecialGuests.map(({ maps: [map] }) => map)
 	);
 }

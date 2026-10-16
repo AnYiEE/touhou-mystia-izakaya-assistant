@@ -3443,25 +3443,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		},
 	},
 	{
-		destinations: [{ map: 'ScarletMansion', position: [9.86, 12.7] }],
-		dlc: 9,
-		id: 'special-9005',
-		isOffByDefault: false,
-		kind: 'specialGuest',
-		merchant: null,
-		name: '蕾米莉亚',
-		showTime: [10, 18],
-		specialGuest: 9005,
-		sprite: {
-			file: 'special-9005.png',
-			hash: 'f15e550ff6ba',
-			height: 64,
-			pivot: [32, 64],
-			pixelsPerUnit: 48,
-			width: 64,
-		},
-	},
-	{
 		destinations: [
 			{ map: 'DLC1_YoukaiMountain', position: [-6.09, 12.39] },
 		],

@@ -165,11 +165,9 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 		hasBondRewards,
 	} = bondRewards;
 
-	const [currentSpecialGuestMainMap] = currentSpecialGuestMaps;
-	const currentSpecialGuestMainPlace =
-		currentSpecialGuestMainMap === undefined
-			? null
-			: getMapLabel(currentSpecialGuestMainMap);
+	const currentSpecialGuestMainPlace = getMapLabel(
+		currentSpecialGuestMaps[0]
+	);
 	const hasSpellCards = !checkLengthEmpty(
 		Object.keys(currentSpecialGuestSpellCards)
 	);
@@ -462,15 +460,14 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 								</Tooltip>
 							</p>
 						))}
-						{currentSpecialGuestCollection &&
-							currentSpecialGuestMainPlace !== null && (
-								<p className="flex items-center leading-5">
-									<LevelLabel level={5} />
-									{t('guests.info.gatherPlace', {
-										place: currentSpecialGuestMainPlace,
-									})}
-								</p>
-							)}
+						{currentSpecialGuestCollection && (
+							<p className="flex items-center leading-5">
+								<LevelLabel level={5} />
+								{t('guests.info.gatherPlace', {
+									place: currentSpecialGuestMainPlace,
+								})}
+							</p>
+						)}
 						{bondPartner !== null && (
 							<p className="flex items-center">
 								<LevelLabel

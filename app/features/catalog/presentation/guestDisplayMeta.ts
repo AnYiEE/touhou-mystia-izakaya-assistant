@@ -58,19 +58,24 @@ export function getSpecialGuestDisplayMeta(
 	hasEnduranceLimit: boolean;
 	hasNegativeSpellCards: boolean;
 	hasOtherPlaces: boolean;
-	mainPlace: null | string;
+	mainPlace: string;
 	placeContent: string;
 } {
 	const { enduranceLimit, maps, price, spellCards } =
 		guestCatalog.getPropsById(guest);
 	const places = maps.map((map) => getMapLabel(map));
-	const [mainPlace = null, ...otherPlaces] = places;
+	const [mainPlace, ...otherPlaces] = places;
 	const hasOtherPlaces = !checkLengthEmpty(otherPlaces);
 	const averagePrice = (price[0] + price[1]) / 2;
 	const enduranceLimitPercent = Math.floor(enduranceLimit * 100 - 100);
 	const hasNegativeSpellCards =
 		'negative' in spellCards &&
 		!checkLengthEmpty<unknown>(spellCards.negative);
+	if (mainPlace === undefined) {
+		throw new Error(
+			`[features/catalog/presentation/guestDisplayMeta]: special guest id \`${guest}\` has no main map label`
+		);
+	}
 
 	return {
 		averagePrice,

@@ -408,39 +408,32 @@ export default function GuestCard() {
 								</Tooltip>
 								<PopoverContent>{sourceLabel}</PopoverContent>
 							</Popover>
-							{currentGuestMainPlace !== null && (
-								<Popover
+							<Popover showArrow offset={hasOtherPlaces ? 6 : 4}>
+								<Tooltip
 									showArrow
-									offset={hasOtherPlaces ? 6 : 4}
+									content={placeContent}
+									offset={2}
 								>
-									<Tooltip
-										showArrow
-										content={placeContent}
-										offset={2}
-									>
-										<span className="cursor-pointer">
-											<PopoverTrigger>
-												<span
-													role="button"
-													tabIndex={0}
-													className={cn(
-														CLASSNAME_FOCUS_VISIBLE_OUTLINE,
-														{
-															'underline-dotted-linear':
-																hasOtherPlaces,
-														}
-													)}
-												>
-													{currentGuestMainPlace}
-												</span>
-											</PopoverTrigger>
-										</span>
-									</Tooltip>
-									<PopoverContent>
-										{placeContent}
-									</PopoverContent>
-								</Popover>
-							)}
+									<span className="cursor-pointer">
+										<PopoverTrigger>
+											<span
+												role="button"
+												tabIndex={0}
+												className={cn(
+													CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+													{
+														'underline-dotted-linear':
+															hasOtherPlaces,
+													}
+												)}
+											>
+												{currentGuestMainPlace}
+											</span>
+										</PopoverTrigger>
+									</span>
+								</Tooltip>
+								<PopoverContent>{placeContent}</PopoverContent>
+							</Popover>
 						</p>
 						<div className="flex items-center justify-between gap-4">
 							<p>
