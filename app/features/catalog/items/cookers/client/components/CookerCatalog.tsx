@@ -158,6 +158,7 @@ export default memo<IProps>(function CookerCatalog({ data }) {
 						ref={popoverCardRef}
 					>
 						<CookerSourceDetails
+							id={id}
 							from={from}
 							openWindow={openWindow}
 						/>

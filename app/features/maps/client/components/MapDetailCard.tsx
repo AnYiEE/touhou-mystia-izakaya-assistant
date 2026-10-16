@@ -16,14 +16,17 @@ import { useDesignPreferences } from '@/design/preferences/DesignPreferencesCont
 import Button from '@/design/ui/components/button';
 import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
 import Link from '@/design/ui/components/link';
+import Tooltip from '@/design/ui/components/tooltip';
 
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type {
 	TDayMapHourRange,
 	TDayMapLabel,
 	TDayMapPoint,
 } from '@/domain/data/maps/types';
+import type { TPartnerId } from '@/domain/data/partners/types';
 import { type ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
 
 import { GUEST_INFO_QUERY_PARAM } from '@/features/catalog/guests/shared/navigation';
@@ -36,6 +39,7 @@ import {
 	getFoodTagLabel,
 } from '@/features/catalog/shared/client/localization/tagLabels';
 import { catalogSharedMessages } from '@/features/catalog/shared/client/messages';
+import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import { mapsMessages } from '@/features/maps/client/messages';
 import {
 	getMapEntityTrackName,
@@ -46,6 +50,7 @@ import {
 	type IDayMapCollectableEntity,
 	type IDayMapTransitionEntity,
 	type TDayMapEntity,
+	type TDayMapLayer,
 	checkTimeLimited,
 	getMerchantGoods,
 } from '@/features/maps/client/model/dayMapEntities';
@@ -83,6 +88,7 @@ interface IProps {
 	visibility: IDayMapVisibility;
 }
 
+const partnerCatalog = PartnerCatalog.getInstance();
 const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 
 /** @description `label：value`, as on the catalog item cards. */
@@ -288,6 +294,29 @@ function SpecialGuestDetail({ guest }: { guest: TSpecialGuestId }) {
 	);
 }
 
+function PartnerDetail({ partner }: { partner: TPartnerId }) {
+	const { t } = useI18n(mapsMessages);
+	const openWindow = useViewInNewWindow();
+	useCatalogLocalizationRevision();
+
+	const name = partnerCatalog.getDisplayPropsById(partner, 'name');
+
+	return (
+		<Button
+			fullWidth
+			color="primary"
+			size="sm"
+			variant="flat"
+			endContent={<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}
+			onPress={() => {
+				openWindow('partners', partner, name);
+			}}
+		>
+			{t('maps.detail.viewPartner')}
+		</Button>
+	);
+}
+
 function CharacterDetail({
 	entity,
 	map,
@@ -391,6 +420,9 @@ function CharacterDetail({
 			{character.specialGuest !== null && (
 				<SpecialGuestDetail guest={character.specialGuest} />
 			)}
+			{character.partner !== undefined && (
+				<PartnerDetail partner={character.partner} />
+			)}
 			{otherPlaces.length > 0 && (
 				<Section label={t('maps.detail.otherPlaces')}>
 					<div className="flex flex-wrap gap-1">
@@ -461,9 +493,23 @@ function TransitionDetail({
 function EntityFields({ entity }: { entity: TDayMapEntity }) {
 	const { t } = useI18n(mapsMessages);
 
+	const layers: TDayMapLayer[] = [entity.layer];
+	if ('character' in entity) {
+		const { merchant, partner, specialGuest } = entity.character;
+		if (specialGuest !== null && entity.layer !== 'specialGuest') {
+			layers.push('specialGuest');
+		}
+		if (merchant !== null && entity.layer !== 'merchant') {
+			layers.push('merchant');
+		}
+		if (partner !== undefined && entity.layer !== 'partner') {
+			layers.push('partner');
+		}
+	}
+
 	const kind = (
 		<Field label={t('maps.detail.kind')}>
-			{t(`maps.kind.${entity.layer}`)}
+			{layers.map((layer) => t(`maps.kind.${layer}`)).join(' / ')}
 		</Field>
 	);
 
@@ -489,6 +535,7 @@ function EntityFields({ entity }: { entity: TDayMapEntity }) {
 			);
 		}
 		case 'merchant':
+		case 'partner':
 		case 'resident':
 		case 'specialGuest': {
 			const { isOffByDefault, showTime } = entity.character;
@@ -555,10 +602,14 @@ export default memo<IProps>(function MapDetailCard({
 			)}
 		>
 			<header className="flex items-center gap-2 text-small text-foreground">
-				<DayMapEntityIcon
-					entity={entity}
-					size={'character' in entity ? 2.5 : 2}
-				/>
+				<Tooltip showArrow content={name} offset={4}>
+					<span className="shrink-0">
+						<DayMapEntityIcon
+							entity={entity}
+							size={'character' in entity ? 2.5 : 2}
+						/>
+					</span>
+				</Tooltip>
 				<p className="min-w-0 flex-1 font-bold">
 					{entity.layer === 'transition'
 						? t('maps.toTarget', { map: name })

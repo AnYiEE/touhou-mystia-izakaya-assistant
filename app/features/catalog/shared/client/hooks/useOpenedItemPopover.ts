@@ -104,7 +104,6 @@ export function useOpenedItemPopover(
 			return;
 		}
 
-		removeHistoryEntryValue(OPENED_ITEM_POPOVER_HISTORY_KEY);
 		openDefaultPopover(recordId, 'history');
 	}, [data, openDefaultPopover]);
 
@@ -156,22 +155,25 @@ export function useOpenedItemPopover(
 	);
 
 	const getPopoverOpenChangeProps = useCallback(
-		(recordId: number) => {
-			if (
-				defaultOpenedPopover?.source !== 'url' ||
-				defaultOpenedPopover.recordId !== recordId
-			) {
-				return {};
-			}
-
-			return {
-				onOpenChange: (isOpen: boolean) => {
-					if (!isOpen) {
-						setOpenedPopover(null);
-					}
-				},
-			};
-		},
+		(recordId: number) => ({
+			onOpenChange: (isOpen: boolean) => {
+				if (isOpen) {
+					return;
+				}
+				if (
+					readHistoryEntryValue(OPENED_ITEM_POPOVER_HISTORY_KEY) ===
+					recordId
+				) {
+					removeHistoryEntryValue(OPENED_ITEM_POPOVER_HISTORY_KEY);
+				}
+				if (
+					defaultOpenedPopover?.source === 'url' &&
+					defaultOpenedPopover.recordId === recordId
+				) {
+					setOpenedPopover(null);
+				}
+			},
+		}),
 		[defaultOpenedPopover, setOpenedPopover]
 	);
 

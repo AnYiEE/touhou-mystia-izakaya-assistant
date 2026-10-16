@@ -13,6 +13,7 @@ import Tooltip from '@/design/ui/components/tooltip';
 import type { IBeverage } from '@/domain/data/beverages/schema';
 import type {
 	IPrayerReference,
+	ITaskReference,
 	TCollectionPointReference,
 	TMapLabel,
 	TMerchantReference,
@@ -30,6 +31,7 @@ import {
 	CollectionPointMapLink,
 	FishingMapLink,
 	MerchantMapLink,
+	TaskMapLinks,
 } from '@/features/maps/client/components/MapLinks';
 
 import { useI18n } from '@/shared/i18n/useI18n';
@@ -282,6 +284,16 @@ export default function BeverageSourceDetails({ from, id }: IProps) {
 													(Array.isArray(item)
 														? item[0]
 														: item) as TCollectionPointReference
+												}
+											/>
+										)}
+										{isTask && (
+											<TaskMapLinks
+												itemId={id}
+												reference={
+													(Array.isArray(item)
+														? item[0]
+														: item) as ITaskReference
 												}
 											/>
 										)}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
+	faArrowLeft,
 	faChevronRight,
 	faEarthAsia,
 	faXmark,
@@ -19,6 +20,7 @@ import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton'
 import Link from '@/design/ui/components/link';
 import Loading from '@/design/ui/components/loading';
 import SiteInfo from '@/design/ui/components/siteInfo';
+import Tooltip from '@/design/ui/components/tooltip';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import { DAY_MAP_LAYOUTS } from '@/domain/data/maps/dayMapLayouts';
@@ -48,23 +50,24 @@ import {
 	getDayMapLabel,
 } from '@/features/maps/client/model/dayMapLabels';
 import {
+	type IMapsVisit,
+	type IOpenedMapItem,
+	clearOpenedMapItem,
+	initializeMapsVisit,
+	pushMapsHistoryEntry,
+	readMapsVisit,
+	readOpenedMapItem,
+} from '@/features/maps/client/model/mapsHistory';
+import {
 	MAP_FADE_ANIMATE,
 	MAP_FADE_HIDDEN,
 	getMapTransition,
 } from '@/features/maps/client/model/motion';
 import {
-	type IMapsVisit,
-	type IOpenedMapItem,
-	readMapsVisit,
-	takeOpenedMapItem,
-	writeMapsVisit,
-} from '@/features/maps/client/model/mapsHistory';
-import {
 	filterVisibleDayMapEntities,
 	useDayMapVisibility,
 } from '@/features/maps/client/model/useDayMapVisibility';
 import {
-	MAPS_PAGE_PATH,
 	MAP_SELECT_PARAM_NAME,
 	getMapsPageHref,
 	parseMerchantReference,
@@ -161,32 +164,10 @@ function revealLayer(
 	return next;
 }
 
-/** @description Whether the history entry before the map is another page of this site, for the close button. */
-function checkCanGoBack() {
-	if (globalThis.history.length <= 1) {
-		return false;
-	}
-	const mapsSegment = MAPS_PAGE_PATH.slice(1);
-	const [entry] = performance.getEntriesByType('navigation');
-	// The document was loaded on another page, so this one was reached in-app.
-	if (
-		entry !== undefined &&
-		!new URL(entry.name).pathname.split('/').includes(mapsSegment)
-	) {
-		return true;
-	}
-
-	return (
-		document.referrer !== '' &&
-		new URL(document.referrer).origin === location.origin
-	);
-}
-
 export default function MapsPage() {
-	const { locale, t } = useI18n(mapsMessages);
+	const { t } = useI18n(mapsMessages);
 	const { t: tAppShell } = useI18n(appShellMessages);
 	const { t: tSite } = useI18n(siteMessages);
-	const isEnglish = locale === 'en';
 	const { isHighAppearance } = useDesignPreferences();
 	const router = useRouter();
 	const isHydrated = useHydrated();
@@ -202,25 +183,20 @@ export default function MapsPage() {
 	const routeEntityId = params.get(MAP_SELECT_PARAM_NAME);
 	const routeHref = getMapsPageHref(routeMapSegment ?? null, routeEntityId);
 
-	const [initialRoute] = useState(() =>
-		resolveMapRoute(routeMapSegment, routeEntityId)
+	const route = useMemo(
+		() => resolveMapRoute(routeMapSegment, routeEntityId),
+		[routeMapSegment, routeEntityId]
 	);
-	const [map, setMap] = useState(initialRoute.map);
-	const [selectedId, setSelectedId] = useState(
-		initialRoute.entity?.id ?? null
-	);
+	const { entity: routeEntity, map } = route;
+	const selectedId = routeEntity?.id ?? null;
 	const [hiddenLayers, setHiddenLayers] = useState(() =>
-		revealLayer(DEFAULT_HIDDEN_DAY_MAP_LAYERS, initialRoute.entity)
+		revealLayer(DEFAULT_HIDDEN_DAY_MAP_LAYERS, routeEntity)
 	);
 	const [query, setQuery] = useState('');
 	const [focusRequest, setFocusRequest] = useState(() =>
-		initialRoute.map === null || initialRoute.entity === null
+		map === null || routeEntity === null
 			? null
-			: createFocusRequest(
-					initialRoute.map,
-					initialRoute.entity.position,
-					0
-				)
+			: createFocusRequest(map, routeEntity.position, 0)
 	);
 	const [arrival, setArrival] = useState<TDayMapPoint | null>(null);
 	const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -228,7 +204,7 @@ export default function MapsPage() {
 		null
 	);
 	const focusKeyRef = useRef(0);
-	const visitRef = useRef<IMapsVisit | null>(null);
+	const [visit, setVisit] = useState<IMapsVisit | null>(null);
 	/** @description Last URL the page state was read from or written to. */
 	const syncedHrefRef = useRef(routeHref);
 	const isPopoverOpenRef = useRef(false);
@@ -260,30 +236,33 @@ export default function MapsPage() {
 		[]
 	);
 
-	// Number the map entries of this visit, so closing the map returns to the
-	// page it was opened from however many map links were followed.
 	useEffect(() => {
-		const stored = readMapsVisit();
-		if (stored !== null) {
-			visitRef.current = stored;
-			return;
-		}
-
-		const previous = visitRef.current;
-		const visit =
-			previous === null
-				? { depth: 0, hasOrigin: checkCanGoBack() }
-				: { depth: previous.depth + 1, hasOrigin: previous.hasOrigin };
-		visitRef.current = visit;
-		writeMapsVisit(visit);
+		setVisit(initializeMapsVisit());
 	}, [routeHref]);
+
+	const selectEntity = useCallback(
+		(id: string | null) => {
+			clearOpenedMapItem();
+			const href = getMapsPageHref(map, id);
+			syncedHrefRef.current = href;
+			replaceHistoryEntryUrl(href);
+		},
+		[map]
+	);
+
+	const navigateMap = useCallback(
+		(targetMap: TDayMapLabel | null, id: string | null = null) => {
+			const href = getMapsPageHref(targetMap, id);
+			syncedHrefRef.current = href;
+			pushMapsHistoryEntry(href);
+		},
+		[]
+	);
 
 	// Back to an entry left through a link in an item popover: open it again.
 	useEffect(() => {
-		const item = takeOpenedMapItem();
-		if (item !== null) {
-			setRestoredItem(item);
-		}
+		const item = readOpenedMapItem();
+		setRestoredItem(item);
 	}, [routeHref]);
 
 	useEffect(() => {
@@ -299,33 +278,30 @@ export default function MapsPage() {
 		}
 		syncedHrefRef.current = routeHref;
 
-		const route = resolveMapRoute(routeMapSegment, routeEntityId);
-		setMap(route.map);
-		setSelectedId(route.entity?.id ?? null);
+		const { entity: nextEntity, map: nextMap } = resolveMapRoute(
+			routeMapSegment,
+			routeEntityId
+		);
 		setQuery('');
 		setArrival(null);
-		setHiddenLayers((previous) => revealLayer(previous, route.entity));
-		if (route.map === null || route.entity === null) {
+		setHiddenLayers((previous) => revealLayer(previous, nextEntity));
+		if (nextMap === null || nextEntity === null) {
 			setFocusRequest(null);
 		} else {
-			requestFocus(route.map, route.entity.position);
+			requestFocus(nextMap, nextEntity.position);
 		}
 	}, [requestFocus, routeEntityId, routeHref, routeMapSegment]);
 
-	// Keep the URL on the current map and selection, so it can be shared.
+	// Canonicalize aliases and hidden maps without adding a history entry.
 	useEffect(() => {
-		const href = getMapsPageHref(map, map === null ? null : selectedId);
-		syncedHrefRef.current = href;
-		replaceHistoryEntryUrl(href);
-	}, [map, selectedId]);
-
-	// A map from a dataset the player turned off falls back to the world map.
-	useEffect(() => {
-		if (map !== null && !isMapVisible(map)) {
-			setMap(null);
-			setSelectedId(null);
+		const href = getMapsPageHref(
+			map !== null && isMapVisible(map) ? map : null,
+			selectedId
+		);
+		if (href !== routeHref) {
+			replaceHistoryEntryUrl(href);
 		}
-	}, [isMapVisible, map]);
+	}, [isMapVisible, map, routeHref, selectedId]);
 
 	useEffect(() => {
 		if (arrival === null) {
@@ -347,13 +323,12 @@ export default function MapsPage() {
 				'Map Navigation Button',
 				`Enter:${nextMap}:${source}`
 			);
-			setMap(nextMap);
-			setSelectedId(null);
+			navigateMap(nextMap);
 			setQuery('');
 			setArrival(null);
 			setFocusRequest(null);
 		},
-		[vibrate]
+		[navigateMap, vibrate]
 	);
 	const handleEnterFromList = useCallback(
 		(nextMap: TDayMapLabel) => {
@@ -372,12 +347,12 @@ export default function MapsPage() {
 		(source: 'Header' | 'Sidebar' | 'Teleport') => {
 			vibrate();
 			trackMapEvent('Map Navigation Button', `World:${source}`);
-			setSelectedId(null);
+			navigateMap(null);
+			setQuery('');
 			setArrival(null);
 			setFocusRequest(null);
-			setMap(null);
 		},
-		[vibrate]
+		[navigateMap, vibrate]
 	);
 	const handleOpenWorldMapFromHeader = useCallback(() => {
 		openWorldMap('Header');
@@ -391,13 +366,20 @@ export default function MapsPage() {
 
 	const handleClose = useCallback(() => {
 		vibrate();
-		const visit = visitRef.current;
-		if (visit?.hasOrigin === true) {
-			trackMapEvent('Map Navigation Button', 'Back');
-			globalThis.history.go(-(visit.depth + 1));
+		const currentVisit = readMapsVisit();
+		if (currentVisit?.hasOrigin === true) {
+			trackMapEvent('Map Navigation Button', 'Close:Origin');
+			globalThis.history.go(-(currentVisit.depth + 1));
 		} else {
-			trackMapEvent('Map Navigation Button', 'Home');
+			trackMapEvent('Map Navigation Button', 'Close:Home');
 			router.push(SITE_LINKS.index.href);
+		}
+	}, [router, vibrate]);
+	const handleBack = useCallback(() => {
+		if ((readMapsVisit()?.depth ?? 0) > 0) {
+			vibrate();
+			trackMapEvent('Map Navigation Button', 'Back:Map');
+			router.back();
 		}
 	}, [router, vibrate]);
 	const handleLogoPress = useCallback(() => {
@@ -413,15 +395,14 @@ export default function MapsPage() {
 					`Go:${map}->${targetMap}`
 				);
 			}
-			setMap(targetMap);
-			setSelectedId(null);
+			navigateMap(targetMap);
 			setQuery('');
 			setArrival(point);
 			if (point !== null) {
 				requestFocus(targetMap, point);
 			}
 		},
-		[map, requestFocus, vibrate]
+		[map, navigateMap, requestFocus, vibrate]
 	);
 
 	const handleSelect = useCallback(
@@ -433,9 +414,9 @@ export default function MapsPage() {
 					`Select:${getMapEntityTrackName(map, id)}:Marker`
 				);
 			}
-			setSelectedId(id);
+			selectEntity(id);
 		},
-		[map, vibrate]
+		[map, selectEntity, vibrate]
 	);
 
 	const handleListSelect = useCallback(
@@ -449,10 +430,10 @@ export default function MapsPage() {
 				'Map Entity Button',
 				`Select:${getMapEntityTrackName(map, id)}:${query.trim() === '' ? 'List' : 'Search'}`
 			);
-			setSelectedId(id);
+			selectEntity(id);
 			requestFocus(map, entity.position);
 		},
-		[entities, map, query, requestFocus, vibrate]
+		[entities, map, query, requestFocus, selectEntity, vibrate]
 	);
 
 	const handleFocusPoint = useCallback(
@@ -471,13 +452,12 @@ export default function MapsPage() {
 				'Map Navigation Button',
 				`Character:${getMapEntityTrackName(targetMap, entityId)}`
 			);
-			setMap(targetMap);
+			navigateMap(targetMap, entityId);
 			setQuery('');
 			setArrival(null);
-			setSelectedId(entityId);
 			requestFocus(targetMap, point);
 		},
-		[requestFocus, vibrate]
+		[navigateMap, requestFocus, vibrate]
 	);
 
 	const handleCloseDetail = useCallback(() => {
@@ -487,8 +467,8 @@ export default function MapsPage() {
 				`Close:${getMapEntityTrackName(map, selectedId)}:Button`
 			);
 		}
-		setSelectedId(null);
-	}, [map, selectedId]);
+		selectEntity(null);
+	}, [map, selectEntity, selectedId]);
 
 	const handleBackgroundPress = useCallback(() => {
 		if (selectedId === null) {
@@ -500,8 +480,8 @@ export default function MapsPage() {
 				`Close:${getMapEntityTrackName(map, selectedId)}:Background`
 			);
 		}
-		setSelectedId(null);
-	}, [map, selectedId]);
+		selectEntity(null);
+	}, [map, selectEntity, selectedId]);
 
 	const handlePopoverOpenChange = useCallback((isOpen: boolean) => {
 		isPopoverOpenRef.current = isOpen;
@@ -523,6 +503,28 @@ export default function MapsPage() {
 				POPOVER_DISMISS_WINDOW_MS,
 		[]
 	);
+
+	const handleQueryChange = useCallback(
+		(value: string) => {
+			if (value === '' && query !== '') {
+				trackMapEvent('Map Search Button', `Clear:${map}`);
+			}
+			setQuery(value);
+		},
+		[map, query]
+	);
+
+	useEffect(() => {
+		if (query.trim() === '' || map === null) {
+			return;
+		}
+		const timer = setTimeout(() => {
+			trackMapEvent('Map Search Button', `Search:${map}`);
+		}, 500);
+		return () => {
+			clearTimeout(timer);
+		};
+	}, [map, query]);
 
 	const handleToggleSidebar = useCallback(() => {
 		vibrate();
@@ -628,20 +630,18 @@ export default function MapsPage() {
 						title={tSite('site.shortName')}
 						className="image-rendering-pixelated h-10 w-10 shrink-0 rounded-full bg-logo bg-cover bg-no-repeat"
 					/>
-					{!isEnglish && (
-						<>
-							<p className="hidden truncate font-bold lg:inline-block">
-								{tSite('site.name')}
-							</p>
-							<SiteInfo
-								baseUrl={PUBLIC_RUNTIME_CONFIG.baseURL}
-								aria-hidden="false"
-								fontSize={16}
-								name={tSite('site.shortName')}
-								className="pointer-events-auto h-full max-w-[13rem] select-auto font-bold text-foreground lg:hidden"
-							/>
-						</>
-					)}
+					<>
+						<p className="hidden truncate font-bold lg:inline-block">
+							{tSite('site.name')}
+						</p>
+						<SiteInfo
+							baseUrl={PUBLIC_RUNTIME_CONFIG.baseURL}
+							aria-hidden="false"
+							fontSize={16}
+							name={tSite('site.shortName')}
+							className="pointer-events-auto h-full max-w-24 select-auto font-bold text-foreground md:max-w-[13rem] lg:hidden"
+						/>
+					</>
 				</Link>
 				<span aria-hidden className="h-8 w-px shrink-0 bg-divider" />
 				<nav
@@ -663,7 +663,7 @@ export default function MapsPage() {
 								type="button"
 								onClick={handleOpenWorldMapFromHeader}
 								className={cn(
-									'shrink-0 rounded-small font-bold text-default-500 transition-colors hover:text-foreground motion-reduce:transition-none',
+									'min-w-0 truncate rounded-small font-bold text-default-500 transition-colors hover:text-foreground motion-reduce:transition-none',
 									CLASSNAME_FOCUS_VISIBLE_OUTLINE
 								)}
 							>
@@ -681,13 +681,26 @@ export default function MapsPage() {
 					)}
 				</nav>
 			</div>
-			<FontAwesomeIconButton
-				icon={faXmark}
-				variant="light"
-				aria-label={t('maps.close')}
-				onPress={handleClose}
-				className="shrink-0"
-			/>
+			<div className="flex shrink-0 items-center gap-1">
+				{visit !== null && visit.depth > 0 && (
+					<Tooltip content={t('maps.back')} size="sm">
+						<FontAwesomeIconButton
+							icon={faArrowLeft}
+							variant="light"
+							aria-label={t('maps.back')}
+							onPress={handleBack}
+						/>
+					</Tooltip>
+				)}
+				<Tooltip content={t('maps.close')} size="sm">
+					<FontAwesomeIconButton
+						icon={faXmark}
+						variant="light"
+						aria-label={t('maps.close')}
+						onPress={handleClose}
+					/>
+				</Tooltip>
+			</div>
 		</header>
 	);
 
@@ -742,7 +755,7 @@ export default function MapsPage() {
 						map={map}
 						onEnterMap={handleEnterFromList}
 						onOpenWorldMap={handleOpenWorldMapFromSidebar}
-						onQueryChange={setQuery}
+						onQueryChange={handleQueryChange}
 						onSelect={handleListSelect}
 						onToggleCollapsed={handleToggleSidebar}
 						onToggleLayer={handleToggleLayer}

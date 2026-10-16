@@ -2,13 +2,17 @@
 
 import { memo } from 'react';
 
+import Tooltip from '@/design/ui/components/tooltip';
+
 import { type ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
 
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import {
 	checkBeverageId,
 	checkIngredientId,
 } from '@/features/maps/client/model/dayMapEntities';
+import { getProductName } from '@/features/maps/client/model/productNames';
 
 interface IProps {
 	className?: string;
@@ -20,35 +24,38 @@ interface IProps {
 export default memo<IProps>(function ProductSprite({
 	className,
 	isDecorative,
-	product: { productId, productType },
+	product,
 	size,
 }) {
-	const decorativeProps = isDecorative
-		? ({ 'aria-hidden': true, title: '' } as const)
-		: {};
+	useCatalogLocalizationRevision();
+	const { productId, productType } = product;
+	const name = getProductName(product);
+	const spriteProps = {
+		'aria-hidden': isDecorative,
+		'aria-label': isDecorative ? undefined : name,
+		className,
+		size,
+		title: '',
+	};
+	let sprite;
 
 	if (productType === 1 && checkIngredientId(productId)) {
-		return (
-			<Sprite
-				target="ingredient"
-				recordId={productId}
-				size={size}
-				className={className}
-				{...decorativeProps}
-			/>
+		sprite = (
+			<Sprite target="ingredient" recordId={productId} {...spriteProps} />
 		);
-	}
-	if (productType === 2 && checkBeverageId(productId)) {
-		return (
-			<Sprite
-				target="beverage"
-				recordId={productId}
-				size={size}
-				className={className}
-				{...decorativeProps}
-			/>
+	} else if (productType === 2 && checkBeverageId(productId)) {
+		sprite = (
+			<Sprite target="beverage" recordId={productId} {...spriteProps} />
 		);
+	} else {
+		return null;
 	}
 
-	return null;
+	return isDecorative ? (
+		sprite
+	) : (
+		<Tooltip showArrow content={name} offset={4}>
+			{sprite}
+		</Tooltip>
+	);
 });

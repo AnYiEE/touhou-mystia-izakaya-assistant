@@ -1,7 +1,9 @@
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import type { TPartnerId } from '@/domain/data/partners/types';
 import { type TCollectableLabel } from '@/domain/data/places/collectableLabels';
 import { type TMerchantLabel } from '@/domain/data/places/merchantFacts';
 import type { TMapLabel, TPlaceLabel } from '@/domain/data/places/types';
+import type { TDlc } from '@/domain/data/shared/types';
 
 /** @description Day-scene places outside the fifteen regions (interiors and event scenes). */
 export type TExtraDayMapLabel =
@@ -95,10 +97,13 @@ export interface IDayMapLayout {
 	transitions: ReadonlyArray<IDayMapTransition>;
 }
 
-export type TDayMapCharacterKind = 'merchant' | 'resident' | 'specialGuest';
+export type TDayMapCharacterKind =
+	'merchant' | 'partner' | 'resident' | 'specialGuest';
 
 export interface IDayMapCharacterSprite {
 	file: string;
+	/** @description Supplemental sprite sets may use their own content hash. */
+	hash?: string;
 	height: number;
 	/** @description Feet position inside the image, in image pixels. */
 	pivot: TDayMapPoint;
@@ -114,11 +119,16 @@ export interface IDayMapCharacterDestination {
 export interface IDayMapCharacter {
 	/** @description One entry means a fixed spot; several mean one is picked at random each day. */
 	destinations: ReadonlyArray<IDayMapCharacterDestination>;
+	/** @description Content pack for a character placed outside its own region. */
+	dlc?: TDlc;
 	id: string;
+	/** @description The character artwork is already part of the map. */
+	isEmbedded?: boolean;
 	isOffByDefault: boolean;
 	kind: TDayMapCharacterKind;
-	merchant: TMerchantLabel | null;
+	merchant: TMerchantLabel | TSpecialGuestId | null;
 	name: string;
+	partner?: TPartnerId;
 	showTime: TDayMapHourRange;
 	specialGuest: TSpecialGuestId | null;
 	sprite: IDayMapCharacterSprite | null;

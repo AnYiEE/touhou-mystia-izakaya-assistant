@@ -3,6 +3,7 @@
 import { useCallback } from 'react';
 
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
+import { PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
 import {
 	getDayMapCharacterName,
 	getDayMapPlaceName,
@@ -19,6 +20,7 @@ import type { IDayMapCharacterEntity, TDayMapEntity } from './dayMapEntities';
 import { checkDayMapLabel, getDayMapLabel } from './dayMapLabels';
 
 const specialGuestCatalog = SpecialGuestCatalog.getInstance();
+const partnerCatalog = PartnerCatalog.getInstance();
 
 export function getTransitionTargetName(target: string, fallback: string) {
 	return checkDayMapLabel(target)
@@ -33,7 +35,13 @@ export function getCharacterName({ character }: IDayMapCharacterEntity) {
 			'name'
 		);
 	}
-	if (character.kind === 'merchant' && character.merchant !== null) {
+	if (character.partner !== undefined) {
+		return partnerCatalog.getDisplayPropsById(character.partner, 'name');
+	}
+	if (
+		character.kind === 'merchant' &&
+		typeof character.merchant === 'string'
+	) {
 		return getMerchantLabel(character.merchant);
 	}
 

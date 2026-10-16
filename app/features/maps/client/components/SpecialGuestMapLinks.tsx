@@ -15,6 +15,7 @@ import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import { mapsMessages } from '@/features/maps/client/messages';
 import { trackMapEvent } from '@/features/maps/client/model/analytics';
 import { getDayMapLabel } from '@/features/maps/client/model/dayMapLabels';
+import { prepareMapsNavigation } from '@/features/maps/client/model/mapsHistory';
 import { useDayMapVisibility } from '@/features/maps/client/model/useDayMapVisibility';
 import { getCharacterEntityId, getMapsPageHref } from '@/features/maps/links';
 
@@ -80,6 +81,7 @@ export default memo<IProps>(function SpecialGuestMapLinks({
 						animationUnderline={false}
 						href={href}
 						onPress={() => {
+							prepareMapsNavigation(href);
 							trackMapEvent(
 								'Map Link Button',
 								`Special Guest:${guest}/${map}`

@@ -114,7 +114,7 @@ const CharacterMarker = memo<ICharacterMarkerProps>(function CharacterMarker({
 	spotIndex,
 }) {
 	const { character, id, spots } = entity;
-	const { kind, sprite } = character;
+	const { isEmbedded, kind, sprite } = character;
 	const isRandomSpot = spots.length > 1;
 
 	const handleClick = useCallback(() => {
@@ -158,28 +158,31 @@ const CharacterMarker = memo<ICharacterMarkerProps>(function CharacterMarker({
 						}
 			}
 		>
-			<span
-				aria-hidden
-				className="absolute h-1.5 w-3/5 -translate-x-1/2 rounded-[50%] bg-black/35 blur-[1px]"
-				style={{ left: feetX, top: feetY - 3 }}
-			/>
-			{sprite === null ? (
-				<span className="block h-full w-full rounded-full bg-default-300" />
-			) : (
+			{!isEmbedded && (
 				<span
 					aria-hidden
-					className={cn(
-						'image-rendering-pixelated relative block h-full w-full bg-[length:100%_100%] bg-no-repeat transition-transform duration-150 group-hover:-translate-y-0.5 motion-reduce:transition-none',
-						isSelected
-							? '[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_3px_#ffa800)]'
-							: '[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.9))] group-hover:[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_2px_#ffa800)]'
-					)}
-					style={{
-						backgroundImage: `url('${getCharacterSpriteUrl(sprite.file)}')`,
-					}}
+					className="absolute h-1.5 w-3/5 -translate-x-1/2 rounded-[50%] bg-black/35 blur-[1px]"
+					style={{ left: feetX, top: feetY - 3 }}
 				/>
 			)}
-			{(isLabelVisible || isSelected) && (
+			{!isEmbedded &&
+				(sprite === null ? (
+					<span className="block h-full w-full rounded-full bg-default-300" />
+				) : (
+					<span
+						aria-hidden
+						className={cn(
+							'image-rendering-pixelated relative block h-full w-full bg-[length:100%_100%] bg-no-repeat transition-transform duration-150 group-hover:-translate-y-0.5 motion-reduce:transition-none',
+							isSelected
+								? '[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_3px_#ffa800)]'
+								: '[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.9))] group-hover:[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_2px_#ffa800)]'
+						)}
+						style={{
+							backgroundImage: `url('${getCharacterSpriteUrl(sprite.file, sprite.hash)}')`,
+						}}
+					/>
+				))}
+			{(isLabelVisible || isSelected || isEmbedded) && (
 				<span
 					aria-hidden
 					className={cn(
@@ -271,15 +274,15 @@ const CollectableMarker = memo<ICollectableMarkerProps>(
 							className={cn({ 'opacity-70': isOffByDefault })}
 						/>
 					)}
-					{isTimeLimited && (
-						<span
-							aria-hidden
-							className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#ffa800] text-[0.5rem] text-black shadow-sm ring-1 ring-black/40"
-						>
-							<FontAwesomeIcon icon={faClock} />
-						</span>
-					)}
 				</span>
+				{isTimeLimited && (
+					<span
+						aria-hidden
+						className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#ffa800] text-[0.5rem] text-black shadow-sm ring-1 ring-black/40"
+					>
+						<FontAwesomeIcon icon={faClock} />
+					</span>
+				)}
 				{(isLabelVisible || isSelected) && (
 					<span
 						aria-hidden

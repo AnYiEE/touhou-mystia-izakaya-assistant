@@ -30,6 +30,7 @@ export const DAY_MAP_LAYER_COLORS = {
 	collectable: { dot: 'bg-[#f3d28b]', icon: 'text-[#f3d28b]' },
 	fishing: { dot: 'bg-sky-400', icon: 'text-sky-300' },
 	merchant: { dot: 'bg-success', icon: 'text-success' },
+	partner: { dot: 'bg-rose-400', icon: 'text-rose-300' },
 	resident: { dot: 'bg-default-400', icon: 'text-default-400' },
 	specialGuest: { dot: 'bg-[#ffa800]', icon: 'text-[#ffa800]' },
 	teleport: { dot: 'bg-fuchsia-400', icon: 'text-fuchsia-300' },

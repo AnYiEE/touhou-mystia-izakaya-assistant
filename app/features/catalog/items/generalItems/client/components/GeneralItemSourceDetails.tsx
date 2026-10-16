@@ -23,10 +23,12 @@ import type {
 	TShareableItemId,
 	TShareableItemName,
 } from '@/features/itemSharing/contracts';
+import { TaskMapLinks } from '@/features/maps/client/components/MapLinks';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps {
+	id: number;
 	from: IGeneralItem['from'];
 	openWindow: (
 		path: TItemRoutePath,
@@ -158,7 +160,11 @@ function GeneralItemSource({
 	);
 }
 
-export default function GeneralItemSourceDetails({ from, openWindow }: IProps) {
+export default function GeneralItemSourceDetails({
+	from,
+	id,
+	openWindow,
+}: IProps) {
 	const { t } = useI18n(catalogItemsMessages);
 	const { t: tShared } = useI18n(catalogSharedMessages);
 
@@ -176,6 +182,18 @@ export default function GeneralItemSourceDetails({ from, openWindow }: IProps) {
 							open: tShared('catalog.guestTag.open'),
 						}}
 					/>
+					{'schedulerLabel' in source && (
+						<TaskMapLinks
+							itemId={id}
+							reference={{ task: source.schedulerLabel }}
+						/>
+					)}
+					{'taskReward' in source && (
+						<TaskMapLinks
+							itemId={id}
+							reference={{ task: source.taskReward }}
+						/>
+					)}
 				</Fragment>
 			))}
 		</p>

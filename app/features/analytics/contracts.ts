@@ -48,6 +48,7 @@ type TAction =
 	| 'Map Layer'
 	| 'Map Link'
 	| 'Map Navigation'
+	| 'Map Search'
 	| 'Map Sidebar'
 	| 'Map Zoom'
 	| 'OpenWindow'

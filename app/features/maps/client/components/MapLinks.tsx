@@ -8,8 +8,18 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from '@/design/ui/components/link';
 import Tooltip from '@/design/ui/components/tooltip';
 
-import { type TMerchantLabel } from '@/domain/data/places/merchantFacts';
+import {
+	SCHEDULER_FACTS,
+	type TSchedulerLabel,
+} from '@/domain/data/labels/schedulerFacts';
+import {
+	DAY_MAP_MERCHANT_SPECIAL_GUESTS,
+	DAY_MAP_SPECIAL_GUEST_LOCATIONS,
+	DAY_MAP_TASK_LOCATIONS,
+	type IDayMapCharacterLocation,
+} from '@/domain/data/maps/dayMapSourceFacts';
 import type {
+	ITaskReference,
 	TCollectionPointReference,
 	TMapLabel,
 	TMerchantReference,
@@ -20,8 +30,10 @@ import { rememberOpenedItemPopover } from '@/features/catalog/shared/client/hook
 import { ITEM_PREVIEW_PARAM_NAME } from '@/features/itemSharing/contracts';
 import { mapsMessages } from '@/features/maps/client/messages';
 import { trackMapEvent } from '@/features/maps/client/model/analytics';
+import { prepareMapsNavigation } from '@/features/maps/client/model/mapsHistory';
 import { useDayMapVisibility } from '@/features/maps/client/model/useDayMapVisibility';
 import {
+	getCharacterEntityId,
 	getCollectableEntityId,
 	getFishingEntityId,
 	getMapsPageHref,
@@ -29,15 +41,6 @@ import {
 } from '@/features/maps/links';
 
 import { useI18n } from '@/shared/i18n/useI18n';
-
-/**
- * @description Merchants that move around and have no spot on the day maps.
- * Listed here so catalog pages need not load the character data to know it.
- */
-const UNPLACED_MERCHANTS: ReadonlySet<TMerchantLabel> = new Set([
-	'MengChengGuo',
-	'ThreeFairies',
-]);
 
 /**
  * @description Runs before a map link leaves the page, with the item whose
@@ -69,6 +72,7 @@ function MapIconLink({ href, itemId, trackName }: IMapIconLinkProps) {
 	const handlePress = () => {
 		trackMapEvent('Map Link Button', trackName);
 		onLeave(itemId);
+		prepareMapsNavigation(href);
 	};
 
 	return (
@@ -121,35 +125,98 @@ export const CollectionPointMapLink = memo<{
 	);
 });
 
-/** @description Opens the map with the merchant selected, for merchants with a fixed spot. */
+/** @description Opens the map at the merchant's character, including special-guest shops. */
 export const MerchantMapLink = memo<{
 	itemId: number;
 	reference: TMerchantReference;
 }>(function MerchantMapLink({ itemId, reference }) {
-	const { isMapVisible } = useDayMapVisibility();
+	const { isMapVisible, isSpecialGuestVisible } = useDayMapVisibility();
 	const isHidden = useMapLinksHidden();
+	const specialGuest =
+		reference.specialGuest ??
+		DAY_MAP_MERCHANT_SPECIAL_GUESTS[reference.label];
+	const location =
+		specialGuest === undefined
+			? undefined
+			: DAY_MAP_SPECIAL_GUEST_LOCATIONS[specialGuest];
+	const map = reference.map ?? location?.map;
+	const entity =
+		location === undefined
+			? reference.label === undefined
+				? null
+				: getMerchantReference(reference.label)
+			: getCharacterEntityId(location.characterId);
 
 	if (
 		isHidden ||
-		reference.label === undefined ||
-		reference.map === undefined ||
-		UNPLACED_MERCHANTS.has(reference.label) ||
-		!isMapVisible(reference.map)
+		map === undefined ||
+		entity === null ||
+		!isMapVisible(map) ||
+		(specialGuest !== undefined && !isSpecialGuestVisible(specialGuest))
 	) {
 		return null;
 	}
 
 	return (
 		<MapIconLink
-			href={getMapsPageHref(
-				reference.map,
-				getMerchantReference(reference.label)
-			)}
+			href={getMapsPageHref(map, entity)}
 			itemId={itemId}
-			trackName={`Merchant:${reference.map}/${reference.label}`}
+			trackName={`Merchant:${map}/${reference.label ?? reference.specialGuest}`}
 		/>
 	);
 });
+
+function getTaskLocation(
+	label: TSchedulerLabel
+): IDayMapCharacterLocation | undefined {
+	const location = DAY_MAP_TASK_LOCATIONS[label];
+	if (location !== undefined) {
+		return location;
+	}
+	const fact = SCHEDULER_FACTS[label];
+	return 'specialGuestBond' in fact
+		? DAY_MAP_SPECIAL_GUEST_LOCATIONS[fact.specialGuestBond.specialGuest]
+		: undefined;
+}
+
+/** @description Task links point to the actual sender/receiver and share duplicate destinations. */
+export const TaskMapLinks = memo<{ itemId: number; reference: ITaskReference }>(
+	function TaskMapLinks({ itemId, reference }) {
+		const { isDlcVisible, isMapVisible, isSpecialGuestVisible } =
+			useDayMapVisibility();
+		const isHidden = useMapLinksHidden();
+		if (isHidden) {
+			return null;
+		}
+		const labels =
+			typeof reference.task === 'string'
+				? [reference.task]
+				: reference.task;
+		const locations = new Map<string, IDayMapCharacterLocation>();
+		for (const label of labels) {
+			const fact = SCHEDULER_FACTS[label];
+			if (
+				!isDlcVisible(fact.dlc) ||
+				('specialGuestBond' in fact &&
+					!isSpecialGuestVisible(fact.specialGuestBond.specialGuest))
+			) {
+				continue;
+			}
+			const location = getTaskLocation(label);
+			if (location !== undefined && isMapVisible(location.map)) {
+				locations.set(location.characterId, location);
+			}
+		}
+		return [...locations.values()].map(({ characterId, map }) => (
+			<MapIconLink
+				key={characterId}
+				href={getMapsPageHref(map, getCharacterEntityId(characterId))}
+				itemId={itemId}
+				trackName={`Task:${map}/${characterId}`}
+			/>
+		));
+	}
+);
 
 /** @description Opens the map with its fishing spot selected. */
 export const FishingMapLink = memo<{ itemId: number; map: TMapLabel }>(

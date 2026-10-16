@@ -92,7 +92,7 @@ export default memo<IProps>(function DayMapEntityIcon({
 							? style
 							: {
 									...style,
-									backgroundImage: `url('${getCharacterSpriteUrl(sprite.file)}')`,
+									backgroundImage: `url('${getCharacterSpriteUrl(sprite.file, sprite.hash)}')`,
 								}
 					}
 				/>

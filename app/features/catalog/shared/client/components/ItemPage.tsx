@@ -5,10 +5,12 @@ import { type PropsWithChildren, memo } from 'react';
 
 import Loading from '@/design/ui/components/loading';
 import Placeholder from '@/design/ui/components/placeholder';
+import { SIDE_BOOKMARK_POSITION_CLASS_NAME } from '@/design/ui/components/SideBookmarkButton';
 
 import { useSkipProcessItemData } from '@/features/catalog/shared/client/hooks/useSkipProcessItemData';
 import { useCatalogLocalizationReady } from '@/features/catalog/shared/client/localization/useCatalogLocalizationReady';
 import { catalogSharedMessages } from '@/features/catalog/shared/client/messages';
+import WorldMapButton from '@/features/maps/client/components/WorldMapButton';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 import { useHydrated } from '@/shared/react/useHydrated';
@@ -42,6 +44,9 @@ export default memo<PropsWithChildren<IProps>>(function ItemPage({
 			)}
 		>
 			{!shouldSkipProcessData && sideButton}
+			<div className={SIDE_BOOKMARK_POSITION_CLASS_NAME}>
+				<WorldMapButton />
+			</div>
 			{isEmpty ? (
 				<Placeholder>{t('catalog.itemPage.empty')}</Placeholder>
 			) : (

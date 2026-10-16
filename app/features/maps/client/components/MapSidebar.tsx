@@ -455,7 +455,7 @@ function MapPanel({
 					})}
 				</div>
 			</div>
-			<ScrollShadow className="-mx-1 min-h-0 flex-1 px-1">
+			<ScrollShadow size={16} className="-mx-1 min-h-0 flex-1 px-1">
 				<AnimatePresence initial={false}>
 					{groups.map(({ items, layer }) => (
 						<motion.div
@@ -525,6 +525,7 @@ function WorldMapScroller({
 	return (
 		<ScrollShadow
 			ref={scrollRef}
+			size={16}
 			onScroll={handleScroll}
 			className="min-h-0 flex-1"
 		>
@@ -668,7 +669,7 @@ export default memo<IProps>(function MapSidebar({
 				initial={false}
 				transition={contentMotionTransition}
 				inert={isCollapsed ? true : undefined}
-				className="flex min-h-0 flex-1 flex-col overflow-hidden md:!h-auto md:w-[19rem] md:min-w-[19rem] md:!opacity-100"
+				className="flex min-h-0 flex-initial flex-col overflow-hidden md:!h-auto md:w-[19rem] md:min-w-[19rem] md:flex-1 md:!opacity-100"
 			>
 				<div
 					className={cn(

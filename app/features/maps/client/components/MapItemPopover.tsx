@@ -7,6 +7,7 @@ import {
 	useEffect,
 	useMemo,
 	useRef,
+	useState,
 } from 'react';
 
 import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
@@ -41,12 +42,14 @@ import {
 } from '@/features/catalog/shared/client/localization/tagLabels';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import { mapsMessages } from '@/features/maps/client/messages';
+import { trackMapEvent } from '@/features/maps/client/model/analytics';
 import {
 	checkBeverageId,
 	checkIngredientId,
 } from '@/features/maps/client/model/dayMapEntities';
 import {
 	type TMapItemProduct,
+	clearOpenedMapItem,
 	getMapItemKey,
 	rememberOpenedMapItem,
 } from '@/features/maps/client/model/mapsHistory';
@@ -173,6 +176,15 @@ export default memo<IProps>(function MapItemPopover({
 	const { isHighAppearance } = useDesignPreferences();
 	const { productId, productType } = product;
 	const isOpenRef = useRef(defaultOpen);
+	const [isOpen, setIsOpen] = useState(defaultOpen);
+
+	useEffect(() => {
+		if (defaultOpen && !isOpenRef.current) {
+			isOpenRef.current = true;
+			setIsOpen(true);
+			onOpenChange(true);
+		}
+	}, [defaultOpen, onOpenChange]);
 
 	// The card unmounts its popovers without them reporting that they closed.
 	useEffect(() => {
@@ -196,6 +208,7 @@ export default memo<IProps>(function MapItemPopover({
 	const handleOpenChange = useCallback(
 		(isOpen: boolean) => {
 			isOpenRef.current = isOpen;
+			setIsOpen(isOpen);
 			if (isOpen) {
 				if (productType === 1 && checkIngredientId(productId)) {
 					trackEvent(
@@ -211,9 +224,16 @@ export default memo<IProps>(function MapItemPopover({
 					);
 				}
 			}
+			if (!isOpen) {
+				clearOpenedMapItem();
+				trackMapEvent(
+					'Map Entity Button',
+					`Close Item:${entityId}/${itemKey}`
+				);
+			}
 			onOpenChange(isOpen);
 		},
-		[onOpenChange, productId, productType]
+		[entityId, itemKey, onOpenChange, productId, productType]
 	);
 
 	// Same surface as the detail card: the site popover is too translucent over the game art.
@@ -225,7 +245,7 @@ export default memo<IProps>(function MapItemPopover({
 	return (
 		<ItemPopover
 			showArrow
-			defaultOpen={defaultOpen}
+			isOpen={isOpen}
 			placement="right"
 			onOpenChange={handleOpenChange}
 			classNames={classNames}

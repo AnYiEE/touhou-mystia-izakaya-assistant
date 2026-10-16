@@ -9,6 +9,7 @@ import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TDayMapLabel } from '@/domain/data/maps/types';
 import { type ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
+import type { TDlc } from '@/domain/data/shared/types';
 
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 
@@ -20,6 +21,7 @@ import {
 import { checkDayMapLabel, getDayMapDlc } from './dayMapLabels';
 
 export interface IDayMapVisibility {
+	isDlcVisible: (dlc: TDlc) => boolean;
 	isMapVisible: (map: TDayMapLabel) => boolean;
 	isProductVisible: (
 		product: Pick<ICollectionPointYieldProduct, 'productId' | 'productType'>
@@ -42,6 +44,7 @@ export function useDayMapVisibility(): IDayMapVisibility {
 
 	return useMemo(
 		() => ({
+			isDlcVisible: (dlc) => dlc === 0 || !hiddenDlcs.has(dlc),
 			isMapVisible: (map) => {
 				const dlc = getDayMapDlc(map);
 				return dlc === 0 || !hiddenDlcs.has(dlc);
@@ -89,10 +92,22 @@ export function useDayMapVisibility(): IDayMapVisibility {
  */
 export function filterVisibleDayMapEntities(
 	entities: ReadonlyArray<TDayMapEntity>,
-	{ isMapVisible, isProductVisible, isSpecialGuestVisible }: IDayMapVisibility
+	{
+		isDlcVisible,
+		isMapVisible,
+		isProductVisible,
+		isSpecialGuestVisible,
+	}: IDayMapVisibility
 ) {
 	const result: TDayMapEntity[] = [];
 	for (const entity of entities) {
+		if (
+			'character' in entity &&
+			entity.character.dlc !== undefined &&
+			!isDlcVisible(entity.character.dlc)
+		) {
+			continue;
+		}
 		switch (entity.layer) {
 			case 'collectable': {
 				const products = entity.products.filter(isProductVisible);

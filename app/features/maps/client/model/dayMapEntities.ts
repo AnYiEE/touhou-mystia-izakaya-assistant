@@ -20,7 +20,6 @@ import {
 	COLLECTION_POINT_YIELD_FACTS,
 	type ICollectionPointYieldProduct,
 } from '@/domain/data/places/collectionYieldFacts';
-import { type TMerchantLabel } from '@/domain/data/places/merchantFacts';
 
 import {
 	getCharacterEntityId,
@@ -32,6 +31,7 @@ export type TDayMapLayer =
 	| 'collectable'
 	| 'fishing'
 	| 'merchant'
+	| 'partner'
 	| 'resident'
 	| 'specialGuest'
 	| 'teleport'
@@ -40,6 +40,7 @@ export type TDayMapLayer =
 /** @description Display and list order of the layers. */
 export const DAY_MAP_LAYERS = [
 	'specialGuest',
+	'partner',
 	'merchant',
 	'collectable',
 	'transition',
@@ -66,7 +67,7 @@ export interface IDayMapCollectableEntity extends IDayMapEntityBase {
 
 export interface IDayMapCharacterEntity extends IDayMapEntityBase {
 	character: IDayMapCharacter;
-	layer: 'merchant' | 'resident' | 'specialGuest';
+	layer: 'merchant' | 'partner' | 'resident' | 'specialGuest';
 	/** @description Spots of this character on the current map. */
 	spots: ReadonlyArray<TDayMapPoint>;
 }
@@ -201,20 +202,27 @@ export interface IMerchantGoods {
 
 function checkSoldBy(
 	{ buy }: IBeverage['from'] | IIngredient['from'],
-	merchant: TMerchantLabel
+	merchant: NonNullable<IDayMapCharacter['merchant']>
 ) {
 	return (
 		buy?.some((reference) => {
 			const target = Array.isArray(reference) ? reference[0] : reference;
-			return 'label' in target && target.label === merchant;
+			return typeof merchant === 'number'
+				? 'specialGuest' in target && target.specialGuest === merchant
+				: 'label' in target && target.label === merchant;
 		}) ?? false
 	);
 }
 
-const merchantGoodsCache = new Map<TMerchantLabel, IMerchantGoods>();
+const merchantGoodsCache = new Map<
+	NonNullable<IDayMapCharacter['merchant']>,
+	IMerchantGoods
+>();
 
 /** @description Ingredients and beverages whose purchase sources include the merchant. */
-export function getMerchantGoods(merchant: TMerchantLabel): IMerchantGoods {
+export function getMerchantGoods(
+	merchant: NonNullable<IDayMapCharacter['merchant']>
+): IMerchantGoods {
 	const cached = merchantGoodsCache.get(merchant);
 	if (cached !== undefined) {
 		return cached;
