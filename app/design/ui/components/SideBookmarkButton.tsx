@@ -1,5 +1,7 @@
 'use client';
 
+import { memo } from 'react';
+
 import { type IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
@@ -14,12 +16,12 @@ interface IProps extends Omit<IButtonProps, 'children'> {
 	label: string;
 }
 
-export default function SideBookmarkButton({
+export default memo<IProps>(function SideBookmarkButton({
 	className,
 	icon,
 	label,
 	...props
-}: IProps) {
+}) {
 	return (
 		<Button
 			color="default"
@@ -43,4 +45,4 @@ export default function SideBookmarkButton({
 			</span>
 		</Button>
 	);
-}
+});

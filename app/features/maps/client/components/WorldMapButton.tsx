@@ -1,5 +1,7 @@
 'use client';
 
+import { memo, useCallback } from 'react';
+
 import { faEarthAsia } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'next/navigation';
 
@@ -16,12 +18,19 @@ import { useI18n } from '@/shared/i18n/useI18n';
 
 import { useMapLinksHidden } from './MapLinks';
 
-export default function WorldMapButton() {
+export default memo(function WorldMapButton() {
 	const { t } = useI18n(mapsMessages);
 	const { pathname } = usePathname();
 	const router = useRouter();
 	const vibrate = useVibrate();
 	const isHidden = useMapLinksHidden();
+
+	const handlePress = useCallback(() => {
+		vibrate();
+		trackMapEvent('Map Link Button', `World:${pathname}`);
+		prepareMapsNavigation(MAPS_PAGE_PATH);
+		router.push(MAPS_PAGE_PATH);
+	}, [pathname, router, vibrate]);
 
 	if (isHidden) {
 		return null;
@@ -32,12 +41,7 @@ export default function WorldMapButton() {
 			icon={faEarthAsia}
 			label={t('maps.world.title')}
 			aria-label={t('maps.world.title')}
-			onPress={() => {
-				vibrate();
-				trackMapEvent('Map Link Button', `World:${pathname}`);
-				prepareMapsNavigation(MAPS_PAGE_PATH);
-				router.push(MAPS_PAGE_PATH);
-			}}
+			onPress={handlePress}
 		/>
 	);
-}
+});

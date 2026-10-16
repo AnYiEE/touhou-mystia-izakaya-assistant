@@ -12,6 +12,7 @@ import type { IWorldMapSpot, TDayMapLabel } from '@/domain/data/maps/types';
 import { WORLD_MAP_FACTS } from '@/domain/data/maps/worldMapFacts';
 import { getPlaceLabel } from '@/domain/places/localizedLabels';
 
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import { mapsMessages } from '@/features/maps/client/messages';
 import { getWorldMapImageUrl } from '@/features/maps/client/model/assets';
 import { checkDayMapLabel } from '@/features/maps/client/model/dayMapLabels';
@@ -78,12 +79,7 @@ function checkOverlap(left: IRect, right: IRect) {
 
 /** @description Greedy label placement: below, above, right, then left of each dot. */
 function placeLabels(
-	spots: ReadonlyArray<{
-		hasIcon: boolean;
-		name: string;
-		x: number;
-		y: number;
-	}>
+	spots: ReadonlyArray<{ width: number; x: number; y: number }>
 ) {
 	const occupied: IRect[] = spots.map(({ x, y }) => ({
 		bottom: y + DOT_RADIUS_PX,
@@ -92,8 +88,7 @@ function placeLabels(
 		top: y - DOT_RADIUS_PX,
 	}));
 
-	return spots.map(({ hasIcon, name, x, y }): ILabelPlacement => {
-		const width = estimateLabelWidth(name, hasIcon);
+	return spots.map(({ width, x, y }): ILabelPlacement => {
 		const candidates: ILabelOffset[] = [
 			{ left: -width / 2, top: DOT_RADIUS_PX + LABEL_GAP_PX },
 			{
@@ -214,6 +209,7 @@ export default memo<IProps>(function WorldMapLayer({
 	view,
 }) {
 	const { x: offsetX, y: offsetY, zoom } = view;
+	const localizationRevision = useCatalogLocalizationRevision();
 
 	const spots = useMemo(
 		() =>
@@ -222,17 +218,27 @@ export default memo<IProps>(function WorldMapLayer({
 			),
 		[isMapVisible]
 	);
+	const labels = useMemo(() => {
+		void localizationRevision;
+		return spots.map(({ place, position: [x, y] }) => ({
+			width: estimateLabelWidth(
+				getPlaceLabel(place),
+				!CONNECTED_PLACES.has(place)
+			),
+			x,
+			y,
+		}));
+	}, [localizationRevision, spots]);
 	const labelPlacements = useMemo(
 		() =>
 			placeLabels(
-				spots.map(({ place, position: [x, y] }) => ({
-					hasIcon: !CONNECTED_PLACES.has(place),
-					name: getPlaceLabel(place),
+				labels.map(({ width, x, y }) => ({
+					width,
 					x: x * zoom,
 					y: y * zoom,
 				}))
 			),
-		[spots, zoom]
+		[labels, zoom]
 	);
 
 	return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, memo, useEffect, useMemo, useState } from 'react';
 
 import type { IDayMapArt, TDayMapLabel } from '@/domain/data/maps/types';
 
@@ -70,60 +70,95 @@ export default memo<IProps>(function DayMapTiles({ art, map, view }) {
 		[levelInfo]
 	);
 
-	if (levelInfo === undefined) {
-		return null;
-	}
-
 	const tileScreenSize = art.tileSize * levelScale * view.zoom;
 	const firstColumn = Math.max(
 		0,
 		Math.floor((-view.x - PRELOAD_MARGIN_PX) / tileScreenSize)
 	);
-	const lastColumn = Math.min(
-		levelInfo.columns - 1,
-		Math.floor((view.width - view.x + PRELOAD_MARGIN_PX) / tileScreenSize)
-	);
+	const lastColumn =
+		levelInfo === undefined
+			? -1
+			: Math.min(
+					levelInfo.columns - 1,
+					Math.floor(
+						(view.width - view.x + PRELOAD_MARGIN_PX) /
+							tileScreenSize
+					)
+				);
 	const firstRow = Math.max(
 		0,
 		Math.floor((-view.y - PRELOAD_MARGIN_PX) / tileScreenSize)
 	);
-	const lastRow = Math.min(
-		levelInfo.rows - 1,
-		Math.floor((view.height - view.y + PRELOAD_MARGIN_PX) / tileScreenSize)
-	);
+	const lastRow =
+		levelInfo === undefined
+			? -1
+			: Math.min(
+					levelInfo.rows - 1,
+					Math.floor(
+						(view.height - view.y + PRELOAD_MARGIN_PX) /
+							tileScreenSize
+					)
+				);
 
-	const tiles = [];
-	for (let row = firstRow; row <= lastRow; row++) {
-		for (let column = firstColumn; column <= lastColumn; column++) {
-			const key = `${column}_${row}`;
-			if (!tileSet.has(key)) {
-				continue;
-			}
-			const width =
-				Math.min(
-					art.tileSize,
-					levelInfo.width - column * art.tileSize
-				) *
-				levelScale *
-				view.zoom;
-			const height =
-				Math.min(art.tileSize, levelInfo.height - row * art.tileSize) *
-				levelScale *
-				view.zoom;
-			tiles.push(
-				<span
-					key={`${level}:${key}`}
-					className="image-rendering-pixelated absolute bg-[length:100%_100%] bg-no-repeat"
-					style={{
-						backgroundImage: `url('${getDayMapTileUrl(map, level, column, row)}')`,
-						height: Math.ceil(height) + 1,
-						left: Math.floor(column * tileScreenSize),
-						top: Math.floor(row * tileScreenSize),
-						width: Math.ceil(width) + 1,
-					}}
-				/>
-			);
+	// Panning within the same tile bounds only moves the parent container.
+	const tiles = useMemo(() => {
+		const tiles: ReactNode[] = [];
+		if (levelInfo === undefined) {
+			return tiles;
 		}
+		for (let row = firstRow; row <= lastRow; row++) {
+			for (let column = firstColumn; column <= lastColumn; column++) {
+				const key = `${column}_${row}`;
+				if (!tileSet.has(key)) {
+					continue;
+				}
+				const width =
+					Math.min(
+						art.tileSize,
+						levelInfo.width - column * art.tileSize
+					) *
+					levelScale *
+					view.zoom;
+				const height =
+					Math.min(
+						art.tileSize,
+						levelInfo.height - row * art.tileSize
+					) *
+					levelScale *
+					view.zoom;
+				tiles.push(
+					<span
+						key={`${level}:${key}`}
+						className="image-rendering-pixelated absolute bg-[length:100%_100%] bg-no-repeat"
+						style={{
+							backgroundImage: `url('${getDayMapTileUrl(map, level, column, row)}')`,
+							height: Math.ceil(height) + 1,
+							left: Math.floor(column * tileScreenSize),
+							top: Math.floor(row * tileScreenSize),
+							width: Math.ceil(width) + 1,
+						}}
+					/>
+				);
+			}
+		}
+		return tiles;
+	}, [
+		art.tileSize,
+		firstColumn,
+		firstRow,
+		lastColumn,
+		lastRow,
+		level,
+		levelInfo,
+		levelScale,
+		map,
+		tileScreenSize,
+		tileSet,
+		view.zoom,
+	]);
+
+	if (levelInfo === undefined) {
+		return null;
 	}
 
 	return (

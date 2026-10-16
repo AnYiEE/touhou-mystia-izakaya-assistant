@@ -76,7 +76,11 @@ const beverageCatalog = BeverageCatalog.getInstance();
 const ingredientCatalog = IngredientCatalog.getInstance();
 
 /** @description Opens the catalog page in the small preview window, like other cross-page item links. */
-function CatalogButton({ onPress }: { onPress: () => void }) {
+const CatalogButton = memo(function CatalogButton({
+	onPress,
+}: {
+	onPress: () => void;
+}) {
 	const { t } = useI18n(mapsMessages);
 
 	return (
@@ -93,9 +97,9 @@ function CatalogButton({ onPress }: { onPress: () => void }) {
 			</Button>
 		</div>
 	);
-}
+});
 
-function ItemDetails({
+const ItemDetails = memo(function ItemDetails({
 	product: { productId, productType },
 }: Pick<IProps, 'product'>) {
 	const openWindow = useViewInNewWindow();
@@ -162,7 +166,7 @@ function ItemDetails({
 	}
 
 	return null;
-}
+});
 
 /** @description Opens the catalog card of an ingredient or beverage in place. */
 export default memo<IProps>(function MapItemPopover({

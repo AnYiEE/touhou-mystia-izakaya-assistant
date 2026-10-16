@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, memo, useContext } from 'react';
+import { createContext, memo, useCallback, useContext, useMemo } from 'react';
 
 import { faMapLocationDot } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -64,16 +64,20 @@ interface IMapIconLinkProps {
 	trackName: string;
 }
 
-function MapIconLink({ href, itemId, trackName }: IMapIconLinkProps) {
+const MapIconLink = memo(function MapIconLink({
+	href,
+	itemId,
+	trackName,
+}: IMapIconLinkProps) {
 	const { t } = useI18n(mapsMessages);
 	const onLeave = useContext(MapLinkLeaveContext);
 
 	const text = t('maps.link.viewOnMap');
-	const handlePress = () => {
+	const handlePress = useCallback(() => {
 		trackMapEvent('Map Link Button', trackName);
 		onLeave(itemId);
 		prepareMapsNavigation(href);
-	};
+	}, [href, itemId, onLeave, trackName]);
 
 	return (
 		<Tooltip showArrow content={text} offset={2} size="sm">
@@ -91,7 +95,7 @@ function MapIconLink({ href, itemId, trackName }: IMapIconLinkProps) {
 			</Link>
 		</Tooltip>
 	);
-}
+});
 
 /**
  * @description Opens the map with the collection point selected. References
@@ -185,29 +189,34 @@ export const TaskMapLinks = memo<{ itemId: number; reference: ITaskReference }>(
 		const { isDlcVisible, isMapVisible, isSpecialGuestVisible } =
 			useDayMapVisibility();
 		const isHidden = useMapLinksHidden();
+		const locations = useMemo(() => {
+			const labels =
+				typeof reference.task === 'string'
+					? [reference.task]
+					: reference.task;
+			const locations = new Map<string, IDayMapCharacterLocation>();
+			for (const label of labels) {
+				const fact = SCHEDULER_FACTS[label];
+				if (
+					!isDlcVisible(fact.dlc) ||
+					('specialGuestBond' in fact &&
+						!isSpecialGuestVisible(
+							fact.specialGuestBond.specialGuest
+						))
+				) {
+					continue;
+				}
+				const location = getTaskLocation(label);
+				if (location !== undefined && isMapVisible(location.map)) {
+					locations.set(location.characterId, location);
+				}
+			}
+			return [...locations.values()];
+		}, [isDlcVisible, isMapVisible, isSpecialGuestVisible, reference.task]);
 		if (isHidden) {
 			return null;
 		}
-		const labels =
-			typeof reference.task === 'string'
-				? [reference.task]
-				: reference.task;
-		const locations = new Map<string, IDayMapCharacterLocation>();
-		for (const label of labels) {
-			const fact = SCHEDULER_FACTS[label];
-			if (
-				!isDlcVisible(fact.dlc) ||
-				('specialGuestBond' in fact &&
-					!isSpecialGuestVisible(fact.specialGuestBond.specialGuest))
-			) {
-				continue;
-			}
-			const location = getTaskLocation(label);
-			if (location !== undefined && isMapVisible(location.map)) {
-				locations.set(location.characterId, location);
-			}
-		}
-		return [...locations.values()].map(({ characterId, map }) => (
+		return locations.map(({ characterId, map }) => (
 			<MapIconLink
 				key={characterId}
 				href={getMapsPageHref(map, getCharacterEntityId(characterId))}

@@ -20,11 +20,6 @@ import Tooltip from '@/design/ui/components/tooltip';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import { mapsMessages } from '@/features/maps/client/messages';
-import {
-	type TMapGesture,
-	trackMapEvent,
-	trackMapGesture,
-} from '@/features/maps/client/model/analytics';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
@@ -74,47 +69,12 @@ const KEYBOARD_PAN_PX = 80;
 const WHEEL_ZOOM_SPEED = 0.0015;
 const BUTTON_ZOOM_STEP = 1.6;
 const MIN_ZOOM_FIT_RATIO = 0.8;
-/** @description A wheel or arrow-key gesture ends after this long without input. */
-const GESTURE_IDLE_MS = 400;
-
 function clamp(value: number, min: number, max: number) {
 	return Math.min(max, Math.max(min, value));
 }
 
 function easeOutCubic(progress: number) {
 	return 1 - (1 - progress) ** 3;
-}
-
-/** @description Reports a repeating gesture, such as wheel or arrow-key input, once until it pauses. */
-function useGestureTracker() {
-	const timersRef = useRef(
-		new Map<TMapGesture, ReturnType<typeof setTimeout>>()
-	);
-
-	useEffect(() => {
-		const timers = timersRef.current;
-		return () => {
-			for (const timer of timers.values()) {
-				clearTimeout(timer);
-			}
-		};
-	}, []);
-
-	return useCallback((gesture: TMapGesture) => {
-		const timers = timersRef.current;
-		const timer = timers.get(gesture);
-		if (timer === undefined) {
-			trackMapGesture(gesture);
-		} else {
-			clearTimeout(timer);
-		}
-		timers.set(
-			gesture,
-			setTimeout(() => {
-				timers.delete(gesture);
-			}, GESTURE_IDLE_MS)
-		);
-	}, []);
 }
 
 export default memo<IProps>(function MapViewport({
@@ -132,7 +92,6 @@ export default memo<IProps>(function MapViewport({
 }) {
 	const { t } = useI18n(mapsMessages);
 	const isReducedMotion = useReducedMotion();
-	const trackGesture = useGestureTracker();
 
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [view, setView] = useState<IMapView>({
@@ -150,8 +109,6 @@ export default memo<IProps>(function MapViewport({
 	const gestureRef = useRef<{
 		distance: number;
 		isDragging: boolean;
-		/** @description A second pointer joined at some point. */
-		isPinch: boolean;
 		startX: number;
 		startY: number;
 	} | null>(null);
@@ -188,6 +145,16 @@ export default memo<IProps>(function MapViewport({
 				next.height / 2 - scaledHeight,
 				next.height / 2
 			);
+			const { current } = viewRef;
+			if (
+				current.height === next.height &&
+				current.width === next.width &&
+				current.x === x &&
+				current.y === y &&
+				current.zoom === zoom
+			) {
+				return;
+			}
 			const clamped = { ...next, x, y, zoom };
 			viewRef.current = clamped;
 			setView(clamped);
@@ -395,7 +362,6 @@ export default memo<IProps>(function MapViewport({
 		const handleWheel = (event: WheelEvent) => {
 			event.preventDefault();
 			cancelAnimation();
-			trackGesture('Wheel');
 			const rect = container.getBoundingClientRect();
 			const delta =
 				event.deltaMode === WheelEvent.DOM_DELTA_LINE
@@ -412,7 +378,7 @@ export default memo<IProps>(function MapViewport({
 		return () => {
 			container.removeEventListener('wheel', handleWheel);
 		};
-	}, [cancelAnimation, trackGesture, zoomAt]);
+	}, [cancelAnimation, zoomAt]);
 
 	const handlePointerDown = useCallback(
 		(event: PointerEvent<HTMLDivElement>) => {
@@ -436,9 +402,6 @@ export default memo<IProps>(function MapViewport({
 						? Math.hypot(first.x - second.x, first.y - second.y)
 						: 0,
 				isDragging: gestureRef.current?.isDragging ?? false,
-				isPinch:
-					(gestureRef.current?.isPinch ?? false) ||
-					second !== undefined,
 				startX: event.clientX,
 				startY: event.clientY,
 			};
@@ -518,7 +481,6 @@ export default memo<IProps>(function MapViewport({
 				return;
 			}
 			if (gesture?.isDragging) {
-				trackMapGesture(gesture.isPinch ? 'Pinch' : 'Pan');
 				isClickSuppressedRef.current = true;
 				setTimeout(() => {
 					isClickSuppressedRef.current = false;
@@ -565,40 +527,33 @@ export default memo<IProps>(function MapViewport({
 			switch (event.key) {
 				case 'ArrowLeft':
 					commit({ ...current, x: current.x + KEYBOARD_PAN_PX });
-					trackGesture('Keyboard Pan');
 					break;
 				case 'ArrowRight':
 					commit({ ...current, x: current.x - KEYBOARD_PAN_PX });
-					trackGesture('Keyboard Pan');
 					break;
 				case 'ArrowUp':
 					commit({ ...current, y: current.y + KEYBOARD_PAN_PX });
-					trackGesture('Keyboard Pan');
 					break;
 				case 'ArrowDown':
 					commit({ ...current, y: current.y - KEYBOARD_PAN_PX });
-					trackGesture('Keyboard Pan');
 					break;
 				case '+':
 				case '=':
 					zoomAt(centerX, centerY, current.zoom * BUTTON_ZOOM_STEP);
-					trackMapEvent('Map Zoom Button', 'In:Keyboard');
 					break;
 				case '-':
 				case '_':
 					zoomAt(centerX, centerY, current.zoom / BUTTON_ZOOM_STEP);
-					trackMapEvent('Map Zoom Button', 'Out:Keyboard');
 					break;
 				case '0':
 					animateTo(getFitView(current.width, current.height));
-					trackMapEvent('Map Zoom Button', 'Fit:Keyboard');
 					break;
 				default:
 					return;
 			}
 			event.preventDefault();
 		},
-		[animateTo, commit, getFitView, trackGesture, zoomAt]
+		[animateTo, commit, getFitView, zoomAt]
 	);
 
 	const zoomBy = useCallback(
@@ -614,15 +569,12 @@ export default memo<IProps>(function MapViewport({
 	);
 
 	const handleZoomIn = useCallback(() => {
-		trackMapEvent('Map Zoom Button', 'In');
 		zoomBy(BUTTON_ZOOM_STEP);
 	}, [zoomBy]);
 	const handleZoomOut = useCallback(() => {
-		trackMapEvent('Map Zoom Button', 'Out');
 		zoomBy(1 / BUTTON_ZOOM_STEP);
 	}, [zoomBy]);
 	const handleFit = useCallback(() => {
-		trackMapEvent('Map Zoom Button', 'Fit');
 		const { height, width } = viewRef.current;
 		animateTo(getFitView(width, height));
 	}, [animateTo, getFitView]);

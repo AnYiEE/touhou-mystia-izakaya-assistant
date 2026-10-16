@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { isAvailableWithHiddenDlcs } from '@/domain/availability';
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
@@ -42,47 +42,60 @@ export function useDayMapVisibility(): IDayMapVisibility {
 	const hiddenBeverages = globalStore.hiddenBeverages.use();
 	const hiddenIngredients = globalStore.hiddenIngredients.use();
 
+	const isDlcVisible = useCallback(
+		(dlc: TDlc) => dlc === 0 || !hiddenDlcs.has(dlc),
+		[hiddenDlcs]
+	);
+	const isMapVisible = useCallback(
+		(map: TDayMapLabel) => isDlcVisible(getDayMapDlc(map)),
+		[isDlcVisible]
+	);
+	const isProductVisible = useCallback<IDayMapVisibility['isProductVisible']>(
+		({ productId, productType }) => {
+			if (productType === 1 && checkIngredientId(productId)) {
+				return (
+					!hiddenIngredients.has(productId) &&
+					isAvailableWithHiddenDlcs(
+						ingredientCatalog.getPropsById(
+							productId,
+							'availabilityPaths'
+						),
+						hiddenDlcs
+					)
+				);
+			}
+			if (productType === 2 && checkBeverageId(productId)) {
+				return (
+					!hiddenBeverages.has(productId) &&
+					isAvailableWithHiddenDlcs(
+						beverageCatalog.getPropsById(
+							productId,
+							'availabilityPaths'
+						),
+						hiddenDlcs
+					)
+				);
+			}
+			return true;
+		},
+		[hiddenBeverages, hiddenDlcs, hiddenIngredients]
+	);
+	const isSpecialGuestVisible = useCallback(
+		(id: TSpecialGuestId) =>
+			isAvailableWithHiddenDlcs(
+				specialGuestCatalog.getPropsById(id, 'availabilityPaths'),
+				hiddenDlcs
+			),
+		[hiddenDlcs]
+	);
 	return useMemo(
 		() => ({
-			isDlcVisible: (dlc) => dlc === 0 || !hiddenDlcs.has(dlc),
-			isMapVisible: (map) => {
-				const dlc = getDayMapDlc(map);
-				return dlc === 0 || !hiddenDlcs.has(dlc);
-			},
-			isProductVisible: ({ productId, productType }) => {
-				if (productType === 1 && checkIngredientId(productId)) {
-					return (
-						!hiddenIngredients.has(productId) &&
-						isAvailableWithHiddenDlcs(
-							ingredientCatalog.getPropsById(
-								productId,
-								'availabilityPaths'
-							),
-							hiddenDlcs
-						)
-					);
-				}
-				if (productType === 2 && checkBeverageId(productId)) {
-					return (
-						!hiddenBeverages.has(productId) &&
-						isAvailableWithHiddenDlcs(
-							beverageCatalog.getPropsById(
-								productId,
-								'availabilityPaths'
-							),
-							hiddenDlcs
-						)
-					);
-				}
-				return true;
-			},
-			isSpecialGuestVisible: (id) =>
-				isAvailableWithHiddenDlcs(
-					specialGuestCatalog.getPropsById(id, 'availabilityPaths'),
-					hiddenDlcs
-				),
+			isDlcVisible,
+			isMapVisible,
+			isProductVisible,
+			isSpecialGuestVisible,
 		}),
-		[hiddenBeverages, hiddenDlcs, hiddenIngredients]
+		[isDlcVisible, isMapVisible, isProductVisible, isSpecialGuestVisible]
 	);
 }
 

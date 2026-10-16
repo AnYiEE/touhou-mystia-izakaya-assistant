@@ -38,6 +38,7 @@ import { DAY_MAP_EXTRA_FACTS } from '@/domain/data/maps/dayMapExtraFacts';
 import type { TDayMapLabel } from '@/domain/data/maps/types';
 import { ALL_MAP_LABELS } from '@/domain/data/places/placeFacts';
 
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import { mapsMessages } from '@/features/maps/client/messages';
 import { trackMapEvent } from '@/features/maps/client/model/analytics';
 import { getDayMapPreviewUrl } from '@/features/maps/client/model/assets';
@@ -92,6 +93,7 @@ interface IMapCardProps {
 
 const MapCard = memo<IMapCardProps>(function MapCard({ map, onEnterMap }) {
 	const { t } = useI18n(mapsMessages);
+	useCatalogLocalizationRevision();
 
 	const dlc = getDayMapDlc(map);
 	const kind = checkExtraDayMapLabel(map)
@@ -174,6 +176,63 @@ const WorldMapList = memo<Pick<IProps, 'isMapVisible' | 'onEnterMap'>>(
 	}
 );
 
+interface IEntityRowProps {
+	entity: TDayMapEntity;
+	isSelected: boolean;
+	name: string;
+	onSelect: (id: string) => void;
+}
+
+const EntityRow = memo<IEntityRowProps>(function EntityRow({
+	entity,
+	isSelected,
+	name,
+	onSelect,
+}) {
+	const { t } = useI18n(mapsMessages);
+	const handleClick = useCallback(() => {
+		onSelect(entity.id);
+	}, [entity.id, onSelect]);
+	return (
+		<li>
+			<button
+				aria-pressed={isSelected}
+				type="button"
+				onClick={handleClick}
+				className={cn(
+					'flex w-full items-center gap-2 rounded-medium px-1.5 py-1 text-left text-small transition-colors motion-reduce:transition-none',
+					CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+					isSelected
+						? 'bg-[#ffa800]/15 font-medium text-foreground ring-1 ring-inset ring-[#ffa800]/60'
+						: 'hover:bg-default-100'
+				)}
+			>
+				<DayMapEntityIcon entity={entity} size={2} />
+				<span className="min-w-0 flex-1 truncate">
+					{entity.layer === 'transition'
+						? t('maps.toTarget', { map: name })
+						: name}
+				</span>
+				{entity.layer === 'collectable' &&
+					checkTimeLimited(entity.collectable.showTime) && (
+						<span className="shrink-0 rounded-full bg-[#ffa800]/15 px-1.5 text-tiny font-medium text-foreground">
+							{t('maps.detail.timeRange', {
+								from: entity.collectable.showTime[0],
+								to: entity.collectable.showTime[1],
+							})}
+						</span>
+					)}
+				{'spots' in entity && entity.spots.length > 1 && (
+					<span className="shrink-0 text-tiny text-default-500">
+						<FontAwesomeIcon icon={faShuffle} size="xs" />
+						{entity.spots.length}
+					</span>
+				)}
+			</button>
+		</li>
+	);
+});
+
 interface IEntityGroupProps {
 	isExpanded: boolean;
 	items: ReadonlyArray<TDayMapEntity>;
@@ -195,6 +254,13 @@ const EntityGroup = memo<IEntityGroupProps>(function EntityGroup({
 	const isReducedMotion = useReducedMotion();
 	const getName = useDayMapEntityName();
 
+	const namedItems = useMemo(
+		() => items.map((entity) => ({ entity, name: getName(entity) })),
+		[getName, items]
+	);
+	const handleToggleExpanded = useCallback(() => {
+		onToggleExpanded(layer);
+	}, [layer, onToggleExpanded]);
 	const transition = getMapTransition(isReducedMotion);
 
 	return (
@@ -203,9 +269,7 @@ const EntityGroup = memo<IEntityGroupProps>(function EntityGroup({
 				<button
 					aria-expanded={isExpanded}
 					type="button"
-					onClick={() => {
-						onToggleExpanded(layer);
-					}}
+					onClick={handleToggleExpanded}
 					className={cn(
 						'flex w-full items-center gap-1.5 rounded-medium px-1 py-0.5 text-left text-tiny font-semibold text-default-600 transition-colors hover:bg-default-100 motion-reduce:transition-none',
 						CLASSNAME_FOCUS_VISIBLE_OUTLINE
@@ -241,68 +305,15 @@ const EntityGroup = memo<IEntityGroupProps>(function EntityGroup({
 						transition={transition}
 						className="space-y-0.5 pt-1"
 					>
-						{items.map((entity) => {
-							const name = getName(entity);
-							const isSelected = entity.id === selectedId;
-							return (
-								<li key={entity.id}>
-									<button
-										aria-pressed={isSelected}
-										type="button"
-										onClick={() => {
-											onSelect(entity.id);
-										}}
-										className={cn(
-											'flex w-full items-center gap-2 rounded-medium px-1.5 py-1 text-left text-small transition-colors motion-reduce:transition-none',
-											CLASSNAME_FOCUS_VISIBLE_OUTLINE,
-											isSelected
-												? 'bg-[#ffa800]/15 font-medium text-foreground ring-1 ring-inset ring-[#ffa800]/60'
-												: 'hover:bg-default-100'
-										)}
-									>
-										<DayMapEntityIcon
-											entity={entity}
-											size={2}
-										/>
-										<span className="min-w-0 flex-1 truncate">
-											{entity.layer === 'transition'
-												? t('maps.toTarget', {
-														map: name,
-													})
-												: name}
-										</span>
-										{entity.layer === 'collectable' &&
-											checkTimeLimited(
-												entity.collectable.showTime
-											) && (
-												<span className="shrink-0 rounded-full bg-[#ffa800]/15 px-1.5 text-tiny font-medium text-foreground">
-													{t(
-														'maps.detail.timeRange',
-														{
-															from: entity
-																.collectable
-																.showTime[0],
-															to: entity
-																.collectable
-																.showTime[1],
-														}
-													)}
-												</span>
-											)}
-										{'spots' in entity &&
-											entity.spots.length > 1 && (
-												<span className="shrink-0 text-tiny text-default-500">
-													<FontAwesomeIcon
-														icon={faShuffle}
-														size="xs"
-													/>
-													{entity.spots.length}
-												</span>
-											)}
-									</button>
-								</li>
-							);
-						})}
+						{namedItems.map(({ entity, name }) => (
+							<EntityRow
+								key={entity.id}
+								entity={entity}
+								isSelected={entity.id === selectedId}
+								name={name}
+								onSelect={onSelect}
+							/>
+						))}
 					</motion.ul>
 				)}
 			</AnimatePresence>
@@ -322,7 +333,7 @@ interface IMapPanelProps extends Omit<
 }
 
 /** @description Search, layer filters and the entity list; only the list scrolls. */
-function MapPanel({
+const MapPanel = memo(function MapPanel({
 	entities,
 	hiddenLayers,
 	onQueryChange,
@@ -364,29 +375,38 @@ function MapPanel({
 		return counts;
 	}, [entities]);
 
-	const trimmedQuery = query.trim();
-	const groups = useMemo(
+	const searchableEntities = useMemo(
 		() =>
-			DAY_MAP_LAYERS.map((layer) => ({
-				items: entities.filter((entity) => {
-					if (entity.layer !== layer || hiddenLayers.has(layer)) {
-						return false;
-					}
-					if (trimmedQuery === '') {
-						return true;
-					}
-					// The catalog's name search: pinyin and initials in Chinese, folded text elsewhere.
-					const name = getName(entity);
-					return matchNameByLocale(
-						trimmedQuery,
-						{ name, pinyin: getPinyin(name) },
-						locale
-					);
-				}),
-				layer,
-			})).filter(({ items }) => items.length > 0),
-		[entities, getName, hiddenLayers, locale, trimmedQuery]
+			entities.map((entity) => {
+				const name = getName(entity);
+				return { entity, name, pinyin: getPinyin(name) };
+			}),
+		[entities, getName]
 	);
+	const trimmedQuery = query.trim();
+	const groups = useMemo(() => {
+		const layerItems = new Map<TDayMapLayer, TDayMapEntity[]>();
+		for (const item of searchableEntities) {
+			const { entity } = item;
+			if (
+				hiddenLayers.has(entity.layer) ||
+				(trimmedQuery !== '' &&
+					!matchNameByLocale(trimmedQuery, item, locale))
+			) {
+				continue;
+			}
+			const items = layerItems.get(entity.layer);
+			if (items === undefined) {
+				layerItems.set(entity.layer, [entity]);
+			} else {
+				items.push(entity);
+			}
+		}
+		return DAY_MAP_LAYERS.flatMap((layer) => {
+			const items = layerItems.get(layer);
+			return items === undefined ? [] : [{ items, layer }];
+		});
+	}, [hiddenLayers, locale, searchableEntities, trimmedQuery]);
 
 	const transition = getMapTransition(isReducedMotion);
 
@@ -484,13 +504,13 @@ function MapPanel({
 			</ScrollShadow>
 		</div>
 	);
-}
+});
 
 /**
  * @description The world list keeps its own scroll position, so going back
  * from a map shows the card that was used to enter it.
  */
-function WorldMapScroller({
+const WorldMapScroller = memo(function WorldMapScroller({
 	isMapVisible,
 	onEnterMap,
 	scrollTopRef,
@@ -535,7 +555,7 @@ function WorldMapScroller({
 			/>
 		</ScrollShadow>
 	);
-}
+});
 
 export default memo<IProps>(function MapSidebar({
 	isCollapsed,
@@ -547,6 +567,7 @@ export default memo<IProps>(function MapSidebar({
 	...props
 }) {
 	const { t } = useI18n(mapsMessages);
+	useCatalogLocalizationRevision();
 	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
 	const worldScrollTopRef = useRef(0);

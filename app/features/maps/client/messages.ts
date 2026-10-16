@@ -1,3 +1,5 @@
+import { appShellMessages } from '@/features/appShell/client/messages';
+
 import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const MAPS_MESSAGES_ZH_CN = {
@@ -28,7 +30,8 @@ const MAPS_MESSAGES_ZH_CN = {
 	'maps.detail.refreshValue': '{hours}小时',
 	'maps.detail.showTime': '出现时段',
 	'maps.detail.spot': '位置{index}',
-	'maps.detail.tagsBeverage': '酒水',
+	'maps.detail.tagsBeverage':
+		appShellMessages['zh-CN']['appShell.nav.beverages'],
 	'maps.detail.tagsDislike': '厌恶',
 	'maps.detail.tagsLike': '喜好',
 	'maps.detail.teleport':
@@ -42,10 +45,11 @@ const MAPS_MESSAGES_ZH_CN = {
 	'maps.kind.fishing': '钓鱼点',
 	'maps.kind.interior': '室内',
 	'maps.kind.merchant': '商人',
-	'maps.kind.partner': '伙伴',
+	'maps.kind.partner': appShellMessages['zh-CN']['appShell.nav.partners'],
 	'maps.kind.place': '地点',
 	'maps.kind.resident': '居民',
-	'maps.kind.specialGuest': '稀客',
+	'maps.kind.specialGuest':
+		appShellMessages['zh-CN']['appShell.nav.specialGuests'],
 	'maps.kind.teleport': '隙间传送',
 	'maps.kind.transition': '出入口',
 	'maps.layers': '图层',
@@ -104,7 +108,8 @@ export const mapsMessages = {
 		'maps.detail.refreshValue': 'every {hours} h',
 		'maps.detail.showTime': 'Hours',
 		'maps.detail.spot': 'Spot {index}',
-		'maps.detail.tagsBeverage': 'Beverages',
+		'maps.detail.tagsBeverage':
+			appShellMessages.en['appShell.nav.beverages'],
 		'maps.detail.tagsDislike': 'Dislikes',
 		'maps.detail.tagsLike': 'Likes',
 		'maps.detail.teleport':
@@ -118,10 +123,11 @@ export const mapsMessages = {
 		'maps.kind.fishing': 'Fishing spot',
 		'maps.kind.interior': 'Interior',
 		'maps.kind.merchant': 'Merchant',
-		'maps.kind.partner': 'Partner',
+		'maps.kind.partner': appShellMessages.en['appShell.nav.partners'],
 		'maps.kind.place': 'Place',
 		'maps.kind.resident': 'Resident',
-		'maps.kind.specialGuest': 'Special guest',
+		'maps.kind.specialGuest':
+			appShellMessages.en['appShell.nav.specialGuests'],
 		'maps.kind.teleport': 'Gap teleport',
 		'maps.kind.transition': 'Exit',
 		'maps.layers': 'Layers',
@@ -176,24 +182,26 @@ export const mapsMessages = {
 		'maps.detail.refreshValue': '{hours}時間',
 		'maps.detail.showTime': '出現時間帯',
 		'maps.detail.spot': '位置{index}',
-		'maps.detail.tagsBeverage': '飲み物',
-		'maps.detail.tagsDislike': '苦手',
+		'maps.detail.tagsBeverage':
+			appShellMessages.ja['appShell.nav.beverages'],
+		'maps.detail.tagsDislike': '嫌い',
 		'maps.detail.tagsLike': '好み',
 		'maps.detail.teleport':
 			'ここから解放済みの場所へワープできます。{first}や{second}など、ワープでしか行けない場所もあります。',
 		'maps.detail.timeRange': '{from}:00～{to}:00',
 		'maps.detail.viewGuest': 'レア客の詳細を見る',
 		'maps.detail.viewInCatalog': '図鑑で見る',
-		'maps.detail.viewPartner': 'パートナーの詳細を見る',
+		'maps.detail.viewPartner': `${appShellMessages.ja['appShell.nav.partners']}の詳細を見る`,
 		'maps.kind.collectable': '採取ポイント',
 		'maps.kind.event': 'イベント会場',
 		'maps.kind.fishing': '釣りスポット',
 		'maps.kind.interior': '屋内',
 		'maps.kind.merchant': '商人',
-		'maps.kind.partner': 'パートナー',
+		'maps.kind.partner': appShellMessages.ja['appShell.nav.partners'],
 		'maps.kind.place': '場所',
 		'maps.kind.resident': '住人',
-		'maps.kind.specialGuest': 'レア客',
+		'maps.kind.specialGuest':
+			appShellMessages.ja['appShell.nav.specialGuests'],
 		'maps.kind.teleport': 'スキマワープ',
 		'maps.kind.transition': '出入口',
 		'maps.layers': 'レイヤー',
@@ -247,7 +255,8 @@ export const mapsMessages = {
 		'maps.detail.refreshValue': '{hours}시간',
 		'maps.detail.showTime': '출현 시간대',
 		'maps.detail.spot': '위치 {index}',
-		'maps.detail.tagsBeverage': '음료',
+		'maps.detail.tagsBeverage':
+			appShellMessages.ko['appShell.nav.beverages'],
 		'maps.detail.tagsDislike': '비선호',
 		'maps.detail.tagsLike': '선호',
 		'maps.detail.teleport':
@@ -255,16 +264,17 @@ export const mapsMessages = {
 		'maps.detail.timeRange': '{from}:00~{to}:00',
 		'maps.detail.viewGuest': '희귀 손님 상세 보기',
 		'maps.detail.viewInCatalog': '도감에서 보기',
-		'maps.detail.viewPartner': '파트너 상세 보기',
+		'maps.detail.viewPartner': `${appShellMessages.ko['appShell.nav.partners']} 상세 보기`,
 		'maps.kind.collectable': '채집 지점',
 		'maps.kind.event': '이벤트 장소',
 		'maps.kind.fishing': '낚시 지점',
 		'maps.kind.interior': '실내',
 		'maps.kind.merchant': '상인',
-		'maps.kind.partner': '파트너',
+		'maps.kind.partner': appShellMessages.ko['appShell.nav.partners'],
 		'maps.kind.place': '장소',
 		'maps.kind.resident': '주민',
-		'maps.kind.specialGuest': '희귀 손님',
+		'maps.kind.specialGuest':
+			appShellMessages.ko['appShell.nav.specialGuests'],
 		'maps.kind.teleport': '스키마 이동',
 		'maps.kind.transition': '출입구',
 		'maps.layers': '레이어',
@@ -318,7 +328,8 @@ export const mapsMessages = {
 		'maps.detail.refreshValue': '{hours}小時',
 		'maps.detail.showTime': '出現時段',
 		'maps.detail.spot': '位置{index}',
-		'maps.detail.tagsBeverage': '酒水',
+		'maps.detail.tagsBeverage':
+			appShellMessages['zh-TW']['appShell.nav.beverages'],
 		'maps.detail.tagsDislike': '厭惡',
 		'maps.detail.tagsLike': '喜好',
 		'maps.detail.teleport':
@@ -332,10 +343,11 @@ export const mapsMessages = {
 		'maps.kind.fishing': '釣魚點',
 		'maps.kind.interior': '室內',
 		'maps.kind.merchant': '商人',
-		'maps.kind.partner': '夥伴',
+		'maps.kind.partner': appShellMessages['zh-TW']['appShell.nav.partners'],
 		'maps.kind.place': '地點',
 		'maps.kind.resident': '居民',
-		'maps.kind.specialGuest': '稀客',
+		'maps.kind.specialGuest':
+			appShellMessages['zh-TW']['appShell.nav.specialGuests'],
 		'maps.kind.teleport': '隙間傳送',
 		'maps.kind.transition': '出入口',
 		'maps.layers': '圖層',

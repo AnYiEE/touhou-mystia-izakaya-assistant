@@ -34,11 +34,8 @@ export function getDayMapPreviewUrl(map: TDayMapLabel) {
 	return `${getDayMapBaseUrl(map)}/preview.${getArtExtension()}`;
 }
 
-export function getCharacterSpriteUrl(
-	file: string,
-	hash = DAY_MAP_CHARACTER_SPRITE_HASH
-) {
-	return `${MAP_ASSET_BASE_URL}/characters/${hash}/${file}`;
+export function getCharacterSpriteUrl(file: string) {
+	return `${MAP_ASSET_BASE_URL}/characters/${DAY_MAP_CHARACTER_SPRITE_HASH}/${file}`;
 }
 
 export function getWorldMapImageUrl() {

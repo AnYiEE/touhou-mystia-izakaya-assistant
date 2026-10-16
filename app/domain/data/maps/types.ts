@@ -102,8 +102,6 @@ export type TDayMapCharacterKind =
 
 export interface IDayMapCharacterSprite {
 	file: string;
-	/** @description Supplemental sprite sets may use their own content hash. */
-	hash?: string;
 	height: number;
 	/** @description Feet position inside the image, in image pixels. */
 	pivot: TDayMapPoint;

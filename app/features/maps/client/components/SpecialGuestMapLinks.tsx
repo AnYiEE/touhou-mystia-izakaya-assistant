@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, memo } from 'react';
+import { Fragment, memo, useMemo } from 'react';
 
 import { faMapLocationDot } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -12,6 +12,7 @@ import { DAY_MAP_CHARACTERS } from '@/domain/data/maps/dayMapCharacters';
 import type { TDayMapLabel } from '@/domain/data/maps/types';
 
 import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
+import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import { mapsMessages } from '@/features/maps/client/messages';
 import { trackMapEvent } from '@/features/maps/client/model/analytics';
 import { getDayMapLabel } from '@/features/maps/client/model/dayMapLabels';
@@ -61,11 +62,16 @@ export default memo<IProps>(function SpecialGuestMapLinks({
 }) {
 	const { t } = useI18n(mapsMessages);
 	const { t: tItems } = useI18n(catalogItemsMessages);
+	useCatalogLocalizationRevision();
 	const { isMapVisible } = useDayMapVisibility();
 	const isHidden = useMapLinksHidden();
 
-	const places = (SPECIAL_GUEST_PLACES.get(guest) ?? []).filter(({ map }) =>
-		isMapVisible(map)
+	const places = useMemo(
+		() =>
+			(SPECIAL_GUEST_PLACES.get(guest) ?? []).filter(({ map }) =>
+				isMapVisible(map)
+			),
+		[guest, isMapVisible]
 	);
 	if (isHidden || places.length === 0) {
 		return null;

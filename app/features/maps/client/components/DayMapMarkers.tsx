@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, memo, useCallback } from 'react';
+import { type ReactNode, memo, useCallback, useMemo } from 'react';
 
 import {
 	faClock,
@@ -178,7 +178,7 @@ const CharacterMarker = memo<ICharacterMarkerProps>(function CharacterMarker({
 								: '[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.9))] group-hover:[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_2px_#ffa800)]'
 						)}
 						style={{
-							backgroundImage: `url('${getCharacterSpriteUrl(sprite.file, sprite.hash)}')`,
+							backgroundImage: `url('${getCharacterSpriteUrl(sprite.file)}')`,
 						}}
 					/>
 				))}
@@ -364,6 +364,21 @@ export default memo<IProps>(function DayMapMarkers({
 	const isReducedMotion = useReducedMotion();
 	const getName = useDayMapEntityName();
 
+	// Names and world-to-content coordinates are independent of zoom and selection.
+	const markers = useMemo(
+		() =>
+			entities.map((entity) => ({
+				entity,
+				name: getName(entity),
+				point: toContentPoint(art, entity.position),
+				spots:
+					'spots' in entity
+						? entity.spots.map((spot) => toContentPoint(art, spot))
+						: [],
+			})),
+		[art, entities, getName]
+	);
+
 	const transition = getMapTransition(isReducedMotion);
 	const pxPerUnit = art.pixelsPerUnit * zoom;
 	const isLabelVisible = pxPerUnit >= LABEL_VISIBLE_PX_PER_UNIT;
@@ -380,12 +395,11 @@ export default memo<IProps>(function DayMapMarkers({
 		}
 	};
 
-	for (const entity of entities) {
+	for (const { entity, name, point, spots } of markers) {
 		if (hiddenLayers.has(entity.layer)) {
 			continue;
 		}
 		const isSelected = entity.id === selectedId;
-		const name = getName(entity);
 
 		switch (entity.layer) {
 			case 'fishing': {
@@ -413,7 +427,7 @@ export default memo<IProps>(function DayMapMarkers({
 					entity.layer,
 					<Anchor
 						key={entity.id}
-						point={toContentPoint(art, entity.position)}
+						point={point}
 						zIndex={isSelected ? 10_000 : 3000}
 						zoom={zoom}
 					>
@@ -435,7 +449,7 @@ export default memo<IProps>(function DayMapMarkers({
 					entity.layer,
 					<Anchor
 						key={entity.id}
-						point={toContentPoint(art, entity.position)}
+						point={point}
 						zIndex={isSelected ? 10_000 : 8000}
 						zoom={zoom}
 					>
@@ -479,7 +493,7 @@ export default memo<IProps>(function DayMapMarkers({
 					entity.layer,
 					<Anchor
 						key={entity.id}
-						point={toContentPoint(art, entity.position)}
+						point={point}
 						zIndex={isSelected ? 10_000 : 9000}
 						zoom={zoom}
 					>
@@ -496,8 +510,7 @@ export default memo<IProps>(function DayMapMarkers({
 				);
 				break;
 			}
-			case 'collectable': {
-				const point = toContentPoint(art, entity.position);
+			case 'collectable':
 				pushNode(
 					entity.layer,
 					<Anchor
@@ -518,10 +531,9 @@ export default memo<IProps>(function DayMapMarkers({
 					</Anchor>
 				);
 				break;
-			}
+
 			default:
-				entity.spots.forEach((spot, spotIndex) => {
-					const point = toContentPoint(art, spot);
+				spots.forEach((point, spotIndex) => {
 					pushNode(
 						entity.layer,
 						<Anchor

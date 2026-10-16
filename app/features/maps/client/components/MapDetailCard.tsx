@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, memo, useCallback } from 'react';
+import { type ReactNode, memo, useCallback, useMemo } from 'react';
 
 import {
 	faArrowRight,
@@ -92,7 +92,13 @@ const partnerCatalog = PartnerCatalog.getInstance();
 const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 
 /** @description `label：value`, as on the catalog item cards. */
-function Field({ children, label }: { children: ReactNode; label: string }) {
+const Field = memo(function Field({
+	children,
+	label,
+}: {
+	children: ReactNode;
+	label: string;
+}) {
 	const { t } = useI18n(catalogSharedMessages);
 
 	return (
@@ -104,9 +110,15 @@ function Field({ children, label }: { children: ReactNode; label: string }) {
 			{children}
 		</p>
 	);
-}
+});
 
-function Section({ children, label }: { children: ReactNode; label: string }) {
+const Section = memo(function Section({
+	children,
+	label,
+}: {
+	children: ReactNode;
+	label: string;
+}) {
 	const { t } = useI18n(catalogSharedMessages);
 
 	return (
@@ -118,9 +130,13 @@ function Section({ children, label }: { children: ReactNode; label: string }) {
 			{children}
 		</div>
 	);
-}
+});
 
-function ShowTime({ showTime }: { showTime: TDayMapHourRange }) {
+const ShowTime = memo(function ShowTime({
+	showTime,
+}: {
+	showTime: TDayMapHourRange;
+}) {
 	const { t } = useI18n(mapsMessages);
 
 	return (
@@ -133,7 +149,7 @@ function ShowTime({ showTime }: { showTime: TDayMapHourRange }) {
 				: t('maps.detail.allDay')}
 		</Field>
 	);
-}
+});
 
 interface IProductRow {
 	/** @description Identical entries are separate rolls in the game. */
@@ -157,7 +173,7 @@ function groupProducts(products: ReadonlyArray<ICollectionPointYieldProduct>) {
 	return [...rows.values()];
 }
 
-function CollectableDetail({
+const CollectableDetail = memo(function CollectableDetail({
 	entity,
 	onPopoverOpenChange,
 	restoredItemKey,
@@ -168,11 +184,11 @@ function CollectableDetail({
 	useCatalogLocalizationRevision();
 
 	const { id, products } = entity;
+	const rows = useMemo(() => groupProducts(products), [products]);
 	if (products.length === 0) {
 		return null;
 	}
 
-	const rows = groupProducts(products);
 	// A product may have several rows; its first one stands for it.
 	const restoredIndex = rows.findIndex(
 		({ product }) => getMapItemKey(product) === restoredItemKey
@@ -229,52 +245,58 @@ function CollectableDetail({
 			<p>{t('maps.detail.itemHint')}</p>
 		</Section>
 	);
-}
+});
 
-function SpecialGuestDetail({ guest }: { guest: TSpecialGuestId }) {
+const SpecialGuestDetail = memo(function SpecialGuestDetail({
+	guest,
+}: {
+	guest: TSpecialGuestId;
+}) {
 	const handleViewGuest = useCallback(() => {
 		trackMapEvent('Map Entity Button', `View Guest:${guest}`);
 	}, [guest]);
 
 	const { t } = useI18n(mapsMessages);
-	useCatalogLocalizationRevision();
+	const localizationRevision = useCatalogLocalizationRevision();
 
-	const { beverageTags, negativeTags, positiveTags } =
-		specialGuestCatalog.getDisplayPropsById(guest);
+	const tagGroups = useMemo(() => {
+		void localizationRevision;
+		const { beverageTags, negativeTags, positiveTags } =
+			specialGuestCatalog.getDisplayPropsById(guest);
+		return (
+			[
+				[
+					'maps.detail.tagsLike',
+					positiveTags
+						.toSorted(compareFoodTagLabels)
+						.map((tag) => getFoodTagLabel(tag)),
+					SPECIAL_GUEST_TAG_STYLE.positive,
+				],
+				[
+					'maps.detail.tagsDislike',
+					negativeTags
+						.toSorted(compareFoodTagLabels)
+						.map((tag) => getFoodTagLabel(tag)),
+					SPECIAL_GUEST_TAG_STYLE.negative,
+				],
+				[
+					'maps.detail.tagsBeverage',
+					beverageTags.map((tag) => getBeverageTagLabel(tag)),
+					SPECIAL_GUEST_TAG_STYLE.beverage,
+				],
+			] as const
+		).filter(([, tags]) => tags.length > 0);
+	}, [guest, localizationRevision]);
 
 	return (
 		<>
-			{(
-				[
-					[
-						'maps.detail.tagsLike',
-						positiveTags
-							.toSorted(compareFoodTagLabels)
-							.map((tag) => getFoodTagLabel(tag)),
-						SPECIAL_GUEST_TAG_STYLE.positive,
-					],
-					[
-						'maps.detail.tagsDislike',
-						negativeTags
-							.toSorted(compareFoodTagLabels)
-							.map((tag) => getFoodTagLabel(tag)),
-						SPECIAL_GUEST_TAG_STYLE.negative,
-					],
-					[
-						'maps.detail.tagsBeverage',
-						beverageTags.map((tag) => getBeverageTagLabel(tag)),
-						SPECIAL_GUEST_TAG_STYLE.beverage,
-					],
-				] as const
-			)
-				.filter(([, tags]) => tags.length > 0)
-				.map(([label, tags, tagStyle]) => (
-					<Section key={label} label={t(label)}>
-						<div className="flex flex-wrap gap-x-2 gap-y-1">
-							<Tags tags={[...tags]} tagStyle={tagStyle} />
-						</div>
-					</Section>
-				))}
+			{tagGroups.map(([label, tags, tagStyle]) => (
+				<Section key={label} label={t(label)}>
+					<div className="flex flex-wrap gap-x-2 gap-y-1">
+						<Tags tags={tags} tagStyle={tagStyle} />
+					</div>
+				</Section>
+			))}
 			<Button
 				as={Link}
 				fullWidth
@@ -292,14 +314,21 @@ function SpecialGuestDetail({ guest }: { guest: TSpecialGuestId }) {
 			</Button>
 		</>
 	);
-}
+});
 
-function PartnerDetail({ partner }: { partner: TPartnerId }) {
+const PartnerDetail = memo(function PartnerDetail({
+	partner,
+}: {
+	partner: TPartnerId;
+}) {
 	const { t } = useI18n(mapsMessages);
 	const openWindow = useViewInNewWindow();
 	useCatalogLocalizationRevision();
 
 	const name = partnerCatalog.getDisplayPropsById(partner, 'name');
+	const handleViewPartner = useCallback(() => {
+		openWindow('partners', partner, name);
+	}, [name, openWindow, partner]);
 
 	return (
 		<Button
@@ -308,16 +337,14 @@ function PartnerDetail({ partner }: { partner: TPartnerId }) {
 			size="sm"
 			variant="flat"
 			endContent={<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}
-			onPress={() => {
-				openWindow('partners', partner, name);
-			}}
+			onPress={handleViewPartner}
 		>
 			{t('maps.detail.viewPartner')}
 		</Button>
 	);
-}
+});
 
-function CharacterDetail({
+const CharacterDetail = memo(function CharacterDetail({
 	entity,
 	map,
 	onFocusPoint,
@@ -338,27 +365,38 @@ function CharacterDetail({
 	useCatalogLocalizationRevision();
 
 	const { character, id, spots } = entity;
+	const { isMapVisible, isProductVisible } = visibility;
 	const goods =
 		character.merchant === null
 			? null
 			: getMerchantGoods(character.merchant);
-	const goodsProducts =
-		goods === null
-			? []
-			: [
-					...goods.ingredients.map(
-						(productId) => ({ productId, productType: 1 }) as const
-					),
-					...goods.beverages.map(
-						(productId) => ({ productId, productType: 2 }) as const
-					),
-				].filter(visibility.isProductVisible);
-	const otherPlaces = character.destinations.filter(
-		(destination, index, destinations) =>
-			destination.map !== map &&
-			visibility.isMapVisible(destination.map) &&
-			destinations.findIndex((item) => item.map === destination.map) ===
-				index
+	const goodsProducts = useMemo(
+		() =>
+			goods === null
+				? []
+				: [
+						...goods.ingredients.map(
+							(productId) =>
+								({ productId, productType: 1 }) as const
+						),
+						...goods.beverages.map(
+							(productId) =>
+								({ productId, productType: 2 }) as const
+						),
+					].filter(isProductVisible),
+		[goods, isProductVisible]
+	);
+	const otherPlaces = useMemo(
+		() =>
+			character.destinations.filter(
+				(destination, index, destinations) =>
+					destination.map !== map &&
+					isMapVisible(destination.map) &&
+					destinations.findIndex(
+						(item) => item.map === destination.map
+					) === index
+			),
+		[character.destinations, map, isMapVisible]
 	);
 
 	return (
@@ -454,9 +492,9 @@ function CharacterDetail({
 			)}
 		</>
 	);
-}
+});
 
-function TransitionDetail({
+const TransitionDetail = memo(function TransitionDetail({
 	entity,
 	name,
 	onGoTo,
@@ -467,6 +505,11 @@ function TransitionDetail({
 		transition: { arrival, target },
 	} = entity;
 	const targetMap = checkDayMapLabel(target) ? target : null;
+	const handleGoTo = useCallback(() => {
+		if (targetMap !== null) {
+			onGoTo(targetMap, arrival);
+		}
+	}, [arrival, onGoTo, targetMap]);
 
 	if (targetMap === null) {
 		return <p>{t('maps.detail.noMap')}</p>;
@@ -480,17 +523,19 @@ function TransitionDetail({
 				color="primary"
 				size="sm"
 				endContent={<FontAwesomeIcon icon={faArrowRight} />}
-				onPress={() => {
-					onGoTo(targetMap, arrival);
-				}}
+				onPress={handleGoTo}
 			>
 				{t('maps.detail.goTo', { map: name })}
 			</Button>
 		</>
 	);
-}
+});
 
-function EntityFields({ entity }: { entity: TDayMapEntity }) {
+const EntityFields = memo(function EntityFields({
+	entity,
+}: {
+	entity: TDayMapEntity;
+}) {
 	const { t } = useI18n(mapsMessages);
 
 	const layers: TDayMapLayer[] = [entity.layer];
@@ -565,7 +610,7 @@ function EntityFields({ entity }: { entity: TDayMapEntity }) {
 		default:
 			return <div className="flex flex-wrap gap-x-4 gap-y-1">{kind}</div>;
 	}
-}
+});
 
 export default memo<IProps>(function MapDetailCard({
 	entity,

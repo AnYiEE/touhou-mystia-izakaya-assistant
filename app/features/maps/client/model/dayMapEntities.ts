@@ -27,6 +27,8 @@ import {
 	getFishingEntityId,
 } from '@/features/maps/links';
 
+import { memoize } from '@/shared/utilities/cache/memoize';
+
 export type TDayMapLayer =
 	| 'collectable'
 	| 'fishing'
@@ -136,64 +138,73 @@ export function checkTimeLimited([from, to]: TDayMapHourRange) {
 	return from !== 10 || to !== 18;
 }
 
-export function buildDayMapEntities(map: TDayMapLabel): TDayMapEntity[] {
-	const layout = DAY_MAP_LAYOUTS[map];
-	const entities: TDayMapEntity[] = [];
+/** @description Static map data is shared across selection changes and return visits. */
+export const buildDayMapEntities = /* @__PURE__ */ memoize(
+	function buildDayMapEntities(
+		map: TDayMapLabel
+	): ReadonlyArray<TDayMapEntity> {
+		const layout = DAY_MAP_LAYOUTS[map];
+		const entities: TDayMapEntity[] = [];
 
-	for (const character of DAY_MAP_CHARACTERS) {
-		const spots = character.destinations
-			.filter((destination) => destination.map === map)
-			.map(({ position }) => position);
-		const [firstSpot] = spots;
-		if (firstSpot === undefined) {
-			continue;
+		for (const character of DAY_MAP_CHARACTERS) {
+			const spots = character.destinations
+				.filter((destination) => destination.map === map)
+				.map(({ position }) => position);
+			const [firstSpot] = spots;
+			if (firstSpot === undefined) {
+				continue;
+			}
+			entities.push({
+				character,
+				id: getCharacterEntityId(character.id),
+				layer: character.kind,
+				position: firstSpot,
+				spots,
+			});
 		}
-		entities.push({
-			character,
-			id: getCharacterEntityId(character.id),
-			layer: character.kind,
-			position: firstSpot,
-			spots,
+
+		for (const collectable of layout.collectables) {
+			entities.push({
+				collectable,
+				displayLabel:
+					COLLECTABLE_DISPLAY_LABEL_MAP.get(collectable.key) ??
+					collectable.key,
+				id: getCollectableEntityId(collectable.key),
+				layer: 'collectable',
+				position: collectable.position,
+				products: COLLECTABLE_PRODUCTS_MAP.get(collectable.key) ?? [],
+			});
+		}
+
+		layout.transitions.forEach((transition, index) => {
+			entities.push({
+				id: `transition:${transition.target}:${index}`,
+				layer: 'transition',
+				position: transition.position,
+				transition,
+			});
 		});
+
+		layout.teleports.forEach(({ position }, index) => {
+			entities.push({
+				id: `teleport:${index}`,
+				layer: 'teleport',
+				position,
+			});
+		});
+
+		layout.fishingAreas.forEach(({ area }, index) => {
+			entities.push({
+				area,
+				id: getFishingEntityId(index),
+				layer: 'fishing',
+				position: [(area[0] + area[2]) / 2, (area[1] + area[3]) / 2],
+			});
+		});
+
+		return entities;
 	}
-
-	for (const collectable of layout.collectables) {
-		entities.push({
-			collectable,
-			displayLabel:
-				COLLECTABLE_DISPLAY_LABEL_MAP.get(collectable.key) ??
-				collectable.key,
-			id: getCollectableEntityId(collectable.key),
-			layer: 'collectable',
-			position: collectable.position,
-			products: COLLECTABLE_PRODUCTS_MAP.get(collectable.key) ?? [],
-		});
-	}
-
-	layout.transitions.forEach((transition, index) => {
-		entities.push({
-			id: `transition:${transition.target}:${index}`,
-			layer: 'transition',
-			position: transition.position,
-			transition,
-		});
-	});
-
-	layout.teleports.forEach(({ position }, index) => {
-		entities.push({ id: `teleport:${index}`, layer: 'teleport', position });
-	});
-
-	layout.fishingAreas.forEach(({ area }, index) => {
-		entities.push({
-			area,
-			id: getFishingEntityId(index),
-			layer: 'fishing',
-			position: [(area[0] + area[2]) / 2, (area[1] + area[3]) / 2],
-		});
-	});
-
-	return entities;
-}
+);
 
 export interface IMerchantGoods {
 	beverages: ReadonlyArray<TBeverageId>;

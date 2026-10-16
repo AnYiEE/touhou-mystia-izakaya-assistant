@@ -3316,7 +3316,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		specialGuest: 41,
 		sprite: {
 			file: 'special-41.png',
-			hash: 'f15e550ff6ba',
 			height: 58,
 			pivot: [23.98, 58],
 			pixelsPerUnit: 48,
@@ -3359,7 +3358,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		specialGuest: 9000,
 		sprite: {
 			file: 'special-9000.png',
-			hash: 'f15e550ff6ba',
 			height: 64,
 			pivot: [32, 64],
 			pixelsPerUnit: 48,
@@ -3378,7 +3376,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		specialGuest: 9001,
 		sprite: {
 			file: 'special-9001.png',
-			hash: 'f15e550ff6ba',
 			height: 64,
 			pivot: [32, 64],
 			pixelsPerUnit: 48,
@@ -3397,7 +3394,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		specialGuest: 9002,
 		sprite: {
 			file: 'special-9002.png',
-			hash: 'f15e550ff6ba',
 			height: 64,
 			pivot: [32, 64],
 			pixelsPerUnit: 48,
@@ -3416,7 +3412,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		specialGuest: 9003,
 		sprite: {
 			file: 'special-9003.png',
-			hash: 'f15e550ff6ba',
 			height: 64,
 			pivot: [32, 64],
 			pixelsPerUnit: 48,
@@ -3435,7 +3430,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		specialGuest: 9004,
 		sprite: {
 			file: 'special-9004.png',
-			hash: 'f15e550ff6ba',
 			height: 64,
 			pivot: [32, 64],
 			pixelsPerUnit: 48,
@@ -3456,7 +3450,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		specialGuest: 10000,
 		sprite: {
 			file: 'special-10000.png',
-			hash: 'f15e550ff6ba',
 			height: 64,
 			pivot: [32, 64],
 			pixelsPerUnit: 48,
@@ -3477,7 +3470,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		specialGuest: 10001,
 		sprite: {
 			file: 'special-10001.png',
-			hash: 'f15e550ff6ba',
 			height: 64,
 			pivot: [32, 64],
 			pixelsPerUnit: 48,
@@ -3496,7 +3488,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		specialGuest: 10002,
 		sprite: {
 			file: 'special-10002.png',
-			hash: 'f15e550ff6ba',
 			height: 64,
 			pivot: [32, 64],
 			pixelsPerUnit: 48,
@@ -3515,7 +3506,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		specialGuest: 11000,
 		sprite: {
 			file: 'special-11000.png',
-			hash: 'f15e550ff6ba',
 			height: 64,
 			pivot: [32, 64],
 			pixelsPerUnit: 48,
@@ -3534,7 +3524,6 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 		specialGuest: 11001,
 		sprite: {
 			file: 'special-11001.png',
-			hash: 'f15e550ff6ba',
 			height: 64,
 			pivot: [32, 64],
 			pixelsPerUnit: 48,
@@ -3544,4 +3533,4 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 ];
 
 /** @description Content hash of the original published sprite set. */
-export const DAY_MAP_CHARACTER_SPRITE_HASH = '477ac9765f1c';
+export const DAY_MAP_CHARACTER_SPRITE_HASH = 'dbf4122180c8';
