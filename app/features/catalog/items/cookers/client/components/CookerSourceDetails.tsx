@@ -21,12 +21,14 @@ import {
 	type TShareableItemId,
 	type TShareableItemName,
 } from '@/features/itemSharing/contracts';
+import { MerchantMapLink } from '@/features/maps/client/components/MapLinks';
 
 import type { TLocale } from '@/shared/i18n/locale';
 import { useI18n } from '@/shared/i18n/useI18n';
 import { checkObjectOrStringEmpty } from '@/shared/utilities/collections/check';
 
 interface IProps {
+	id: number;
 	from: ICooker['from'];
 	openWindow: (
 		path: TItemRoutePath,
@@ -192,7 +194,7 @@ function renderCookerSource(
 	});
 }
 
-export default function CookerSourceDetails({ from, openWindow }: IProps) {
+export default function CookerSourceDetails({ from, id, openWindow }: IProps) {
 	const { locale, t } = useI18n(catalogItemsMessages);
 
 	if (checkObjectOrStringEmpty(from)) {
@@ -206,6 +208,12 @@ export default function CookerSourceDetails({ from, openWindow }: IProps) {
 				<Fragment key={fromIndex}>
 					{fromIndex > 0 && t('items.source.listSeparator')}
 					{renderCookerSource(item, fromIndex, openWindow, locale, t)}
+					{'buy' in item && (
+						<MerchantMapLink
+							itemId={id}
+							reference={item.buy.merchant}
+						/>
+					)}
 				</Fragment>
 			))}
 		</p>

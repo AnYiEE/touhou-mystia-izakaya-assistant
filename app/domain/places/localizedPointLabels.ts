@@ -124,7 +124,7 @@ const POINT_LABEL_TRANSLATIONS: Readonly<
 	'南侧亭子（需借道迷途竹林）': {
 		en: 'South pavilion (via the Bamboo Forest of the Lost)',
 		ja: '南側のあずまや（迷いの竹林経由）',
-		ko: '남쪽 정자(미로의 죽림 경유)',
+		ko: '남쪽 정자(미혹의 죽림 경유)',
 		'zh-TW': '南側亭子（需借道迷途竹林）',
 	},
 	南侧瀑布: {

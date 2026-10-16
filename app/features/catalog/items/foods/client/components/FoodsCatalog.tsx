@@ -109,6 +109,7 @@ export default memo<IProps>(function FoodsCatalog({ data }) {
 						ref={popoverCardRef}
 					>
 						<FoodSourceDetails
+							id={id}
 							from={from}
 							openWindow={openWindow}
 						/>

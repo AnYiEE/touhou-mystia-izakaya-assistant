@@ -13,7 +13,10 @@ import Tooltip from '@/design/ui/components/tooltip';
 import type { IBeverage } from '@/domain/data/beverages/schema';
 import type {
 	IPrayerReference,
+	ITaskReference,
 	TCollectionPointReference,
+	TMapLabel,
+	TMerchantReference,
 } from '@/domain/data/places/types';
 
 import { renderSourceReference } from '@/features/catalog/items/shared/client/renderSourceReference';
@@ -24,6 +27,12 @@ import {
 	formatSourceReference,
 	getCollectionPointRefreshTimeHours,
 } from '@/features/catalog/items/shared/sourceReferenceFormatting';
+import {
+	CollectionPointMapLink,
+	FishingMapLink,
+	MerchantMapLink,
+	TaskMapLinks,
+} from '@/features/maps/client/components/MapLinks';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 import { checkObjectOrStringEmpty } from '@/shared/utilities/collections/check';
@@ -268,6 +277,42 @@ export default function BeverageSourceDetails({ from, id }: IProps) {
 													item,
 													locale
 												)}
+										{isCollect && (
+											<CollectionPointMapLink
+												itemId={id}
+												reference={
+													(Array.isArray(item)
+														? item[0]
+														: item) as TCollectionPointReference
+												}
+											/>
+										)}
+										{isTask && (
+											<TaskMapLinks
+												itemId={id}
+												reference={
+													(Array.isArray(item)
+														? item[0]
+														: item) as ITaskReference
+												}
+											/>
+										)}
+										{isBuy && (
+											<MerchantMapLink
+												itemId={id}
+												reference={
+													(Array.isArray(item)
+														? item[0]
+														: item) as TMerchantReference
+												}
+											/>
+										)}
+										{isFishingAdvanced && (
+											<FishingMapLink
+												itemId={id}
+												map={item as TMapLabel}
+											/>
+										)}
 									</Ol.Li>
 								))
 							) : (

@@ -19,9 +19,10 @@ export default function GeneralItemsCatalog({
 
 	return (
 		<CollectibleCatalog data={data} target="item" trackingLabel="Item Card">
-			{({ effects, from }) => (
+			{({ effects, from, id }) => (
 				<>
 					<GeneralItemSourceDetails
+						id={id}
 						from={from}
 						openWindow={openWindow}
 					/>

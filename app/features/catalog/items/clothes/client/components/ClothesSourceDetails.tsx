@@ -21,12 +21,17 @@ import {
 	type TShareableItemId,
 	type TShareableItemName,
 } from '@/features/itemSharing/contracts';
+import {
+	MerchantMapLink,
+	TaskMapLinks,
+} from '@/features/maps/client/components/MapLinks';
 
 import type { TLocale } from '@/shared/i18n/locale';
 import { useI18n } from '@/shared/i18n/useI18n';
 import { checkObjectOrStringEmpty } from '@/shared/utilities/collections/check';
 
 interface IProps {
+	id: number;
 	from: IClothes['from'];
 	openWindow: (
 		path: TItemRoutePath,
@@ -133,7 +138,7 @@ function renderClothesSource(
 	});
 }
 
-export default function ClothesSourceDetails({ from, openWindow }: IProps) {
+export default function ClothesSourceDetails({ from, id, openWindow }: IProps) {
 	const { locale, t } = useI18n(catalogItemsMessages);
 
 	if (checkObjectOrStringEmpty(from)) {
@@ -147,6 +152,15 @@ export default function ClothesSourceDetails({ from, openWindow }: IProps) {
 				<Fragment key={fromIndex}>
 					{fromIndex > 0 && t('items.source.listSeparator')}
 					{renderClothesSource(item, openWindow, locale, t)}
+					{'buy' in item && (
+						<MerchantMapLink
+							itemId={id}
+							reference={item.buy.merchant}
+						/>
+					)}
+					{'taskReward' in item && (
+						<TaskMapLinks itemId={id} reference={item.taskReward} />
+					)}
 				</Fragment>
 			))}
 		</p>

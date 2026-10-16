@@ -25,10 +25,15 @@ import {
 	type TShareableItemId,
 	type TShareableItemName,
 } from '@/features/itemSharing/contracts';
+import {
+	MerchantMapLink,
+	TaskMapLinks,
+} from '@/features/maps/client/components/MapLinks';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps {
+	id: number;
 	from: IFood['from'];
 	openWindow: (
 		path: TItemRoutePath,
@@ -82,7 +87,7 @@ function CurrencyItemPrice({
 	);
 }
 
-export default function FoodSourceDetails({ from, openWindow }: IProps) {
+export default function FoodSourceDetails({ from, id, openWindow }: IProps) {
 	const { locale, t } = useI18n(catalogItemsMessages);
 
 	let details;
@@ -137,8 +142,8 @@ export default function FoodSourceDetails({ from, openWindow }: IProps) {
 		const collaborationLabel = getCollaborationLabel(
 			from.collaboration.collaborationLabel
 		);
-		details = from.collaboration.merchants
-			.map(({ merchant, platformLabel }, index) => {
+		details = from.collaboration.merchants.map(
+			({ merchant, platformLabel }, index) => {
 				const merchantName =
 					index === 0 && 'map' in merchant
 						? t('items.source.collaborationSource', {
@@ -149,9 +154,18 @@ export default function FoodSourceDetails({ from, openWindow }: IProps) {
 								map: getMapLabel(merchant.map),
 							})
 						: formatSourceReference(merchant, locale);
-				return `${merchantName}${t('items.source.parenthesisOpen')}${platformLabel}${t('items.source.parenthesisClose')}`;
-			})
-			.join(t('items.source.listSeparator'));
+				return (
+					<Fragment key={index}>
+						{index > 0 && t('items.source.listSeparator')}
+						{merchantName}
+						<MerchantMapLink itemId={id} reference={merchant} />
+						{t('items.source.parenthesisOpen')}
+						{platformLabel}
+						{t('items.source.parenthesisClose')}
+					</Fragment>
+				);
+			}
+		);
 	} else if ('levelup' in from) {
 		const { level, map } = from.levelup;
 		details = (
@@ -200,6 +214,15 @@ export default function FoodSourceDetails({ from, openWindow }: IProps) {
 					{t('items.source.recipeFrom')}
 				</span>
 				{details}
+				{'taskReward' in from && (
+					<TaskMapLinks itemId={id} reference={from.taskReward} />
+				)}
+				{'buy' in from && (
+					<MerchantMapLink
+						itemId={id}
+						reference={from.buy.merchant}
+					/>
+				)}
 			</p>
 		</Fragment>
 	);
