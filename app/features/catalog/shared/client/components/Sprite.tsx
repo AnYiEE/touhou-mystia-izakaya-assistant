@@ -8,6 +8,7 @@ import PressElement, {
 	type IPressProp,
 } from '@/design/ui/components/pressElement';
 
+import { SPRITE_ASSET_HASHES } from '@/domain/data/sprites/assetHashes';
 import type { TSpriteId, TSpriteTarget } from '@/domain/data/sprites/types';
 
 import { Sprite as SpriteClass } from '@/features/catalog/presentation/SpriteModel';
@@ -22,7 +23,7 @@ import { remToPx } from '@/shared/utilities/cssUnits/remToPx';
 const { cdnUrl } = PUBLIC_RUNTIME_CONFIG;
 
 const getSpriteStyle = (target: TSpriteTarget): CSSProperties => {
-	const basePath = `${cdnUrl}/assets/sprites`;
+	const basePath = `${cdnUrl}/assets/sprites/${target}/${SPRITE_ASSET_HASHES[target]}`;
 
 	return { backgroundImage: `url('${basePath}/${target}.png')` };
 };

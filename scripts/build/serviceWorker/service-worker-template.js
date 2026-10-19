@@ -13,6 +13,10 @@
 	const MAP_ASSET_PATH = '/assets/maps/';
 	/** @type {string[]} */
 	const MAP_ASSET_DIRECTORIES = JSON.parse('{{mapAssetDirectories}}');
+	const STATIC_CACHE = 'static/assets';
+	const STATIC_ASSET_PATH = '/assets/';
+	/** @type {string[]} */
+	const STATIC_ASSET_DIRECTORIES = JSON.parse('{{staticAssetDirectories}}');
 
 	const CDN_URL = '{{cdnUrl}}';
 	const FAKE_URL = 'https://url.internal';
@@ -55,6 +59,33 @@
 		const staleRequests = requests.filter((request) => {
 			const path = getMapAssetPath(new URL(request.url).pathname);
 			return path === null || !checkCurrentMapAsset(path);
+		});
+
+		await Promise.all(
+			staleRequests.map((request) => cache.delete(request))
+		);
+	}
+
+	/** @returns {string | null} The path below `/assets/`, if any. */
+	function getStaticAssetPath(/** @type {string} */ pathname) {
+		const index = pathname.indexOf(STATIC_ASSET_PATH);
+		return index === -1
+			? null
+			: pathname.slice(index + STATIC_ASSET_PATH.length);
+	}
+
+	function checkCurrentStaticAsset(/** @type {string} */ path) {
+		return STATIC_ASSET_DIRECTORIES.some((directory) =>
+			path.startsWith(directory)
+		);
+	}
+
+	async function deleteStaleStaticAssets() {
+		const cache = await caches.open(STATIC_CACHE);
+		const requests = await cache.keys();
+		const staleRequests = requests.filter((request) => {
+			const path = getStaticAssetPath(new URL(request.url).pathname);
+			return path === null || !checkCurrentStaticAsset(path);
 		});
 
 		await Promise.all(
@@ -203,6 +234,7 @@
 					self.clients.claim(),
 					deleteOldCaches(),
 					deleteStaleMapAssets(),
+					deleteStaleStaticAssets(),
 				])
 			);
 		}
@@ -257,6 +289,15 @@
 		const mapAssetPath = getMapAssetPath(pathname);
 		if (mapAssetPath !== null && checkCurrentMapAsset(mapAssetPath)) {
 			event.respondWith(cacheFirst(event.request, event, MAP_CACHE));
+			return;
+		}
+
+		const staticAssetPath = getStaticAssetPath(pathname);
+		if (
+			staticAssetPath !== null &&
+			checkCurrentStaticAsset(staticAssetPath)
+		) {
+			event.respondWith(cacheFirst(event.request, event, STATIC_CACHE));
 			return;
 		}
 
