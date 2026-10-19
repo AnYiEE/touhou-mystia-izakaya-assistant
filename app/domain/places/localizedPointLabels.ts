@@ -124,7 +124,7 @@ const POINT_LABEL_TRANSLATIONS: Readonly<
 	'南侧亭子（需借道迷途竹林）': {
 		en: 'South pavilion (via the Bamboo Forest of the Lost)',
 		ja: '南側のあずまや（迷いの竹林経由）',
-		ko: '남쪽 정자(미로의 죽림 경유)',
+		ko: '남쪽 정자(미혹의 죽림 경유)',
 		'zh-TW': '南側亭子（需借道迷途竹林）',
 	},
 	南侧瀑布: {
@@ -595,6 +595,149 @@ const POINT_LABEL_TRANSLATIONS: Readonly<
 	黑盐: { en: 'Black Salt', ja: '黒塩', ko: '블랙솔트', 'zh-TW': '黑鹽' },
 };
 
+const MAP_INTERACTION_LABEL_TRANSLATIONS: Readonly<
+	Record<string, TPointLabelTranslations>
+> = {
+	'20万贺图': {
+		en: '200K celebration artwork',
+		ja: '20万祝賀イラスト',
+		ko: '20만 축하 일러스트',
+		'zh-TW': '20萬賀圖',
+	},
+	CG鉴赏: {
+		en: 'CG gallery',
+		ja: 'CG鑑賞',
+		ko: 'CG 감상',
+		'zh-TW': 'CG鑑賞',
+	},
+	万本纪念: {
+		en: '10,000 Sales Commemoration',
+		ja: '万本記念',
+		ko: '1만 부 기념',
+		'zh-TW': '萬本紀念',
+	},
+	任务线索: {
+		en: 'Task clue',
+		ja: '任務の手がかり',
+		ko: '임무 단서',
+		'zh-TW': '任務線索',
+	},
+	博丽大祭挑战: {
+		en: 'Hakurei Grand Festival challenge',
+		ja: '博麗大祭の挑戦',
+		ko: '하쿠레이 예대제 도전',
+		'zh-TW': '博麗大祭挑戰',
+	},
+	博丽神社赛钱箱: {
+		en: 'Hakurei Shrine donation box',
+		ja: '博麗神社の賽銭箱',
+		ko: '하쿠레이 신사 향전함',
+		'zh-TW': '博麗神社賽錢箱',
+	},
+	同人图: {
+		en: 'Fan art',
+		ja: 'ファンアート',
+		ko: '팬 아트',
+		'zh-TW': '同人圖',
+	},
+	地藏人偶: {
+		en: 'Jizo Figure',
+		ja: '地蔵人形',
+		ko: '지장 인형',
+		'zh-TW': '地藏人偶',
+	},
+	展示柜: {
+		en: 'Display Cabinet',
+		ja: '陳列棚',
+		ko: '쇼케이스',
+		'zh-TW': '展示櫃',
+	},
+	幻想节拍: {
+		en: 'Gensou Beat',
+		ja: 'ゲンソウビート',
+		ko: '환상 비트',
+		'zh-TW': '幻想節拍',
+	},
+	床: { en: 'Bed', ja: 'ベッド', ko: '침대', 'zh-TW': '牀' },
+	料理台: {
+		en: 'Cooking table',
+		ja: '料理台',
+		ko: '조리대',
+		'zh-TW': '料理台',
+	},
+	月都终端: {
+		en: 'Lunar Capital terminal',
+		ja: '月の都端末',
+		ko: '달의 도시 단말기',
+		'zh-TW': '月都終端',
+	},
+	河童重工电话机: {
+		en: 'Kappa Heavy Duty Telephone',
+		ja: '河童重工電話機',
+		ko: '캇파 전화기',
+		'zh-TW': '河童重工電話機',
+	},
+	漫画: { en: 'Comic', ja: '漫画', ko: '만화', 'zh-TW': '漫畫' },
+	灯笼A: { en: 'Lantern A', ja: '提灯A', ko: '등불A', 'zh-TW': '燈籠A' },
+	灯笼B: { en: 'Lantern B', ja: '提灯B', ko: '등불B', 'zh-TW': '燈籠B' },
+	灯笼C: { en: 'Lantern C', ja: '提灯C', ko: '등불C', 'zh-TW': '燈籠C' },
+	灯笼D: { en: 'Lantern D', ja: '提灯D', ko: '등불D', 'zh-TW': '燈籠D' },
+	灯笼E: { en: 'Lantern E', ja: '提灯E', ko: '등불E', 'zh-TW': '燈籠E' },
+	玉石线索: {
+		en: 'Jade clue',
+		ja: '玉の手がかり',
+		ko: '옥 단서',
+		'zh-TW': '玉石線索',
+	},
+	瓶子A: { en: 'Bottle A', ja: '瓶A', ko: '병A', 'zh-TW': '瓶子A' },
+	瓶子B: { en: 'Bottle B', ja: '瓶B', ko: '병B', 'zh-TW': '瓶子B' },
+	瓶子C: { en: 'Bottle C', ja: '瓶C', ko: '병C', 'zh-TW': '瓶子C' },
+	留声机: { en: 'Phonograph', ja: '蓄音機', ko: '축음기', 'zh-TW': '留聲機' },
+	衣橱: { en: 'Closet', ja: 'クローゼット', ko: '옷장', 'zh-TW': '衣櫥' },
+	贺图: {
+		en: 'Celebration artwork',
+		ja: '祝賀イラスト',
+		ko: '축하 일러스트',
+		'zh-TW': '賀圖',
+	},
+	造物者之盒: {
+		en: 'Box of Creation',
+		ja: '創造者の箱',
+		ko: '창조주의 상자',
+		'zh-TW': '造物者之盒',
+	},
+	遗失书本线索: {
+		en: 'Lost book clue',
+		ja: '紛失した本の手がかり',
+		ko: '분실된 책 단서',
+		'zh-TW': '遺失書本線索',
+	},
+	酒水仓库: {
+		en: 'Beverage storage',
+		ja: '酒水倉庫',
+		ko: '주류 창고',
+		'zh-TW': '酒水倉庫',
+	},
+	飞碟老虎机: {
+		en: 'UFO Slot Machine',
+		ja: 'UFOスロットマシン',
+		ko: '벤토라 슬롯머신',
+		'zh-TW': '飛碟老虎機',
+	},
+	食材仓库: {
+		en: 'Ingredient storage',
+		ja: '食材倉庫',
+		ko: '식재료 창고',
+		'zh-TW': '食材倉庫',
+	},
+	鸡毛线索: {
+		en: 'Chicken feather clue',
+		ja: '鶏の羽の手がかり',
+		ko: '닭 깃털 단서',
+		'zh-TW': '雞毛線索',
+	},
+};
+
 let activeLocale: TLocale = DEFAULT_LOCALE;
 
 export function deactivatePointLabels() {
@@ -608,6 +751,7 @@ export function activatePointLabels(locale: TLocale) {
 export function getPointLabel(canonicalLabel: string) {
 	return (
 		POINT_LABEL_TRANSLATIONS[canonicalLabel]?.[activeLocale] ??
+		MAP_INTERACTION_LABEL_TRANSLATIONS[canonicalLabel]?.[activeLocale] ??
 		canonicalLabel
 	);
 }

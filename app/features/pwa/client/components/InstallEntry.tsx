@@ -7,10 +7,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Button from '@/design/ui/components/button';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { useVibrate } from '@/features/preferences/client/useVibrate';
 import InstallGuidePopover from '@/features/pwa/client/components/InstallGuidePopover';
 import { pwaInstallStore } from '@/features/pwa/client/installStore';
 import { pwaInstallMessages } from '@/features/pwa/client/messages';
-import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 

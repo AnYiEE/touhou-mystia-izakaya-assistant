@@ -1,10 +1,16 @@
 import { useEffect } from 'react';
 
+import { isLocalePrefixSegment } from '@/shared/i18n/routeLocales';
+
 export function useDocumentTitle(title: string, pathnamePrefix?: string) {
 	useEffect(() => {
+		const [, prefix = '', ...segments] = location.pathname.split('/');
+		const pathname = isLocalePrefixSegment(prefix)
+			? `/${segments.join('/')}`
+			: location.pathname;
 		if (
 			pathnamePrefix !== undefined &&
-			!location.pathname.startsWith(pathnamePrefix)
+			!pathname.startsWith(pathnamePrefix)
 		) {
 			return;
 		}
@@ -18,7 +24,8 @@ export function useDocumentTitle(title: string, pathnamePrefix?: string) {
 		const observer = new MutationObserver(setExpectedTitle);
 
 		setExpectedTitle();
-		observer.observe(document.head, {
+		// Next's streamed metadata may keep the title in the body.
+		observer.observe(document.documentElement, {
 			characterData: true,
 			childList: true,
 			subtree: true,

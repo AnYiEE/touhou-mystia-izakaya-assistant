@@ -33,9 +33,11 @@ import {
 	APP_SHELL_NAV_LABEL_KEYS,
 	appShellMessages,
 } from '@/features/appShell/client/messages';
-import type { TSitePath } from '@/features/appShell/navigation/config';
+import { type TSitePath } from '@/features/appShell/navigation/config';
 import { derivativeProjectsMessages } from '@/features/derivativeProjects/client/messages';
 import { DERIVATIVE_PROJECTS_PAGE_PATH } from '@/features/derivativeProjects/links';
+import { mapsMessages } from '@/features/maps/client/messages';
+import { MAPS_PAGE_PATH } from '@/features/maps/links';
 import {
 	META_MYSTIA_GUESTS,
 	META_MYSTIA_SHOWCASE_GROUPS,
@@ -339,6 +341,29 @@ export function buildDerivativeProjectsPageMetadata({
 		locale,
 		isPrefixed
 	);
+
+	return {
+		title,
+
+		description,
+		...(alternates === undefined ? {} : { alternates }),
+	};
+}
+
+export function buildMapsPageMetadata({
+	isPrefixed,
+	locale,
+}: {
+	isPrefixed: boolean;
+	locale: TLocale;
+}): Metadata {
+	const title = translate(mapsMessages, locale, 'maps.world.title');
+	const description = translate(
+		mapsMessages,
+		locale,
+		'maps.meta.description'
+	);
+	const alternates = buildPageAlternates(MAPS_PAGE_PATH, locale, isPrefixed);
 
 	return {
 		title,

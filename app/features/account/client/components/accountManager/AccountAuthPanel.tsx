@@ -28,6 +28,9 @@ import {
 } from '@/features/account/constants';
 import { SITE_LINKS } from '@/features/appShell/links';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+import { isChinaSurfaceLocale } from '@/shared/site/chinaSurfaces';
+
 import {
 	AccountAuthEntryMotion,
 	AccountCollapseMotion,
@@ -40,9 +43,6 @@ import {
 	type IAccountLoginSupportMessage,
 } from './copy';
 import { type IUseAccountAuthenticationResult } from './useAccountAuthentication';
-
-import { useI18n } from '@/shared/i18n/useI18n';
-import { isChinaSurfaceLocale } from '@/shared/site/chinaSurfaces';
 
 const ACCOUNT_AUTH_PASSWORD_FORM_ID = 'account-auth-password-form';
 

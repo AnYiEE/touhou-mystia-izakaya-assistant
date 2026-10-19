@@ -31,13 +31,6 @@ import { useI18n } from '@/shared/i18n/useI18n';
 import { useHydrated } from '@/shared/react/useHydrated';
 
 import {
-	type IMobileIconNavItem,
-	MOBILE_GUEST_NAV_ITEMS,
-	MOBILE_QUERY_NAV_GROUPS,
-	MOBILE_UTILITY_NAV_ITEMS,
-	type TMobileSpriteNavItem,
-} from './navigationItems';
-import {
 	NAVIGATION_CARD_ACTIVE_CLASS_NAME,
 	NAVIGATION_CARD_BASE_CLASS_NAME,
 	NAVIGATION_CARD_INACTIVE_CLASS_NAME,
@@ -45,6 +38,13 @@ import {
 	NAVIGATION_ICON_FRAME_CLASS_NAME,
 	NAVIGATION_ICON_FRAME_INACTIVE_CLASS_NAME,
 } from './navigationCardStyles';
+import {
+	type IMobileIconNavItem,
+	MOBILE_GUEST_NAV_ITEMS,
+	MOBILE_QUERY_NAV_GROUPS,
+	MOBILE_UTILITY_NAV_ITEMS,
+	type TMobileSpriteNavItem,
+} from './navigationItems';
 import { type INavbarPaletteItem, NAVBAR_THEME_ITEMS } from './themeItems';
 
 const MOBILE_SECTION_TITLE_CLASS_NAME =

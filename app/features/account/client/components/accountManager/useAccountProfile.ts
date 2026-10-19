@@ -30,6 +30,8 @@ import { trackEvent } from '@/features/analytics/client/trackEvent';
 
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+
 import {
 	type IAccountActionController,
 	handleUnauthorizedAccountActionError,
@@ -37,8 +39,6 @@ import {
 } from './controller';
 import { ACCOUNT_MANAGER_MESSAGE_KEYS } from './copy';
 import { type IUseAccountPasskeysResult } from './useAccountPasskeys';
-
-import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IUseAccountProfileOptions {
 	controller: IAccountActionController;

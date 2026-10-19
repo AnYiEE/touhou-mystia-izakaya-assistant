@@ -63,6 +63,10 @@ import {
 	deactivateSchedulerLabels,
 } from '@/domain/labels/localizedSchedulerLabels';
 import {
+	activateDayMapLabels,
+	deactivateDayMapLabels,
+} from '@/domain/maps/localizedLabels';
+import {
 	activatePlaceLabels,
 	deactivatePlaceLabels,
 } from '@/domain/places/localizedLabels';
@@ -77,7 +81,7 @@ import {
 
 import { Sprite as SpriteClass } from '@/features/catalog/presentation/SpriteModel';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 
 import { activateTagLabels, deactivateTagLabels } from './tagLabels';
 
@@ -586,6 +590,14 @@ export const CATALOG_LOCALIZATION_TARGETS: ReadonlyArray<ICatalogLocalizationTar
 			},
 			deactivate: () => {
 				deactivatePointLabels();
+			},
+		},
+		{
+			activate: async (locale) => {
+				await activateDayMapLabels(locale);
+			},
+			deactivate: () => {
+				deactivateDayMapLabels();
 			},
 		},
 		{

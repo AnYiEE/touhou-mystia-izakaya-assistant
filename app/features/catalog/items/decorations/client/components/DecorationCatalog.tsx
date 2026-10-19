@@ -28,6 +28,11 @@ import { renderContentDlcSections } from '@/features/catalog/shared/client/rende
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
+import {
+	CollaborationMapLink,
+	DecorationMapLink,
+	TaskMapLinks,
+} from '@/features/maps/client/components/MapLinks';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
@@ -165,6 +170,20 @@ export default memo<IProps>(function DecorationCatalog({ data }) {
 								{t('items.source.from')}
 							</span>
 							<DecorationSource from={from} />
+							{'collaboration' in from && (
+								<CollaborationMapLink itemId={id} />
+							)}
+							{'completion' in from && (
+								<DecorationMapLink itemId={id} />
+							)}
+							{'task' in from && (
+								<TaskMapLinks
+									itemId={id}
+									reference={{
+										task: from.task.startEventLabel,
+									}}
+								/>
+							)}
 						</p>
 						<p className="text-cjk-flow">
 							<span className="font-semibold">

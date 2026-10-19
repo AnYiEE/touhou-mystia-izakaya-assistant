@@ -19,14 +19,14 @@ import {
 } from '@/features/account/constants';
 import type { IAccountUserProfile } from '@/features/account/contracts';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+
 import {
 	AccountCollapseMotion,
 	AccountInputIcon,
 	AccountPanel,
 	AccountPanelTitle,
 } from './accountPanelLayout';
-
-import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IAccountProfileSummaryProps {
 	accountStatusDescription: string;

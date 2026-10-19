@@ -3579,12 +3579,7 @@ export const SPECIAL_GUEST_LIST = [
 			'真是太让我震撼了。原来，她不仅是魔界之神，还是一位认真又有耐心的“创作者”，难怪能做出如此精致的“作品”。做菜也好，招待客人也罢，在追求精益求精这方面，我确实该向她学习呢。',
 		],
 		dlc: 9,
-		maps: [
-			'DLC1_MagicForest',
-			'DLC3_MyourenTemple',
-			'DLC3_DivineSpiritMausoleum',
-			'DLC5_Makai',
-		],
+		maps: ['DLC5_Makai', 'DLC1_MagicForest', 'DLC3_MyourenTemple'],
 		price: [3000, 3500],
 		enduranceLimit: 1.4,
 		positiveTags: [3, 4, 5, 13, 17, 27, 29],

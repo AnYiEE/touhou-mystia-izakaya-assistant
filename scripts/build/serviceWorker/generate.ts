@@ -1,6 +1,6 @@
 import nextEnv from '@next/env';
 import assert from 'node:assert/strict';
-import { access, readFile, writeFile } from 'node:fs/promises';
+import { access, readFile, readdir, writeFile } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
 import { argv, cwd } from 'node:process';
 
@@ -21,6 +21,79 @@ const serviceWorkerTemplatePath = resolve(
 );
 const registerOutputPath = resolve(publicPath, 'registerServiceWorker.js');
 const serviceWorkerOutputPath = resolve(publicPath, 'serviceWorker.js');
+const mapAssetsPath = resolve(publicPath, 'assets/maps');
+
+async function listSubdirectories(path: string) {
+	try {
+		const entries = await readdir(path, { withFileTypes: true });
+		return entries
+			.filter((entry) => entry.isDirectory())
+			.map(({ name }) => name)
+			.sort();
+	} catch (error) {
+		if (
+			typeof error === 'object' &&
+			error !== null &&
+			'code' in error &&
+			error.code === 'ENOENT'
+		) {
+			return [];
+		}
+		throw error;
+	}
+}
+
+/**
+ * @description Content-hash directories of the published map assets
+ * (`day/<map>/<hash>/`, `characters/<source>/<hash>/`,
+ * `facilities/<folder>/<hash>/`, `fishing/<folder>/<hash>/`,
+ * `interactions/<folder>/<hash>/`, `prayers/<folder>/<hash>/`,
+ * `tasks/<folder>/<hash>/`, `teleports/<folder>/<hash>/`, `world/<hash>/`).
+ * The service worker keeps cached map assets inside them and drops the rest.
+ */
+async function listMapAssetDirectories() {
+	const directories: string[] = [];
+	for (const map of await listSubdirectories(resolve(mapAssetsPath, 'day'))) {
+		for (const hash of await listSubdirectories(
+			resolve(mapAssetsPath, 'day', map)
+		)) {
+			directories.push(`day/${map}/${hash}/`);
+		}
+	}
+	for (const source of await listSubdirectories(
+		resolve(mapAssetsPath, 'characters')
+	)) {
+		for (const hash of await listSubdirectories(
+			resolve(mapAssetsPath, 'characters', source)
+		)) {
+			directories.push(`characters/${source}/${hash}/`);
+		}
+	}
+	for (const kind of [
+		'facilities',
+		'fishing',
+		'interactions',
+		'prayers',
+		'tasks',
+		'teleports',
+	]) {
+		for (const folder of await listSubdirectories(
+			resolve(mapAssetsPath, kind)
+		)) {
+			for (const hash of await listSubdirectories(
+				resolve(mapAssetsPath, kind, folder)
+			)) {
+				directories.push(`${kind}/${folder}/${hash}/`);
+			}
+		}
+	}
+	for (const hash of await listSubdirectories(
+		resolve(mapAssetsPath, 'world')
+	)) {
+		directories.push(`world/${hash}/`);
+	}
+	return directories;
+}
 
 function normalizeRelativePath(path: string) {
 	return relative(rootPath, path).replaceAll('\\', '/');
@@ -67,15 +140,19 @@ if (argv.includes('--self-check-paths')) {
 	await checkServiceWorkerPaths();
 } else {
 	const sha = await getSha();
-	const [registerTemplate, serviceWorkerTemplate] = await Promise.all([
-		readFile(registerTemplatePath, encoding),
-		readFile(serviceWorkerTemplatePath, encoding),
-	]);
+	const [registerTemplate, serviceWorkerTemplate, mapAssetDirectories] =
+		await Promise.all([
+			readFile(registerTemplatePath, encoding),
+			readFile(serviceWorkerTemplatePath, encoding),
+			listMapAssetDirectories(),
+		]);
 	const cdnUrlSlot = '{{cdnUrl}}';
+	const mapAssetDirectoriesSlot = '{{mapAssetDirectories}}';
 	const versionSlot = '{{version}}';
 	const registerResult = registerTemplate.replace(versionSlot, sha);
 	const serviceWorkerResult = serviceWorkerTemplate
 		.replace(cdnUrlSlot, process.env.CDN_URL ?? '')
+		.replace(mapAssetDirectoriesSlot, JSON.stringify(mapAssetDirectories))
 		.replace(versionSlot, sha);
 
 	await Promise.all([

@@ -1,0 +1,46 @@
+html[data-map-sidebar-collapsed='true'] [data-map-skeleton-expanded-content] {
+	display: none;
+}
+
+/* stylelint-disable-next-line media-feature-range-notation -- browserslist includes Safari 12. */
+@media (min-width: 768px) {
+	html[data-map-sidebar-collapsed='true'] [data-map-sidebar-skeleton] {
+		width: 4rem;
+		min-width: 4rem;
+		max-width: 4rem;
+		flex: none;
+		padding: 1rem;
+	}
+
+	html[data-map-sidebar-collapsed='true'] [data-map-skeleton-header] {
+		height: 2.25rem;
+		min-height: 2.25rem;
+		justify-content: center;
+	}
+
+	html[data-map-sidebar-collapsed='true'] [data-map-skeleton-title] {
+		position: absolute;
+		left: 50%;
+		top: 3rem;
+		z-index: 10;
+		display: flex;
+		max-height: calc(100dvh - 12rem);
+		width: 2rem;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		overflow: hidden;
+		transform: translateX(-50%);
+	}
+
+	html[data-map-sidebar-collapsed='true'] [data-map-skeleton-title-primary] {
+		width: 0.75rem;
+		height: 5rem;
+	}
+
+	html[data-map-sidebar-collapsed='true']
+		[data-map-skeleton-title-secondary] {
+		width: 0.625rem;
+		height: 4rem;
+	}
+}

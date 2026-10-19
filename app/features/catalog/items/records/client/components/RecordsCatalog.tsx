@@ -3,7 +3,7 @@ import { Fragment } from 'react';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
-import type { RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog';
+import { type RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog';
 import { getMerchantLabel } from '@/domain/places/localizedLabels';
 
 import CollectibleCatalog from '@/features/catalog/items/collectibles/client/components/CollectibleCatalog';
@@ -12,6 +12,7 @@ import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import type { TItemData } from '@/features/catalog/shared/contracts';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
+import { MerchantMapLink } from '@/features/maps/client/components/MapLinks';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
@@ -31,7 +32,7 @@ export default function RecordsCatalog({
 			target="record"
 			trackingLabel="Record Card"
 		>
-			{({ buy, composer, original, trackName }) => (
+			{({ buy, composer, id, original, trackName }) => (
 				<>
 					<p>
 						<span className="font-semibold">
@@ -106,6 +107,10 @@ export default function RecordsCatalog({
 							</Fragment>
 						))}
 						{t('items.source.parenthesisClose')}
+						<MerchantMapLink
+							itemId={id}
+							reference={{ label: buy.merchant }}
+						/>
 					</p>
 				</>
 			)}

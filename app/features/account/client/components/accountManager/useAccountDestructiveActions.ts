@@ -42,14 +42,14 @@ import { trackEvent } from '@/features/analytics/client/trackEvent';
 
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
+import { useI18n } from '@/shared/i18n/useI18n';
+
 import {
 	type IAccountActionController,
 	handleUnauthorizedAccountActionError,
 	handleUnauthorizedAccountError,
 } from './controller';
 import { ACCOUNT_MANAGER_MESSAGE_KEYS } from './copy';
-
-import { useI18n } from '@/shared/i18n/useI18n';
 
 const LOGOUT_SKIPPED = Symbol('logout-skipped');
 type TLogoutAfterFlushResult =

@@ -4,11 +4,11 @@ import type { TClothes, TClothesName } from './clothes/types';
 import type { TCookerName, TCookers } from './cookers/types';
 import type { TCurrencyItemName, TCurrencyItems } from './currencyItems/types';
 import type { TDecorationName, TDecorations } from './decorations/types';
-import type { TFoodName, TFoods } from './foods/types';
 import type {
 	TFishingCollectibleName,
 	TFishingCollectibles,
 } from './fishingCollectibles/types';
+import type { TFoodName, TFoods } from './foods/types';
 import type { TGeneralItemName, TGeneralItems } from './generalItems/types';
 import type { TNormalGuestName, TNormalGuests } from './guests/normal/types';
 import type { TSpecialGuestName, TSpecialGuests } from './guests/special/types';

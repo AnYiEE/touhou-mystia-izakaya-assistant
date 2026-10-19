@@ -879,9 +879,29 @@ export function getCollectionPointReferenceKey(
 	return JSON.stringify(['label', reference.map, reference.label]);
 }
 
+function checkCollectionLabelsMatch(
+	labels: ReadonlyArray<string>,
+	candidateLabels: ReadonlyArray<string>
+) {
+	return labels.some((label) => candidateLabels.includes(label));
+}
+
 export function getCollectionPointFact(reference: TCollectionPointReference) {
 	const key = getCollectionPointReferenceKey(reference);
-	return COLLECTION_POINT_REFRESH_FACTS.find(
+	const exactMatch = COLLECTION_POINT_REFRESH_FACTS.find(
 		(candidate) => getCollectionPointReferenceKey(candidate) === key
+	);
+	if (exactMatch !== undefined || 'excludedMaps' in reference) {
+		return exactMatch;
+	}
+
+	const labels = 'labels' in reference ? reference.labels : [reference.label];
+	return COLLECTION_POINT_REFRESH_FACTS.find(
+		(candidate) =>
+			'map' in candidate &&
+			candidate.map === reference.map &&
+			('label' in candidate
+				? labels.includes(candidate.label)
+				: checkCollectionLabelsMatch(labels, candidate.labels))
 	);
 }
