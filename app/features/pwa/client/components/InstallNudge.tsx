@@ -10,10 +10,10 @@ import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { useVibrate } from '@/features/preferences/client/useVibrate';
 import InstallGuidePopover from '@/features/pwa/client/components/InstallGuidePopover';
 import { pwaInstallStore } from '@/features/pwa/client/installStore';
 import { pwaInstallMessages } from '@/features/pwa/client/messages';
-import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 import { siteMessages } from '@/shared/site/messages';

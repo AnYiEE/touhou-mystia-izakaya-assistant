@@ -7,15 +7,18 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
-import Button from '@/design/ui/components/button';
 import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
 import Link from '@/design/ui/components/link';
+import SideBookmarkButton, {
+	SIDE_BOOKMARK_POSITION_CLASS_NAME,
+} from '@/design/ui/components/SideBookmarkButton';
 import SiteInfo from '@/design/ui/components/siteInfo';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 import { appShellMessages } from '@/features/appShell/client/messages';
 import { SITE_LINKS } from '@/features/appShell/links';
+import WorldMapButton from '@/features/maps/client/components/WorldMapButton';
 import {
 	SPECIAL_GUEST_PLAN_DRAWER_EXIT_DURATION_MS,
 	useCoordinatedOverlay,
@@ -328,29 +331,20 @@ export default function SpecialGuestPlanDrawer() {
 		<>
 			<div
 				ref={bookmarkRef}
-				className="fixed left-0 top-[calc(var(--navbar-height,4rem)+var(--announcement-bar-offset,0rem)+2rem)] z-30 xl:top-[calc(var(--navbar-height,4rem)+var(--announcement-bar-offset,0rem)+2.5rem)]"
+				className={cn(
+					SIDE_BOOKMARK_POSITION_CLASS_NAME,
+					'flex flex-col items-start gap-3'
+				)}
 			>
-				<Button
-					color="default"
+				<SideBookmarkButton
+					icon={faBookmark}
+					label={t('plans.drawer.title')}
 					aria-label={t('plans.drawer.open')}
 					aria-haspopup="dialog"
 					aria-expanded={isDrawerPresentationOpen}
-					radius="none"
-					size="sm"
-					variant="flat"
 					onClick={handleOpen}
-					className="min-h-24 w-6 !min-w-6 rounded-l-none rounded-r-medium border border-l-0 border-default/70 bg-background px-0 py-3 font-medium text-default-foreground shadow-[inset_-1px_0_0_rgb(255_255_255_/_0.42),0_2px_7px_rgb(0_0_0_/_0.08),0_8px_18px_-14px_rgb(0_0_0_/_0.18)] ring-1 ring-inset ring-white/25 transition-all data-[hover=true]:translate-x-0.5 data-[hover=true]:border-default/90 data-[hover=true]:shadow-[inset_-1px_0_0_rgb(255_255_255_/_0.48),0_3px_9px_rgb(0_0_0_/_0.09),0_10px_20px_-14px_rgb(0_0_0_/_0.2)] motion-reduce:data-[hover=true]:translate-x-0 xl:min-h-28 xl:w-8 xl:!min-w-8 dark:border-default/20 dark:bg-default/40 dark:shadow-none dark:ring-0 dark:data-[hover=true]:border-default/40 dark:data-[hover=true]:shadow-none"
-				>
-					<span className="flex h-full w-full flex-col items-center justify-center gap-1.5 xl:gap-2">
-						<FontAwesomeIcon
-							className="text-[10px] opacity-90 xl:text-tiny"
-							icon={faBookmark}
-						/>
-						<span className="text-[10px] leading-none [writing-mode:vertical-rl] xl:text-tiny">
-							{t('plans.drawer.title')}
-						</span>
-					</span>
-				</Button>
+				/>
+				<WorldMapButton />
 			</div>
 
 			<AnimatePresence initial={false}>

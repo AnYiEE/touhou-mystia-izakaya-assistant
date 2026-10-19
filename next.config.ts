@@ -120,10 +120,23 @@ if (exportMode) {
 			[];
 
 		if (IS_PRODUCTION) {
-			headers.push({
-				headers: [{ key: 'Cache-Control', value: 'no-cache' }],
-				source: '/assets/:path*',
-			});
+			headers.push(
+				{
+					headers: [{ key: 'Cache-Control', value: 'no-cache' }],
+					source: '/assets/:path*',
+				},
+				{
+					// Hashed asset URLs change with their content. Keep this
+					// after the generic `/assets/` rule so it takes precedence.
+					headers: [
+						{
+							key: 'Cache-Control',
+							value: 'public, max-age=31536000, immutable',
+						},
+					],
+					source: '/assets/maps/:path*',
+				}
+			);
 		}
 
 		return headers;

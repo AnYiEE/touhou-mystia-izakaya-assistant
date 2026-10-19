@@ -136,6 +136,9 @@ const CHANGELOG_EN: Readonly<Record<string, ReadonlyArray<string>>> = {
 		'Added: the whole site now supports Simplified Chinese, Traditional Chinese, English, Japanese, and Korean.',
 		'Improved: catalog section titles now separate base game and mod content.',
 	],
+	'v3.1': [
+		'Added: a world map page for viewing locations, resources, and character positions.',
+	],
 };
 
 const CHANGELOG_JA: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -270,6 +273,7 @@ const CHANGELOG_JA: Readonly<Record<string, ReadonlyArray<string>>> = {
 		'追加：サイト全体が簡体字中国語・繁体字中国語・英語・日本語・韓国語の5言語に対応。',
 		'改善：図鑑ページにゲーム本編とModコンテンツの区切り見出しを追加。',
 	],
+	'v3.1': ['追加：場所、資源、人物の位置を確認できるワールドマップページ。'],
 };
 
 const CHANGELOG_KO: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -400,6 +404,7 @@ const CHANGELOG_KO: Readonly<Record<string, ReadonlyArray<string>>> = {
 		'추가: 사이트 전체가 중국어 간체·번체, 영어, 일본어, 한국어 5개 언어를 지원.',
 		'개선: 자료 페이지에 본편과 모드 콘텐츠를 구분하는 제목을 추가.',
 	],
+	'v3.1': ['추가: 장소, 자원, 인물 위치를 확인할 수 있는 월드맵 페이지.'],
 };
 
 const CHANGELOG_ZH_TW: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -522,6 +527,7 @@ const CHANGELOG_ZH_TW: Readonly<Record<string, ReadonlyArray<string>>> = {
 		'新增：全站支援簡體中文、繁體中文、英文、日文和韓文五種語言。',
 		'改善：查詢頁面的分區標題，區分遊戲本體與模組內容。',
 	],
+	'v3.1': ['新增：世界地圖頁面，可查看地點、資源和角色位置。'],
 };
 
 export const CHANGELOG_LOCALIZED: Readonly<

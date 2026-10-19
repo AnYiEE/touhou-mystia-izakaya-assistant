@@ -30,6 +30,7 @@ import type { TItemData } from '@/features/catalog/shared/contracts';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
+import { MerchantMapLink } from '@/features/maps/client/components/MapLinks';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
@@ -170,6 +171,10 @@ export default memo<IProps>(function CurrencyItemsCatalog({ data }) {
 											source.buy.merchant,
 											locale
 										)}
+										<MerchantMapLink
+											itemId={id}
+											reference={source.buy.merchant}
+										/>
 										{t('items.source.parenthesisOpen')}
 										<span className="inline-flex items-center">
 											<Price showSymbol={false}>

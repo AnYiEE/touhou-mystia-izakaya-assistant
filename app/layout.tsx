@@ -137,7 +137,10 @@ export default async function RootLayout({
 						locale={locale}
 						routeLocale={isPrefixed ? locale : null}
 					>
-						<div className="flex min-h-dvh-safe flex-col">
+						<div
+							data-app-shell-container
+							className="flex min-h-dvh-safe flex-col [&:has([data-fullscreen-page])>:not(main)]:pointer-events-none"
+						>
 							<AnnouncementBar
 								viewer={
 									accountFeatureInitialData?.viewer ?? null

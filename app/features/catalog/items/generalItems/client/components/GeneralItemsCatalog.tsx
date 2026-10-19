@@ -1,4 +1,4 @@
-import type { GeneralItemCatalog } from '@/domain/catalog/items/GeneralItemCatalog';
+import { type GeneralItemCatalog } from '@/domain/catalog/items/GeneralItemCatalog';
 
 import CollectibleCatalog from '@/features/catalog/items/collectibles/client/components/CollectibleCatalog';
 import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
@@ -19,9 +19,10 @@ export default function GeneralItemsCatalog({
 
 	return (
 		<CollectibleCatalog data={data} target="item" trackingLabel="Item Card">
-			{({ effects, from }) => (
+			{({ effects, from, id }) => (
 				<>
 					<GeneralItemSourceDetails
+						id={id}
 						from={from}
 						openWindow={openWindow}
 					/>

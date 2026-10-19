@@ -1,0 +1,23 @@
+import type { TDayMapLocalizationLoader } from '@/domain/data/localization/types';
+
+/**
+ * @description Generated from the installed game's Addressables. Do not edit by hand.
+ */
+export const DAY_MAP_LOCALIZATION_LOADERS = {
+	en: async () => {
+		const localizationModule = await import('./en');
+		return localizationModule.DAY_MAP_LOCALIZATION_EN;
+	},
+	ja: async () => {
+		const localizationModule = await import('./ja');
+		return localizationModule.DAY_MAP_LOCALIZATION_JA;
+	},
+	ko: async () => {
+		const localizationModule = await import('./ko');
+		return localizationModule.DAY_MAP_LOCALIZATION_KO;
+	},
+	'zh-TW': async () => {
+		const localizationModule = await import('./zh-TW');
+		return localizationModule.DAY_MAP_LOCALIZATION_ZH_TW;
+	},
+} satisfies TDayMapLocalizationLoader;

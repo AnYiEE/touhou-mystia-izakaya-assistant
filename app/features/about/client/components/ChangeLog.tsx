@@ -222,6 +222,10 @@ const changelog = [
 			'改善：资料页的分区标题，区分游戏本体与模组内容。',
 		],
 	},
+	{
+		version: 'v3.1',
+		changes: ['新增：世界地图页面，可查看地点、资源和角色位置。'],
+	},
 ] as const satisfies Array<{
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
 	version: `v${string}`;

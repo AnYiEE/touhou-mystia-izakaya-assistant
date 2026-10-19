@@ -6,6 +6,14 @@
 	const CACHE_NAMESPACE = 'offline/';
 	const VERSION = `${CACHE_NAMESPACE}{{version}}`;
 
+	// Map art sits under content-hash directories, so a cached copy never goes
+	// stale. It lives in its own cache that survives releases; entries outside
+	// the directories this build publishes are removed on activation.
+	const MAP_CACHE = 'maps/assets';
+	const MAP_ASSET_PATH = '/assets/maps/';
+	/** @type {string[]} */
+	const MAP_ASSET_DIRECTORIES = JSON.parse('{{mapAssetDirectories}}');
+
 	const CDN_URL = '{{cdnUrl}}';
 	const FAKE_URL = 'https://url.internal';
 
@@ -25,6 +33,33 @@
 
 	async function deleteCache(/** @type {string} */ key) {
 		await caches.delete(key);
+	}
+
+	/** @returns {string | null} The path below `/assets/maps/`, if any. */
+	function getMapAssetPath(/** @type {string} */ pathname) {
+		const index = pathname.indexOf(MAP_ASSET_PATH);
+		return index === -1
+			? null
+			: pathname.slice(index + MAP_ASSET_PATH.length);
+	}
+
+	function checkCurrentMapAsset(/** @type {string} */ path) {
+		return MAP_ASSET_DIRECTORIES.some((directory) =>
+			path.startsWith(directory)
+		);
+	}
+
+	async function deleteStaleMapAssets() {
+		const cache = await caches.open(MAP_CACHE);
+		const requests = await cache.keys();
+		const staleRequests = requests.filter((request) => {
+			const path = getMapAssetPath(new URL(request.url).pathname);
+			return path === null || !checkCurrentMapAsset(path);
+		});
+
+		await Promise.all(
+			staleRequests.map((request) => cache.delete(request))
+		);
 	}
 
 	async function deleteOldCaches() {
@@ -48,7 +83,8 @@
 
 	async function fetchAndCache(
 		/** @type {Request} */ request,
-		/** @type {FetchEvent} */ event
+		/** @type {FetchEvent} */ event,
+		cacheName = VERSION
 	) {
 		const response = await fetch(request, {
 			cache: 'no-cache',
@@ -62,7 +98,7 @@
 
 		if (response.ok) {
 			event.waitUntil(
-				putInCache(request, response.clone(), VERSION).catch(() => {})
+				putInCache(request, response.clone(), cacheName).catch(() => {})
 			);
 		}
 
@@ -97,14 +133,21 @@
 		/** @type {Request} */ request,
 		/** @type {number} */ retries,
 		/** @type {FetchEvent} */ event,
-		/** @type {typeof fetchAndCache} */ fetcher
+		/** @type {typeof fetchAndCache} */ fetcher,
+		cacheName = VERSION
 	) {
 		try {
-			return await fetcher(request, event);
+			return await fetcher(request, event, cacheName);
 		} catch (error) {
 			if (retries > 1) {
 				await delay(1000);
-				return fetchWithRetry(request, retries - 1, event, fetcher);
+				return fetchWithRetry(
+					request,
+					retries - 1,
+					event,
+					fetcher,
+					cacheName
+				);
 			}
 			throw error;
 		}
@@ -112,16 +155,23 @@
 
 	async function cacheFirst(
 		/** @type {Request} */ request,
-		/** @type {FetchEvent} */ event
+		/** @type {FetchEvent} */ event,
+		cacheName = VERSION
 	) {
-		const cache = await caches.open(VERSION);
+		const cache = await caches.open(cacheName);
 		const responseFromCache = await cache.match(request);
 		if (responseFromCache !== undefined) {
 			return responseFromCache;
 		}
 
 		try {
-			return await fetchWithRetry(request, 3, event, fetchAndCache);
+			return await fetchWithRetry(
+				request,
+				3,
+				event,
+				fetchAndCache,
+				cacheName
+			);
 		} catch {
 			return networkErrorResponse.clone();
 		}
@@ -149,7 +199,11 @@
 		'activate',
 		(/** @type {ExtendableEvent} */ event) => {
 			event.waitUntil(
-				Promise.all([self.clients.claim(), deleteOldCaches()])
+				Promise.all([
+					self.clients.claim(),
+					deleteOldCaches(),
+					deleteStaleMapAssets(),
+				])
 			);
 		}
 	);
@@ -197,6 +251,12 @@
 		) {
 			// Never cache protected routes that may contain
 			// user-specific data or session-dependent content.
+			return;
+		}
+
+		const mapAssetPath = getMapAssetPath(pathname);
+		if (mapAssetPath !== null && checkCurrentMapAsset(mapAssetPath)) {
+			event.respondWith(cacheFirst(event.request, event, MAP_CACHE));
 			return;
 		}
 

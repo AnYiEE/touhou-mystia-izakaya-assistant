@@ -1,4 +1,3 @@
-export { LEGACY_BACKUP_FREQUENCY_TTL } from '@/features/legacyBackup/contracts';
 import {
 	type IBackupCheckSuccessResponse,
 	type IBackupUploadBody,
@@ -11,6 +10,8 @@ import { ServiceApiError } from '@/infrastructure/http/client/serviceApiError';
 import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
 
 import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
+
+export { LEGACY_BACKUP_FREQUENCY_TTL } from '@/features/legacyBackup/contracts';
 
 function readLegacyBackupError(error: unknown): never {
 	if (error instanceof ServiceApiError) {

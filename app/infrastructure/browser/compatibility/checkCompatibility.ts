@@ -3,7 +3,7 @@ import { UAParser } from 'ua-parser-js';
 
 import { memoize } from '@/shared/utilities/cache/memoize';
 
-type TFeature = 'flexGap' | 'largeSlidingPanelAnimation';
+type TFeature = 'flexGap' | 'largeSlidingPanelAnimation' | 'webp';
 type TCompatibility = Record<TFeature, boolean>;
 
 function isVersionAtLeast(version: string | undefined, minimumVersion: string) {
@@ -29,6 +29,7 @@ export const checkCompatibility = memoize(function checkCompatibility() {
 	const compatibility: TCompatibility = {
 		flexGap: true,
 		largeSlidingPanelAnimation: true,
+		webp: true,
 	};
 
 	const {
@@ -69,6 +70,14 @@ export const checkCompatibility = memoize(function checkCompatibility() {
 		compatibility.flexGap = isSupportedFlexGapFirefox;
 	} else if (isSafari) {
 		compatibility.flexGap = isSupportedFlexGapSafari;
+	}
+
+	// Every Chromium and Firefox in `browserslist` decodes WebP, but WebKit only
+	// gained it in Safari 14 and every iOS browser uses the system WebKit.
+	if (osName.includes('ios')) {
+		compatibility.webp = isVersionAtLeast(osVersion, '14');
+	} else if (isSafari && !isChromium && !isFirefox) {
+		compatibility.webp = isVersionAtLeast(browserVersion, '14');
 	}
 
 	return compatibility;

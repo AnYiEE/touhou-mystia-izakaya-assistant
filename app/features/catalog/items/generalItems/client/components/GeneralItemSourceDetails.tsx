@@ -18,15 +18,20 @@ import Price from '@/features/catalog/shared/client/components/Price';
 import SpecialGuestBondReference from '@/features/catalog/shared/client/components/SpecialGuestBondReference';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import { catalogSharedMessages } from '@/features/catalog/shared/client/messages';
-import type {
-	TItemRoutePath,
-	TShareableItemId,
-	TShareableItemName,
+import {
+	type TItemRoutePath,
+	type TShareableItemId,
+	type TShareableItemName,
 } from '@/features/itemSharing/contracts';
+import {
+	CollaborationMapLink,
+	TaskMapLinks,
+} from '@/features/maps/client/components/MapLinks';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps {
+	id: number;
 	from: IGeneralItem['from'];
 	openWindow: (
 		path: TItemRoutePath,
@@ -158,7 +163,11 @@ function GeneralItemSource({
 	);
 }
 
-export default function GeneralItemSourceDetails({ from, openWindow }: IProps) {
+export default function GeneralItemSourceDetails({
+	from,
+	id,
+	openWindow,
+}: IProps) {
 	const { t } = useI18n(catalogItemsMessages);
 	const { t: tShared } = useI18n(catalogSharedMessages);
 
@@ -176,6 +185,21 @@ export default function GeneralItemSourceDetails({ from, openWindow }: IProps) {
 							open: tShared('catalog.guestTag.open'),
 						}}
 					/>
+					{'collaborationUnlock' in source && (
+						<CollaborationMapLink itemId={id} />
+					)}
+					{'schedulerLabel' in source && (
+						<TaskMapLinks
+							itemId={id}
+							reference={{ task: source.schedulerLabel }}
+						/>
+					)}
+					{'taskReward' in source && (
+						<TaskMapLinks
+							itemId={id}
+							reference={{ task: source.taskReward }}
+						/>
+					)}
 				</Fragment>
 			))}
 		</p>

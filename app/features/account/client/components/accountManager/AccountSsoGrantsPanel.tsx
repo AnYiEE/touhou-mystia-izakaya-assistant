@@ -8,16 +8,16 @@ import Button from '@/design/ui/components/button';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import AccountConfirmButton from '@/features/account/client/components/AccountConfirmButton';
+import { accountMessages } from '@/features/account/client/messages';
 import type { IAccountSsoGrant } from '@/features/account/contracts';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import {
 	AccountAnimatedList,
 	AccountAnimatedListItem,
 } from './accountPanelLayout';
 import { ACCOUNT_MANAGER_STATUS_LABEL_KEYS } from './copy';
-import { accountMessages } from '@/features/account/client/messages';
-
-import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IAccountSsoGrantsPanelProps {
 	csrfToken: string | null;

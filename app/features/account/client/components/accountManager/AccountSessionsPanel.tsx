@@ -14,7 +14,10 @@ import TimeAgo from '@/design/ui/components/timeAgo';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import AccountConfirmButton from '@/features/account/client/components/AccountConfirmButton';
+import { accountMessages } from '@/features/account/client/messages';
 import type { IAccountSessionRecord } from '@/features/account/contracts';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import {
 	AccountAnimatedList,
@@ -22,9 +25,6 @@ import {
 	formatSessionTimestamp,
 } from './accountPanelLayout';
 import { ACCOUNT_MANAGER_STATUS_LABEL_KEYS } from './copy';
-import { accountMessages } from '@/features/account/client/messages';
-
-import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IAccountSessionsPanelProps {
 	handleRefreshSessions: () => void;
