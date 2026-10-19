@@ -10,6 +10,7 @@
 		"build:offline": "tsx scripts/build/offline.ts",
 		"fonts:update": "tsx scripts/assets/updateFonts.ts",
 		"sprites": "tsx scripts/assets/sprites/generate.ts",
+		"tachies:hash": "tsx scripts/assets/tachies/hashTachies.ts",
 		"start": "node scripts/startSelfHosted.mjs",
 		"serve": "pnpx serve out",
 		"lint": "eslint --cache .",

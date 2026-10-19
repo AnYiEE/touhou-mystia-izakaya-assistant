@@ -22,6 +22,7 @@ const serviceWorkerTemplatePath = resolve(
 const registerOutputPath = resolve(publicPath, 'registerServiceWorker.js');
 const serviceWorkerOutputPath = resolve(publicPath, 'serviceWorker.js');
 const mapAssetsPath = resolve(publicPath, 'assets/maps');
+const staticAssetsPath = resolve(publicPath, 'assets');
 
 async function listSubdirectories(path: string) {
 	try {
@@ -95,6 +96,27 @@ async function listMapAssetDirectories() {
 	return directories;
 }
 
+/**
+ * Content-hash directories for the small generated/manual static assets.
+ * They use a separate persistent cache from maps so a release does not
+ * re-download unchanged sprite sheets or tachies.
+ */
+async function listStaticAssetDirectories() {
+	const directories: string[] = [];
+	for (const kind of ['sprites', 'tachies']) {
+		for (const category of await listSubdirectories(
+			resolve(staticAssetsPath, kind)
+		)) {
+			for (const hash of await listSubdirectories(
+				resolve(staticAssetsPath, kind, category)
+			)) {
+				directories.push(`${kind}/${category}/${hash}/`);
+			}
+		}
+	}
+	return directories;
+}
+
 function normalizeRelativePath(path: string) {
 	return relative(rootPath, path).replaceAll('\\', '/');
 }
@@ -140,19 +162,29 @@ if (argv.includes('--self-check-paths')) {
 	await checkServiceWorkerPaths();
 } else {
 	const sha = await getSha();
-	const [registerTemplate, serviceWorkerTemplate, mapAssetDirectories] =
-		await Promise.all([
-			readFile(registerTemplatePath, encoding),
-			readFile(serviceWorkerTemplatePath, encoding),
-			listMapAssetDirectories(),
-		]);
+	const [
+		registerTemplate,
+		serviceWorkerTemplate,
+		mapAssetDirectories,
+		staticAssetDirectories,
+	] = await Promise.all([
+		readFile(registerTemplatePath, encoding),
+		readFile(serviceWorkerTemplatePath, encoding),
+		listMapAssetDirectories(),
+		listStaticAssetDirectories(),
+	]);
 	const cdnUrlSlot = '{{cdnUrl}}';
 	const mapAssetDirectoriesSlot = '{{mapAssetDirectories}}';
+	const staticAssetDirectoriesSlot = '{{staticAssetDirectories}}';
 	const versionSlot = '{{version}}';
 	const registerResult = registerTemplate.replace(versionSlot, sha);
 	const serviceWorkerResult = serviceWorkerTemplate
 		.replace(cdnUrlSlot, process.env.CDN_URL ?? '')
 		.replace(mapAssetDirectoriesSlot, JSON.stringify(mapAssetDirectories))
+		.replace(
+			staticAssetDirectoriesSlot,
+			JSON.stringify(staticAssetDirectories)
+		)
 		.replace(versionSlot, sha);
 
 	await Promise.all([

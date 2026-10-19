@@ -135,6 +135,24 @@ if (exportMode) {
 						},
 					],
 					source: '/assets/maps/:path*',
+				},
+				{
+					headers: [
+						{
+							key: 'Cache-Control',
+							value: 'public, max-age=31536000, immutable',
+						},
+					],
+					source: '/assets/sprites/:path*',
+				},
+				{
+					headers: [
+						{
+							key: 'Cache-Control',
+							value: 'public, max-age=31536000, immutable',
+						},
+					],
+					source: '/assets/tachies/:path*',
 				}
 			);
 		}
