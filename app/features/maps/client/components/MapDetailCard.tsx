@@ -31,6 +31,10 @@ import { type ICollectionPointYieldProduct } from '@/domain/data/places/collecti
 import { DYNAMIC_FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import { getCollaborationLabel } from '@/domain/labels/localizedCollaborationLabels';
 
+import {
+	APP_SHELL_NAV_LABEL_KEYS,
+	appShellMessages,
+} from '@/features/appShell/client/messages';
 import { GUEST_INFO_QUERY_PARAM } from '@/features/catalog/guests/shared/navigation';
 import { SPECIAL_GUEST_TAG_STYLE } from '@/features/catalog/presentation/tagStyles';
 import Tags from '@/features/catalog/shared/client/components/Tags';
@@ -50,6 +54,8 @@ import {
 import {
 	type TMapCatalogItem,
 	getCollaborationRewardGroups,
+	getInteractionCatalogItem,
+	getInteractionCatalogPath,
 } from '@/features/maps/client/model/dayMapCatalogItems';
 import {
 	type IDayMapCharacterEntity,
@@ -235,7 +241,7 @@ const PrayerDetail = memo(function PrayerDetail({
 	);
 });
 
-const InteractionDetail = memo(function InteractionDetail({
+const InteractionDescription = memo(function InteractionDescription({
 	entity,
 }: {
 	entity: IDayMapInteractionEntity;
@@ -302,6 +308,60 @@ const InteractionDetail = memo(function InteractionDetail({
 		case 'ten-thousand-sales':
 			return <p>{t('maps.detail.interaction.tenThousandSales')}</p>;
 	}
+});
+
+const InteractionDetail = memo(function InteractionDetail({
+	entity,
+	onPopoverOpenChange,
+}: Pick<IProps, 'onPopoverOpenChange'> & { entity: IDayMapInteractionEntity }) {
+	const { t } = useI18n(mapsMessages);
+	const { t: tAppShell } = useI18n(appShellMessages);
+	const { kind } = entity.interaction;
+	const catalogItem = getInteractionCatalogItem(kind);
+	const catalogPath = getInteractionCatalogPath(kind);
+
+	return (
+		<>
+			<InteractionDescription entity={entity} />
+			{catalogItem !== null && (
+				<Section label={t('maps.detail.relatedCatalogItem')}>
+					<MapCatalogItems
+						items={[catalogItem]}
+						onPopoverOpenChange={onPopoverOpenChange}
+					/>
+					<p>{t('maps.detail.itemHint')}</p>
+				</Section>
+			)}
+			{catalogPath !== null && (
+				<Button
+					as={Link}
+					fullWidth
+					isExternal
+					animationUnderline={false}
+					color="primary"
+					endContent={
+						<FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+					}
+					href={catalogPath}
+					role="link"
+					size="sm"
+					variant="flat"
+					onPress={() => {
+						trackMapEvent(
+							'Map Entity Button',
+							`View Catalog Page:${kind}`
+						);
+					}}
+				>
+					{t('maps.detail.viewCatalogPage', {
+						category: tAppShell(
+							APP_SHELL_NAV_LABEL_KEYS[catalogPath]
+						),
+					})}
+				</Button>
+			)}
+		</>
+	);
 });
 
 const TaskDetail = memo(function TaskDetail({
@@ -910,7 +970,10 @@ export default memo<IProps>(function MapDetailCard({
 					/>
 				)}
 				{entity.layer === 'interaction' && (
-					<InteractionDetail entity={entity} />
+					<InteractionDetail
+						entity={entity}
+						onPopoverOpenChange={onPopoverOpenChange}
+					/>
 				)}
 				{entity.layer === 'task' && <TaskDetail entity={entity} />}
 				{'character' in entity && (

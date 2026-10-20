@@ -7,6 +7,7 @@ import type { TDecorationId } from '@/domain/data/decorations/types';
 import type { TFoodId } from '@/domain/data/foods/types';
 import type { TGeneralItemId } from '@/domain/data/generalItems/types';
 import { type TCollaborationLabel } from '@/domain/data/labels/collaborationFacts';
+import type { TDayMapInteractionKind } from '@/domain/data/maps/types';
 import type { TDlc } from '@/domain/data/shared/types';
 
 import { memoize } from '@/shared/utilities/cache/memoize';
@@ -17,6 +18,38 @@ export type TMapCatalogItem =
 	| { id: TDecorationId; target: 'decoration' }
 	| { id: TFoodId; target: 'food' }
 	| { id: TGeneralItemId; target: 'item' };
+
+export type TDayMapCatalogPath =
+	'/beverages' | '/clothes' | '/decorations' | '/foods' | '/ingredients';
+
+const INTERACTION_CATALOG_ITEMS: Partial<
+	Record<TDayMapInteractionKind, TMapCatalogItem>
+> = {
+	'comic-book': { id: 53, target: 'item' },
+	'creator-box': { id: 5014, target: 'decoration' },
+	'jizo-doll': { id: 1003, target: 'decoration' },
+	'slot-machine': { id: 3000, target: 'decoration' },
+	telephone: { id: 1004, target: 'decoration' },
+	'ten-thousand-sales': { id: 0, target: 'item' },
+};
+
+const INTERACTION_CATALOG_PATHS: Partial<
+	Record<TDayMapInteractionKind, TDayMapCatalogPath>
+> = {
+	'beverage-storage': '/beverages',
+	closet: '/clothes',
+	'cooking-table': '/foods',
+	'food-storage': '/ingredients',
+	showcase: '/decorations',
+};
+
+export function getInteractionCatalogItem(kind: TDayMapInteractionKind) {
+	return INTERACTION_CATALOG_ITEMS[kind] ?? null;
+}
+
+export function getInteractionCatalogPath(kind: TDayMapInteractionKind) {
+	return INTERACTION_CATALOG_PATHS[kind] ?? null;
+}
 
 type TCollaborationReward = TMapCatalogItem & { dlc: TDlc };
 
