@@ -8,7 +8,7 @@ export const RECOMMENDATION_ALGORITHM_VERSION = 5;
 /**
  * Increment when the persisted record shape or validation contract changes.
  */
-export const RECOMMENDATION_CACHE_RECORD_VERSION = 3;
+export const RECOMMENDATION_CACHE_RECORD_VERSION = 4;
 
 /**
  * Emergency invalidation switch for otherwise compatible records.

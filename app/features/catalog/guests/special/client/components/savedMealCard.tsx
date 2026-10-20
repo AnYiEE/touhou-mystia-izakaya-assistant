@@ -10,6 +10,7 @@ import FadeMotionDiv, {
 } from '@/design/ui/components/fadeMotionDiv';
 import { PopoverTrigger } from '@/design/ui/components/popover';
 import Tooltip from '@/design/ui/components/tooltip';
+import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 
 import { DARK_MATTER_META_MAP } from '@/domain/data/tags/tagFacts';
 import { getEvaluationLabelByKey } from '@/domain/evaluation/localizedLabels';
@@ -25,6 +26,7 @@ import { Plus } from '@/features/catalog/guests/shared/client/components/resultC
 import TagGroup from '@/features/catalog/guests/shared/client/components/tagGroup';
 import SavedMealActionRail from '@/features/catalog/guests/shared/client/mealPlanning/savedMealActionRail';
 import SavedMealIngredientsStrip from '@/features/catalog/guests/shared/client/mealPlanning/savedMealIngredientsStrip';
+import SavedMealRatingContent from '@/features/catalog/guests/shared/client/mealPlanning/savedMealRatingContent';
 import { useSavedMealListKeys } from '@/features/catalog/guests/shared/client/mealPlanning/useSavedMealListKeys';
 import { useSavedMealReorderAnimation } from '@/features/catalog/guests/shared/client/mealPlanning/useSavedMealReorderAnimation';
 import {
@@ -64,6 +66,10 @@ const RATING_AVATAR_CLASS_NAMES = {
 export default function SavedMealCard() {
 	const { isHighAppearance } = useDesignPreferences();
 	const { t } = useI18n(catalogGuestsMessages);
+	const { breakpoint: placement } = useBreakpoint(
+		{ left: 1280, top: -1 },
+		'top'
+	);
 	const {
 		CLASSNAME_EXCLUDE_FROM_PIP,
 		PipButton,
@@ -232,6 +238,8 @@ export default function SavedMealCard() {
 								dataIndex,
 								evaluation: {
 									isDarkMatter,
+									matchedBeverageTags,
+									matchedFoodTags,
 									price,
 									rating: ratingKey,
 								},
@@ -326,8 +334,29 @@ export default function SavedMealCard() {
 												<>
 													<RatingAvatarShell
 														color={ratingColor}
-														content={rating}
-														placement="left"
+														containerPadding={24}
+														contentClassName="max-w-[calc(100vw-3rem)]"
+														content={
+															<SavedMealRatingContent
+																hasMystiaCooker={
+																	hasMystiaCooker
+																}
+																isDarkMatter={
+																	isDarkMatter
+																}
+																matchedBeverageTags={
+																	matchedBeverageTags
+																}
+																matchedFoodTags={
+																	matchedFoodTags
+																}
+																order={
+																	guestOrder
+																}
+																rating={rating}
+															/>
+														}
+														placement={placement}
 														popoverOffset={12}
 														trigger={
 															<span className="cursor-pointer">

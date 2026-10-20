@@ -2,6 +2,7 @@ import type { TBeverageId } from '@/domain/data/beverages/types';
 import type { TCookerId } from '@/domain/data/cookers/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import type { TMapLabel } from '@/domain/data/places/types';
+import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import type { TRatingKey } from '@/domain/evaluation/types';
 import type { IMealFood } from '@/domain/meals/types';
 import type { IGuestOrder } from '@/domain/orders/types';
@@ -39,6 +40,8 @@ export interface IResolvedSpecialGuestPlanMeal {
 	dataIndex: number | null;
 	evaluation: {
 		isDarkMatter: boolean;
+		matchedBeverageTags: ReadonlyArray<TBeverageTagId>;
+		matchedFoodTags: ReadonlyArray<TFoodTagId>;
 		price: number;
 		rating: TRatingKey | null;
 	};

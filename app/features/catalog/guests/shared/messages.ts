@@ -137,7 +137,12 @@ const CATALOG_GUESTS_MESSAGES_ZH_CN = {
 	'guests.resultCard.selectBeverage': '请选择酒水',
 	'guests.resultCard.selectFood': '请选择料理',
 	'guests.resultCard.unrated': '未评级',
+	'guests.savedMeal.beveragePreferences': '酒水喜好',
+	'guests.savedMeal.currentOrder': '当前点单',
 	'guests.savedMeal.delete': '删除',
+	'guests.savedMeal.foodPreferences': '料理喜好',
+	'guests.savedMeal.noMatchedPreferences': '未满足该顾客的料理或酒水喜好',
+	'guests.savedMeal.satisfiedPreferences': '已满足的喜好',
 	'guests.savedMeal.select': '选择',
 	'guests.savedMeal.viewCookerTip':
 		'点击：在新窗口中查看厨具【{name}】的详情',
@@ -419,7 +424,13 @@ export const catalogGuestsMessages = {
 		'guests.resultCard.selectBeverage': 'Select a beverage',
 		'guests.resultCard.selectFood': 'Select a food',
 		'guests.resultCard.unrated': 'unrated',
+		'guests.savedMeal.beveragePreferences': 'Beverage preferences',
+		'guests.savedMeal.currentOrder': 'Current order',
 		'guests.savedMeal.delete': 'Delete',
+		'guests.savedMeal.foodPreferences': 'Food preferences',
+		'guests.savedMeal.noMatchedPreferences':
+			'No food or beverage preferences are satisfied.',
+		'guests.savedMeal.satisfiedPreferences': 'Satisfied preferences',
 		'guests.savedMeal.select': 'Select',
 		'guests.savedMeal.viewCookerTip':
 			'Click: view details of “{name}” in a new window',
@@ -709,7 +720,13 @@ export const catalogGuestsMessages = {
 		'guests.resultCard.selectBeverage': '飲み物を選択',
 		'guests.resultCard.selectFood': '料理を選択',
 		'guests.resultCard.unrated': '未評価',
+		'guests.savedMeal.beveragePreferences': '飲み物の好み',
+		'guests.savedMeal.currentOrder': '現在の注文',
 		'guests.savedMeal.delete': '削除',
+		'guests.savedMeal.foodPreferences': '料理の好み',
+		'guests.savedMeal.noMatchedPreferences':
+			'料理・飲み物の好みは満たしていません',
+		'guests.savedMeal.satisfiedPreferences': '満たした好み',
 		'guests.savedMeal.select': '選択',
 		'guests.savedMeal.viewCookerTip':
 			'クリック：新しいウィンドウで調理器具【{name}】の詳細を表示',
@@ -993,7 +1010,13 @@ export const catalogGuestsMessages = {
 		'guests.resultCard.selectBeverage': '음료 선택',
 		'guests.resultCard.selectFood': '요리 선택',
 		'guests.resultCard.unrated': '미평가',
+		'guests.savedMeal.beveragePreferences': '음료 선호',
+		'guests.savedMeal.currentOrder': '현재 주문',
 		'guests.savedMeal.delete': '삭제',
+		'guests.savedMeal.foodPreferences': '요리 선호',
+		'guests.savedMeal.noMatchedPreferences':
+			'충족한 요리 또는 음료 선호가 없습니다.',
+		'guests.savedMeal.satisfiedPreferences': '충족한 선호',
 		'guests.savedMeal.select': '선택',
 		'guests.savedMeal.viewCookerTip':
 			'클릭: 새 창에서 “{name}” 조리도구 상세 보기',
@@ -1270,7 +1293,12 @@ export const catalogGuestsMessages = {
 		'guests.resultCard.selectBeverage': '請選擇酒水',
 		'guests.resultCard.selectFood': '請選擇料理',
 		'guests.resultCard.unrated': '未評級',
+		'guests.savedMeal.beveragePreferences': '酒水喜好',
+		'guests.savedMeal.currentOrder': '目前點單',
 		'guests.savedMeal.delete': '刪除',
+		'guests.savedMeal.foodPreferences': '料理喜好',
+		'guests.savedMeal.noMatchedPreferences': '未滿足該顧客的料理或酒水喜好',
+		'guests.savedMeal.satisfiedPreferences': '已滿足的喜好',
 		'guests.savedMeal.select': '選擇',
 		'guests.savedMeal.viewCookerTip':
 			'點擊：在新視窗中查看廚具【{name}】的詳情',

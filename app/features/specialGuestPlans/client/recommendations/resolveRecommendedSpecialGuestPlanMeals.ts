@@ -1,5 +1,7 @@
 import { isAvailableWithHiddenDlcs } from '@/domain/availability';
+import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import type { TBeverageId } from '@/domain/data/beverages/types';
@@ -13,6 +15,7 @@ import {
 	FOOD_TAG_MAP,
 } from '@/domain/data/tags/tagFacts';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
+import { getMatchedPreferenceTags } from '@/domain/evaluation/getMatchedPreferenceTags';
 import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';
 import type { ISuggestedMeal } from '@/domain/recommendations/types';
 import type { IPopularTrend } from '@/domain/trends/types';
@@ -62,7 +65,9 @@ interface IResolveRecommendedSpecialGuestPlanMealBatchParams {
 }
 
 const cookerCatalog = CookerCatalog.getInstance();
+const beverageCatalog = BeverageCatalog.getInstance();
 const foodCatalog = FoodCatalog.getInstance();
+const ingredientCatalog = IngredientCatalog.getInstance();
 const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 
 export function createRecommendedSpecialGuestPlanMealSession({
@@ -130,6 +135,7 @@ export async function resolveRecommendedSpecialGuestPlanMealBatch(
 	const safeStartIndex = Math.max(0, startIndex);
 	const safeBatchSize = Math.max(1, batchSize);
 	const safeMaxResults = Math.max(1, maxResults);
+	const specialGuestRecord = specialGuestCatalog.getPropsById(specialGuest);
 	const batchCombos = combos.slice(
 		safeStartIndex,
 		safeStartIndex + safeBatchSize
@@ -144,26 +150,62 @@ export async function resolveRecommendedSpecialGuestPlanMealBatch(
 		}
 		const { beverageTag, cooker, foodTag } = combo;
 
-		return suggestedMeals.map((meal, recommendedSetIndex) => ({
-			cooker,
-			dataIndex: null,
-			evaluation: {
-				isDarkMatter: currentFoodCatalog.checkDarkMatter(meal.food)
-					.isDarkMatter,
-				price: meal.price,
-				rating: meal.rating,
-			},
-			meal: {
-				beverage: meal.beverage,
-				food: meal.food,
-				hasMystiaCooker: false,
-				order: { beverageTag, foodTag },
-			},
-			recommendedSetIndex,
-			source: 'recommended' as const,
-			visibleIndex:
-				(safeStartIndex + index) * safeMaxResults + recommendedSetIndex,
-		}));
+		return suggestedMeals.map((meal, recommendedSetIndex) => {
+			const { isDarkMatter } = currentFoodCatalog.checkDarkMatter(
+				meal.food
+			);
+			const { food, recipe } = currentFoodCatalog.getRecipeOwnerById(
+				meal.food.recipeId
+			);
+			const extraTags = meal.food.extraIngredients.flatMap((ingredient) =>
+				ingredientCatalog.getIngredientTags(ingredient)
+			);
+			const foodTagsWithTrend =
+				currentFoodCatalog.calculateFoodTagsWithTrend(
+					currentFoodCatalog.composeFoodTagsWithPopularTrend(
+						recipe.ingredients,
+						meal.food.extraIngredients,
+						food.positiveTags,
+						extraTags,
+						popularTrend
+					),
+					popularTrend,
+					isFamousShop
+				);
+			const beverageTags = beverageCatalog.getPropsById(
+				meal.beverage,
+				'tags'
+			);
+
+			return {
+				cooker,
+				dataIndex: null,
+				evaluation: {
+					isDarkMatter,
+					matchedBeverageTags: getMatchedPreferenceTags(
+						beverageTags,
+						specialGuestRecord.beverageTags
+					),
+					matchedFoodTags: getMatchedPreferenceTags(
+						foodTagsWithTrend,
+						specialGuestRecord.positiveTags
+					),
+					price: meal.price,
+					rating: meal.rating,
+				},
+				meal: {
+					beverage: meal.beverage,
+					food: meal.food,
+					hasMystiaCooker: false,
+					order: { beverageTag, foodTag },
+				},
+				recommendedSetIndex,
+				source: 'recommended' as const,
+				visibleIndex:
+					(safeStartIndex + index) * safeMaxResults +
+					recommendedSetIndex,
+			};
+		});
 	};
 	const resolvedBatches: Array<IResolvedSpecialGuestPlanGroup['meals']> = [];
 	await suggestMealsBatch(

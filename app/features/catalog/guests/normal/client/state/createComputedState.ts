@@ -386,6 +386,7 @@ export const createNormalGuestComputedState = (
 		return visibleMeals.map(({ dataIndex, meal, visibleIndex }) => ({
 			dataIndex,
 			evaluation: evaluateNormalGuestSavedMeal({
+				beverage: meal.beverage,
 				isFamousShop,
 				mealFood: meal.food,
 				normalGuest: currentNormalGuest,

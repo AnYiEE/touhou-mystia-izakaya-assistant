@@ -4,6 +4,7 @@ import {
 	PopoverTrigger,
 } from '@/design/ui/components/popover';
 import Tooltip from '@/design/ui/components/tooltip';
+import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
@@ -18,6 +19,7 @@ import RatingAvatarShell from '@/features/catalog/guests/shared/client/component
 import { Plus } from '@/features/catalog/guests/shared/client/components/resultCardAtoms';
 import TagGroup from '@/features/catalog/guests/shared/client/components/tagGroup';
 import SavedMealIngredientsStrip from '@/features/catalog/guests/shared/client/mealPlanning/savedMealIngredientsStrip';
+import SavedMealRatingContent from '@/features/catalog/guests/shared/client/mealPlanning/savedMealRatingContent';
 import {
 	BEVERAGE_TAG_STYLE,
 	FOOD_TAG_STYLE,
@@ -60,9 +62,19 @@ export default function MealRow({
 }) {
 	useCatalogLocalizationRevision();
 	const { t } = useI18n(specialGuestPlansMessages);
+	const { breakpoint: placement } = useBreakpoint(
+		{ left: 768, top: -1 },
+		'top'
+	);
 	const {
 		cooker,
-		evaluation: { isDarkMatter, price, rating: ratingKey },
+		evaluation: {
+			isDarkMatter,
+			matchedBeverageTags,
+			matchedFoodTags,
+			price,
+			rating: ratingKey,
+		},
 		meal: { beverage, food: mealFood, hasMystiaCooker, order: guestOrder },
 		source,
 	} = meal;
@@ -95,10 +107,22 @@ export default function MealRow({
 			<div className="relative z-10 flex min-w-0 flex-col flex-wrap items-center gap-2 md:flex-row md:flex-nowrap md:gap-3 min-[1202px]:gap-2">
 				<RatingAvatarShell
 					color={ratingColor}
-					content={rating}
-					placement="left"
+					containerPadding={24}
+					contentClassName="w-80 max-w-[calc(100vw-3rem)]"
+					content={
+						<SavedMealRatingContent
+							hasMystiaCooker={hasMystiaCooker}
+							isDarkMatter={isDarkMatter}
+							matchedBeverageTags={matchedBeverageTags}
+							matchedFoodTags={matchedFoodTags}
+							order={guestOrder}
+							rating={rating}
+						/>
+					}
+					placement={placement}
 					popoverProps={popoverPortalProps}
 					popoverOffset={12}
+					shouldFlip={placement === 'top'}
 					trigger={
 						<span
 							className="cursor-pointer"

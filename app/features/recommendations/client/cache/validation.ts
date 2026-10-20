@@ -20,6 +20,8 @@ export interface ICachedSpecialGuestPlanRecommendationMeal {
 	dataIndex: number | null;
 	evaluation: {
 		isDarkMatter: boolean;
+		matchedBeverageTags: ReadonlyArray<TBeverageTagId>;
+		matchedFoodTags: ReadonlyArray<TFoodTagId>;
 		price: number;
 		rating: TRatingKey | null;
 	};
@@ -60,18 +62,28 @@ function isCooker(value: unknown): value is TCookerId {
 	return typeof value === 'number' && cookers.has(value);
 }
 
+function isBeverageTag(value: unknown): value is TBeverageTagId {
+	return typeof value === 'number' && Object.hasOwn(BEVERAGE_TAG_MAP, value);
+}
+
 function isBeverageTagOrNull(value: unknown): value is TBeverageTagId | null {
-	return (
-		value === null ||
-		(typeof value === 'number' && Object.hasOwn(BEVERAGE_TAG_MAP, value))
-	);
+	return value === null || isBeverageTag(value);
+}
+
+function isFoodTag(value: unknown): value is TFoodTagId {
+	return typeof value === 'number' && Object.hasOwn(FOOD_TAG_MAP, value);
 }
 
 function isFoodTagOrNull(value: unknown): value is TFoodTagId | null {
-	return (
-		value === null ||
-		(typeof value === 'number' && Object.hasOwn(FOOD_TAG_MAP, value))
-	);
+	return value === null || isFoodTag(value);
+}
+
+function isBeverageTagArray(value: unknown): value is TBeverageTagId[] {
+	return Array.isArray(value) && value.every(isBeverageTag);
+}
+
+function isFoodTagArray(value: unknown): value is TFoodTagId[] {
+	return Array.isArray(value) && value.every(isFoodTag);
 }
 
 function isRatingKey(value: unknown): value is TRatingKey {
@@ -140,6 +152,8 @@ function validateSpecialGuestPlanMeal(
 		!isNonNegativeSafeInteger(value['visibleIndex']) ||
 		!checkIsRecord(value['evaluation']) ||
 		typeof value['evaluation']['isDarkMatter'] !== 'boolean' ||
+		!isBeverageTagArray(value['evaluation']['matchedBeverageTags']) ||
+		!isFoodTagArray(value['evaluation']['matchedFoodTags']) ||
 		!isFiniteNumber(value['evaluation']['price']) ||
 		!(
 			value['evaluation']['rating'] === null ||
@@ -164,6 +178,10 @@ function validateSpecialGuestPlanMeal(
 		dataIndex: value['dataIndex'],
 		evaluation: {
 			isDarkMatter: value['evaluation']['isDarkMatter'],
+			matchedBeverageTags: [
+				...value['evaluation']['matchedBeverageTags'],
+			],
+			matchedFoodTags: [...value['evaluation']['matchedFoodTags']],
 			price: value['evaluation']['price'],
 			rating: value['evaluation']['rating'],
 		},
