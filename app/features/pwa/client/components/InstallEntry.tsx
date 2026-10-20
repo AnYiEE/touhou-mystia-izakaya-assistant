@@ -124,10 +124,7 @@ export default function InstallEntry() {
 	}
 
 	return (
-		<div
-			className="flex flex-col gap-1 lg:hidden"
-			data-pwa-install-entry=""
-		>
+		<div data-pwa-install-entry className="flex flex-col gap-1 lg:hidden">
 			<p>
 				<InstallGuidePopover
 					anchor="entry"

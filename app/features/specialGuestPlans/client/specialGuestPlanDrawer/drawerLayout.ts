@@ -32,6 +32,19 @@ export function getDrawerResultsClassName(isHighAppearance: boolean) {
 	);
 }
 
+export function getDrawerMealGridClassName({
+	isControlsCollapsed,
+}: {
+	isControlsCollapsed: boolean;
+}) {
+	return cn(
+		'grid grid-cols-1 gap-2',
+		isControlsCollapsed
+			? 'min-[1202px]:grid-cols-2 min-[1738px]:grid-cols-3 min-[2284px]:grid-cols-4'
+			: 'min-[1474px]:grid-cols-2 min-[2010px]:grid-cols-3 min-[2556px]:grid-cols-4'
+	);
+}
+
 export function getDrawerSkeletonClassName({
 	className,
 	isHighAppearance,

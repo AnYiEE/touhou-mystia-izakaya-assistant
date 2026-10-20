@@ -41,6 +41,7 @@ import {
 } from '@/features/catalog/shared/client/localization/tagLabels';
 import { recommendationPreferencesFacade } from '@/features/preferences/client/recommendationPreferencesFacade';
 import { specialGuestPlansMessages } from '@/features/specialGuestPlans/client/messages';
+import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/state/store';
 import { useSpecialGuestPlanRecommendations } from '@/features/specialGuestPlans/client/useSpecialGuestPlanRecommendations';
 import type { IResolvedSpecialGuestPlanGroup } from '@/features/specialGuestPlans/contracts';
 
@@ -53,6 +54,7 @@ import {
 	isGuestGroupToggleGuarded,
 	isSpecialGuestPlanInteractiveTarget,
 } from './dom';
+import { getDrawerMealGridClassName } from './drawerLayout';
 import MealRow from './MealRow';
 
 const DRAWER_RECOMMENDED_MEAL_RENDER_BATCH_SIZE = 12;
@@ -110,6 +112,8 @@ export default function GuestGroup({
 			: 'sm:grid-cols-[8rem_minmax(0,1fr)_minmax(0,1fr)]';
 	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
+	const isControlsCollapsed =
+		specialGuestPlansStore.shared.drawer.isControlsCollapsed.use();
 	const hiddenBeverages = specialGuestPlanCatalogPort.hiddenBeverages.use();
 	const hiddenDlcs = specialGuestPlanCatalogPort.hiddenDlcs.use();
 	const hiddenFoods = specialGuestPlanCatalogPort.hiddenFoods.use();
@@ -836,7 +840,11 @@ export default function GuestGroup({
 											</motion.div>
 										)}
 									</AnimatePresence>
-									<div className="grid grid-cols-1 gap-2 min-[1202px]:grid-cols-2 min-[1738px]:grid-cols-3 min-[2284px]:grid-cols-4">
+									<div
+										className={getDrawerMealGridClassName({
+											isControlsCollapsed,
+										})}
+									>
 										{renderedMeals.map((meal) => (
 											<MealRow
 												key={`${group.specialGuest}:${meal.source}:${meal.dataIndex ?? meal.visibleIndex}`}

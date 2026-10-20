@@ -4,7 +4,9 @@ import { memo, useCallback } from 'react';
 import { faEarthAsia } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'next/navigation';
 
-import SideBookmarkButton from '@/design/ui/components/SideBookmarkButton';
+import SideBookmarkButton, {
+	type TSideBookmarkExpandWidth,
+} from '@/design/ui/components/SideBookmarkButton';
 
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { mapsMessages } from '@/features/maps/client/messages';
@@ -17,7 +19,13 @@ import { useI18n } from '@/shared/i18n/useI18n';
 
 import { useMapLinksHidden } from './MapLinks';
 
-export default memo(function WorldMapButton() {
+export default memo(function WorldMapButton({
+	expandAtWidth = 1280,
+	isCatalogEntry = false,
+}: {
+	expandAtWidth?: TSideBookmarkExpandWidth;
+	isCatalogEntry?: boolean;
+}) {
 	const { t } = useI18n(mapsMessages);
 	const { pathname } = usePathname();
 	const router = useRouter();
@@ -37,6 +45,9 @@ export default memo(function WorldMapButton() {
 
 	return (
 		<SideBookmarkButton
+			data-world-map-entry
+			{...(isCatalogEntry ? { 'data-catalog-world-map-entry': '' } : {})}
+			expandAtWidth={expandAtWidth}
 			icon={faEarthAsia}
 			label={t('maps.world.title')}
 			aria-label={t('maps.world.title')}

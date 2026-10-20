@@ -147,7 +147,7 @@ export default async function RootLayout({
 								}
 							/>
 							<Navbar />
-							<main className="container mx-auto grid max-w-7xl grow grid-cols-1 px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl [&>*]:min-w-0">
+							<main className="container mx-auto grid max-w-7xl grow grid-cols-1 px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl max-[1300px]:[&:has([data-catalog-world-map-entry])]:px-7 [&>*]:min-w-0">
 								<div id="modal-portal-container" />
 								{children}
 							</main>
