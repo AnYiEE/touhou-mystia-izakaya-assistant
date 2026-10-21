@@ -26,6 +26,11 @@ import {
 	beverageTagSelectionAdapter,
 	foodTagSelectionAdapter,
 } from '@/features/catalog/guests/shared/state/tagSelectionAdapter';
+import {
+	createMealValueDedupeKey,
+	createSpecialGuestRecommendationWorkflowKey,
+} from '@/features/donations/client/supportNudgePolicy';
+import { trackSupportMealSave } from '@/features/donations/client/state/supportNudgeStore';
 import { createSpecialGuestPlansActionsDefinition } from '@/features/specialGuestPlans/client/state/planStoreDefinition';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
@@ -329,6 +334,31 @@ export const createSpecialGuestStoreActions = (
 			'Save Button',
 			`${foodName} - ${beverageName}${checkLengthEmpty(extraIngredientNames) ? '' : ` - ${extraIngredientNames.join(' ')}`}`
 		);
+		const recommendationWorkflowKey =
+			guestOrder.foodTag !== null && guestOrder.beverageTag !== null
+				? createSpecialGuestRecommendationWorkflowKey({
+						beverageTag: guestOrder.beverageTag,
+						foodTag: guestOrder.foodTag,
+						hasMystiaCooker,
+						specialGuest: currentSpecialGuest,
+					})
+				: undefined;
+		trackSupportMealSave({
+			dedupeKey: createMealValueDedupeKey({
+				beverageId: beverage,
+				beverageTag: saveObject.order.beverageTag,
+				foodTag: saveObject.order.foodTag,
+				guestId: currentSpecialGuest,
+				hasMystiaCooker,
+				ingredientIds: extraIngredients,
+				isDarkMatter: Boolean(isDarkMatter),
+				kind: 'special',
+				recipeId,
+			}),
+			...(recommendationWorkflowKey === undefined
+				? {}
+				: { recommendationWorkflowKey }),
+		});
 	},
 
 	refreshGuest(specialGuest: TSpecialGuestId | null) {

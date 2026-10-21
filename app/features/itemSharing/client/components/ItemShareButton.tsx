@@ -15,6 +15,7 @@ import Tooltip from '@/design/ui/components/tooltip';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { useParams } from '@/features/appShell/client/navigation/useParams';
+import { trackSupportShareSuccess } from '@/features/donations/client/state/supportNudgeStore';
 import { itemSharingMessages } from '@/features/itemSharing/client/messages';
 import {
 	type TShareableItemId,
@@ -78,10 +79,17 @@ export const ItemShareButton = memo<IItemShareButtonProps>(
 
 		const handlePress = useCallback(() => {
 			if (isCanShare) {
-				navigator.share(shareObject).catch(() => {});
+				void navigator
+					.share(shareObject)
+					.then(() => {
+						trackSupportShareSuccess(
+							`item:${recordId}:${Date.now()}`
+						);
+					})
+					.catch(() => {});
 			}
 			trackEvent(trackEvent.category.click, 'Share Button', name);
-		}, [isCanShare, name, shareObject]);
+		}, [isCanShare, name, recordId, shareObject]);
 
 		const label = t('itemSharing.shareLabel');
 

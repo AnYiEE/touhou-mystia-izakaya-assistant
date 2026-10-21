@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { trackSupportCatalogDetail } from '@/features/donations/client/state/supportNudgeStore';
 import {
 	ITEM_PREVIEW_PARAM_NAME,
 	ITEM_SHARE_PARAM_NAME,
@@ -10,39 +11,7 @@ import {
 } from '@/features/itemSharing/contracts';
 
 export function useViewInNewWindow() {
-	const [windowRecord, setWindowRecord] = useState<[TShareableItemId] | null>(
-		null
-	);
-	const [windowItemPath, setWindowItemPath] = useState<
-		[TItemRoutePath] | null
-	>(null);
 	const windowObjectRef = useRef<Window | null>(null);
-
-	useEffect(() => {
-		if (windowRecord === null || windowItemPath === null) {
-			return;
-		}
-
-		windowObjectRef.current?.close();
-		windowObjectRef.current = null;
-
-		const pathname = `/${windowItemPath[0]}?${new URLSearchParams({
-			[ITEM_SHARE_PARAM_NAME]: String(windowRecord[0]),
-			// eslint-disable-next-line sort-keys -- Preserve the existing select-before-preview query serialization.
-			[ITEM_PREVIEW_PARAM_NAME]: '1',
-		}).toString()}`;
-		const height = 640;
-		const width = 384;
-
-		const { height: screenHeight, width: screenWidth } = screen;
-		const newWindowObject = globalThis.open(
-			pathname,
-			'_blank',
-			`left=${screenWidth - width},top=${screenHeight - height},height=${height},width=${width}`
-		);
-
-		windowObjectRef.current = newWindowObject;
-	}, [windowItemPath, windowRecord]);
 
 	const openWindow = useCallback(
 		(
@@ -56,8 +25,30 @@ export function useViewInNewWindow() {
 				path,
 				name
 			);
-			setWindowRecord([recordId]);
-			setWindowItemPath([path]);
+			windowObjectRef.current?.close();
+			windowObjectRef.current = null;
+
+			const pathname = `/${path}?${new URLSearchParams({
+				[ITEM_SHARE_PARAM_NAME]: String(recordId),
+				// eslint-disable-next-line sort-keys -- Preserve the existing select-before-preview query serialization.
+				[ITEM_PREVIEW_PARAM_NAME]: '1',
+			}).toString()}`;
+			const height = 640;
+			const width = 384;
+
+			const { height: screenHeight, width: screenWidth } = screen;
+			const newWindowObject = globalThis.open(
+				pathname,
+				'_blank',
+				`left=${screenWidth - width},top=${screenHeight - height},height=${height},width=${width}`
+			);
+			if (newWindowObject === null) {
+				return;
+			}
+
+			newWindowObject.opener = null;
+			windowObjectRef.current = newWindowObject;
+			trackSupportCatalogDetail(path, recordId);
 		},
 		[]
 	);

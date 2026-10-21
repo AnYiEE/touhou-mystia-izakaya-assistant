@@ -201,6 +201,7 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 			defaultExpandedKeys={defaultExpandedKeys}
 			desktopTriggerContainer={desktopTriggerContainer}
 			overlayId="special-guest.info"
+			supportGuest={{ id: currentSpecialGuest, kind: 'special' }}
 			onButtonPress={handleButtonPress}
 		>
 			<AccordionItem

@@ -1,9 +1,16 @@
 'use client';
 
+import { faGithub, faQq } from '@fortawesome/free-brands-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useCallback, useEffect, useMemo } from 'react';
 
 import Button from '@/design/ui/components/button';
 import Heading from '@/design/ui/components/heading';
+import Link from '@/design/ui/components/link';
+import Popover, {
+	PopoverContent,
+	PopoverTrigger,
+} from '@/design/ui/components/popover';
 import QRCode from '@/design/ui/components/qrCode';
 
 import { useTrackedInteractionCount } from '@/features/analytics/client/interactionCount';
@@ -15,15 +22,18 @@ import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 import { useHydrated } from '@/shared/react/useHydrated';
+import { isChinaSurfaceLocale } from '@/shared/site/chinaSurfaces';
 import { siteMessages } from '@/shared/site/messages';
 
 import { donationMessages } from './messages';
 import {
 	DONATION_REMIND_LATER_DAYS,
 	checkDonationModalRequestValid,
-	getCurrentDonationMilestone,
 } from './milestones';
-import { donationModalStore } from './state/donationModalStore';
+import {
+	closeActiveDonationModal,
+	donationModalStore,
+} from './state/donationModalStore';
 import {
 	closeDonationModal,
 	remindDonationModalLater,
@@ -33,30 +43,35 @@ import {
 import { useDonationModalTrigger } from './useDonationModalTrigger';
 
 const links = SITE_LINKS;
+const QQ_GROUP_POPOVER_CLASS_NAMES = { content: 'px-0 pb-1' } as const;
 
 export default function DonationModal() {
 	useDonationModalTrigger();
 	const isMounted = useHydrated();
 	const { t: tAppShell } = useI18n(appShellMessages);
-	const { t } = useI18n(donationMessages);
+	const { locale, t } = useI18n(donationMessages);
 	const { t: tSite } = useI18n(siteMessages);
 	const interactionCount = useTrackedInteractionCount();
 	const vibrate = useVibrate();
 
 	const isOpen = donationModalStore.isOpen.use();
+	const source = donationModalStore.source.use();
 
 	const lastMilestoneShown = useDonationLastMilestoneShown();
 	const lastShown = useDonationLastShown();
-	const isRequestValid = checkDonationModalRequestValid({
+	const isMilestoneRequestValid = checkDonationModalRequestValid({
 		interactionCount,
 		lastMilestoneShown,
 		lastShown,
 	});
 
-	const milestone = getCurrentDonationMilestone(interactionCount);
 	const mainlandNote = t('donation.mainlandNote');
+	const shouldShowQqGroup = isChinaSurfaceLocale(locale);
 
-	const canActivate = useCallback(() => isRequestValid, [isRequestValid]);
+	const canActivate = useCallback(
+		() => source !== 'milestone' || isMilestoneRequestValid,
+		[isMilestoneRequestValid, source]
+	);
 
 	const coordination = useMemo(
 		() => ({ canActivate, id: 'donation' as const }),
@@ -64,30 +79,32 @@ export default function DonationModal() {
 	);
 
 	useEffect(() => {
-		if (isOpen && !isRequestValid) {
-			donationModalStore.isOpen.set(false);
+		if (isOpen && source === 'milestone' && !isMilestoneRequestValid) {
+			closeActiveDonationModal();
 		}
-	}, [isOpen, isRequestValid]);
+	}, [isMilestoneRequestValid, isOpen, source]);
 
 	const handleClose = useCallback(() => {
 		vibrate();
 		trackEvent(
 			trackEvent.category.click,
 			'Donation Modal Button',
-			'Close Without Action'
+			'Close Without Action',
+			source ?? 'unknown'
 		);
 		closeDonationModal();
-	}, [vibrate]);
+	}, [source, vibrate]);
 
 	const handleRemindLater = useCallback(() => {
 		vibrate();
 		trackEvent(
 			trackEvent.category.click,
 			'Donation Modal Button',
-			'Remind Later'
+			'Remind Later',
+			source ?? 'unknown'
 		);
 		remindDonationModalLater();
-	}, [vibrate]);
+	}, [source, vibrate]);
 
 	if (!isMounted) {
 		return null;
@@ -104,12 +121,14 @@ export default function DonationModal() {
 					{t('donation.heading', { name: tSite('site.name') })}
 				</Heading>
 				<div className="text-cjk-flow space-y-2 indent-8">
-					<p>
-						{t('donation.intro', {
-							count: milestone,
-							shortName: tSite('site.shortName'),
-						})}
-					</p>
+					{source === 'milestone' && (
+						<p>
+							{t('donation.intro', {
+								count: interactionCount,
+								shortName: tSite('site.shortName'),
+							})}
+						</p>
+					)}
 					<p>
 						{t('donation.cost', {
 							shortName: tSite('site.shortName'),
@@ -120,7 +139,7 @@ export default function DonationModal() {
 							shortName: tSite('site.shortName'),
 						})}
 					</p>
-					<p>{t('donation.apology')}</p>
+					{source === 'milestone' && <p>{t('donation.apology')}</p>}
 				</div>
 				<QRCode text={links.donate.href} className="w-28">
 					{tAppShell('appShell.links.donateQrCode')}
@@ -130,20 +149,137 @@ export default function DonationModal() {
 						{mainlandNote}
 					</p>
 				)}
-				<div className="flex justify-end gap-2">
+				<div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
 					<Button
-						color="warning"
+						as={Link}
+						isExternal
+						animationUnderline={false}
+						href={links.github.href}
+						size="sm"
+						startContent={
+							<FontAwesomeIcon
+								icon={faGithub}
+								className="text-foreground"
+							/>
+						}
 						variant="light"
-						onPress={handleRemindLater}
+						onPress={() => {
+							trackEvent(
+								trackEvent.category.click,
+								'Donation Modal Button',
+								'GitHub Star'
+							);
+						}}
+						role="link"
+						title={t('donation.other.githubStar')}
+						className="h-auto min-h-0 gap-1 bg-transparent px-1 py-0 text-small font-normal text-foreground transition-opacity data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
 					>
-						{t('donation.remindLater', {
-							days: DONATION_REMIND_LATER_DAYS,
-						})}
+						{t('donation.other.githubStar')}
 					</Button>
-					<Button variant="solid" onPress={handleClose}>
-						{t('donation.close')}
-					</Button>
+					{shouldShowQqGroup && (
+						<Popover
+							showArrow
+							classNames={QQ_GROUP_POPOVER_CLASS_NAMES}
+						>
+							<PopoverTrigger>
+								<Button
+									size="sm"
+									startContent={
+										<FontAwesomeIcon
+											icon={faQq}
+											className="text-qq-blue"
+										/>
+									}
+									variant="light"
+									className="h-auto min-h-0 gap-1 bg-transparent px-1 py-0 text-small font-normal text-foreground transition-opacity data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
+								>
+									{t('donation.other.qqGroup')}
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent>
+								<div className="flex flex-col items-center">
+									<p className="pt-1 text-tiny leading-none">
+										{tAppShell('appShell.home.qqHint')}
+									</p>
+									<div className="flex">
+										<QRCode text={links.qqGroup1.href}>
+											<Link
+												isExternal
+												showAnchorIcon
+												href={links.qqGroup1.href}
+												title={tAppShell(
+													'appShell.links.qqGroup1'
+												)}
+												onPress={() => {
+													trackEvent(
+														trackEvent.category
+															.click,
+														'Donation Modal Button',
+														'QQ Group 1'
+													);
+												}}
+												className="text-tiny text-foreground"
+											>
+												{tAppShell(
+													'appShell.home.joinGroup',
+													{
+														label: tAppShell(
+															'appShell.links.qqGroup1'
+														),
+													}
+												)}
+											</Link>
+										</QRCode>
+										<QRCode text={links.qqGroup2.href}>
+											<Link
+												isExternal
+												showAnchorIcon
+												href={links.qqGroup2.href}
+												title={tAppShell(
+													'appShell.links.qqGroup2'
+												)}
+												onPress={() => {
+													trackEvent(
+														trackEvent.category
+															.click,
+														'Donation Modal Button',
+														'QQ Group 2'
+													);
+												}}
+												className="text-tiny text-foreground"
+											>
+												{tAppShell(
+													'appShell.home.joinGroup',
+													{
+														label: tAppShell(
+															'appShell.links.qqGroup2'
+														),
+													}
+												)}
+											</Link>
+										</QRCode>
+									</div>
+								</div>
+							</PopoverContent>
+						</Popover>
+					)}
 				</div>
+				{source === 'milestone' && (
+					<div className="flex justify-end gap-2">
+						<Button
+							color="warning"
+							variant="light"
+							onPress={handleRemindLater}
+						>
+							{t('donation.remindLater', {
+								days: DONATION_REMIND_LATER_DAYS,
+							})}
+						</Button>
+						<Button variant="solid" onPress={handleClose}>
+							{t('donation.close')}
+						</Button>
+					</div>
+				)}
 			</div>
 		</CoordinatedModal>
 	);

@@ -35,6 +35,7 @@ import { useParams } from '@/features/appShell/client/navigation/useParams';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { SITE_LINKS } from '@/features/appShell/links';
 import { useCatalogLocalizationReady } from '@/features/catalog/shared/client/localization/useCatalogLocalizationReady';
+import { trackSupportMapDetail } from '@/features/donations/client/state/supportNudgeStore';
 import { mapsMessages } from '@/features/maps/client/messages';
 import {
 	getMapEntityTrackName,
@@ -44,6 +45,7 @@ import {
 	type TDayMapEntity,
 	type TDayMapLayer,
 	buildDayMapEntities,
+	findDayMapEntity,
 	toContentPoint,
 } from '@/features/maps/client/model/dayMapEntities';
 import {
@@ -78,7 +80,6 @@ import {
 	MAPS_PAGE_PATH,
 	MAP_SELECT_PARAM_NAME,
 	getMapsPageHref,
-	parseMerchantReference,
 } from '@/features/maps/links';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 import {
@@ -131,20 +132,6 @@ interface IMapRoute {
 	map: TDayMapLabel | null;
 }
 
-function findRouteEntity(map: TDayMapLabel, entityId: string) {
-	const entities = buildDayMapEntities(map);
-	const merchant = parseMerchantReference(entityId);
-
-	return (
-		entities.find((entity) =>
-			merchant === null
-				? entity.id === entityId
-				: 'character' in entity &&
-					entity.character.merchant === merchant
-		) ?? null
-	);
-}
-
 /** @description Map and entity named by the URL; unknown names are dropped. */
 function resolveMapRoute(
 	mapSegment: string | undefined,
@@ -156,7 +143,7 @@ function resolveMapRoute(
 
 	return {
 		entity:
-			entityId === null ? null : findRouteEntity(mapSegment, entityId),
+			entityId === null ? null : findDayMapEntity(mapSegment, entityId),
 		map: mapSegment,
 	};
 }
@@ -597,6 +584,7 @@ export default function MapsPage() {
 					'Map Entity Button',
 					`Select:${getMapEntityTrackName(map, id)}:Marker`
 				);
+				trackSupportMapDetail(map, id);
 			}
 			selectEntity(id);
 		},
@@ -614,6 +602,7 @@ export default function MapsPage() {
 				'Map Entity Button',
 				`Select:${getMapEntityTrackName(map, id)}:${query.trim() === '' ? 'List' : 'Search'}`
 			);
+			trackSupportMapDetail(map, id);
 			selectEntity(id);
 			requestFocus(map, entity.position);
 		},
@@ -654,6 +643,7 @@ export default function MapsPage() {
 				'Map Navigation Button',
 				`Character:${getMapEntityTrackName(targetMap, entityId)}`
 			);
+			trackSupportMapDetail(targetMap, entityId);
 			navigateMap(targetMap, entityId);
 			mapViewStore.resetQuery();
 			setArrival(null);
@@ -916,7 +906,12 @@ export default function MapsPage() {
 	);
 
 	const overlay = (
-		<div className="pointer-events-none absolute bottom-3 left-3 top-3 flex w-[min(23rem,calc(100%-4.5rem))] flex-col justify-end">
+		<div
+			{...(selectedEntity === null
+				? {}
+				: { 'data-support-nudge-blocker': '' })}
+			className="pointer-events-none absolute bottom-3 left-3 top-3 flex w-[min(23rem,calc(100%-4.5rem))] flex-col justify-end"
+		>
 			<FadeMotionDiv
 				target={selectedEntity?.id ?? ''}
 				className="flex max-h-full min-h-0 flex-col"

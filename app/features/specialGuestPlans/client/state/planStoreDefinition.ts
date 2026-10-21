@@ -13,6 +13,7 @@ import type { IPopularTrend } from '@/domain/trends/types';
 
 import { specialGuestPlansShape } from '@/features/account/sync/shapes/specialGuestPlans';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { trackSupportPlanSave } from '@/features/donations/client/state/supportNudgeStore';
 import {
 	requestOverlayClose,
 	requestOverlayOpen,
@@ -216,19 +217,18 @@ export function createSpecialGuestPlansActionsDefinition(
 			);
 		},
 		createPlan() {
-			let createdPlanId: string | null = null;
+			const plan = createSpecialGuestPlan();
 			currentStore.persistence.plans.set((prev) => {
-				const plan = createSpecialGuestPlan();
 				prev.items.push(plan);
 				prev.activeId = plan.id;
-				createdPlanId = plan.id;
 			});
 			trackEvent(
 				trackEvent.category.click,
 				'Customer Rare Plan Button',
 				'Create'
 			);
-			return createdPlanId;
+			trackSupportPlanSave(plan.id);
+			return plan.id;
 		},
 		deletePlan(planId: string) {
 			const plans = currentStore.persistence.plans.get();
@@ -282,6 +282,7 @@ export function createSpecialGuestPlansActionsDefinition(
 				'Customer Rare Plan Button',
 				'Rename'
 			);
+			trackSupportPlanSave(planId);
 		},
 		setActivePlan(planId: string) {
 			const plans = currentStore.persistence.plans.get();

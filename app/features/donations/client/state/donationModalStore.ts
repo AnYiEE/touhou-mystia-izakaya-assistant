@@ -1,16 +1,36 @@
 import { store } from '@davstack/store';
 
-export const donationModalStore = store({ isOpen: false });
+export type TDonationModalSource = 'manual' | 'milestone' | 'nudge';
+
+export const donationModalStore = store({
+	isOpen: false,
+	source: null as null | TDonationModalSource,
+});
 
 export type TDonationModalOwnership = symbol;
 
 let activeDonationModalOwnership: TDonationModalOwnership | null = null;
+let deferredMilestoneInteractionCount = 0;
 
 export function createDonationModalOwnership(): TDonationModalOwnership {
 	return Symbol('donation-modal-ownership');
 }
 
-export function openDonationModal(ownership: TDonationModalOwnership) {
+export function deferMilestoneUntilNextInteraction(interactionCount: number) {
+	deferredMilestoneInteractionCount = Math.max(
+		deferredMilestoneInteractionCount,
+		interactionCount
+	);
+}
+
+export function readDeferredMilestoneInteractionCount() {
+	return deferredMilestoneInteractionCount;
+}
+
+export function openDonationModal(
+	ownership: TDonationModalOwnership,
+	source: TDonationModalSource
+) {
 	if (
 		activeDonationModalOwnership !== null ||
 		donationModalStore.isOpen.get()
@@ -19,18 +39,23 @@ export function openDonationModal(ownership: TDonationModalOwnership) {
 	}
 
 	activeDonationModalOwnership = ownership;
-	donationModalStore.isOpen.set(true);
+	donationModalStore.set({ isOpen: true, source });
 	return true;
+}
+
+export function closeActiveDonationModal() {
+	activeDonationModalOwnership = null;
+	donationModalStore.isOpen.set(false);
 }
 
 export function waitForDonationModalCloseOrAbort(
 	ownership: TDonationModalOwnership,
-	signal: AbortSignal
+	signal?: AbortSignal
 ) {
 	if (
 		activeDonationModalOwnership !== ownership ||
 		!donationModalStore.isOpen.get() ||
-		signal.aborted
+		signal?.aborted
 	) {
 		return Promise.resolve();
 	}
@@ -45,7 +70,7 @@ export function waitForDonationModalCloseOrAbort(
 
 			isSettled = true;
 			unsubscribe();
-			signal.removeEventListener('abort', finish);
+			signal?.removeEventListener('abort', finish);
 			resolve();
 		};
 		unsubscribe = donationModalStore.isOpen.onChange((isOpen) => {
@@ -53,8 +78,8 @@ export function waitForDonationModalCloseOrAbort(
 				finish();
 			}
 		});
-		signal.addEventListener('abort', finish);
-		if (!donationModalStore.isOpen.get() || signal.aborted) {
+		signal?.addEventListener('abort', finish);
+		if (!donationModalStore.isOpen.get() || signal?.aborted) {
 			finish();
 		}
 	});

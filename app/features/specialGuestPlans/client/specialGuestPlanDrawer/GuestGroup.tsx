@@ -87,6 +87,7 @@ export default function GuestGroup({
 	onOpenGuest,
 	onOpenIngredient,
 	onToggleExpanded,
+	onVisibleResultsChange,
 	popoverPortalProps,
 	recommendationSessionKey,
 	recommendationSortProfile,
@@ -100,6 +101,10 @@ export default function GuestGroup({
 	onOpenGuest: (specialGuest: TSpecialGuestId) => void;
 	onOpenIngredient: (ingredient: TIngredientId) => void;
 	onToggleExpanded: (specialGuest: TSpecialGuestId) => void;
+	onVisibleResultsChange: (
+		specialGuest: TSpecialGuestId,
+		hasVisibleResults: boolean
+	) => void;
 	popoverPortalProps: Pick<IPopoverProps, 'portalContainer'>;
 	recommendationSessionKey: string;
 	recommendationSortProfile: TRecommendationSortProfile;
@@ -360,11 +365,20 @@ export default function GuestGroup({
 	const renderedMeals = isRecommendedSource
 		? filteredDisplayMeals.slice(0, renderedRecommendedMealCount)
 		: filteredDisplayMeals;
+	const hasVisibleResults = isExpanded && !checkLengthEmpty(renderedMeals);
 	const isRecommendedMealsPending =
 		isRecommendedSource &&
 		isExpanded &&
 		isRecommendedMealsLoading &&
 		checkLengthEmpty(displayMeals);
+
+	useEffect(() => {
+		onVisibleResultsChange(group.specialGuest, hasVisibleResults);
+		return () => {
+			onVisibleResultsChange(group.specialGuest, false);
+		};
+	}, [group.specialGuest, hasVisibleResults, onVisibleResultsChange]);
+
 	const recommendedStatusNotice = isRecommendedMealsLoading
 		? {
 				className: 'text-foreground-500',
@@ -857,6 +871,9 @@ export default function GuestGroup({
 												onOpenFood={onOpenFood}
 												popoverPortalProps={
 													popoverPortalProps
+												}
+												specialGuest={
+													group.specialGuest
 												}
 											/>
 										))}

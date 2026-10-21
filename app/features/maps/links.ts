@@ -27,22 +27,6 @@ export function getTaskEntityId(key: string) {
 	return `task:${key}`;
 }
 
-const MERCHANT_REFERENCE_PREFIX = 'merchant:';
-
-/**
- * @description Names a merchant by its label instead of its character, so
- * pages without the character data can link to it; the map page resolves it.
- */
-export function getMerchantReference(label: string) {
-	return `${MERCHANT_REFERENCE_PREFIX}${label}`;
-}
-
-export function parseMerchantReference(value: string) {
-	return value.startsWith(MERCHANT_REFERENCE_PREFIX)
-		? value.slice(MERCHANT_REFERENCE_PREFIX.length)
-		: null;
-}
-
 /** @description Page URL of a map, optionally with one of its entities selected. */
 export function getMapsPageHref(
 	map: string | null,

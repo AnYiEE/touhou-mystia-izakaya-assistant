@@ -16,6 +16,11 @@ import {
 	getGlobalSearchSectionPath,
 } from '@/features/globalSearch/core/constants';
 import {
+	trackSupportGuestInfo,
+	trackSupportSearchDetail,
+} from '@/features/donations/client/state/supportNudgeStore';
+import {
+	getGlobalSearchGuestInfoKind,
 	getGlobalSearchItemNavigationHref,
 	getGlobalSearchItemNavigationUrl,
 	getGlobalSearchItemShareUrl,
@@ -107,6 +112,10 @@ export function useGlobalSearchNavigationActions() {
 					setSpecialGuestTutorialAllowedPathname(item.href);
 				}
 				router.push(getGlobalSearchItemNavigationHref(item, match));
+				const guestInfoKind = getGlobalSearchGuestInfoKind(item, match);
+				if (guestInfoKind !== null) {
+					trackSupportGuestInfo(guestInfoKind, item.recordId);
+				}
 				return;
 			}
 			if (item.recordId === undefined) {
@@ -121,6 +130,7 @@ export function useGlobalSearchNavigationActions() {
 			if (pathname !== targetPathname) {
 				router.push(targetPathname, { scroll: false });
 			}
+			trackSupportSearchDetail(item.section, item.recordId);
 		},
 		[pathname, router]
 	);
@@ -153,7 +163,24 @@ export function useGlobalSearchNavigationActions() {
 
 	const openSearchItemInNewTab = useCallback(
 		(item: IGlobalSearchIndexItem, match?: IGlobalSearchMatchedField) => {
-			openItemInNewTab(getGlobalSearchItemNavigationUrl(item, match));
+			const guestInfoKind = getGlobalSearchGuestInfoKind(item, match);
+			const didOpen = openItemInNewTab(
+				getGlobalSearchItemNavigationUrl(item, match)
+			);
+			if (
+				didOpen &&
+				item.recordId !== undefined &&
+				item.section !== 'preferences'
+			) {
+				if (guestInfoKind !== null) {
+					trackSupportGuestInfo(guestInfoKind, item.recordId);
+				} else if (
+					item.section !== 'normal-guests' &&
+					item.section !== 'special-guests'
+				) {
+					trackSupportSearchDetail(item.section, item.recordId);
+				}
+			}
 		},
 		[]
 	);

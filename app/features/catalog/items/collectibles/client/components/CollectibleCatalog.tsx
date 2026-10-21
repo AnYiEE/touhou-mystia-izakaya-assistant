@@ -75,7 +75,7 @@ function CollectibleCatalog<
 					defaultOpen={checkDefaultOpen(id)}
 					{...getPopoverOpenChangeProps(id)}
 				>
-					<ItemPopoverTrigger>
+					<ItemPopoverTrigger supportRecordId={id}>
 						<ItemCard
 							isHoverable={checkShouldEffect(id)}
 							isPressable={checkShouldEffect(id)}

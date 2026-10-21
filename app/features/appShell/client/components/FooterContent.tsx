@@ -1,10 +1,9 @@
 'use client';
 
-import QRCode from '@/design/ui/components/qrCode';
-
 import { FooterLinkWithTooltip } from '@/features/appShell/client/components/FooterLink';
 import { appShellMessages } from '@/features/appShell/client/messages';
 import { SITE_LINKS } from '@/features/appShell/links';
+import SupportActionButton from '@/features/donations/client/components/SupportActionButton';
 import FooterVisitors from '@/features/siteStatus/client/FooterVisitors';
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
@@ -21,8 +20,6 @@ const { version } = SITE_METADATA;
 const FOOTER_CHINA_SERVER_EVENT = { click: 'China server' } as const;
 const FOOTER_CLASS_NAME =
 	"[&>*]:after:mx-1 [&>*]:after:-mb-0.5 [&>*]:after:inline-block [&>*]:after:h-3 [&>*]:after:w-px [&>*]:after:rounded-small [&>*]:after:bg-default-400 [&>*]:after:content-[''] last:[&>*]:after:hidden";
-const FOOTER_DONATE_EVENT = { click: 'footer:Donate', show: true } as const;
-const FOOTER_DONATE_TOOLTIP_CLASS_NAMES = { content: 'px-1' } as const;
 const FOOTER_GITHUB_COMMIT_EVENT = { click: 'GitHub commit' } as const;
 const FOOTER_ICP_FILING_EVENT = { click: 'ICP filing' } as const;
 const FOOTER_STEAM_EVENT = { click: 'footer:Steam' } as const;
@@ -93,21 +90,15 @@ export default function FooterContent({ sha }: IProps) {
 						{t('appShell.links.china')}
 					</FooterLinkWithTooltip>
 				)}
-				<FooterLinkWithTooltip
-					content={
-						<QRCode text={links.donate.href} className="w-24">
-							{t('appShell.links.donateQrCode')}
-						</QRCode>
-					}
-					event={FOOTER_DONATE_EVENT}
-					href={links.donate.href}
-					title={t('appShell.links.donate')}
-					classNames={FOOTER_DONATE_TOOLTIP_CLASS_NAMES}
+				<SupportActionButton
+					classNames={{ underline: 'bottom-0' }}
+					eventLabel="footer:Donate"
+					className="text-tiny"
 				>
 					{t('appShell.footer.support', {
 						name: tSite('site.shortName'),
 					})}
-				</FooterLinkWithTooltip>
+				</SupportActionButton>
 			</p>
 		</footer>
 	);

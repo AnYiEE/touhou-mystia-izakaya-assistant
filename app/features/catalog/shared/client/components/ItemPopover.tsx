@@ -10,6 +10,9 @@ import Popover, {
 	type PopoverTriggerProps,
 } from '@/design/ui/components/popover';
 
+import { useItemPopoverSupportContext } from '@/features/catalog/shared/client/components/ItemPopoverSupport';
+import { trackSupportCatalogDetail } from '@/features/donations/client/state/supportNudgeStore';
+
 export const ItemPopover = memo<IPopoverProps>(function ItemPopover({
 	classNames,
 	...props
@@ -25,23 +28,56 @@ export const ItemPopover = memo<IPopoverProps>(function ItemPopover({
 interface IItemPopoverTriggerProps
 	extends
 		Omit<PopoverTriggerProps, 'className'>,
-		HTMLButtonElementAttributes {}
+		HTMLButtonElementAttributes {
+	supportRecordId?: number;
+}
 
 export const ItemPopoverTrigger = memo<IItemPopoverTriggerProps>(
-	function ItemPopoverTrigger({ className, ...props }) {
+	function ItemPopoverTrigger({
+		className,
+		onClickCapture,
+		onPress,
+		supportRecordId,
+		...props
+	}) {
 		const { isHighAppearance } = useDesignPreferences();
+		const supportContext = useItemPopoverSupportContext();
+
+		const handleOriginalPress = onPress as
+			((event: unknown) => void) | undefined;
+		const handleOriginalClickCapture = onClickCapture as
+			((event: unknown) => void) | undefined;
 
 		return (
-			<PopoverTrigger
-				className={cn(
-					{
-						'aria-expanded:bg-background/40 aria-expanded:opacity-100 aria-expanded:backdrop-blur dark:aria-expanded:bg-content1/40':
-							isHighAppearance,
-					},
-					className
-				)}
-				{...props}
-			/>
+			<span
+				onClickCapture={(event: unknown) => {
+					if (
+						supportRecordId !== undefined &&
+						supportContext?.isEnabled
+					) {
+						trackSupportCatalogDetail(
+							supportContext.section,
+							supportRecordId
+						);
+					}
+					handleOriginalClickCapture?.(event);
+				}}
+				className="contents"
+			>
+				<PopoverTrigger
+					onPress={(event: unknown) => {
+						handleOriginalPress?.(event);
+					}}
+					className={cn(
+						{
+							'aria-expanded:bg-background/40 aria-expanded:opacity-100 aria-expanded:backdrop-blur dark:aria-expanded:bg-content1/40':
+								isHighAppearance,
+						},
+						className
+					)}
+					{...props}
+				/>
+			</span>
 		);
 	}
 );

@@ -36,6 +36,7 @@ type TAction =
 	| 'Customer Rare Plan Mode'
 	| 'Customer Rare Plan Navigation'
 	| 'Customer Rare Plan Sort'
+	| 'Donation Nudge'
 	| 'Donation Modal'
 	| 'Error'
 	| 'Export'

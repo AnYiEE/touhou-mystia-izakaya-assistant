@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import Placeholder from '@/design/ui/components/placeholder';
 import { type IPopoverProps } from '@/design/ui/components/popover';
@@ -18,6 +18,9 @@ import type { TIngredientId } from '@/domain/data/ingredients/types';
 
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { specialGuestPlanCatalogPort } from '@/features/catalog/guests/special/client/state/specialGuestPlanCatalogPort';
+import { useDocumentVisibility } from '@/features/donations/client/hooks/useDocumentVisibility';
+import { SUPPORT_PLAN_DETAIL_DWELL_MS } from '@/features/donations/client/supportNudgePolicy';
+import { trackSupportPlanDetail } from '@/features/donations/client/state/supportNudgeStore';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import { recommendationPreferencesFacade } from '@/features/preferences/client/recommendationPreferencesFacade';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
@@ -38,20 +41,28 @@ const ingredientCatalog = IngredientCatalog.getInstance();
 const RESULTS_MOTION_ANIMATE = { opacity: 1, y: 0 } as const;
 
 export default function SpecialGuestPlanResults({
+	isActiveTask,
 	isHighAppearance,
 	popoverPortalProps,
 }: {
 	isHighAppearance: boolean;
+	isActiveTask: boolean;
 	popoverPortalProps: Pick<IPopoverProps, 'portalContainer'>;
 }) {
 	const { t } = useI18n(specialGuestPlansMessages);
 	const { pushState } = usePathname();
 	const openWindow = useViewInNewWindow();
 	const isReducedMotion = useReducedMotion();
+	const isDocumentVisible = useDocumentVisibility();
 	const vibrate = useVibrate();
 	const groups = specialGuestPlansStore.resolvedGroups.use();
 	const plans = specialGuestPlansStore.persistence.plans.use();
-	const recommendationSessionKey = getDisplayedSpecialGuestPlan(plans).id;
+	const displayedPlan = getDisplayedSpecialGuestPlan(plans);
+	const recommendationSessionKey = displayedPlan.id;
+	const [
+		specialGuestsWithVisibleResults,
+		setSpecialGuestsWithVisibleResults,
+	] = useState<ReadonlySet<TSpecialGuestId>>(new Set());
 	const recommendationSortProfileOverride =
 		specialGuestPlansStore.shared.drawer.sortProfileOverride.use();
 	const permanentRecommendationSortProfile =
@@ -91,6 +102,57 @@ export default function SpecialGuestPlanResults({
 		}),
 		[isReducedMotion]
 	);
+	const hasVisibleResults = specialGuestsWithVisibleResults.size > 0;
+	const hasPersistedDisplayedPlan = plans.items.some(
+		(plan) => plan.id === displayedPlan.id
+	);
+
+	const handleVisibleResultsChange = useCallback(
+		(specialGuest: TSpecialGuestId, hasVisibleResults: boolean) => {
+			setSpecialGuestsWithVisibleResults((previous) => {
+				const hadVisibleResults = previous.has(specialGuest);
+				if (hadVisibleResults === hasVisibleResults) {
+					return previous;
+				}
+
+				const next = new Set(previous);
+				if (hasVisibleResults) {
+					next.add(specialGuest);
+				} else {
+					next.delete(specialGuest);
+				}
+				return next;
+			});
+		},
+		[]
+	);
+
+	useEffect(() => {
+		if (
+			!isActiveTask ||
+			!isDocumentVisible ||
+			!hasPersistedDisplayedPlan ||
+			!hasVisibleResults
+		) {
+			return;
+		}
+
+		const timeoutId = setTimeout(() => {
+			if (document.visibilityState === 'visible') {
+				trackSupportPlanDetail(displayedPlan.id);
+			}
+		}, SUPPORT_PLAN_DETAIL_DWELL_MS);
+
+		return () => {
+			clearTimeout(timeoutId);
+		};
+	}, [
+		displayedPlan.id,
+		hasPersistedDisplayedPlan,
+		hasVisibleResults,
+		isActiveTask,
+		isDocumentVisible,
+	]);
 
 	const handleOpenBeverage = useCallback(
 		(id: TBeverageId) => {
@@ -270,6 +332,9 @@ export default function SpecialGuestPlanResults({
 											onOpenFood={handleOpenFood}
 											onToggleExpanded={
 												handleToggleSpecialGuestExpanded
+											}
+											onVisibleResultsChange={
+												handleVisibleResultsChange
 											}
 											popoverPortalProps={
 												popoverPortalProps

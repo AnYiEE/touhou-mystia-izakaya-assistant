@@ -18,6 +18,7 @@ export {
 export {
 	useCoordinatedOverlay,
 	useIsOverlayTaskActive,
+	useIsTutorialActive,
 	useOverlayIdleForTutorial,
 } from './client/useCoordinatedOverlay';
 export type * from './contracts';

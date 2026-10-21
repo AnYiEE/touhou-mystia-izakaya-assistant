@@ -1,5 +1,7 @@
 import { store } from '@davstack/store';
 
+import { claimBottomNudge } from '@/design/ui/bottomNudgeCoordinator';
+
 import { accountRemoteStateApplicationGuard } from '@/features/account/client/sync/stateGuards';
 
 import { createStoreSyncMiddleware } from '@/infrastructure/browser/crossTab/createStoreSyncMiddleware';
@@ -230,6 +232,7 @@ export const pwaInstallStore = store(state, {
 				) {
 					return false;
 				}
+				claimBottomNudge('pwa');
 				currentStore.persistence.nudge.shownAt.set(now);
 				currentStore.nudgeVisible.set(true);
 				return true;

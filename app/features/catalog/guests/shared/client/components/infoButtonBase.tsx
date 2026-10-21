@@ -19,6 +19,7 @@ import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 import { useParams } from '@/features/appShell/client/navigation/useParams';
 import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { GUEST_INFO_QUERY_PARAM } from '@/features/catalog/guests/shared/navigation';
+import { trackSupportGuestInfo } from '@/features/donations/client/state/supportNudgeStore';
 import {
 	CoordinatedModal,
 	requestOverlayClose,
@@ -80,6 +81,7 @@ interface IProps extends Pick<
 	onButtonPress?: () => void;
 	overlayId: TOverlayId;
 	showMobileTextTrigger?: boolean;
+	supportGuest?: { id: number; kind: 'normal' | 'special' };
 }
 
 export default memo<IProps>(function InfoButtonBase({
@@ -89,6 +91,7 @@ export default memo<IProps>(function InfoButtonBase({
 	onButtonPress,
 	overlayId,
 	showMobileTextTrigger = false,
+	supportGuest,
 }) {
 	const { t } = useI18n(catalogGuestsMessages);
 	const isReducedMotion = useReducedMotion();
@@ -111,13 +114,16 @@ export default memo<IProps>(function InfoButtonBase({
 
 	const handlePress = useCallback(() => {
 		vibrate();
+		if (supportGuest !== undefined) {
+			trackSupportGuestInfo(supportGuest.kind, supportGuest.id);
+		}
 		setOpened(true);
 		onButtonPress?.();
 
 		const newParams = new URLSearchParams(params);
 		newParams.set(GUEST_INFO_QUERY_PARAM, '');
 		replaceState(newParams);
-	}, [onButtonPress, params, replaceState, vibrate]);
+	}, [onButtonPress, params, replaceState, supportGuest, vibrate]);
 
 	useEffect(() => {
 		setOpened(params.has(GUEST_INFO_QUERY_PARAM));

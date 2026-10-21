@@ -16,25 +16,33 @@ const GUEST_INFO_FIELD_TYPES = new Set<
 	'reward',
 ]);
 
-function checkShouldOpenGuestInfo(
+export function getGlobalSearchGuestInfoKind(
 	item: IGlobalSearchIndexItem,
 	match: IGlobalSearchMatchedField | undefined
 ) {
-	return (
-		(item.section === 'normal-guests' ||
-			item.section === 'special-guests') &&
-		match !== undefined &&
-		GUEST_INFO_FIELD_TYPES.has(match.field.fieldType)
-	);
+	if (
+		match === undefined ||
+		!GUEST_INFO_FIELD_TYPES.has(match.field.fieldType)
+	) {
+		return null;
+	}
+	if (item.section === 'normal-guests') {
+		return 'normal';
+	}
+	if (item.section === 'special-guests') {
+		return 'special';
+	}
+
+	return null;
 }
 
 export function getGlobalSearchItemNavigationHref(
 	item: IGlobalSearchIndexItem,
 	match?: IGlobalSearchMatchedField
 ) {
-	return checkShouldOpenGuestInfo(item, match)
-		? `${item.href}?info`
-		: item.href;
+	return getGlobalSearchGuestInfoKind(item, match) === null
+		? item.href
+		: `${item.href}?info`;
 }
 
 export function getGlobalSearchItemShareUrl(item: IGlobalSearchIndexItem) {

@@ -78,7 +78,7 @@ export default memo<IProps>(function FoodsCatalog({ data }) {
 				defaultOpen={checkDefaultOpen(id)}
 				{...getPopoverOpenChangeProps(id)}
 			>
-				<ItemPopoverTrigger>
+				<ItemPopoverTrigger supportRecordId={id}>
 					<ItemCard
 						isHoverable={checkShouldEffect(id)}
 						isPressable={checkShouldEffect(id)}

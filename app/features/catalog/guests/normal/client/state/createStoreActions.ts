@@ -25,6 +25,8 @@ import {
 	beverageTagSelectionAdapter,
 	foodTagSelectionAdapter,
 } from '@/features/catalog/guests/shared/state/tagSelectionAdapter';
+import { createMealValueDedupeKey } from '@/features/donations/client/supportNudgePolicy';
+import { trackSupportMealSave } from '@/features/donations/client/state/supportNudgeStore';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 import { removeLastElement } from '@/shared/utilities/collections/removeLastElement';
@@ -261,6 +263,15 @@ export const createNormalGuestStoreActions = (
 			'Save Button',
 			`${foodName}${beverageName === null ? '' : ` - ${beverageName}`}${checkLengthEmpty(extraIngredientNames) ? '' : ` - ${extraIngredientNames.join(' ')}`}`
 		);
+		trackSupportMealSave({
+			dedupeKey: createMealValueDedupeKey({
+				beverageId: beverage,
+				guestId: normalGuest,
+				ingredientIds: extraIngredients,
+				kind: 'normal',
+				recipeId,
+			}),
+		});
 	},
 
 	refreshGuest(normalGuest: TNormalGuestId | null) {

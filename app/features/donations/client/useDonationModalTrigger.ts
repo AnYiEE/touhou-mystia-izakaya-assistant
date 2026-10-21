@@ -5,6 +5,11 @@ import { useEffect, useRef } from 'react';
 import { useTrackedInteractionCount } from '@/features/analytics/client/interactionCount';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
+import {
+	useIsTutorialActive,
+	useOverlayIdleForTutorial,
+} from '@/features/overlays/client';
+import { isOverlayIdleForTutorial } from '@/features/overlays/client/store';
 
 import { withCrossTabLock } from '@/infrastructure/browser/crossTab/withCrossTabLock';
 
@@ -19,6 +24,7 @@ import {
 	createDonationModalOwnershipRelease,
 	donationModalStore,
 	openDonationModal,
+	readDeferredMilestoneInteractionCount,
 	waitForDonationModalCloseOrAbort,
 } from './state/donationModalStore';
 import {
@@ -38,8 +44,13 @@ function delayDonationModalLockVerify() {
 
 export function useDonationModalTrigger() {
 	const isMounted = useHydrated();
+	const isTutorialActive = useIsTutorialActive();
+	const isOverlayIdle = useOverlayIdleForTutorial();
 	const { pathname } = usePathname();
+
+	const ignoredInteractionCountRef = useRef<number | null>(null);
 	const ownershipControllerRef = useRef<AbortController | null>(null);
+	const wasTutorialActiveRef = useRef(false);
 
 	const isOpen = donationModalStore.isOpen.use();
 	const interactionCount = useTrackedInteractionCount();
@@ -50,6 +61,19 @@ export function useDonationModalTrigger() {
 		lastMilestoneShown,
 		lastShown,
 	});
+
+	useEffect(() => {
+		if (isTutorialActive) {
+			wasTutorialActiveRef.current = true;
+			ignoredInteractionCountRef.current = interactionCount;
+			return;
+		}
+
+		if (wasTutorialActiveRef.current) {
+			wasTutorialActiveRef.current = false;
+			ignoredInteractionCountRef.current = interactionCount;
+		}
+	}, [interactionCount, isTutorialActive]);
 
 	useEffect(() => {
 		if (!isMounted) {
@@ -73,6 +97,11 @@ export function useDonationModalTrigger() {
 			isOpen ||
 			!isMounted ||
 			!isRequestValid ||
+			isTutorialActive ||
+			!isOverlayIdle ||
+			(ignoredInteractionCountRef.current !== null &&
+				interactionCount <= ignoredInteractionCountRef.current) ||
+			interactionCount <= readDeferredMilestoneInteractionCount() ||
 			ownershipController === null
 		) {
 			return;
@@ -90,7 +119,8 @@ export function useDonationModalTrigger() {
 					if (
 						!isEffectActive ||
 						ownershipController.signal.aborted ||
-						!openDonationModal(ownership)
+						!isOverlayIdleForTutorial() ||
+						!openDonationModal(ownership, 'milestone')
 					) {
 						return;
 					}
@@ -122,5 +152,13 @@ export function useDonationModalTrigger() {
 		return () => {
 			isEffectActive = false;
 		};
-	}, [interactionCount, isMounted, isOpen, isRequestValid, pathname]);
+	}, [
+		interactionCount,
+		isMounted,
+		isOpen,
+		isOverlayIdle,
+		isRequestValid,
+		isTutorialActive,
+		pathname,
+	]);
 }

@@ -1027,6 +1027,7 @@ export function useSuggestedMealsViewModel() {
 		currentFood,
 		currentGuestName,
 		currentGuestOrder: displayGuestOrder,
+		currentSpecialGuest,
 		effectiveSortProfileLabel:
 			getRecommendationSortProfileLabel(effectiveSortProfile),
 		handleCookerChange,
@@ -1034,6 +1035,7 @@ export function useSuggestedMealsViewModel() {
 		handleMaxRatingChange,
 		handleMaxResultsChange,
 		handleSortProfileChange,
+		hasMystiaCooker,
 		isActive,
 		isHighAppearance,
 		isVisible,

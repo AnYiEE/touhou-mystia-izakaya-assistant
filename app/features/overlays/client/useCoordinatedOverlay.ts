@@ -42,6 +42,10 @@ function useOverlayCoordinatorSnapshot() {
 	);
 }
 
+export function useIsTutorialActive() {
+	return useOverlayCoordinatorSnapshot().isTutorialActive;
+}
+
 export function useCoordinatedOverlay({
 	canActivate,
 	dismissable = false,

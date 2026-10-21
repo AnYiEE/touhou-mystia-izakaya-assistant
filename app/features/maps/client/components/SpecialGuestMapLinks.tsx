@@ -11,6 +11,7 @@ import { DAY_MAP_SPECIAL_GUEST_MAPS } from '@/domain/data/maps/dayMapSpecialGues
 
 import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
+import { trackSupportMapDetail } from '@/features/donations/client/state/supportNudgeStore';
 import { mapsMessages } from '@/features/maps/client/messages';
 import { trackMapEvent } from '@/features/maps/client/model/analytics';
 import { getDayMapLabel } from '@/features/maps/client/model/dayMapLabels';
@@ -69,13 +70,17 @@ export default memo<IProps>(function SpecialGuestMapLinks({
 						animationUnderline={false}
 						href={href}
 						onPress={() => {
+							trackSupportMapDetail(
+								map,
+								getCharacterEntityId(`special-${guest}`)
+							);
 							prepareMapsNavigation(href);
 							trackMapEvent(
 								'Map Link Button',
 								`Special Guest:${guest}/${map}`
 							);
 						}}
-						// Same colour as the text around it, like the portrait link beside it.
+						// Same color as the text around it, like the portrait link beside it.
 						className="underline-dotted-offset2 inline-flex items-center gap-0.5 text-inherit"
 					>
 						<FontAwesomeIcon icon={faMapLocationDot} size="xs" />

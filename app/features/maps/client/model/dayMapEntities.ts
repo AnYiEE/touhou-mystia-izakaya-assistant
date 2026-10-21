@@ -301,6 +301,26 @@ export const buildDayMapEntities = /* @__PURE__ */ memoize(
 	}
 );
 
+/** @description Resolve a canonical entity ID to the map entity selected by the route. */
+export function findDayMapEntity(map: TDayMapLabel, entityId: string) {
+	return (
+		buildDayMapEntities(map).find((entity) => entity.id === entityId) ??
+		null
+	);
+}
+
+export function findDayMapMerchantEntityId(
+	map: TDayMapLabel,
+	merchant: string
+) {
+	return (
+		buildDayMapEntities(map).find(
+			(entity) =>
+				'character' in entity && entity.character.merchant === merchant
+		)?.id ?? null
+	);
+}
+
 export interface IMerchantGoods {
 	beverages: ReadonlyArray<TBeverageId>;
 	cookers: ReadonlyArray<TCookerId>;

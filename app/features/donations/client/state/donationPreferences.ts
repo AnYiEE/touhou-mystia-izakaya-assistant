@@ -1,8 +1,14 @@
 import { readTrackedInteractionCount } from '@/features/analytics/client/interactionCount';
 import { getCurrentDonationMilestone } from '@/features/donations/client/milestones';
+import { SUPPORT_MILESTONE_NUDGE_SUPPRESSION_MS } from '@/features/donations/client/supportNudgePolicy';
+import { suppressSupportNudgeUntil } from '@/features/donations/client/state/supportNudgeStore';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 
-import { donationModalStore } from './donationModalStore';
+import {
+	closeActiveDonationModal,
+	deferMilestoneUntilNextInteraction,
+	donationModalStore,
+} from './donationModalStore';
 
 export function readDonationLastMilestoneShown() {
 	return globalStore.persistence.donationModal.lastMilestoneShown.get();
@@ -29,14 +35,26 @@ export function writeDonationLastShown(timestamp: number) {
 }
 
 export function closeDonationModal() {
-	const currentCount = readTrackedInteractionCount();
-	const milestone = getCurrentDonationMilestone(currentCount);
-	writeDonationLastMilestoneShown(milestone);
-	donationModalStore.isOpen.set(false);
+	const source = donationModalStore.source.get();
+	if (source === 'milestone') {
+		const currentCount = readTrackedInteractionCount();
+		const milestone = getCurrentDonationMilestone(currentCount);
+		writeDonationLastMilestoneShown(milestone);
+		suppressSupportNudgeUntil(
+			Date.now() + SUPPORT_MILESTONE_NUDGE_SUPPRESSION_MS
+		);
+	} else if (source === 'manual' || source === 'nudge') {
+		deferMilestoneUntilNextInteraction(readTrackedInteractionCount());
+	}
+	closeActiveDonationModal();
 }
 
 export function remindDonationModalLater() {
-	writeDonationLastMilestoneShown(0);
-	writeDonationLastShown(Date.now());
-	donationModalStore.isOpen.set(false);
+	if (donationModalStore.source.get() === 'milestone') {
+		const now = Date.now();
+		writeDonationLastMilestoneShown(0);
+		writeDonationLastShown(now);
+		suppressSupportNudgeUntil(now + SUPPORT_MILESTONE_NUDGE_SUPPRESSION_MS);
+	}
+	closeActiveDonationModal();
 }

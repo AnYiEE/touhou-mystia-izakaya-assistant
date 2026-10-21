@@ -70,6 +70,7 @@ export default function InfoButton() {
 	return (
 		<InfoButtonBase
 			defaultExpandedKeys={defaultExpandedKeys}
+			supportGuest={{ id: currentNormalGuest, kind: 'normal' }}
 			overlayId="normal-guest.info"
 			onButtonPress={handleButtonPress}
 		>

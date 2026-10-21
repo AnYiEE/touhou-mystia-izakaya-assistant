@@ -495,6 +495,7 @@ export default function SpecialGuestPlanDrawer() {
 										/>
 										<SpecialGuestPlanResults
 											isHighAppearance={isHighAppearance}
+											isActiveTask={isActiveTask}
 											popoverPortalProps={
 												drawerPortalContainerProps
 											}

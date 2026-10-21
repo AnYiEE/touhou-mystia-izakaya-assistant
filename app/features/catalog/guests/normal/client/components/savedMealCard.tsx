@@ -35,6 +35,10 @@ import {
 import { swapSavedMeals } from '@/features/catalog/guests/shared/mealPlanning/swapSavedMeals';
 import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
+import {
+	trackSupportMealRating,
+	trackSupportPictureInPicture,
+} from '@/features/donations/client/state/supportNudgeStore';
 import { usePictureInPicture } from '@/features/itemSharing/client/hooks/usePictureInPicture';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
@@ -282,6 +286,19 @@ export default function NormalGuestSavedMealCard() {
 															</PopoverTrigger>
 														</span>
 													}
+													onPopoverOpen={() => {
+														trackSupportMealRating({
+															beverageId:
+																beverage,
+															guestId:
+																currentNormalGuest,
+															ingredientIds:
+																foodData.extraIngredients,
+															kind: 'normal',
+															recipeId:
+																foodData.recipeId,
+														});
+													}}
 												/>
 											);
 										})()}
@@ -544,13 +561,20 @@ export default function NormalGuestSavedMealCard() {
 			{content !== null && (
 				<PipButton
 					onOpen={() => {
-						if (currentGuestName === null) {
+						if (
+							currentGuestName === null ||
+							currentNormalGuest === null
+						) {
 							return;
 						}
 						trackEvent(
 							trackEvent.category.click,
 							'PIP Button',
 							currentGuestName
+						);
+						trackSupportPictureInPicture(
+							'normal',
+							currentNormalGuest
 						);
 					}}
 				/>

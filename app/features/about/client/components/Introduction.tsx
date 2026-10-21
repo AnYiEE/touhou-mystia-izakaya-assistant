@@ -2,13 +2,12 @@
 
 import Heading from '@/design/ui/components/heading';
 import Link from '@/design/ui/components/link';
-import QRCode from '@/design/ui/components/qrCode';
-import Tooltip from '@/design/ui/components/tooltip';
 
 import { aboutMessages } from '@/features/about/client/messages';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { appShellMessages } from '@/features/appShell/client/messages';
 import { SITE_LINKS } from '@/features/appShell/links';
+import SupportActionButton from '@/features/donations/client/components/SupportActionButton';
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
@@ -19,8 +18,6 @@ import { SITE_METADATA } from '@/shared/site/metadata';
 const links = SITE_LINKS;
 const { baseOrigin } = PUBLIC_RUNTIME_CONFIG;
 const { enName } = SITE_METADATA;
-
-const DONATE_TOOLTIP_CLASS_NAMES = { content: 'px-1' } as const;
 
 export default function Introduction() {
 	const { locale, t } = useI18n(aboutMessages);
@@ -78,43 +75,9 @@ export default function Introduction() {
 					{t('about.introduction.p6.prefix', {
 						shortName: siteShortName,
 					})}
-					<Tooltip
-						showArrow
-						closeDelay={10}
-						content={
-							<QRCode text={links.donate.href} className="w-24">
-								{tAppShell('appShell.links.donateQrCode')}
-							</QRCode>
-						}
-						offset={1}
-						onOpenChange={(isOpen) => {
-							if (isOpen) {
-								trackEvent(
-									trackEvent.category.show,
-									'Tooltip',
-									'about:Donate'
-								);
-							}
-						}}
-						classNames={DONATE_TOOLTIP_CLASS_NAMES}
-					>
-						<Link
-							isExternal
-							showAnchorIcon
-							href={links.donate.href}
-							title={tAppShell('appShell.links.donate')}
-							onPress={() => {
-								trackEvent(
-									trackEvent.category.click,
-									'Link',
-									'about:Donate'
-								);
-							}}
-							className="rounded-small indent-0"
-						>
-							{t('about.introduction.donateLink')}
-						</Link>
-					</Tooltip>
+					<SupportActionButton eventLabel="about:Donate">
+						{t('about.introduction.donateLink')}
+					</SupportActionButton>
 					{t('about.introduction.p6.suffix', {
 						shortName: siteShortName,
 					})}

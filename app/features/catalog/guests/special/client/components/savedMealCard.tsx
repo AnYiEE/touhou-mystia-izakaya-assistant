@@ -47,6 +47,10 @@ import {
 	getBeverageTagLabel,
 	getFoodTagLabel,
 } from '@/features/catalog/shared/client/localization/tagLabels';
+import {
+	trackSupportMealRating,
+	trackSupportPictureInPicture,
+} from '@/features/donations/client/state/supportNudgeStore';
 import { usePictureInPicture } from '@/features/itemSharing/client/hooks/usePictureInPicture';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
@@ -418,6 +422,27 @@ export default function SavedMealCard() {
 																</PopoverTrigger>
 															</span>
 														}
+														onPopoverOpen={() => {
+															trackSupportMealRating(
+																{
+																	beverageId:
+																		beverage,
+																	beverageTag:
+																		guestOrder.beverageTag,
+																	foodTag:
+																		guestOrder.foodTag,
+																	guestId:
+																		currentSpecialGuest,
+																	hasMystiaCooker,
+																	ingredientIds:
+																		mealFood.extraIngredients,
+																	isDarkMatter,
+																	kind: 'special',
+																	recipeId:
+																		mealFood.recipeId,
+																}
+															);
+														}}
 													/>
 													<div className="flex items-center gap-2 xl:gap-1">
 														<Tooltip
@@ -652,10 +677,17 @@ export default function SavedMealCard() {
 			{content !== null && (
 				<PipButton
 					onOpen={() => {
+						if (currentSpecialGuest === null) {
+							return;
+						}
 						trackEvent(
 							trackEvent.category.click,
 							'PIP Button',
 							`${currentGuestName}`
+						);
+						trackSupportPictureInPicture(
+							'special',
+							currentSpecialGuest
 						);
 					}}
 				/>

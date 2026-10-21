@@ -32,6 +32,7 @@ import {
 	getBeverageTagLabel,
 	getFoodTagLabel,
 } from '@/features/catalog/shared/client/localization/tagLabels';
+import { trackSupportMealRating } from '@/features/donations/client/state/supportNudgeStore';
 import { specialGuestPlansMessages } from '@/features/specialGuestPlans/client/messages';
 import type { IResolvedSpecialGuestPlanGroup } from '@/features/specialGuestPlans/contracts';
 
@@ -52,6 +53,7 @@ export default function MealRow({
 	onOpenFood,
 	onOpenIngredient,
 	popoverPortalProps,
+	specialGuest,
 }: {
 	meal: IResolvedSpecialGuestPlanGroup['meals'][number];
 	onOpenBeverage: (beverage: TBeverageId) => void;
@@ -59,6 +61,7 @@ export default function MealRow({
 	onOpenFood: (food: TFoodId) => void;
 	onOpenIngredient: (ingredient: TIngredientId) => void;
 	popoverPortalProps: Pick<IPopoverProps, 'portalContainer'>;
+	specialGuest: IResolvedSpecialGuestPlanGroup['specialGuest'];
 }) {
 	useCatalogLocalizationRevision();
 	const { t } = useI18n(specialGuestPlansMessages);
@@ -122,6 +125,19 @@ export default function MealRow({
 					placement={placement}
 					popoverProps={popoverPortalProps}
 					popoverOffset={12}
+					onPopoverOpen={() => {
+						trackSupportMealRating({
+							beverageId: beverage,
+							beverageTag: guestOrder.beverageTag,
+							foodTag: guestOrder.foodTag,
+							guestId: specialGuest,
+							hasMystiaCooker,
+							ingredientIds: mealFood.extraIngredients,
+							isDarkMatter,
+							kind: 'special',
+							recipeId: mealFood.recipeId,
+						});
+					}}
 					shouldFlip={placement === 'top'}
 					trigger={
 						<span

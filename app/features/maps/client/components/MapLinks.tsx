@@ -30,9 +30,11 @@ import type {
 
 import { useParams } from '@/features/appShell/client/navigation/useParams';
 import { rememberOpenedItemPopover } from '@/features/catalog/shared/client/hooks/useOpenedItemPopover';
+import { trackSupportMapDetail } from '@/features/donations/client/state/supportNudgeStore';
 import { ITEM_PREVIEW_PARAM_NAME } from '@/features/itemSharing/contracts';
 import { mapsMessages } from '@/features/maps/client/messages';
 import { trackMapEvent } from '@/features/maps/client/model/analytics';
+import { findDayMapMerchantEntityId } from '@/features/maps/client/model/dayMapEntities';
 import { prepareMapsNavigation } from '@/features/maps/client/model/mapsHistory';
 import { useDayMapVisibility } from '@/features/maps/client/model/useDayMapVisibility';
 import {
@@ -41,7 +43,6 @@ import {
 	getFacilityEntityId,
 	getFishingEntityId,
 	getMapsPageHref,
-	getMerchantReference,
 } from '@/features/maps/links';
 
 import { useI18n } from '@/shared/i18n/useI18n';
@@ -63,25 +64,29 @@ export function useMapLinksHidden() {
 }
 
 interface IMapIconLinkProps {
-	href: string;
+	entityId: string;
 	itemId: number;
+	map: string;
 	trackName: string;
 }
 
 const MapIconLink = memo(function MapIconLink({
-	href,
+	entityId,
 	itemId,
+	map,
 	trackName,
 }: IMapIconLinkProps) {
 	const { t } = useI18n(mapsMessages);
 	const onLeave = useContext(MapLinkLeaveContext);
 
 	const text = t('maps.link.viewOnMap');
+	const href = getMapsPageHref(map, entityId);
 	const handlePress = useCallback(() => {
 		trackMapEvent('Map Link Button', trackName);
+		trackSupportMapDetail(map, entityId);
 		onLeave(itemId);
 		prepareMapsNavigation(href);
-	}, [href, itemId, onLeave, trackName]);
+	}, [entityId, href, itemId, map, onLeave, trackName]);
 
 	return (
 		<Tooltip showArrow content={text} offset={2} size="sm">
@@ -126,8 +131,9 @@ export const CollectionPointMapLink = memo<{
 
 	return (
 		<MapIconLink
-			href={getMapsPageHref(reference.map, getCollectableEntityId(label))}
+			entityId={getCollectableEntityId(label)}
 			itemId={itemId}
+			map={reference.map}
 			trackName={`Collectable:${reference.map}/${label}`}
 		/>
 	);
@@ -149,11 +155,15 @@ export const MerchantMapLink = memo<{
 			: DAY_MAP_SPECIAL_GUEST_LOCATIONS[specialGuest];
 	const map =
 		('map' in reference ? reference.map : undefined) ?? location?.map;
+	const merchantEntityId =
+		location === undefined &&
+		map !== undefined &&
+		reference.label !== undefined
+			? findDayMapMerchantEntityId(map, reference.label)
+			: null;
 	const entity =
 		location === undefined
-			? reference.label === undefined
-				? null
-				: getMerchantReference(reference.label)
+			? merchantEntityId
 			: getCharacterEntityId(location.characterId);
 
 	if (
@@ -168,8 +178,9 @@ export const MerchantMapLink = memo<{
 
 	return (
 		<MapIconLink
-			href={getMapsPageHref(map, entity)}
+			entityId={entity}
 			itemId={itemId}
+			map={map}
 			trackName={`Merchant:${map}/${reference.label ?? reference.specialGuest}`}
 		/>
 	);
@@ -223,9 +234,10 @@ export const TaskMapLinks = memo<{ itemId: number; reference: ITaskReference }>(
 		}
 		return locations.map(({ characterId, map }) => (
 			<MapIconLink
+				entityId={getCharacterEntityId(characterId)}
 				key={characterId}
-				href={getMapsPageHref(map, getCharacterEntityId(characterId))}
 				itemId={itemId}
+				map={map}
 				trackName={`Task:${map}/${characterId}`}
 			/>
 		));
@@ -245,8 +257,9 @@ export const FishingMapLink = memo<{ itemId: number; map: TMapLabel }>(
 		return (
 			<MapIconLink
 				// Every map with fish has exactly one fishing spot.
-				href={getMapsPageHref(map, getFishingEntityId(0))}
+				entityId={getFishingEntityId(0)}
 				itemId={itemId}
+				map={map}
 				trackName={`Fishing:${map}`}
 			/>
 		);
@@ -264,11 +277,9 @@ export const DecorationMapLink = memo<{ itemId: TDecorationId }>(
 		}
 		return (
 			<MapIconLink
-				href={getMapsPageHref(
-					location.map,
-					getCharacterEntityId(location.characterId)
-				)}
+				entityId={getCharacterEntityId(location.characterId)}
 				itemId={itemId}
+				map={location.map}
 				trackName={`Decoration:${location.map}/${location.characterId}`}
 			/>
 		);
@@ -286,8 +297,9 @@ export const CollaborationMapLink = memo<{ itemId: number }>(
 		}
 		return (
 			<MapIconLink
-				href={getMapsPageHref(map, getFacilityEntityId(key))}
+				entityId={getFacilityEntityId(key)}
 				itemId={itemId}
+				map={map}
 				trackName={`Facility:${map}/${key}`}
 			/>
 		);

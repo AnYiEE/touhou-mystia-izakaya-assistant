@@ -54,134 +54,143 @@ export function usePictureInPicture(
 
 	const vibrate = useVibrate();
 
-	const togglePictureInPicture = useCallback(async () => {
-		if (!isSupported) {
-			return;
-		}
-
-		const docPip = globalThis.documentPictureInPicture;
-		if (!docPip) {
-			return;
-		}
-
-		if (!isNil(docPip.window)) {
-			docPip.window.close();
-			return;
-		}
-
-		try {
-			const element = containerRef.current;
-
-			let width = requestedWidth ?? element?.offsetWidth;
-			if (width !== undefined) {
-				width += offsetWidth;
+	const togglePictureInPicture = useCallback(
+		async (onOpen?: () => void) => {
+			if (!isSupported) {
+				return;
 			}
-			let height =
-				requestedHeight ??
-				element?.offsetHeight ??
-				globalThis.screen.height / 2;
-			height += offsetHeight;
-			height = Math.min(height, globalThis.screen.height / 2);
-			height = Math.max(height, 96);
 
-			const newPipWindow = await docPip.requestWindow({
-				height,
-				preferInitialWindowPlacement: true,
-				width,
-			});
+			const docPip = globalThis.documentPictureInPicture;
+			if (!docPip) {
+				return;
+			}
 
-			setPipWindow(newPipWindow);
+			if (!isNil(docPip.window)) {
+				docPip.window.close();
+				return;
+			}
 
-			newPipWindow.addEventListener('pagehide', () => {
-				setPipWindow(null);
-			});
+			try {
+				const element = containerRef.current;
 
-			[...document.styleSheets].forEach((styleSheet) => {
-				try {
-					const cssRules = [...styleSheet.cssRules]
-						.map((rule) =>
-							rule.cssText.replaceAll(
-								/url\((['"]?)(?!data:|https?:\/\/|\/\/)(.*?)\1\)/gu,
-								(_match, quote, url: string) => {
-									const absoluteUrl = new URL(
-										url,
-										styleSheet.href ?? document.baseURI
-									).href;
-									return `url(${quote}${absoluteUrl}${quote})`;
-								}
-							)
-						)
-						.join('');
-					const style = document.createElement('style');
-					style.textContent = cssRules;
-					newPipWindow.document.head.append(style);
-				} catch {
-					const link = document.createElement('link');
-					link.media = styleSheet.media.mediaText;
-					link.rel = 'stylesheet';
-					link.type = styleSheet.type;
-					if (styleSheet.href) {
-						link.href = styleSheet.href;
-					}
-					newPipWindow.document.head.append(link);
+				let width = requestedWidth ?? element?.offsetWidth;
+				if (width !== undefined) {
+					width += offsetWidth;
 				}
-			});
+				let height =
+					requestedHeight ??
+					element?.offsetHeight ??
+					globalThis.screen.height / 2;
+				height += offsetHeight;
+				height = Math.min(height, globalThis.screen.height / 2);
+				height = Math.max(height, 96);
 
-			newPipWindow.document.documentElement.className =
-				document.documentElement.className;
-			newPipWindow.document.body.className = document.body.className;
+				const newPipWindow = await docPip.requestWindow({
+					height,
+					preferInitialWindowPlacement: true,
+					width,
+				});
 
-			const style = newPipWindow.document.createElement('style');
-			style.textContent = `* { pointer-events: none !important; } .${CLASSNAME_EXCLUDE_FROM_PIP} { display: none !important; }`;
-			newPipWindow.document.head.append(style);
+				setPipWindow(newPipWindow);
 
-			if (containerRef.current !== null) {
-				const contentContainer =
-					newPipWindow.document.createElement('div');
-				contentContainer.classList.add(
-					'box-border',
-					'h-full',
-					'overflow-auto',
-					'p-4',
-					'w-full'
-				);
-				contentContainer.innerHTML = containerRef.current.innerHTML;
+				newPipWindow.addEventListener('pagehide', () => {
+					setPipWindow(null);
+				});
 
-				const applyResponsiveClasses = (el: Element) => {
-					const classList = [...el.classList];
-					const mdClasses: string[] = [];
-					const nonMdClasses: string[] = [];
-
-					classList.forEach((className) => {
-						if (className.startsWith('md:')) {
-							mdClasses.push(className.slice(3));
-						} else {
-							nonMdClasses.push(className);
+				[...document.styleSheets].forEach((styleSheet) => {
+					try {
+						const cssRules = [...styleSheet.cssRules]
+							.map((rule) =>
+								rule.cssText.replaceAll(
+									/url\((['"]?)(?!data:|https?:\/\/|\/\/)(.*?)\1\)/gu,
+									(_match, quote, url: string) => {
+										const absoluteUrl = new URL(
+											url,
+											styleSheet.href ?? document.baseURI
+										).href;
+										return `url(${quote}${absoluteUrl}${quote})`;
+									}
+								)
+							)
+							.join('');
+						const style = document.createElement('style');
+						style.textContent = cssRules;
+						newPipWindow.document.head.append(style);
+					} catch {
+						const link = document.createElement('link');
+						link.media = styleSheet.media.mediaText;
+						link.rel = 'stylesheet';
+						link.type = styleSheet.type;
+						if (styleSheet.href) {
+							link.href = styleSheet.href;
 						}
-					});
-
-					if (!checkLengthEmpty(mdClasses)) {
-						el.className = cn(nonMdClasses, mdClasses);
+						newPipWindow.document.head.append(link);
 					}
+				});
 
-					[...el.children].forEach(applyResponsiveClasses);
-				};
+				newPipWindow.document.documentElement.className =
+					document.documentElement.className;
+				newPipWindow.document.body.className = document.body.className;
 
-				applyResponsiveClasses(contentContainer);
-				newPipWindow.document.body.append(contentContainer);
+				const style = newPipWindow.document.createElement('style');
+				style.textContent = `* { pointer-events: none !important; } .${CLASSNAME_EXCLUDE_FROM_PIP} { display: none !important; }`;
+				newPipWindow.document.head.append(style);
+
+				let didWriteContent = false;
+				if (containerRef.current !== null) {
+					const contentContainer =
+						newPipWindow.document.createElement('div');
+					contentContainer.classList.add(
+						'box-border',
+						'h-full',
+						'overflow-auto',
+						'p-4',
+						'w-full'
+					);
+					contentContainer.innerHTML = containerRef.current.innerHTML;
+
+					const applyResponsiveClasses = (el: Element) => {
+						const classList = [...el.classList];
+						const mdClasses: string[] = [];
+						const nonMdClasses: string[] = [];
+
+						classList.forEach((className) => {
+							if (className.startsWith('md:')) {
+								mdClasses.push(className.slice(3));
+							} else {
+								nonMdClasses.push(className);
+							}
+						});
+
+						if (!checkLengthEmpty(mdClasses)) {
+							el.className = cn(nonMdClasses, mdClasses);
+						}
+
+						[...el.children].forEach(applyResponsiveClasses);
+					};
+
+					applyResponsiveClasses(contentContainer);
+					newPipWindow.document.body.append(contentContainer);
+					didWriteContent = true;
+				}
+
+				if (didWriteContent && !newPipWindow.closed) {
+					onOpen?.();
+				}
+			} catch (error) {
+				console.error('Failed to open Picture-in-Picture window:', {
+					errorCode: getLogSafeErrorCode(error),
+				});
 			}
-		} catch (error) {
-			console.error('Failed to open Picture-in-Picture window:', {
-				errorCode: getLogSafeErrorCode(error),
-			});
-		}
-	}, [
-		isSupported,
-		offsetHeight,
-		offsetWidth,
-		requestedHeight,
-		requestedWidth,
-	]);
+		},
+		[
+			isSupported,
+			offsetHeight,
+			offsetWidth,
+			requestedHeight,
+			requestedWidth,
+		]
+	);
 
 	const PipButton = useCallback<IUsePictureInPictureReturn['PipButton']>(
 		({ onOpen }) => {
@@ -204,8 +213,7 @@ export function usePictureInPicture(
 							variant="light"
 							onPress={() => {
 								vibrate();
-								void togglePictureInPicture();
-								onOpen?.();
+								void togglePictureInPicture(onOpen);
 							}}
 							aria-label={label}
 							className="rounded-large opacity-70 !shadow-none transition-opacity hover:opacity-100 hover:!shadow-small hover:backdrop-blur"

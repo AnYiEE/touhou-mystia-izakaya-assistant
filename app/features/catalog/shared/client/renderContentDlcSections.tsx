@@ -4,6 +4,7 @@ import { groupItemsByContentDlc } from '@/domain/availability/contentDlc';
 import type { TDlc } from '@/domain/data/shared/types';
 
 import ContentDlcDivider from '@/features/catalog/shared/client/components/ContentDlcDivider';
+import { ItemPopoverSupportProvider } from '@/features/catalog/shared/client/components/ItemPopoverSupport';
 import OfficialContentDivider from '@/features/catalog/shared/client/components/OfficialContentDivider';
 
 export function renderContentDlcSections<TEntry>(
@@ -49,5 +50,9 @@ export function renderContentDlcSections<TEntry>(
 		pushEntries(items);
 	});
 
-	return nodes;
+	return [
+		<ItemPopoverSupportProvider key="item-popover-support">
+			{nodes}
+		</ItemPopoverSupportProvider>,
+	];
 }

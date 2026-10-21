@@ -4,7 +4,7 @@ import { Divider } from '@heroui/divider';
 import { Select, SelectItem } from '@heroui/select';
 import { cn } from '@heroui/theme';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
 import Avatar from '@/design/ui/components/avatar';
 import Button from '@/design/ui/components/button';
@@ -34,6 +34,7 @@ import TagGroup from '@/features/catalog/guests/shared/client/components/tagGrou
 import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { useSuggestedMealsViewModel } from '@/features/catalog/guests/special/client/useSuggestedMealsViewModel';
+import { useSupportRecommendationTracking } from '@/features/catalog/guests/special/client/useSupportRecommendationTracking';
 import {
 	BEVERAGE_TAG_STYLE,
 	FOOD_TAG_STYLE,
@@ -97,12 +98,14 @@ export default function SuggestedMealCard() {
 		currentFood,
 		currentGuestName,
 		currentGuestOrder,
+		currentSpecialGuest,
 		effectiveSortProfileLabel,
 		handleCookerChange,
 		handleMaxExtraChange,
 		handleMaxRatingChange,
 		handleMaxResultsChange,
 		handleSortProfileChange,
+		hasMystiaCooker,
 		isHighAppearance,
 		isVisible,
 		selectableMaxExtraIngredients,
@@ -123,6 +126,20 @@ export default function SuggestedMealCard() {
 	);
 	const openWindow = useViewInNewWindow();
 	const vibrate = useVibrate();
+
+	const cardRef = useRef<HTMLDivElement | null>(null);
+	const hasSuggestedMealRows =
+		suggestedMealRows !== null && !checkLengthEmpty(suggestedMealRows);
+
+	useSupportRecommendationTracking({
+		cardRef,
+		currentGuestOrder,
+		currentSpecialGuest,
+		hasMystiaCooker,
+		hasRows: hasSuggestedMealRows,
+		isVisible,
+		suggestionStatus,
+	});
 
 	const selectPopoverProps = useMemo(
 		() => ({ motionProps: selectMotionProps, shouldCloseOnScroll: false }),
@@ -189,8 +206,6 @@ export default function SuggestedMealCard() {
 			maxRatingKey === undefined
 				? getEvaluationLabelByKey('exgood')
 				: getEvaluationLabelByKey(maxRatingKey);
-		const hasSuggestedMealRows =
-			suggestedMealRows !== null && !checkLengthEmpty(suggestedMealRows);
 		const isResultInteractionDisabled = suggestionStatus !== 'success';
 		const statusNotice = isRefreshingNoticeVisible
 			? {
@@ -550,7 +565,12 @@ export default function SuggestedMealCard() {
 		);
 
 		content = (
-			<Card fullWidth shadow="sm" classNames={cardClassNames}>
+			<Card
+				ref={cardRef}
+				fullWidth
+				shadow="sm"
+				classNames={cardClassNames}
+			>
 				<div className="space-y-3 p-4 xl:p-2 xl:pb-4">
 					{cookerSelect}
 					<AnimatePresence initial={false}>

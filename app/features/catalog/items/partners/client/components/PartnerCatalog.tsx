@@ -139,7 +139,7 @@ export default memo<IProps>(function PartnerCatalog({ data }) {
 				defaultOpen={checkDefaultOpen(id)}
 				{...getPopoverOpenChangeProps(id)}
 			>
-				<ItemPopoverTrigger>
+				<ItemPopoverTrigger supportRecordId={id}>
 					<ItemCard
 						isHoverable={checkShouldEffect(id)}
 						isPressable={checkShouldEffect(id)}

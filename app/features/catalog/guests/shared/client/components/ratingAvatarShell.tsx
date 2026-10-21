@@ -12,6 +12,7 @@ interface IProps {
 	content: ReactNode;
 	contentClassName?: string;
 	containerPadding?: number;
+	onPopoverOpen?: () => void;
 	placement?: IPopoverProps['placement'];
 	popoverOffset?: IPopoverProps['offset'];
 	popoverProps?: Partial<IPopoverProps>;
@@ -25,6 +26,7 @@ export default memo<IProps>(function RatingAvatarShell({
 	containerPadding,
 	content,
 	contentClassName,
+	onPopoverOpen,
 	placement,
 	popoverOffset,
 	popoverProps,
@@ -37,6 +39,12 @@ export default memo<IProps>(function RatingAvatarShell({
 		...(popoverOffset === undefined ? {} : { offset: popoverOffset }),
 		...(shouldFlip === undefined ? {} : { shouldFlip }),
 		...popoverProps,
+		onOpenChange: (isOpen: boolean) => {
+			popoverProps?.onOpenChange?.(isOpen);
+			if (isOpen) {
+				onPopoverOpen?.();
+			}
+		},
 	};
 	const tooltipProps = {
 		...(placement === undefined ? {} : { placement }),

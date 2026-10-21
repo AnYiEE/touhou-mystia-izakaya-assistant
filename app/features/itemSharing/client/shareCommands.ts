@@ -1,3 +1,4 @@
+import { trackSupportShareSuccess } from '@/features/donations/client/state/supportNudgeStore';
 import { createItemShareData } from '@/features/itemSharing/shareUrl';
 
 export function shareItem(shareText: string, url: string) {
@@ -18,10 +19,27 @@ export function shareItem(shareText: string, url: string) {
 		return false;
 	}
 
-	navigator.share(shareObject).catch(() => {});
+	void navigator
+		.share(shareObject)
+		.then(() => {
+			trackSupportShareSuccess(`share:${Date.now()}`);
+		})
+		.catch(() => {});
 	return true;
 }
 
 export function openItemInNewTab(url: string) {
-	globalThis.open(url, '_blank', 'noopener,noreferrer');
+	const newTab = globalThis.open('', '_blank');
+	if (newTab === null) {
+		return false;
+	}
+
+	try {
+		newTab.opener = null;
+		newTab.location.replace(url);
+		return true;
+	} catch {
+		newTab.close();
+		return false;
+	}
 }
