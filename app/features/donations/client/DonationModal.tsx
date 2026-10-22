@@ -65,9 +65,6 @@ export default function DonationModal() {
 		lastShown,
 	});
 
-	const mainlandNote = t('donation.mainlandNote');
-	const shouldShowQqGroup = isChinaSurfaceLocale(locale);
-
 	const canActivate = useCallback(
 		() => source !== 'milestone' || isMilestoneRequestValid,
 		[isMilestoneRequestValid, source]
@@ -110,6 +107,8 @@ export default function DonationModal() {
 		return null;
 	}
 
+	const shouldShowChinaSurfaces = isChinaSurfaceLocale(locale);
+
 	return (
 		<CoordinatedModal
 			coordination={coordination}
@@ -144,11 +143,6 @@ export default function DonationModal() {
 				<QRCode text={links.donate.href} className="w-28">
 					{tAppShell('appShell.links.donateQrCode')}
 				</QRCode>
-				{mainlandNote !== '' && (
-					<p className="text-tiny text-foreground-500">
-						{mainlandNote}
-					</p>
-				)}
 				<div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
 					<Button
 						as={Link}
@@ -176,7 +170,7 @@ export default function DonationModal() {
 					>
 						{t('donation.other.githubStar')}
 					</Button>
-					{shouldShowQqGroup && (
+					{shouldShowChinaSurfaces && (
 						<Popover
 							showArrow
 							classNames={QQ_GROUP_POPOVER_CLASS_NAMES}

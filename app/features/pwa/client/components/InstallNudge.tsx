@@ -103,7 +103,11 @@ export default function InstallNudge() {
 	});
 
 	return (
-		<BottomNudge isVisible={shouldRenderNudge} nudgeKey="install-nudge">
+		<BottomNudge
+			isVisible={shouldRenderNudge}
+			nudgeKey="install-nudge"
+			onSwipeDismiss={handleDismiss}
+		>
 			<div className="flex min-w-0 flex-1 flex-col gap-0.5">
 				<p className="text-small font-medium">{title}</p>
 				<p className="text-tiny text-foreground-500">

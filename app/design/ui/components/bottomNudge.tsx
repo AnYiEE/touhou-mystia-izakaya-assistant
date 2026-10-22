@@ -2,7 +2,7 @@
 
 import { cn } from '@heroui/theme';
 import { AnimatePresence, type PanInfo, motion } from 'framer-motion';
-import { type PropsWithChildren, useCallback } from 'react';
+import { type PropsWithChildren, useCallback, useRef } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
@@ -29,6 +29,7 @@ const SWIPE_DRAG_CONSTRAINTS = {
 	right: 0,
 	top: 0,
 } as const;
+const SWIPE_DRAG_ELASTIC = { bottom: 1, left: 1, right: 1, top: 0 } as const;
 
 interface IProps extends PropsWithChildren {
 	isVisible: boolean;
@@ -45,15 +46,31 @@ export default function BottomNudge({
 	const { isHighAppearance } = useDesignPreferences();
 	const isReducedMotion = useReducedMotion();
 
+	const swipeAxisRef = useRef<'x' | 'y' | null>(null);
+
+	const handleDragStart = useCallback(() => {
+		swipeAxisRef.current = null;
+	}, []);
+
+	const handleDirectionLock = useCallback((axis: 'x' | 'y') => {
+		swipeAxisRef.current = axis;
+	}, []);
+
 	const handleDragEnd = useCallback(
 		(_event: MouseEvent | PointerEvent | TouchEvent, info: PanInfo) => {
 			if (onSwipeDismiss === undefined) {
 				return;
 			}
-			if (
-				Math.abs(info.offset.x) >= SWIPE_DISMISS_DISTANCE_PX ||
-				info.offset.y >= SWIPE_DISMISS_DISTANCE_PX
-			) {
+
+			const swipeAxis = swipeAxisRef.current;
+			swipeAxisRef.current = null;
+			const shouldDismiss =
+				(swipeAxis === 'x' &&
+					Math.abs(info.offset.x) >= SWIPE_DISMISS_DISTANCE_PX) ||
+				(swipeAxis === 'y' &&
+					info.offset.y >= SWIPE_DISMISS_DISTANCE_PX);
+
+			if (shouldDismiss) {
 				onSwipeDismiss();
 			}
 		},
@@ -80,7 +97,8 @@ export default function BottomNudge({
 						)}
 						drag={onSwipeDismiss !== undefined}
 						dragConstraints={SWIPE_DRAG_CONSTRAINTS}
-						dragElastic={1}
+						dragDirectionLock
+						dragElastic={SWIPE_DRAG_ELASTIC}
 						dragMomentum={false}
 						exit={
 							isReducedMotion
@@ -102,7 +120,9 @@ export default function BottomNudge({
 								? REDUCED_MOTION_TRANSITION
 								: NUDGE_TRANSITION
 						}
+						onDirectionLock={handleDirectionLock}
 						onDragEnd={handleDragEnd}
+						onDragStart={handleDragStart}
 					>
 						{children}
 					</motion.div>
