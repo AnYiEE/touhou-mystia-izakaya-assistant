@@ -96,6 +96,7 @@ const nextConfig: NextConfig = {
 			transform: '@fortawesome/free-solid-svg-icons/{{member}}',
 		},
 	},
+	outputFileTracingRoot: process.cwd(),
 	serverExternalPackages: ['kysely'],
 
 	experimental: {

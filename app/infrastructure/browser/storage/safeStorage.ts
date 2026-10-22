@@ -24,7 +24,15 @@ class SafeStorage implements ISafeStorage, Storage {
 	private _memoryStorage: Map<string, string>;
 
 	private constructor() {
+		this._managedKeys = new Set();
 		this._memoryStorage = new Map();
+		this._storage = null;
+
+		// eslint-disable-next-line unicorn/prefer-global-this
+		if (typeof window === 'undefined') {
+			return;
+		}
+
 		this._managedKeys = this.readStoredManagedKeys();
 		this._storage = this.getAvailableStorage();
 		this.loadToMemoryStorage();
@@ -257,6 +265,11 @@ class SafeStorage implements ISafeStorage, Storage {
 	}
 
 	private getAvailableStorage() {
+		// eslint-disable-next-line unicorn/prefer-global-this
+		if (typeof window === 'undefined') {
+			return null;
+		}
+
 		const fallbackMode = this.readFallbackMode();
 		if (fallbackMode === 'memory') {
 			this._mode = 'memory';
