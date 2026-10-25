@@ -3,6 +3,8 @@ import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import { type TSchedulerLabel } from '@/domain/data/labels/schedulerFacts';
 import { type TMerchantLabel } from '@/domain/data/places/merchantFacts';
 
+import { memoize } from '@/shared/utilities/cache/memoize';
+
 import type { TDayMapLabel } from './types';
 
 export interface IDayMapCharacterLocation {
@@ -129,3 +131,11 @@ export const DAY_MAP_MERCHANT_SPECIAL_GUESTS: Partial<
 	SpecialGuestShop_Tewi: 29,
 	ThreeFairies: 31,
 };
+
+/** @description Primary map of merchants whose location is known through their special-guest sprite. */
+export const getDayMapMerchantMap = memoize((merchant: TMerchantLabel) => {
+	const specialGuest = DAY_MAP_MERCHANT_SPECIAL_GUESTS[merchant];
+	return specialGuest === undefined
+		? undefined
+		: DAY_MAP_SPECIAL_GUEST_LOCATIONS[specialGuest]?.map;
+});

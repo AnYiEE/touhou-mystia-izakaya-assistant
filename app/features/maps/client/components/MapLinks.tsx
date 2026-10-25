@@ -22,6 +22,7 @@ import {
 } from '@/domain/data/maps/dayMapSourceFacts';
 import type {
 	IMapMerchantReference,
+	IPrayerReference,
 	ITaskReference,
 	TCollectionPointReference,
 	TMapLabel,
@@ -43,6 +44,7 @@ import {
 	getFacilityEntityId,
 	getFishingEntityId,
 	getMapsPageHref,
+	getPrayerEntityId,
 } from '@/features/maps/links';
 
 import { useI18n } from '@/shared/i18n/useI18n';
@@ -186,17 +188,32 @@ export const MerchantMapLink = memo<{
 	);
 });
 
+/** @description Opens the map with the referenced prayer spot selected. */
+export const PrayerMapLink = memo<{
+	itemId: number;
+	reference: IPrayerReference;
+}>(function PrayerMapLink({ itemId, reference }) {
+	const { isMapVisible } = useDayMapVisibility();
+	const isHidden = useMapLinksHidden();
+
+	if (isHidden || !isMapVisible(reference.map)) {
+		return null;
+	}
+
+	return (
+		<MapIconLink
+			entityId={getPrayerEntityId(reference.label)}
+			itemId={itemId}
+			map={reference.map}
+			trackName={`Prayer:${reference.map}/${reference.label}`}
+		/>
+	);
+});
+
 function getTaskLocation(
 	label: TSchedulerLabel
 ): IDayMapCharacterLocation | undefined {
-	const location = DAY_MAP_TASK_LOCATIONS[label];
-	if (location !== undefined) {
-		return location;
-	}
-	const fact = SCHEDULER_FACTS[label];
-	return 'specialGuestBond' in fact
-		? DAY_MAP_SPECIAL_GUEST_LOCATIONS[fact.specialGuestBond.specialGuest]
-		: undefined;
+	return DAY_MAP_TASK_LOCATIONS[label];
 }
 
 /** @description Task links point to the actual sender/receiver and share duplicate destinations. */

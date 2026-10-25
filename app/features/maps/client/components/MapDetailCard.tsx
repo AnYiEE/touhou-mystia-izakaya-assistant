@@ -202,8 +202,7 @@ const PrayerDetail = memo(function PrayerDetail({
 
 	const rewards = PRAYER_REWARD_FACTS[entity.prayer.label];
 	const restoredIndex = rewards.findIndex(
-		({ productId, productType }) =>
-			getMapItemKey({ productId, productType }) === restoredItemKey
+		(reward) => getMapItemKey(reward) === restoredItemKey
 	);
 
 	return (

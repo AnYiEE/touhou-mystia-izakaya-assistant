@@ -4,20 +4,19 @@ import { memo } from 'react';
 
 import Tooltip from '@/design/ui/components/tooltip';
 
-import { type ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
-
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import {
 	checkBeverageId,
 	checkIngredientId,
 } from '@/features/maps/client/model/dayMapEntities';
+import { type TMapItemProduct } from '@/features/maps/client/model/mapsHistory';
 import { getProductName } from '@/features/maps/client/model/productNames';
 
 interface IProps {
 	className?: string;
 	isDecorative?: boolean;
-	product: Pick<ICollectionPointYieldProduct, 'productId' | 'productType'>;
+	product: TMapItemProduct;
 	size: number;
 }
 
@@ -46,6 +45,14 @@ export default memo<IProps>(function ProductSprite({
 	} else if (productType === 2 && checkBeverageId(productId)) {
 		sprite = (
 			<Sprite target="beverage" recordId={productId} {...spriteProps} />
+		);
+	} else if (productType === 'currency') {
+		sprite = (
+			<Sprite
+				target="currency_item"
+				recordId={productId}
+				{...spriteProps}
+			/>
 		);
 	} else {
 		return null;

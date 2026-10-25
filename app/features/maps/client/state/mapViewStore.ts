@@ -150,10 +150,12 @@ export const mapViewStore = mapViewStoreBase.actions((currentStore) => ({
 		currentStore.shared.query.set('');
 	},
 
-	initializeIgnoredPreferencesLayers() {
-		currentStore.shared.ignoredPreferencesHiddenLayers.set([
-			...DEFAULT_HIDDEN_DAY_MAP_LAYERS,
-		]);
+	initializeIgnoredPreferencesLayers(entity: TDayMapEntity | null = null) {
+		currentStore.shared.ignoredPreferencesHiddenLayers.set(
+			[...DEFAULT_HIDDEN_DAY_MAP_LAYERS].filter(
+				(layer) => layer !== entity?.layer
+			)
+		);
 	},
 
 	commitIgnoredPreferences() {

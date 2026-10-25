@@ -343,10 +343,13 @@ export default function MapsPage() {
 		) {
 			ignoredPreferencesRef.current = nextVisit.shouldIgnorePreferences;
 			if (nextVisit.shouldIgnorePreferences) {
-				mapViewStore.initializeIgnoredPreferencesLayers();
+				mapViewStore.initializeIgnoredPreferencesLayers(routeEntity);
 			} else {
 				mapViewStore.setIgnoredPreferencesHiddenLayers(null);
 			}
+		}
+		if (!nextVisit.shouldIgnorePreferences) {
+			mapViewStore.revealForEntity(routeEntity);
 		}
 		setVisit((previous) =>
 			previous?.depth === nextVisit.depth &&
@@ -356,7 +359,7 @@ export default function MapsPage() {
 				? previous
 				: nextVisit
 		);
-	}, [isMapViewStoreHydrated, routeHref]);
+	}, [isMapViewStoreHydrated, routeEntity, routeHref]);
 
 	const selectEntity = useCallback(
 		(id: string | null) => {
@@ -416,21 +419,12 @@ export default function MapsPage() {
 		);
 		mapViewStore.resetQuery();
 		setArrival(null);
-		if (!shouldIgnorePreferences) {
-			mapViewStore.revealForEntity(nextEntity);
-		}
 		if (nextMap === null || nextEntity === null) {
 			setFocusRequest(null);
 		} else {
 			requestFocus(nextMap, nextEntity.position);
 		}
-	}, [
-		requestFocus,
-		routeEntityId,
-		routeHref,
-		routeMapSegment,
-		shouldIgnorePreferences,
-	]);
+	}, [requestFocus, routeEntityId, routeHref, routeMapSegment]);
 
 	// Canonicalize aliases and hidden maps without adding a history entry.
 	useEffect(() => {

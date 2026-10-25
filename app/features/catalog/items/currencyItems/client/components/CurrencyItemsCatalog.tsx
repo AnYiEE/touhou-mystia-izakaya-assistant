@@ -30,7 +30,10 @@ import type { TItemData } from '@/features/catalog/shared/contracts';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
-import { MerchantMapLink } from '@/features/maps/client/components/MapLinks';
+import {
+	MerchantMapLink,
+	PrayerMapLink,
+} from '@/features/maps/client/components/MapLinks';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
@@ -137,6 +140,10 @@ export default memo<IProps>(function CurrencyItemsCatalog({ data }) {
 													source.mapPrayer.label
 												],
 											})}
+											<PrayerMapLink
+												itemId={id}
+												reference={source.mapPrayer}
+											/>
 										</Fragment>
 									);
 								}

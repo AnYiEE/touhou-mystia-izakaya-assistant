@@ -1,22 +1,24 @@
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
-import { type ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
+import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 
 import { checkBeverageId, checkIngredientId } from './dayMapEntities';
+import { type TMapItemProduct } from './mapsHistory';
 
 const beverageCatalog = BeverageCatalog.getInstance();
+const currencyItemCatalog = CurrencyItemCatalog.getInstance();
 const ingredientCatalog = IngredientCatalog.getInstance();
 
-/** @description Localized name of a collection product (ingredient or beverage). */
-export function getProductName({
-	productId,
-	productType,
-}: Pick<ICollectionPointYieldProduct, 'productId' | 'productType'>) {
+/** @description Localized name of a map product. */
+export function getProductName({ productId, productType }: TMapItemProduct) {
 	if (productType === 1 && checkIngredientId(productId)) {
 		return ingredientCatalog.getDisplayPropsById(productId, 'name');
 	}
 	if (productType === 2 && checkBeverageId(productId)) {
 		return beverageCatalog.getDisplayPropsById(productId, 'name');
+	}
+	if (productType === 'currency') {
+		return currencyItemCatalog.getDisplayPropsById(productId, 'name');
 	}
 
 	return String(productId);

@@ -12,7 +12,7 @@ const DONATION_MESSAGES_ZH_CN = {
 	'donation.intro':
 		'您已经在{shortName}内做出了{count}次互动，相信您已经体验到了{shortName}带来的便利，希望它在您游玩《东方夜雀食堂》的过程中真正帮到了您。',
 	'donation.mainlandNote': '',
-	'donation.nudge.body': '欢迎支持{shortName}的日常运营',
+	'donation.nudge.body': '欢迎支持{shortName}日常运营',
 	'donation.nudge.dismiss': '收起（{seconds}）',
 	'donation.nudge.support': '支持一下',
 	'donation.nudge.title': '这些功能帮到您了吗？',
@@ -97,7 +97,7 @@ export const donationMessages = {
 		'donation.intro':
 			'您已經在{shortName}內做出了{count}次互動，相信您已經體驗到了{shortName}帶來的便利，希望它在您遊玩《東方夜雀食堂》的過程中真正幫到了您。',
 		'donation.mainlandNote': '（中國大陸的支付寶）',
-		'donation.nudge.body': '歡迎支持{shortName}的日常營運',
+		'donation.nudge.body': '歡迎支持{shortName}日常營運',
 		'donation.nudge.dismiss': '收起（{seconds}）',
 		'donation.nudge.support': '支持一下',
 		'donation.nudge.title': '這些功能幫到您了嗎？',

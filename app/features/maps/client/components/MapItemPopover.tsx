@@ -20,6 +20,7 @@ import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
+import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import { getIngredientTypeLabel } from '@/domain/catalog/localizedCategoryLabels';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
@@ -73,6 +74,7 @@ interface IProps {
 }
 
 const beverageCatalog = BeverageCatalog.getInstance();
+const currencyItemCatalog = CurrencyItemCatalog.getInstance();
 const ingredientCatalog = IngredientCatalog.getInstance();
 
 /** @description Opens the catalog page in the small preview window, like other cross-page item links. */
@@ -164,11 +166,31 @@ const ItemDetails = memo(function ItemDetails({
 			</>
 		);
 	}
+	if (productType === 'currency') {
+		const { description, dlc, name } =
+			currencyItemCatalog.getDisplayPropsById(productId);
+		return (
+			<>
+				<ItemPopoverCard
+					target="currency_item"
+					id={productId}
+					name={name}
+					description={{ description }}
+					dlc={dlc}
+				/>
+				<CatalogButton
+					onPress={() => {
+						openWindow('currencies', productId, name);
+					}}
+				/>
+			</>
+		);
+	}
 
 	return null;
 });
 
-/** @description Opens the catalog card of an ingredient or beverage in place. */
+/** @description Opens the catalog card of a map product in place. */
 export default memo<IProps>(function MapItemPopover({
 	children,
 	className,
@@ -229,6 +251,12 @@ export default memo<IProps>(function MapItemPopover({
 						trackEvent.category.click,
 						'Beverage Card',
 						beverageCatalog.getPropsById(productId, 'name')
+					);
+				} else if (productType === 'currency') {
+					trackEvent(
+						trackEvent.category.click,
+						'Currency Card',
+						currencyItemCatalog.getPropsById(productId, 'name')
 					);
 				}
 			}
