@@ -8,10 +8,16 @@ import type {
 	TAccountMeResponse,
 } from '@/features/account/contracts';
 import { getUserStateSnapshotInTransaction } from '@/features/account/sync/server';
+import {
+	presentAnonymousFeatureAccess,
+	presentUserFeatureAccessInTransaction,
+} from '@/features/featureAccess/server/presentation';
 import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { createCurrentRequest } from '@/infrastructure/http/server/currentRequest';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
+
+import { type TLocale } from '@/shared/i18n/locale';
 
 import { authenticateAccountFromRequestWithTransaction } from './auth/requestAuthentication';
 import {
@@ -29,9 +35,12 @@ interface IAccountFeatureInitialData {
 	webauthn: IAccountWebauthnInitialData | null;
 }
 
-function createAccountAnonymousInitialData(): TAccountMeResponse {
+async function createAccountAnonymousInitialData(
+	locale: TLocale
+): Promise<TAccountMeResponse> {
 	return {
 		csrf_token: null,
+		feature_access: await presentAnonymousFeatureAccess(locale),
 		featureEnabled: true,
 		has_password: false,
 		isLoggedIn: false,
@@ -76,11 +85,18 @@ export async function readAccountFeatureInitialData(
 						user: authenticatedAccount.user,
 					}
 				);
+				const featureAccess =
+					await presentUserFeatureAccessInTransaction(
+						trx,
+						authenticatedAccount.user.id,
+						contentLocale
+					);
 				if (
 					authenticatedAccount.credential.password_must_change === 1
 				) {
 					return {
 						credentials: null,
+						featureAccess,
 						grantRecords: null,
 						sessionRecords: null,
 						stateSnapshot,
@@ -105,6 +121,7 @@ export async function readAccountFeatureInitialData(
 
 				return {
 					credentials,
+					featureAccess,
 					grantRecords,
 					sessionRecords,
 					stateSnapshot,
@@ -115,7 +132,10 @@ export async function readAccountFeatureInitialData(
 		if (auth.status === 'error') {
 			return auth.message === 'unauthorized'
 				? {
-						account: createAccountAnonymousInitialData(),
+						account:
+							await createAccountAnonymousInitialData(
+								contentLocale
+							),
 						sessions: null,
 						ssoGrants: null,
 						viewer: { isAuthenticated: false },
@@ -124,10 +144,16 @@ export async function readAccountFeatureInitialData(
 				: null;
 		}
 
-		const { credentials, grantRecords, sessionRecords, stateSnapshot } =
-			auth.result;
+		const {
+			credentials,
+			featureAccess,
+			grantRecords,
+			sessionRecords,
+			stateSnapshot,
+		} = auth.result;
 		const account = createAccountMeInitialData({
 			credential: stateSnapshot.credential,
+			featureAccess,
 			records: stateSnapshot.records,
 			sessionTokenHash: auth.data.sessionTokenHash,
 			user: stateSnapshot.user,

@@ -7,6 +7,7 @@ export interface IOfflinePackagePaths {
 	apiPath: string;
 	appPath: string;
 	fakeApiPath: string;
+	mapAssetsPath: string;
 	middlewarePath: string;
 	nextBuildPath: string;
 	offlineAdminPath: string;
@@ -30,6 +31,7 @@ export function getOfflinePackagePaths(): IOfflinePackagePaths {
 		apiPath: resolve(appPath, 'api'),
 		appPath,
 		fakeApiPath: resolve(appPath, '_api'),
+		mapAssetsPath: resolve(rootPath, 'app/assets/maps'),
 		middlewarePath: resolve(rootPath, 'middleware.ts'),
 		nextBuildPath: resolve(rootPath, '.next'),
 		offlineAdminPath: resolve(offlinePagesPath, 'admin'),
@@ -54,6 +56,7 @@ export async function checkOfflinePackagePaths() {
 		apiPath: resolve(paths.rootPath, 'app/api'),
 		appPath: resolve(paths.rootPath, 'app'),
 		fakeApiPath: resolve(paths.rootPath, 'app/_api'),
+		mapAssetsPath: resolve(paths.rootPath, 'app/assets/maps'),
 		middlewarePath: resolve(paths.rootPath, 'middleware.ts'),
 		nextBuildPath: resolve(paths.rootPath, '.next'),
 		offlineAdminPath: resolve(paths.rootPath, 'app/_offline_pages/admin'),
@@ -78,6 +81,7 @@ export async function checkOfflinePackagePaths() {
 	assert.deepEqual(paths, expectedPaths);
 	await Promise.all([
 		access(paths.appPath),
+		access(paths.mapAssetsPath),
 		access(paths.publicPath),
 		access(paths.templatePath),
 	]);
@@ -86,6 +90,7 @@ export async function checkOfflinePackagePaths() {
 		'apiPath',
 		'appPath',
 		'fakeApiPath',
+		'mapAssetsPath',
 		'middlewarePath',
 		'nextBuildPath',
 		'offlineAdminPath',

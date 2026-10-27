@@ -48,12 +48,15 @@ interface IProps {
 	contentHeight: number;
 	contentWidth: number;
 	focusRequest: IMapFocusRequest | null;
+	isPreviewAccessHintVisible?: boolean;
 	maxZoom: number;
 	/** @description Lower bound for the fitted zoom used initially and by the fit button. */
 	minFitZoom?: number;
 	/** @description Called when the empty map area is clicked. */
 	onBackgroundPress?: () => void;
+	onPreviewResolutionLimitReached?: () => void;
 	overlay?: ReactNode;
+	previewResolutionZoomLimit?: number;
 	/** @description Changing it refits the content into the viewport. */
 	resetKey: string;
 	/**
@@ -63,10 +66,18 @@ interface IProps {
 	shouldIgnoreBackgroundPress?: () => boolean;
 }
 
+/** @description Non-standard WebKit trackpad gesture fired by Safari. */
+interface IWebKitGestureEvent extends Event {
+	clientX?: number;
+	clientY?: number;
+	scale: number;
+}
+
 const DRAG_THRESHOLD_PX = 5;
 const FOCUS_DURATION_MS = 420;
 const KEYBOARD_PAN_PX = 80;
-const WHEEL_ZOOM_SPEED = 0.0015;
+const PINCH_ZOOM_SPEED = 0.01;
+const WHEEL_LINE_HEIGHT_PX = 16;
 const BUTTON_ZOOM_STEP = 1.6;
 const MIN_ZOOM_FIT_RATIO = 0.8;
 function clamp(value: number, min: number, max: number) {
@@ -77,16 +88,29 @@ function easeOutCubic(progress: number) {
 	return 1 - (1 - progress) ** 3;
 }
 
+function getWheelDelta(event: WheelEvent, viewportHeight: number) {
+	const multiplier =
+		event.deltaMode === WheelEvent.DOM_DELTA_LINE
+			? WHEEL_LINE_HEIGHT_PX
+			: event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+				? viewportHeight
+				: 1;
+	return { x: event.deltaX * multiplier, y: event.deltaY * multiplier };
+}
+
 export default memo<IProps>(function MapViewport({
 	children,
 	className,
 	contentHeight,
 	contentWidth,
 	focusRequest,
+	isPreviewAccessHintVisible,
 	maxZoom,
 	minFitZoom,
 	onBackgroundPress,
+	onPreviewResolutionLimitReached,
 	overlay,
+	previewResolutionZoomLimit,
 	resetKey,
 	shouldIgnoreBackgroundPress,
 }) {
@@ -162,6 +186,25 @@ export default memo<IProps>(function MapViewport({
 		[contentHeight, contentWidth, getZoomLimits]
 	);
 
+	const notifyPreviewResolutionLimit = useCallback(
+		(nextZoom: number, currentZoom: number) => {
+			if (
+				previewResolutionZoomLimit !== undefined &&
+				!isPreviewAccessHintVisible &&
+				currentZoom > 0 &&
+				nextZoom > currentZoom &&
+				nextZoom > previewResolutionZoomLimit
+			) {
+				onPreviewResolutionLimitReached?.();
+			}
+		},
+		[
+			isPreviewAccessHintVisible,
+			onPreviewResolutionLimitReached,
+			previewResolutionZoomLimit,
+		]
+	);
+
 	const cancelAnimation = useCallback(() => {
 		if (animationFrameRef.current !== null) {
 			cancelAnimationFrame(animationFrameRef.current);
@@ -206,6 +249,7 @@ export default memo<IProps>(function MapViewport({
 			if (targetZoom === from.zoom) {
 				return;
 			}
+			notifyPreviewResolutionLimit(targetZoom, from.zoom);
 			const contentX = (screenX - from.x) / from.zoom;
 			const contentY = (screenY - from.y) / from.zoom;
 			const apply = (zoom: number) => {
@@ -234,7 +278,13 @@ export default memo<IProps>(function MapViewport({
 			};
 			animationFrameRef.current = requestAnimationFrame(step);
 		},
-		[cancelAnimation, commit, getZoomLimits, isReducedMotion]
+		[
+			cancelAnimation,
+			commit,
+			getZoomLimits,
+			isReducedMotion,
+			notifyPreviewResolutionLimit,
+		]
 	);
 
 	const getFitView = useCallback(
@@ -259,6 +309,7 @@ export default memo<IProps>(function MapViewport({
 			const { current } = viewRef;
 			const limits = getZoomLimits(current.width, current.height);
 			const zoom = clamp(nextZoom, limits.minZoom, limits.maxZoom);
+			notifyPreviewResolutionLimit(zoom, current.zoom);
 			const ratio = zoom / current.zoom;
 			commit({
 				...current,
@@ -267,7 +318,7 @@ export default memo<IProps>(function MapViewport({
 				zoom,
 			});
 		},
-		[commit, getZoomLimits]
+		[commit, getZoomLimits, notifyPreviewResolutionLimit]
 	);
 
 	useEffect(() => {
@@ -342,6 +393,7 @@ export default memo<IProps>(function MapViewport({
 			limits.minZoom,
 			limits.maxZoom
 		);
+		notifyPreviewResolutionLimit(targetZoom, zoom);
 		animateTo({
 			x: width / 2 - focusRequest.x * targetZoom,
 			y: height / 2 - focusRequest.y * targetZoom,
@@ -352,32 +404,114 @@ export default memo<IProps>(function MapViewport({
 
 	useEffect(() => cancelAnimation, [cancelAnimation]);
 
-	// Wheel zoom needs a non-passive listener to prevent page scrolling.
+	useLayoutEffect(() => {
+		const { current } = viewRef;
+		if (current.width !== 0 && current.height !== 0) {
+			commit(current);
+		}
+	}, [commit]);
+
+	// Chromium reports trackpad pinch as ctrl/meta + wheel, while Safari emits
+	// WebKit gesture events. Plain wheel input pans the map.
 	useEffect(() => {
 		const container = containerRef.current;
 		if (container === null) {
 			return;
 		}
+		let gestureStartZoom: number | null = null;
+		let gesturePreviousX = 0;
+		let gesturePreviousY = 0;
+
+		const getGesturePoint = (
+			gesture: IWebKitGestureEvent,
+			rect: DOMRect
+		) => ({
+			x:
+				typeof gesture.clientX === 'number' &&
+				Number.isFinite(gesture.clientX)
+					? gesture.clientX - rect.left
+					: rect.width / 2,
+			y:
+				typeof gesture.clientY === 'number' &&
+				Number.isFinite(gesture.clientY)
+					? gesture.clientY - rect.top
+					: rect.height / 2,
+		});
+
 		const handleWheel = (event: WheelEvent) => {
 			event.preventDefault();
 			cancelAnimation();
 			const rect = container.getBoundingClientRect();
-			const delta =
-				event.deltaMode === WheelEvent.DOM_DELTA_LINE
-					? event.deltaY * 16
-					: event.deltaY;
-			zoomAt(
-				event.clientX - rect.left,
-				event.clientY - rect.top,
-				viewRef.current.zoom * Math.exp(-delta * WHEEL_ZOOM_SPEED)
-			);
+			const delta = getWheelDelta(event, viewRef.current.height);
+			if (event.ctrlKey || event.metaKey) {
+				zoomAt(
+					event.clientX - rect.left,
+					event.clientY - rect.top,
+					viewRef.current.zoom * Math.exp(-delta.y * PINCH_ZOOM_SPEED)
+				);
+				return;
+			}
+			const { current } = viewRef;
+			commit({
+				...current,
+				x: current.x - delta.x,
+				y: current.y - delta.y,
+			});
 		};
+		const handleGestureStart = (event: Event) => {
+			event.preventDefault();
+			cancelAnimation();
+			const gesture = event as IWebKitGestureEvent;
+			const point = getGesturePoint(
+				gesture,
+				container.getBoundingClientRect()
+			);
+			gestureStartZoom = viewRef.current.zoom;
+			gesturePreviousX = point.x;
+			gesturePreviousY = point.y;
+		};
+		const handleGestureChange = (event: Event) => {
+			event.preventDefault();
+			const gesture = event as IWebKitGestureEvent;
+			gestureStartZoom ??= viewRef.current.zoom;
+			const point = getGesturePoint(
+				gesture,
+				container.getBoundingClientRect()
+			);
+			const { current } = viewRef;
+			commit({
+				...current,
+				x: current.x + point.x - gesturePreviousX,
+				y: current.y + point.y - gesturePreviousY,
+			});
+			gesturePreviousX = point.x;
+			gesturePreviousY = point.y;
+
+			zoomAt(point.x, point.y, gestureStartZoom * gesture.scale);
+		};
+		const handleGestureEnd = (event: Event) => {
+			event.preventDefault();
+			gestureStartZoom = null;
+		};
+
 		container.addEventListener('wheel', handleWheel, { passive: false });
+		container.addEventListener('gesturestart', handleGestureStart, {
+			passive: false,
+		});
+		container.addEventListener('gesturechange', handleGestureChange, {
+			passive: false,
+		});
+		container.addEventListener('gestureend', handleGestureEnd, {
+			passive: false,
+		});
 
 		return () => {
 			container.removeEventListener('wheel', handleWheel);
+			container.removeEventListener('gesturestart', handleGestureStart);
+			container.removeEventListener('gesturechange', handleGestureChange);
+			container.removeEventListener('gestureend', handleGestureEnd);
 		};
-	}, [cancelAnimation, zoomAt]);
+	}, [cancelAnimation, commit, zoomAt]);
 
 	const handlePointerDown = useCallback(
 		(event: PointerEvent<HTMLDivElement>) => {

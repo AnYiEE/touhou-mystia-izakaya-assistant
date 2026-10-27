@@ -51,6 +51,12 @@ export const ADMIN_CLIENT_ERROR_MESSAGE_MAP: Record<string, string> = {
 	'announcement-not-visible':
 		'通知当前不可见，请检查启用状态、时间和受众设置',
 	'client-disabled': ADMIN_MESSAGE_MAP.ssoClientDisabled,
+	'feature-access-group-invalid': '授权组名称或说明不符合要求',
+	'feature-access-group-name-conflict': '授权组名称已存在',
+	'feature-access-group-not-found': '授权组不存在或已被删除',
+	'feature-access-module-invalid': '功能模块不存在或已不可用',
+	'feature-access-user-invalid': '用户不存在、重复或状态无效',
+	'feature-access-user-not-found': '用户不存在或已被删除',
 	'feature-disabled': '功能暂不可用',
 	'invalid-object-structure': '提交内容格式无效，请检查后重试',
 	'invalid-password-rule': '新密码不符合密码规则',

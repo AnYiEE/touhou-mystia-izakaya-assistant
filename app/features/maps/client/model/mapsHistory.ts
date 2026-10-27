@@ -1,6 +1,7 @@
 import isObject from 'lodash/isObject.js';
 
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
+import type { TFishingCollectibleId } from '@/domain/data/fishingCollectibles/types';
 import { type ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
 
 import {
@@ -151,7 +152,8 @@ export function pushMapsHistoryEntry(href: string) {
 
 export type TMapItemProduct =
 	| Pick<ICollectionPointYieldProduct, 'productId' | 'productType'>
-	| { productId: TCurrencyItemId; productType: 'currency' };
+	| { productId: TCurrencyItemId; productType: 'currency' }
+	| { productId: TFishingCollectibleId; productType: 'trophy' };
 
 export function getMapItemKey({ productId, productType }: TMapItemProduct) {
 	return `${productType}:${productId}`;

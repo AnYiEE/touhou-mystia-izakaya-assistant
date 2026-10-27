@@ -48,11 +48,14 @@ export const AdminTableActionLink = memo<IAdminTableActionLinkProps>(
 );
 interface IAdminTableProps extends PropsWithChildren<
 	Pick<HTMLDivElementAttributes, 'className'>
-> {}
+> {
+	tableClassName?: string;
+}
 
 export const AdminTable = memo<IAdminTableProps>(function AdminTable({
 	children,
 	className,
+	tableClassName,
 }) {
 	const { isHighAppearance } = useDesignPreferences();
 
@@ -66,7 +69,12 @@ export const AdminTable = memo<IAdminTableProps>(function AdminTable({
 				className
 			)}
 		>
-			<table className="w-max min-w-full text-left text-small">
+			<table
+				className={cn(
+					'w-max min-w-full text-left text-small',
+					tableClassName
+				)}
+			>
 				{children}
 			</table>
 		</div>

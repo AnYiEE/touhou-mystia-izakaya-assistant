@@ -1,7 +1,10 @@
 import { type NextRequest } from 'next/server';
 
 import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
-import type { IAuthInitialPasswordBody } from '@/features/account/contracts';
+import type {
+	IAuthInitialPasswordBody,
+	IAuthLoginSuccessResponse,
+} from '@/features/account/contracts';
 import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
@@ -11,6 +14,8 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+import { presentUserFeatureAccess } from '@/features/featureAccess/server/presentation';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
@@ -127,11 +132,16 @@ export async function POST(request: NextRequest) {
 						: 500;
 		return createNoStoreErrorResponse(result.message, status);
 	}
+	const featureAccess = await presentUserFeatureAccess(
+		auth.data.user.id,
+		readContentLocale(request)
+	);
 
 	return createNoStoreJsonResponse({
 		csrf_token: result.csrfToken,
+		feature_access: featureAccess,
 		has_password: true,
 		password_must_change: false,
 		user: userModule.createAccountUserProfile(auth.data.user),
-	});
+	} satisfies IAuthLoginSuccessResponse);
 }

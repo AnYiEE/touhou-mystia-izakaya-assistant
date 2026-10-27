@@ -252,6 +252,27 @@ export async function validateSelfHostedRuntime(
 		'upload-directory-path-inside-release',
 		'upload-directory-not-accessible'
 	);
+	const mapAssetDirectory = resolve(
+		releaseDirectory,
+		'app',
+		'assets',
+		'maps'
+	);
+	let mapAssetStatus;
+	try {
+		mapAssetStatus = await lstat(mapAssetDirectory);
+	} catch (error) {
+		throw createError('map-asset-directory-not-accessible', error);
+	}
+	if (!mapAssetStatus.isDirectory() || mapAssetStatus.isSymbolicLink()) {
+		throw createError('map-asset-directory-invalid');
+	}
+	await validatePathAccess(
+		mapAssetDirectory,
+		'isDirectory',
+		'map-asset-directory-not-accessible',
+		fileSystemConstants.R_OK
+	);
 	return {
 		releaseDirectory,
 		serverPath,

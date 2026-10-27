@@ -226,6 +226,13 @@ const changelog = [
 		version: 'v3.1',
 		changes: ['新增：世界地图页面，可查看地点、资源和角色位置。'],
 	},
+	{
+		version: 'v3.2',
+		changes: [
+			'新增：地图钓鱼点可查看普通的钓鱼竿、超级钓鱼竿的产出，以及该地区的垂钓收藏。',
+			'改善：地图支持macOS触控板捏合缩放与双指平移。',
+		],
+	},
 ] as const satisfies Array<{
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
 	version: `v${string}`;

@@ -196,6 +196,7 @@ export async function publishRelease({
 	const standaloneDirectory = join(paths.projectRoot, '.next', 'standalone');
 	const staticDirectory = join(paths.projectRoot, '.next', 'static');
 	const publicDirectory = join(paths.projectRoot, 'public');
+	const mapAssetsDirectory = join(paths.projectRoot, 'app', 'assets', 'maps');
 	await getPathStatus(
 		standaloneDirectory,
 		'isDirectory',
@@ -210,6 +211,11 @@ export async function publishRelease({
 		publicDirectory,
 		'isDirectory',
 		'self-hosted-public-not-found'
+	);
+	await getPathStatus(
+		mapAssetsDirectory,
+		'isDirectory',
+		'self-hosted-map-assets-not-found'
 	);
 	await ensureDeploymentDirectories(paths);
 	const stagingRelease = join(paths.stagingDirectory, release);

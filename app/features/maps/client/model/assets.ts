@@ -15,15 +15,10 @@ import type {
 	TDayMapLabel,
 } from '@/domain/data/maps/types';
 import { WORLD_MAP_FACTS } from '@/domain/data/maps/worldMapFacts';
+import { WORLD_MAP_PREVIEW_FACTS } from '@/domain/data/maps/worldMapPreviewFacts';
 
 import { checkCompatibility } from '@/infrastructure/browser/compatibility/checkCompatibility';
-import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
-
-/**
- * @description Every map asset sits under a content-hash directory, so its URL
- * changes whenever its content does; the service worker caches them for good.
- */
-const MAP_ASSET_BASE_URL = `${PUBLIC_RUNTIME_CONFIG.cdnUrl}/assets/maps`;
+import { getMapAssetBaseUrl } from './mapAssetBaseUrl';
 
 const DAY_MAP_INTERACTION_SPRITES_BY_KIND: Readonly<
 	Partial<
@@ -66,7 +61,7 @@ function getArtExtension() {
 }
 
 function getDayMapBaseUrl(map: TDayMapLabel) {
-	return `${MAP_ASSET_BASE_URL}/day/${map}/${DAY_MAP_LAYOUTS[map].art.hash}`;
+	return `${getMapAssetBaseUrl()}/day/${map}/${DAY_MAP_LAYOUTS[map].art.hash}`;
 }
 
 export function getDayMapTileUrl(
@@ -86,7 +81,7 @@ export function getCharacterSpriteUrl({
 	file,
 	source,
 }: IDayMapCharacterSprite) {
-	return `${MAP_ASSET_BASE_URL}/characters/${String(source)}/${DAY_MAP_CHARACTER_SPRITE_HASHES[source]}/${file}`;
+	return `${getMapAssetBaseUrl()}/characters/${String(source)}/${DAY_MAP_CHARACTER_SPRITE_HASHES[source]}/${file}`;
 }
 
 export function getDayMapInteractionSpriteUrl(
@@ -97,7 +92,7 @@ export function getDayMapInteractionSpriteUrl(
 	if (sprite === undefined) {
 		return null;
 	}
-	return `${MAP_ASSET_BASE_URL}/interactions/${kind}-${map}/${sprite.hash}/${sprite.file}`;
+	return `${getMapAssetBaseUrl()}/interactions/${kind}-${map}/${sprite.hash}/${sprite.file}`;
 }
 
 export function getDayMapTaskSpriteUrl(map: TDayMapLabel, key: string) {
@@ -105,7 +100,7 @@ export function getDayMapTaskSpriteUrl(map: TDayMapLabel, key: string) {
 	if (sprite === undefined) {
 		return null;
 	}
-	return `${MAP_ASSET_BASE_URL}/tasks/${map}-${key}/${sprite.hash}/${sprite.file}`;
+	return `${getMapAssetBaseUrl()}/tasks/${map}-${key}/${sprite.hash}/${sprite.file}`;
 }
 
 export function getDayMapInteractionSprite(
@@ -124,7 +119,7 @@ export function getDayMapFishingSpriteUrl(map: TDayMapLabel, index: number) {
 	if (sprite === undefined) {
 		return null;
 	}
-	return `${MAP_ASSET_BASE_URL}/fishing/${map}-${index}/${sprite.hash}/${sprite.file}`;
+	return `${getMapAssetBaseUrl()}/fishing/${map}-${index}/${sprite.hash}/${sprite.file}`;
 }
 
 export function getDayMapTeleportSpriteUrl(map: TDayMapLabel, index: number) {
@@ -132,7 +127,7 @@ export function getDayMapTeleportSpriteUrl(map: TDayMapLabel, index: number) {
 	if (sprite === undefined) {
 		return null;
 	}
-	return `${MAP_ASSET_BASE_URL}/teleports/${map}-${index}/${sprite.hash}/${sprite.file}`;
+	return `${getMapAssetBaseUrl()}/teleports/${map}-${index}/${sprite.hash}/${sprite.file}`;
 }
 
 export function getDayMapFishingSprite(map: TDayMapLabel, index: number) {
@@ -144,7 +139,7 @@ export function getDayMapFacilitySpriteUrl(map: TDayMapLabel, key: string) {
 	if (sprite === undefined) {
 		return null;
 	}
-	return `${MAP_ASSET_BASE_URL}/facilities/${map}-${key}/${sprite.hash}/${sprite.file}`;
+	return `${getMapAssetBaseUrl()}/facilities/${map}-${key}/${sprite.hash}/${sprite.file}`;
 }
 
 export function getDayMapFacilitySprite(map: TDayMapLabel, key: string) {
@@ -156,7 +151,7 @@ export function getDayMapPrayerSpriteUrl(map: TDayMapLabel, label: string) {
 	if (sprite === undefined) {
 		return null;
 	}
-	return `${MAP_ASSET_BASE_URL}/prayers/${map}-${label}/${sprite.hash}/${sprite.file}`;
+	return `${getMapAssetBaseUrl()}/prayers/${map}-${label}/${sprite.hash}/${sprite.file}`;
 }
 
 export function getDayMapPrayerSprite(map: TDayMapLabel, label: string) {
@@ -167,7 +162,12 @@ export function getDayMapTeleportSprite(map: TDayMapLabel, index: number) {
 	return DAY_MAP_TELEPORT_SPRITES_BY_MAP[map]?.[index];
 }
 
-export function getWorldMapImageUrl() {
+export function getWorldMapImageUrl(isPreview = false) {
+	if (isPreview) {
+		const { hash, image } = WORLD_MAP_PREVIEW_FACTS;
+		return `${getMapAssetBaseUrl()}/previews/world/${hash}/${image}.${getArtExtension()}`;
+	}
+
 	const { hash, image } = WORLD_MAP_FACTS;
-	return `${MAP_ASSET_BASE_URL}/world/${hash}/${image}.${getArtExtension()}`;
+	return `${getMapAssetBaseUrl()}/world/${hash}/${image}.${getArtExtension()}`;
 }

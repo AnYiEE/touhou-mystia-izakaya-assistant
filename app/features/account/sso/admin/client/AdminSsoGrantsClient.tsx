@@ -952,7 +952,7 @@ export default function AdminSsoGrantsClient({
 			</AdminMetricPanel>
 
 			{grants === null ? (
-				<AdminEmptyState icon={faClock}>
+				<AdminEmptyState isLoading icon={faClock}>
 					{ADMIN_SSO_MESSAGE_MAP.grantListReading}
 				</AdminEmptyState>
 			) : grants.grants.length === 0 ? (

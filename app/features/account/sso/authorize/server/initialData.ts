@@ -2,6 +2,10 @@ import { cookies } from 'next/headers';
 import { unstable_rethrow } from 'next/navigation';
 
 import { USER_STATUS_MAP } from '@/domain/account/contracts';
+import {
+	type TFeatureModuleKey,
+	createSsoAppFeatureModuleKey,
+} from '@/domain/featureAccess/contracts';
 
 import { accountMessages } from '@/features/account/client/messages';
 import type {
@@ -19,6 +23,7 @@ import {
 	getLocalizedSsoClientName,
 } from '@/features/account/sso/server/validation';
 import { getActiveUserStateSnapshotForSession } from '@/features/account/sync/server';
+import { presentUserFeatureAccess } from '@/features/featureAccess/server/presentation';
 
 import { createCurrentRequest } from '@/infrastructure/http/server/currentRequest';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
@@ -33,6 +38,13 @@ interface IMessageInitialData {
 
 interface ILoginRequiredInitialData {
 	kind: 'login-required';
+}
+
+interface IFeatureAccessRequiredInitialData {
+	account: IAccountMeSuccessResponse;
+	clientName: string;
+	kind: 'feature-access-required';
+	moduleKey: TFeatureModuleKey;
 }
 
 interface IPasswordChangeRequiredInitialData {
@@ -50,6 +62,7 @@ interface IReadyInitialData {
 }
 
 export type TSsoAuthorizeInitialData =
+	| IFeatureAccessRequiredInitialData
 	| ILoginRequiredInitialData
 	| IMessageInitialData
 	| IPasswordChangeRequiredInitialData
@@ -74,25 +87,31 @@ async function createAccountSsoGrantInitialDataForUser(
 }
 
 async function createAccountMeInitialDataForAuthenticatedRequest({
+	locale,
 	sessionId,
 	sessionTokenHash,
 	userId,
 }: {
+	locale: TLocale;
 	sessionId: string;
 	sessionTokenHash: string;
 	userId: string;
 }): Promise<IAccountMeSuccessResponse | null> {
-	const stateSnapshot = await getActiveUserStateSnapshotForSession({
-		namespaces: null,
-		session: { id: sessionId, token_hash: sessionTokenHash },
-		userId,
-	});
+	const [featureAccess, stateSnapshot] = await Promise.all([
+		presentUserFeatureAccess(userId, locale),
+		getActiveUserStateSnapshotForSession({
+			namespaces: null,
+			session: { id: sessionId, token_hash: sessionTokenHash },
+			userId,
+		}),
+	]);
 	if (stateSnapshot.status === 'unauthorized') {
 		return null;
 	}
 
 	return createAccountMeInitialData({
 		credential: stateSnapshot.credential,
+		featureAccess,
 		records: stateSnapshot.records,
 		sessionTokenHash,
 		user: stateSnapshot.user,
@@ -122,6 +141,7 @@ export async function readSsoAuthorizeInitialData(
 
 		const account = await createAccountMeInitialDataForAuthenticatedRequest(
 			{
+				locale,
 				sessionId: auth.data.session.id,
 				sessionTokenHash: auth.data.sessionTokenHash,
 				userId: auth.data.user.id,
@@ -141,10 +161,32 @@ export async function readSsoAuthorizeInitialData(
 		const client = await ssoModule.getSsoClientById(context.client_id);
 		if (
 			client === null ||
-			!checkSsoClientEnabled(client) ||
 			!ssoModule.validateSsoRedirectUri(client, context.redirect_uri)
 		) {
 			return { kind: 'message', status: 'invalid' };
+		}
+		if (!checkSsoClientEnabled(client)) {
+			return { kind: 'message', status: 'invalid' };
+		}
+		const clientName = getLocalizedSsoClientName(client, locale);
+		const ssoUseAccess = account.feature_access.modules['sso.use'];
+		if (!ssoUseAccess.allowed) {
+			return {
+				account,
+				clientName,
+				kind: 'feature-access-required',
+				moduleKey: 'sso.use',
+			};
+		}
+		const appModuleKey = createSsoAppFeatureModuleKey(client.id);
+		const appAccess = account.feature_access.modules[appModuleKey];
+		if (appAccess?.allowed !== true) {
+			return {
+				account,
+				clientName,
+				kind: 'feature-access-required',
+				moduleKey: appModuleKey,
+			};
 		}
 
 		const ssoGrants = await createAccountSsoGrantInitialDataForUser(
@@ -178,7 +220,7 @@ export async function readSsoAuthorizeInitialData(
 								username: auth.data.user.username,
 							}
 						),
-			clientName: getLocalizedSsoClientName(client, locale),
+			clientName,
 			kind: 'ready',
 			ssoGrants,
 			transactionId: context.transaction_id,

@@ -11,7 +11,6 @@ import {
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
-import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 import { ACCOUNT_SYNC_API_RESPONSE_CODE_MAP } from '@/features/account/sync/apiResponseCodes';
 import { checkSyncProtocolRequestBody } from '@/features/account/sync/protocol';
 import { getAccountSyncCapacityConfiguration } from '@/features/account/sync/server/capacity';
@@ -22,6 +21,10 @@ import type {
 	ISyncStatePingBody,
 } from '@/features/account/sync/types';
 import { parseSyncStatePutBody } from '@/features/account/sync/validation';
+import {
+	createFeatureAccessGuardErrorResponse,
+	requireFeatureAccess,
+} from '@/features/featureAccess/server/requireFeatureAccess';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
@@ -57,13 +60,19 @@ export async function POST(request: NextRequest) {
 		return preAuthRateLimitResponse;
 	}
 
-	const [authModule, csrfModule] = await Promise.all([
-		import('@/features/account/server/auth/requestAuthentication'),
+	const [csrfModule, featureAccess] = await Promise.all([
 		import('@/features/account/server/auth/csrf'),
+		requireFeatureAccess(request, 'account.sync'),
 	]);
-	const auth = await authModule.authenticateAccountFromRequest(request);
-	if (auth.status === 'error') {
-		return createAccountAuthErrorRouteResponse(auth, request);
+	if (featureAccess.status === 'error') {
+		return createFeatureAccessGuardErrorResponse(featureAccess);
+	}
+	const { account } = featureAccess;
+	if (account === null) {
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
@@ -95,7 +104,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	if (
-		!csrfModule.verifyCsrfToken(body.csrf_token, auth.data.sessionTokenHash)
+		!csrfModule.verifyCsrfToken(body.csrf_token, account.sessionTokenHash)
 	) {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.forbidden,
@@ -124,36 +133,36 @@ export async function POST(request: NextRequest) {
 		);
 	}
 	const { body: parsedBody } = parsedResult;
-	if (auth.data.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+	if (account.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
 		return createNoStoreErrorResponse(
 			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.paused,
 			409,
 			{
-				state_epoch: auth.data.user.state_epoch,
-				sync_generation: auth.data.user.sync_generation,
-				sync_status: auth.data.user.sync_status,
+				state_epoch: account.user.state_epoch,
+				sync_generation: account.user.sync_generation,
+				sync_status: account.user.sync_status,
 			}
 		);
 	}
-	if (parsedBody.state_epoch !== auth.data.user.state_epoch) {
+	if (parsedBody.state_epoch !== account.user.state_epoch) {
 		return createNoStoreErrorResponse(
 			ACCOUNT_API_RESPONSE_CODE_MAP.stateEpochMismatch,
 			409,
 			{
-				state_epoch: auth.data.user.state_epoch,
-				sync_generation: auth.data.user.sync_generation,
-				sync_status: auth.data.user.sync_status,
+				state_epoch: account.user.state_epoch,
+				sync_generation: account.user.sync_generation,
+				sync_status: account.user.sync_status,
 			}
 		);
 	}
-	if (parsedBody.sync_generation !== auth.data.user.sync_generation) {
+	if (parsedBody.sync_generation !== account.user.sync_generation) {
 		return createNoStoreErrorResponse(
 			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.generationMismatch,
 			409,
 			{
-				state_epoch: auth.data.user.state_epoch,
-				sync_generation: auth.data.user.sync_generation,
-				sync_status: auth.data.user.sync_status,
+				state_epoch: account.user.state_epoch,
+				sync_generation: account.user.sync_generation,
+				sync_status: account.user.sync_status,
 			}
 		);
 	}
@@ -161,8 +170,8 @@ export async function POST(request: NextRequest) {
 	const writeResult = await putSyncStateChanges({
 		body: parsedBody,
 		conflictParseMode: 'item-error',
-		session: auth.data.session,
-		userId: auth.data.user.id,
+		session: account.session,
+		userId: account.user.id,
 	});
 	if (writeResult.status === 'corrupt-user-state') {
 		return createNoStoreErrorResponse(
@@ -212,8 +221,8 @@ export async function POST(request: NextRequest) {
 
 	return createNoStoreJsonResponse({
 		results: writeResult.results,
-		state_epoch: auth.data.user.state_epoch,
-		sync_generation: auth.data.user.sync_generation,
-		sync_status: auth.data.user.sync_status,
+		state_epoch: account.user.state_epoch,
+		sync_generation: account.user.sync_generation,
+		sync_status: account.user.sync_status,
 	});
 }

@@ -1,6 +1,14 @@
 'use client';
 
-import { type ReactNode, memo, useCallback, useMemo } from 'react';
+import {
+	type ReactNode,
+	createContext,
+	memo,
+	useCallback,
+	useContext,
+	useMemo,
+	useState,
+} from 'react';
 import {
 	faClock,
 	faDisplay,
@@ -8,6 +16,7 @@ import {
 	faFish,
 	faLightbulb,
 	faMagnifyingGlass,
+	faRotate,
 	faShuffle,
 	faToriiGate,
 	faWandMagicSparkles,
@@ -27,6 +36,7 @@ import type {
 	TDayMapPoint,
 } from '@/domain/data/maps/types';
 
+import { useMapAsset } from '@/features/maps/client/assets/MapAssetContext';
 import { mapsMessages } from '@/features/maps/client/messages';
 import {
 	getCharacterSpriteUrl,
@@ -73,6 +83,7 @@ import { useDayMapEntityName } from '@/features/maps/client/model/useDayMapEntit
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
+import { useMapAccess } from './MapAccessContext';
 import ProductSprite from './ProductSprite';
 
 interface IProps {
@@ -82,6 +93,7 @@ interface IProps {
 	hiddenLayers: ReadonlySet<TDayMapLayer>;
 	map: TDayMapLabel;
 	onQuickTravel: (entity: TDayMapEntity) => void;
+	onRequestTransitionAccess: (entity: TDayMapEntity) => void;
 	onSelect: (id: string) => void;
 	selectedId: string | null;
 	zoom: number;
@@ -95,6 +107,61 @@ const CHARACTER_MIN_HEIGHT_PX = 30;
 const CHARACTER_MAX_HEIGHT_PX = 84;
 const OVERLAY_LABEL_HEIGHT_PX = 24;
 const OVERLAY_LABEL_GAP_PX = 4;
+
+interface IOverlayMarkerInteraction {
+	isHovered: boolean;
+	onBlur: () => void;
+	onFocus: () => void;
+	onPointerEnter: () => void;
+	onPointerLeave: () => void;
+}
+
+const OverlayMarkerInteractionContext =
+	createContext<IOverlayMarkerInteraction | null>(null);
+
+const OverlayMarkerInteractionProvider = memo<{
+	children: ReactNodeWithoutBoolean;
+}>(function OverlayMarkerInteractionProvider({ children }) {
+	const [isHovered, setIsHovered] = useState(false);
+	const handleBlur = useCallback(() => {
+		setIsHovered(false);
+	}, []);
+	const handleFocus = useCallback(() => {
+		setIsHovered(true);
+	}, []);
+	const handlePointerEnter = useCallback(() => {
+		setIsHovered(true);
+	}, []);
+	const handlePointerLeave = useCallback(() => {
+		setIsHovered(false);
+	}, []);
+	const value = useMemo(
+		() => ({
+			isHovered,
+			onBlur: handleBlur,
+			onFocus: handleFocus,
+			onPointerEnter: handlePointerEnter,
+			onPointerLeave: handlePointerLeave,
+		}),
+		[
+			handleBlur,
+			handleFocus,
+			handlePointerEnter,
+			handlePointerLeave,
+			isHovered,
+		]
+	);
+
+	return (
+		<OverlayMarkerInteractionContext.Provider value={value}>
+			{children}
+		</OverlayMarkerInteractionContext.Provider>
+	);
+});
+
+function useOverlayMarkerInteraction() {
+	return useContext(OverlayMarkerInteractionContext);
+}
 
 function getOverlayLabelOffset(
 	art: IDayMapArt,
@@ -125,139 +192,310 @@ function getTaskIcon(key: string) {
 
 const OverlaySpriteVisual = memo(function OverlaySpriteVisual({
 	art,
+	isSelected,
+	label,
+	onClick,
+	onDoubleClick,
 	sprite,
 	url,
 	zoom,
 }: {
 	art: IDayMapArt;
+	isSelected: boolean;
+	label: string;
+	onClick: () => void;
+	onDoubleClick?: () => void;
 	sprite: IDayMapOverlaySprite;
 	url: string;
 	zoom: number;
 }) {
+	const { t } = useI18n(mapsMessages);
 	const pxPerUnit = art.pixelsPerUnit * zoom;
 	const scale = pxPerUnit / sprite.pixelsPerUnit;
+	const interaction = useOverlayMarkerInteraction();
+	const isHovered = interaction?.isHovered ?? false;
+	const asset = useMapAsset(url);
+	const isError = asset.status === 'error';
+	const handlePress = useCallback(() => {
+		if (isError) {
+			asset.retry();
+			return;
+		}
+		onClick();
+	}, [asset, isError, onClick]);
 
 	return (
-		<span
-			aria-hidden
-			className="image-rendering-pixelated pointer-events-none absolute block bg-[length:100%_100%] bg-no-repeat"
+		<button
+			aria-label={isError ? t('maps.asset.retry') : label}
+			aria-pressed={isSelected}
+			title={isError ? t('maps.asset.error') : label}
+			type="button"
+			onClick={handlePress}
+			onDoubleClick={onDoubleClick}
+			onBlur={interaction?.onBlur}
+			onFocus={interaction?.onFocus}
+			onPointerEnter={interaction?.onPointerEnter}
+			onPointerLeave={interaction?.onPointerLeave}
+			className={cn(
+				'absolute block cursor-pointer',
+				CLASSNAME_FOCUS_VISIBLE_OUTLINE
+			)}
 			style={{
-				backgroundImage: `url('${url}')`,
 				height: sprite.height * scale,
 				left: sprite.offsetX * pxPerUnit,
 				top: -sprite.offsetY * pxPerUnit,
 				width: sprite.width * scale,
 			}}
-		/>
+		>
+			<span
+				aria-hidden
+				className={cn(
+					'image-rendering-pixelated flex h-full w-full items-center justify-center bg-[length:100%_100%] bg-no-repeat',
+					'transition-[filter,transform] duration-150 motion-reduce:transition-none',
+					isHovered && '-translate-y-0.5',
+					asset.objectUrl === null &&
+						'rounded-full bg-black/55 text-white shadow-md',
+					isSelected
+						? '[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_3px_#ffa800)]'
+						: isHovered
+							? '[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_2px_#ffa800)]'
+							: '[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.9))]'
+				)}
+				style={{
+					backgroundImage:
+						asset.objectUrl === null
+							? undefined
+							: `url('${asset.objectUrl}')`,
+				}}
+			>
+				{isError && <FontAwesomeIcon icon={faRotate} />}
+			</span>
+		</button>
 	);
 });
 
 const InteractionVisual = memo(function InteractionVisual({
 	art,
 	entity,
+	isSelected,
 	map,
+	name,
+	onSelect,
 	zoom,
 }: {
 	art: IDayMapArt;
 	entity: IDayMapInteractionEntity;
+	isSelected: boolean;
+	name: string;
 	map: TDayMapLabel;
+	onSelect: (id: string) => void;
 	zoom: number;
 }) {
 	const { kind } = entity.interaction;
 	const sprite = getDayMapInteractionSprite(map, kind);
 	const url = getDayMapInteractionSpriteUrl(map, kind);
+	const handleClick = useCallback(() => {
+		onSelect(entity.id);
+	}, [entity.id, onSelect]);
 	return sprite === undefined || url === null ? null : (
-		<OverlaySpriteVisual art={art} sprite={sprite} url={url} zoom={zoom} />
+		<OverlaySpriteVisual
+			art={art}
+			isSelected={isSelected}
+			label={name}
+			onClick={handleClick}
+			sprite={sprite}
+			url={url}
+			zoom={zoom}
+		/>
 	);
 });
 
 const PrayerVisual = memo(function PrayerVisual({
 	art,
+	id,
+	isSelected,
 	label,
 	map,
+	name,
+	onSelect,
 	zoom,
 }: {
 	art: IDayMapArt;
+	id: string;
+	isSelected: boolean;
 	label: string;
 	map: TDayMapLabel;
+	name: string;
+	onSelect: (id: string) => void;
 	zoom: number;
 }) {
 	const sprite = getDayMapPrayerSprite(map, label);
 	const url = getDayMapPrayerSpriteUrl(map, label);
+	const handleClick = useCallback(() => {
+		onSelect(id);
+	}, [id, onSelect]);
 	return sprite === undefined || url === null ? null : (
-		<OverlaySpriteVisual art={art} sprite={sprite} url={url} zoom={zoom} />
+		<OverlaySpriteVisual
+			art={art}
+			isSelected={isSelected}
+			label={name}
+			onClick={handleClick}
+			sprite={sprite}
+			url={url}
+			zoom={zoom}
+		/>
 	);
 });
 
 const TaskInteractionVisual = memo(function TaskInteractionVisual({
 	art,
 	entity,
+	isSelected,
 	map,
+	name,
+	onSelect,
 	zoom,
 }: {
 	art: IDayMapArt;
 	entity: IDayMapTaskEntity;
+	isSelected: boolean;
+	name: string;
 	map: TDayMapLabel;
+	onSelect: (id: string) => void;
 	zoom: number;
 }) {
 	const sprite = getDayMapTaskSprite(map, entity.task.key);
 	const url = getDayMapTaskSpriteUrl(map, entity.task.key);
+	const handleClick = useCallback(() => {
+		onSelect(entity.id);
+	}, [entity.id, onSelect]);
 	return sprite === undefined || url === null ? null : (
-		<OverlaySpriteVisual art={art} sprite={sprite} url={url} zoom={zoom} />
+		<OverlaySpriteVisual
+			art={art}
+			isSelected={isSelected}
+			label={name}
+			onClick={handleClick}
+			sprite={sprite}
+			url={url}
+			zoom={zoom}
+		/>
 	);
 });
 
 const FishingVisual = memo(function FishingVisual({
 	art,
+	id,
 	index,
+	isSelected,
 	map,
+	name,
+	onSelect,
 	zoom,
 }: {
 	art: IDayMapArt;
+	id: string;
 	index: number;
+	isSelected: boolean;
+	name: string;
 	map: TDayMapLabel;
+	onSelect: (id: string) => void;
 	zoom: number;
 }) {
 	const sprite = getDayMapFishingSprite(map, index);
 	const url = getDayMapFishingSpriteUrl(map, index);
+	const handleClick = useCallback(() => {
+		onSelect(id);
+	}, [id, onSelect]);
 	return sprite === undefined || url === null ? null : (
-		<OverlaySpriteVisual art={art} sprite={sprite} url={url} zoom={zoom} />
+		<OverlaySpriteVisual
+			art={art}
+			isSelected={isSelected}
+			label={name}
+			onClick={handleClick}
+			sprite={sprite}
+			url={url}
+			zoom={zoom}
+		/>
 	);
 });
 
 const FacilityVisual = memo(function FacilityVisual({
 	art,
 	facilityKey,
+	id,
+	isSelected,
 	map,
+	name,
+	onSelect,
 	zoom,
 }: {
 	art: IDayMapArt;
 	facilityKey: string;
+	id: string;
+	isSelected: boolean;
+	name: string;
 	map: TDayMapLabel;
+	onSelect: (id: string) => void;
 	zoom: number;
 }) {
 	const sprite = getDayMapFacilitySprite(map, facilityKey);
 	const url = getDayMapFacilitySpriteUrl(map, facilityKey);
+	const handleClick = useCallback(() => {
+		onSelect(id);
+	}, [id, onSelect]);
 	return sprite === undefined || url === null ? null : (
-		<OverlaySpriteVisual art={art} sprite={sprite} url={url} zoom={zoom} />
+		<OverlaySpriteVisual
+			art={art}
+			isSelected={isSelected}
+			label={name}
+			onClick={handleClick}
+			sprite={sprite}
+			url={url}
+			zoom={zoom}
+		/>
 	);
 });
 
 const TeleportVisual = memo(function TeleportVisual({
 	art,
+	entity,
 	index,
+	isSelected,
 	map,
+	name,
+	onQuickTravel,
+	onSelect,
 	zoom,
 }: {
 	art: IDayMapArt;
+	entity: TDayMapEntity;
 	index: number;
+	isSelected: boolean;
+	name: string;
 	map: TDayMapLabel;
+	onQuickTravel: (entity: TDayMapEntity) => void;
+	onSelect: (id: string) => void;
 	zoom: number;
 }) {
 	const sprite = getDayMapTeleportSprite(map, index);
 	const url = getDayMapTeleportSpriteUrl(map, index);
+	const handleClick = useCallback(() => {
+		onSelect(entity.id);
+	}, [entity.id, onSelect]);
+	const handleDoubleClick = useCallback(() => {
+		onQuickTravel(entity);
+	}, [entity, onQuickTravel]);
 	return sprite === undefined || url === null ? null : (
-		<OverlaySpriteVisual art={art} sprite={sprite} url={url} zoom={zoom} />
+		<OverlaySpriteVisual
+			art={art}
+			isSelected={isSelected}
+			label={name}
+			onClick={handleClick}
+			onDoubleClick={handleDoubleClick}
+			sprite={sprite}
+			url={url}
+			zoom={zoom}
+		/>
 	);
 });
 
@@ -314,10 +552,19 @@ const CharacterMarker = memo<ICharacterMarkerProps>(function CharacterMarker({
 	const { character, id, spots } = entity;
 	const { kind, sprite } = character;
 	const isRandomSpot = spots.length > 1;
+	const { t } = useI18n(mapsMessages);
+	const characterAsset = useMapAsset(
+		sprite === null ? null : getCharacterSpriteUrl(sprite)
+	);
+	const isAssetError = characterAsset.status === 'error';
 
 	const handleClick = useCallback(() => {
+		if (isAssetError) {
+			characterAsset.retry();
+			return;
+		}
 		onSelect(id);
-	}, [id, onSelect]);
+	}, [characterAsset, id, isAssetError, onSelect]);
 
 	const height =
 		sprite === null
@@ -337,9 +584,9 @@ const CharacterMarker = memo<ICharacterMarkerProps>(function CharacterMarker({
 
 	return (
 		<button
-			aria-label={name}
+			aria-label={isAssetError ? t('maps.asset.retry') : name}
 			aria-pressed={isSelected}
-			title={name}
+			title={isAssetError ? t('maps.asset.error') : name}
 			type="button"
 			onClick={handleClick}
 			className={cn('group absolute', CLASSNAME_FOCUS_VISIBLE_OUTLINE, {
@@ -362,7 +609,9 @@ const CharacterMarker = memo<ICharacterMarkerProps>(function CharacterMarker({
 				style={{ left: feetX, top: feetY - 3 }}
 			/>
 			{sprite === null ? (
-				<span className="block h-full w-full rounded-full bg-default-300" />
+				<span className="flex h-full w-full items-center justify-center rounded-full bg-default-300">
+					{isAssetError && <FontAwesomeIcon icon={faRotate} />}
+				</span>
 			) : (
 				<span
 					aria-hidden
@@ -374,9 +623,14 @@ const CharacterMarker = memo<ICharacterMarkerProps>(function CharacterMarker({
 							: '[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.9))] group-hover:[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_2px_#ffa800)]'
 					)}
 					style={{
-						backgroundImage: `url('${getCharacterSpriteUrl(sprite)}')`,
+						backgroundImage:
+							characterAsset.objectUrl === null
+								? undefined
+								: `url('${characterAsset.objectUrl}')`,
 					}}
-				/>
+				>
+					{isAssetError && <FontAwesomeIcon icon={faRotate} />}
+				</span>
 			)}
 			{(isLabelVisible || isSelected) && (
 				<span
@@ -522,9 +776,12 @@ const ChipMarker = memo<IChipMarkerProps>(function ChipMarker({
 	onDoubleClick,
 	onSelect,
 }) {
+	const interaction = useOverlayMarkerInteraction();
+	const isHovered = interaction?.isHovered ?? false;
 	const handleClick = useCallback(() => {
 		onSelect(id);
 	}, [id, onSelect]);
+
 	const handleDoubleClick = useCallback(() => {
 		onDoubleClick?.();
 	}, [onDoubleClick]);
@@ -537,13 +794,22 @@ const ChipMarker = memo<IChipMarkerProps>(function ChipMarker({
 			type="button"
 			onClick={handleClick}
 			onDoubleClick={handleDoubleClick}
+			onBlur={interaction?.onBlur}
+			onFocus={interaction?.onFocus}
+			onPointerEnter={interaction?.onPointerEnter}
+			onPointerLeave={interaction?.onPointerLeave}
 			className={cn(
-				'absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 transition-transform duration-150 hover:scale-105 motion-reduce:transition-none',
+				'absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2',
 				MAP_LABEL_CONTENT_CLASS_NAME,
 				CLASSNAME_FOCUS_VISIBLE_OUTLINE,
 				!(isLabelVisible || isSelected) &&
 					'h-7 w-7 justify-center gap-0 px-0',
-				isSelected && MAP_PILL_ACTIVE_CLASS_NAME
+				isSelected
+					? MAP_PILL_ACTIVE_CLASS_NAME
+					: cn(
+							'hover:bg-black/85 focus-visible:bg-black/85',
+							isHovered && 'bg-black/85'
+						)
 			)}
 			style={
 				(isLabelVisible || isSelected) && labelOffset !== undefined
@@ -569,13 +835,16 @@ export default memo<IProps>(function DayMapMarkers({
 	hiddenLayers,
 	map,
 	onQuickTravel,
+	onRequestTransitionAccess,
 	onSelect,
 	selectedId,
 	zoom,
 }) {
 	const { t } = useI18n(mapsMessages);
 	const isReducedMotion = useReducedMotion();
+
 	const getName = useDayMapEntityName();
+	const { policy } = useMapAccess();
 
 	// Names and world-to-content coordinates are independent of zoom and selection.
 	const markers = useMemo(
@@ -626,39 +895,46 @@ export default memo<IProps>(function DayMapMarkers({
 						: getOverlayLabelOffset(art, sprite, zoom);
 				pushNode(
 					entity.layer,
-					<Anchor
-						key={`${entity.id}:visual`}
-						point={point}
-						zIndex={1}
-						zoom={zoom}
-					>
-						<FacilityVisual
-							art={art}
-							facilityKey={entity.facility.key}
-							map={map}
+					<OverlayMarkerInteractionProvider key={entity.id}>
+						<Anchor
+							key={`${entity.id}:visual`}
+							point={point}
+							zIndex={1}
 							zoom={zoom}
-						/>
-					</Anchor>
-				);
-				pushNode(
-					entity.layer,
-					<Anchor
-						key={entity.id}
-						point={point}
-						zIndex={isSelected ? 10_000 : 9500}
-						zoom={zoom}
-					>
-						<ChipMarker
-							icon={faDisplay}
-							iconClassName={DAY_MAP_LAYER_COLORS.facility.icon}
-							id={entity.id}
-							isLabelVisible={isLabelVisible}
-							isSelected={isSelected}
-							labelOffset={labelOffset}
-							name={name}
-							onSelect={onSelect}
-						/>
-					</Anchor>
+						>
+							<FacilityVisual
+								art={art}
+								facilityKey={entity.facility.key}
+								id={entity.id}
+								isSelected={isSelected}
+								map={map}
+								name={name}
+								onSelect={onSelect}
+								zoom={zoom}
+							/>
+						</Anchor>
+						{(isLabelVisible || isSelected) && (
+							<Anchor
+								key={entity.id}
+								point={point}
+								zIndex={isSelected ? 10_000 : 9500}
+								zoom={zoom}
+							>
+								<ChipMarker
+									icon={faDisplay}
+									iconClassName={
+										DAY_MAP_LAYER_COLORS.facility.icon
+									}
+									id={entity.id}
+									isLabelVisible={isLabelVisible}
+									isSelected={isSelected}
+									labelOffset={labelOffset}
+									name={name}
+									onSelect={onSelect}
+								/>
+							</Anchor>
+						)}
+					</OverlayMarkerInteractionProvider>
 				);
 				break;
 			}
@@ -690,39 +966,46 @@ export default memo<IProps>(function DayMapMarkers({
 				);
 				pushNode(
 					entity.layer,
-					<Anchor
-						key={`${entity.id}:visual`}
-						point={point}
-						zIndex={1}
-						zoom={zoom}
-					>
-						<FishingVisual
-							art={art}
-							index={entity.index}
-							map={map}
+					<OverlayMarkerInteractionProvider key={entity.id}>
+						<Anchor
+							key={`${entity.id}:visual`}
+							point={point}
+							zIndex={1}
 							zoom={zoom}
-						/>
-					</Anchor>
-				);
-				pushNode(
-					entity.layer,
-					<Anchor
-						key={entity.id}
-						point={point}
-						zIndex={isSelected ? 10_000 : 3000}
-						zoom={zoom}
-					>
-						<ChipMarker
-							icon={faFish}
-							iconClassName={DAY_MAP_LAYER_COLORS.fishing.icon}
-							id={entity.id}
-							isLabelVisible={isLabelVisible}
-							isSelected={isSelected}
-							labelOffset={labelOffset}
-							name={name}
-							onSelect={onSelect}
-						/>
-					</Anchor>
+						>
+							<FishingVisual
+								art={art}
+								id={entity.id}
+								index={entity.index}
+								isSelected={isSelected}
+								map={map}
+								name={name}
+								onSelect={onSelect}
+								zoom={zoom}
+							/>
+						</Anchor>
+						{(isLabelVisible || isSelected) && (
+							<Anchor
+								key={entity.id}
+								point={point}
+								zIndex={isSelected ? 10_000 : 3000}
+								zoom={zoom}
+							>
+								<ChipMarker
+									icon={faFish}
+									iconClassName={
+										DAY_MAP_LAYER_COLORS.fishing.icon
+									}
+									id={entity.id}
+									isLabelVisible={isLabelVisible}
+									isSelected={isSelected}
+									labelOffset={labelOffset}
+									name={name}
+									onSelect={onSelect}
+								/>
+							</Anchor>
+						)}
+					</OverlayMarkerInteractionProvider>
 				);
 				break;
 			}
@@ -734,39 +1017,46 @@ export default memo<IProps>(function DayMapMarkers({
 						: getOverlayLabelOffset(art, sprite, zoom);
 				pushNode(
 					entity.layer,
-					<Anchor
-						key={`${entity.id}:visual`}
-						point={point}
-						zIndex={1}
-						zoom={zoom}
-					>
-						<PrayerVisual
-							art={art}
-							label={entity.prayer.label}
-							map={map}
+					<OverlayMarkerInteractionProvider key={entity.id}>
+						<Anchor
+							key={`${entity.id}:visual`}
+							point={point}
+							zIndex={1}
 							zoom={zoom}
-						/>
-					</Anchor>
-				);
-				pushNode(
-					entity.layer,
-					<Anchor
-						key={entity.id}
-						point={point}
-						zIndex={isSelected ? 10_000 : 8500}
-						zoom={zoom}
-					>
-						<ChipMarker
-							icon={faToriiGate}
-							iconClassName={DAY_MAP_LAYER_COLORS.prayer.icon}
-							id={entity.id}
-							isLabelVisible={isLabelVisible}
-							isSelected={isSelected}
-							labelOffset={labelOffset}
-							name={name}
-							onSelect={onSelect}
-						/>
-					</Anchor>
+						>
+							<PrayerVisual
+								art={art}
+								id={entity.id}
+								isSelected={isSelected}
+								label={entity.prayer.label}
+								map={map}
+								name={name}
+								onSelect={onSelect}
+								zoom={zoom}
+							/>
+						</Anchor>
+						{(isLabelVisible || isSelected) && (
+							<Anchor
+								key={entity.id}
+								point={point}
+								zIndex={isSelected ? 10_000 : 8500}
+								zoom={zoom}
+							>
+								<ChipMarker
+									icon={faToriiGate}
+									iconClassName={
+										DAY_MAP_LAYER_COLORS.prayer.icon
+									}
+									id={entity.id}
+									isLabelVisible={isLabelVisible}
+									isSelected={isSelected}
+									labelOffset={labelOffset}
+									name={name}
+									onSelect={onSelect}
+								/>
+							</Anchor>
+						)}
+					</OverlayMarkerInteractionProvider>
 				);
 				break;
 			}
@@ -781,43 +1071,47 @@ export default memo<IProps>(function DayMapMarkers({
 						: getOverlayLabelOffset(art, sprite, zoom);
 				pushNode(
 					entity.layer,
-					<Anchor
-						key={`${entity.id}:visual`}
-						point={point}
-						zIndex={1}
-						zoom={zoom}
-					>
-						<InteractionVisual
-							art={art}
-							entity={entity}
-							map={map}
+					<OverlayMarkerInteractionProvider key={entity.id}>
+						<Anchor
+							key={`${entity.id}:visual`}
+							point={point}
+							zIndex={1}
 							zoom={zoom}
-						/>
-					</Anchor>
-				);
-				pushNode(
-					entity.layer,
-					<Anchor
-						key={entity.id}
-						point={point}
-						zIndex={isSelected ? 10_000 : 8500}
-						zoom={zoom}
-					>
-						<ChipMarker
-							icon={getDayMapInteractionIcon(
-								entity.interaction.kind
-							)}
-							iconClassName={
-								DAY_MAP_LAYER_COLORS.interaction.icon
-							}
-							id={entity.id}
-							isLabelVisible={isLabelVisible}
-							isSelected={isSelected}
-							labelOffset={labelOffset}
-							name={name}
-							onSelect={onSelect}
-						/>
-					</Anchor>
+						>
+							<InteractionVisual
+								art={art}
+								entity={entity}
+								isSelected={isSelected}
+								map={map}
+								name={name}
+								onSelect={onSelect}
+								zoom={zoom}
+							/>
+						</Anchor>
+						{(isLabelVisible || isSelected) && (
+							<Anchor
+								key={entity.id}
+								point={point}
+								zIndex={isSelected ? 10_000 : 8500}
+								zoom={zoom}
+							>
+								<ChipMarker
+									icon={getDayMapInteractionIcon(
+										entity.interaction.kind
+									)}
+									iconClassName={
+										DAY_MAP_LAYER_COLORS.interaction.icon
+									}
+									id={entity.id}
+									isLabelVisible={isLabelVisible}
+									isSelected={isSelected}
+									labelOffset={labelOffset}
+									name={name}
+									onSelect={onSelect}
+								/>
+							</Anchor>
+						)}
+					</OverlayMarkerInteractionProvider>
 				);
 				break;
 			}
@@ -829,39 +1123,45 @@ export default memo<IProps>(function DayMapMarkers({
 						: getOverlayLabelOffset(art, sprite, zoom);
 				pushNode(
 					entity.layer,
-					<Anchor
-						key={`${entity.id}:visual`}
-						point={point}
-						zIndex={1}
-						zoom={zoom}
-					>
-						<TaskInteractionVisual
-							art={art}
-							entity={entity}
-							map={map}
+					<OverlayMarkerInteractionProvider key={entity.id}>
+						<Anchor
+							key={`${entity.id}:visual`}
+							point={point}
+							zIndex={1}
 							zoom={zoom}
-						/>
-					</Anchor>
-				);
-				pushNode(
-					entity.layer,
-					<Anchor
-						key={entity.id}
-						point={point}
-						zIndex={isSelected ? 10_000 : 7000}
-						zoom={zoom}
-					>
-						<ChipMarker
-							icon={getTaskIcon(entity.task.key)}
-							iconClassName={DAY_MAP_LAYER_COLORS.task.icon}
-							id={entity.id}
-							isLabelVisible={isLabelVisible}
-							isSelected={isSelected}
-							labelOffset={labelOffset}
-							name={name}
-							onSelect={onSelect}
-						/>
-					</Anchor>
+						>
+							<TaskInteractionVisual
+								art={art}
+								entity={entity}
+								isSelected={isSelected}
+								map={map}
+								name={name}
+								onSelect={onSelect}
+								zoom={zoom}
+							/>
+						</Anchor>
+						{(isLabelVisible || isSelected) && (
+							<Anchor
+								key={entity.id}
+								point={point}
+								zIndex={isSelected ? 10_000 : 7000}
+								zoom={zoom}
+							>
+								<ChipMarker
+									icon={getTaskIcon(entity.task.key)}
+									iconClassName={
+										DAY_MAP_LAYER_COLORS.task.icon
+									}
+									id={entity.id}
+									isLabelVisible={isLabelVisible}
+									isSelected={isSelected}
+									labelOffset={labelOffset}
+									name={name}
+									onSelect={onSelect}
+								/>
+							</Anchor>
+						)}
+					</OverlayMarkerInteractionProvider>
 				);
 				break;
 			}
@@ -873,42 +1173,50 @@ export default memo<IProps>(function DayMapMarkers({
 						: getOverlayLabelOffset(art, sprite, zoom);
 				pushNode(
 					entity.layer,
-					<Anchor
-						key={`${entity.id}:visual`}
-						point={point}
-						zIndex={1}
-						zoom={zoom}
-					>
-						<TeleportVisual
-							art={art}
-							index={entity.index}
-							map={map}
+					<OverlayMarkerInteractionProvider key={entity.id}>
+						<Anchor
+							key={`${entity.id}:visual`}
+							point={point}
+							zIndex={1}
 							zoom={zoom}
-						/>
-					</Anchor>
-				);
-				pushNode(
-					entity.layer,
-					<Anchor
-						key={entity.id}
-						point={point}
-						zIndex={isSelected ? 10_000 : 8000}
-						zoom={zoom}
-					>
-						<ChipMarker
-							icon={faWandMagicSparkles}
-							iconClassName={DAY_MAP_LAYER_COLORS.teleport.icon}
-							id={entity.id}
-							isLabelVisible={isLabelVisible}
-							isSelected={isSelected}
-							labelOffset={labelOffset}
-							name={name}
-							onDoubleClick={() => {
-								onQuickTravel(entity);
-							}}
-							onSelect={onSelect}
-						/>
-					</Anchor>
+						>
+							<TeleportVisual
+								art={art}
+								entity={entity}
+								index={entity.index}
+								isSelected={isSelected}
+								map={map}
+								name={name}
+								onQuickTravel={onQuickTravel}
+								onSelect={onSelect}
+								zoom={zoom}
+							/>
+						</Anchor>
+						{(isLabelVisible || isSelected) && (
+							<Anchor
+								key={entity.id}
+								point={point}
+								zIndex={isSelected ? 10_000 : 8000}
+								zoom={zoom}
+							>
+								<ChipMarker
+									icon={faWandMagicSparkles}
+									iconClassName={
+										DAY_MAP_LAYER_COLORS.teleport.icon
+									}
+									id={entity.id}
+									isLabelVisible={isLabelVisible}
+									isSelected={isSelected}
+									labelOffset={labelOffset}
+									name={name}
+									onDoubleClick={() => {
+										onQuickTravel(entity);
+									}}
+									onSelect={onSelect}
+								/>
+							</Anchor>
+						)}
+					</OverlayMarkerInteractionProvider>
 				);
 				break;
 			}
@@ -952,7 +1260,11 @@ export default memo<IProps>(function DayMapMarkers({
 							isSelected={isSelected}
 							name={t('maps.toTarget', { map: name })}
 							onDoubleClick={() => {
-								onQuickTravel(entity);
+								if (policy.mode === 'full') {
+									onQuickTravel(entity);
+								} else {
+									onRequestTransitionAccess(entity);
+								}
 							}}
 							onSelect={onSelect}
 						/>

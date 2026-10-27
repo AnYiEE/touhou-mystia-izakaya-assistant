@@ -6,6 +6,7 @@ import {
 	checkAccountCookieSecurityGuard,
 	checkAccountFeatureGuard,
 } from '@/features/account/server/http/guards';
+import { ADMIN_CLIENT_ERROR_MESSAGE_MAP } from '@/features/admin/copy';
 
 import { createCurrentRequest } from '@/infrastructure/http/server/currentRequest';
 
@@ -26,9 +27,11 @@ export type TAdminAuthInitialDataResult =
 export function getAdminAuthInitialDataMessage(
 	result: TAdminAuthInitialDataResult
 ) {
-	return result.error?.message === 'unauthorized'
-		? null
-		: (result.error?.message ?? null);
+	const message = result.error?.message;
+	if (message === undefined || message === 'unauthorized') {
+		return null;
+	}
+	return ADMIN_CLIENT_ERROR_MESSAGE_MAP[message] ?? message;
 }
 
 export async function readAdminAuthInitialData(

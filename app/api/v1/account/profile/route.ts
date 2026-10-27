@@ -2,7 +2,10 @@ import isObject from 'lodash/isObject.js';
 import { type NextRequest } from 'next/server';
 
 import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
-import type { IAccountProfileUpdateBody } from '@/features/account/contracts';
+import type {
+	IAccountProfileUpdateBody,
+	IAuthLoginSuccessResponse,
+} from '@/features/account/contracts';
 import { readJsonBodyResult } from '@/features/account/server/http/jsonBody';
 import {
 	checkAccountCookieSecurityRouteResponse,
@@ -12,6 +15,8 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+import { presentUserFeatureAccess } from '@/features/featureAccess/server/presentation';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import { createRetryAfterHeaders } from '@/infrastructure/http/headers';
@@ -199,11 +204,16 @@ export async function POST(request: NextRequest) {
 			httpStatusMap[result.message]
 		);
 	}
+	const featureAccess = await presentUserFeatureAccess(
+		auth.data.user.id,
+		readContentLocale(request)
+	);
 
 	return createNoStoreJsonResponse({
 		csrf_token: result.csrfToken,
+		feature_access: featureAccess,
 		has_password: auth.data.credential.password_set === 1,
 		password_must_change: auth.data.credential.password_must_change === 1,
 		user: userModule.createAccountUserProfile(result.user),
-	});
+	} satisfies IAuthLoginSuccessResponse);
 }

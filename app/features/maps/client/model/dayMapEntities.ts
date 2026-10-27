@@ -2,6 +2,7 @@ import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
+import { FishingCollectibleCatalog } from '@/domain/catalog/items/FishingCollectibleCatalog';
 import type { IBeverage } from '@/domain/data/beverages/schema';
 import type { TBeverageId } from '@/domain/data/beverages/types';
 import type { TCookerId } from '@/domain/data/cookers/types';
@@ -35,6 +36,7 @@ import {
 } from '@/domain/data/places/collectionYieldFacts';
 import type { TMerchantReference } from '@/domain/data/places/types';
 
+import { type TMapItemProduct } from '@/features/maps/client/model/mapsHistory';
 import {
 	getCharacterEntityId,
 	getCollectableEntityId,
@@ -115,7 +117,14 @@ export interface IDayMapFacilityEntity extends IDayMapEntityBase {
 	layer: 'facility';
 }
 
-export interface IDayMapFishingEntity extends IDayMapEntityBase {
+interface IDayMapFishingProducts {
+	advancedProducts: ReadonlyArray<TMapItemProduct>;
+	collectibles: ReadonlyArray<TMapItemProduct>;
+	normalProducts: ReadonlyArray<TMapItemProduct>;
+}
+
+export interface IDayMapFishingEntity
+	extends IDayMapEntityBase, IDayMapFishingProducts {
 	area: TDayMapRect;
 	index: number;
 	layer: 'fishing';
@@ -166,6 +175,63 @@ const COLLECTABLE_PRODUCTS_MAP = new Map<
 	TCollectableLabel,
 	ReadonlyArray<ICollectionPointYieldProduct>
 >(COLLECTION_POINT_YIELD_FACTS.map(({ label, products }) => [label, products]));
+
+function checkFishingMap(
+	from: object,
+	field: 'fishing' | 'fishingAdvanced',
+	map: TDayMapLabel
+) {
+	const fishingMaps =
+		field === 'fishing'
+			? 'fishing' in from
+				? from.fishing
+				: undefined
+			: 'fishingAdvanced' in from
+				? from.fishingAdvanced
+				: undefined;
+	return Array.isArray(fishingMaps) && fishingMaps.includes(map);
+}
+
+const getFishingProducts = memoize(function getFishingProducts(
+	map: TDayMapLabel
+): IDayMapFishingProducts {
+	const ingredientCatalog = IngredientCatalog.getInstance();
+	const beverageCatalog = BeverageCatalog.getInstance();
+	const fishingCollectibleCatalog = FishingCollectibleCatalog.getInstance();
+
+	return {
+		advancedProducts: [
+			...ingredientCatalog.canonicalData
+				.filter(({ from }) =>
+					checkFishingMap(from, 'fishingAdvanced', map)
+				)
+				.map(({ id }): TMapItemProduct => ({
+					productId: id,
+					productType: 1,
+				})),
+			...beverageCatalog.canonicalData
+				.filter(({ from }) =>
+					checkFishingMap(from, 'fishingAdvanced', map)
+				)
+				.map(({ id }): TMapItemProduct => ({
+					productId: id,
+					productType: 2,
+				})),
+		],
+		collectibles: fishingCollectibleCatalog.canonicalData
+			.filter((collectible) => collectible.map === map)
+			.map(({ id }): TMapItemProduct => ({
+				productId: id,
+				productType: 'trophy',
+			})),
+		normalProducts: ingredientCatalog.canonicalData
+			.filter(({ from }) => checkFishingMap(from, 'fishing', map))
+			.map(({ id }): TMapItemProduct => ({
+				productId: id,
+				productType: 1,
+			})),
+	};
+});
 
 export function toContentPoint(
 	art: IDayMapArt,
@@ -277,15 +343,22 @@ export const buildDayMapEntities = /* @__PURE__ */ memoize(
 			});
 		});
 
-		layout.fishingAreas.forEach(({ area }, index) => {
-			entities.push({
-				area,
-				id: getFishingEntityId(index),
-				index,
-				layer: 'fishing',
-				position: [(area[0] + area[2]) / 2, (area[1] + area[3]) / 2],
+		if (layout.fishingAreas.length > 0) {
+			const fishingProducts = getFishingProducts(map);
+			layout.fishingAreas.forEach(({ area }, index) => {
+				entities.push({
+					...fishingProducts,
+					area,
+					id: getFishingEntityId(index),
+					index,
+					layer: 'fishing',
+					position: [
+						(area[0] + area[2]) / 2,
+						(area[1] + area[3]) / 2,
+					],
+				});
 			});
-		});
+		}
 
 		const facility = DAY_MAP_COLLABORATION_TERMINAL;
 		if (facility.map === map) {

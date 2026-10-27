@@ -2,7 +2,7 @@ import nextEnv from '@next/env';
 import assert from 'node:assert/strict';
 import { type ChildProcess, spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { access } from 'node:fs/promises';
+import { access, cp, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { relative, resolve } from 'node:path';
 import { argv, cwd, execPath } from 'node:process';
@@ -32,7 +32,8 @@ import {
 	restoreStaticRouterReplacement,
 } from './offlinePackage/routerReplacement';
 
-export type TBuildStage = 'babel-transform' | 'next-build' | 'service-worker';
+export type TBuildStage =
+	'babel-transform' | 'map-assets' | 'next-build' | 'service-worker';
 
 interface IBuildCoordinatorOptions {
 	clearBuildIdentity: () => void;
@@ -50,6 +51,7 @@ interface IBuildCoordinatorOptions {
 }
 
 const BUILD_STAGES = [
+	'map-assets',
 	'service-worker',
 	'next-build',
 	'babel-transform',
@@ -235,6 +237,12 @@ async function main() {
 	const isSelfHosted = checkEnvironmentFlag(process.env.SELF_HOSTED);
 	const isVercel = checkEnvironmentFlag(process.env.VERCEL);
 	const runtimeEnabled = isSelfHosted && !isVercel && !isOffline;
+	if (!isVercel) {
+		await rm(resolve(projectDirectory, 'public/assets/maps'), {
+			force: true,
+			recursive: true,
+		});
+	}
 	const staticExportPaths =
 		!isSelfHosted && !isVercel && !isOffline
 			? getOfflinePackagePaths()
@@ -243,6 +251,7 @@ async function main() {
 	let activeChild: ChildProcess | null = null;
 	const stageCommands = {
 		'babel-transform': ['tsx', ['scripts/build/babelTransform.ts']],
+		'map-assets': ['tsx', ['scripts/assets/maps/generatePreviewAssets.ts']],
 		'next-build': ['next', ['build']],
 		'service-worker': ['tsx', ['scripts/build/serviceWorker/generate.ts']],
 	} as const satisfies Record<
@@ -350,6 +359,18 @@ async function main() {
 				writeSiteStatusBuildIdentity(projectDirectory, value);
 			},
 		});
+		if (staticExportPaths !== null) {
+			const outputMapAssetsPath = resolve(
+				staticExportPaths.outputPath,
+				'assets/maps'
+			);
+			await rm(outputMapAssetsPath, { force: true, recursive: true });
+			await cp(
+				resolve(projectDirectory, 'app/assets/maps'),
+				outputMapAssetsPath,
+				{ recursive: true }
+			);
+		}
 	} catch (error) {
 		if (signalState.received === null) {
 			console.error(

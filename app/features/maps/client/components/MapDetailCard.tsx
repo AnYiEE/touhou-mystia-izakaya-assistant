@@ -36,6 +36,7 @@ import {
 	appShellMessages,
 } from '@/features/appShell/client/messages';
 import { GUEST_INFO_QUERY_PARAM } from '@/features/catalog/guests/shared/navigation';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import { SPECIAL_GUEST_TAG_STYLE } from '@/features/catalog/presentation/tagStyles';
 import Tags from '@/features/catalog/shared/client/components/Tags';
 import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
@@ -60,6 +61,7 @@ import {
 import {
 	type IDayMapCharacterEntity,
 	type IDayMapCollectableEntity,
+	type IDayMapFishingEntity,
 	type IDayMapInteractionEntity,
 	type IDayMapPrayerEntity,
 	type IDayMapTaskEntity,
@@ -83,12 +85,15 @@ import { useI18n } from '@/shared/i18n/useI18n';
 
 import DayMapEntityIcon from './DayMapEntityIcon';
 import MapCatalogItems from './MapCatalogItems';
+import MapFullAccessButton from './MapFullAccessButton';
 import MapItemPopover from './MapItemPopover';
 import ProductSprite from './ProductSprite';
 
 interface IProps {
+	accessPromptRequest: number | null;
 	entity: TDayMapEntity;
 	map: TDayMapLabel;
+	onAccessPromptOpened: () => void;
 	onClose: () => void;
 	onFocusPoint: (point: TDayMapPoint) => void;
 	onGoTo: (map: TDayMapLabel, arrival: TDayMapPoint | null) => void;
@@ -218,6 +223,7 @@ const PrayerDetail = memo(function PrayerDetail({
 							className="flex w-full items-center gap-2 px-1 py-0.5 text-left"
 						>
 							<ProductSprite
+								isDecorative
 								product={reward}
 								size={1.5}
 								className="shrink-0"
@@ -237,6 +243,117 @@ const PrayerDetail = memo(function PrayerDetail({
 			</ul>
 			<p>{t('maps.detail.itemHint')}</p>
 		</Section>
+	);
+});
+
+const FishingProductIcons = memo(function FishingProductIcons({
+	entityId,
+	onPopoverOpenChange,
+	products,
+	restoredItemKey,
+}: Pick<IProps, 'onPopoverOpenChange' | 'restoredItemKey'> & {
+	entityId: IDayMapFishingEntity['id'];
+	products: IDayMapFishingEntity['normalProducts'];
+}) {
+	useCatalogLocalizationRevision();
+
+	return (
+		<div className="-mx-0.5 flex flex-wrap">
+			{products.map((product) => {
+				const key = getMapItemKey(product);
+				return (
+					<MapItemPopover
+						key={key}
+						defaultOpen={key === restoredItemKey}
+						entityId={entityId}
+						product={product}
+						onOpenChange={onPopoverOpenChange}
+						// A flex box drops the line box, so the button stays square.
+						className="flex p-0.5"
+					>
+						<ProductSprite product={product} size={1.75} />
+					</MapItemPopover>
+				);
+			})}
+		</div>
+	);
+});
+
+const FishingProductGroup = memo(function FishingProductGroup({
+	label,
+	...props
+}: Pick<IProps, 'onPopoverOpenChange' | 'restoredItemKey'> & {
+	entityId: IDayMapFishingEntity['id'];
+	label: string;
+	products: IDayMapFishingEntity['normalProducts'];
+}) {
+	return (
+		<div className="space-y-1">
+			<p className="font-medium text-default-600">{label}</p>
+			<FishingProductIcons {...props} />
+		</div>
+	);
+});
+
+const FishingDetail = memo(function FishingDetail({
+	entity,
+	onPopoverOpenChange,
+	restoredItemKey,
+}: Pick<IProps, 'onPopoverOpenChange' | 'restoredItemKey'> & {
+	entity: IDayMapFishingEntity;
+}) {
+	const { t } = useI18n(mapsMessages);
+	const { t: tCatalogItems } = useI18n(catalogItemsMessages);
+	const { t: tAppShell } = useI18n(appShellMessages);
+
+	const { advancedProducts, collectibles, id, normalProducts } = entity;
+	const hasFishingProducts =
+		normalProducts.length > 0 || advancedProducts.length > 0;
+
+	return (
+		<>
+			{hasFishingProducts && (
+				<Section label={t('maps.detail.products')}>
+					<div className="space-y-2">
+						{normalProducts.length > 0 && (
+							<FishingProductGroup
+								label={tCatalogItems(
+									'items.source.fishingRod.normal'
+								)}
+								entityId={id}
+								products={normalProducts}
+								restoredItemKey={restoredItemKey}
+								onPopoverOpenChange={onPopoverOpenChange}
+							/>
+						)}
+						{advancedProducts.length > 0 && (
+							<FishingProductGroup
+								label={tCatalogItems(
+									'items.source.fishingRod.super'
+								)}
+								entityId={id}
+								products={advancedProducts}
+								restoredItemKey={restoredItemKey}
+								onPopoverOpenChange={onPopoverOpenChange}
+							/>
+						)}
+					</div>
+				</Section>
+			)}
+			{collectibles.length > 0 && (
+				<Section label={tAppShell('appShell.nav.fishingCollectibles')}>
+					<FishingProductIcons
+						entityId={id}
+						products={collectibles}
+						restoredItemKey={restoredItemKey}
+						onPopoverOpenChange={onPopoverOpenChange}
+					/>
+				</Section>
+			)}
+			{(hasFishingProducts || collectibles.length > 0) && (
+				<p>{t('maps.detail.itemHint')}</p>
+			)}
+		</>
 	);
 });
 
@@ -315,6 +432,7 @@ const InteractionDetail = memo(function InteractionDetail({
 }: Pick<IProps, 'onPopoverOpenChange'> & { entity: IDayMapInteractionEntity }) {
 	const { t } = useI18n(mapsMessages);
 	const { t: tAppShell } = useI18n(appShellMessages);
+
 	const { kind } = entity.interaction;
 	const catalogItem = getInteractionCatalogItem(kind);
 	const catalogPath = getInteractionCatalogPath(kind);
@@ -416,6 +534,7 @@ const CollectableDetail = memo(function CollectableDetail({
 							className="flex w-full items-center gap-2 px-1 py-0.5 text-left"
 						>
 							<ProductSprite
+								isDecorative
 								product={product}
 								size={1.5}
 								className="shrink-0"
@@ -465,8 +584,8 @@ const SpecialGuestDetail = memo(function SpecialGuestDetail({
 		trackMapEvent('Map Entity Button', `View Guest:${guest}`);
 	}, [guest]);
 
-	const { t } = useI18n(mapsMessages);
 	const localizationRevision = useCatalogLocalizationRevision();
+	const { t } = useI18n(mapsMessages);
 
 	const tagGroups = useMemo(() => {
 		void localizationRevision;
@@ -530,9 +649,9 @@ const PartnerDetail = memo(function PartnerDetail({
 }: {
 	partner: TPartnerId;
 }) {
+	useCatalogLocalizationRevision();
 	const { t } = useI18n(mapsMessages);
 	const openWindow = useViewInNewWindow();
-	useCatalogLocalizationRevision();
 
 	const name = partnerCatalog.getDisplayPropsById(partner, 'name');
 	const handleViewPartner = useCallback(() => {
@@ -550,6 +669,35 @@ const PartnerDetail = memo(function PartnerDetail({
 		>
 			{t('maps.detail.viewPartner')}
 		</Button>
+	);
+});
+
+const OtherMapPlaceButton = memo(function OtherMapPlaceButton({
+	entityId,
+	map,
+	onPopoverOpenChange,
+	onShowCharacter,
+	point,
+}: {
+	entityId: string;
+	map: TDayMapLabel;
+	onPopoverOpenChange: IProps['onPopoverOpenChange'];
+	onShowCharacter: IProps['onShowCharacter'];
+	point: TDayMapPoint;
+}) {
+	return (
+		<MapFullAccessButton
+			onPopoverOpenChange={onPopoverOpenChange}
+			endContent={<FontAwesomeIcon icon={faArrowRight} size="xs" />}
+			size="sm"
+			variant="flat"
+			onAllowed={() => {
+				onShowCharacter(map, entityId, point);
+			}}
+			className="h-7 min-w-0 px-2 text-tiny"
+		>
+			{getDayMapLabel(map)}
+		</MapFullAccessButton>
 	);
 });
 
@@ -708,27 +856,14 @@ const CharacterDetail = memo(function CharacterDetail({
 				<Section label={t('maps.detail.otherPlaces')}>
 					<div className="flex flex-wrap gap-1">
 						{otherPlaces.map((destination) => (
-							<Button
+							<OtherMapPlaceButton
 								key={destination.map}
-								size="sm"
-								variant="flat"
-								endContent={
-									<FontAwesomeIcon
-										icon={faArrowRight}
-										size="xs"
-									/>
-								}
-								onPress={() => {
-									onShowCharacter(
-										destination.map,
-										id,
-										destination.position
-									);
-								}}
-								className="h-7 min-w-0 px-2 text-tiny"
-							>
-								{getDayMapLabel(destination.map)}
-							</Button>
+								entityId={id}
+								map={destination.map}
+								onPopoverOpenChange={onPopoverOpenChange}
+								onShowCharacter={onShowCharacter}
+								point={destination.position}
+							/>
 						))}
 					</div>
 				</Section>
@@ -771,10 +906,17 @@ const CollaborationDetail = memo(function CollaborationDetail({
 });
 
 const TransitionDetail = memo(function TransitionDetail({
+	accessPromptRequest,
 	entity,
 	name,
+	onAccessPromptOpened,
 	onGoTo,
-}: Pick<IProps, 'onGoTo'> & { entity: IDayMapTransitionEntity; name: string }) {
+	onPopoverOpenChange,
+}: Pick<IProps, 'onAccessPromptOpened' | 'onGoTo' | 'onPopoverOpenChange'> & {
+	accessPromptRequest: number | null;
+	entity: IDayMapTransitionEntity;
+	name: string;
+}) {
 	const { t } = useI18n(mapsMessages);
 
 	const {
@@ -794,15 +936,18 @@ const TransitionDetail = memo(function TransitionDetail({
 	return (
 		<>
 			<p>{t('maps.detail.arrival', { map: name })}</p>
-			<Button
+			<MapFullAccessButton
+				autoOpenRequest={accessPromptRequest}
+				onAutoOpen={onAccessPromptOpened}
+				onPopoverOpenChange={onPopoverOpenChange}
 				fullWidth
 				color="primary"
 				size="sm"
 				endContent={<FontAwesomeIcon icon={faArrowRight} />}
-				onPress={handleGoTo}
+				onAllowed={handleGoTo}
 			>
 				{t('maps.detail.goTo', { map: name })}
-			</Button>
+			</MapFullAccessButton>
 			<p>{t('maps.detail.doubleClickTransition', { map: name })}</p>
 		</>
 	);
@@ -890,8 +1035,10 @@ const EntityFields = memo(function EntityFields({
 });
 
 export default memo<IProps>(function MapDetailCard({
+	accessPromptRequest,
 	entity,
 	map,
+	onAccessPromptOpened,
 	onClose,
 	onFocusPoint,
 	onGoTo,
@@ -988,9 +1135,12 @@ export default memo<IProps>(function MapDetailCard({
 				)}
 				{entity.layer === 'transition' && (
 					<TransitionDetail
+						accessPromptRequest={accessPromptRequest ?? null}
 						entity={entity}
 						name={name}
+						onAccessPromptOpened={onAccessPromptOpened}
 						onGoTo={onGoTo}
+						onPopoverOpenChange={onPopoverOpenChange}
 					/>
 				)}
 				{entity.layer === 'teleport' && (
@@ -1018,7 +1168,11 @@ export default memo<IProps>(function MapDetailCard({
 					</>
 				)}
 				{entity.layer === 'fishing' && (
-					<p>{t('maps.detail.fishing')}</p>
+					<FishingDetail
+						entity={entity}
+						onPopoverOpenChange={onPopoverOpenChange}
+						restoredItemKey={restoredItemKey}
+					/>
 				)}
 				{entity.layer === 'facility' && (
 					<CollaborationDetail

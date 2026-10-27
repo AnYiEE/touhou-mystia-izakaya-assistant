@@ -7,6 +7,7 @@ import {
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import {
 	createNoStoreErrorResponse,
@@ -42,28 +43,48 @@ export async function GET(request: NextRequest) {
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;
 	}
+	const locale = readContentLocale(request);
 
-	const [authModule, csrfModule, userModule, userStateModule] =
-		await Promise.all([
-			import('@/features/account/server/auth/requestAuthentication'),
-			import('@/features/account/server/auth/csrf'),
-			import('@/features/account/server/presentation/user'),
-			import('@/features/account/sync/server'),
-		]);
+	const [
+		authModule,
+		csrfModule,
+		featureAccessModule,
+		userModule,
+		userStateModule,
+	] = await Promise.all([
+		import('@/features/account/server/auth/requestAuthentication'),
+		import('@/features/account/server/auth/csrf'),
+		import('@/features/featureAccess/server/presentation'),
+		import('@/features/account/server/presentation/user'),
+		import('@/features/account/sync/server'),
+	]);
 	const auth = await authModule.authenticateAccountFromRequestWithTransaction(
 		request,
-		(trx, account) =>
-			userStateModule.getUserStateSnapshotInTransaction(trx, {
-				credential: account.credential,
-				namespaces: null,
-				user: account.user,
-			}),
+		async (trx, account) => {
+			const [featureAccess, stateSnapshot] = await Promise.all([
+				featureAccessModule.presentUserFeatureAccessInTransaction(
+					trx,
+					account.user.id,
+					locale
+				),
+				userStateModule.getUserStateSnapshotInTransaction(trx, {
+					credential: account.credential,
+					namespaces: null,
+					user: account.user,
+				}),
+			]);
+			return { featureAccess, stateSnapshot };
+		},
 		true
 	);
 	if (auth.status === 'error') {
 		if (auth.message === 'unauthorized') {
 			return createNoStoreJsonResponse({
 				csrf_token: null,
+				feature_access:
+					await featureAccessModule.presentAnonymousFeatureAccess(
+						locale
+					),
 				featureEnabled: true,
 				has_password: false,
 				isLoggedIn: false,
@@ -77,7 +98,7 @@ export async function GET(request: NextRequest) {
 		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
 	}
 
-	const stateSnapshot = auth.result;
+	const { featureAccess, stateSnapshot } = auth.result;
 	const revisions = stateSnapshot.records.reduce<Record<string, number>>(
 		(result, namespace) => {
 			result[namespace.namespace] = namespace.revision;
@@ -88,6 +109,7 @@ export async function GET(request: NextRequest) {
 
 	return createNoStoreJsonResponse({
 		csrf_token: csrfModule.createCsrfToken(auth.data.sessionTokenHash),
+		feature_access: featureAccess,
 		featureEnabled: true,
 		has_password: stateSnapshot.credential.password_set === 1,
 		isLoggedIn: true,

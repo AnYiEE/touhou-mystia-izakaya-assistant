@@ -11,6 +11,8 @@ import {
 	checkSsoCodeVerifier,
 	checkSsoTicketFormat,
 } from '@/features/account/sso/server/validation';
+import { createFeatureAccessDecisionErrorResponse } from '@/features/featureAccess/server/requireFeatureAccess';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
@@ -88,6 +90,7 @@ export async function POST(request: NextRequest) {
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;
 	}
+	const locale = readContentLocale(request);
 
 	try {
 		const ssoModule = await import('@/features/account/sso/server');
@@ -95,7 +98,8 @@ export async function POST(request: NextRequest) {
 			clientId,
 			clientSecret,
 			ticket,
-			codeVerifier
+			codeVerifier,
+			locale
 		);
 		switch (validation.status) {
 			case 'client-disabled':
@@ -140,6 +144,18 @@ export async function POST(request: NextRequest) {
 			}
 			case 'validated': {
 				const validationResult = validation.validation;
+				if (validationResult.feature_access_denial !== null) {
+					return (
+						createFeatureAccessDecisionErrorResponse(
+							validationResult.feature_access_denial,
+							locale
+						) ??
+						createNoStoreErrorResponse(
+							HTTP_API_RESPONSE_CODE_MAP.forbidden,
+							403
+						)
+					);
+				}
 				if (validationResult.user_error !== null) {
 					return createNoStoreErrorResponse(
 						validationResult.user_error,

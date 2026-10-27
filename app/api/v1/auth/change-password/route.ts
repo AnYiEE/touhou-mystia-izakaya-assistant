@@ -14,6 +14,7 @@ import {
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
 import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import { createRetryAfterHeaders } from '@/infrastructure/http/headers';
@@ -76,12 +77,14 @@ export async function POST(request: NextRequest) {
 		csrfModule,
 		userModule,
 		changePasswordModule,
+		featureAccessModule,
 	] = await Promise.all([
 		import('@/features/account/server/auth/password'),
 		import('@/features/account/server/auth/requestAuthentication'),
 		import('@/features/account/server/auth/accountCsrf'),
 		import('@/features/account/server/presentation/user'),
 		import('@/features/account/server/useCases/changePassword'),
+		import('@/features/featureAccess/server/presentation'),
 	]);
 
 	const auth = await authModule.authenticateAccountFromRequest(request, true);
@@ -142,9 +145,14 @@ export async function POST(request: NextRequest) {
 						: 500;
 		return createNoStoreErrorResponse(result.message, status);
 	}
+	const featureAccess = await featureAccessModule.presentUserFeatureAccess(
+		auth.data.user.id,
+		readContentLocale(request)
+	);
 
 	return createNoStoreJsonResponse({
 		csrf_token: result.csrfToken,
+		feature_access: featureAccess,
 		has_password: true,
 		password_must_change: false,
 		user: userModule.createAccountUserProfile(auth.data.user),

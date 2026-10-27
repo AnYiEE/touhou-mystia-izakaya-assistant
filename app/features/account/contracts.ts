@@ -6,6 +6,7 @@ import {
 	type TSsoGrantEvent,
 	type TUserStatus,
 } from '@/domain/account/contracts';
+import type { IFeatureAccessResponse } from '@/domain/featureAccess/contracts';
 
 import type { TLocale } from '@/shared/i18n/locale';
 
@@ -29,6 +30,7 @@ export interface IAuthLoginBody {
 
 export interface IAuthLoginSuccessResponse {
 	csrf_token: string;
+	feature_access: IFeatureAccessResponse;
 	has_password: boolean;
 	password_must_change: boolean;
 	user: IAccountUserProfile;
@@ -36,6 +38,7 @@ export interface IAuthLoginSuccessResponse {
 
 export interface IAccountMeSuccessResponse {
 	csrf_token: string;
+	feature_access: IFeatureAccessResponse;
 	featureEnabled: true;
 	has_password: boolean;
 	isLoggedIn: true;
@@ -47,6 +50,7 @@ export interface IAccountMeSuccessResponse {
 
 export interface IAccountMeAnonymousResponse {
 	csrf_token: null;
+	feature_access: IFeatureAccessResponse;
 	featureEnabled: true;
 	has_password: false;
 	isLoggedIn: false;

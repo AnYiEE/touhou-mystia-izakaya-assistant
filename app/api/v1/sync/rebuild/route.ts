@@ -11,7 +11,6 @@ import {
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
-import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 import { ACCOUNT_SYNC_API_RESPONSE_CODE_MAP } from '@/features/account/sync/apiResponseCodes';
 import { checkSyncProtocolRequestBody } from '@/features/account/sync/protocol';
 import { getAccountSyncCapacityConfiguration } from '@/features/account/sync/server/capacity';
@@ -28,6 +27,10 @@ import {
 	checkSyncStateRebuildChanges,
 	parseSyncStatePutBody,
 } from '@/features/account/sync/validation';
+import {
+	createFeatureAccessGuardErrorResponse,
+	requireFeatureAccess,
+} from '@/features/featureAccess/server/requireFeatureAccess';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
@@ -77,13 +80,19 @@ export async function POST(request: NextRequest) {
 		return preAuthRateLimitResponse;
 	}
 
-	const [authModule, csrfModule] = await Promise.all([
-		import('@/features/account/server/auth/requestAuthentication'),
+	const [csrfModule, featureAccess] = await Promise.all([
 		import('@/features/account/server/auth/accountCsrf'),
+		requireFeatureAccess(request, 'account.sync'),
 	]);
-	const auth = await authModule.authenticateAccountFromRequest(request);
-	if (auth.status === 'error') {
-		return createAccountAuthErrorRouteResponse(auth, request);
+	if (featureAccess.status === 'error') {
+		return createFeatureAccessGuardErrorResponse(featureAccess);
+	}
+	const { account } = featureAccess;
+	if (account === null) {
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
@@ -92,7 +101,7 @@ export async function POST(request: NextRequest) {
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;
 	}
-	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
+	if (!csrfModule.verifyAccountCsrf(request, account.sessionTokenHash)) {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.forbidden,
 			403
@@ -135,21 +144,21 @@ export async function POST(request: NextRequest) {
 			400
 		);
 	}
-	if (auth.data.user.sync_status !== ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+	if (account.user.sync_status !== ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
 		return createNoStoreErrorResponse(
 			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.notPaused,
 			409,
 			{
-				state_epoch: auth.data.user.state_epoch,
-				sync_generation: auth.data.user.sync_generation,
-				sync_status: auth.data.user.sync_status,
+				state_epoch: account.user.state_epoch,
+				sync_generation: account.user.sync_generation,
+				sync_status: account.user.sync_status,
 			}
 		);
 	}
 
 	const updatedAt = Date.now();
 	const entries = body.changes.map((change) =>
-		createUserStateRecord(auth.data.user.id, change, 1, updatedAt)
+		createUserStateRecord(account.user.id, change, 1, updatedAt)
 	);
 	if (entries.includes(null)) {
 		return createNoStoreErrorResponse(
@@ -165,8 +174,8 @@ export async function POST(request: NextRequest) {
 		entries.filter((entry) => entry !== null),
 		body.state_epoch,
 		body.sync_generation,
-		auth.data.session,
-		auth.data.user.id,
+		account.session,
+		account.user.id,
 		(trx, now, stateEpoch, syncGeneration, totalBytes) =>
 			accountAuditModule.writeAccountAuditLogInTransaction(
 				trx,
@@ -180,7 +189,7 @@ export async function POST(request: NextRequest) {
 						total_bytes: totalBytes,
 					},
 					request,
-					userId: auth.data.user.id,
+					userId: account.user.id,
 				}),
 				now
 			)

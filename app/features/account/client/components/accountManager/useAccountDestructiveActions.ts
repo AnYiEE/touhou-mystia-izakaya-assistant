@@ -58,6 +58,7 @@ type TLogoutAfterFlushResult =
 interface IUseAccountDestructiveActionsOptions {
 	controller: IAccountActionController;
 	csrfToken: string | null;
+	isAccountSyncAllowed: boolean;
 	user: IAccountUserProfile | null;
 	vibrate: () => void;
 }
@@ -83,6 +84,7 @@ export function useAccountDestructiveActions(
 	const {
 		controller: { isSubmitting, setIsSubmitting, setMessage },
 		csrfToken,
+		isAccountSyncAllowed,
 		user,
 		vibrate,
 	} = options;
@@ -211,7 +213,12 @@ export function useAccountDestructiveActions(
 	}, [logoutAfterFlush]);
 
 	const handleDeleteData = useCallback(() => {
-		if (csrfToken === null || isSubmitting || user === null) {
+		if (
+			!isAccountSyncAllowed ||
+			csrfToken === null ||
+			isSubmitting ||
+			user === null
+		) {
 			return;
 		}
 
@@ -386,6 +393,7 @@ export function useAccountDestructiveActions(
 			});
 	}, [
 		csrfToken,
+		isAccountSyncAllowed,
 		isSubmitting,
 		locale,
 		setIsSubmitting,

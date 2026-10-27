@@ -1,5 +1,5 @@
 import { shouldPrerenderRecordRoutes } from '@/features/appShell/navigation/recordRouteStaticParams';
-import MapsPage from '@/features/maps/client/components/MapsPage';
+import MapsPageEntry from '@/features/maps/client/components/MapsPageEntry';
 import { ALL_DAY_MAP_LABELS } from '@/features/maps/client/model/dayMapLabels';
 
 export function generateStaticParams() {
@@ -12,5 +12,5 @@ export function generateStaticParams() {
 }
 
 export default function Maps() {
-	return <MapsPage />;
+	return <MapsPageEntry />;
 }

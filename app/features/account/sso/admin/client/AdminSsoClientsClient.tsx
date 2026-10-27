@@ -621,7 +621,7 @@ export default function AdminSsoClientsClient({
 			{message !== null && <AdminMessage message={message} />}
 
 			{clients === null ? (
-				<AdminEmptyState icon={faClock}>
+				<AdminEmptyState isLoading icon={faClock}>
 					{ADMIN_SSO_MESSAGE_MAP.clientListReading}
 				</AdminEmptyState>
 			) : clients.clients.length === 0 ? (

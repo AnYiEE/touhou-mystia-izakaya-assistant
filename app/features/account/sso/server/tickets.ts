@@ -1,8 +1,14 @@
 import { type Transaction } from 'kysely';
 
+import {
+	type IEffectiveFeatureAccess,
+	createSsoAppFeatureModuleKey,
+} from '@/domain/featureAccess/contracts';
+
 import type { TAuthenticatedSessionIdentity } from '@/features/account/server/persistence/contracts';
 import { getAccountDatabase } from '@/features/account/server/persistence/database';
 import { lockActiveUserSessionInTransaction } from '@/features/account/server/persistence/repositories/sessions';
+import { evaluateFeatureAccessForUserInTransaction } from '@/features/featureAccess/server/accessService';
 
 import type {
 	TDatabase,
@@ -11,6 +17,8 @@ import type {
 	TUser,
 } from '@/infrastructure/database/schema';
 import { TABLE_NAME_MAP } from '@/infrastructure/database/tableNames';
+
+import { DEFAULT_LOCALE, type TLocale } from '@/shared/i18n/locale';
 
 import {
 	listActiveSsoClientSecretHashesInTransaction,
@@ -41,6 +49,7 @@ const USER_TABLE_NAME = TABLE_NAME_MAP.user;
 export type TSsoTicketValidationUserError = 'user-deleted' | 'user-disabled';
 
 export interface ISsoTicketValidationResult {
+	feature_access_denial: IEffectiveFeatureAccess | null;
 	ticket: TSsoTicket;
 	user: TUser | null;
 	user_error: TSsoTicketValidationUserError | null;
@@ -58,7 +67,8 @@ export async function createSsoTicket(
 	redirectUri: string,
 	codeChallenge: string,
 	session: TAuthenticatedSessionIdentity,
-	writeAuditLog?: (trx: Transaction<TDatabase>, now: number) => Promise<void>
+	writeAuditLog?: (trx: Transaction<TDatabase>, now: number) => Promise<void>,
+	locale: TLocale = DEFAULT_LOCALE
 ) {
 	if (
 		!checkSsoClientId(clientId) ||
@@ -73,9 +83,36 @@ export async function createSsoTicket(
 	const ticket = createSsoTicketToken(SSO_TICKET_BYTE_LENGTH);
 	const ticketHash = hashSsoTicket(ticket);
 
-	const didCreate = await db.transaction().execute(async (trx) => {
+	const result = await db.transaction().execute(async (trx) => {
 		if (!(await lockActiveUserSessionInTransaction(trx, userId, session))) {
-			return false;
+			return { status: 'unauthorized' as const };
+		}
+		const client = await trx
+			.selectFrom(CLIENT_TABLE_NAME)
+			.select(['deleted_at', 'disabled_at'])
+			.where('id', '=', clientId)
+			.executeTakeFirst();
+		if (client === undefined) {
+			return { status: 'invalid-client' as const };
+		}
+		if (client.deleted_at !== null || client.disabled_at !== null) {
+			return { status: 'invalid-client' as const };
+		}
+		const access = await evaluateFeatureAccessForUserInTransaction(
+			trx,
+			userId,
+			locale
+		);
+		const ssoUseAccess = access['sso.use'];
+		const appAccess = (access as Partial<typeof access>)[
+			createSsoAppFeatureModuleKey(clientId)
+		];
+		const deniedAccess = ssoUseAccess.allowed ? appAccess : ssoUseAccess;
+		if (deniedAccess?.allowed !== true) {
+			return {
+				access: deniedAccess ?? null,
+				status: 'feature-access-denied' as const,
+			};
 		}
 		await trx
 			.insertInto(TICKET_TABLE_NAME)
@@ -92,12 +129,10 @@ export async function createSsoTicket(
 			.execute();
 
 		await writeAuditLog?.(trx, now);
-		return true;
+		return { status: 'ok' as const };
 	});
 
-	return didCreate
-		? { status: 'ok' as const, ticket }
-		: { status: 'unauthorized' as const };
+	return result.status === 'ok' ? { status: 'ok' as const, ticket } : result;
 }
 
 async function validateSsoTicketInTransaction(
@@ -105,7 +140,8 @@ async function validateSsoTicketInTransaction(
 	clientId: string,
 	ticket: string,
 	codeVerifier: string,
-	now: number
+	now: number,
+	locale: TLocale
 ): Promise<ISsoTicketValidationResult | null> {
 	const ticketHash = hashSsoTicket(ticket);
 	const record =
@@ -127,6 +163,50 @@ async function validateSsoTicketInTransaction(
 		return null;
 	}
 
+	const user =
+		(await trx
+			.selectFrom(USER_TABLE_NAME)
+			.selectAll()
+			.where('id', '=', record.user_id)
+			.executeTakeFirst()) ?? null;
+	if (user === null) {
+		return {
+			feature_access_denial: null,
+			ticket: record,
+			user,
+			user_error: 'user-deleted' as const,
+		};
+	}
+
+	const userError = getSsoUserStatusError(user);
+	if (userError !== null) {
+		return {
+			feature_access_denial: null,
+			ticket: record,
+			user,
+			user_error: userError,
+		};
+	}
+
+	const access = await evaluateFeatureAccessForUserInTransaction(
+		trx,
+		user.id,
+		locale
+	);
+	const ssoUseAccess = access['sso.use'];
+	const appAccess = (access as Partial<typeof access>)[
+		createSsoAppFeatureModuleKey(clientId)
+	];
+	const deniedAccess = ssoUseAccess.allowed ? appAccess : ssoUseAccess;
+	if (deniedAccess?.allowed !== true) {
+		return {
+			feature_access_denial: deniedAccess ?? null,
+			ticket: record,
+			user,
+			user_error: null,
+		};
+	}
+
 	const result = await trx
 		.updateTable(TICKET_TABLE_NAME)
 		.set({ used_at: now })
@@ -138,21 +218,6 @@ async function validateSsoTicketInTransaction(
 		.executeTakeFirst();
 	if (result.numUpdatedRows !== 1n) {
 		return null;
-	}
-
-	const user =
-		(await trx
-			.selectFrom(USER_TABLE_NAME)
-			.selectAll()
-			.where('id', '=', record.user_id)
-			.executeTakeFirst()) ?? null;
-	if (user === null) {
-		return { ticket: record, user, user_error: 'user-deleted' };
-	}
-
-	const userError = getSsoUserStatusError(user);
-	if (userError !== null) {
-		return { ticket: record, user, user_error: userError };
 	}
 
 	const existingGrant = await trx
@@ -193,13 +258,19 @@ async function validateSsoTicketInTransaction(
 		} satisfies TSsoGrantEventNew)
 		.execute();
 
-	return { ticket: record, user, user_error: null };
+	return {
+		feature_access_denial: null,
+		ticket: record,
+		user,
+		user_error: null,
+	};
 }
 
 export async function validateSsoTicket(
 	clientId: string,
 	ticket: string,
-	codeVerifier: string
+	codeVerifier: string,
+	locale: TLocale = DEFAULT_LOCALE
 ): Promise<ISsoTicketValidationResult | null> {
 	if (
 		!checkSsoClientId(clientId) ||
@@ -220,7 +291,8 @@ export async function validateSsoTicket(
 				clientId,
 				ticket,
 				codeVerifier,
-				now
+				now,
+				locale
 			)
 		);
 }
@@ -229,7 +301,8 @@ export async function validateSsoTicketWithClientSecret(
 	clientId: string,
 	clientSecret: string,
 	ticket: string,
-	codeVerifier: string
+	codeVerifier: string,
+	locale: TLocale = DEFAULT_LOCALE
 ): Promise<TSsoTicketWithClientSecretValidationResult> {
 	if (!checkSsoClientId(clientId) || !checkSsoClientSecret(clientSecret)) {
 		return { status: 'invalid-client' };
@@ -275,7 +348,8 @@ export async function validateSsoTicketWithClientSecret(
 			clientId,
 			ticket,
 			codeVerifier,
-			now
+			now,
+			locale
 		);
 
 		return validation === null

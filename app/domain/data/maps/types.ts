@@ -205,3 +205,12 @@ export interface IWorldMapFacts {
 	spots: ReadonlyArray<IWorldMapSpot>;
 	width: number;
 }
+
+export interface IWorldMapPreviewFacts {
+	/** @description Content hash of the generated preview; part of its URL. */
+	hash: string;
+	height: number;
+	/** @description File name without extension; WebP and PNG copies are published. */
+	image: string;
+	width: number;
+}

@@ -438,6 +438,51 @@ export function startAccountSyncClient() {
 				});
 		}
 	);
+	let accountSyncAvailabilityKey: string | null = null;
+	const reconcileAccountSyncAvailability = () => {
+		const userId = accountStore.shared.user.get()?.id ?? null;
+		const isAllowed =
+			accountStore.shared.featureAccess.get()?.modules['account.sync']
+				?.allowed === true;
+		const nextKey =
+			userId === null || !isAllowed ? null : `${userId}:allowed`;
+		if (nextKey === accountSyncAvailabilityKey) {
+			return;
+		}
+
+		const hadAvailableContext = accountSyncAvailabilityKey !== null;
+		accountSyncAvailabilityKey = nextKey;
+		if (nextKey === null) {
+			if (hadAvailableContext) {
+				invalidateAccountSyncClientRuns();
+				updatePendingCount();
+			}
+			return;
+		}
+
+		const context = getLoggedInAccountContext();
+		if (context === null) {
+			accountSyncAvailabilityKey = null;
+			return;
+		}
+		if (hadAvailableContext) {
+			invalidateAccountSyncClientRuns();
+		}
+		if (checkAccountSyncResetPrepared(context.user.id)) {
+			scheduleAccountSyncResetRecovery(context.user.id);
+		}
+		restoreAccountSyncRuntimeState(context.user.id);
+		runAfterAccountSyncPromiseSettles(
+			reconcileAccountSyncPausedConflicts(context.user.id),
+			scheduleAccountSyncFlush
+		);
+	};
+	const unsubscribeFeatureAccess = accountStore.shared.featureAccess.onChange(
+		reconcileAccountSyncAvailability
+	);
+	const unsubscribeUser = accountStore.shared.user.onChange(
+		reconcileAccountSyncAvailability
+	);
 	let lastAccountStateResumeRefreshAt = 0;
 	const scheduleAccountStateResumeRefresh = () => {
 		const now = Date.now();
@@ -625,23 +670,15 @@ export function startAccountSyncClient() {
 	globalThis.addEventListener('pagehide', onPageHide);
 	globalThis.addEventListener('storage', onStorage);
 
-	const initialContext = getLoggedInAccountContext();
-	if (initialContext !== null) {
-		if (checkAccountSyncResetPrepared(initialContext.user.id)) {
-			scheduleAccountSyncResetRecovery(initialContext.user.id);
-		}
-		restoreAccountSyncRuntimeState(initialContext.user.id);
-		runAfterAccountSyncPromiseSettles(
-			reconcileAccountSyncPausedConflicts(initialContext.user.id),
-			scheduleAccountSyncFlush
-		);
-	}
+	reconcileAccountSyncAvailability();
 
 	return () => {
 		stopAccountSyncClient();
 		clearInterval(conflictHeartbeat);
 		setVisibilityOperationId(null);
 		unsubscribeBroadcast();
+		unsubscribeFeatureAccess();
+		unsubscribeUser();
 		document.removeEventListener('visibilitychange', onVisibilityChange);
 		globalThis.removeEventListener('focus', onRetrySignal);
 		globalThis.removeEventListener('online', onRetrySignal);

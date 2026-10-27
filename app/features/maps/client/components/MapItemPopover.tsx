@@ -21,6 +21,7 @@ import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
+import { FishingCollectibleCatalog } from '@/domain/catalog/items/FishingCollectibleCatalog';
 import { getIngredientTypeLabel } from '@/domain/catalog/localizedCategoryLabels';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
@@ -42,6 +43,7 @@ import {
 	getFoodTagLabel,
 } from '@/features/catalog/shared/client/localization/tagLabels';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
+import FeatureAccessNotice from '@/features/featureAccess/client/components/FeatureAccessNotice';
 import { mapsMessages } from '@/features/maps/client/messages';
 import { trackMapEvent } from '@/features/maps/client/model/analytics';
 import {
@@ -54,11 +56,18 @@ import {
 	getMapItemKey,
 	rememberOpenedMapItem,
 } from '@/features/maps/client/model/mapsHistory';
-import { getMapSurfaceClassName } from '@/features/maps/client/model/mapStyles';
+import {
+	MAP_POPOVER_CONTAINER_PADDING,
+	MAP_POPOVER_CONTENT_MAX_WIDTH_CLASS_NAME,
+	MAP_POPOVER_CONTENT_WIDTH_CLASS_NAME,
+	MAP_POPOVER_SIDE_PLACEMENT_MIN_WIDTH,
+	getMapSurfaceClassName,
+} from '@/features/maps/client/model/mapStyles';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 
+import { useMapAccess } from './MapAccessContext';
 import { MapLinkLeaveContext } from './MapLinks';
 
 interface IProps {
@@ -75,6 +84,7 @@ interface IProps {
 
 const beverageCatalog = BeverageCatalog.getInstance();
 const currencyItemCatalog = CurrencyItemCatalog.getInstance();
+const fishingCollectibleCatalog = FishingCollectibleCatalog.getInstance();
 const ingredientCatalog = IngredientCatalog.getInstance();
 
 /** @description Opens the catalog page in the small preview window, like other cross-page item links. */
@@ -104,8 +114,8 @@ const CatalogButton = memo(function CatalogButton({
 const ItemDetails = memo(function ItemDetails({
 	product: { productId, productType },
 }: Pick<IProps, 'product'>) {
-	const openWindow = useViewInNewWindow();
 	useCatalogLocalizationRevision();
+	const openWindow = useViewInNewWindow();
 
 	if (productType === 1 && checkIngredientId(productId)) {
 		const { description, dlc, from, level, name, price, tags, type } =
@@ -186,6 +196,26 @@ const ItemDetails = memo(function ItemDetails({
 			</>
 		);
 	}
+	if (productType === 'trophy') {
+		const { description, dlc, name } =
+			fishingCollectibleCatalog.getDisplayPropsById(productId);
+		return (
+			<>
+				<ItemPopoverCard
+					target="trophy"
+					id={productId}
+					name={name}
+					description={{ description }}
+					dlc={dlc}
+				/>
+				<CatalogButton
+					onPress={() => {
+						openWindow('fishing-collectibles', productId, name);
+					}}
+				/>
+			</>
+		);
+	}
 
 	return null;
 });
@@ -199,13 +229,26 @@ export default memo<IProps>(function MapItemPopover({
 	onOpenChange,
 	product,
 }) {
-	const { isHighAppearance } = useDesignPreferences();
 	const { breakpoint: placement } = useBreakpoint(
-		{ right: 640, top: -1 },
+		{ right: MAP_POPOVER_SIDE_PLACEMENT_MIN_WIDTH, top: -1 },
 		'top'
 	);
+	const { isHighAppearance } = useDesignPreferences();
+	const { t } = useI18n(mapsMessages);
+	const {
+		cancelAccessRequest,
+		fullReason,
+		markAccountModalOrigin,
+		policy,
+		requestAccess,
+	} = useMapAccess();
+
 	const { productId, productType } = product;
+
 	const isOpenRef = useRef(defaultOpen);
+	const isOpeningAccountModalRef = useRef(false);
+	const triggerRef = useRef<HTMLButtonElement>(null);
+
 	const [isOpen, setIsOpen] = useState(defaultOpen);
 
 	useEffect(() => {
@@ -234,6 +277,31 @@ export default memo<IProps>(function MapItemPopover({
 		rememberOpenedMapItem({ entityId, itemKey });
 	}, [entityId, itemKey]);
 
+	const handleBlockedPress = useCallback(() => {
+		if (triggerRef.current === null) {
+			return;
+		}
+		requestAccess({
+			moduleKey: 'maps.full',
+			onAllowed: () => {
+				isOpenRef.current = true;
+				setIsOpen(true);
+				onOpenChange(true);
+			},
+		});
+	}, [onOpenChange, requestAccess]);
+
+	const handleAccessLogin = useCallback(() => {
+		markAccountModalOrigin();
+		isOpeningAccountModalRef.current = true;
+		isOpenRef.current = false;
+		setIsOpen(false);
+		onOpenChange(false);
+		setTimeout(() => {
+			isOpeningAccountModalRef.current = false;
+		}, 250);
+	}, [markAccountModalOrigin, onOpenChange]);
+
 	// Tracked like opening the item's card in the catalog.
 	const handleOpenChange = useCallback(
 		(isOpen: boolean) => {
@@ -258,9 +326,21 @@ export default memo<IProps>(function MapItemPopover({
 						'Currency Card',
 						currencyItemCatalog.getPropsById(productId, 'name')
 					);
+				} else if (productType === 'trophy') {
+					trackEvent(
+						trackEvent.category.click,
+						'Fishing Collectible Card',
+						fishingCollectibleCatalog.getPropsById(
+							productId,
+							'name'
+						)
+					);
 				}
 			}
 			if (!isOpen) {
+				if (!isOpeningAccountModalRef.current) {
+					cancelAccessRequest();
+				}
 				clearOpenedMapItem();
 				trackMapEvent(
 					'Map Entity Button',
@@ -269,7 +349,14 @@ export default memo<IProps>(function MapItemPopover({
 			}
 			onOpenChange(isOpen);
 		},
-		[entityId, itemKey, onOpenChange, productId, productType]
+		[
+			cancelAccessRequest,
+			entityId,
+			itemKey,
+			onOpenChange,
+			productId,
+			productType,
+		]
 	);
 
 	// Same surface as the detail card: the site popover is too translucent over the game art.
@@ -277,7 +364,7 @@ export default memo<IProps>(function MapItemPopover({
 		() => ({
 			content: cn(
 				getMapSurfaceClassName(isHighAppearance),
-				'max-w-[calc(100vw-1rem)]'
+				MAP_POPOVER_CONTENT_MAX_WIDTH_CLASS_NAME
 			),
 		}),
 		[isHighAppearance]
@@ -285,28 +372,62 @@ export default memo<IProps>(function MapItemPopover({
 
 	return (
 		<ItemPopover
+			containerPadding={MAP_POPOVER_CONTAINER_PADDING}
 			showArrow
 			isOpen={isOpen}
 			placement={placement}
 			onOpenChange={handleOpenChange}
 			classNames={classNames}
 		>
-			<ItemPopoverTrigger>
+			<ItemPopoverTrigger
+				shouldStyleExpandedState={policy.canOpenSecondaryDetails}
+			>
 				<button
+					ref={triggerRef}
 					type="button"
 					className={cn(
 						'rounded-medium transition-colors hover:bg-default-100 motion-reduce:transition-none',
 						CLASSNAME_FOCUS_VISIBLE_OUTLINE,
 						className
 					)}
+					{...(policy.canOpenSecondaryDetails
+						? {}
+						: { onClick: handleBlockedPress })}
 				>
 					{children}
 				</button>
 			</ItemPopoverTrigger>
 			<ItemPopoverContent>
-				<MapLinkLeaveContext value={handleLinkLeave}>
-					<ItemDetails product={product} />
-				</MapLinkLeaveContext>
+				{policy.canOpenSecondaryDetails ? (
+					<MapLinkLeaveContext value={handleLinkLeave}>
+						<ItemDetails product={product} />
+					</MapLinkLeaveContext>
+				) : (
+					<div
+						className={cn(
+							MAP_POPOVER_CONTENT_WIDTH_CLASS_NAME,
+							'p-3'
+						)}
+					>
+						<div className="space-y-2 text-tiny leading-5 text-foreground-500">
+							{(fullReason ?? 'unavailable') ===
+								'login-required' && (
+								<p className="font-medium text-foreground-700">
+									{t('maps.access.title')}
+								</p>
+							)}
+							<p>{t('maps.access.body')}</p>
+							<FeatureAccessNotice
+								className="rounded-small border border-default-200/60 bg-default-50/30 p-2 text-tiny dark:border-white/10 dark:bg-white/[0.07] dark:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.06),0_8px_20px_rgb(0_0_0_/_0.14)]"
+								isActionFullWidth
+								moduleKey="maps.full"
+								onLoginPress={handleAccessLogin}
+								reasonOverride={fullReason ?? 'unavailable'}
+								showBody={fullReason !== 'login-required'}
+							/>
+						</div>
+					</div>
+				)}
 			</ItemPopoverContent>
 		</ItemPopover>
 	);

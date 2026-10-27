@@ -26,6 +26,7 @@ interface IAccountDangerZoneProps {
 	handleDeleteDataPopoverOpenChange: (isOpen: boolean) => void;
 	isDeleteAccountPopoverOpen: boolean;
 	isDeleteDataPopoverOpen: boolean;
+	isAccountSyncAllowed: boolean;
 	isSubmitting: boolean;
 	user: IAccountUserProfile;
 }
@@ -39,6 +40,7 @@ export default memo<IAccountDangerZoneProps>(function AccountDangerZone(props) {
 		handleDeleteData,
 		handleDeleteDataCancel,
 		handleDeleteDataPopoverOpenChange,
+		isAccountSyncAllowed,
 		isDeleteAccountPopoverOpen,
 		isDeleteDataPopoverOpen,
 		isSubmitting,
@@ -56,26 +58,32 @@ export default memo<IAccountDangerZoneProps>(function AccountDangerZone(props) {
 				<p>{t('account.manager.danger.warning')}</p>
 			</div>
 			<div className="flex flex-col gap-2">
-				<AccountConfirmButton
-					buttonLabel={
-						user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
-							? t('account.manager.danger.clearDataCleared')
-							: t('account.manager.danger.clearData')
-					}
-					color="warning"
-					confirmLabel={t('account.manager.danger.clearDataConfirm')}
-					icon={faCloudArrowUp}
-					isDisabled={
-						isSubmitting ||
-						csrfToken === null ||
-						user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
-					}
-					isLoading={isSubmitting}
-					isOpen={isDeleteDataPopoverOpen}
-					onOpenChange={handleDeleteDataPopoverOpenChange}
-					onConfirm={handleDeleteData}
-					onCancel={handleDeleteDataCancel}
-				/>
+				{isAccountSyncAllowed && (
+					<AccountConfirmButton
+						buttonLabel={
+							user.sync_status ===
+							ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
+								? t('account.manager.danger.clearDataCleared')
+								: t('account.manager.danger.clearData')
+						}
+						color="warning"
+						confirmLabel={t(
+							'account.manager.danger.clearDataConfirm'
+						)}
+						icon={faCloudArrowUp}
+						isDisabled={
+							isSubmitting ||
+							csrfToken === null ||
+							user.sync_status ===
+								ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
+						}
+						isLoading={isSubmitting}
+						isOpen={isDeleteDataPopoverOpen}
+						onOpenChange={handleDeleteDataPopoverOpenChange}
+						onConfirm={handleDeleteData}
+						onCancel={handleDeleteDataCancel}
+					/>
+				)}
 				<AccountConfirmButton
 					buttonLabel={t('account.manager.danger.deleteAccount')}
 					color="danger"

@@ -11,9 +11,12 @@ import {
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
-import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 import { ACCOUNT_SYNC_API_RESPONSE_CODE_MAP } from '@/features/account/sync/apiResponseCodes';
 import { parseClientSyncGeneration } from '@/features/account/sync/protocol';
+import {
+	createFeatureAccessGuardErrorResponse,
+	requireFeatureAccess,
+} from '@/features/featureAccess/server/requireFeatureAccess';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
@@ -76,13 +79,19 @@ export async function DELETE(request: NextRequest) {
 		return preAuthRateLimitResponse;
 	}
 
-	const [authModule, csrfModule] = await Promise.all([
-		import('@/features/account/server/auth/requestAuthentication'),
+	const [csrfModule, featureAccess] = await Promise.all([
 		import('@/features/account/server/auth/accountCsrf'),
+		requireFeatureAccess(request, 'account.sync'),
 	]);
-	const auth = await authModule.authenticateAccountFromRequest(request);
-	if (auth.status === 'error') {
-		return createAccountAuthErrorRouteResponse(auth, request);
+	if (featureAccess.status === 'error') {
+		return createFeatureAccessGuardErrorResponse(featureAccess);
+	}
+	const { account } = featureAccess;
+	if (account === null) {
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
@@ -93,7 +102,7 @@ export async function DELETE(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
+	if (!csrfModule.verifyAccountCsrf(request, account.sessionTokenHash)) {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.forbidden,
 			403
@@ -119,25 +128,25 @@ export async function DELETE(request: NextRequest) {
 	}
 	const expectedStateEpoch = body.state_epoch;
 	const expectedSyncGeneration = body.sync_generation;
-	if (expectedSyncGeneration !== auth.data.user.sync_generation) {
+	if (expectedSyncGeneration !== account.user.sync_generation) {
 		return createNoStoreErrorResponse(
 			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.generationMismatch,
 			409,
 			{
-				state_epoch: auth.data.user.state_epoch,
-				sync_generation: auth.data.user.sync_generation,
-				sync_status: auth.data.user.sync_status,
+				state_epoch: account.user.state_epoch,
+				sync_generation: account.user.sync_generation,
+				sync_status: account.user.sync_status,
 			}
 		);
 	}
-	if (expectedStateEpoch !== auth.data.user.state_epoch) {
+	if (expectedStateEpoch !== account.user.state_epoch) {
 		return createNoStoreErrorResponse(
 			ACCOUNT_API_RESPONSE_CODE_MAP.stateEpochMismatch,
 			409,
 			{
-				state_epoch: auth.data.user.state_epoch,
-				sync_generation: auth.data.user.sync_generation,
-				sync_status: auth.data.user.sync_status,
+				state_epoch: account.user.state_epoch,
+				sync_generation: account.user.sync_generation,
+				sync_status: account.user.sync_status,
 			}
 		);
 	}
@@ -148,13 +157,10 @@ export async function DELETE(request: NextRequest) {
 	]);
 	const clearResult =
 		await userStateModule.clearUserStateIfStateEpochWithAudit(
-			auth.data.user.id,
+			account.user.id,
 			expectedStateEpoch,
 			expectedSyncGeneration,
-			{
-				id: auth.data.session.id,
-				token_hash: auth.data.session.token_hash,
-			},
+			{ id: account.session.id, token_hash: account.session.token_hash },
 			(trx, auditNow, nextStateEpoch, nextSyncGeneration) =>
 				accountAuditModule.writeAccountAuditLogInTransaction(
 					trx,
@@ -162,14 +168,14 @@ export async function DELETE(request: NextRequest) {
 						action: accountAuditModule.ACCOUNT_AUDIT_ACTION_MAP
 							.accountDataCleared,
 						metadata: {
-							nickname: auth.data.user.nickname,
+							nickname: account.user.nickname,
 							state_epoch: nextStateEpoch,
 							sync_generation: nextSyncGeneration,
 							sync_status: ACCOUNT_SYNC_STATUS_MAP.pausedEmpty,
-							username: auth.data.user.username,
+							username: account.user.username,
 						},
 						request,
-						userId: auth.data.user.id,
+						userId: account.user.id,
 					}),
 					auditNow
 				)

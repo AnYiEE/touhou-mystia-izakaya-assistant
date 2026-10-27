@@ -1,5 +1,7 @@
 import { type NextRequest } from 'next/server';
 
+import { createSsoAppFeatureModuleKey } from '@/domain/featureAccess/contracts';
+
 import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
 import { checkAccountFeatureRouteResponse } from '@/features/account/server/http/routeGuards';
 import { ACCOUNT_SSO_API_RESPONSE_CODE_MAP } from '@/features/account/sso/apiResponseCodes';
@@ -9,6 +11,9 @@ import {
 	checkSsoClientId,
 	checkSsoClientSecret,
 } from '@/features/account/sso/server/validation';
+import { evaluateFeatureAccessForUser } from '@/features/featureAccess/server/accessService';
+import { createFeatureAccessDecisionErrorResponse } from '@/features/featureAccess/server/requireFeatureAccess';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
@@ -83,6 +88,7 @@ export async function POST(request: NextRequest) {
 	if (rateLimitResponse !== null) {
 		return rateLimitResponse;
 	}
+	const locale = readContentLocale(request);
 
 	try {
 		const ssoModule = await import('@/features/account/sso/server');
@@ -123,7 +129,6 @@ export async function POST(request: NextRequest) {
 				404
 			);
 		}
-
 		const hasGrant = await ssoModule.hasSsoUserClientGrant(
 			clientId,
 			userId
@@ -134,10 +139,28 @@ export async function POST(request: NextRequest) {
 				404
 			);
 		}
-
 		const statusError = ssoModule.getSsoUserStatusError(user);
 		if (statusError !== null) {
 			return createNoStoreErrorResponse(statusError, 403);
+		}
+		const featureAccess = await evaluateFeatureAccessForUser(
+			userId,
+			locale
+		);
+		const ssoUseAccess = featureAccess['sso.use'];
+		const appAccess = featureAccess[createSsoAppFeatureModuleKey(clientId)];
+		const deniedAccess = ssoUseAccess.allowed ? appAccess : ssoUseAccess;
+		if (deniedAccess?.allowed !== true) {
+			return (
+				createFeatureAccessDecisionErrorResponse(
+					deniedAccess ?? null,
+					locale
+				) ??
+				createNoStoreErrorResponse(
+					HTTP_API_RESPONSE_CODE_MAP.forbidden,
+					403
+				)
+			);
 		}
 
 		return createNoStoreJsonResponse({

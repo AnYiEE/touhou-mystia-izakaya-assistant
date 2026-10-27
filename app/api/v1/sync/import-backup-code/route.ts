@@ -9,12 +9,15 @@ import {
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
-import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 import { ACCOUNT_SYNC_API_RESPONSE_CODE_MAP } from '@/features/account/sync/apiResponseCodes';
 import { checkSyncProtocolRequestBody } from '@/features/account/sync/protocol';
 import { type TImportLegacyBackupUseCaseResult } from '@/features/account/sync/server/importLegacyBackupUseCase';
 import { createSyncClientUpdateRequiredResponse } from '@/features/account/sync/server/protocolResponse';
 import type { ISyncProtocolRequest } from '@/features/account/sync/types';
+import {
+	createFeatureAccessGuardErrorResponse,
+	requireFeatureAccess,
+} from '@/features/featureAccess/server/requireFeatureAccess';
 
 import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
@@ -135,14 +138,20 @@ export async function POST(request: NextRequest) {
 	}
 	const code = rawCode.toLowerCase();
 
-	const [authModule, csrfModule, importModule] = await Promise.all([
-		import('@/features/account/server/auth/requestAuthentication'),
+	const [csrfModule, featureAccess, importModule] = await Promise.all([
 		import('@/features/account/server/auth/accountCsrf'),
+		requireFeatureAccess(request, 'account.sync'),
 		import('@/features/account/sync/server/importLegacyBackupUseCase'),
 	]);
-	const auth = await authModule.authenticateAccountFromRequest(request);
-	if (auth.status === 'error') {
-		return createAccountAuthErrorRouteResponse(auth, request);
+	if (featureAccess.status === 'error') {
+		return createFeatureAccessGuardErrorResponse(featureAccess);
+	}
+	const { account } = featureAccess;
+	if (account === null) {
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
@@ -155,7 +164,7 @@ export async function POST(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
+	if (!csrfModule.verifyAccountCsrf(request, account.sessionTokenHash)) {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.forbidden,
 			403
@@ -168,8 +177,8 @@ export async function POST(request: NextRequest) {
 	const result = await importModule.importLegacyBackupUseCase({
 		code,
 		request,
-		session: auth.data.session,
-		user: auth.data.user,
+		session: account.session,
+		user: account.user,
 	});
 
 	return createImportBackupResponse(result);

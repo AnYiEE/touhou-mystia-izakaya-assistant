@@ -17,7 +17,12 @@ export function normalizeServiceRetryAfterSeconds(value: unknown) {
 }
 
 function createPathUrl(path: string) {
-	return new URL(path, location.origin).toString();
+	const origin =
+		typeof location === 'undefined'
+			? PUBLIC_RUNTIME_CONFIG.baseOrigin
+			: location.origin;
+
+	return new URL(path, origin).toString();
 }
 
 function readRetryAfterHeader(headers: Headers) {

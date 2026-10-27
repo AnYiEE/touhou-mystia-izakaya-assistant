@@ -38,6 +38,7 @@ export default memo<IProps>(function AccountInitialStateHydrator({ data }) {
 
 			accountStore.shared.bootstrapStatus.set('anonymous');
 			accountStore.shared.csrfToken.set(null);
+			accountStore.shared.featureAccess.set(data.feature_access);
 			accountStore.shared.hasPassword.set(false);
 			accountStore.shared.isBootstrapped.set(true);
 			accountStore.shared.isLoggedIn.set(false);
@@ -68,6 +69,7 @@ export default memo<IProps>(function AccountInitialStateHydrator({ data }) {
 
 		accountStore.shared.bootstrapStatus.set('loggedIn');
 		accountStore.shared.csrfToken.set(data.csrf_token);
+		accountStore.shared.featureAccess.set(data.feature_access);
 		accountStore.shared.hasPassword.set(data.has_password);
 		accountStore.shared.isBootstrapped.set(true);
 		accountStore.shared.isLoggedIn.set(true);

@@ -9,7 +9,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
-import { motion, useAnimationControls } from 'framer-motion';
+import { AnimatePresence, motion, useAnimationControls } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
@@ -18,6 +18,7 @@ import FadeMotionDiv from '@/design/ui/components/fadeMotionDiv';
 import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
 import Link from '@/design/ui/components/link';
 import SiteInfo from '@/design/ui/components/siteInfo';
+import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 import {
 	MOTION_DURATION_MS,
@@ -36,6 +37,7 @@ import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { SITE_LINKS } from '@/features/appShell/links';
 import { useCatalogLocalizationReady } from '@/features/catalog/shared/client/localization/useCatalogLocalizationReady';
 import { trackSupportMapDetail } from '@/features/donations/client/state/supportNudgeStore';
+import FeatureAccessNotice from '@/features/featureAccess/client/components/FeatureAccessNotice';
 import { mapsMessages } from '@/features/maps/client/messages';
 import {
 	getMapEntityTrackName,
@@ -65,6 +67,7 @@ import {
 	readOpenedMapItem,
 	shouldAnimateMapsEntrance,
 } from '@/features/maps/client/model/mapsHistory';
+import { getMapSurfaceClassName } from '@/features/maps/client/model/mapStyles';
 import {
 	MAP_FADE_ANIMATE,
 	MAP_FADE_HIDDEN,
@@ -97,6 +100,7 @@ import { SITE_METADATA } from '@/shared/site/metadata';
 
 import DayMapMarkers from './DayMapMarkers';
 import DayMapTiles from './DayMapTiles';
+import { useMapAccess } from './MapAccessContext';
 import MapDetailCard from './MapDetailCard';
 import MapSidebar from './MapSidebar';
 import MapsPageSkeleton from './MapsPageSkeleton';
@@ -117,6 +121,7 @@ const WORLD_MAP_MIN_FIT_ZOOM = 0.45;
 const ARRIVAL_HIGHLIGHT_MS = 4000;
 const POPOVER_DISMISS_WINDOW_MS = 100;
 const MAP_ENTER_CONTENT_DELAY_MS = MOTION_DURATION_MS.slow + 20;
+const PREVIEW_HINT_TIMEOUT_MS = 10_000;
 const MAP_ENTER_HIDDEN = { x: '-100%' } as const;
 const MAP_ENTER_VISIBLE = { x: 0 } as const;
 const MAP_ENTER_TRANSITION = {
@@ -168,6 +173,8 @@ export default function MapsPage() {
 	const router = useRouter();
 	const isHydrated = useHydrated();
 	const isReducedMotion = useReducedMotion();
+	const { fullReason, policy } = useMapAccess();
+	const popoverMotionProps = useMotionProps('popover');
 	const enterTransition = isReducedMotion
 		? REDUCED_MOTION_TRANSITION
 		: MAP_ENTER_TRANSITION;
@@ -253,6 +260,52 @@ export default function MapsPage() {
 	const [restoredItem, setRestoredItem] = useState<IOpenedMapItem | null>(
 		null
 	);
+	const [isPreviewHintVisible, setIsPreviewHintVisible] = useState(false);
+	const [previewHintKey, setPreviewHintKey] = useState(0);
+	const [previewHintSecondsRemaining, setPreviewHintSecondsRemaining] =
+		useState(PREVIEW_HINT_TIMEOUT_MS / 1000);
+	const [transitionAccessPrompt, setTransitionAccessPrompt] = useState<{
+		entityId: string;
+		requestId: number;
+	} | null>(null);
+	const previousAccessModeRef = useRef(policy.mode);
+	const transitionAccessPromptIdRef = useRef(0);
+
+	useEffect(() => {
+		if (policy.mode === 'preview' && fullReason === null) {
+			return;
+		}
+		const previousMode = previousAccessModeRef.current;
+		previousAccessModeRef.current = policy.mode;
+		if (
+			previousMode === 'full' &&
+			policy.mode === 'preview' &&
+			fullReason !== null
+		) {
+			setPreviewHintKey((current) => current + 1);
+			setIsPreviewHintVisible(true);
+		}
+	}, [fullReason, policy.mode]);
+
+	useEffect(() => {
+		if (!isPreviewHintVisible) {
+			return;
+		}
+		const deadline = Date.now() + PREVIEW_HINT_TIMEOUT_MS;
+		setPreviewHintSecondsRemaining(PREVIEW_HINT_TIMEOUT_MS / 1000);
+		const intervalId = setInterval(() => {
+			setPreviewHintSecondsRemaining(
+				Math.max(0, Math.ceil((deadline - Date.now()) / 1000))
+			);
+		}, 250);
+		const timeoutId = setTimeout(() => {
+			setIsPreviewHintVisible(false);
+		}, PREVIEW_HINT_TIMEOUT_MS);
+		return () => {
+			clearInterval(intervalId);
+			clearTimeout(timeoutId);
+		};
+	}, [isPreviewHintVisible, previewHintKey]);
 	const focusKeyRef = useRef(0);
 	const ignoredPreferencesRef = useRef<boolean | null>(null);
 	/** @description Last URL the page state was read from or written to. */
@@ -572,6 +625,8 @@ export default function MapsPage() {
 
 	const handleSelect = useCallback(
 		(id: string) => {
+			setIsPreviewHintVisible(false);
+			setTransitionAccessPrompt(null);
 			vibrate();
 			if (map !== null) {
 				trackMapEvent(
@@ -591,6 +646,8 @@ export default function MapsPage() {
 			if (entity === undefined || map === null) {
 				return;
 			}
+			setIsPreviewHintVisible(false);
+			setTransitionAccessPrompt(null);
 			vibrate();
 			trackMapEvent(
 				'Map Entity Button',
@@ -602,6 +659,28 @@ export default function MapsPage() {
 		},
 		[entities, map, query, requestFocus, selectEntity, vibrate]
 	);
+
+	const handleShowPreviewAccessHint = useCallback(() => {
+		setPreviewHintKey((current) => current + 1);
+		setIsPreviewHintVisible(true);
+	}, []);
+
+	const handleRequestTransitionAccess = useCallback(
+		(entity: TDayMapEntity) => {
+			setIsPreviewHintVisible(false);
+			selectEntity(entity.id);
+			transitionAccessPromptIdRef.current += 1;
+			setTransitionAccessPrompt({
+				entityId: entity.id,
+				requestId: transitionAccessPromptIdRef.current,
+			});
+		},
+		[selectEntity]
+	);
+
+	const handleTransitionAccessPromptOpened = useCallback(() => {
+		setTransitionAccessPrompt(null);
+	}, []);
 
 	const handleQuickTravel = useCallback(
 		(entity: TDayMapEntity) => {
@@ -647,6 +726,7 @@ export default function MapsPage() {
 	);
 
 	const handleCloseDetail = useCallback(() => {
+		setTransitionAccessPrompt(null);
 		if (map !== null && selectedId !== null) {
 			trackMapEvent(
 				'Map Entity Button',
@@ -657,6 +737,8 @@ export default function MapsPage() {
 	}, [map, selectEntity, selectedId]);
 
 	const handleBackgroundPress = useCallback(() => {
+		setIsPreviewHintVisible(false);
+		setTransitionAccessPrompt(null);
 		if (selectedId === null) {
 			return;
 		}
@@ -743,6 +825,7 @@ export default function MapsPage() {
 	);
 
 	const mapTransition = getMapTransition(isReducedMotion);
+	const maxMapZoom = map === null ? WORLD_MAP_MAX_ZOOM : DAY_MAP_MAX_ZOOM;
 	const renderView = useCallback(
 		(view: IMapView) => (
 			// Zero-sized so empty map space still reaches the viewport's background press.
@@ -766,7 +849,12 @@ export default function MapsPage() {
 							transform: `translate3d(${view.x}px, ${view.y}px, 0)`,
 						}}
 					>
-						<DayMapTiles art={layout.art} map={map} view={view} />
+						<DayMapTiles
+							art={layout.art}
+							map={map}
+							maxTileLevel={policy.maxTileLevel}
+							view={view}
+						/>
 						<DayMapMarkers
 							arrival={arrival}
 							art={layout.art}
@@ -774,6 +862,9 @@ export default function MapsPage() {
 							hiddenLayers={hiddenLayers}
 							map={map}
 							onQuickTravel={handleQuickTravel}
+							onRequestTransitionAccess={
+								handleRequestTransitionAccess
+							}
 							onSelect={handleSelect}
 							selectedId={selectedId}
 							zoom={view.zoom}
@@ -787,12 +878,14 @@ export default function MapsPage() {
 			entities,
 			handleEnterFromWorldMap,
 			handleQuickTravel,
+			handleRequestTransitionAccess,
 			handleSelect,
 			hiddenLayers,
 			isMapVisible,
 			layout,
 			map,
 			mapTransition,
+			policy.maxTileLevel,
 			selectedId,
 		]
 	);
@@ -900,36 +993,101 @@ export default function MapsPage() {
 	);
 
 	const overlay = (
-		<div
-			{...(selectedEntity === null
-				? {}
-				: { 'data-support-nudge-blocker': '' })}
-			className="pointer-events-none absolute bottom-3 left-3 top-3 flex w-[min(23rem,calc(100%-4.5rem))] flex-col justify-end"
-		>
-			<FadeMotionDiv
-				target={selectedEntity?.id ?? ''}
-				className="flex max-h-full min-h-0 flex-col"
+		<>
+			<div
+				{...(selectedEntity === null
+					? {}
+					: { 'data-support-nudge-blocker': '' })}
+				className="pointer-events-none absolute bottom-3 left-3 top-3 flex w-[min(23rem,calc(100%-4.5rem))] flex-col justify-end"
 			>
-				{selectedEntity !== null && map !== null ? (
-					<MapDetailCard
-						entity={selectedEntity}
-						map={map}
-						onClose={handleCloseDetail}
-						onFocusPoint={handleFocusPoint}
-						onGoTo={handleGoTo}
-						onOpenWorldMap={handleOpenWorldMapFromTeleport}
-						onPopoverOpenChange={handlePopoverOpenChange}
-						onShowCharacter={handleShowCharacter}
-						restoredItemKey={
-							restoredItem?.entityId === selectedEntity.id
-								? restoredItem.itemKey
-								: null
+				<FadeMotionDiv
+					target={selectedEntity?.id ?? ''}
+					className="flex max-h-full min-h-0 flex-col"
+				>
+					{selectedEntity !== null && map !== null ? (
+						<MapDetailCard
+							accessPromptRequest={
+								transitionAccessPrompt?.entityId ===
+								selectedEntity.id
+									? transitionAccessPrompt.requestId
+									: null
+							}
+							entity={selectedEntity}
+							map={map}
+							onAccessPromptOpened={
+								handleTransitionAccessPromptOpened
+							}
+							onClose={handleCloseDetail}
+							onFocusPoint={handleFocusPoint}
+							onGoTo={handleGoTo}
+							onOpenWorldMap={handleOpenWorldMapFromTeleport}
+							onPopoverOpenChange={handlePopoverOpenChange}
+							onShowCharacter={handleShowCharacter}
+							restoredItemKey={
+								restoredItem?.entityId === selectedEntity.id
+									? restoredItem.itemKey
+									: null
+							}
+							visibility={visibility}
+						/>
+					) : null}
+				</FadeMotionDiv>
+			</div>
+			<AnimatePresence>
+				{policy.mode === 'preview' && isPreviewHintVisible && (
+					<motion.div
+						key={previewHintKey}
+						{...(isReducedMotion
+							? {}
+							: { exit: { opacity: 0, y: -8 } })}
+						animate={{ opacity: 1, y: 0 }}
+						aria-live="polite"
+						className={cn(
+							'pointer-events-auto absolute left-3 top-3 z-50 max-h-full w-[min(23rem,calc(100%-4.5rem))] rounded-large text-tiny text-default-800 shadow-medium',
+							getMapSurfaceClassName(isHighAppearance)
+						)}
+						data-map-preview-resolution-hint
+						initial={
+							isReducedMotion ? false : { opacity: 0, y: -8 }
 						}
-						visibility={visibility}
-					/>
-				) : null}
-			</FadeMotionDiv>
-		</div>
+						transition={
+							isReducedMotion
+								? { duration: 0 }
+								: 'variants' in popoverMotionProps
+									? popoverMotionProps.variants.enter
+											.transition
+									: { duration: 0.2, ease: 'easeOut' }
+						}
+					>
+						<section className="space-y-2 p-3">
+							<header className="flex items-center gap-2 text-small text-foreground">
+								<p className="min-w-0 flex-1 font-bold">
+									{t('maps.preview.badge')}
+								</p>
+								<span
+									aria-hidden
+									className="shrink-0 text-tiny tabular-nums text-default-600"
+								>
+									{t('maps.preview.closeIn', {
+										seconds: previewHintSecondsRemaining,
+									})}
+								</span>
+							</header>
+							<p>{t('maps.access.body')}</p>
+							<FeatureAccessNotice
+								className="rounded-small border border-default-200/60 bg-default-50/30 p-2 text-tiny dark:border-white/10 dark:bg-white/[0.07] dark:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.06),0_8px_20px_rgb(0_0_0_/_0.14)]"
+								isActionFullWidth
+								moduleKey="maps.full"
+								onLoginPress={() => {
+									setIsPreviewHintVisible(false);
+								}}
+								showBody={fullReason !== 'login-required'}
+							/>
+						</section>
+					</motion.div>
+				)}
+			</AnimatePresence>
+		</>
 	);
 
 	const surfaceClassName = isHighAppearance
@@ -968,6 +1126,7 @@ export default function MapsPage() {
 								map={map}
 								onEnterMap={handleEnterFromList}
 								onQueryChange={handleQueryChange}
+								onRequestAccess={handleShowPreviewAccessHint}
 								onSelect={handleListSelect}
 								onToggleCollapsed={handleToggleSidebar}
 								onToggleLayer={handleToggleLayer}
@@ -986,15 +1145,27 @@ export default function MapsPage() {
 										: layout.art.width
 								}
 								focusRequest={focusRequest}
-								maxZoom={
-									layout === null
-										? WORLD_MAP_MAX_ZOOM
-										: DAY_MAP_MAX_ZOOM
+								isPreviewAccessHintVisible={
+									isPreviewHintVisible
 								}
+								maxZoom={maxMapZoom}
 								minFitZoom={
 									layout === null ? WORLD_MAP_MIN_FIT_ZOOM : 0
 								}
 								onBackgroundPress={handleBackgroundPress}
+								{...(policy.mode === 'preview'
+									? {
+											onPreviewResolutionLimitReached:
+												handleShowPreviewAccessHint,
+											previewResolutionZoomLimit:
+												map === null
+													? 0.5
+													: 1 /
+														2 **
+															(policy.maxTileLevel ??
+																0),
+										}
+									: {})}
 								overlay={overlay}
 								resetKey={map ?? 'world'}
 								shouldIgnoreBackgroundPress={

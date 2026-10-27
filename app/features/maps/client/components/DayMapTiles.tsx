@@ -1,20 +1,50 @@
 'use client';
 
-import { type ReactNode, memo, useEffect, useMemo, useState } from 'react';
+import {
+	type MouseEvent,
+	type ReactNode,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
+import { faRotate } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { cn } from '@heroui/theme';
+
+import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
 
 import type { IDayMapArt, TDayMapLabel } from '@/domain/data/maps/types';
 
 import {
+	useMapAsset,
+	useMapAssetPreloader,
+} from '@/features/maps/client/assets/MapAssetContext';
+import { mapsMessages } from '@/features/maps/client/messages';
+import {
 	getDayMapPreviewUrl,
 	getDayMapTileUrl,
 } from '@/features/maps/client/model/assets';
+import { limitDayMapTileLevel } from '@/features/maps/client/model/mapAccessPolicy';
+
+import { useI18n } from '@/shared/i18n/useI18n';
 
 import { type IMapView } from './MapViewport';
 
 interface IProps {
 	art: IDayMapArt;
 	map: TDayMapLabel;
+	maxTileLevel: number | null;
 	view: IMapView;
+}
+
+interface IMapTileProps {
+	height: number;
+	left: number;
+	top: number;
+	url: string;
+	width: number;
 }
 
 /** @description Screen pixels kept loaded around the viewport to hide loading while panning. */
@@ -74,41 +104,98 @@ function getVisibleTileUrls(
 	return urls;
 }
 
-function preloadImage(url: string) {
-	return new Promise<void>((resolve) => {
-		const image = new Image();
-		image.decoding = 'async';
-		image.addEventListener(
-			'load',
-			() => {
-				if (typeof image.decode === 'function') {
-					void image.decode().then(
-						() => {
-							resolve();
-						},
-						() => {
-							resolve();
-						}
-					);
-				} else {
-					resolve();
-				}
+const MapAssetRetryButton = memo<{ className?: string; onRetry: () => void }>(
+	function MapAssetRetryButton({ className, onRetry }) {
+		const { t } = useI18n(mapsMessages);
+		const handleClick = useCallback(
+			(event: MouseEvent<HTMLButtonElement>) => {
+				event.preventDefault();
+				event.stopPropagation();
+				onRetry();
 			},
-			{ once: true }
+			[onRetry]
 		);
-		image.addEventListener(
-			'error',
-			() => {
-				resolve();
-			},
-			{ once: true }
-		);
-		image.src = url;
-	});
-}
 
-export default memo<IProps>(function DayMapTiles({ art, map, view }) {
-	const targetLevel = selectLevel(art, view.zoom);
+		return (
+			<button
+				aria-label={t('maps.asset.retry')}
+				title={t('maps.asset.error')}
+				type="button"
+				onClick={handleClick}
+				className={cn(
+					'pointer-events-auto absolute left-1/2 top-1/2 z-10 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/75 text-white shadow-md',
+					CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+					className
+				)}
+			>
+				<FontAwesomeIcon icon={faRotate} />
+			</button>
+		);
+	}
+);
+
+const MapTile = memo<IMapTileProps>(function MapTile({
+	height,
+	left,
+	top,
+	url,
+	width,
+}) {
+	const asset = useMapAsset(url);
+
+	return (
+		<span
+			className="image-rendering-pixelated absolute block bg-no-repeat"
+			style={{
+				backgroundImage:
+					asset.objectUrl === null
+						? undefined
+						: `url('${asset.objectUrl}')`,
+				backgroundSize: '100% 100%',
+				height,
+				left,
+				top,
+				width,
+			}}
+		>
+			{asset.status === 'error' && (
+				<MapAssetRetryButton onRetry={asset.retry} />
+			)}
+		</span>
+	);
+});
+
+const DayMapPreview = memo<{ map: TDayMapLabel }>(function DayMapPreview({
+	map,
+}) {
+	const asset = useMapAsset(getDayMapPreviewUrl(map));
+
+	return (
+		<span
+			aria-hidden
+			className="image-rendering-pixelated pointer-events-none absolute left-0 top-0 block bg-cover bg-center bg-no-repeat blur-[1px]"
+			style={{
+				backgroundImage:
+					asset.objectUrl === null
+						? undefined
+						: `url('${asset.objectUrl}')`,
+				inset: 0,
+			}}
+		/>
+	);
+});
+
+export default memo<IProps>(function DayMapTiles({
+	art,
+	map,
+	maxTileLevel,
+	view,
+}) {
+	const preloadAssets = useMapAssetPreloader();
+	const targetLevel = limitDayMapTileLevel(
+		selectLevel(art, view.zoom),
+		maxTileLevel
+	);
 	const [displayedLevel, setDisplayedLevel] = useState(targetLevel);
 
 	useEffect(() => {
@@ -116,12 +203,12 @@ export default memo<IProps>(function DayMapTiles({ art, map, view }) {
 			return;
 		}
 
-		let isCancelled = false;
 		let timer: ReturnType<typeof setTimeout> | undefined;
+		const controller = new AbortController();
 		const switchLevel = () => {
 			const urls = getVisibleTileUrls(art, map, targetLevel, view);
-			void Promise.all(urls.map(preloadImage)).then(() => {
-				if (!isCancelled) {
+			void preloadAssets(urls, controller.signal).then(() => {
+				if (!controller.signal.aborted) {
 					setDisplayedLevel(targetLevel);
 				}
 			});
@@ -136,12 +223,12 @@ export default memo<IProps>(function DayMapTiles({ art, map, view }) {
 		}
 
 		return () => {
-			isCancelled = true;
+			controller.abort();
 			if (timer !== undefined) {
 				clearTimeout(timer);
 			}
 		};
-	}, [art, displayedLevel, map, targetLevel, view]);
+	}, [art, displayedLevel, map, preloadAssets, targetLevel, view]);
 
 	const levelInfo = art.levels[displayedLevel];
 	const levelScale = 2 ** displayedLevel;
@@ -215,16 +302,13 @@ export default memo<IProps>(function DayMapTiles({ art, map, view }) {
 					levelScale *
 					view.zoom;
 				tiles.push(
-					<span
+					<MapTile
 						key={`${displayedLevel}:${key}`}
-						className="image-rendering-pixelated absolute bg-[length:100%_100%] bg-no-repeat"
-						style={{
-							backgroundImage: `url('${getDayMapTileUrl(map, displayedLevel, column, row)}')`,
-							height: Math.ceil(height) + 1,
-							left: Math.floor(column * tileScreenSize),
-							top: Math.floor(row * tileScreenSize),
-							width: Math.ceil(width) + 1,
-						}}
+						height={Math.ceil(height) + 1}
+						left={Math.floor(column * tileScreenSize)}
+						top={Math.floor(row * tileScreenSize)}
+						url={getDayMapTileUrl(map, displayedLevel, column, row)}
+						width={Math.ceil(width) + 1}
 					/>
 				);
 			}
@@ -250,15 +334,14 @@ export default memo<IProps>(function DayMapTiles({ art, map, view }) {
 	}
 
 	return (
-		<div aria-hidden className="pointer-events-none absolute left-0 top-0">
-			<span
-				className="image-rendering-pixelated absolute left-0 top-0 bg-[length:100%_100%] bg-no-repeat blur-[1px]"
-				style={{
-					backgroundImage: `url('${getDayMapPreviewUrl(map)}')`,
-					height: art.height * view.zoom,
-					width: art.width * view.zoom,
-				}}
-			/>
+		<div
+			className="pointer-events-none absolute left-0 top-0"
+			style={{
+				height: art.height * view.zoom,
+				width: art.width * view.zoom,
+			}}
+		>
+			<DayMapPreview map={map} />
 			{tiles}
 		</div>
 	);

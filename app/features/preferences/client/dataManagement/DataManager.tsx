@@ -74,10 +74,6 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 		};
 	}, [isResetPopoverOpened]);
 
-	const handleOpenAccountModal = useCallback(() => {
-		accountStore.openAccountModal('preferences');
-	}, []);
-
 	const handleSelectionChange = useCallback(() => {
 		setLocalDataManagerKey((currentKey) => currentKey + 1);
 	}, []);
@@ -110,9 +106,7 @@ export default memo<IProps>(function DataManager({ onModalClose }) {
 							title={t('preferences.dataManager.tab.legacy')}
 						>
 							<div className="w-full space-y-2 lg:w-1/2">
-								<LegacyBackupImport
-									onOpenAccountModal={handleOpenAccountModal}
-								/>
+								<LegacyBackupImport />
 							</div>
 						</Tab>
 					)}

@@ -18,6 +18,10 @@ import {
 	type TAnnouncementLevel,
 	type TAnnouncementVersionAction,
 } from '@/domain/announcements/contracts';
+import {
+	type TFeatureAccessLevel,
+	type TFeatureAccessOverrideEffect,
+} from '@/domain/featureAccess/contracts';
 
 export type TSsoCallbackEvent = TAccountSsoCallbackEvent;
 
@@ -86,6 +90,35 @@ interface ITableBackupImportRecord {
 	user_id: string;
 }
 
+interface ITableFeatureAccessGroup {
+	created_at: number;
+	created_by_admin: string | null;
+	description: string;
+	id: string;
+	name: string;
+	name_normalized: string;
+	updated_at: number;
+}
+
+interface ITableFeatureAccessGroupMember {
+	created_at: number;
+	created_by_admin: string | null;
+	group_id: string;
+	user_id: string;
+}
+
+interface ITableFeatureAccessGroupModule {
+	group_id: string;
+	module_key: string;
+}
+
+interface ITableFeatureModulePolicy {
+	access_level: TFeatureAccessLevel;
+	module_key: string;
+	updated_at: number;
+	updated_by_admin: string | null;
+}
+
 interface ITableUser {
 	created_at: number;
 	deleted_at: number | null;
@@ -109,6 +142,16 @@ interface ITableUserCredential {
 	password_must_change: number;
 	password_set: number;
 	updated_at: number;
+	user_id: string;
+}
+
+interface ITableUserFeatureAccessOverride {
+	created_at: number;
+	created_by_admin: string | null;
+	effect: TFeatureAccessOverrideEffect;
+	module_key: string;
+	updated_at: number;
+	updated_by_admin: string | null;
 	user_id: string;
 }
 
@@ -280,6 +323,26 @@ export type TBackupImportRecord = Selectable<ITableBackupImportRecord>;
 export type TBackupImportRecordNew = Insertable<ITableBackupImportRecord>;
 export type TBackupImportRecordUpdate = Updateable<ITableBackupImportRecord>;
 
+export type TFeatureAccessGroup = Selectable<ITableFeatureAccessGroup>;
+export type TFeatureAccessGroupNew = Insertable<ITableFeatureAccessGroup>;
+export type TFeatureAccessGroupUpdate = Updateable<ITableFeatureAccessGroup>;
+
+export type TFeatureAccessGroupMember =
+	Selectable<ITableFeatureAccessGroupMember>;
+export type TFeatureAccessGroupMemberNew =
+	Insertable<ITableFeatureAccessGroupMember>;
+export type TFeatureAccessGroupMemberUpdate =
+	Updateable<ITableFeatureAccessGroupMember>;
+
+export type TFeatureAccessGroupModule =
+	Selectable<ITableFeatureAccessGroupModule>;
+export type TFeatureAccessGroupModuleNew =
+	Insertable<ITableFeatureAccessGroupModule>;
+
+export type TFeatureModulePolicy = Selectable<ITableFeatureModulePolicy>;
+export type TFeatureModulePolicyNew = Insertable<ITableFeatureModulePolicy>;
+export type TFeatureModulePolicyUpdate = Updateable<ITableFeatureModulePolicy>;
+
 export type TUser = Selectable<ITableUser>;
 export type TUserNew = Insertable<ITableUser>;
 export type TUserUpdate = Updateable<ITableUser>;
@@ -287,6 +350,13 @@ export type TUserUpdate = Updateable<ITableUser>;
 export type TUserCredential = Selectable<ITableUserCredential>;
 export type TUserCredentialNew = Insertable<ITableUserCredential>;
 export type TUserCredentialUpdate = Updateable<ITableUserCredential>;
+
+export type TUserFeatureAccessOverride =
+	Selectable<ITableUserFeatureAccessOverride>;
+export type TUserFeatureAccessOverrideNew =
+	Insertable<ITableUserFeatureAccessOverride>;
+export type TUserFeatureAccessOverrideUpdate =
+	Updateable<ITableUserFeatureAccessOverride>;
 
 export type TSession = Selectable<ITableSession>;
 export type TSessionNew = Insertable<ITableSession>;
@@ -363,6 +433,10 @@ export interface TDatabase {
 	backup_code_locks: ITableBackupCodeLock;
 	backup_files: ITableBackupFileRecord;
 	backup_imports: ITableBackupImportRecord;
+	feature_access_group_members: ITableFeatureAccessGroupMember;
+	feature_access_group_modules: ITableFeatureAccessGroupModule;
+	feature_access_groups: ITableFeatureAccessGroup;
+	feature_module_policies: ITableFeatureModulePolicy;
 	sessions: ITableSession;
 	site_runtime_states: ITableSiteRuntimeState;
 	sso_callback_deliveries: ITableSsoCallbackDelivery;
@@ -373,6 +447,7 @@ export interface TDatabase {
 	sso_tickets: ITableSsoTicket;
 	sso_user_client_grants: ITableSsoUserClientGrant;
 	user_credentials: ITableUserCredential;
+	user_feature_access_overrides: ITableUserFeatureAccessOverride;
 	user_state: ITableUserState;
 	user_webauthn_credentials: ITableUserWebauthnCredential;
 	users: ITableUser;

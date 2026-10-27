@@ -31,7 +31,7 @@ import {
 interface IAccountProfileSummaryProps {
 	accountStatusDescription: string;
 	accountStatusMessage: string | null;
-	isAccountSyncPaused: boolean;
+	isAccountSyncWarning: boolean;
 	isMessageSuccess: boolean;
 	passwordMustChange: boolean;
 	user: IAccountUserProfile;
@@ -41,7 +41,7 @@ export const AccountProfileSummary = memo<IAccountProfileSummaryProps>(
 	function AccountProfileSummary({
 		accountStatusDescription,
 		accountStatusMessage,
-		isAccountSyncPaused,
+		isAccountSyncWarning,
 		isMessageSuccess,
 		passwordMustChange,
 		user,
@@ -79,7 +79,7 @@ export const AccountProfileSummary = memo<IAccountProfileSummaryProps>(
 						aria-live="polite"
 						className={cn(
 							'max-w-28 shrink truncate rounded-full px-2 py-1 text-tiny leading-none sm:max-w-40',
-							isAccountSyncPaused
+							isAccountSyncWarning
 								? 'bg-warning/15 text-warning-700 dark:text-warning'
 								: accountStatusMessage === null
 									? 'bg-default-100 text-foreground-500 dark:bg-default-50/20'
@@ -89,7 +89,7 @@ export const AccountProfileSummary = memo<IAccountProfileSummaryProps>(
 						)}
 						role={
 							accountStatusMessage === null &&
-							!isAccountSyncPaused
+							!isAccountSyncWarning
 								? undefined
 								: 'status'
 						}

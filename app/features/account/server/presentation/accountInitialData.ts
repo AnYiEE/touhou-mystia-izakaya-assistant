@@ -1,3 +1,5 @@
+import type { IFeatureAccessResponse } from '@/domain/featureAccess/contracts';
+
 import type { IAccountMeSuccessResponse } from '@/features/account/contracts';
 import { createCsrfToken } from '@/features/account/server/auth/csrf';
 
@@ -11,11 +13,13 @@ import { createAccountUserProfile } from './user';
 
 export function createAccountMeInitialData({
 	credential,
+	featureAccess,
 	records,
 	sessionTokenHash,
 	user,
 }: {
 	credential: TUserCredential;
+	featureAccess: IFeatureAccessResponse;
 	records: TUserState[];
 	sessionTokenHash: string;
 	user: TUser;
@@ -30,6 +34,7 @@ export function createAccountMeInitialData({
 
 	return {
 		csrf_token: createCsrfToken(sessionTokenHash),
+		feature_access: featureAccess,
 		featureEnabled: true,
 		has_password: credential.password_set === 1,
 		isLoggedIn: true,

@@ -1,3 +1,5 @@
+import { isSsoAppFeatureModuleKey } from '@/domain/featureAccess/contracts';
+
 import AccountInitialStateHydrator from '@/features/account/client/components/AccountInitialStateHydrator';
 import AccountSsoGrantInitialDataHydrator from '@/features/account/client/components/AccountSsoGrantInitialDataHydrator';
 import {
@@ -17,6 +19,8 @@ import {
 	SsoAuthorizeRenderedLocaleRefresh,
 	authorizePanelIcons,
 } from '@/features/account/sso/authorize/client';
+import FeatureAccessNotice from '@/features/featureAccess/client/components/FeatureAccessNotice';
+import { presentAnonymousFeatureAccess } from '@/features/featureAccess/server/presentation';
 import { readRequestLocale } from '@/features/preferences/server/requestLocale';
 
 import { type TLocale } from '@/shared/i18n/locale';
@@ -28,16 +32,19 @@ function t(locale: TLocale, key: TAccountMessageKey) {
 	return translate(accountMessages, locale, key);
 }
 
-const SSO_AUTHORIZE_LOGGED_OUT_ACCOUNT_STATE = {
-	csrf_token: null,
-	featureEnabled: true,
-	has_password: false,
-	isLoggedIn: false,
-	password_must_change: false,
-	state_epoch: null,
-	syncMeta: null,
-	user: null,
-} as const satisfies TAccountMeResponse;
+async function createSsoAuthorizeLoggedOutAccountState(locale: TLocale) {
+	return {
+		csrf_token: null,
+		feature_access: await presentAnonymousFeatureAccess(locale),
+		featureEnabled: true,
+		has_password: false,
+		isLoggedIn: false,
+		password_must_change: false,
+		state_epoch: null,
+		syncMeta: null,
+		user: null,
+	} as const satisfies TAccountMeResponse;
+}
 
 function SsoAuthorizeMessage({
 	locale,
@@ -71,12 +78,11 @@ function SsoAuthorizeMessage({
 	);
 }
 
-function SsoAuthorizeLoginRequired({ locale }: { locale: TLocale }) {
+async function SsoAuthorizeLoginRequired({ locale }: { locale: TLocale }) {
+	const account = await createSsoAuthorizeLoggedOutAccountState(locale);
 	return (
 		<div className="min-h-main-content text-foreground">
-			<AccountInitialStateHydrator
-				data={SSO_AUTHORIZE_LOGGED_OUT_ACCOUNT_STATE}
-			/>
+			<AccountInitialStateHydrator data={account} />
 			<SsoAuthorizeAccountGate />
 			<SsoAuthorizePanel
 				icon={authorizePanelIcons.login}
@@ -122,6 +128,25 @@ export default async function SsoAuthorizePageContent({
 
 	if (initialData.kind === 'login-required') {
 		return <SsoAuthorizeLoginRequired locale={locale} />;
+	}
+	if (initialData.kind === 'feature-access-required') {
+		return (
+			<div className="min-h-main-content text-foreground">
+				<AccountInitialStateHydrator data={initialData.account} />
+				<SsoAuthorizeAccountContextRefresh
+					initialUser={initialData.account.user}
+				/>
+				<SsoAuthorizeRenderedLocaleRefresh renderedLocale={locale} />
+				<SsoAuthorizePanel subtitle={initialData.clientName}>
+					<FeatureAccessNotice
+						{...(isSsoAppFeatureModuleKey(initialData.moduleKey)
+							? { featureName: initialData.clientName }
+							: {})}
+						moduleKey={initialData.moduleKey}
+					/>
+				</SsoAuthorizePanel>
+			</div>
+		);
 	}
 	if (initialData.kind === 'message') {
 		return (

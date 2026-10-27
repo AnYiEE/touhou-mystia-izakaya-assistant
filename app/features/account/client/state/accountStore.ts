@@ -1,6 +1,7 @@
 import { store } from '@davstack/store';
 
 import { type TSyncNamespace } from '@/domain/account/contracts';
+import type { IFeatureAccessResponse } from '@/domain/featureAccess/contracts';
 
 import type {
 	IAccountSessionInitialData,
@@ -38,10 +39,11 @@ const ACCOUNT_STORE_VERSION = { initial: 0 } as const;
 const state = {
 	persistence: {},
 	shared: {
-		accountModal: { isOpen: false },
+		accountModal: { closeAfterAuthentication: false, isOpen: false },
 		adminCsrfToken: null as string | null,
 		bootstrapStatus: 'unknown' as TAccountBootstrapStatus,
 		csrfToken: null as string | null,
+		featureAccess: null as IFeatureAccessResponse | null,
 		hasPassword: false,
 		isBootstrapped: false,
 		isLoggedIn: false,
@@ -86,9 +88,33 @@ export const accountStore = store(state, {
 }).actions((currentStore) => ({
 	closeAccountModal() {
 		currentStore.shared.accountModal.isOpen.set(false);
+		currentStore.shared.accountModal.closeAfterAuthentication.set(false);
 		requestOverlayClose('account.main');
 	},
+	closeAccountModalAfterAuthentication() {
+		if (!currentStore.shared.accountModal.closeAfterAuthentication.get()) {
+			return false;
+		}
+		currentStore.shared.accountModal.isOpen.set(false);
+		currentStore.shared.accountModal.closeAfterAuthentication.set(false);
+		requestOverlayClose('account.main');
+		return true;
+	},
 	openAccountModal(parentId?: TOverlayId) {
+		currentStore.shared.accountModal.closeAfterAuthentication.set(false);
+		const onActivate = () => {
+			currentStore.shared.accountModal.isOpen.set(true);
+		};
+		return parentId === undefined
+			? requestOverlayOpen('account.main', { onActivate })
+			: pushOverlayChild({
+					childId: 'account.main',
+					onOpenChild: onActivate,
+					parentId,
+				});
+	},
+	openAccountModalAfterAuthentication(parentId?: TOverlayId) {
+		currentStore.shared.accountModal.closeAfterAuthentication.set(true);
 		const onActivate = () => {
 			currentStore.shared.accountModal.isOpen.set(true);
 		};

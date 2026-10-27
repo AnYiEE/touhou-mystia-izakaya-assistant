@@ -22,6 +22,8 @@ import {
 	PASSWORD_MIN_LENGTH,
 } from '@/features/account/constants';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { useFeatureModuleAccess } from '@/features/featureAccess/client/useFeatureModuleAccess';
+import { featureAccessMessages } from '@/features/featureAccess/messages';
 import {
 	CoordinatedModal,
 	pushOverlayChild,
@@ -65,6 +67,7 @@ interface IProps {}
 
 export default memo<IProps>(function AccountManager() {
 	const { locale, t } = useI18n(accountMessages);
+	const { t: tFeatureAccess } = useI18n(featureAccessMessages);
 	const vibrate = useVibrate();
 
 	const bootstrapStatus = accountStore.shared.bootstrapStatus.use();
@@ -77,6 +80,7 @@ export default memo<IProps>(function AccountManager() {
 	const user = accountStore.shared.user.use();
 	const webauthnInitialData = accountStore.shared.webauthnInitialData.use();
 	const isAccountModalOpen = accountStore.shared.accountModal.isOpen.use();
+	const accountSyncAccess = useFeatureModuleAccess('account.sync');
 
 	const [message, setMessage] = useState<string | null>(null);
 
@@ -185,6 +189,7 @@ export default memo<IProps>(function AccountManager() {
 	const destructiveActions = useAccountDestructiveActions({
 		controller: actionController,
 		csrfToken,
+		isAccountSyncAllowed: accountSyncAccess.allowed,
 		user,
 		vibrate,
 	});
@@ -255,10 +260,24 @@ export default memo<IProps>(function AccountManager() {
 		messageText !== null && authErrorMessage === null ? messageText : null;
 	const isAccountSyncPaused =
 		user?.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty;
-	const accountStatusDescription = isAccountSyncPaused
-		? t(ACCOUNT_MANAGER_STATUS_LABEL_KEYS.paused)
-		: (accountStatusMessage ??
-			t(ACCOUNT_MANAGER_STATUS_LABEL_KEYS.connected));
+	const isAccountSyncRestricted =
+		user !== null &&
+		!accountSyncAccess.isLoading &&
+		!accountSyncAccess.allowed;
+	const accountSyncRestrictionDescription =
+		accountSyncAccess.reason === 'denied' ||
+		accountSyncAccess.reason === 'grant-required'
+			? tFeatureAccess('featureAccess.title.accountSyncUnavailable')
+			: accountSyncAccess.reason === 'unavailable'
+				? tFeatureAccess('featureAccess.title.unavailable')
+				: tFeatureAccess('featureAccess.title.loginRequired');
+	const isAccountSyncWarning = isAccountSyncPaused || isAccountSyncRestricted;
+	const accountStatusDescription = isAccountSyncRestricted
+		? accountSyncRestrictionDescription
+		: isAccountSyncPaused
+			? t(ACCOUNT_MANAGER_STATUS_LABEL_KEYS.paused)
+			: (accountStatusMessage ??
+				t(ACCOUNT_MANAGER_STATUS_LABEL_KEYS.connected));
 	const passwordDescription =
 		authCredentialErrorMessage === null
 			? authMode === 'register'
@@ -336,7 +355,7 @@ export default memo<IProps>(function AccountManager() {
 						<AccountProfileSummary
 							accountStatusDescription={accountStatusDescription}
 							accountStatusMessage={accountStatusMessage}
-							isAccountSyncPaused={isAccountSyncPaused}
+							isAccountSyncWarning={isAccountSyncWarning}
 							isMessageSuccess={isMessageSuccess}
 							passwordMustChange={passwordMustChange}
 							user={user}
@@ -454,6 +473,7 @@ export default memo<IProps>(function AccountManager() {
 							<AccountDangerZone
 								{...destructiveActions}
 								csrfToken={csrfToken}
+								isAccountSyncAllowed={accountSyncAccess.allowed}
 								isSubmitting={isSubmitting}
 								user={user}
 							/>

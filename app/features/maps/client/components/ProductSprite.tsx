@@ -54,6 +54,10 @@ export default memo<IProps>(function ProductSprite({
 				{...spriteProps}
 			/>
 		);
+	} else if (productType === 'trophy') {
+		sprite = (
+			<Sprite target="trophy" recordId={productId} {...spriteProps} />
+		);
 	} else {
 		return null;
 	}
@@ -61,7 +65,7 @@ export default memo<IProps>(function ProductSprite({
 	return isDecorative ? (
 		sprite
 	) : (
-		<Tooltip showArrow content={name} offset={4}>
+		<Tooltip showArrow content={name} offset={2} size="sm">
 			{sprite}
 		</Tooltip>
 	);

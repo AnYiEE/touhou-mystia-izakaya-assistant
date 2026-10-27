@@ -4,6 +4,7 @@ import type {
 	IAuthLoginSuccessResponse,
 	TAccountMeResponse,
 } from '@/features/account/contracts';
+import { isFeatureModuleAllowed } from '@/features/featureAccess/client/access';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 
 import { normalizeServiceRetryAfterSeconds } from '@/infrastructure/http/client/fetchServiceApi';
@@ -105,6 +106,7 @@ export function resetAccountState() {
 	resetAccountSyncRuntime();
 	accountStore.shared.bootstrapStatus.set('anonymous');
 	accountStore.shared.csrfToken.set(null);
+	accountStore.shared.featureAccess.set(null);
 	accountStore.shared.hasPassword.set(false);
 	accountStore.shared.isLoggedIn.set(false);
 	accountStore.setPasswordMustChange(false);
@@ -205,19 +207,19 @@ export function applyAccountAuthSuccessResponse(
 	}
 	const canUseAccountSync = checkRestoredAccountSyncCanBootstrap(data.user);
 	const syncLifecyclePort = getAccountSyncLifecyclePort();
+	const hasAuthContextChanged = hasAccountAuthContextChanged(
+		currentUser?.id ?? null,
+		currentCsrfToken,
+		data.user.id,
+		data.csrf_token
+	);
 
 	advanceAccountStateRequestGeneration();
 	syncLifecyclePort.invalidateRuns();
 	const previousUser = currentUser;
-	if (
-		hasAccountAuthContextChanged(
-			previousUser?.id ?? null,
-			currentCsrfToken,
-			data.user.id,
-			data.csrf_token
-		)
-	) {
+	if (hasAuthContextChanged) {
 		clearAccountSessionInitialData();
+		accountStore.shared.featureAccess.set(null);
 	}
 	if (
 		previousUser?.id !== data.user.id ||
@@ -229,6 +231,7 @@ export function applyAccountAuthSuccessResponse(
 
 	accountStore.shared.bootstrapStatus.set('loggedIn');
 	accountStore.shared.csrfToken.set(data.csrf_token);
+	accountStore.shared.featureAccess.set(data.feature_access);
 	accountStore.shared.hasPassword.set(data.has_password);
 	accountStore.shared.isBootstrapped.set(true);
 	accountStore.shared.isLoggedIn.set(true);
@@ -252,6 +255,9 @@ export async function importPendingLegacyBackupCode(
 	checkCurrentRequest = () => true,
 	userId?: string
 ) {
+	if (!isFeatureModuleAllowed('account.sync')) {
+		return false;
+	}
 	if (
 		accountStore.shared.user.get()?.sync_status ===
 		ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
@@ -456,6 +462,7 @@ async function runAccountStateRefresh() {
 
 	const {
 		csrf_token: csrfToken,
+		feature_access: featureAccess,
 		has_password: hasPassword,
 		isLoggedIn: responseIsLoggedIn,
 		password_must_change: passwordMustChange,
@@ -476,8 +483,10 @@ async function runAccountStateRefresh() {
 
 	const isLoggedIn = accountUser !== null;
 	const accountSyncMeta = syncMeta;
-	const canUseAccountSync =
-		accountUser === null ||
+	const isAccountSyncAllowed = featureAccess.modules['account.sync'].allowed;
+	const canBootstrapAccountSync =
+		accountUser !== null &&
+		isAccountSyncAllowed &&
 		checkRestoredAccountSyncCanBootstrap(accountUser);
 	const hasAuthContextChanged = hasAccountAuthContextChanged(
 		previousUser?.id ?? null,
@@ -507,6 +516,7 @@ async function runAccountStateRefresh() {
 		isLoggedIn ? 'loggedIn' : 'anonymous'
 	);
 	accountStore.shared.csrfToken.set(accountCsrfToken);
+	accountStore.shared.featureAccess.set(featureAccess);
 	accountStore.shared.hasPassword.set(accountHasPassword);
 	accountStore.shared.isBootstrapped.set(true);
 	accountStore.shared.isLoggedIn.set(isLoggedIn);
@@ -519,9 +529,14 @@ async function runAccountStateRefresh() {
 	accountStore.shared.user.set(accountUser);
 	accountStore.setPasswordMustChange(accountPasswordMustChange);
 
-	if (accountUser !== null && canUseAccountSync) {
+	if (accountUser !== null) {
 		getAccountSyncLifecyclePort().restoreRuntimeState(accountUser.id);
-	} else if (accountUser !== null) {
+	}
+	if (
+		accountUser !== null &&
+		isAccountSyncAllowed &&
+		!canBootstrapAccountSync
+	) {
 		accountStore.shared.sync.lastError.set(
 			'sync-account-restore-incomplete'
 		);
@@ -532,7 +547,7 @@ async function runAccountStateRefresh() {
 		accountUser !== null &&
 		accountCsrfToken !== null &&
 		!accountPasswordMustChange &&
-		canUseAccountSync
+		canBootstrapAccountSync
 	) {
 		await ensureAccountPostLoginBootstrap({
 			csrfToken: accountCsrfToken,

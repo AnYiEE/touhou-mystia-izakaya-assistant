@@ -8,6 +8,7 @@
 		"dev": "next dev --turbopack",
 		"build": "tsx scripts/build/selfHosted.ts",
 		"build:offline": "tsx scripts/build/offline.ts",
+		"build:vercel": "tsx scripts/build/vercel.ts",
 		"fonts:update": "tsx scripts/assets/updateFonts.ts",
 		"sprites": "tsx scripts/assets/sprites/generate.ts",
 		"tachies:hash": "tsx scripts/assets/tachies/hashTachies.ts",

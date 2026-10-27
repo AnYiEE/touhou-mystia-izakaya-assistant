@@ -205,6 +205,12 @@ export default function AdminUserDetailClient({
 							返回列表
 						</AdminHeaderActionLink>
 						<AdminHeaderActionLink
+							href={`/admin/access/users/${encodeURIComponent(userId)}`}
+							icon={faShieldHalved}
+						>
+							功能访问
+						</AdminHeaderActionLink>
+						<AdminHeaderActionLink
 							href={userAuditHref}
 							icon={faClipboardList}
 							onPress={() => {

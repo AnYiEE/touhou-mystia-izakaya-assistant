@@ -1,8 +1,11 @@
 import { type Transaction, sql } from 'kysely';
 
+import { createSsoAppFeatureModuleKey } from '@/domain/featureAccess/contracts';
+
 import type { TSsoClientNameTranslations } from '@/features/account/contracts';
 import { getAccountDatabase } from '@/features/account/server/persistence/database';
 import { createSsoClientSecret } from '@/features/account/sso/server/crypto';
+import { deleteFeatureAccessModuleReferencesInTransaction } from '@/features/featureAccess/server/moduleCleanup';
 
 import { normalizeDatabaseCount } from '@/infrastructure/database/queryValues';
 import type {
@@ -370,6 +373,9 @@ export async function deleteSsoClient(
 			return null;
 		}
 
+		await deleteFeatureAccessModuleReferencesInTransaction(trx, [
+			createSsoAppFeatureModuleKey(id),
+		]);
 		const deletedGrants = await trx
 			.deleteFrom(GRANT_TABLE_NAME)
 			.returning(['client_id', 'user_id'])

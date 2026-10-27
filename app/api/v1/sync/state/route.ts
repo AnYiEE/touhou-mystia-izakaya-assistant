@@ -30,6 +30,12 @@ import type {
 	ISyncStatePutBody,
 } from '@/features/account/sync/types';
 import { parseSyncStatePutBody } from '@/features/account/sync/validation';
+import {
+	createFeatureAccessDecisionErrorResponse,
+	createFeatureAccessGuardErrorResponse,
+	requireFeatureAccess,
+} from '@/features/featureAccess/server/requireFeatureAccess';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
@@ -72,11 +78,14 @@ export async function GET(request: NextRequest) {
 	if (preAuthRateLimitResponse !== null) {
 		return preAuthRateLimitResponse;
 	}
+	const locale = readContentLocale(request);
 
-	const [authModule, userStateModule] = await Promise.all([
-		import('@/features/account/server/auth/requestAuthentication'),
-		import('@/features/account/sync/server/repository'),
-	]);
+	const [authModule, featureAccessModule, userStateModule] =
+		await Promise.all([
+			import('@/features/account/server/auth/requestAuthentication'),
+			import('@/features/featureAccess/server/accessService'),
+			import('@/features/account/sync/server/repository'),
+		]);
 	const auth = await authModule.authenticateAccountFromRequestWithTransaction(
 		request,
 		async (trx, account) => {
@@ -99,6 +108,16 @@ export async function GET(request: NextRequest) {
 			const namespaces = namespaceParams.filter(checkKnownSyncNamespace);
 			if (namespaces.length !== namespaceParams.length) {
 				return { status: 'unknown-namespace' as const };
+			}
+			const accessMap =
+				await featureAccessModule.evaluateFeatureAccessForUserInTransaction(
+					trx,
+					account.user.id,
+					locale
+				);
+			const access = accessMap['account.sync'];
+			if (!access.allowed) {
+				return { access, status: 'feature-access-error' as const };
 			}
 
 			return {
@@ -135,6 +154,18 @@ export async function GET(request: NextRequest) {
 		return createNoStoreErrorResponse(
 			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.unknownNamespace,
 			400
+		);
+	}
+	if (auth.result.status === 'feature-access-error') {
+		return (
+			createFeatureAccessDecisionErrorResponse(
+				auth.result.access,
+				locale
+			) ??
+			createNoStoreErrorResponse(
+				HTTP_API_RESPONSE_CODE_MAP.forbidden,
+				403
+			)
 		);
 	}
 
@@ -180,13 +211,19 @@ export async function PUT(request: NextRequest) {
 		return preAuthRateLimitResponse;
 	}
 
-	const [authModule, csrfModule] = await Promise.all([
-		import('@/features/account/server/auth/requestAuthentication'),
+	const [csrfModule, featureAccess] = await Promise.all([
 		import('@/features/account/server/auth/accountCsrf'),
+		requireFeatureAccess(request, 'account.sync'),
 	]);
-	const auth = await authModule.authenticateAccountFromRequest(request);
-	if (auth.status === 'error') {
-		return createAccountAuthErrorRouteResponse(auth, request);
+	if (featureAccess.status === 'error') {
+		return createFeatureAccessGuardErrorResponse(featureAccess);
+	}
+	const { account } = featureAccess;
+	if (account === null) {
+		return createNoStoreErrorResponse(
+			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
+			401
+		);
 	}
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
@@ -197,7 +234,7 @@ export async function PUT(request: NextRequest) {
 		return rateLimitResponse;
 	}
 
-	if (!csrfModule.verifyAccountCsrf(request, auth.data.sessionTokenHash)) {
+	if (!csrfModule.verifyAccountCsrf(request, account.sessionTokenHash)) {
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.forbidden,
 			403
@@ -240,36 +277,36 @@ export async function PUT(request: NextRequest) {
 		);
 	}
 	const { body } = parsedBody;
-	if (auth.data.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
+	if (account.user.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
 		return createNoStoreErrorResponse(
 			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.paused,
 			409,
 			{
-				state_epoch: auth.data.user.state_epoch,
-				sync_generation: auth.data.user.sync_generation,
-				sync_status: auth.data.user.sync_status,
+				state_epoch: account.user.state_epoch,
+				sync_generation: account.user.sync_generation,
+				sync_status: account.user.sync_status,
 			}
 		);
 	}
-	if (body.state_epoch !== auth.data.user.state_epoch) {
+	if (body.state_epoch !== account.user.state_epoch) {
 		return createNoStoreErrorResponse(
 			ACCOUNT_API_RESPONSE_CODE_MAP.stateEpochMismatch,
 			409,
 			{
-				state_epoch: auth.data.user.state_epoch,
-				sync_generation: auth.data.user.sync_generation,
-				sync_status: auth.data.user.sync_status,
+				state_epoch: account.user.state_epoch,
+				sync_generation: account.user.sync_generation,
+				sync_status: account.user.sync_status,
 			}
 		);
 	}
-	if (body.sync_generation !== auth.data.user.sync_generation) {
+	if (body.sync_generation !== account.user.sync_generation) {
 		return createNoStoreErrorResponse(
 			ACCOUNT_SYNC_API_RESPONSE_CODE_MAP.generationMismatch,
 			409,
 			{
-				state_epoch: auth.data.user.state_epoch,
-				sync_generation: auth.data.user.sync_generation,
-				sync_status: auth.data.user.sync_status,
+				state_epoch: account.user.state_epoch,
+				sync_generation: account.user.sync_generation,
+				sync_status: account.user.sync_status,
 			}
 		);
 	}
@@ -277,8 +314,8 @@ export async function PUT(request: NextRequest) {
 	const writeResult = await putSyncStateChanges({
 		body,
 		conflictParseMode: 'fail',
-		session: auth.data.session,
-		userId: auth.data.user.id,
+		session: account.session,
+		userId: account.user.id,
 	});
 	if (writeResult.status === 'corrupt-user-state') {
 		return createCorruptUserStateResponse();
@@ -338,8 +375,8 @@ export async function PUT(request: NextRequest) {
 
 	return createNoStoreJsonResponse({
 		results: writeResult.results,
-		state_epoch: auth.data.user.state_epoch,
-		sync_generation: auth.data.user.sync_generation,
-		sync_status: auth.data.user.sync_status,
+		state_epoch: account.user.state_epoch,
+		sync_generation: account.user.sync_generation,
+		sync_status: account.user.sync_status,
 	});
 }

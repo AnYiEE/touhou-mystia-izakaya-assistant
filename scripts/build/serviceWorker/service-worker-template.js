@@ -11,6 +11,7 @@
 	// the directories this build publishes are removed on activation.
 	const MAP_CACHE = 'maps/assets';
 	const MAP_ASSET_PATH = '/assets/maps/';
+	const MAP_ASSET_API_PATH = '/api/v1/maps/assets/';
 	/** @type {string[]} */
 	const MAP_ASSET_DIRECTORIES = JSON.parse('{{mapAssetDirectories}}');
 	const STATIC_CACHE = 'static/assets';
@@ -39,12 +40,27 @@
 		await caches.delete(key);
 	}
 
-	/** @returns {string | null} The path below `/assets/maps/`, if any. */
+	/**
+	 * @returns {{
+	 *   isApi: boolean,
+	 *   path: string,
+	 * } | null}
+	 * The path below either map asset prefix, if any.
+	 */
 	function getMapAssetPath(/** @type {string} */ pathname) {
-		const index = pathname.indexOf(MAP_ASSET_PATH);
-		return index === -1
-			? null
-			: pathname.slice(index + MAP_ASSET_PATH.length);
+		if (pathname.startsWith(MAP_ASSET_API_PATH)) {
+			return {
+				isApi: true,
+				path: pathname.slice(MAP_ASSET_API_PATH.length),
+			};
+		}
+		if (pathname.startsWith(MAP_ASSET_PATH)) {
+			return {
+				isApi: false,
+				path: pathname.slice(MAP_ASSET_PATH.length),
+			};
+		}
+		return null;
 	}
 
 	function checkCurrentMapAsset(/** @type {string} */ path) {
@@ -57,8 +73,13 @@
 		const cache = await caches.open(MAP_CACHE);
 		const requests = await cache.keys();
 		const staleRequests = requests.filter((request) => {
-			const path = getMapAssetPath(new URL(request.url).pathname);
-			return path === null || !checkCurrentMapAsset(path);
+			const url = new URL(request.url);
+			const mapAsset = getMapAssetPath(url.pathname);
+			return (
+				mapAsset === null ||
+				url.origin !== location.origin ||
+				!checkCurrentMapAsset(mapAsset.path)
+			);
 		});
 
 		await Promise.all(
@@ -136,6 +157,49 @@
 		return response;
 	}
 
+	function checkCacheableMapAssetResponse(/** @type {Response} */ response) {
+		const contentType = response.headers
+			.get('Content-Type')
+			?.split(';', 1)[0]
+			?.trim()
+			.toLowerCase();
+		return (
+			response.status === 200 &&
+			(contentType === 'image/png' || contentType === 'image/webp')
+		);
+	}
+
+	async function fetchMapAssetAndCache(
+		/** @type {Request} */ request,
+		/** @type {FetchEvent} */ event
+	) {
+		const response = await fetch(request, { cache: 'no-cache' });
+		if (checkCacheableMapAssetResponse(response)) {
+			event.waitUntil(
+				putInCache(request, response.clone(), MAP_CACHE).catch(() => {})
+			);
+		}
+		return response;
+	}
+
+	/**
+	 * @param {Cache} cache
+	 * @param {string} path
+	 */
+	async function findLegacyMapAsset(cache, path) {
+		const url = new URL(
+			`${MAP_ASSET_PATH}${path}`,
+			location.origin
+		).toString();
+		const response = await cache.match(url);
+		if (response !== undefined) {
+			if (checkCacheableMapAssetResponse(response)) {
+				return response;
+			}
+			await cache.delete(url);
+		}
+	}
+
 	async function fetchAnonymousNavigationAndCache(
 		/** @type {Request} */ request
 	) {
@@ -182,6 +246,39 @@
 			}
 			throw error;
 		}
+	}
+
+	/**
+	 * @param {Request} request
+	 * @param {FetchEvent} event
+	 * @param {{ isApi: boolean, path: string }} mapAsset
+	 */
+	async function cacheFirstMapAsset(request, event, mapAsset) {
+		const cache = await caches.open(MAP_CACHE);
+		const responseFromCache = await cache.match(request);
+		if (responseFromCache !== undefined) {
+			if (checkCacheableMapAssetResponse(responseFromCache)) {
+				return responseFromCache;
+			}
+			await cache.delete(request);
+		}
+		if (mapAsset.isApi) {
+			const legacyResponse = await findLegacyMapAsset(
+				cache,
+				mapAsset.path
+			);
+			if (legacyResponse !== undefined) {
+				return legacyResponse;
+			}
+		}
+
+		return await fetchWithRetry(
+			request,
+			3,
+			event,
+			fetchMapAssetAndCache,
+			MAP_CACHE
+		);
 	}
 
 	async function cacheFirst(
@@ -264,9 +361,6 @@
 		) {
 			return;
 		}
-		if (pathname === '/api' || pathname.startsWith('/api/')) {
-			return;
-		}
 		if (
 			searchParams.has('_rsc') ||
 			event.request.headers.get('rsc') === '1' ||
@@ -286,9 +380,14 @@
 			return;
 		}
 
-		const mapAssetPath = getMapAssetPath(pathname);
-		if (mapAssetPath !== null && checkCurrentMapAsset(mapAssetPath)) {
-			event.respondWith(cacheFirst(event.request, event, MAP_CACHE));
+		const mapAsset = getMapAssetPath(pathname);
+		if (mapAsset !== null && checkCurrentMapAsset(mapAsset.path)) {
+			event.respondWith(
+				cacheFirstMapAsset(event.request, event, mapAsset)
+			);
+			return;
+		}
+		if (pathname === '/api' || pathname.startsWith('/api/')) {
 			return;
 		}
 

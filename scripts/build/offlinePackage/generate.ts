@@ -1,6 +1,6 @@
 import nextEnv from '@next/env';
 import minimist from 'minimist';
-import { copyFile, rm } from 'node:fs/promises';
+import { copyFile, cp, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { argv, cwd } from 'node:process';
 
@@ -44,6 +44,10 @@ const paths = getOfflinePackagePaths();
 
 async function prepareOfflineFiles() {
 	await restoreOfflineRouterReplacement(paths);
+	await rm(resolve(paths.publicPath, 'assets/maps'), {
+		force: true,
+		recursive: true,
+	});
 	await rm(paths.nextBuildPath, { force: true, recursive: true });
 	await rm(paths.outputPath, { force: true, recursive: true });
 	await prepareOfflineRouterReplacement(paths);
@@ -51,6 +55,11 @@ async function prepareOfflineFiles() {
 
 async function packageOfflineFiles() {
 	await restoreOfflineRouterReplacement(paths);
+	await cp(paths.mapAssetsPath, resolve(paths.outputPath, 'assets/maps'), {
+		errorOnExist: false,
+		force: true,
+		recursive: true,
+	});
 
 	const replaceExtension = (fileName: string) => {
 		const fileNameParts = fileName.split('.');

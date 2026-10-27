@@ -940,7 +940,7 @@ export default function AdminSsoCallbacksClient({
 			</AdminMetricPanel>
 
 			{callbacks === null ? (
-				<AdminEmptyState icon={faClock}>
+				<AdminEmptyState isLoading icon={faClock}>
 					{ADMIN_SSO_MESSAGE_MAP.callbackQueueReading}
 				</AdminEmptyState>
 			) : callbacks.callbacks.length === 0 ? (

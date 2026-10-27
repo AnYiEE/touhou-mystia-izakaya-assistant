@@ -1,6 +1,8 @@
 /node_modules
 .*cache
 .DS_Store
+/.playwright-cli/
+/.tmp/
 
 # next.js
 /.next/
@@ -8,6 +10,7 @@
 
 # production
 /.deploy/
+/public/assets/maps/
 /public/registerServiceWorker.js
 /public/serviceWorker.js
 /*offline*.zip

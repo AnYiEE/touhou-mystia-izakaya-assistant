@@ -132,10 +132,11 @@ export const AdminErrorRetryState = memo<IAdminErrorRetryStateProps>(
 interface IAdminEmptyStateProps {
 	children: ReactNodeWithoutBoolean;
 	icon: FontAwesomeIconProps['icon'];
+	isLoading?: boolean;
 }
 
 export const AdminEmptyState = memo<IAdminEmptyStateProps>(
-	function AdminEmptyState({ children, icon }) {
+	function AdminEmptyState({ children, icon, isLoading = false }) {
 		const { isHighAppearance } = useDesignPreferences();
 
 		return (
@@ -147,7 +148,13 @@ export const AdminEmptyState = memo<IAdminEmptyStateProps>(
 						: 'bg-default-50/30 dark:bg-default-100/10'
 				)}
 			>
-				<FontAwesomeIcon icon={icon} size="lg" />
+				<FontAwesomeIcon
+					icon={icon}
+					className={cn(
+						isLoading && 'animate-spin motion-reduce:animate-none'
+					)}
+					size="lg"
+				/>
 				<span>{children}</span>
 			</Placeholder>
 		);

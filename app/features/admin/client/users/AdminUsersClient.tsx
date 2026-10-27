@@ -157,6 +157,13 @@ export default function AdminUsersClient({
 				actions={
 					<>
 						<AdminHeaderActionLink
+							href="/admin/access"
+							icon={faShieldHalved}
+							onPress={handleLeaveUserList}
+						>
+							功能访问
+						</AdminHeaderActionLink>
+						<AdminHeaderActionLink
 							href="/admin/announcements"
 							icon={faBullhorn}
 							onPress={handleLeaveUserList}

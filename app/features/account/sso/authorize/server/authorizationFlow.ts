@@ -14,6 +14,7 @@ import {
 	checkSsoClientEnabled,
 	checkSsoRedirectUriFormat,
 } from '@/features/account/sso/server/validation';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
@@ -39,7 +40,10 @@ export type TSsoAuthorizationPrepareResult =
 export type TSsoAuthorizationSubmitIntent = 'agree' | 'cancel';
 
 export type TSsoAuthorizationSubmitResult =
-	| { clearContext: false; status: 'expired' | 'invalid' | 'resume' }
+	| {
+			clearContext: false;
+			status: 'expired' | 'feature-access-denied' | 'invalid' | 'resume';
+	  }
 	| { clearContext: true; status: 'cancelled' }
 	| { clearContext: true; redirectUrl: string; status: 'redirect' };
 
@@ -166,10 +170,17 @@ async function submitSsoAuthorizationAgree(
 						userId: auth.data.user.id,
 					}),
 					auditNow
-				)
+				),
+			readContentLocale(request)
 		);
 		if (ticketResult.status === 'unauthorized') {
 			return { clearContext: false, status: 'resume' };
+		}
+		if (ticketResult.status === 'feature-access-denied') {
+			return { clearContext: false, status: 'feature-access-denied' };
+		}
+		if (ticketResult.status === 'invalid-client') {
+			return { clearContext: false, status: 'invalid' };
 		}
 
 		return {

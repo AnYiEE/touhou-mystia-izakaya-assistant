@@ -39,6 +39,8 @@ import { retryAccountSyncQueue } from '@/features/account/client/sync/flush';
 import { rebuildAccountSyncCloudFromLocal } from '@/features/account/client/sync/rebuild';
 import { checkAccountSyncResetPrepared } from '@/features/account/client/sync/resetGeneration';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import FeatureAccessNotice from '@/features/featureAccess/client/components/FeatureAccessNotice';
+import { useFeatureModuleAccess } from '@/features/featureAccess/client/useFeatureModuleAccess';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { checkCrossTabNativeLockSupported } from '@/infrastructure/browser/crossTab/withCrossTabLock';
@@ -71,6 +73,7 @@ export default memo<IProps>(function AccountSyncStatus() {
 	const { locale, t } = useI18n(accountMessages);
 	const isReducedMotion = useReducedMotion();
 	const vibrate = useVibrate();
+	const featureAccess = useFeatureModuleAccess('account.sync');
 
 	const controlLabel = {
 		broadcastAvailable: t(
@@ -235,6 +238,14 @@ export default memo<IProps>(function AccountSyncStatus() {
 			setRebuildError(null);
 		}
 	}, []);
+
+	if (
+		!featureAccess.isLoading &&
+		!featureAccess.allowed &&
+		featureAccess.reason !== null
+	) {
+		return <FeatureAccessNotice moduleKey="account.sync" />;
+	}
 
 	if (user?.sync_status === ACCOUNT_SYNC_STATUS_MAP.pausedEmpty) {
 		return (

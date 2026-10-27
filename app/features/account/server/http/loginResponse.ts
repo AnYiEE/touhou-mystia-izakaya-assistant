@@ -5,6 +5,8 @@ import type {
 	IAuthLoginSuccessResponse,
 } from '@/features/account/contracts';
 import { setAccountSessionCookie } from '@/features/account/server/auth/sessionLifecycle';
+import { presentUserFeatureAccess } from '@/features/featureAccess/server/presentation';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
 import {
@@ -51,9 +53,14 @@ export async function createAccountLoginSuccessResponse({
 
 		return response;
 	}
+	const featureAccess = await presentUserFeatureAccess(
+		user.id,
+		readContentLocale(request)
+	);
 
 	const response = createNoStoreJsonResponse({
 		csrf_token: session.csrfToken,
+		feature_access: featureAccess,
 		has_password: hasPassword,
 		password_must_change: passwordMustChange,
 		...(ssoContext === null

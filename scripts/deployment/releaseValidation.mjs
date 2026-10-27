@@ -47,6 +47,42 @@ export async function validatePublishedRelease(releaseDirectory, buildId) {
 		'isFile',
 		'release-service-worker-registration-not-found'
 	);
+	const privateMapAssetsDirectory = join(
+		releaseDirectory,
+		'app',
+		'assets',
+		'maps'
+	);
+	const privateMapAssetsStatus = await lstat(privateMapAssetsDirectory).catch(
+		(error) => {
+			throw createError('release-map-assets-not-found', error);
+		}
+	);
+	if (
+		!privateMapAssetsStatus.isDirectory() ||
+		privateMapAssetsStatus.isSymbolicLink()
+	) {
+		throw createError('release-map-assets-invalid');
+	}
+	try {
+		await lstat(join(releaseDirectory, 'public', 'assets', 'maps'));
+		throw createError('release-public-map-assets-present');
+	} catch (error) {
+		if (
+			Error.isError(error) &&
+			error.message === 'release-public-map-assets-present'
+		) {
+			throw error;
+		}
+		if (!(
+			typeof error === 'object' &&
+			error !== null &&
+			'code' in error &&
+			error.code === 'ENOENT'
+		)) {
+			throw createError('release-public-map-assets-invalid', error);
+		}
+	}
 	let releaseBuildId;
 	try {
 		const releaseBuildIdContents = await readFile(

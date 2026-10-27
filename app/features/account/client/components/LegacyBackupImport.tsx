@@ -20,6 +20,7 @@ import {
 	getAccountClientErrorMessage,
 	isLegacyBackupImportErrorMessage,
 } from '@/features/account/client/errorMessage';
+import { useAccountLoginRequiredAction } from '@/features/account/client/hooks/useAccountLoginRequiredAction';
 import {
 	type TAccountMessageKey,
 	accountMessages,
@@ -36,6 +37,8 @@ import {
 import { takeOverLocalAccountData } from '@/features/account/client/sync/localTakeover';
 import { withAccountSyncOperationLease } from '@/features/account/client/sync/syncOperationLease';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import FeatureAccessNotice from '@/features/featureAccess/client/components/FeatureAccessNotice';
+import { useFeatureModuleAccess } from '@/features/featureAccess/client/useFeatureModuleAccess';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
@@ -50,19 +53,18 @@ function clearPendingLegacyBackupImportError() {
 	}
 }
 
-interface IProps {
-	onOpenAccountModal: () => void;
-}
-
-export default function LegacyBackupImport({ onOpenAccountModal }: IProps) {
+export default function LegacyBackupImport() {
 	const { locale, t } = useI18n(accountMessages);
 	const vibrate = useVibrate();
+	const openAccountModalAfterAuthentication =
+		useAccountLoginRequiredAction('preferences');
 
 	const cloudCode = globalStore.persistence.cloudCode.use();
 
 	const csrfToken = accountStore.shared.csrfToken.use();
 	const isLoggedIn = accountStore.shared.isLoggedIn.use();
 	const user = accountStore.shared.user.use();
+	const accountSyncAccess = useFeatureModuleAccess('account.sync');
 
 	const [code, setCode] = useState(cloudCode ?? '');
 	const [message, setMessage] = useState<TLegacyImportMessage | null>(null);
@@ -235,8 +237,8 @@ export default function LegacyBackupImport({ onOpenAccountModal }: IProps) {
 			'Account Button',
 			'Open Modal From Legacy Backup Import'
 		);
-		onOpenAccountModal();
-	}, [onOpenAccountModal, vibrate]);
+		openAccountModalAfterAuthentication();
+	}, [openAccountModalAfterAuthentication, vibrate]);
 
 	useEffect(() => {
 		const previousCloudCode = previousCloudCodeRef.current;
@@ -262,6 +264,9 @@ export default function LegacyBackupImport({ onOpenAccountModal }: IProps) {
 				</Button>
 			</div>
 		);
+	}
+	if (!accountSyncAccess.isLoading && !accountSyncAccess.allowed) {
+		return <FeatureAccessNotice moduleKey="account.sync" />;
 	}
 
 	return (

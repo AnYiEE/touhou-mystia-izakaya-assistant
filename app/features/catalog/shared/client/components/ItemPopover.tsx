@@ -29,6 +29,7 @@ interface IItemPopoverTriggerProps
 	extends
 		Omit<PopoverTriggerProps, 'className'>,
 		HTMLButtonElementAttributes {
+	shouldStyleExpandedState?: boolean;
 	supportRecordId?: number;
 }
 
@@ -37,6 +38,7 @@ export const ItemPopoverTrigger = memo<IItemPopoverTriggerProps>(
 		className,
 		onClickCapture,
 		onPress,
+		shouldStyleExpandedState = true,
 		supportRecordId,
 		...props
 	}) {
@@ -71,7 +73,7 @@ export const ItemPopoverTrigger = memo<IItemPopoverTriggerProps>(
 					className={cn(
 						{
 							'aria-expanded:bg-background/40 aria-expanded:opacity-100 aria-expanded:backdrop-blur dark:aria-expanded:bg-content1/40':
-								isHighAppearance,
+								isHighAppearance && shouldStyleExpandedState,
 						},
 						className
 					)}

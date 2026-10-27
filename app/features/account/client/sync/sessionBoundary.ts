@@ -6,6 +6,8 @@ import {
 } from '@/features/account/client/session';
 import { accountStore } from '@/features/account/client/state/accountStore';
 import type { IAccountSyncMeta } from '@/features/account/sync/contracts';
+import { FEATURE_ACCESS_API_RESPONSE_CODE_MAP } from '@/features/featureAccess/apiResponseCodes';
+import { isFeatureModuleAllowed } from '@/features/featureAccess/client/access';
 
 import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 
@@ -28,7 +30,11 @@ export function getLoggedInAccountContext() {
 	const csrfToken = accountStore.shared.csrfToken.get();
 	const user = accountStore.shared.user.get();
 
-	if (csrfToken === null || user === null) {
+	if (
+		csrfToken === null ||
+		user === null ||
+		!isFeatureModuleAllowed('account.sync')
+	) {
 		return null;
 	}
 
@@ -116,8 +122,18 @@ export function handleForbiddenSyncError(error: AccountApiError) {
 	const user = accountStore.shared.user.get();
 	accountStore.shared.sync.canRetry.set(false);
 	accountStore.shared.sync.failedAttempts.set(0);
-	accountStore.shared.sync.lastError.set(error.message);
 	accountStore.shared.sync.lastResult.set('failed');
+
+	if (error.message === FEATURE_ACCESS_API_RESPONSE_CODE_MAP.denied) {
+		accountStore.shared.sync.lastError.set(null);
+		getAccountSyncLifecyclePort().stopRuns();
+		void getAccountSessionRefreshPort()
+			.refreshFromInvalidation()
+			.catch(() => {});
+		return;
+	}
+
+	accountStore.shared.sync.lastError.set(error.message);
 
 	if (error.message !== 'password-must-change') {
 		getAccountSyncLifecyclePort().stopRuns();

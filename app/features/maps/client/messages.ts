@@ -3,7 +3,15 @@ import { appShellMessages } from '@/features/appShell/client/messages';
 import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const MAPS_MESSAGES_ZH_CN = {
+	'maps.access.body':
+		'预览模式支持查看低清地图和基础详情。完整模式会加载高清地图瓦片并提供完整功能，因此会消耗更多服务器资源和网络流量，并增加长期运行费用。为了让地图服务保持稳定，完整模式需要登录账号后使用。',
+	'maps.access.expired':
+		'登录已过期，已切换为预览模式。重新登录后可继续使用完整模式。',
+	'maps.access.title': '需要登录账号',
+	'maps.access.unavailable': '暂时无法验证账号，请稍后重试。',
 	'maps.arrival': '到达点',
+	'maps.asset.error': '图片加载失败',
+	'maps.asset.retry': '重试',
 	'maps.back': '返回上一级地图',
 	'maps.close': '关闭地图',
 	'maps.detail.allDay': '全天',
@@ -16,7 +24,6 @@ const MAPS_MESSAGES_ZH_CN = {
 		'双击地图上的“隙间传送”标记可直接打开世界地图。',
 	'maps.detail.doubleClickTransition':
 		'双击地图上的“通往{map}”标记可直接前往。',
-	'maps.detail.fishing': '可在此区域钓鱼',
 	'maps.detail.goods': '商品',
 	'maps.detail.goTo': '前往{map}',
 	'maps.detail.interaction.bed': '在家休息，可调整当前时间。',
@@ -116,6 +123,8 @@ const MAPS_MESSAGES_ZH_CN = {
 	'maps.list.empty': '没有符合条件的条目',
 	'maps.meta.description':
 		'东方夜雀食堂世界地图：在游戏原版地图上查看采集点、钓鱼点、设施、商人、稀客、居民和任务线索，以及地图出入口和隙间传送。',
+	'maps.preview.badge': '预览模式',
+	'maps.preview.closeIn': '{seconds}秒后关闭',
 	'maps.search.placeholder': '搜索本地图条目',
 	'maps.sidebar.collapse': '收起侧栏',
 	'maps.sidebar.expand': '展开侧栏',
@@ -136,7 +145,16 @@ export type TMapsMessageKey = keyof typeof MAPS_MESSAGES_ZH_CN;
 
 export const mapsMessages = {
 	en: {
+		'maps.access.body':
+			'Preview mode supports the low-resolution map and basic details. Full mode loads high-resolution map tiles and offers all features, consuming more server resources and network traffic and increasing long-term running costs. To keep the map service stable, full mode requires a signed-in account.',
+		'maps.access.expired':
+			'Your sign-in has expired. Preview mode is now active; sign in again to resume using full mode.',
+		'maps.access.title': 'Sign-in required',
+		'maps.access.unavailable':
+			'Unable to verify your account. Try again later.',
 		'maps.arrival': 'Arrival',
+		'maps.asset.error': 'Image failed to load',
+		'maps.asset.retry': 'Retry',
 		'maps.back': 'Back to previous map',
 		'maps.close': 'Close map',
 		'maps.detail.allDay': 'All day',
@@ -149,7 +167,6 @@ export const mapsMessages = {
 			'Double-click the “Gap teleport” marker on the map to open the world map.',
 		'maps.detail.doubleClickTransition':
 			'Double-click the “To {map}” marker on the map to travel there directly.',
-		'maps.detail.fishing': 'You can fish in this area',
 		'maps.detail.goods': 'Goods',
 		'maps.detail.goTo': 'Go to {map}',
 		'maps.detail.interaction.bed':
@@ -262,6 +279,8 @@ export const mapsMessages = {
 		'maps.list.empty': 'Nothing matches',
 		'maps.meta.description':
 			"Touhou Mystia's Izakaya world map: browse gathering and fishing spots, facilities, merchants, special guests, residents, and task clues on the original maps, along with exits and gap teleport.",
+		'maps.preview.badge': 'Preview mode',
+		'maps.preview.closeIn': 'Closes in {seconds}s',
 		'maps.search.placeholder': 'Search items on this map',
 		'maps.sidebar.collapse': 'Collapse sidebar',
 		'maps.sidebar.expand': 'Expand sidebar',
@@ -278,7 +297,16 @@ export const mapsMessages = {
 		'maps.zoom.out': 'Zoom out',
 	},
 	ja: {
+		'maps.access.body':
+			'プレビューモードでは、低画質の地図と基本詳細を表示できます。完全モードでは高画質の地図タイルを読み込み、すべての機能を利用できますが、サーバーリソースと通信量が増え、長期的な運用費用も増加します。地図サービスを安定して提供するため、完全モードの利用にはログイン済みアカウントが必要です。',
+		'maps.access.expired':
+			'ログインの有効期限が切れたため、プレビューモードに切り替わりました。再度ログインすると完全モードを利用できます。',
+		'maps.access.title': 'ログインが必要です',
+		'maps.access.unavailable':
+			'アカウントを確認できません。しばらくしてからもう一度お試しください。',
 		'maps.arrival': '到着地点',
+		'maps.asset.error': '画像を読み込めませんでした',
+		'maps.asset.retry': '再試行',
 		'maps.back': '前のマップに戻る',
 		'maps.close': '地図を閉じる',
 		'maps.detail.allDay': '終日',
@@ -291,7 +319,6 @@ export const mapsMessages = {
 			'マップ上の「スキマ移動」マーカーをダブルクリックすると、ワールドマップを開けます。',
 		'maps.detail.doubleClickTransition':
 			'マップ上の「{map}へ」マーカーをダブルクリックすると、直接移動できます。',
-		'maps.detail.fishing': 'このエリアで釣りができます',
 		'maps.detail.goods': '商品',
 		'maps.detail.goTo': '{map}へ移動',
 		'maps.detail.interaction.bed': '家で休み、現在時刻を調整できます。',
@@ -405,6 +432,8 @@ export const mapsMessages = {
 		'maps.list.empty': '条件に合う項目はありません',
 		'maps.meta.description':
 			'東方夜雀食堂のワールドマップ：原作マップ上で採取ポイント、釣り場、施設、商人、レア客、住人、任務の手がかりの位置と、出入口、スキマ移動を確認できます。',
+		'maps.preview.badge': 'プレビューモード',
+		'maps.preview.closeIn': '{seconds}秒後に閉じます',
 		'maps.search.placeholder': 'このマップ内を検索',
 		'maps.sidebar.collapse': 'サイドバーを折りたたむ',
 		'maps.sidebar.expand': 'サイドバーを展開',
@@ -421,7 +450,16 @@ export const mapsMessages = {
 		'maps.zoom.out': '縮小',
 	},
 	ko: {
+		'maps.access.body':
+			'미리보기 모드에서는 저화질 지도와 기본 상세 정보를 확인할 수 있습니다. 전체 모드는 고해상도 지도 타일을 불러오고 모든 기능을 제공하지만, 서버 리소스와 네트워크 트래픽이 더 많이 소모되고 장기적인 운영 비용이 증가합니다. 지도 서비스를 안정적으로 제공하기 위해 전체 모드는 로그인한 계정으로 이용해야 합니다.',
+		'maps.access.expired':
+			'로그인이 만료되어 미리보기 모드로 전환되었습니다. 다시 로그인하면 전체 모드를 계속 이용할 수 있습니다.',
+		'maps.access.title': '로그인이 필요합니다',
+		'maps.access.unavailable':
+			'계정을 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.',
 		'maps.arrival': '도착 지점',
+		'maps.asset.error': '이미지를 불러오지 못했습니다',
+		'maps.asset.retry': '다시 시도',
 		'maps.back': '이전 지도로 돌아가기',
 		'maps.close': '지도 닫기',
 		'maps.detail.allDay': '종일',
@@ -434,7 +472,6 @@ export const mapsMessages = {
 			"지도에서 '스키마 이동' 마커를 두 번 클릭하면 월드맵을 열 수 있습니다.",
 		'maps.detail.doubleClickTransition':
 			"지도에서 '{map}(으)로' 마커를 두 번 클릭하면 바로 이동할 수 있습니다.",
-		'maps.detail.fishing': '이 구역에서 낚시할 수 있습니다',
 		'maps.detail.goods': '상품',
 		'maps.detail.goTo': '{map}(으)로 이동',
 		'maps.detail.interaction.bed':
@@ -549,6 +586,8 @@ export const mapsMessages = {
 		'maps.list.empty': '조건에 맞는 항목이 없습니다',
 		'maps.meta.description':
 			'동방 야작식당 월드맵: 원작 지도에서 채집 지점, 낚시터, 시설, 상인, 희귀 손님, 주민, 임무 단서의 위치와 출입구, 스키마 이동을 확인하세요.',
+		'maps.preview.badge': '미리보기 모드',
+		'maps.preview.closeIn': '{seconds}초 후 닫힘',
 		'maps.search.placeholder': '이 지도에서 검색',
 		'maps.sidebar.collapse': '사이드바 접기',
 		'maps.sidebar.expand': '사이드바 펼치기',
@@ -566,7 +605,15 @@ export const mapsMessages = {
 	},
 	'zh-CN': MAPS_MESSAGES_ZH_CN,
 	'zh-TW': {
+		'maps.access.body':
+			'預覽模式支援查看低畫質地圖和基本詳情。完整模式會載入高畫質地圖圖磚並提供完整功能，因此會消耗更多伺服器資源和網路流量，並增加長期營運費用。為了讓地圖服務保持穩定，完整模式需要登入帳號後使用。',
+		'maps.access.expired':
+			'登入已過期，已切換為預覽模式。重新登入後可繼續使用完整模式。',
+		'maps.access.title': '需要登入帳號',
+		'maps.access.unavailable': '暫時無法驗證帳號，請稍後重試。',
 		'maps.arrival': '到達點',
+		'maps.asset.error': '圖片載入失敗',
+		'maps.asset.retry': '重試',
 		'maps.back': '返回上一級地圖',
 		'maps.close': '關閉地圖',
 		'maps.detail.allDay': '全天',
@@ -580,7 +627,6 @@ export const mapsMessages = {
 			'雙擊地圖上的「隙間傳送」標記可直接開啟世界地圖。',
 		'maps.detail.doubleClickTransition':
 			'雙擊地圖上的「通往{map}」標記可直接前往。',
-		'maps.detail.fishing': '可在此區域釣魚',
 		'maps.detail.goods': '商品',
 		'maps.detail.goTo': '前往{map}',
 		'maps.detail.interaction.bed': '在家休息，可調整目前時間。',
@@ -683,6 +729,8 @@ export const mapsMessages = {
 		'maps.list.empty': '沒有符合條件的項目',
 		'maps.meta.description':
 			'東方夜雀食堂世界地圖：在遊戲原版地圖上查看採集點、釣魚點、設施、商人、稀客、居民和任務線索，以及地圖出入口和隙間傳送。',
+		'maps.preview.badge': '預覽模式',
+		'maps.preview.closeIn': '{seconds}秒後關閉',
 		'maps.search.placeholder': '搜尋本地圖項目',
 		'maps.sidebar.collapse': '收起側欄',
 		'maps.sidebar.expand': '展開側欄',

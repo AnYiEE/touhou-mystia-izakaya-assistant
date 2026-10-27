@@ -1,7 +1,10 @@
 'use client';
 
 import { memo, useCallback, useMemo } from 'react';
-import { faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
+import {
+	faRotate,
+	faWandMagicSparkles,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
 
@@ -12,6 +15,7 @@ import { WORLD_MAP_FACTS } from '@/domain/data/maps/worldMapFacts';
 import { getPlaceLabel } from '@/domain/places/localizedLabels';
 
 import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
+import { useMapAsset } from '@/features/maps/client/assets/MapAssetContext';
 import { mapsMessages } from '@/features/maps/client/messages';
 import { getWorldMapImageUrl } from '@/features/maps/client/model/assets';
 import { checkDayMapLabel } from '@/features/maps/client/model/dayMapLabels';
@@ -19,6 +23,7 @@ import { MAP_PILL_CLASS_NAME } from '@/features/maps/client/model/mapStyles';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
+import { useMapAccess } from './MapAccessContext';
 import { type IMapView } from './MapViewport';
 
 interface IProps {
@@ -207,8 +212,19 @@ export default memo<IProps>(function WorldMapLayer({
 	onEnter,
 	view,
 }) {
+	const { t } = useI18n(mapsMessages);
+	const { policy } = useMapAccess();
 	const { x: offsetX, y: offsetY, zoom } = view;
 	const localizationRevision = useCatalogLocalizationRevision();
+	const {
+		objectUrl: worldMapObjectUrl,
+		retry: retryWorldMapAsset,
+		status: worldMapStatus,
+	} = useMapAsset(getWorldMapImageUrl(policy.mode === 'preview'));
+
+	const handleRetry = useCallback(() => {
+		retryWorldMapAsset();
+	}, [retryWorldMapAsset]);
 
 	const spots = useMemo(
 		() =>
@@ -245,15 +261,34 @@ export default memo<IProps>(function WorldMapLayer({
 			className="absolute left-0 top-0"
 			style={{ transform: `translate3d(${offsetX}px, ${offsetY}px, 0)` }}
 		>
-			<span
-				aria-hidden
-				className="image-rendering-pixelated pointer-events-none absolute left-0 top-0 bg-[length:100%_100%] bg-no-repeat"
-				style={{
-					backgroundImage: `url('${getWorldMapImageUrl()}')`,
-					height: WORLD_MAP_FACTS.height * zoom,
-					width: WORLD_MAP_FACTS.width * zoom,
-				}}
-			/>
+			{worldMapObjectUrl !== null && (
+				// eslint-disable-next-line @next/next/no-img-element -- Object URLs cannot be represented by next/image.
+				<img
+					aria-hidden
+					alt=""
+					draggable={false}
+					src={worldMapObjectUrl}
+					className="image-rendering-pixelated pointer-events-none absolute left-0 top-0 max-w-none object-fill"
+					style={{
+						height: WORLD_MAP_FACTS.height * zoom,
+						width: WORLD_MAP_FACTS.width * zoom,
+					}}
+				/>
+			)}
+			{worldMapStatus === 'error' && (
+				<button
+					aria-label={t('maps.asset.retry')}
+					title={t('maps.asset.error')}
+					type="button"
+					onClick={handleRetry}
+					className={cn(
+						'absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/75 text-white shadow-md',
+						CLASSNAME_FOCUS_VISIBLE_OUTLINE
+					)}
+				>
+					<FontAwesomeIcon icon={faRotate} />
+				</button>
+			)}
 			{spots.map((spot, index) => (
 				<WorldMapSpot
 					key={spot.place}

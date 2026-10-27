@@ -21,7 +21,7 @@ const serviceWorkerTemplatePath = resolve(
 );
 const registerOutputPath = resolve(publicPath, 'registerServiceWorker.js');
 const serviceWorkerOutputPath = resolve(publicPath, 'serviceWorker.js');
-const mapAssetsPath = resolve(publicPath, 'assets/maps');
+const mapAssetsPath = resolve(rootPath, 'app/assets/maps');
 const staticAssetsPath = resolve(publicPath, 'assets');
 
 async function listSubdirectories(path: string) {
@@ -49,7 +49,8 @@ async function listSubdirectories(path: string) {
  * (`day/<map>/<hash>/`, `characters/<source>/<hash>/`,
  * `facilities/<folder>/<hash>/`, `fishing/<folder>/<hash>/`,
  * `interactions/<folder>/<hash>/`, `prayers/<folder>/<hash>/`,
- * `tasks/<folder>/<hash>/`, `teleports/<folder>/<hash>/`, `world/<hash>/`).
+ * `tasks/<folder>/<hash>/`, `teleports/<folder>/<hash>/`,
+ * `previews/world/<hash>/`, `world/<hash>/`).
  * The service worker keeps cached map assets inside them and drops the rest.
  */
 async function listMapAssetDirectories() {
@@ -92,6 +93,11 @@ async function listMapAssetDirectories() {
 		resolve(mapAssetsPath, 'world')
 	)) {
 		directories.push(`world/${hash}/`);
+	}
+	for (const hash of await listSubdirectories(
+		resolve(mapAssetsPath, 'previews/world')
+	)) {
+		directories.push(`previews/world/${hash}/`);
 	}
 	return directories;
 }

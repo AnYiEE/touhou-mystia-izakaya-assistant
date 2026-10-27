@@ -14,6 +14,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
 
+import { useMapAsset } from '@/features/maps/client/assets/MapAssetContext';
 import { getCharacterSpriteUrl } from '@/features/maps/client/model/assets';
 import {
 	type TDayMapEntity,
@@ -56,6 +57,11 @@ export default memo<IProps>(function DayMapEntityIcon({
 	size,
 }) {
 	const style = { height: `${size}rem`, width: `${size}rem` };
+	const characterSpriteUrl =
+		'character' in entity && entity.character.sprite !== null
+			? getCharacterSpriteUrl(entity.character.sprite)
+			: null;
+	const characterAsset = useMapAsset(characterSpriteUrl);
 
 	switch (entity.layer) {
 		case 'collectable': {
@@ -131,7 +137,10 @@ export default memo<IProps>(function DayMapEntityIcon({
 							? style
 							: {
 									...style,
-									backgroundImage: `url('${getCharacterSpriteUrl(sprite)}')`,
+									backgroundImage:
+										characterAsset.objectUrl === null
+											? undefined
+											: `url('${characterAsset.objectUrl}')`,
 								}
 					}
 				/>

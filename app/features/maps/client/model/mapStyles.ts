@@ -1,5 +1,16 @@
 import { type TDayMapLayer } from './dayMapEntities';
 
+export const MAP_POPOVER_CONTAINER_PADDING = 12;
+export const MAP_POPOVER_CONTENT_MAX_WIDTH_CLASS_NAME =
+	'max-w-[calc(100vw-1.5rem)]';
+export const MAP_POPOVER_CONTENT_WIDTH_CLASS_NAME =
+	'w-[min(23rem,calc(100vw-1.5rem))]';
+/**
+ * 21rem sidebar + 12px inset + 23rem card + 23rem popover + 8px gap +
+ * 12px viewport padding = 1104px (69rem).
+ */
+export const MAP_POPOVER_SIDE_PLACEMENT_MIN_WIDTH = 1104;
+
 /**
  * @description Shared class names for overlays drawn on top of the game art.
  * Overlays use the game's own language: dark translucent pills with white text,

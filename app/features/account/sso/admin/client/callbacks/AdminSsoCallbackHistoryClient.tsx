@@ -777,7 +777,7 @@ export default function AdminSsoCallbackHistoryClient({
 			</AdminMetricPanel>
 
 			{deliveries === null ? (
-				<AdminEmptyState icon={faClock}>
+				<AdminEmptyState isLoading icon={faClock}>
 					{ADMIN_SSO_MESSAGE_MAP.callbackHistoryReading}
 				</AdminEmptyState>
 			) : deliveries.deliveries.length === 0 ? (

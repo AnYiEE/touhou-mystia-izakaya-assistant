@@ -66,6 +66,8 @@ import { getPinyin } from '@/shared/utilities/pinyin/getPinyin';
 import { matchNameByLocale } from '@/shared/utilities/search/localeNameMatch';
 
 import DayMapEntityIcon from './DayMapEntityIcon';
+import LazyMapAssetImage from './LazyMapAssetImage';
+import { useMapAccess } from './MapAccessContext';
 
 interface IProps {
 	entities: ReadonlyArray<TDayMapEntity>;
@@ -76,6 +78,7 @@ interface IProps {
 	map: TDayMapLabel | null;
 	onEnterMap: (map: TDayMapLabel) => void;
 	onQueryChange: (query: string) => void;
+	onRequestAccess: () => void;
 	onSelect: (id: string) => void;
 	onToggleCollapsed: () => void;
 	onToggleLayer: (layer: TDayMapLayer) => void;
@@ -89,8 +92,11 @@ interface IMapCardProps {
 }
 
 const MapCard = memo<IMapCardProps>(function MapCard({ map, onEnterMap }) {
-	const { t } = useI18n(mapsMessages);
 	useCatalogLocalizationRevision();
+	const { t } = useI18n(mapsMessages);
+	const { policy } = useMapAccess();
+
+	const isLocked = !policy.canNavigateToMap(map);
 
 	const dlc = getDayMapDlc(map);
 	const kind = checkExtraDayMapLabel(map)
@@ -98,45 +104,50 @@ const MapCard = memo<IMapCardProps>(function MapCard({ map, onEnterMap }) {
 		: null;
 
 	const handleClick = useCallback(() => {
+		if (isLocked) {
+			return;
+		}
 		onEnterMap(map);
-	}, [map, onEnterMap]);
+	}, [isLocked, map, onEnterMap]);
 
 	return (
-		<button
-			type="button"
-			onClick={handleClick}
+		<div
 			className={cn(
-				'group w-full overflow-hidden rounded-medium bg-content2 text-left shadow-sm ring-1 ring-default-200 transition hover:ring-2 hover:ring-[#ffa800] motion-reduce:transition-none',
-				CLASSNAME_FOCUS_VISIBLE_OUTLINE
+				'group relative w-full overflow-hidden rounded-medium bg-content2 text-left shadow-sm ring-1 ring-default-200 transition hover:ring-2 hover:ring-[#ffa800] motion-reduce:transition-none'
 			)}
 		>
-			<span className="relative block aspect-[16/9] overflow-hidden bg-[#14110d]">
-				{/* Lazy: most cards start below the fold of the scrolling list. */}
-				{/* eslint-disable-next-line @next/next/no-img-element -- Pre-sized static thumbnail; static export cannot optimise `next/image`, and CSS backgrounds cannot load lazily. */}
-				<img
-					alt=""
-					decoding="async"
-					loading="lazy"
-					src={getDayMapPreviewUrl(map)}
-					className="image-rendering-pixelated block h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none"
-				/>
-				{kind !== null && kind !== 'place' && (
-					<span className="absolute left-1 top-1 rounded-full bg-black/70 px-1.5 text-tiny font-medium text-white">
-						{t(`maps.kind.${kind}`)}
-					</span>
+			<button
+				aria-label={t('maps.world.enter', { map: getDayMapLabel(map) })}
+				disabled={isLocked}
+				type="button"
+				onClick={handleClick}
+				className={cn(
+					'absolute inset-0 z-0 rounded-medium',
+					CLASSNAME_FOCUS_VISIBLE_OUTLINE
 				)}
-			</span>
-			<span className="flex items-center justify-between gap-1 px-2 py-1">
-				<span className="truncate text-small font-medium">
-					{getDayMapLabel(map)}
+			/>
+			<span className="pointer-events-none relative z-10 block">
+				<span className="relative block aspect-[16/9] overflow-hidden bg-[#14110d]">
+					<LazyMapAssetImage
+						src={getDayMapPreviewUrl(map)}
+						className="image-rendering-pixelated"
+					/>
+					{kind !== null && kind !== 'place' && (
+						<span className="absolute left-1 top-1 rounded-full bg-black/70 px-1.5 text-tiny font-medium text-white">
+							{t(`maps.kind.${kind}`)}
+						</span>
+					)}
 				</span>
-				{dlc !== 0 && (
-					<span className="shrink-0 text-tiny text-default-500">
-						DLC{dlc}
+				<span className="flex items-center justify-between gap-1 px-2 py-1">
+					<span className="truncate text-small font-medium">
+						{getDayMapLabel(map)}
 					</span>
-				)}
+					<span className="flex shrink-0 items-center gap-1 text-tiny text-default-500">
+						{dlc !== 0 && <>DLC{dlc}</>}
+					</span>
+				</span>
 			</span>
-		</button>
+		</div>
 	);
 });
 
@@ -187,9 +198,11 @@ const EntityRow = memo<IEntityRowProps>(function EntityRow({
 	onSelect,
 }) {
 	const { t } = useI18n(mapsMessages);
+
 	const handleClick = useCallback(() => {
 		onSelect(entity.id);
 	}, [entity.id, onSelect]);
+
 	return (
 		<li>
 			<button
@@ -247,17 +260,19 @@ const EntityGroup = memo<IEntityGroupProps>(function EntityGroup({
 	onToggleExpanded,
 	selectedId,
 }) {
+	const getName = useDayMapEntityName();
 	const { t } = useI18n(mapsMessages);
 	const isReducedMotion = useReducedMotion();
-	const getName = useDayMapEntityName();
 
 	const namedItems = useMemo(
 		() => items.map((entity) => ({ entity, name: getName(entity) })),
 		[getName, items]
 	);
+
 	const handleToggleExpanded = useCallback(() => {
 		onToggleExpanded(layer);
 	}, [layer, onToggleExpanded]);
+
 	const transition = getMapTransition(isReducedMotion);
 
 	return (
@@ -330,16 +345,19 @@ const MapPanel = memo(function MapPanel({
 	entities,
 	hiddenLayers,
 	onQueryChange,
+	onRequestAccess,
 	onSelect,
 	onToggleLayer,
 	query,
 	selectedId,
 }: IMapPanelProps) {
-	const { locale, t } = useI18n(mapsMessages);
-	const isReducedMotion = useReducedMotion();
 	const getName = useDayMapEntityName();
+	const { locale, t } = useI18n(mapsMessages);
+	const { policy } = useMapAccess();
+	const isReducedMotion = useReducedMotion();
 
 	const collapsedLayerList = mapViewStore.shared.collapsedLayers.use();
+
 	const collapsedLayers = useMemo(
 		() => new Set(collapsedLayerList),
 		[collapsedLayerList]
@@ -355,6 +373,23 @@ const MapPanel = memo(function MapPanel({
 		},
 		[collapsedLayers]
 	);
+
+	const handleToggleLayerPress = useCallback(
+		(layer: TDayMapLayer) => {
+			if (policy.canToggleLayers) {
+				onToggleLayer(layer);
+				return;
+			}
+			onRequestAccess();
+		},
+		[onRequestAccess, onToggleLayer, policy.canToggleLayers]
+	);
+
+	const handleSearchPress = useCallback(() => {
+		if (!policy.canSearch) {
+			onRequestAccess();
+		}
+	}, [onRequestAccess, policy.canSearch]);
 
 	const layerCounts = useMemo(() => {
 		const counts = new Map<TDayMapLayer, number>();
@@ -376,7 +411,8 @@ const MapPanel = memo(function MapPanel({
 			}),
 		[entities, getName, locale]
 	);
-	const trimmedQuery = query.trim();
+
+	const trimmedQuery = policy.canSearch ? query.trim() : '';
 	const groups = useMemo(() => {
 		const layerItems = new Map<TDayMapLayer, TDayMapEntity[]>();
 		for (const item of searchableEntities) {
@@ -410,6 +446,7 @@ const MapPanel = memo(function MapPanel({
 		>
 			<Input
 				isClearable
+				isReadOnly={!policy.canSearch}
 				aria-label={t('maps.search.placeholder')}
 				placeholder={t('maps.search.placeholder')}
 				size="sm"
@@ -419,8 +456,13 @@ const MapPanel = memo(function MapPanel({
 						className="text-default-400"
 					/>
 				}
-				value={query}
-				onValueChange={onQueryChange}
+				value={policy.canSearch ? query : ''}
+				onClick={handleSearchPress}
+				onValueChange={(value) => {
+					if (policy.canSearch) {
+						onQueryChange(value);
+					}
+				}}
 				className="shrink-0"
 			/>
 			<div className="shrink-0">
@@ -435,10 +477,11 @@ const MapPanel = memo(function MapPanel({
 						return (
 							<button
 								key={layer}
+								aria-disabled={!policy.canToggleLayers}
 								aria-pressed={isVisible}
 								type="button"
 								onClick={() => {
-									onToggleLayer(layer);
+									handleToggleLayerPress(layer);
 								}}
 								className={cn(
 									'flex items-center gap-1.5 rounded-full px-2.5 py-1 text-tiny font-medium transition motion-reduce:transition-none',
@@ -564,10 +607,11 @@ export default memo<IProps>(function MapSidebar({
 	onToggleCollapsed,
 	...props
 }) {
-	const { t } = useI18n(mapsMessages);
 	useCatalogLocalizationRevision();
 	const { isHighAppearance } = useDesignPreferences();
+	const { t } = useI18n(mapsMessages);
 	const isReducedMotion = useReducedMotion();
+
 	const worldScrollTopRef = useRef(0);
 
 	const title = map === null ? t('maps.world.title') : getDayMapLabel(map);

@@ -794,7 +794,7 @@ export default function AdminSsoTicketsClient({
 			</AdminMetricPanel>
 
 			{tickets === null ? (
-				<AdminEmptyState icon={faClock}>
+				<AdminEmptyState isLoading icon={faClock}>
 					{ADMIN_SSO_MESSAGE_MAP.ticketListReading}
 				</AdminEmptyState>
 			) : tickets.tickets.length === 0 ? (

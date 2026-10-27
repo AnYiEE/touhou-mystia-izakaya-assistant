@@ -97,6 +97,17 @@ const nextConfig: NextConfig = {
 		},
 	},
 	outputFileTracingRoot: process.cwd(),
+	...(IS_VERCEL
+		? {
+				// Vercel serves maps from `public`; keep the private source out
+				// of the otherwise unused API route's serverless bundle.
+				outputFileTracingExcludes: {
+					'/app/api/v1/maps/assets/[...path]': [
+						'./app/assets/maps/**/*',
+					],
+				},
+			}
+		: {}),
 	serverExternalPackages: ['kysely'],
 
 	experimental: {

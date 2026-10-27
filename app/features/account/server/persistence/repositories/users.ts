@@ -5,6 +5,8 @@ import { type TUserStatus } from '@/domain/account/contracts';
 import { getAccountDatabase } from '@/features/account/server/persistence/database';
 import { enqueueSsoCallbacksForUserEventInTransaction } from '@/features/account/sso/server/persistence/callbackQueue';
 import { deleteCredentialsByUserIdInTransaction } from '@/features/account/webauthn/server';
+import { deleteFeatureAccessGroupMembersByUserIdInTransaction } from '@/features/featureAccess/server/groupRepository';
+import { deleteUserFeatureAccessOverridesByUserIdInTransaction } from '@/features/featureAccess/server/userAccessOverrideRepository';
 
 import { normalizeDatabaseCount } from '@/infrastructure/database/queryValues';
 import type {
@@ -655,6 +657,8 @@ export async function deleteActiveUserIfSessionCurrentWithAudit(
 			.where('user_id', '=', id)
 			.execute();
 
+		await deleteFeatureAccessGroupMembersByUserIdInTransaction(trx, id);
+		await deleteUserFeatureAccessOverridesByUserIdInTransaction(trx, id);
 		await deleteCredentialsByUserIdInTransaction(trx, id);
 		await enqueueSsoCallbacksForUserEventInTransaction(
 			trx,

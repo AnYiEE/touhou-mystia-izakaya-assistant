@@ -10,6 +10,7 @@ import Tooltip from '@/design/ui/components/tooltip';
 import AccountConfirmButton from '@/features/account/client/components/AccountConfirmButton';
 import { accountMessages } from '@/features/account/client/messages';
 import type { IAccountSsoGrant } from '@/features/account/contracts';
+import FeatureAccessNotice from '@/features/featureAccess/client/components/FeatureAccessNotice';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
@@ -96,6 +97,7 @@ export default memo<IAccountSsoGrantsPanelProps>(
 						</span>
 					</Tooltip>
 				</div>
+				<FeatureAccessNotice moduleKey="sso.use" />
 				<AccountAnimatedList>
 					{isSsoGrantListLoading && !isSsoGrantsReady ? (
 						<AccountAnimatedListItem key="loading">

@@ -320,6 +320,7 @@ export function useAccountAuthentication({
 						? ACCOUNT_MANAGER_MESSAGE_KEYS.loginSuccess
 						: ACCOUNT_MANAGER_MESSAGE_KEYS.registrationSuccess
 				);
+				accountStore.closeAccountModalAfterAuthentication();
 
 				void publishAccountRuntimeInvalidation({
 					reason: 'login',
@@ -537,6 +538,7 @@ export function useAccountAuthentication({
 			}
 
 			setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.loginSuccess);
+			accountStore.closeAccountModalAfterAuthentication();
 
 			void publishAccountRuntimeInvalidation({
 				reason: 'login',
@@ -802,6 +804,7 @@ export function useAccountAuthentication({
 				setPassword('');
 				setIsPasskeyRegistrationPromptVisible(false);
 				setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.registrationSuccess);
+				accountStore.closeAccountModalAfterAuthentication();
 
 				void publishAccountRuntimeInvalidation({
 					reason: 'login',

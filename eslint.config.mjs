@@ -97,6 +97,8 @@ export default defineConfig(
 			'node_modules/**',
 			'.deploy/**',
 			'.next/**',
+			'.playwright-cli/**',
+			'.tmp/**',
 			'build/**',
 			'out/**',
 			'next-env.d.ts',
