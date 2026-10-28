@@ -382,28 +382,28 @@ export const derivativeProjectsMessages = {
 	'zh-CN': DERIVATIVE_PROJECTS_MESSAGES_ZH_CN,
 	'zh-TW': {
 		'derivativeProjects.ai.p1':
-			'AI 正在降低軟體開發的門檻，這是技術發展的自然結果。',
+			'AI正在降低軟體開發的門檻，這是技術發展的自然結果。',
 		'derivativeProjects.ai.p2.item1':
-			'AI 能夠幫助開發者編寫程式碼，卻無法代替開發者承擔授權義務',
+			'AI能夠幫助開發者編寫程式碼，卻無法代替開發者承擔授權義務',
 		'derivativeProjects.ai.p2.item2':
-			'AI 能夠重寫程式碼結構，卻無法重寫版權歸屬',
+			'AI能夠重寫程式碼結構，卻無法重寫版權歸屬',
 		'derivativeProjects.ai.p2.item3':
-			'AI 能夠生成新的實作方式，卻不能憑空創造原本不存在的授權',
+			'AI能夠生成新的實作方式，卻不能憑空創造原本不存在的授權',
 		'derivativeProjects.ai.p2.lead': '但需要明確的是：',
 		'derivativeProjects.ai.p3':
 			'無論程式碼最終由誰生成，專案維護者始終需要對專案的授權合規性、版權合規性以及相關法律責任負責。',
 		'derivativeProjects.ai.p4':
 			'技術的發展改變的是開發方式，而不是規則本身。',
-		'derivativeProjects.ai.title': '關於 AI 與開發者責任',
+		'derivativeProjects.ai.title': '關於AI與開發者責任',
 		'derivativeProjects.assets.notice':
 			'東方夜雀食堂小助手開發者已獲得相關著作權人的非商業使用授權，相關素材僅用於識別、展示和說明用途。',
 		'derivativeProjects.assets.p1': '我還想特別強調一個經常被忽視的問題。',
 		'derivativeProjects.assets.p2':
-			'AGPL-3.0 授權條款授予的是程式碼層面的權利，而不是整個專案涉及的一切權利。',
+			'AGPL-3.0授權條款授予的是程式碼層面的權利，而不是整個專案涉及的一切權利。',
 		'derivativeProjects.assets.p3':
 			'東方夜雀食堂小助手中涉及的遊戲名稱、角色名稱、角色形象、遊戲素材、文字內容、商標標識以及其他相關資源，其著作權、商標權及其他相關權利歸屬於各自權利人。',
 		'derivativeProjects.assets.p4':
-			'因此，即便某個專案完全符合 AGPL-3.0 的要求，也不意味著當然獲得了上述遊戲素材、商標或其他第三方內容的使用授權。',
+			'因此，即便某個專案完全符合AGPL-3.0的要求，也不意味著當然獲得了上述遊戲素材、商標或其他第三方內容的使用授權。',
 		'derivativeProjects.assets.p5':
 			'換句話說，程式碼開源與素材授權是兩件完全不同的事情。',
 		'derivativeProjects.assets.p6': '獲得前者，並不意味著自動獲得後者。',
@@ -414,7 +414,7 @@ export const derivativeProjectsMessages = {
 		'derivativeProjects.final.bullet2': '公開可見不等於自由使用',
 		'derivativeProjects.final.bullet3': '能夠取得程式碼不等於獲得授權',
 		'derivativeProjects.final.bullet4':
-			'使用 AI 也不意味著可以繞過授權條款和版權規則',
+			'使用AI也不意味著可以繞過授權條款和版權規則',
 		'derivativeProjects.final.p1':
 			'我歡迎任何人在遵守相關規則的前提下學習、研究、改進和擴充東方夜雀食堂小助手，也樂於看到優秀的衍生專案出現。',
 		'derivativeProjects.final.p2':
@@ -426,25 +426,25 @@ export const derivativeProjectsMessages = {
 		'derivativeProjects.final.title': '最後',
 		'derivativeProjects.intro.emphasis': '遺憾的是，事實並非如此。',
 		'derivativeProjects.intro.p1':
-			'近期，隨著 AI 工具的普及，我注意到社群中出現了一些基於東方夜雀食堂小助手進行二次開發、功能擴充、介面最佳化以及 AI 輔助重構的專案。',
+			'近期，隨著AI工具的普及，我注意到社群中出現了一些基於東方夜雀食堂小助手進行二次開發、功能擴充、介面最佳化以及AI輔助重構的專案。',
 		'derivativeProjects.intro.p2': '對此，我並不反對。',
 		'derivativeProjects.intro.p3':
-			'恰恰相反，我認為開源的價值之一就在於促進學習、研究、改進與創新。無論是傳統開發方式，還是借助 AI 提升開發效率，只要遵守相應規則，開發者都可以在前人的基礎上創造新的價值。',
+			'恰恰相反，我認為開源的價值之一就在於促進學習、研究、改進與創新。無論是傳統開發方式，還是借助AI提升開發效率，只要遵守相應規則，開發者都可以在前人的基礎上創造新的價值。',
 		'derivativeProjects.intro.p4':
-			'但與此同時，我也發現，一些開發者似乎產生了一種誤解：只要經過 AI 重寫、重新組織程式碼結構、更換介面設計，或者進行了較大幅度的修改，就可以忽略開源授權條款、版權聲明以及第三方權利歸屬問題。',
+			'但與此同時，我也發現，一些開發者似乎產生了一種誤解：只要經過AI重寫、重新組織程式碼結構、更換介面設計，或者進行了較大幅度的修改，就可以忽略開源授權條款、版權聲明以及第三方權利歸屬問題。',
 		'derivativeProjects.kicker': '開源聲明',
 		'derivativeProjects.license.legal.linkLabel': '法律聲明',
 		'derivativeProjects.license.legal.prefix': '同時，請閱讀並遵守本專案',
 		'derivativeProjects.license.legal.suffix': '。',
 		'derivativeProjects.license.p1':
-			'東方夜雀食堂小助手採用 AGPL-3.0 授權條款開源發布。',
+			'東方夜雀食堂小助手採用AGPL-3.0授權條款開源發布。',
 		'derivativeProjects.license.p2':
-			'無論程式碼是由人工編寫、AI 生成，還是經過重構、轉換、最佳化後形成，只要其來源於本專案，或者構成對本專案程式碼的衍生使用，就仍然受到相關授權條款約束。開發工具的變化不會改變程式碼來源，程式碼表現形式的變化也不會改變授權義務。',
+			'無論程式碼是由人工編寫、AI生成，還是經過重構、轉換、最佳化後形成，只要其來源於本專案，或者構成對本專案程式碼的衍生使用，就仍然受到相關授權條款約束。開發工具的變化不會改變程式碼來源，程式碼表現形式的變化也不會改變授權義務。',
 		'derivativeProjects.license.p3':
-			'對於基於本專案進行修改、再發布，或者基於本專案提供網路服務的開發者，請認真閱讀並遵守 AGPL-3.0 授權條款的相關要求。',
-		'derivativeProjects.license.title': '關於 AGPL-3.0 授權條款',
+			'對於基於本專案進行修改、再發布，或者基於本專案提供網路服務的開發者，請認真閱讀並遵守AGPL-3.0授權條款的相關要求。',
+		'derivativeProjects.license.title': '關於AGPL-3.0授權條款',
 		'derivativeProjects.meta.description':
-			'關於東方夜雀食堂小助手衍生專案、AGPL-3.0 授權條款、素材授權邊界與 AI 開發責任的說明。',
+			'關於東方夜雀食堂小助手衍生專案、AGPL-3.0授權條款、素材授權邊界與AI開發責任的說明。',
 		'derivativeProjects.originalPost.label': '站外原始發布（小黑盒）',
 		'derivativeProjects.propagation.p1.mid': '，或者',
 		'derivativeProjects.propagation.p1.prefix':

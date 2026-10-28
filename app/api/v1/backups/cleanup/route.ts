@@ -1,6 +1,10 @@
 import { type NextRequest } from 'next/server';
 
-import { LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP } from '@/features/legacyBackup/apiResponseMessages';
+import {
+	LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP,
+	translateLegacyBackupApiResponseMessage,
+} from '@/features/legacyBackup/apiResponseMessages';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
 import { createRetryAfterHeaders } from '@/infrastructure/http/headers';
@@ -35,6 +39,7 @@ function checkCleanupSecretFailureRateLimit(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+	const locale = readContentLocale(request);
 	const secret = request.headers.get('x-cleanup-secret');
 	const configuredSecret = process.env.CLEANUP_SECRET;
 
@@ -45,7 +50,10 @@ export async function DELETE(request: NextRequest) {
 	if (!checkCleanupSecret(secret, configuredSecret)) {
 		const retryAfter = checkCleanupSecretFailureRateLimit(request);
 		return createNoStoreErrorResponse(
-			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidSecret,
+			translateLegacyBackupApiResponseMessage(
+				LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidSecret,
+				locale
+			),
 			retryAfter === null ? 401 : 429,
 			retryAfter === null ? undefined : { retry_after: retryAfter },
 			retryAfter === null

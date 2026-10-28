@@ -29,7 +29,7 @@ interface IBilibiliVideo {
 export const META_MYSTIA_VIDEOS = [
 	{
 		aid: '116358163464340',
-		title: '【东方/mod开发】什么叫厨师比顾客多？！十人同屏的夜雀食堂多人联机 MetaMystia',
+		title: '【东方/mod开发】什么叫厨师比顾客多？！十人同屏的夜雀食堂多人联机MetaMystia',
 	},
 	{
 		aid: '116493236961425',

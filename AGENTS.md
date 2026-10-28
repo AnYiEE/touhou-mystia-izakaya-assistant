@@ -168,6 +168,13 @@ Apply these conventions to edited code while preserving established public contr
 - Application modules may use only the `isNil`, `isObject`, `debounce`, and `throttle` Lodash leaves, imported as default bindings from `lodash/<api>.js`; do not use package-level default or named Lodash imports there. Direct Node scripts may use `import lodash from 'lodash'`, and their Lodash API calls are not restricted by the application leaf allowlist. Code serialized into or injected as a self-contained page script must not depend on module imports.
 - Lodash `isObject` returns `true` for functions. Replace a paired object/null guard with `isObject` only when the complete pair can be replaced without changing behavior for every reachable value. When that equivalence cannot be established, retain the original `typeof ... === 'object'`/null guard (or its De Morgan inverse); do not combine `typeof` and `isObject` into a redundant guard.
 
+### User-facing text
+
+- Localize all user-facing copy for every supported locale, including messages returned by APIs.
+- Do not fabricate translations for canonical game records that lack authoritative localization, such as the records in `records.ts`. Administration-only interfaces do not require localization.
+- User-visible copy has no extra spaces at boundaries between Chinese or Japanese text and Latin letters or numbers.
+- Preserve normal spaces inside English phrases and code formatting; apply this rule to labels, messages, tooltips, errors, empty states, and changelogs when text is displayed to users.
+
 ### TypeScript and naming
 
 - Object contracts normally use `I`-prefixed interfaces, such as `IAccountUserProfile` and `IProps`. Unions and derived aliases normally use `T`-prefixed types, such as `TSyncNamespace`. Preserve established generated, database, and public-boundary exceptions.

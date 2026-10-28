@@ -97,8 +97,8 @@ const SPECIAL_GUEST_PLANS_MESSAGES_ZH_CN = {
 	'plans.sort.pinyinAscGrouped': '拼音A-Z（按DLC分组）',
 	'plans.sort.pinyinDescFlat': '拼音Z-A（不按DLC分组）',
 	'plans.sort.pinyinDescGrouped': '拼音Z-A（按DLC分组）',
-	'plans.summary.meals': '{guests} 稀客 / {meals} 套餐',
-	'plans.summary.recommended': '{guests} 稀客 / 自动推荐',
+	'plans.summary.meals': '{guests}稀客 / {meals}套餐',
+	'plans.summary.recommended': '{guests}稀客 / 自动推荐',
 } as const;
 
 export type TSpecialGuestPlansMessageKey =
@@ -323,8 +323,8 @@ export const specialGuestPlansMessages = {
 		'plans.sort.pinyinAscGrouped': '名前順A-Z（DLCでグループ）',
 		'plans.sort.pinyinDescFlat': '名前順Z-A（DLCでグループ化しない）',
 		'plans.sort.pinyinDescGrouped': '名前順Z-A（DLCでグループ）',
-		'plans.summary.meals': '{guests} レア客 / {meals} セットメニュー',
-		'plans.summary.recommended': '{guests} レア客 / 自動推薦',
+		'plans.summary.meals': '{guests}レア客 / {meals}セットメニュー',
+		'plans.summary.recommended': '{guests}レア客 / 自動推薦',
 	},
 	ko: {
 		'plans.controls.cancelDelete': '삭제 취소',
@@ -529,7 +529,7 @@ export const specialGuestPlansMessages = {
 		'plans.sort.pinyinAscGrouped': '筆畫升序（按DLC分組）',
 		'plans.sort.pinyinDescFlat': '筆畫降序（不按DLC分組）',
 		'plans.sort.pinyinDescGrouped': '筆畫降序（按DLC分組）',
-		'plans.summary.meals': '{guests} 稀客 / {meals} 套餐',
-		'plans.summary.recommended': '{guests} 稀客 / 自動推薦',
+		'plans.summary.meals': '{guests}稀客 / {meals}套餐',
+		'plans.summary.recommended': '{guests}稀客 / 自動推薦',
 	},
 } as const satisfies TLocalizedMessageTable<TSpecialGuestPlansMessageKey>;

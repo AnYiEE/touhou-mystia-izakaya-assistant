@@ -30,7 +30,7 @@ const ACCOUNT_MESSAGES_ZH_CN = {
 	'account.conflict.boolean.popularNegative': '流行厌恶',
 	'account.conflict.boolean.popularPositive': '流行喜爱',
 	'account.conflict.candidate.keep': '保留此候选',
-	'account.conflict.candidate.label': '候选 {number}',
+	'account.conflict.candidate.label': '候选{number}',
 	'account.conflict.candidate.rawData': '候选原始数据',
 	'account.conflict.candidatesIntro':
 		'选择前不会上传任何候选。选择后，系统会先保存选择结果，再继续与云端版本比较。',
@@ -1019,7 +1019,7 @@ export const accountMessages = {
 		'account.conflict.boolean.popularNegative': '「不人気」',
 		'account.conflict.boolean.popularPositive': '「人気」',
 		'account.conflict.candidate.keep': 'この候補を保持',
-		'account.conflict.candidate.label': '候補 {number}',
+		'account.conflict.candidate.label': '候補{number}',
 		'account.conflict.candidate.rawData': '候補の元データ',
 		'account.conflict.candidatesIntro':
 			'選択するまで候補はアップロードされません。選択後、システムはまず選択結果を保存し、その後クラウド版と比較します。',
@@ -2053,7 +2053,7 @@ export const accountMessages = {
 		'account.conflict.boolean.popularNegative': '「流行厭惡」',
 		'account.conflict.boolean.popularPositive': '「流行喜愛」',
 		'account.conflict.candidate.keep': '保留此候選',
-		'account.conflict.candidate.label': '候選 {number}',
+		'account.conflict.candidate.label': '候選{number}',
 		'account.conflict.candidate.rawData': '候選原始資料',
 		'account.conflict.candidatesIntro':
 			'選擇前不會上傳任何候選。選擇後，系統會先儲存選擇結果，再繼續與雲端版本比較。',

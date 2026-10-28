@@ -1,8 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP } from '@/features/legacyBackup/apiResponseMessages';
+import {
+	LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP,
+	translateLegacyBackupApiResponseMessage,
+} from '@/features/legacyBackup/apiResponseMessages';
 import { parseLegacyBackupCode } from '@/features/legacyBackup/server/code';
 import { getLegacyBackupRequestMeta } from '@/features/legacyBackup/server/requestContext';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { createRetryAfterHeaders } from '@/infrastructure/http/headers';
 import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
@@ -19,11 +23,15 @@ export async function GET(
 	request: NextRequest,
 	{ params }: { params: Promise<{ code: string }> }
 ) {
+	const locale = readContentLocale(request);
 	const { code: rawCode } = await params;
 	const code = parseLegacyBackupCode(rawCode);
 	if (code === null) {
 		return createNoStoreErrorResponse(
-			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidCode,
+			translateLegacyBackupApiResponseMessage(
+				LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidCode,
+				locale
+			),
 			400
 		);
 	}
@@ -37,7 +45,10 @@ export async function GET(
 	});
 	if (downloadResult.status === 'error') {
 		return createNoStoreErrorResponse(
-			downloadResult.message,
+			translateLegacyBackupApiResponseMessage(
+				downloadResult.message,
+				locale
+			),
 			downloadResult.httpStatus
 		);
 	}
@@ -51,11 +62,15 @@ export async function DELETE(
 	request: NextRequest,
 	{ params }: { params: Promise<{ code: string }> }
 ) {
+	const locale = readContentLocale(request);
 	const { code: rawCode } = await params;
 	const code = parseLegacyBackupCode(rawCode);
 	if (code === null) {
 		return createNoStoreErrorResponse(
-			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidCode,
+			translateLegacyBackupApiResponseMessage(
+				LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.invalidCode,
+				locale
+			),
 			400
 		);
 	}
@@ -70,7 +85,10 @@ export async function DELETE(
 	if (deleteResult.status === 'error') {
 		const retryAfter = deleteResult.data?.['retry_after'];
 		return createNoStoreErrorResponse(
-			deleteResult.message,
+			translateLegacyBackupApiResponseMessage(
+				deleteResult.message,
+				locale
+			),
 			deleteResult.httpStatus,
 			deleteResult.data,
 			deleteResult.httpStatus === 429 && typeof retryAfter === 'number'

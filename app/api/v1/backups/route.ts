@@ -1,7 +1,10 @@
 import { type NextRequest } from 'next/server';
 
 import { MAX_BACKUP_UPLOAD_JSON_BODY_BYTES } from '@/features/account/requestLimits';
-import { LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP } from '@/features/legacyBackup/apiResponseMessages';
+import {
+	LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP,
+	translateLegacyBackupApiResponseMessage,
+} from '@/features/legacyBackup/apiResponseMessages';
 import {
 	type IBackupUploadBody,
 	type IBackupUploadSuccessResponse,
@@ -9,6 +12,7 @@ import {
 	LEGACY_BACKUP_FREQUENCY_TTL,
 } from '@/features/legacyBackup/contracts';
 import { getLegacyBackupRequestMeta } from '@/features/legacyBackup/server/requestContext';
+import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
 import { createRetryAfterHeaders } from '@/infrastructure/http/headers';
 import {
@@ -21,12 +25,18 @@ import {
 	readJsonBodyResult,
 } from '@/infrastructure/http/server/responses';
 
+import { type TLocale } from '@/shared/i18n/locale';
+
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function createLegacyBackupRouteErrorResponse(message: string, status: number) {
+function createLegacyBackupRouteErrorResponse(
+	message: string,
+	status: number,
+	locale: TLocale
+) {
 	return createNoStoreErrorResponse(
-		message,
+		translateLegacyBackupApiResponseMessage(message, locale),
 		status,
 		undefined,
 		status === 429
@@ -69,12 +79,14 @@ function checkLegacyBackupUploadMeta({
 }
 
 export async function POST(request: NextRequest) {
+	const locale = readContentLocale(request);
 	const requestMeta = getLegacyBackupRequestMeta(request);
 	const metaError = checkLegacyBackupUploadMeta(requestMeta);
 	if (metaError !== null) {
 		return createLegacyBackupRouteErrorResponse(
 			metaError.message,
-			metaError.status
+			metaError.status,
+			locale
 		);
 	}
 
@@ -84,7 +96,10 @@ export async function POST(request: NextRequest) {
 	);
 	if (jsonResult.status === 'payload-too-large') {
 		return createNoStoreErrorResponse(
-			LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.dataTooLarge,
+			translateLegacyBackupApiResponseMessage(
+				LEGACY_BACKUP_API_RESPONSE_MESSAGE_MAP.dataTooLarge,
+				locale
+			),
 			413
 		);
 	}
@@ -98,7 +113,8 @@ export async function POST(request: NextRequest) {
 	if (uploadResult.status === 'error') {
 		return createLegacyBackupRouteErrorResponse(
 			uploadResult.message,
-			uploadResult.httpStatus
+			uploadResult.httpStatus,
+			locale
 		);
 	}
 
