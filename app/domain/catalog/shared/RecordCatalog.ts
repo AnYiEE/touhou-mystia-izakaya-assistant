@@ -1,7 +1,7 @@
 import { attachAvailabilityData } from '@/domain/availability/catalog';
 import type { TAvailabilityCategory } from '@/domain/availability/types';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 import { toGetValueCollection } from '@/shared/utilities/objects/convertCollection';
 import { getPinyin } from '@/shared/utilities/pinyin/getPinyin';

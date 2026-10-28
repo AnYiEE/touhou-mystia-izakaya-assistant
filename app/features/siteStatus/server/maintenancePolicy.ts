@@ -1,6 +1,6 @@
 import type { IDeploymentMaintenancePublicState } from '@/features/siteStatus/contracts';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 
 export const DEPLOYMENT_MAINTENANCE_MESSAGES = {
 	en: 'The system is under maintenance, so access may be slower and some operations may need to be retried later.',

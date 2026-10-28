@@ -14,9 +14,9 @@ import { useCurrentLocale, useI18n } from '@/shared/i18n/useI18n';
 import { isChinaSurfaceLocale } from '@/shared/site/chinaSurfaces';
 
 import CloudBackupPanel from './CloudBackupPanel';
-import { getClosestModalScrollContainer } from './dataManagerScroll';
 import LocalDataManager from './LocalDataManager';
 import ResetSavedDataPanel from './ResetSavedDataPanel';
+import { getClosestModalScrollContainer } from './dataManagerScroll';
 
 const { isAccountFeatureClientEnabled } = PUBLIC_RUNTIME_CONFIG;
 

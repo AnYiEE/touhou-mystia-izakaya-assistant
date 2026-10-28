@@ -6,6 +6,10 @@ import { useCallback } from 'react';
 import { openAccountModal } from '@/features/account/client/overlayCommands';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { selectCatalogGuest } from '@/features/catalog/globalSearch/client/navigationCommands';
+import {
+	trackSupportGuestInfo,
+	trackSupportSearchDetail,
+} from '@/features/donations/client/state/supportNudgeStore';
 import type {
 	IGlobalSearchFilterAction,
 	IGlobalSearchIndexItem,
@@ -15,10 +19,6 @@ import {
 	GLOBAL_SEARCH_SECTION_PATH_MAP,
 	getGlobalSearchSectionPath,
 } from '@/features/globalSearch/core/constants';
-import {
-	trackSupportGuestInfo,
-	trackSupportSearchDetail,
-} from '@/features/donations/client/state/supportNudgeStore';
 import {
 	getGlobalSearchGuestInfoKind,
 	getGlobalSearchItemNavigationHref,

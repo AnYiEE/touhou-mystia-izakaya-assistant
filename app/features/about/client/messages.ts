@@ -1,4 +1,4 @@
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const ABOUT_MESSAGES_ZH_CN = {
 	'about.changelog.commitsLink': 'GitHub',

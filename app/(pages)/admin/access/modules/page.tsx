@@ -4,9 +4,9 @@ import {
 	getAdminAuthInitialDataMessage,
 	readAdminAuthInitialData,
 } from '@/features/admin/server/initialData/auth';
+import { AccessModulesClient } from '@/features/featureAccess/admin/client/AccessModulesClient';
 import { AccessAuthRequired } from '@/features/featureAccess/admin/server/AccessAuthRequired';
 import { listAdminFeatureModules } from '@/features/featureAccess/admin/server/service';
-import { AccessModulesClient } from '@/features/featureAccess/admin/client/AccessModulesClient';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

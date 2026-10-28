@@ -16,11 +16,11 @@ import {
 
 import { useAccountLoginRequiredAction } from '@/features/account/client/hooks/useAccountLoginRequiredAction';
 import { requestDonationModalOpen } from '@/features/donations/client/requestDonationModalOpen';
+import { useFeatureModuleAccess } from '@/features/featureAccess/client/useFeatureModuleAccess';
 import {
 	type TFeatureAccessMessageKey,
 	featureAccessMessages,
 } from '@/features/featureAccess/messages';
-import { useFeatureModuleAccess } from '@/features/featureAccess/client/useFeatureModuleAccess';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { useI18n } from '@/shared/i18n/useI18n';

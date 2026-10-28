@@ -1,4 +1,4 @@
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 
 import { SITE_METADATA } from './metadata';
 

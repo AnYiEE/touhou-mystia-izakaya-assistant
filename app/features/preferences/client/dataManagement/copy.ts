@@ -1,4 +1,4 @@
-import type { TPreferencesMessageKey } from '@/features/preferences/client/messages';
+import { type TPreferencesMessageKey } from '@/features/preferences/client/messages';
 
 export const LEGACY_CLOUD_DELETE_BUTTON_LABEL_KEYS = {
 	delete: 'preferences.cloud.delete',

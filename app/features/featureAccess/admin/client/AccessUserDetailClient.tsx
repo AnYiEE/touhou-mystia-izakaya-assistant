@@ -10,23 +10,12 @@ import {
 import { Select, SelectItem } from '@heroui/select';
 import { useCallback, useMemo, useState } from 'react';
 
-import type {
-	TFeatureAccessOverrideEffect,
-	TFeatureModuleKey,
+import {
+	type TFeatureAccessOverrideEffect,
+	type TFeatureModuleKey,
 } from '@/domain/featureAccess/contracts';
 
 import type { IAdminMeData } from '@/features/account/contracts';
-import { AccessAdminNavigation } from '@/features/featureAccess/admin/client/AccessAdminNavigation';
-import { updateAdminFeatureAccessUser } from '@/features/featureAccess/admin/client/api';
-import {
-	FEATURE_ACCESS_ADMIN_MESSAGE_MAP,
-	FEATURE_ACCESS_REASON_LABEL_MAP,
-	FEATURE_ACCESS_SOURCE_LABEL_MAP,
-} from '@/features/featureAccess/admin/client/copy';
-import type {
-	IAdminFeatureAccessUserData,
-	IAdminFeatureModuleListData,
-} from '@/features/featureAccess/contracts';
 import {
 	AdminEmptyState,
 	AdminMessage,
@@ -54,6 +43,17 @@ import {
 	AdminTableRow,
 } from '@/features/admin/client/components/table';
 import { createAdminUserDisplayName } from '@/features/admin/client/components/userPresentation';
+import { AccessAdminNavigation } from '@/features/featureAccess/admin/client/AccessAdminNavigation';
+import { updateAdminFeatureAccessUser } from '@/features/featureAccess/admin/client/api';
+import {
+	FEATURE_ACCESS_ADMIN_MESSAGE_MAP,
+	FEATURE_ACCESS_REASON_LABEL_MAP,
+	FEATURE_ACCESS_SOURCE_LABEL_MAP,
+} from '@/features/featureAccess/admin/client/copy';
+import {
+	type IAdminFeatureAccessUserData,
+	type IAdminFeatureModuleListData,
+} from '@/features/featureAccess/contracts';
 
 type TOverrideSelection = 'inherit' | TFeatureAccessOverrideEffect;
 

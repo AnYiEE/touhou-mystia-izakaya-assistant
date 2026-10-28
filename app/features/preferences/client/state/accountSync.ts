@@ -9,7 +9,7 @@ import {
 	type TFoodTableColumnKey,
 } from '@/features/catalog/guests/shared/state/tableDescriptors';
 
-import type { TLocalePreference } from '@/shared/i18n/locale';
+import { type TLocalePreference } from '@/shared/i18n/locale';
 
 import { globalStore } from './globalPersistenceStore';
 

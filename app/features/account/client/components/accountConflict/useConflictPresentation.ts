@@ -12,7 +12,7 @@ import {
 import { type TSyncNamespace } from '@/domain/account/contracts';
 import { getDlcLabel } from '@/domain/availability/localizedLabels';
 import { DLC_LABEL_MAP } from '@/domain/availability/messages';
-import { type TDlc } from '@/domain/data/shared/types';
+import type { TDlc } from '@/domain/data/shared/types';
 import { RECOMMENDATION_SORT_PROFILE_LABEL_MAP } from '@/domain/recommendations/labels';
 import { getRecommendationSortProfileLabel } from '@/domain/recommendations/localizedLabels';
 import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';

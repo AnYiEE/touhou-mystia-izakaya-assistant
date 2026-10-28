@@ -1,8 +1,8 @@
 import { type Transaction } from 'kysely';
 
-import type {
-	IEffectiveFeatureAccess,
-	TFeatureModuleKey,
+import {
+	type IEffectiveFeatureAccess,
+	type TFeatureModuleKey,
 } from '@/domain/featureAccess/contracts';
 
 import { getAccountDatabase } from '@/features/account/server/persistence/database';
@@ -13,8 +13,8 @@ import { DEFAULT_LOCALE, type TLocale } from '@/shared/i18n/locale';
 
 import { evaluateFeatureAccessMap } from './accessEvaluation';
 import { listFeatureAccessGroupModuleGrantsForUserInTransaction } from './groupRepository';
-import { listFeatureModuleDefinitionsInTransaction } from './moduleRegistryService';
 import { listFeatureModulePolicyOverridesInTransaction } from './modulePolicyRepository';
+import { listFeatureModuleDefinitionsInTransaction } from './moduleRegistryService';
 import { listUserFeatureAccessOverridesInTransaction } from './userAccessOverrideRepository';
 
 export async function evaluateFeatureAccessForAnonymousInTransaction(

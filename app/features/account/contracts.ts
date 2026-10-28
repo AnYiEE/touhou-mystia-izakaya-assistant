@@ -6,9 +6,9 @@ import {
 	type TSsoGrantEvent,
 	type TUserStatus,
 } from '@/domain/account/contracts';
-import type { IFeatureAccessResponse } from '@/domain/featureAccess/contracts';
+import { type IFeatureAccessResponse } from '@/domain/featureAccess/contracts';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 
 import { type ACCOUNT_COOKIE_NAME_MAP } from './constants';
 import type { IAccountSyncMeta } from './sync/contracts';

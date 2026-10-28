@@ -1,6 +1,5 @@
 import type { TOverlayId } from '@/features/overlays/contracts';
-
-import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
+import type { TPreferenceTargetKey } from '@/features/preferences/contracts';
 
 import { globalStore } from './state/globalPersistenceStore';
 

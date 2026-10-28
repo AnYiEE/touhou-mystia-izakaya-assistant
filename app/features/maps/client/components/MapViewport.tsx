@@ -1,5 +1,7 @@
 'use client';
 
+import { faExpand, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { cn } from '@heroui/theme';
 import {
 	type KeyboardEvent,
 	type MouseEvent,
@@ -12,8 +14,6 @@ import {
 	useRef,
 	useState,
 } from 'react';
-import { faExpand, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons';
-import { cn } from '@heroui/theme';
 
 import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
 import Tooltip from '@/design/ui/components/tooltip';

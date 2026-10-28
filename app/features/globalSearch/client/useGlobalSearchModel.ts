@@ -33,7 +33,7 @@ import { useLocale } from '@/features/preferences/client/state/localeRuntime';
 
 import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntimeConfig';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 
 function getExamplePreviewItem({
 	index,

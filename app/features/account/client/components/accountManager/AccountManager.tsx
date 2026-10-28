@@ -36,13 +36,13 @@ import { useI18n } from '@/shared/i18n/useI18n';
 
 import AccountAuthPanel from './AccountAuthPanel';
 import AccountDangerZone from './AccountDangerZone';
-import { AccountPanel, AccountPanelTitle } from './accountPanelLayout';
 import AccountPasskeysPanel from './AccountPasskeysPanel';
 import AccountProfilePanel, {
 	AccountProfileSummary,
 } from './AccountProfilePanel';
 import AccountSessionsPanel from './AccountSessionsPanel';
 import AccountSsoGrantsPanel from './AccountSsoGrantsPanel';
+import { AccountPanel, AccountPanelTitle } from './accountPanelLayout';
 import { type IAccountActionController } from './controller';
 import {
 	ACCOUNT_MANAGER_STATUS_LABEL_KEYS,

@@ -1,10 +1,10 @@
 import { type Transaction } from 'kysely';
 
-import type {
-	IEffectiveFeatureAccess,
-	IFeatureAccessReasonState,
-	IFeatureAccessResponse,
-	TFeatureModuleKey,
+import {
+	type IEffectiveFeatureAccess,
+	type IFeatureAccessReasonState,
+	type IFeatureAccessResponse,
+	type TFeatureModuleKey,
 } from '@/domain/featureAccess/contracts';
 
 import { getAccountDatabase } from '@/features/account/server/persistence/database';

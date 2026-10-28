@@ -2,7 +2,7 @@ import type { IAccountSessionRecord } from '@/features/account/contracts';
 
 import type { TSession } from '@/infrastructure/database/schema';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 
 import { createIpSummary, createUserAgentSummary } from './request';
 

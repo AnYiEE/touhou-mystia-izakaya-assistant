@@ -1,4 +1,4 @@
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const PREFERENCES_MESSAGES_ZH_CN = {
 	'preferences.appearance.highAppearance': '平滑滚动和磨砂效果',

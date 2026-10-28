@@ -1,9 +1,9 @@
 import { type Transaction } from 'kysely';
 import { type NextRequest } from 'next/server';
 
-import type {
-	IEffectiveFeatureAccess,
-	TFeatureModuleKey,
+import {
+	type IEffectiveFeatureAccess,
+	type TFeatureModuleKey,
 } from '@/domain/featureAccess/contracts';
 
 import {

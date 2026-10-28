@@ -1,4 +1,4 @@
-import type { Kysely, Transaction } from 'kysely';
+import { type Kysely, type Transaction } from 'kysely';
 
 import { getApplicationDatabase } from '@/infrastructure/database/applicationDatabase';
 import type {

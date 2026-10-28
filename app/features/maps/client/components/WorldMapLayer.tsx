@@ -1,12 +1,12 @@
 'use client';
 
-import { memo, useCallback, useMemo } from 'react';
 import {
 	faRotate,
 	faWandMagicSparkles,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
+import { memo, useCallback, useMemo } from 'react';
 
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
 

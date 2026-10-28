@@ -10,9 +10,9 @@ import {
 	useRef,
 } from 'react';
 
-import type {
-	IFeatureAccessResponse,
-	TFeatureAccessReason,
+import {
+	type IFeatureAccessResponse,
+	type TFeatureAccessReason,
 } from '@/domain/featureAccess/contracts';
 
 import { accountStore } from '@/features/account/client/state/accountStore';

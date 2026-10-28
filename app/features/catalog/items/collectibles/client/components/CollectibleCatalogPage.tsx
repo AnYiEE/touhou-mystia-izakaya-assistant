@@ -5,7 +5,7 @@ import { hasEquivalentDlcFilters } from '@/domain/availability';
 import { filterCollectibleData } from '@/features/catalog/items/collectibles/client/queries/filterCollectibleData';
 import {
 	type TCollectibleCatalog,
-	createCollectibleStore,
+	type createCollectibleStore,
 } from '@/features/catalog/items/collectibles/client/state/createCollectibleStore';
 import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import ItemPage from '@/features/catalog/shared/client/components/ItemPage';

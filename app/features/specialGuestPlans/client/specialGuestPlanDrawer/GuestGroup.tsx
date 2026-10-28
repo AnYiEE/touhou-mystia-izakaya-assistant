@@ -49,13 +49,13 @@ import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 
+import MealRow from './MealRow';
 import { SPECIAL_GUEST_PLAN_RECOMMENDATION_MESSAGE_KEYS } from './copy';
 import {
 	isGuestGroupToggleGuarded,
 	isSpecialGuestPlanInteractiveTarget,
 } from './dom';
 import { getDrawerMealGridClassName } from './drawerLayout';
-import MealRow from './MealRow';
 
 const DRAWER_RECOMMENDED_MEAL_RENDER_BATCH_SIZE = 12;
 const RECOMMENDED_FILTER_ALL_KEY = '__all__';

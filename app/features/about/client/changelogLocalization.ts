@@ -1,4 +1,4 @@
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 
 const CHANGELOG_EN: Readonly<Record<string, ReadonlyArray<string>>> = {
 	'v0.1': ['Added: food, beverage, and ingredient pages.'],

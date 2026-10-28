@@ -14,7 +14,7 @@ import type {
 import { getGlobalSearchFieldValueDisplayText } from '@/features/globalSearch/core/fieldValueSuggestions';
 import { getFieldPrefixLabel } from '@/features/globalSearch/core/parser';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 import { useI18n } from '@/shared/i18n/useI18n';
 
 import { renderSearchSyntax } from './SearchSyntax';

@@ -4,18 +4,18 @@ import Heading from '@/design/ui/components/heading';
 
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { preferencesMessages } from '@/features/preferences/client/messages';
-import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
+import type { TPreferenceTargetKey } from '@/features/preferences/contracts';
 
 import { isChineseLocale } from '@/shared/i18n/locale';
 import { useI18n } from '@/shared/i18n/useI18n';
 
 import HiddenItems from './HiddenItems';
 import SwitchItem from './PreferenceSwitchItem';
+import RecommendationPreferencesSection from './RecommendationPreferencesSection';
 import {
 	getPreferenceTargetClassName,
 	getPreferenceTargetDataProps,
 } from './preferenceTarget';
-import RecommendationPreferencesSection from './RecommendationPreferencesSection';
 
 interface IProps {
 	highlightedPreferenceKey: null | TPreferenceTargetKey;

@@ -13,7 +13,7 @@ import { getRecommendationSortProfileLabel } from '@/domain/recommendations/loca
 import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
 import { preferencesMessages } from '@/features/preferences/client/messages';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
-import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
+import type { TPreferenceTargetKey } from '@/features/preferences/contracts';
 
 import { isChineseLocale } from '@/shared/i18n/locale';
 import { useI18n } from '@/shared/i18n/useI18n';

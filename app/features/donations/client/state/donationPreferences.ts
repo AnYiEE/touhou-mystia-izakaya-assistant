@@ -1,7 +1,7 @@
 import { readTrackedInteractionCount } from '@/features/analytics/client/interactionCount';
 import { getCurrentDonationMilestone } from '@/features/donations/client/milestones';
-import { SUPPORT_MILESTONE_NUDGE_SUPPRESSION_MS } from '@/features/donations/client/supportNudgePolicy';
 import { suppressSupportNudgeUntil } from '@/features/donations/client/state/supportNudgeStore';
+import { SUPPORT_MILESTONE_NUDGE_SUPPRESSION_MS } from '@/features/donations/client/supportNudgePolicy';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 
 import {

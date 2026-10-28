@@ -1,6 +1,6 @@
 'use client';
 
-import type { TFeatureAccessReason } from '@/domain/featureAccess/contracts';
+import { type TFeatureAccessReason } from '@/domain/featureAccess/contracts';
 
 import { FEATURE_ACCESS_API_RESPONSE_CODE_MAP } from '@/features/featureAccess/apiResponseCodes';
 

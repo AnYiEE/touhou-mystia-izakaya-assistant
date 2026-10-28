@@ -1,7 +1,7 @@
 import { DEFAULT_LOCALE, type TLocale } from '@/shared/i18n/locale';
 import { type TLocalizedMessageTable, translate } from '@/shared/i18n/messages';
 
-import type { TRecommendationSortProfile } from './sortProfiles';
+import { type TRecommendationSortProfile } from './sortProfiles';
 
 const RECOMMENDATION_SORT_PROFILE_MESSAGES_ZH_CN = {
 	'availability-first': '容易获取',

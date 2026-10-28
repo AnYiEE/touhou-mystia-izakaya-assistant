@@ -3,7 +3,7 @@ import { type Kysely } from 'kysely';
 import { getApplicationDatabase } from '@/infrastructure/database/applicationDatabase';
 import type { TDatabase } from '@/infrastructure/database/schema';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 
 import { getCompiledSiteStatusBuildOperationId } from './buildIdentity';
 import { toDeploymentMaintenancePublicState } from './maintenancePolicy';

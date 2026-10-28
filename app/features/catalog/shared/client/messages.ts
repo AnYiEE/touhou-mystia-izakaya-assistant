@@ -1,4 +1,4 @@
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const CATALOG_SHARED_MESSAGES_ZH_CN = {
 	'catalog.dlcTag.close': '】',

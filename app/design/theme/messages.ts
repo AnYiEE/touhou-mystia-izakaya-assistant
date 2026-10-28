@@ -1,4 +1,4 @@
-import type { TLocalizedMessageTable } from '../../shared/i18n/messages';
+import { type TLocalizedMessageTable } from '../../shared/i18n/messages';
 import type { TDarkPalette, TLightPalette } from './runtime/types';
 
 const THEME_MESSAGES_ZH_CN = {

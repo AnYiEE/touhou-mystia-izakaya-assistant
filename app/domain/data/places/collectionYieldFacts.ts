@@ -1,4 +1,4 @@
-import type { TCollectableLabel } from './collectableLabels';
+import { type TCollectableLabel } from './collectableLabels';
 
 export type TCollectionProductType = 1 | 2;
 

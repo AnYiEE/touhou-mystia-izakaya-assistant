@@ -1,4 +1,4 @@
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const UI_MESSAGES_ZH_CN = {
 	'ui.loading': '少女料理中',

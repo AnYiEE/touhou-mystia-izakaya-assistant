@@ -1,17 +1,17 @@
-import type {
-	IAdminFeatureAccessGroupBody,
-	IAdminFeatureAccessGroupDetailData,
-	IAdminFeatureAccessGroupListData,
-	IAdminFeatureAccessUserData,
-	IAdminFeatureAccessUserUpdateBody,
-	IAdminFeatureModuleListData,
-	IAdminFeatureModulePolicyUpdateBody,
-} from '@/features/featureAccess/contracts';
 import type { IAdminUserListData } from '@/features/account/contracts';
 import {
 	createAdminCsrfRequestInit,
 	fetchAdminApiResult,
 } from '@/features/admin/client/api';
+import {
+	type IAdminFeatureAccessGroupBody,
+	type IAdminFeatureAccessGroupDetailData,
+	type IAdminFeatureAccessGroupListData,
+	type IAdminFeatureAccessUserData,
+	type IAdminFeatureAccessUserUpdateBody,
+	type IAdminFeatureModuleListData,
+	type IAdminFeatureModulePolicyUpdateBody,
+} from '@/features/featureAccess/contracts';
 
 import { createJsonRequestInit } from '@/infrastructure/http/client/createJsonRequestInit';
 

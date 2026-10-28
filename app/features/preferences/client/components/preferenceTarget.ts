@@ -1,6 +1,6 @@
 import { cn } from '@heroui/theme';
 
-import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
+import type { TPreferenceTargetKey } from '@/features/preferences/contracts';
 
 export function getPreferenceTargetClassName(
 	key: TPreferenceTargetKey,

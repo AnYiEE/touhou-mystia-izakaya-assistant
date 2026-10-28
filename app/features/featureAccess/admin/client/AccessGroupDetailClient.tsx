@@ -16,33 +16,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/design/ui/components/button';
 import Input from '@/design/ui/components/input';
 
-import type { TFeatureModuleKey } from '@/domain/featureAccess/contracts';
+import { type TFeatureModuleKey } from '@/domain/featureAccess/contracts';
 
 import type {
 	IAdminMeData,
 	IAdminUserListData,
 } from '@/features/account/contracts';
-import { AccessAdminNavigation } from '@/features/featureAccess/admin/client/AccessAdminNavigation';
-import {
-	deleteAdminFeatureGroup,
-	updateAdminFeatureGroup,
-} from '@/features/featureAccess/admin/client/api';
-import { FEATURE_ACCESS_ADMIN_MESSAGE_MAP } from '@/features/featureAccess/admin/client/copy';
-import {
-	FEATURE_ACCESS_GROUP_DESCRIPTION_MAX_LENGTH,
-	FEATURE_ACCESS_GROUP_NAME_MAX_LENGTH,
-	type IAdminFeatureAccessGroupDetailData,
-	type IAdminFeatureModuleListData,
-} from '@/features/featureAccess/contracts';
+import { listAdminUsers } from '@/features/admin/client/api';
 import { AdminConfirmButton } from '@/features/admin/client/components/confirmation';
-import {
-	ADMIN_LIST_DEBOUNCE_MS,
-	AdminSearchInput,
-} from '@/features/admin/client/components/filters';
 import {
 	AdminEmptyState,
 	AdminMessage,
 } from '@/features/admin/client/components/feedback';
+import {
+	ADMIN_LIST_DEBOUNCE_MS,
+	AdminSearchInput,
+} from '@/features/admin/client/components/filters';
 import {
 	AdminPanel,
 	AdminPanelTitle,
@@ -66,7 +55,18 @@ import {
 	AdminTableRow,
 } from '@/features/admin/client/components/table';
 import { createAdminUserDisplayName } from '@/features/admin/client/components/userPresentation';
-import { listAdminUsers } from '@/features/admin/client/api';
+import { AccessAdminNavigation } from '@/features/featureAccess/admin/client/AccessAdminNavigation';
+import {
+	deleteAdminFeatureGroup,
+	updateAdminFeatureGroup,
+} from '@/features/featureAccess/admin/client/api';
+import { FEATURE_ACCESS_ADMIN_MESSAGE_MAP } from '@/features/featureAccess/admin/client/copy';
+import {
+	FEATURE_ACCESS_GROUP_DESCRIPTION_MAX_LENGTH,
+	FEATURE_ACCESS_GROUP_NAME_MAX_LENGTH,
+	type IAdminFeatureAccessGroupDetailData,
+	type IAdminFeatureModuleListData,
+} from '@/features/featureAccess/contracts';
 
 type TAdminUser = IAdminUserListData['users'][number];
 

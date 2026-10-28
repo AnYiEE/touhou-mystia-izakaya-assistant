@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react';
 
 import { getDlcLabel } from '@/domain/availability/localizedLabels';
-import type { FishingCollectibleCatalog } from '@/domain/catalog/items/FishingCollectibleCatalog';
+import { type FishingCollectibleCatalog } from '@/domain/catalog/items/FishingCollectibleCatalog';
 import { getMapLabel } from '@/domain/places/localizedLabels';
 
 import CollectibleCatalog from '@/features/catalog/items/collectibles/client/components/CollectibleCatalog';

@@ -20,17 +20,17 @@ import { CoordinatedModal } from '@/features/overlays/client';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
-import {
-	SPOTLIGHT_CONTENT_TRANSITION,
-	SPOTLIGHT_LIST_TRANSITION,
-	SPOTLIGHT_MAIN_CONTENT_VARIANTS,
-} from './motion';
 import { SearchHome } from './SearchHome';
 import { SearchInput } from './SearchInput';
 import { SearchResults } from './SearchResults';
 import { FieldValueSuggestions, PrefixSuggestions } from './SearchSuggestions';
 import { renderSearchSyntax } from './SearchSyntax';
 import { SpotlightMotionBlock } from './SpotlightMotion';
+import {
+	SPOTLIGHT_CONTENT_TRANSITION,
+	SPOTLIGHT_LIST_TRANSITION,
+	SPOTLIGHT_MAIN_CONTENT_VARIANTS,
+} from './motion';
 
 const SPOTLIGHT_COLLAPSIBLE_ANIMATE = { height: 'auto', opacity: 1 } as const;
 const SPOTLIGHT_COLLAPSIBLE_EXIT = { height: 0, opacity: 0 } as const;

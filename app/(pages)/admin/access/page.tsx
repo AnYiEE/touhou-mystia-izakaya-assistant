@@ -1,13 +1,13 @@
 import { faCubes, faShieldHalved } from '@fortawesome/free-solid-svg-icons';
 import { type Metadata } from 'next';
 
-import { AdminHeader } from '@/features/admin/client/components/shell';
 import {
 	AdminMetric,
 	AdminMetricPanel,
 	AdminPanel,
 	AdminPanelTitle,
 } from '@/features/admin/client/components/panels';
+import { AdminHeader } from '@/features/admin/client/components/shell';
 import {
 	getAdminAuthInitialDataMessage,
 	readAdminAuthInitialData,

@@ -16,9 +16,9 @@ import type { ISpecialGuestSavedMeal } from '@/domain/meals/types';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import type { TTab } from '@/features/catalog/guests/shared/contracts';
 import { applyTableSortChange } from '@/features/catalog/guests/shared/state/applyTableSortChange';
-import type {
-	TBeverageTableSortDescriptor,
-	TFoodTableSortDescriptor,
+import {
+	type TBeverageTableSortDescriptor,
+	type TFoodTableSortDescriptor,
 } from '@/features/catalog/guests/shared/state/guestPersistenceShape';
 import { keepLastTag } from '@/features/catalog/guests/shared/state/keepLastTag';
 import { reverseVisibilityState } from '@/features/catalog/guests/shared/state/tabVisibility';
@@ -26,11 +26,11 @@ import {
 	beverageTagSelectionAdapter,
 	foodTagSelectionAdapter,
 } from '@/features/catalog/guests/shared/state/tagSelectionAdapter';
+import { trackSupportMealSave } from '@/features/donations/client/state/supportNudgeStore';
 import {
 	createMealValueDedupeKey,
 	createSpecialGuestRecommendationWorkflowKey,
 } from '@/features/donations/client/supportNudgePolicy';
-import { trackSupportMealSave } from '@/features/donations/client/state/supportNudgeStore';
 import { createSpecialGuestPlansActionsDefinition } from '@/features/specialGuestPlans/client/state/planStoreDefinition';
 
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';

@@ -4,7 +4,7 @@ import Heading from '@/design/ui/components/heading';
 
 import { preferencesMessages } from '@/features/preferences/client/messages';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
-import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
+import type { TPreferenceTargetKey } from '@/features/preferences/contracts';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 

@@ -4,7 +4,7 @@ import type { TDlc } from '@/domain/data/shared/types';
 import type { TSpriteId, TSpriteTarget } from '@/domain/data/sprites/types';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
-import type { TItemCard } from '@/features/analytics/contracts';
+import { type TItemCard } from '@/features/analytics/contracts';
 import ItemCard from '@/features/catalog/shared/client/components/ItemCard';
 import {
 	ItemPopover,
@@ -18,9 +18,9 @@ import { useOpenedItemPopover } from '@/features/catalog/shared/client/hooks/use
 import { renderContentDlcSections } from '@/features/catalog/shared/client/renderContentDlcSections';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
-import type {
-	TShareableItemId,
-	TShareableItemName,
+import {
+	type TShareableItemId,
+	type TShareableItemName,
 } from '@/features/itemSharing/contracts';
 
 interface ICollectibleItem<TTarget extends TSpriteTarget> {

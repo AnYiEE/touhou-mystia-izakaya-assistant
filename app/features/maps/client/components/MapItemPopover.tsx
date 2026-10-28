@@ -1,5 +1,8 @@
 'use client';
 
+import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { cn } from '@heroui/theme';
 import {
 	type ReactNode,
 	memo,
@@ -9,9 +12,6 @@ import {
 	useRef,
 	useState,
 } from 'react';
-import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { cn } from '@heroui/theme';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Button from '@/design/ui/components/button';
@@ -42,8 +42,8 @@ import {
 	getBeverageTagLabel,
 	getFoodTagLabel,
 } from '@/features/catalog/shared/client/localization/tagLabels';
-import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import FeatureAccessNotice from '@/features/featureAccess/client/components/FeatureAccessNotice';
+import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import { mapsMessages } from '@/features/maps/client/messages';
 import { trackMapEvent } from '@/features/maps/client/model/analytics';
 import {
@@ -51,18 +51,18 @@ import {
 	checkIngredientId,
 } from '@/features/maps/client/model/dayMapEntities';
 import {
-	type TMapItemProduct,
-	clearOpenedMapItem,
-	getMapItemKey,
-	rememberOpenedMapItem,
-} from '@/features/maps/client/model/mapsHistory';
-import {
 	MAP_POPOVER_CONTAINER_PADDING,
 	MAP_POPOVER_CONTENT_MAX_WIDTH_CLASS_NAME,
 	MAP_POPOVER_CONTENT_WIDTH_CLASS_NAME,
 	MAP_POPOVER_SIDE_PLACEMENT_MIN_WIDTH,
 	getMapSurfaceClassName,
 } from '@/features/maps/client/model/mapStyles';
+import {
+	type TMapItemProduct,
+	clearOpenedMapItem,
+	getMapItemKey,
+	rememberOpenedMapItem,
+} from '@/features/maps/client/model/mapsHistory';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 import { numberSort } from '@/shared/utilities/sort/numberSort';

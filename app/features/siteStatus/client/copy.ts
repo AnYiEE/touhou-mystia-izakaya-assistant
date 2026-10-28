@@ -1,4 +1,4 @@
-import type { TSiteTranslate } from './messages';
+import { type TSiteTranslate } from './messages';
 
 export const SITE_VISITOR_STATUS_MESSAGE_KEYS = {
 	failed: 'siteStatus.failed',

@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react';
 
-import type {
-	TFeatureAccessReason,
-	TFeatureModuleKey,
+import {
+	type TFeatureAccessReason,
+	type TFeatureModuleKey,
 } from '@/domain/featureAccess/contracts';
 
 import { refreshAccountState } from '@/features/account/client/session';

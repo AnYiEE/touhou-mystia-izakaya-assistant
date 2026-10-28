@@ -1,4 +1,4 @@
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const PWA_INSTALL_MESSAGES_ZH_CN = {
 	'pwa.install.entry.dismissed': '查看安装步骤',

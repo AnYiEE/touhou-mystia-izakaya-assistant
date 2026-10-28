@@ -11,12 +11,12 @@ import {
 	useSyncExternalStore,
 } from 'react';
 
+import { loadMapAsset } from './loadMapAsset';
 import {
 	MapAssetLoadError,
 	checkAbortError,
 	checkMapAssetAccessFailure,
 } from './mapAssetErrors';
-import { loadMapAsset } from './loadMapAsset';
 
 export type TMapAssetStatus =
 	'error' | 'idle' | 'loading' | 'queued' | 'success';

@@ -1,18 +1,17 @@
 'use client';
 
-import { type MouseEvent, memo, useCallback, useRef } from 'react';
 import { faRotate } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
 import { useInView } from 'framer-motion';
+import { type MouseEvent, memo, useCallback, useRef } from 'react';
 
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
 
+import { useMapAsset } from '@/features/maps/client/assets/MapAssetContext';
 import { mapsMessages } from '@/features/maps/client/messages';
 
 import { useI18n } from '@/shared/i18n/useI18n';
-
-import { useMapAsset } from '@/features/maps/client/assets/MapAssetContext';
 
 interface IProps {
 	className?: string;

@@ -1,6 +1,6 @@
-import type { TSitePath } from '@/features/appShell/navigation/config';
+import { type TSitePath } from '@/features/appShell/navigation/config';
 
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const APP_SHELL_MESSAGES_ZH_CN = {
 	'appShell.accountTheme.account': '账号',

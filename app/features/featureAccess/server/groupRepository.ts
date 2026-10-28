@@ -1,7 +1,7 @@
 import { type Transaction } from 'kysely';
 import { randomUUID } from 'node:crypto';
 
-import type { TFeatureModuleKey } from '@/domain/featureAccess/contracts';
+import { type TFeatureModuleKey } from '@/domain/featureAccess/contracts';
 
 import { normalizeDatabaseCount } from '@/infrastructure/database/queryValues';
 import type {

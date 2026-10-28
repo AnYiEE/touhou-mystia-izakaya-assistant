@@ -17,7 +17,7 @@ import { ANNOUNCEMENT_LEVEL_PRESENTATION } from '@/features/announcements/client
 import { useAnnouncementCarouselController } from '@/features/announcements/client/useAnnouncementCarouselController';
 import { type IAnnouncementPublicItem } from '@/features/announcements/contracts';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 import { useI18n } from '@/shared/i18n/useI18n';
 
 import {

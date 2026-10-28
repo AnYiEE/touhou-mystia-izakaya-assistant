@@ -11,7 +11,6 @@ import { isOverlayIdleForTutorial } from '@/features/overlays/client/store';
 import { withCrossTabLock } from '@/infrastructure/browser/crossTab/withCrossTabLock';
 
 import { checkDonationModalRequestValid } from './milestones';
-import { shouldShowSupportNudge } from './supportNudgePolicy';
 import {
 	readDonationLastMilestoneShown,
 	readDonationLastShown,
@@ -20,6 +19,7 @@ import {
 	markSupportNudgeShown,
 	supportNudgeStore,
 } from './state/supportNudgeStore';
+import { shouldShowSupportNudge } from './supportNudgePolicy';
 
 const SUPPORT_NUDGE_LOCK_NAME = 'support-nudge';
 const SUPPORT_NUDGE_LOCK_TTL_MS = 3000;

@@ -4,12 +4,12 @@ import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntim
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
+import { useSiteVisitors } from './SiteStatusProvider';
 import {
 	SITE_VISITOR_STATUS_MESSAGE_KEYS,
 	createSiteVisitorCountMessage,
 } from './copy';
 import { siteStatusMessages } from './messages';
-import { useSiteVisitors } from './SiteStatusProvider';
 
 export default function FooterVisitors() {
 	const { t } = useI18n(siteStatusMessages);

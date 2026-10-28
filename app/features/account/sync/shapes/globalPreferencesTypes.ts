@@ -4,12 +4,12 @@ import type { TIngredientId } from '@/domain/data/ingredients/types';
 import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';
 import type { IPopularTrend } from '@/domain/trends/types';
 
-import type {
-	TBeverageTableColumnKey,
-	TFoodTableColumnKey,
+import {
+	type TBeverageTableColumnKey,
+	type TFoodTableColumnKey,
 } from '@/features/catalog/guests/shared/state/tableDescriptors';
 
-import type { TLocalePreference } from '@/shared/i18n/locale';
+import { type TLocalePreference } from '@/shared/i18n/locale';
 
 export interface TGlobalPreferencesSnapshot {
 	donationModal: {

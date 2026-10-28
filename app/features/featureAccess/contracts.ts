@@ -1,9 +1,9 @@
-import type {
-	IEffectiveFeatureAccess,
-	IFeatureAccessReasonState,
-	TFeatureAccessLevel,
-	TFeatureAccessOverrideEffect,
-	TFeatureModuleKey,
+import {
+	type IEffectiveFeatureAccess,
+	type IFeatureAccessReasonState,
+	type TFeatureAccessLevel,
+	type TFeatureAccessOverrideEffect,
+	type TFeatureModuleKey,
 } from '@/domain/featureAccess/contracts';
 
 import type { IAccountUserProfile } from '@/features/account/contracts';

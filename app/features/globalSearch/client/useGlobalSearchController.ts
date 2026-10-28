@@ -28,7 +28,7 @@ import {
 	insertPrefixSuggestion,
 	replaceActiveFieldValue,
 } from '@/features/globalSearch/core/queryEditing';
-import type { IGlobalSearchRecentState } from '@/features/globalSearch/shapes/recentSearchShape';
+import { type IGlobalSearchRecentState } from '@/features/globalSearch/shapes/recentSearchShape';
 import { useIsOverlayTaskActive } from '@/features/overlays/client';
 import type { IOverlayShortcutDefinition } from '@/features/overlays/contracts';
 import { useVibrate } from '@/features/preferences/client/useVibrate';

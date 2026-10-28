@@ -2,9 +2,9 @@
 
 import { memo } from 'react';
 
-import type {
-	TFeatureAccessReason,
-	TFeatureModuleKey,
+import {
+	type TFeatureAccessReason,
+	type TFeatureModuleKey,
 } from '@/domain/featureAccess/contracts';
 
 interface IProps {

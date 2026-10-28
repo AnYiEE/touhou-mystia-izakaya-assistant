@@ -1,4 +1,4 @@
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const ITEM_SHARING_MESSAGES_ZH_CN = {
 	'itemSharing.closePopover': '点击：关闭弹出框',

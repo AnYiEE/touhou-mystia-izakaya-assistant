@@ -1,4 +1,4 @@
-import type { Kysely, Transaction } from 'kysely';
+import { type Kysely, type Transaction } from 'kysely';
 import { randomUUID } from 'node:crypto';
 
 import { getApplicationDatabase } from '@/infrastructure/database/applicationDatabase';

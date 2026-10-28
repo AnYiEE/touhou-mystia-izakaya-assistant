@@ -1,4 +1,4 @@
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const DERIVATIVE_PROJECTS_MESSAGES_ZH_CN = {
 	'derivativeProjects.ai.p1':

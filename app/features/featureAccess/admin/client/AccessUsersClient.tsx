@@ -8,23 +8,21 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { IAdminUserListData } from '@/features/account/contracts';
-import { AccessAdminNavigation } from '@/features/featureAccess/admin/client/AccessAdminNavigation';
-import { fetchAdminFeatureAccessUsers } from '@/features/featureAccess/admin/client/api';
-import { FEATURE_ACCESS_ADMIN_MESSAGE_MAP } from '@/features/featureAccess/admin/client/copy';
-import {
-	ADMIN_LIST_DEBOUNCE_MS,
-	AdminSearchInput,
-} from '@/features/admin/client/components/filters';
 import {
 	AdminEmptyState,
 	AdminMessage,
 } from '@/features/admin/client/components/feedback';
-import { AdminFilterPanel } from '@/features/admin/client/components/panels';
+import {
+	ADMIN_LIST_DEBOUNCE_MS,
+	AdminSearchInput,
+} from '@/features/admin/client/components/filters';
 import { AdminPagination } from '@/features/admin/client/components/pagination';
+import { AdminFilterPanel } from '@/features/admin/client/components/panels';
 import {
 	AdminHeader,
 	AdminShell,
 } from '@/features/admin/client/components/shell';
+import { AdminStatusBadge } from '@/features/admin/client/components/statusBadges';
 import {
 	AdminEntityCell,
 	AdminTable,
@@ -34,8 +32,10 @@ import {
 	AdminTableHeader,
 	AdminTableRow,
 } from '@/features/admin/client/components/table';
-import { AdminStatusBadge } from '@/features/admin/client/components/statusBadges';
 import { createAdminUserDisplayName } from '@/features/admin/client/components/userPresentation';
+import { AccessAdminNavigation } from '@/features/featureAccess/admin/client/AccessAdminNavigation';
+import { fetchAdminFeatureAccessUsers } from '@/features/featureAccess/admin/client/api';
+import { FEATURE_ACCESS_ADMIN_MESSAGE_MAP } from '@/features/featureAccess/admin/client/copy';
 
 export function AccessUsersClient({
 	initialData,

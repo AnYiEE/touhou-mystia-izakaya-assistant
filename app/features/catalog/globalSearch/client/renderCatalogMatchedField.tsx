@@ -33,7 +33,7 @@ import {
 	getGlobalSearchMatchedDlcDisplayText,
 } from '@/features/globalSearch/core/fieldValueSuggestions';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 import { type TMessageParams, translate } from '@/shared/i18n/messages';
 import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 

@@ -1,7 +1,7 @@
 import { faDesktop, faMoon, faSun } from '@fortawesome/free-solid-svg-icons';
 import { type FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
 
-import type { TThemeMessageKey } from '@/design/theme/messages';
+import { type TThemeMessageKey } from '@/design/theme/messages';
 import {
 	DARK_PALETTE_PRESENTATION_MAP,
 	LIGHT_PALETTE_PRESENTATION_MAP,

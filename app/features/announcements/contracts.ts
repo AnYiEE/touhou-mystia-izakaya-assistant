@@ -4,7 +4,7 @@ import {
 	type TAnnouncementVersionAction,
 } from '@/domain/announcements/contracts';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 
 export const ANNOUNCEMENT_COMPUTED_STATUSES = [
 	'active',

@@ -1,4 +1,4 @@
-import type { IFeatureAccessResponse } from '@/domain/featureAccess/contracts';
+import { type IFeatureAccessResponse } from '@/domain/featureAccess/contracts';
 
 import type { IAccountMeSuccessResponse } from '@/features/account/contracts';
 import { createCsrfToken } from '@/features/account/server/auth/csrf';

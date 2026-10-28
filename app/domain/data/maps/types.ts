@@ -1,5 +1,5 @@
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
-import type { TPrayerLabel } from '@/domain/data/labels/prayerFacts';
+import { type TPrayerLabel } from '@/domain/data/labels/prayerFacts';
 import type { TPartnerId } from '@/domain/data/partners/types';
 import { type TCollectableLabel } from '@/domain/data/places/collectableLabels';
 import { type TMerchantLabel } from '@/domain/data/places/merchantFacts';

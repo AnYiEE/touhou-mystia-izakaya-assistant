@@ -1,10 +1,10 @@
 import { store } from '@davstack/store';
 
 import { filterAvailableItemsByHiddenDlcs } from '@/domain/availability';
-import type { BadgeCatalog } from '@/domain/catalog/items/BadgeCatalog';
-import type { FishingCollectibleCatalog } from '@/domain/catalog/items/FishingCollectibleCatalog';
-import type { GeneralItemCatalog } from '@/domain/catalog/items/GeneralItemCatalog';
-import type { RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog';
+import { type BadgeCatalog } from '@/domain/catalog/items/BadgeCatalog';
+import { type FishingCollectibleCatalog } from '@/domain/catalog/items/FishingCollectibleCatalog';
+import { type GeneralItemCatalog } from '@/domain/catalog/items/GeneralItemCatalog';
+import { type RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog';
 import type { TDlc } from '@/domain/data/shared/types';
 import {
 	getMapLabelByDisplayLabel,

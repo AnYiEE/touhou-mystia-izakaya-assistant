@@ -1,4 +1,4 @@
-import type { State } from '@davstack/store';
+import { type State } from '@davstack/store';
 
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import type { TBeverageId } from '@/domain/data/beverages/types';

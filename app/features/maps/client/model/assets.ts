@@ -18,6 +18,7 @@ import { WORLD_MAP_FACTS } from '@/domain/data/maps/worldMapFacts';
 import { WORLD_MAP_PREVIEW_FACTS } from '@/domain/data/maps/worldMapPreviewFacts';
 
 import { checkCompatibility } from '@/infrastructure/browser/compatibility/checkCompatibility';
+
 import { getMapAssetBaseUrl } from './mapAssetBaseUrl';
 
 const DAY_MAP_INTERACTION_SPRITES_BY_KIND: Readonly<

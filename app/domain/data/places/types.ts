@@ -1,7 +1,7 @@
-import type { TPrayerLabel } from '@/domain/data/labels/prayerFacts';
-import type { TSchedulerLabel } from '@/domain/data/labels/schedulerFacts';
-import type { TCollectableLabel } from '@/domain/data/places/collectableLabels';
-import type { TMerchantLabel } from '@/domain/data/places/merchantFacts';
+import { type TPrayerLabel } from '@/domain/data/labels/prayerFacts';
+import { type TSchedulerLabel } from '@/domain/data/labels/schedulerFacts';
+import { type TCollectableLabel } from '@/domain/data/places/collectableLabels';
+import { type TMerchantLabel } from '@/domain/data/places/merchantFacts';
 
 export type TMapLabel =
 	| 'BeastForest'

@@ -1,6 +1,5 @@
 'use client';
 
-import { memo } from 'react';
 import {
 	faDisplay,
 	faDoorOpen,
@@ -13,6 +12,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
+import { memo } from 'react';
 
 import { useMapAsset } from '@/features/maps/client/assets/MapAssetContext';
 import { getCharacterSpriteUrl } from '@/features/maps/client/model/assets';

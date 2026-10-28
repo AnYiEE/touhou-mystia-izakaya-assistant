@@ -7,7 +7,7 @@ import Popover, {
 } from '@/design/ui/components/popover';
 import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 
-import type { BadgeCatalog } from '@/domain/catalog/items/BadgeCatalog';
+import { type BadgeCatalog } from '@/domain/catalog/items/BadgeCatalog';
 
 import CollectibleCatalog from '@/features/catalog/items/collectibles/client/components/CollectibleCatalog';
 import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';

@@ -23,7 +23,7 @@ import { catalogSharedMessages } from '@/features/catalog/shared/client/messages
 import { preferencesMessages } from '@/features/preferences/client/messages';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
-import { type TPreferenceTargetKey } from '@/features/preferences/contracts';
+import type { TPreferenceTargetKey } from '@/features/preferences/contracts';
 
 import { isChineseLocale } from '@/shared/i18n/locale';
 import { useI18n } from '@/shared/i18n/useI18n';

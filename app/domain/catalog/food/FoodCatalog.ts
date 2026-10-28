@@ -15,7 +15,7 @@ import type { TFoodTagId } from '@/domain/data/tags/types';
 import type { IMealFood, IResolvedMealFood } from '@/domain/meals/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 

@@ -13,7 +13,7 @@ import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import ContentDlcDivider from '@/features/catalog/shared/client/components/ContentDlcDivider';
 import OfficialContentDivider from '@/features/catalog/shared/client/components/OfficialContentDivider';
-import { type TItemDataItem } from '@/features/catalog/shared/contracts';
+import type { TItemDataItem } from '@/features/catalog/shared/contracts';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { useI18n } from '@/shared/i18n/useI18n';

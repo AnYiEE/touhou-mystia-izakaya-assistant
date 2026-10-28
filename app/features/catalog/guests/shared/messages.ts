@@ -1,6 +1,6 @@
-import type {
-	TLocalizedMessageTable,
-	TMessageParams,
+import {
+	type TLocalizedMessageTable,
+	type TMessageParams,
 } from '@/shared/i18n/messages';
 
 const CATALOG_GUESTS_MESSAGES_ZH_CN = {

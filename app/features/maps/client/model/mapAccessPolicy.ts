@@ -1,4 +1,4 @@
-import type { IFeatureAccessReasonState } from '@/domain/featureAccess/contracts';
+import { type IFeatureAccessReasonState } from '@/domain/featureAccess/contracts';
 
 export type TMapAccessMode = 'denied' | 'full' | 'preview';
 

@@ -1,4 +1,4 @@
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const ACCOUNT_ERROR_MESSAGES_ZH_CN = {
 	'account.error.account-disabled-offline': '离线包不支持账号功能',

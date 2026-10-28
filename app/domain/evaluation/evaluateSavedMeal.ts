@@ -6,8 +6,8 @@ import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog
 import type { TBeverageId } from '@/domain/data/beverages/types';
 import type { TNormalGuestId } from '@/domain/data/guests/normal/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
-import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import { DARK_MATTER_META_MAP } from '@/domain/data/tags/tagFacts';
+import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import type { IMealFood } from '@/domain/meals/types';
 import type { IGuestOrder } from '@/domain/orders/types';
 import type { IPopularTrend } from '@/domain/trends/types';

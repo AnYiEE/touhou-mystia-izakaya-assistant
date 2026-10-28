@@ -52,7 +52,7 @@ import {
 	NAVBAR_COMPACT_BELOW_XL_LOCALES,
 	NAVBAR_HOME_LG_UP_ONLY_LOCALES,
 } from './navigationLocaleRules';
-import type { INavbarPaletteItem } from './themeItems';
+import { type INavbarPaletteItem } from './themeItems';
 
 const { baseURL } = PUBLIC_RUNTIME_CONFIG;
 const links = SITE_LINKS;

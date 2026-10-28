@@ -70,10 +70,10 @@ import type {
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
+import SpecialGuestPlanSummaryText from './SpecialGuestPlanSummaryText';
 import { guardGuestGroupToggleDuringControlsAnimation } from './dom';
 import { getDrawerControlsClassName } from './drawerLayout';
 import { createPlanSelectionComparator } from './selectionOrdering';
-import SpecialGuestPlanSummaryText from './SpecialGuestPlanSummaryText';
 
 const SPECIAL_GUEST_PLAN_GUEST_SORT_OPTIONS = [
 	{ labelKey: 'plans.sort.default', value: 'default' },

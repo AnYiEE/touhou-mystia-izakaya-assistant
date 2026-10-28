@@ -1,6 +1,5 @@
 'use client';
 
-import { type ReactNode, memo, useCallback, useMemo } from 'react';
 import {
 	faArrowRight,
 	faArrowUpRightFromSquare,
@@ -10,6 +9,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
+import { type ReactNode, memo, useCallback, useMemo } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Button from '@/design/ui/components/button';
@@ -75,8 +75,8 @@ import {
 	checkDayMapLabel,
 	getDayMapLabel,
 } from '@/features/maps/client/model/dayMapLabels';
-import { getMapItemKey } from '@/features/maps/client/model/mapsHistory';
 import { getMapSurfaceClassName } from '@/features/maps/client/model/mapStyles';
+import { getMapItemKey } from '@/features/maps/client/model/mapsHistory';
 import { getProductName } from '@/features/maps/client/model/productNames';
 import { useDayMapEntityName } from '@/features/maps/client/model/useDayMapEntityName';
 import { type IDayMapVisibility } from '@/features/maps/client/model/useDayMapVisibility';

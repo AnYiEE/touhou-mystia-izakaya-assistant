@@ -1,16 +1,16 @@
 import { type NextRequest } from 'next/server';
 
-import type { IAdminFeatureModulePolicyUpdateBody } from '@/features/featureAccess/contracts';
+import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
+import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
+import { createFeatureAccessAdminResultResponse } from '@/features/featureAccess/admin/server/http';
 import {
 	checkAdminFeatureAccessLevel,
 	checkAdminFeatureModuleKey,
 	listAdminFeatureModules,
 	updateAdminFeatureModulePolicy,
 } from '@/features/featureAccess/admin/server/service';
-import { createFeatureAccessAdminResultResponse } from '@/features/featureAccess/admin/server/http';
-import { checkAdminRequest } from '@/features/admin/server/http/requestGuard';
+import { type IAdminFeatureModulePolicyUpdateBody } from '@/features/featureAccess/contracts';
 
-import { MAX_ACCOUNT_JSON_BODY_BYTES } from '@/features/account/requestLimits';
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
 	createNoStoreErrorResponse,

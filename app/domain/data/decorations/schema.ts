@@ -1,6 +1,6 @@
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
-import type { TCollaborationLabel } from '@/domain/data/labels/collaborationFacts';
-import type { TSchedulerLabel } from '@/domain/data/labels/schedulerFacts';
+import { type TCollaborationLabel } from '@/domain/data/labels/collaborationFacts';
+import { type TSchedulerLabel } from '@/domain/data/labels/schedulerFacts';
 import type { TMapLabel } from '@/domain/data/places/types';
 import type { IItemBase } from '@/domain/data/shared/itemSchema';
 

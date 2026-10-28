@@ -1,7 +1,7 @@
-import type {
-	TFeatureAccessLevel,
-	TFeatureAccessReason,
-	TFeatureAccessSource,
+import {
+	type TFeatureAccessLevel,
+	type TFeatureAccessReason,
+	type TFeatureAccessSource,
 } from '@/domain/featureAccess/contracts';
 
 export const FEATURE_ACCESS_ADMIN_MESSAGE_MAP = {

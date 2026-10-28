@@ -7,11 +7,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
-import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
-import Link from '@/design/ui/components/link';
 import SideBookmarkButton, {
 	SIDE_BOOKMARK_POSITION_CLASS_NAME,
 } from '@/design/ui/components/SideBookmarkButton';
+import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
+import Link from '@/design/ui/components/link';
 import SiteInfo from '@/design/ui/components/siteInfo';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
@@ -33,12 +33,12 @@ import { PUBLIC_RUNTIME_CONFIG } from '@/infrastructure/environment/publicRuntim
 import { useI18n } from '@/shared/i18n/useI18n';
 import { siteMessages } from '@/shared/site/messages';
 
-import { getFocusableElements } from './dom';
-import { getDrawerLayoutClassName } from './drawerLayout';
 import SpecialGuestPlanControls from './SpecialGuestPlanControls';
 import SpecialGuestPlanDrawerSkeleton from './SpecialGuestPlanDrawerSkeleton';
 import SpecialGuestPlanHelpPopover from './SpecialGuestPlanHelpPopover';
 import SpecialGuestPlanResults from './SpecialGuestPlanResults';
+import { getFocusableElements } from './dom';
+import { getDrawerLayoutClassName } from './drawerLayout';
 
 const DRAWER_CONTENT_READY_DELAY =
 	SPECIAL_GUEST_PLAN_DRAWER_EXIT_DURATION_MS + 20;

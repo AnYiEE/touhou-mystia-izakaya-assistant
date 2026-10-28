@@ -1,8 +1,8 @@
 'use client';
 
-import { createContext, memo, useCallback, useContext, useMemo } from 'react';
 import { faMapLocationDot } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { createContext, memo, useCallback, useContext, useMemo } from 'react';
 
 import Link from '@/design/ui/components/link';
 import Tooltip from '@/design/ui/components/tooltip';

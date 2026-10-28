@@ -1,6 +1,6 @@
 import { type Transaction } from 'kysely';
 
-import type { TFeatureModuleKey } from '@/domain/featureAccess/contracts';
+import { type TFeatureModuleKey } from '@/domain/featureAccess/contracts';
 
 import type { TDatabase } from '@/infrastructure/database/schema';
 

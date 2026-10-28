@@ -1,7 +1,7 @@
 import { store } from '@davstack/store';
 
 import { type TSyncNamespace } from '@/domain/account/contracts';
-import type { IFeatureAccessResponse } from '@/domain/featureAccess/contracts';
+import { type IFeatureAccessResponse } from '@/domain/featureAccess/contracts';
 
 import type {
 	IAccountSessionInitialData,

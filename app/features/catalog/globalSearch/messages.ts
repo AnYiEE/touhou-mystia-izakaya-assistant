@@ -1,4 +1,4 @@
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const CATALOG_GLOBAL_SEARCH_MESSAGES_ZH_CN = {
 	'search.filter.applyTo': '应用到{label}筛选',

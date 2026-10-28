@@ -14,7 +14,6 @@ import type { IMealFood } from '@/domain/meals/types';
 import type { IPopularTrend } from '@/domain/trends/types';
 
 import type { TTab } from '@/features/catalog/guests/shared/contracts';
-
 import { normalGuestPersistenceShape } from '@/features/catalog/guests/shared/state/guestPersistenceShape';
 
 export const normalGuestBeverageCatalog = BeverageCatalog.getInstance();

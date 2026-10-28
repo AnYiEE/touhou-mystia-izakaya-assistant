@@ -1,5 +1,5 @@
-import { type ReactElement, type ReactNode, memo } from 'react';
 import { cn } from '@heroui/theme';
+import { type ReactElement, type ReactNode, memo } from 'react';
 
 import Popover, {
 	type IPopoverProps,

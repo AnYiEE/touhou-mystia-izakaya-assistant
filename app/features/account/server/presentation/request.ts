@@ -2,7 +2,7 @@ import { UAParser } from 'ua-parser-js';
 
 import { accountMessages } from '@/features/account/client/messages';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 import { translate } from '@/shared/i18n/messages';
 
 export function createIpSummary(value: string, locale: TLocale) {

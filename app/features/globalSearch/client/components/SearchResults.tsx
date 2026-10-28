@@ -23,13 +23,13 @@ import {
 	getSectionDisplayLabel,
 } from '@/features/globalSearch/core/parser';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 import { useI18n } from '@/shared/i18n/useI18n';
 
-import { SPOTLIGHT_LIST_TRANSITION, SPOTLIGHT_RESULT_VARIANTS } from './motion';
 import { SearchItemVisual } from './SearchItemVisual';
 import { SearchPreview } from './SearchPreview';
 import { SpotlightMotionBlock } from './SpotlightMotion';
+import { SPOTLIGHT_LIST_TRANSITION, SPOTLIGHT_RESULT_VARIANTS } from './motion';
 
 const resultTransitionCache = new Map<number, Transition>();
 

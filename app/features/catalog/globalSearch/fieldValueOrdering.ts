@@ -8,7 +8,7 @@ import {
 } from '@/domain/catalog/localizedCategoryLabels';
 import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
 import { compareIngredientTypes } from '@/domain/data/ingredients/ingredientFacts';
-import { SPEED_LABEL_MAP } from '@/domain/data/partners/speedFacts';
+import { type SPEED_LABEL_MAP } from '@/domain/data/partners/speedFacts';
 import { ALL_MAP_LABELS } from '@/domain/data/places/placeFacts';
 import {
 	getActivePlaceLabelLocale,

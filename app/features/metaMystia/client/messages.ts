@@ -1,4 +1,4 @@
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const META_MYSTIA_MESSAGES_ZH_CN = {
 	'metaMystia.actions.docs': '阅读使用文档',

@@ -1,8 +1,8 @@
 'use client';
 
-import { memo, useCallback } from 'react';
 import { faEarthAsia } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'next/navigation';
+import { memo, useCallback } from 'react';
 
 import SideBookmarkButton, {
 	type TSideBookmarkExpandWidth,

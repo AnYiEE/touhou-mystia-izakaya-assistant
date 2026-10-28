@@ -1,4 +1,4 @@
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const FEATURE_ACCESS_MESSAGES_ZH_CN = {
 	'featureAccess.action.donate': '捐赠',

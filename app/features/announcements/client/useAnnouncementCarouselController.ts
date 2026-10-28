@@ -20,7 +20,7 @@ import { fetchServiceApi } from '@/infrastructure/http/client/fetchServiceApi';
 import { FILE_TYPE_JSON } from '@/infrastructure/http/mediaTypes';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 import { useI18n } from '@/shared/i18n/useI18n';
 import { checkOrderedArrayEqual } from '@/shared/utilities/collections/check';
 

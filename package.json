@@ -17,6 +17,8 @@
 		"lint": "eslint --cache .",
 		"lint:fix": "eslint --cache --fix .",
 		"format": "prettier --cache --write .",
+		"imports:check": "tsx scripts/validation/validateImportConventions.ts",
+		"imports:fix": "tsx scripts/validation/validateImportConventions.ts --fix",
 		"stylelint": "stylelint --allow-empty-input --cache app/**/*.css app/**/*.scss",
 		"stylelint:fix": "stylelint --allow-empty-input --cache --fix app/**/*.css app/**/*.scss",
 		"preinstall": "npx only-allow pnpm",

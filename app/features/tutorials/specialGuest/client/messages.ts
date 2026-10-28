@@ -1,4 +1,4 @@
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const SPECIAL_GUEST_TUTORIAL_MESSAGES_ZH_CN = {
 	'tutorial.complete': '完成',

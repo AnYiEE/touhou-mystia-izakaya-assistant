@@ -1,14 +1,6 @@
 'use client';
 
 import {
-	type RefObject,
-	memo,
-	useCallback,
-	useLayoutEffect,
-	useMemo,
-	useRef,
-} from 'react';
-import {
 	faChevronDown,
 	faChevronLeft,
 	faChevronRight,
@@ -20,6 +12,14 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
 import { AnimatePresence, motion } from 'framer-motion';
+import {
+	type RefObject,
+	memo,
+	useCallback,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+} from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Button from '@/design/ui/components/button';

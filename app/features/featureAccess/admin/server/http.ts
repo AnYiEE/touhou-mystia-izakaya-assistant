@@ -3,9 +3,9 @@ import {
 	createNoStoreJsonResponse,
 } from '@/infrastructure/http/server/responses';
 
-import type {
-	TFeatureAccessAdminError,
-	TFeatureAccessAdminResult,
+import {
+	type TFeatureAccessAdminError,
+	type TFeatureAccessAdminResult,
 } from './service';
 
 const FEATURE_ACCESS_ADMIN_ERROR_STATUS_MAP = {

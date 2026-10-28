@@ -1,5 +1,5 @@
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
-import type { TCollectionProductType } from '@/domain/data/places/collectionYieldFacts';
+import { type TCollectionProductType } from '@/domain/data/places/collectionYieldFacts';
 
 export const PRAYER_LABEL_MAP = { MoriyaShrine: '西侧守矢分社' } as const;
 

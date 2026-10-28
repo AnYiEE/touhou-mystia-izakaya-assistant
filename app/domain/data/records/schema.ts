@@ -1,5 +1,5 @@
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
-import type { TMerchantLabel } from '@/domain/data/places/merchantFacts';
+import { type TMerchantLabel } from '@/domain/data/places/merchantFacts';
 import type { IItemBase } from '@/domain/data/shared/itemSchema';
 
 import type { TRecordId } from './types';

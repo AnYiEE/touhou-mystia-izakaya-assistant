@@ -1,4 +1,8 @@
-import { DARK_PALETTE_MAP, LIGHT_PALETTE_MAP, THEME_MAP } from './constants';
+import {
+	type DARK_PALETTE_MAP,
+	type LIGHT_PALETTE_MAP,
+	type THEME_MAP,
+} from './constants';
 
 export type TDarkPalette =
 	(typeof DARK_PALETTE_MAP)[keyof typeof DARK_PALETTE_MAP];

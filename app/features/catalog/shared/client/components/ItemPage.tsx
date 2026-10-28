@@ -3,9 +3,9 @@
 import { cn } from '@heroui/theme';
 import { type PropsWithChildren, memo } from 'react';
 
+import { getSideBookmarkPositionClassName } from '@/design/ui/components/SideBookmarkButton';
 import Loading from '@/design/ui/components/loading';
 import Placeholder from '@/design/ui/components/placeholder';
-import { getSideBookmarkPositionClassName } from '@/design/ui/components/SideBookmarkButton';
 
 import { useSkipProcessItemData } from '@/features/catalog/shared/client/hooks/useSkipProcessItemData';
 import { useCatalogLocalizationReady } from '@/features/catalog/shared/client/localization/useCatalogLocalizationReady';

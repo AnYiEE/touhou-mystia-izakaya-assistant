@@ -12,9 +12,9 @@ import {
 	createAccountAdminAuditLogInput,
 	writeAccountAuditLogInTransaction,
 } from '@/features/account/server/audit/service';
-import { createAccountUserProfile } from '@/features/account/server/presentation/user';
 import { getAccountDatabase } from '@/features/account/server/persistence/database';
-import type { IListUsersOptions } from '@/features/account/server/persistence/repositories/users';
+import { type IListUsersOptions } from '@/features/account/server/persistence/repositories/users';
+import { createAccountUserProfile } from '@/features/account/server/presentation/user';
 import {
 	FEATURE_ACCESS_GROUP_DESCRIPTION_MAX_LENGTH as GROUP_DESCRIPTION_MAX_LENGTH,
 	FEATURE_ACCESS_GROUP_NAME_MAX_LENGTH as GROUP_NAME_MAX_LENGTH,

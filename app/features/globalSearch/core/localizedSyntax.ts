@@ -4,7 +4,7 @@ import type {
 	TGlobalSearchSection,
 } from '@/features/globalSearch/contracts';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 
 import { GLOBAL_SEARCH_EXAMPLE_QUERIES } from './constants';
 

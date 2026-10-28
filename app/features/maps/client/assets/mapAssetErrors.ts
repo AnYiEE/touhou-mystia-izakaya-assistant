@@ -1,4 +1,4 @@
-import type { TFeatureAccessReason } from '@/domain/featureAccess/contracts';
+import { type TFeatureAccessReason } from '@/domain/featureAccess/contracts';
 
 export type TMapAssetFailureKind =
 	| 'account-unavailable'

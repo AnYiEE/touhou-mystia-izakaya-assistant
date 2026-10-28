@@ -19,8 +19,8 @@ import type { TIngredientId } from '@/domain/data/ingredients/types';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
 import { specialGuestPlanCatalogPort } from '@/features/catalog/guests/special/client/state/specialGuestPlanCatalogPort';
 import { useDocumentVisibility } from '@/features/donations/client/hooks/useDocumentVisibility';
-import { SUPPORT_PLAN_DETAIL_DWELL_MS } from '@/features/donations/client/supportNudgePolicy';
 import { trackSupportPlanDetail } from '@/features/donations/client/state/supportNudgeStore';
+import { SUPPORT_PLAN_DETAIL_DWELL_MS } from '@/features/donations/client/supportNudgePolicy';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import { recommendationPreferencesFacade } from '@/features/preferences/client/recommendationPreferencesFacade';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
@@ -31,8 +31,8 @@ import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/stat
 import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
-import { getDrawerResultsClassName } from './drawerLayout';
 import GuestGroup from './GuestGroup';
+import { getDrawerResultsClassName } from './drawerLayout';
 
 const beverageCatalog = BeverageCatalog.getInstance();
 const cookerCatalog = CookerCatalog.getInstance();

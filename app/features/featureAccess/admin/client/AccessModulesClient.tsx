@@ -13,17 +13,8 @@ import {
 	type TFeatureModuleKey,
 	isSsoAppFeatureModuleKey,
 } from '@/domain/featureAccess/contracts';
+
 import type { IAdminMeData } from '@/features/account/contracts';
-import { updateAdminFeatureModulePolicy } from '@/features/featureAccess/admin/client/api';
-import {
-	FEATURE_ACCESS_ADMIN_MESSAGE_MAP,
-	FEATURE_ACCESS_LEVEL_LABEL_MAP,
-} from '@/features/featureAccess/admin/client/copy';
-import type {
-	IAdminFeatureModuleListData,
-	IAdminFeatureModuleRecord,
-} from '@/features/featureAccess/contracts';
-import { AccessAdminNavigation } from '@/features/featureAccess/admin/client/AccessAdminNavigation';
 import { AdminConfirmButton } from '@/features/admin/client/components/confirmation';
 import {
 	AdminEmptyState,
@@ -42,6 +33,16 @@ import {
 	AdminTableHeader,
 	AdminTableRow,
 } from '@/features/admin/client/components/table';
+import { AccessAdminNavigation } from '@/features/featureAccess/admin/client/AccessAdminNavigation';
+import { updateAdminFeatureModulePolicy } from '@/features/featureAccess/admin/client/api';
+import {
+	FEATURE_ACCESS_ADMIN_MESSAGE_MAP,
+	FEATURE_ACCESS_LEVEL_LABEL_MAP,
+} from '@/features/featureAccess/admin/client/copy';
+import {
+	type IAdminFeatureModuleListData,
+	type IAdminFeatureModuleRecord,
+} from '@/features/featureAccess/contracts';
 
 const ACCESS_LEVELS = [
 	'public',

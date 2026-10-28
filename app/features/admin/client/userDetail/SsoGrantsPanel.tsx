@@ -5,7 +5,7 @@ import {
 	faServer,
 	faUserSlash,
 } from '@fortawesome/free-solid-svg-icons';
-import type { SyntheticEvent } from 'react';
+import { type SyntheticEvent } from 'react';
 
 import TimeAgo from '@/design/ui/components/timeAgo';
 

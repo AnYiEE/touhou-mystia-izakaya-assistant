@@ -1,15 +1,6 @@
 'use client';
 
 import {
-	type ReactNode,
-	createContext,
-	memo,
-	useCallback,
-	useContext,
-	useMemo,
-	useState,
-} from 'react';
-import {
 	faClock,
 	faDisplay,
 	faDoorOpen,
@@ -25,6 +16,15 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
 import { AnimatePresence, motion } from 'framer-motion';
+import {
+	type ReactNode,
+	createContext,
+	memo,
+	useCallback,
+	useContext,
+	useMemo,
+	useState,
+} from 'react';
 
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';

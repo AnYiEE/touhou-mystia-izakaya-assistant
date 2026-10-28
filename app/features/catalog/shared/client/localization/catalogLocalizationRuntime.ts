@@ -3,7 +3,7 @@ import { resolveEffectiveLocale } from '@/features/preferences/client/state/loca
 
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 
 import { setActiveLocalizationLocale } from './activeLocalizationLocale';
 import { bumpCatalogLocalizationRevision } from './catalogLocalizationRevision';

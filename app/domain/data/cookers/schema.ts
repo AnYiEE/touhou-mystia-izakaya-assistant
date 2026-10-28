@@ -1,6 +1,6 @@
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
-import type { TSchedulerLabel } from '@/domain/data/labels/schedulerFacts';
+import { type TSchedulerLabel } from '@/domain/data/labels/schedulerFacts';
 import type { TMerchantReference } from '@/domain/data/places/types';
 import type { IItemBase } from '@/domain/data/shared/itemSchema';
 

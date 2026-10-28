@@ -1,9 +1,9 @@
 'use client';
 
-import { memo } from 'react';
 import { type IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
+import { memo } from 'react';
 
 import Button, { type IButtonProps } from './button';
 

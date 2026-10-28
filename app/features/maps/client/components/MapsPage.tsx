@@ -1,6 +1,5 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	faArrowLeft,
 	faChevronRight,
@@ -11,6 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
 import { AnimatePresence, motion, useAnimationControls } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
@@ -54,6 +54,7 @@ import {
 	checkDayMapLabel,
 	getDayMapLabel,
 } from '@/features/maps/client/model/dayMapLabels';
+import { getMapSurfaceClassName } from '@/features/maps/client/model/mapStyles';
 import {
 	type IMapsVisit,
 	type IOpenedMapItem,
@@ -67,7 +68,6 @@ import {
 	readOpenedMapItem,
 	shouldAnimateMapsEntrance,
 } from '@/features/maps/client/model/mapsHistory';
-import { getMapSurfaceClassName } from '@/features/maps/client/model/mapStyles';
 import {
 	MAP_FADE_ANIMATE,
 	MAP_FADE_HIDDEN,
@@ -103,12 +103,12 @@ import DayMapTiles from './DayMapTiles';
 import { useMapAccess } from './MapAccessContext';
 import MapDetailCard from './MapDetailCard';
 import MapSidebar from './MapSidebar';
-import MapsPageSkeleton from './MapsPageSkeleton';
-import MapsSidebarBootScript from './MapsSidebarBootScript';
 import MapViewport, {
 	type IMapFocusRequest,
 	type IMapView,
 } from './MapViewport';
+import MapsPageSkeleton from './MapsPageSkeleton';
+import MapsSidebarBootScript from './MapsSidebarBootScript';
 import WorldMapLayer from './WorldMapLayer';
 
 /** @description Screen pixels per world unit used when focusing a marker. */

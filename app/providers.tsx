@@ -24,8 +24,8 @@ import type {
 import { startAnalyticsClient } from './features/analytics/client';
 import CompatibleBrowser from './features/appShell/client/CompatibleBrowser';
 import { startCatalogLocalizationClient } from './features/catalog/shared/client/localization/catalogLocalizationRuntime';
-import DonationNudge from './features/donations/client/components/DonationNudge';
 import DonationModal from './features/donations/client/DonationModal';
+import DonationNudge from './features/donations/client/components/DonationNudge';
 import { OverlayCoordinatorHost } from './features/overlays/client';
 import DesignPreferencesConnector from './features/preferences/client/designPreferencesConnector';
 import { startPreferencesClient } from './features/preferences/client/startPreferencesClient';

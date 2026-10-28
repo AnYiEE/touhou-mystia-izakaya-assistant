@@ -13,18 +13,6 @@ import Input from '@/design/ui/components/input';
 import TimeAgo from '@/design/ui/components/timeAgo';
 
 import type { IAdminMeData } from '@/features/account/contracts';
-import { AccessAdminNavigation } from '@/features/featureAccess/admin/client/AccessAdminNavigation';
-import {
-	createAdminFeatureGroup,
-	deleteAdminFeatureGroup,
-} from '@/features/featureAccess/admin/client/api';
-import { FEATURE_ACCESS_ADMIN_MESSAGE_MAP } from '@/features/featureAccess/admin/client/copy';
-import {
-	FEATURE_ACCESS_GROUP_DESCRIPTION_MAX_LENGTH,
-	FEATURE_ACCESS_GROUP_NAME_MAX_LENGTH,
-	type IAdminFeatureAccessGroupListData,
-	type IAdminFeatureAccessGroupRecord,
-} from '@/features/featureAccess/contracts';
 import { AdminConfirmButton } from '@/features/admin/client/components/confirmation';
 import {
 	AdminEmptyState,
@@ -46,6 +34,18 @@ import {
 	AdminTableHeader,
 	AdminTableRow,
 } from '@/features/admin/client/components/table';
+import { AccessAdminNavigation } from '@/features/featureAccess/admin/client/AccessAdminNavigation';
+import {
+	createAdminFeatureGroup,
+	deleteAdminFeatureGroup,
+} from '@/features/featureAccess/admin/client/api';
+import { FEATURE_ACCESS_ADMIN_MESSAGE_MAP } from '@/features/featureAccess/admin/client/copy';
+import {
+	FEATURE_ACCESS_GROUP_DESCRIPTION_MAX_LENGTH,
+	FEATURE_ACCESS_GROUP_NAME_MAX_LENGTH,
+	type IAdminFeatureAccessGroupListData,
+	type IAdminFeatureAccessGroupRecord,
+} from '@/features/featureAccess/contracts';
 
 export function AccessGroupsClient({
 	admin,

@@ -1,4 +1,4 @@
-import type { TLocalizedMessageTable } from '@/shared/i18n/messages';
+import { type TLocalizedMessageTable } from '@/shared/i18n/messages';
 
 const ANNOUNCEMENT_CLIENT_MESSAGES_ZH_CN = {
 	'announcements.bar.ariaLabel': '站点通知',

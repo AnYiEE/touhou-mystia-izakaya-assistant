@@ -1,4 +1,4 @@
-import type { TFeatureModuleKey } from '@/domain/featureAccess/contracts';
+import { type TFeatureModuleKey } from '@/domain/featureAccess/contracts';
 
 import { accountStore } from '@/features/account/client/state/accountStore';
 

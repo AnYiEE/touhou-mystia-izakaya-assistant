@@ -4,9 +4,9 @@ import { useEffect, useRef } from 'react';
 
 import { createAccountViewerSignatureFromClientState } from '@/features/account/client/accountViewerSignature';
 import { accountStore } from '@/features/account/client/state/accountStore';
-import type {
-	IAnnouncementPublicItem,
-	IAnnouncementVisibleListData,
+import {
+	type IAnnouncementPublicItem,
+	type IAnnouncementVisibleListData,
 } from '@/features/announcements/contracts';
 import {
 	checkAnnouncementDismissalTokensCoverLocale,
@@ -19,7 +19,7 @@ import {
 import { fetchServiceApi } from '@/infrastructure/http/client/fetchServiceApi';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
-import type { TLocale } from '@/shared/i18n/locale';
+import { type TLocale } from '@/shared/i18n/locale';
 
 const ANNOUNCEMENT_VIEWER_SYNC_DEBOUNCE_MS = 150;
 
