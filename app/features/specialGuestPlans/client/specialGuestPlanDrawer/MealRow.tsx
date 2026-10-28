@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import Avatar from '@/design/ui/components/avatar';
 import {
 	type IPopoverProps,
@@ -46,15 +48,7 @@ const RATING_AVATAR_CLASS_NAMES = {
 	fallback: 'static w-full translate-x-0 translate-y-0',
 } as const;
 
-export default function MealRow({
-	meal,
-	onOpenBeverage,
-	onOpenCooker,
-	onOpenFood,
-	onOpenIngredient,
-	popoverPortalProps,
-	specialGuest,
-}: {
+export default memo<{
 	meal: IResolvedSpecialGuestPlanGroup['meals'][number];
 	onOpenBeverage: (beverage: TBeverageId) => void;
 	onOpenCooker: (cooker: TCookerId) => void;
@@ -62,6 +56,14 @@ export default function MealRow({
 	onOpenIngredient: (ingredient: TIngredientId) => void;
 	popoverPortalProps: Pick<IPopoverProps, 'portalContainer'>;
 	specialGuest: IResolvedSpecialGuestPlanGroup['specialGuest'];
+}>(function MealRow({
+	meal,
+	onOpenBeverage,
+	onOpenCooker,
+	onOpenFood,
+	onOpenIngredient,
+	popoverPortalProps,
+	specialGuest,
 }) {
 	useCatalogLocalizationRevision();
 	const { t } = useI18n(specialGuestPlansMessages);
@@ -245,4 +247,4 @@ export default function MealRow({
 			</div>
 		</div>
 	);
-}
+});

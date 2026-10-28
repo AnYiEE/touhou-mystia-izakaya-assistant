@@ -1,6 +1,6 @@
 import { AccordionItem } from '@heroui/accordion';
 import { cn } from '@heroui/theme';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import Avatar from '@/design/ui/components/avatar';
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
@@ -121,6 +121,15 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 	const bondRewards = specialGuestStore.bondRewards.use();
 
 	const specialGuestCatalog = specialGuestStore.instances.guest.get();
+
+	const supportGuest = useMemo(
+		() =>
+			currentSpecialGuest === null
+				? null
+				: { id: currentSpecialGuest, kind: 'special' as const },
+		[currentSpecialGuest]
+	);
+
 	const handleButtonPress = useCallback(() => {
 		if (currentSpecialGuest === null) {
 			return;
@@ -133,7 +142,7 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 		);
 	}, [currentSpecialGuest, specialGuestCatalog]);
 
-	if (currentSpecialGuest === null) {
+	if (currentSpecialGuest === null || supportGuest === null) {
 		return null;
 	}
 
@@ -201,7 +210,7 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 			defaultExpandedKeys={defaultExpandedKeys}
 			desktopTriggerContainer={desktopTriggerContainer}
 			overlayId="special-guest.info"
-			supportGuest={{ id: currentSpecialGuest, kind: 'special' }}
+			supportGuest={supportGuest}
 			onButtonPress={handleButtonPress}
 		>
 			<AccordionItem

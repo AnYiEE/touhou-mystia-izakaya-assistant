@@ -4,7 +4,7 @@ import {
 	FontAwesomeIcon,
 	type FontAwesomeIconProps,
 } from '@fortawesome/react-fontawesome';
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 
 import Button, { type IButtonProps } from '@/design/ui/components/button';
 import Popover, {
@@ -43,13 +43,16 @@ function AdminConfirmButtonBase<TConfirmAction extends string>({
 	openAction,
 	size,
 }: IAdminConfirmButtonProps<TConfirmAction>) {
-	const handleOpenChange = (isOpen: boolean) => {
-		onOpenChange(isOpen ? confirmAction : null);
-	};
+	const handleOpenChange = useCallback(
+		(isOpen: boolean) => {
+			onOpenChange(isOpen ? confirmAction : null);
+		},
+		[confirmAction, onOpenChange]
+	);
 
-	const handleCancelPress = () => {
+	const handleCancelPress = useCallback(() => {
 		onOpenChange(null);
-	};
+	}, [onOpenChange]);
 
 	return (
 		<Popover

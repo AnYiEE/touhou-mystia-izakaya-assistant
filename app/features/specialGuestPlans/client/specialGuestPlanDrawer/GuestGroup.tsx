@@ -8,7 +8,7 @@ import { Select, SelectItem } from '@heroui/select';
 import { type Selection } from '@heroui/table';
 import { cn } from '@heroui/theme';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Button from '@/design/ui/components/button';
@@ -77,7 +77,7 @@ const RECOMMENDED_SELECT_CLASS_NAMES = {
 } as const;
 const specialGuestPlanCatalog = SpecialGuestCatalog.getInstance();
 
-export default function GuestGroup({
+export default memo(function GuestGroup({
 	group,
 	isExpanded,
 	onCreateMeal,
@@ -886,4 +886,4 @@ export default function GuestGroup({
 			</AnimatePresence>
 		</Card>
 	);
-}
+});

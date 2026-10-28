@@ -1,6 +1,13 @@
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Fragment, memo, useEffect, useMemo, useState } from 'react';
+import {
+	Fragment,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
 
 import Button from '@/design/ui/components/button';
 import Popover, {
@@ -177,10 +184,10 @@ export default memo<IProps>(function FoodTableActionButton({
 		}
 	}, [unavailableIngredients.length]);
 
-	const handleConfirmPress = () => {
+	const handleConfirmPress = useCallback(() => {
 		setIsConfirmPopoverOpen(false);
 		onSelect();
-	};
+	}, [onSelect]);
 
 	const label = t('guests.foodAction.selectTip');
 

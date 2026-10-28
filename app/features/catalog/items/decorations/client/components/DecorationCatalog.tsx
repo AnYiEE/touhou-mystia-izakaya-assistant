@@ -179,9 +179,7 @@ export default memo<IProps>(function DecorationCatalog({ data }) {
 							{'task' in from && (
 								<TaskMapLinks
 									itemId={id}
-									reference={{
-										task: from.task.startEventLabel,
-									}}
+									task={from.task.startEventLabel}
 								/>
 							)}
 						</p>

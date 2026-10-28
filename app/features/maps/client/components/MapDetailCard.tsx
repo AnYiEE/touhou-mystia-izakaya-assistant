@@ -426,10 +426,9 @@ const InteractionDescription = memo(function InteractionDescription({
 	}
 });
 
-const InteractionDetail = memo(function InteractionDetail({
-	entity,
-	onPopoverOpenChange,
-}: Pick<IProps, 'onPopoverOpenChange'> & { entity: IDayMapInteractionEntity }) {
+const InteractionDetail = memo<
+	Pick<IProps, 'onPopoverOpenChange'> & { entity: IDayMapInteractionEntity }
+>(function InteractionDetail({ entity, onPopoverOpenChange }) {
 	const { t } = useI18n(mapsMessages);
 	const { t: tAppShell } = useI18n(appShellMessages);
 
@@ -437,13 +436,18 @@ const InteractionDetail = memo(function InteractionDetail({
 	const catalogItem = getInteractionCatalogItem(kind);
 	const catalogPath = getInteractionCatalogPath(kind);
 
+	const catalogItems = useMemo(
+		() => (catalogItem === null ? [] : [catalogItem]),
+		[catalogItem]
+	);
+
 	return (
 		<>
 			<InteractionDescription entity={entity} />
 			{catalogItem !== null && (
 				<Section label={t('maps.detail.relatedCatalogItem')}>
 					<MapCatalogItems
-						items={[catalogItem]}
+						items={catalogItems}
 						onPopoverOpenChange={onPopoverOpenChange}
 					/>
 					<p>{t('maps.detail.itemHint')}</p>

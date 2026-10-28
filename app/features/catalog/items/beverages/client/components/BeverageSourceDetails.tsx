@@ -290,10 +290,11 @@ export default function BeverageSourceDetails({ from, id }: IProps) {
 										{isTask && (
 											<TaskMapLinks
 												itemId={id}
-												reference={
+												task={
 													(Array.isArray(item)
-														? item[0]
-														: item) as ITaskReference
+														? (item[0] as unknown as ITaskReference)
+														: (item as unknown as ITaskReference)
+													).task
 												}
 											/>
 										)}

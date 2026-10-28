@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import type { IGuestOrder } from '@/domain/orders/types';
@@ -49,8 +49,22 @@ export default memo<IProps>(function SavedMealRatingContent({
 	order,
 	rating,
 }) {
-	useCatalogLocalizationRevision();
+	const localizationRevision = useCatalogLocalizationRevision();
 	const { t } = useI18n(catalogGuestsMessages);
+
+	const foodPreferenceLabels = useMemo(() => {
+		void localizationRevision;
+		return matchedFoodTags
+			.toSorted(compareFoodTagLabels)
+			.map((tag) => getFoodTagLabel(tag));
+	}, [localizationRevision, matchedFoodTags]);
+
+	const beveragePreferenceLabels = useMemo(() => {
+		void localizationRevision;
+		return matchedBeverageTags
+			.toSorted(numberSort)
+			.map((tag) => getBeverageTagLabel(tag));
+	}, [localizationRevision, matchedBeverageTags]);
 
 	if (
 		!shouldShowSavedMealPreferenceMatches({ hasMystiaCooker, isDarkMatter })
@@ -58,12 +72,6 @@ export default memo<IProps>(function SavedMealRatingContent({
 		return rating;
 	}
 
-	const foodPreferenceLabels = matchedFoodTags
-		.toSorted(compareFoodTagLabels)
-		.map((tag) => getFoodTagLabel(tag));
-	const beveragePreferenceLabels = matchedBeverageTags
-		.toSorted(numberSort)
-		.map((tag) => getBeverageTagLabel(tag));
 	const hasMatchedPreference =
 		foodPreferenceLabels.length > 0 || beveragePreferenceLabels.length > 0;
 	const hasCurrentOrder =

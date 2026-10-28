@@ -215,7 +215,7 @@ export default function FoodSourceDetails({ from, id, openWindow }: IProps) {
 				</span>
 				{details}
 				{'taskReward' in from && (
-					<TaskMapLinks itemId={id} reference={from.taskReward} />
+					<TaskMapLinks itemId={id} task={from.taskReward.task} />
 				)}
 				{'buy' in from && (
 					<MerchantMapLink

@@ -1,7 +1,7 @@
 'use client';
 
 import { animate, useInView } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
@@ -12,7 +12,7 @@ interface IProps {
 	value: number;
 }
 
-export default function CountUpNumber({ className, value }: IProps) {
+export default memo<IProps>(function CountUpNumber({ className, value }) {
 	const isReducedMotion = useReducedMotion();
 	const numberRef = useRef<HTMLSpanElement>(null);
 	const isInView = useInView(numberRef, {
@@ -44,4 +44,4 @@ export default function CountUpNumber({ className, value }: IProps) {
 			{displayValue}
 		</span>
 	);
-}
+});

@@ -94,6 +94,7 @@ import {
 const SECRET_LABEL_INPUT_CLASS_NAMES = {
 	inputWrapper: 'h-10 min-h-10',
 } as const;
+const SECRET_STATUS_SWITCH_CLASS_NAMES = { base: 'shrink-0' } as const;
 
 function joinLines(values: string[]) {
 	return values.join('\n');
@@ -227,22 +228,22 @@ function createSecretStatusText(secret: IAdminSsoClientSecretRecord) {
 	return ADMIN_SSO_CLIENT_SECRET_STATUS_LABEL_MAP[secret.status];
 }
 
-function AdminSecretStatusBadge({
-	secret,
-}: {
-	secret: IAdminSsoClientSecretRecord;
-}) {
-	const tone =
-		secret.status === 'active'
-			? 'success'
-			: secret.status === 'disabled'
-				? 'warning'
-				: 'default';
+const AdminSecretStatusBadge = memo<{ secret: IAdminSsoClientSecretRecord }>(
+	function AdminSecretStatusBadge({ secret }) {
+		const tone =
+			secret.status === 'active'
+				? 'success'
+				: secret.status === 'disabled'
+					? 'warning'
+					: 'default';
 
-	return (
-		<AdminBadge tone={tone}>{createSecretStatusText(secret)}</AdminBadge>
-	);
-}
+		return (
+			<AdminBadge tone={tone}>
+				{createSecretStatusText(secret)}
+			</AdminBadge>
+		);
+	}
+);
 
 interface IProps {
 	clientId?: string;
@@ -1187,7 +1188,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 						<div className="min-w-0 max-w-xl">
 							<Input
 								aria-label={`${createSecretDisplayName(secret)} ${secret.secret_hash_prefix}备注`}
-								classNames={{ inputWrapper: 'h-10 min-h-10' }}
+								classNames={SECRET_LABEL_INPUT_CLASS_NAMES}
 								isDisabled={
 									!canMutateSecrets ||
 									secret.status === 'revoked'
@@ -1227,7 +1228,7 @@ export default memo<IProps>(function AdminSsoClientForm({
 					<div className="flex min-w-0 flex-wrap items-center justify-end gap-2 lg:pl-2">
 						<Switch
 							aria-label={`${createSecretDisplayName(secret)} ${secret.secret_hash_prefix}启用状态`}
-							classNames={{ base: 'shrink-0' }}
+							classNames={SECRET_STATUS_SWITCH_CLASS_NAMES}
 							isDisabled={
 								!canMutateSecrets || secret.status === 'revoked'
 							}

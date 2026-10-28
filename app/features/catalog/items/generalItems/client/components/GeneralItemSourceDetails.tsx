@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, memo, useMemo } from 'react';
 
 import Tooltip from '@/design/ui/components/tooltip';
 
@@ -66,15 +66,11 @@ function renderSpecialGuest(
 	);
 }
 
-function GeneralItemSource({
-	openWindow,
-	source,
-	tag,
-}: {
+const GeneralItemSource = memo<{
 	openWindow: IProps['openWindow'];
 	source: IGeneralItem['from'][number];
 	tag: { close: string; open: string };
-}) {
+}>(function GeneralItemSource({ openWindow, source, tag }) {
 	const { t } = useI18n(catalogItemsMessages);
 
 	if ('areaTask' in source) {
@@ -161,7 +157,7 @@ function GeneralItemSource({
 			{t('items.source.rewardSpellCardSuffix')}
 		</>
 	);
-}
+});
 
 export default function GeneralItemSourceDetails({
 	from,
@@ -170,6 +166,14 @@ export default function GeneralItemSourceDetails({
 }: IProps) {
 	const { t } = useI18n(catalogItemsMessages);
 	const { t: tShared } = useI18n(catalogSharedMessages);
+
+	const sourceTag = useMemo(
+		() => ({
+			close: tShared('catalog.guestTag.close'),
+			open: tShared('catalog.guestTag.open'),
+		}),
+		[tShared]
+	);
 
 	return (
 		<p>
@@ -180,10 +184,7 @@ export default function GeneralItemSourceDetails({
 					<GeneralItemSource
 						source={source}
 						openWindow={openWindow}
-						tag={{
-							close: tShared('catalog.guestTag.close'),
-							open: tShared('catalog.guestTag.open'),
-						}}
+						tag={sourceTag}
 					/>
 					{'collaborationUnlock' in source && (
 						<CollaborationMapLink itemId={id} />
@@ -191,14 +192,11 @@ export default function GeneralItemSourceDetails({
 					{'schedulerLabel' in source && (
 						<TaskMapLinks
 							itemId={id}
-							reference={{ task: source.schedulerLabel }}
+							task={source.schedulerLabel}
 						/>
 					)}
 					{'taskReward' in source && (
-						<TaskMapLinks
-							itemId={id}
-							reference={{ task: source.taskReward }}
-						/>
+						<TaskMapLinks itemId={id} task={source.taskReward} />
 					)}
 				</Fragment>
 			))}

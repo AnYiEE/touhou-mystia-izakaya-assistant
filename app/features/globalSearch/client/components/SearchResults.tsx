@@ -2,7 +2,7 @@ import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
 import { AnimatePresence, type Transition, motion } from 'framer-motion';
-import { type Ref } from 'react';
+import { type Ref, memo } from 'react';
 
 import Button from '@/design/ui/components/button';
 import ScrollMask from '@/design/ui/components/scrollMask';
@@ -48,16 +48,7 @@ function getResultTransition(index: number) {
 	return transition;
 }
 
-function ResultRow({
-	baseId,
-	index,
-	isHighAppearance,
-	isSelected,
-	locale,
-	onOpenItem,
-	onSelect,
-	result,
-}: {
+const ResultRow = memo<{
 	baseId: string;
 	index: number;
 	isHighAppearance: boolean;
@@ -69,6 +60,15 @@ function ResultRow({
 	) => void;
 	onSelect: (index: number) => void;
 	result: IGlobalSearchResult;
+}>(function ResultRow({
+	baseId,
+	index,
+	isHighAppearance,
+	isSelected,
+	locale,
+	onOpenItem,
+	onSelect,
+	result,
 }) {
 	const { t } = useI18n(globalSearchMessages);
 
@@ -148,7 +148,7 @@ function ResultRow({
 			</span>
 		</Button>
 	);
-}
+});
 
 export function SearchResults({
 	baseId,

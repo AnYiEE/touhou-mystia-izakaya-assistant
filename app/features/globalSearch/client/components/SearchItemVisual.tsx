@@ -4,6 +4,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
+import { memo } from 'react';
 
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import type { IGlobalSearchIndexItem } from '@/features/globalSearch/contracts';
@@ -32,13 +33,10 @@ function getSpriteClassName(item: IGlobalSearchIndexItem, size: 'md' | 'sm') {
 	});
 }
 
-export function SearchItemVisual({
-	item,
-	size,
-}: {
+export const SearchItemVisual = memo<{
 	item: IGlobalSearchIndexItem | null | undefined;
 	size: 'md' | 'sm';
-}) {
+}>(function SearchItemVisual({ item, size }) {
 	const visualSizeClassName = size === 'sm' ? 'h-6 w-6' : 'h-9 w-9';
 	const isNormalGuestVisual = item?.spriteTarget === 'normal_guest';
 	const normalGuestCropSizeClassName =
@@ -87,4 +85,4 @@ export function SearchItemVisual({
 			)}
 		</span>
 	);
-}
+});

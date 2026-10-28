@@ -162,6 +162,14 @@ function GroupPanel<T extends TMetaMystiaShowcaseTarget>({
 		once: true,
 	});
 
+	const itemStyles = useMemo(
+		() =>
+			group.records.map((_, index) => ({
+				transitionDelay: `${index * 15}ms`,
+			})),
+		[group.records]
+	);
+
 	return (
 		<ShowcasePanel
 			count={group.records.length}
@@ -196,7 +204,7 @@ function GroupPanel<T extends TMetaMystiaShowcaseTarget>({
 							)}
 							recordId={id}
 							size={ITEM_SPRITE_SIZE}
-							style={{ transitionDelay: `${index * 15}ms` }}
+							style={itemStyles[index]}
 							target={group.target}
 						/>
 					</Tooltip>
@@ -220,6 +228,14 @@ function GuestPanel({ delay }: { delay: number }) {
 		id,
 		name: isLocalizationReady ? getMetaMystiaGuestDisplayName(id) : '',
 	}));
+
+	const itemStyles = useMemo(
+		() =>
+			META_MYSTIA_GUEST_IDS.map((_, index) => ({
+				transitionDelay: `${index * 30}ms`,
+			})),
+		[]
+	);
 
 	return (
 		<ShowcasePanel
@@ -246,7 +262,7 @@ function GuestPanel({ delay }: { delay: number }) {
 							)}
 							recordId={id}
 							size={GUEST_SPRITE_SIZE}
-							style={{ transitionDelay: `${index * 30}ms` }}
+							style={itemStyles[index]}
 							target="special_guest"
 						/>
 						<span className="text-tiny text-foreground-600">

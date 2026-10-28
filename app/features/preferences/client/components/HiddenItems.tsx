@@ -171,7 +171,9 @@ interface ISettingsPanelDlcGroupProps<U extends TData[number]> extends Pick<
 	items: U[];
 }
 
-function SettingsPanelDlcGroup<U extends TData[number]>({
+const SettingsPanelDlcGroup = memo(function SettingsPanelDlcGroup<
+	U extends TData[number],
+>({
 	dlc,
 	getDlcToggleState,
 	handleDlcToggle,
@@ -297,7 +299,7 @@ function SettingsPanelDlcGroup<U extends TData[number]>({
 			</div>
 		</div>
 	);
-}
+});
 
 const SettingsPanel = memo(function SettingsPanel<
 	T extends TData,

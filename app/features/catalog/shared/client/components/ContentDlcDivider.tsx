@@ -1,5 +1,7 @@
 'use client';
 
+import { memo } from 'react';
+
 import LabeledDivider from '@/design/ui/components/labeledDivider';
 
 import { getDlcLabel } from '@/domain/availability/localizedLabels';
@@ -15,7 +17,11 @@ interface IProps {
 	dlc: TDlc;
 }
 
-export default function ContentDlcDivider({ className, count, dlc }: IProps) {
+export default memo<IProps>(function ContentDlcDivider({
+	className,
+	count,
+	dlc,
+}) {
 	const { t } = useI18n(catalogSharedMessages);
 
 	return (
@@ -23,4 +29,4 @@ export default function ContentDlcDivider({ className, count, dlc }: IProps) {
 			{t('catalog.modContentDivider', { dlc: getDlcLabel(dlc) })}
 		</LabeledDivider>
 	);
-}
+});

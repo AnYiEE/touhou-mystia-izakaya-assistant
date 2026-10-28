@@ -1,5 +1,5 @@
 import { AccordionItem } from '@heroui/accordion';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import Avatar from '@/design/ui/components/avatar';
 import Ol from '@/design/ui/components/ol';
@@ -41,6 +41,7 @@ export default function InfoButton() {
 	const currentNormalGuest = normalGuestStore.shared.guest.id.use();
 
 	const normalGuestCatalog = normalGuestStore.instances.guest.get();
+
 	const handleButtonPress = useCallback(() => {
 		if (currentNormalGuest === null) {
 			return;
@@ -53,7 +54,15 @@ export default function InfoButton() {
 		);
 	}, [currentNormalGuest, normalGuestCatalog]);
 
-	if (currentNormalGuest === null) {
+	const supportGuest = useMemo(
+		() =>
+			currentNormalGuest === null
+				? null
+				: { id: currentNormalGuest, kind: 'normal' as const },
+		[currentNormalGuest]
+	);
+
+	if (currentNormalGuest === null || supportGuest === null) {
 		return null;
 	}
 
@@ -70,7 +79,7 @@ export default function InfoButton() {
 	return (
 		<InfoButtonBase
 			defaultExpandedKeys={defaultExpandedKeys}
-			supportGuest={{ id: currentNormalGuest, kind: 'normal' }}
+			supportGuest={supportGuest}
 			overlayId="normal-guest.info"
 			onButtonPress={handleButtonPress}
 		>

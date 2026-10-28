@@ -96,7 +96,6 @@ const nextConfig: NextConfig = {
 			transform: '@fortawesome/free-solid-svg-icons/{{member}}',
 		},
 	},
-	outputFileTracingRoot: process.cwd(),
 	...(IS_VERCEL
 		? {
 				// Vercel serves maps from `public`; keep the private source out
@@ -108,6 +107,8 @@ const nextConfig: NextConfig = {
 				},
 			}
 		: {}),
+	outputFileTracingRoot: process.cwd(),
+
 	serverExternalPackages: ['kysely'],
 
 	experimental: {

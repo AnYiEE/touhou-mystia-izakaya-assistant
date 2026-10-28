@@ -163,7 +163,7 @@ export default function ClothesSourceDetails({ from, id, openWindow }: IProps) {
 						<CollaborationMapLink itemId={id} />
 					)}
 					{'taskReward' in item && (
-						<TaskMapLinks itemId={id} reference={item.taskReward} />
+						<TaskMapLinks itemId={id} task={item.taskReward.task} />
 					)}
 				</Fragment>
 			))}

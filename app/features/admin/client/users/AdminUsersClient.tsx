@@ -10,6 +10,7 @@ import {
 	faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useMemo } from 'react';
 
 import Button from '@/design/ui/components/button';
 
@@ -82,6 +83,11 @@ export default function AdminUsersClient({
 		users,
 	} = useAdminUsersController(initialData);
 
+	const listLocationState = useMemo(
+		() => ({ page, query, status }),
+		[page, query, status]
+	);
+
 	if (admin === null) {
 		if (adminAuthStatus === 'checking') {
 			return (
@@ -147,7 +153,6 @@ export default function AdminUsersClient({
 	const pageSize = users?.page_size ?? 0;
 	const totalCount = users?.total_count ?? null;
 	const totalPages = users?.total_pages ?? null;
-	const listLocationState = { page, query, status };
 	const statusFilterKey = getStatusFilterKey(status);
 	const statusFilterLabel = getFilterStatusLabel(status);
 

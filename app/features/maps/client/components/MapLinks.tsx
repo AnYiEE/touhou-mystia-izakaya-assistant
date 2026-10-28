@@ -217,49 +217,45 @@ function getTaskLocation(
 }
 
 /** @description Task links point to the actual sender/receiver and share duplicate destinations. */
-export const TaskMapLinks = memo<{ itemId: number; reference: ITaskReference }>(
-	function TaskMapLinks({ itemId, reference }) {
-		const { isDlcVisible, isMapVisible, isSpecialGuestVisible } =
-			useDayMapVisibility();
-		const isHidden = useMapLinksHidden();
-		const locations = useMemo(() => {
-			const labels =
-				typeof reference.task === 'string'
-					? [reference.task]
-					: reference.task;
-			const locations = new Map<string, IDayMapCharacterLocation>();
-			for (const label of labels) {
-				const fact = SCHEDULER_FACTS[label];
-				if (
-					!isDlcVisible(fact.dlc) ||
-					('specialGuestBond' in fact &&
-						!isSpecialGuestVisible(
-							fact.specialGuestBond.specialGuest
-						))
-				) {
-					continue;
-				}
-				const location = getTaskLocation(label);
-				if (location !== undefined && isMapVisible(location.map)) {
-					locations.set(location.characterId, location);
-				}
+export const TaskMapLinks = memo<{
+	itemId: number;
+	task: ITaskReference['task'];
+}>(function TaskMapLinks({ itemId, task }) {
+	const { isDlcVisible, isMapVisible, isSpecialGuestVisible } =
+		useDayMapVisibility();
+	const isHidden = useMapLinksHidden();
+	const locations = useMemo(() => {
+		const labels = typeof task === 'string' ? [task] : task;
+		const locations = new Map<string, IDayMapCharacterLocation>();
+		for (const label of labels) {
+			const fact = SCHEDULER_FACTS[label];
+			if (
+				!isDlcVisible(fact.dlc) ||
+				('specialGuestBond' in fact &&
+					!isSpecialGuestVisible(fact.specialGuestBond.specialGuest))
+			) {
+				continue;
 			}
-			return [...locations.values()];
-		}, [isDlcVisible, isMapVisible, isSpecialGuestVisible, reference.task]);
-		if (isHidden) {
-			return null;
+			const location = getTaskLocation(label);
+			if (location !== undefined && isMapVisible(location.map)) {
+				locations.set(location.characterId, location);
+			}
 		}
-		return locations.map(({ characterId, map }) => (
-			<MapIconLink
-				entityId={getCharacterEntityId(characterId)}
-				key={characterId}
-				itemId={itemId}
-				map={map}
-				trackName={`Task:${map}/${characterId}`}
-			/>
-		));
+		return [...locations.values()];
+	}, [isDlcVisible, isMapVisible, isSpecialGuestVisible, task]);
+	if (isHidden) {
+		return null;
 	}
-);
+	return locations.map(({ characterId, map }) => (
+		<MapIconLink
+			entityId={getCharacterEntityId(characterId)}
+			key={characterId}
+			itemId={itemId}
+			map={map}
+			trackName={`Task:${map}/${characterId}`}
+		/>
+	));
+});
 
 /** @description Opens the map with its fishing spot selected. */
 export const FishingMapLink = memo<{ itemId: number; map: TMapLabel }>(
