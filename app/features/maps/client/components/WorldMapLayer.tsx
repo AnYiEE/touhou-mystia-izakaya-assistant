@@ -220,7 +220,9 @@ export default memo<IProps>(function WorldMapLayer({
 		objectUrl: worldMapObjectUrl,
 		retry: retryWorldMapAsset,
 		status: worldMapStatus,
-	} = useMapAsset(getWorldMapImageUrl(policy.mode === 'preview'));
+	} = useMapAsset(getWorldMapImageUrl(policy.mode === 'preview'), {
+		priority: 'critical',
+	});
 
 	const handleRetry = useCallback(() => {
 		retryWorldMapAsset();

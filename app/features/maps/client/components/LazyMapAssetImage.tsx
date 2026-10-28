@@ -8,21 +8,29 @@ import { type MouseEvent, memo, useCallback, useRef } from 'react';
 
 import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant';
 
-import { useMapAsset } from '@/features/maps/client/assets/MapAssetContext';
+import {
+	type TMapAssetPriority,
+	useMapAsset,
+} from '@/features/maps/client/assets/MapAssetContext';
 import { mapsMessages } from '@/features/maps/client/messages';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
 interface IProps {
 	className?: string;
+	priority?: TMapAssetPriority;
 	src: string;
 }
 
-export default memo<IProps>(function LazyMapAssetImage({ className, src }) {
+export default memo<IProps>(function LazyMapAssetImage({
+	className,
+	priority = 'normal',
+	src,
+}) {
 	const { t } = useI18n(mapsMessages);
 	const rootRef = useRef<HTMLSpanElement>(null);
 	const isInView = useInView(rootRef, { margin: '128px', once: true });
-	const asset = useMapAsset(isInView ? src : null);
+	const asset = useMapAsset(isInView ? src : null, { priority });
 	const retryAsset = asset.retry;
 
 	const handleRetry = useCallback(

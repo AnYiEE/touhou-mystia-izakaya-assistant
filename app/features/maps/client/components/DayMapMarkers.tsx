@@ -214,7 +214,7 @@ const OverlaySpriteVisual = memo(function OverlaySpriteVisual({
 	const scale = pxPerUnit / sprite.pixelsPerUnit;
 	const interaction = useOverlayMarkerInteraction();
 	const isHovered = interaction?.isHovered ?? false;
-	const asset = useMapAsset(url);
+	const asset = useMapAsset(url, { priority: 'high' });
 	const isError = asset.status === 'error';
 	const handlePress = useCallback(() => {
 		if (isError) {
@@ -554,7 +554,8 @@ const CharacterMarker = memo<ICharacterMarkerProps>(function CharacterMarker({
 	const isRandomSpot = spots.length > 1;
 	const { t } = useI18n(mapsMessages);
 	const characterAsset = useMapAsset(
-		sprite === null ? null : getCharacterSpriteUrl(sprite)
+		sprite === null ? null : getCharacterSpriteUrl(sprite),
+		{ priority: 'high' }
 	);
 	const isAssetError = characterAsset.status === 'error';
 

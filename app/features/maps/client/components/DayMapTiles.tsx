@@ -18,6 +18,7 @@ import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant
 import type { IDayMapArt, TDayMapLabel } from '@/domain/data/maps/types';
 
 import {
+	type TMapAssetPriority,
 	useMapAsset,
 	useMapAssetPreloader,
 } from '@/features/maps/client/assets/MapAssetContext';
@@ -42,6 +43,7 @@ interface IProps {
 interface IMapTileProps {
 	height: number;
 	left: number;
+	priority: TMapAssetPriority;
 	top: number;
 	url: string;
 	width: number;
@@ -137,11 +139,12 @@ const MapAssetRetryButton = memo<{ className?: string; onRetry: () => void }>(
 const MapTile = memo<IMapTileProps>(function MapTile({
 	height,
 	left,
+	priority,
 	top,
 	url,
 	width,
 }) {
-	const asset = useMapAsset(url);
+	const asset = useMapAsset(url, { priority });
 
 	return (
 		<span
@@ -168,7 +171,9 @@ const MapTile = memo<IMapTileProps>(function MapTile({
 const DayMapPreview = memo<{ map: TDayMapLabel }>(function DayMapPreview({
 	map,
 }) {
-	const asset = useMapAsset(getDayMapPreviewUrl(map));
+	const asset = useMapAsset(getDayMapPreviewUrl(map), {
+		priority: 'critical',
+	});
 
 	return (
 		<span
@@ -207,7 +212,7 @@ export default memo<IProps>(function DayMapTiles({
 		const controller = new AbortController();
 		const switchLevel = () => {
 			const urls = getVisibleTileUrls(art, map, targetLevel, view);
-			void preloadAssets(urls, controller.signal).then(() => {
+			void preloadAssets(urls, controller.signal, 'high').then(() => {
 				if (!controller.signal.aborted) {
 					setDisplayedLevel(targetLevel);
 				}
@@ -301,12 +306,22 @@ export default memo<IProps>(function DayMapTiles({
 					) *
 					levelScale *
 					view.zoom;
+				const left = Math.floor(column * tileScreenSize);
+				const top = Math.floor(row * tileScreenSize);
 				tiles.push(
 					<MapTile
 						key={`${displayedLevel}:${key}`}
 						height={Math.ceil(height) + 1}
-						left={Math.floor(column * tileScreenSize)}
-						top={Math.floor(row * tileScreenSize)}
+						left={left}
+						priority={
+							left < view.width &&
+							left + Math.ceil(width) + 1 > 0 &&
+							top < view.height &&
+							top + Math.ceil(height) + 1 > 0
+								? 'critical'
+								: 'high'
+						}
+						top={top}
 						url={getDayMapTileUrl(map, displayedLevel, column, row)}
 						width={Math.ceil(width) + 1}
 					/>
@@ -326,6 +341,8 @@ export default memo<IProps>(function DayMapTiles({
 		map,
 		tileScreenSize,
 		tileSet,
+		view.height,
+		view.width,
 		view.zoom,
 	]);
 

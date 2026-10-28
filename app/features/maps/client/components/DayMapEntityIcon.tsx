@@ -61,7 +61,7 @@ export default memo<IProps>(function DayMapEntityIcon({
 		'character' in entity && entity.character.sprite !== null
 			? getCharacterSpriteUrl(entity.character.sprite)
 			: null;
-	const characterAsset = useMapAsset(characterSpriteUrl);
+	const characterAsset = useMapAsset(characterSpriteUrl, { priority: 'low' });
 
 	switch (entity.layer) {
 		case 'collectable': {

@@ -20,6 +20,7 @@ import {
 
 export type TMapAssetStatus =
 	'error' | 'idle' | 'loading' | 'queued' | 'success';
+export type TMapAssetPriority = 'critical' | 'high' | 'low' | 'normal';
 
 export interface IMapAssetSnapshot {
 	error: MapAssetLoadError | null;
@@ -27,10 +28,14 @@ export interface IMapAssetSnapshot {
 	status: TMapAssetStatus;
 }
 
+export interface IUseMapAssetOptions {
+	priority?: TMapAssetPriority | undefined;
+}
+
 interface IMapAssetEntry {
 	controller: AbortController | null;
 	keepForPreload: boolean;
-	listeners: Set<() => void>;
+	listeners: Map<() => void, number>;
 	releaseTimer: ReturnType<typeof setTimeout> | null;
 	snapshot: IMapAssetSnapshot;
 }
@@ -42,6 +47,12 @@ interface IMapAssetManagerProps {
 }
 
 const MAX_CONCURRENT_REQUESTS = 6;
+const PRIORITY_VALUES = {
+	critical: 3,
+	high: 2,
+	low: 0,
+	normal: 1,
+} as const satisfies Record<TMapAssetPriority, number>;
 /** Keeps preloaded resources alive long enough for the replacing UI to subscribe. */
 const PRELOAD_RELEASE_DELAY_MS = 1000;
 const IDLE_SNAPSHOT: IMapAssetSnapshot = {
@@ -57,6 +68,7 @@ class MapAssetManager {
 	private readonly queuedUrls: string[] = [];
 	private readonly queuedUrlSet = new Set<string>();
 	private deactivateTimer: ReturnType<typeof setTimeout> | null = null;
+	private isPumpScheduled = false;
 	private isDestroyed = false;
 
 	constructor({ onAccessFailure }: IMapAssetManagerProps) {
@@ -88,7 +100,11 @@ class MapAssetManager {
 		return entry === undefined ? IDLE_SNAPSHOT : entry.snapshot;
 	};
 
-	subscribe(url: string, listener: TMapAssetListener) {
+	subscribe(
+		url: string,
+		listener: TMapAssetListener,
+		priority: TMapAssetPriority = 'normal'
+	) {
 		if (this.isDestroyed) {
 			return () => {};
 		}
@@ -98,7 +114,7 @@ class MapAssetManager {
 			entry = {
 				controller: null,
 				keepForPreload: false,
-				listeners: new Set(),
+				listeners: new Map(),
 				releaseTimer: null,
 				snapshot: { error: null, objectUrl: null, status: 'queued' },
 			};
@@ -109,7 +125,13 @@ class MapAssetManager {
 			entry.releaseTimer = null;
 		}
 		entry.keepForPreload = false;
-		entry.listeners.add(listener);
+		const currentPriority = entry.listeners.get(listener);
+		entry.listeners.set(
+			listener,
+			currentPriority === undefined
+				? PRIORITY_VALUES[priority]
+				: Math.max(currentPriority, PRIORITY_VALUES[priority])
+		);
 		this.queueRequest(url);
 
 		return () => {
@@ -130,7 +152,11 @@ class MapAssetManager {
 		this.queueRequest(url);
 	}
 
-	async preload(url: string, signal?: AbortSignal) {
+	async preload(
+		url: string,
+		signal?: AbortSignal,
+		priority: TMapAssetPriority = 'normal'
+	) {
 		return await new Promise<boolean>((resolvePromise) => {
 			let hasSettled = false;
 			let removeAbortListener = () => {};
@@ -180,7 +206,7 @@ class MapAssetManager {
 					signal.removeEventListener('abort', handleAbort);
 				};
 			}
-			release = this.subscribe(url, settle);
+			release = this.subscribe(url, settle, priority);
 			settle();
 		});
 	}
@@ -210,6 +236,18 @@ class MapAssetManager {
 		this.activeUrls.clear();
 	}
 
+	private getQueuedPriority(url: string) {
+		const entry = this.entries.get(url);
+		if (entry === undefined || entry.listeners.size === 0) {
+			return Number.NEGATIVE_INFINITY;
+		}
+		let priority = Number.NEGATIVE_INFINITY;
+		for (const listenerPriority of entry.listeners.values()) {
+			priority = Math.max(priority, listenerPriority);
+		}
+		return priority;
+	}
+
 	private queueRequest(url: string) {
 		const entry = this.entries.get(url);
 		if (entry === undefined) {
@@ -232,7 +270,18 @@ class MapAssetManager {
 		});
 		this.queuedUrls.push(url);
 		this.queuedUrlSet.add(url);
-		this.pump();
+		this.schedulePump();
+	}
+
+	private schedulePump() {
+		if (this.isDestroyed || this.isPumpScheduled) {
+			return;
+		}
+		this.isPumpScheduled = true;
+		void Promise.resolve().then(() => {
+			this.isPumpScheduled = false;
+			this.pump();
+		});
 	}
 
 	private pump() {
@@ -241,7 +290,16 @@ class MapAssetManager {
 			this.activeUrls.size < MAX_CONCURRENT_REQUESTS &&
 			this.queuedUrls.length > 0
 		) {
-			const url = this.queuedUrls.shift();
+			let nextIndex = 0;
+			let nextPriority = Number.NEGATIVE_INFINITY;
+			for (const [index, queuedUrl] of this.queuedUrls.entries()) {
+				const priority = this.getQueuedPriority(queuedUrl);
+				if (priority > nextPriority) {
+					nextIndex = index;
+					nextPriority = priority;
+				}
+			}
+			const [url] = this.queuedUrls.splice(nextIndex, 1);
 			if (url === undefined) {
 				return;
 			}
@@ -308,7 +366,7 @@ class MapAssetManager {
 					if (entry.controller === controller) {
 						entry.controller = null;
 					}
-					this.pump();
+					this.schedulePump();
 				});
 		}
 	}
@@ -343,7 +401,7 @@ class MapAssetManager {
 
 	private updateSnapshot(entry: IMapAssetEntry, snapshot: IMapAssetSnapshot) {
 		entry.snapshot = snapshot;
-		for (const listener of entry.listeners) {
+		for (const listener of entry.listeners.keys()) {
 			listener();
 		}
 	}
@@ -391,12 +449,17 @@ function useMapAssetManager() {
 	return manager;
 }
 
-export function useMapAsset(url: string | null) {
+export function useMapAsset(
+	url: string | null,
+	{ priority = 'normal' }: IUseMapAssetOptions = {}
+) {
 	const manager = useMapAssetManager();
 	const subscribe = useCallback(
 		(listener: TMapAssetListener) =>
-			url === null ? () => {} : manager.subscribe(url, listener),
-		[manager, url]
+			url === null
+				? () => {}
+				: manager.subscribe(url, listener, priority),
+		[manager, priority, url]
 	);
 	const getSnapshot = useCallback(
 		() => manager.getSnapshot(url),
@@ -426,9 +489,15 @@ export function useMapAssetPreloader() {
 	preloaderRef.current = manager;
 
 	return useCallback(
-		(urls: ReadonlyArray<string>, signal?: AbortSignal) =>
+		(
+			urls: ReadonlyArray<string>,
+			signal?: AbortSignal,
+			priority: TMapAssetPriority = 'normal'
+		) =>
 			Promise.all(
-				urls.map((url) => preloaderRef.current.preload(url, signal))
+				urls.map((url) =>
+					preloaderRef.current.preload(url, signal, priority)
+				)
 			),
 		[]
 	);
