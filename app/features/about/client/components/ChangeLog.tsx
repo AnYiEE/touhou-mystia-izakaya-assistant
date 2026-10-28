@@ -230,7 +230,7 @@ const changelog = [
 		version: 'v3.2',
 		changes: [
 			'新增：地图钓鱼点可查看普通的钓鱼竿、超级钓鱼竿的产出，以及该地区的垂钓收藏。',
-			'改善：地图支持macOS触控板捏合缩放与双指平移。',
+			'改善：地图支持滚轮缩放、按住拖动平移、macOS触控板捏合缩放与双指平移。',
 		],
 	},
 ] as const satisfies Array<{

@@ -3,14 +3,12 @@
 import { faExpand, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@heroui/theme';
 import {
-	type KeyboardEvent,
-	type MouseEvent,
-	type PointerEvent,
 	type ReactNode,
 	memo,
 	useCallback,
 	useEffect,
 	useLayoutEffect,
+	useMemo,
 	useRef,
 	useState,
 } from 'react';
@@ -18,6 +16,14 @@ import {
 import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
 import Tooltip from '@/design/ui/components/tooltip';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
+import {
+	type TViewportNavigationAction,
+	useViewportNavigation,
+} from '@/design/ui/hooks/useViewportNavigation';
+import {
+	DEFAULT_VIEWPORT_NAVIGATION_CONFIG,
+	type IViewportNavigationConfig,
+} from '@/design/ui/hooks/viewportNavigationConfig';
 
 import { mapsMessages } from '@/features/maps/client/messages';
 
@@ -52,6 +58,7 @@ interface IProps {
 	maxZoom: number;
 	/** @description Lower bound for the fitted zoom used initially and by the fit button. */
 	minFitZoom?: number;
+	navigationConfig?: Partial<IViewportNavigationConfig>;
 	/** @description Called when the empty map area is clicked. */
 	onBackgroundPress?: () => void;
 	onPreviewResolutionLimitReached?: () => void;
@@ -66,36 +73,12 @@ interface IProps {
 	shouldIgnoreBackgroundPress?: () => boolean;
 }
 
-/** @description Non-standard WebKit trackpad gesture fired by Safari. */
-interface IWebKitGestureEvent extends Event {
-	clientX?: number;
-	clientY?: number;
-	scale: number;
-}
-
-const DRAG_THRESHOLD_PX = 5;
-const FOCUS_DURATION_MS = 420;
-const KEYBOARD_PAN_PX = 80;
-const PINCH_ZOOM_SPEED = 0.01;
-const WHEEL_LINE_HEIGHT_PX = 16;
-const BUTTON_ZOOM_STEP = 1.6;
-const MIN_ZOOM_FIT_RATIO = 0.8;
 function clamp(value: number, min: number, max: number) {
 	return Math.min(max, Math.max(min, value));
 }
 
 function easeOutCubic(progress: number) {
 	return 1 - (1 - progress) ** 3;
-}
-
-function getWheelDelta(event: WheelEvent, viewportHeight: number) {
-	const multiplier =
-		event.deltaMode === WheelEvent.DOM_DELTA_LINE
-			? WHEEL_LINE_HEIGHT_PX
-			: event.deltaMode === WheelEvent.DOM_DELTA_PAGE
-				? viewportHeight
-				: 1;
-	return { x: event.deltaX * multiplier, y: event.deltaY * multiplier };
 }
 
 export default memo<IProps>(function MapViewport({
@@ -107,6 +90,7 @@ export default memo<IProps>(function MapViewport({
 	isPreviewAccessHintVisible,
 	maxZoom,
 	minFitZoom,
+	navigationConfig,
 	onBackgroundPress,
 	onPreviewResolutionLimitReached,
 	overlay,
@@ -116,6 +100,11 @@ export default memo<IProps>(function MapViewport({
 }) {
 	const { t } = useI18n(mapsMessages);
 	const isReducedMotion = useReducedMotion();
+	const resolvedNavigationConfig = useMemo(
+		() => ({ ...DEFAULT_VIEWPORT_NAVIGATION_CONFIG, ...navigationConfig }),
+		[navigationConfig]
+	);
+	const { focusDurationMs, minZoomFitRatio } = resolvedNavigationConfig;
 
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [view, setView] = useState<IMapView>({
@@ -129,15 +118,6 @@ export default memo<IProps>(function MapViewport({
 	/** @description `resetKey` the current view was fitted for; children wait until it matches. */
 	const [fittedKey, setFittedKey] = useState<string | null>(null);
 	const animationFrameRef = useRef<number | null>(null);
-	const pointersRef = useRef(new Map<number, { x: number; y: number }>());
-	const gestureRef = useRef<{
-		distance: number;
-		isDragging: boolean;
-		startX: number;
-		startY: number;
-	} | null>(null);
-	const isClickSuppressedRef = useRef(false);
-	const isBackgroundPressIgnoredRef = useRef(false);
 	/** @description Allows one hint until the map returns to the preview resolution range. */
 	const isPreviewResolutionHintArmedRef = useRef(true);
 
@@ -148,10 +128,10 @@ export default memo<IProps>(function MapViewport({
 				width === 0 || height === 0
 					? 1
 					: Math.min(width / contentWidth, height / contentHeight);
-			const minZoom = fitZoom * MIN_ZOOM_FIT_RATIO;
+			const minZoom = fitZoom * minZoomFitRatio;
 			return { maxZoom: Math.max(maxZoom, minZoom), minZoom };
 		},
-		[contentHeight, contentWidth, maxZoom]
+		[contentHeight, contentWidth, maxZoom, minZoomFitRatio]
 	);
 
 	const commit = useCallback(
@@ -256,7 +236,7 @@ export default memo<IProps>(function MapViewport({
 			const startTime = performance.now();
 			const step = (now: number) => {
 				const progress = easeOutCubic(
-					Math.min(1, (now - startTime) / FOCUS_DURATION_MS)
+					Math.min(1, (now - startTime) / focusDurationMs)
 				);
 				commit({
 					...from,
@@ -269,12 +249,23 @@ export default memo<IProps>(function MapViewport({
 			};
 			animationFrameRef.current = requestAnimationFrame(step);
 		},
-		[cancelAnimation, commit, isReducedMotion, previewResolutionZoomLimit]
+		[
+			cancelAnimation,
+			commit,
+			focusDurationMs,
+			isReducedMotion,
+			previewResolutionZoomLimit,
+		]
 	);
 
 	/** @description Zooms while the content point under the anchor stays under it. */
 	const animateZoomAt = useCallback(
-		(screenX: number, screenY: number, nextZoom: number) => {
+		(
+			screenX: number,
+			screenY: number,
+			nextZoom: number,
+			durationMs = focusDurationMs
+		) => {
 			cancelAnimation();
 			const { current: from } = viewRef;
 			const limits = getZoomLimits(from.width, from.height);
@@ -302,7 +293,7 @@ export default memo<IProps>(function MapViewport({
 			const startTime = performance.now();
 			const step = (now: number) => {
 				const progress = easeOutCubic(
-					Math.min(1, (now - startTime) / FOCUS_DURATION_MS)
+					Math.min(1, (now - startTime) / durationMs)
 				);
 				// Interpolate geometrically so every frame scales by the same ratio.
 				apply(from.zoom * (targetZoom / from.zoom) ** progress);
@@ -314,6 +305,7 @@ export default memo<IProps>(function MapViewport({
 		[
 			cancelAnimation,
 			commit,
+			focusDurationMs,
 			getZoomLimits,
 			isReducedMotion,
 			notifyPreviewResolutionLimit,
@@ -444,303 +436,67 @@ export default memo<IProps>(function MapViewport({
 		}
 	}, [commit]);
 
-	// Chromium reports trackpad pinch as ctrl/meta + wheel, while Safari emits
-	// WebKit gesture events. Plain wheel input pans the map.
-	useEffect(() => {
-		const container = containerRef.current;
-		if (container === null) {
-			return;
-		}
-		let gestureStartZoom: number | null = null;
-		let gesturePreviousX = 0;
-		let gesturePreviousY = 0;
-
-		const getGesturePoint = (
-			gesture: IWebKitGestureEvent,
-			rect: DOMRect
-		) => ({
-			x:
-				typeof gesture.clientX === 'number' &&
-				Number.isFinite(gesture.clientX)
-					? gesture.clientX - rect.left
-					: rect.width / 2,
-			y:
-				typeof gesture.clientY === 'number' &&
-				Number.isFinite(gesture.clientY)
-					? gesture.clientY - rect.top
-					: rect.height / 2,
-		});
-
-		const handleWheel = (event: WheelEvent) => {
-			event.preventDefault();
-			cancelAnimation();
-			const rect = container.getBoundingClientRect();
-			const delta = getWheelDelta(event, viewRef.current.height);
-			if (event.ctrlKey || event.metaKey) {
-				zoomAt(
-					event.clientX - rect.left,
-					event.clientY - rect.top,
-					viewRef.current.zoom * Math.exp(-delta.y * PINCH_ZOOM_SPEED)
-				);
-				return;
-			}
-			const { current } = viewRef;
-			commit({
-				...current,
-				x: current.x - delta.x,
-				y: current.y - delta.y,
-			});
-		};
-		const handleGestureStart = (event: Event) => {
-			event.preventDefault();
-			cancelAnimation();
-			const gesture = event as IWebKitGestureEvent;
-			const point = getGesturePoint(
-				gesture,
-				container.getBoundingClientRect()
-			);
-			gestureStartZoom = viewRef.current.zoom;
-			gesturePreviousX = point.x;
-			gesturePreviousY = point.y;
-		};
-		const handleGestureChange = (event: Event) => {
-			event.preventDefault();
-			const gesture = event as IWebKitGestureEvent;
-			gestureStartZoom ??= viewRef.current.zoom;
-			const point = getGesturePoint(
-				gesture,
-				container.getBoundingClientRect()
-			);
-			const { current } = viewRef;
-			commit({
-				...current,
-				x: current.x + point.x - gesturePreviousX,
-				y: current.y + point.y - gesturePreviousY,
-			});
-			gesturePreviousX = point.x;
-			gesturePreviousY = point.y;
-
-			zoomAt(point.x, point.y, gestureStartZoom * gesture.scale);
-		};
-		const handleGestureEnd = (event: Event) => {
-			event.preventDefault();
-			gestureStartZoom = null;
-		};
-
-		container.addEventListener('wheel', handleWheel, { passive: false });
-		container.addEventListener('gesturestart', handleGestureStart, {
-			passive: false,
-		});
-		container.addEventListener('gesturechange', handleGestureChange, {
-			passive: false,
-		});
-		container.addEventListener('gestureend', handleGestureEnd, {
-			passive: false,
-		});
-
-		return () => {
-			container.removeEventListener('wheel', handleWheel);
-			container.removeEventListener('gesturestart', handleGestureStart);
-			container.removeEventListener('gesturechange', handleGestureChange);
-			container.removeEventListener('gestureend', handleGestureEnd);
-		};
-	}, [cancelAnimation, commit, zoomAt]);
-
-	const handlePointerDown = useCallback(
-		(event: PointerEvent<HTMLDivElement>) => {
-			if (event.pointerType === 'mouse' && event.button !== 0) {
-				return;
-			}
-			cancelAnimation();
-			if (pointersRef.current.size === 0) {
-				isBackgroundPressIgnoredRef.current =
-					shouldIgnoreBackgroundPress?.() ?? false;
-			}
-			pointersRef.current.set(event.pointerId, {
-				x: event.clientX,
-				y: event.clientY,
-			});
-			const points = [...pointersRef.current.values()];
-			const [first, second] = points;
-			gestureRef.current = {
-				distance:
-					first !== undefined && second !== undefined
-						? Math.hypot(first.x - second.x, first.y - second.y)
-						: 0,
-				isDragging: gestureRef.current?.isDragging ?? false,
-				startX: event.clientX,
-				startY: event.clientY,
-			};
-		},
-		[cancelAnimation, shouldIgnoreBackgroundPress]
-	);
-
-	const handlePointerMove = useCallback(
-		(event: PointerEvent<HTMLDivElement>) => {
-			const previous = pointersRef.current.get(event.pointerId);
-			const gesture = gestureRef.current;
-			if (previous === undefined || gesture === null) {
-				return;
-			}
-			const container = event.currentTarget;
-			if (
-				!gesture.isDragging &&
-				Math.hypot(
-					event.clientX - gesture.startX,
-					event.clientY - gesture.startY
-				) > DRAG_THRESHOLD_PX
-			) {
-				gesture.isDragging = true;
-				container.setPointerCapture(event.pointerId);
-			}
-			pointersRef.current.set(event.pointerId, {
-				x: event.clientX,
-				y: event.clientY,
-			});
-			if (!gesture.isDragging) {
-				return;
-			}
-
-			const points = [...pointersRef.current.values()];
-			const [first, second] = points;
-			if (first !== undefined && second !== undefined) {
-				const distance = Math.hypot(
-					first.x - second.x,
-					first.y - second.y
-				);
-				const rect = container.getBoundingClientRect();
-				if (gesture.distance > 0) {
-					zoomAt(
-						(first.x + second.x) / 2 - rect.left,
-						(first.y + second.y) / 2 - rect.top,
-						viewRef.current.zoom * (distance / gesture.distance)
-					);
-				}
-				gesture.distance = distance;
-				const { current } = viewRef;
-				commit({
-					...current,
-					x: current.x + (event.clientX - previous.x) / 2,
-					y: current.y + (event.clientY - previous.y) / 2,
-				});
-				return;
-			}
-
-			const { current } = viewRef;
-			commit({
-				...current,
-				x: current.x + event.clientX - previous.x,
-				y: current.y + event.clientY - previous.y,
-			});
-		},
-		[commit, zoomAt]
-	);
-
-	const handlePointerEnd = useCallback(
-		(event: PointerEvent<HTMLDivElement>) => {
-			pointersRef.current.delete(event.pointerId);
-			const gesture = gestureRef.current;
-			if (pointersRef.current.size > 0) {
-				if (gesture !== null) {
-					gesture.distance = 0;
-				}
-				return;
-			}
-			if (gesture?.isDragging) {
-				isClickSuppressedRef.current = true;
-				setTimeout(() => {
-					isClickSuppressedRef.current = false;
-				}, 0);
-			}
-			gestureRef.current = null;
-		},
-		[]
-	);
-
-	const handleClickCapture = useCallback(
-		(event: MouseEvent<HTMLDivElement>) => {
-			if (isClickSuppressedRef.current) {
-				event.preventDefault();
-				event.stopPropagation();
-			}
-		},
-		[]
-	);
-
-	const handleClick = useCallback(
-		(event: MouseEvent<HTMLDivElement>) => {
-			if (
-				event.target === event.currentTarget &&
-				!isBackgroundPressIgnoredRef.current
-			) {
-				onBackgroundPress?.();
-			}
-		},
-		[onBackgroundPress]
-	);
-
-	const handleKeyDown = useCallback(
-		(event: KeyboardEvent<HTMLDivElement>) => {
-			if (event.target !== event.currentTarget) {
-				return;
-			}
-			const { current } = viewRef;
-			const centerX = current.width / 2;
-			const centerY = current.height / 2;
-			switch (event.key) {
-				case 'ArrowLeft':
-					commit({ ...current, x: current.x + KEYBOARD_PAN_PX });
-					break;
-				case 'ArrowRight':
-					commit({ ...current, x: current.x - KEYBOARD_PAN_PX });
-					break;
-				case 'ArrowUp':
-					commit({ ...current, y: current.y + KEYBOARD_PAN_PX });
-					break;
-				case 'ArrowDown':
-					commit({ ...current, y: current.y - KEYBOARD_PAN_PX });
-					break;
-				case '+':
-				case '=':
-					zoomAt(centerX, centerY, current.zoom * BUTTON_ZOOM_STEP);
-					break;
-				case '-':
-				case '_':
-					zoomAt(centerX, centerY, current.zoom / BUTTON_ZOOM_STEP);
-					break;
-				case '0':
-					animateTo(getFitView(current.width, current.height));
-					break;
-				default:
+	const handleViewportNavigationAction = useCallback(
+		(action: TViewportNavigationAction) => {
+			switch (action.type) {
+				case 'pan': {
+					cancelAnimation();
+					const { current } = viewRef;
+					commit({
+						...current,
+						x: current.x + action.deltaX,
+						y: current.y + action.deltaY,
+					});
 					return;
+				}
+				case 'zoom-by': {
+					const nextZoom = viewRef.current.zoom * action.factor;
+					if (action.durationMs > 0) {
+						animateZoomAt(
+							action.x,
+							action.y,
+							nextZoom,
+							action.durationMs
+						);
+					} else {
+						if (action.source !== 'wheel') {
+							cancelAnimation();
+						}
+						zoomAt(action.x, action.y, nextZoom);
+					}
+					return;
+				}
+				case 'zoom-to':
+					if (action.durationMs > 0) {
+						animateZoomAt(
+							action.x,
+							action.y,
+							action.zoom,
+							action.durationMs
+						);
+					} else {
+						cancelAnimation();
+						zoomAt(action.x, action.y, action.zoom);
+					}
+					return;
+				case 'fit': {
+					const { height, width } = viewRef.current;
+					animateTo(getFitView(width, height));
+				}
 			}
-			event.preventDefault();
 		},
-		[animateTo, commit, getFitView, zoomAt]
+		[animateTo, animateZoomAt, cancelAnimation, commit, getFitView, zoomAt]
 	);
 
-	const zoomBy = useCallback(
-		(factor: number) => {
-			const { current } = viewRef;
-			animateZoomAt(
-				current.width / 2,
-				current.height / 2,
-				current.zoom * factor
-			);
-		},
-		[animateZoomAt]
-	);
-
-	const handleZoomIn = useCallback(() => {
-		zoomBy(BUTTON_ZOOM_STEP);
-	}, [zoomBy]);
-	const handleZoomOut = useCallback(() => {
-		zoomBy(1 / BUTTON_ZOOM_STEP);
-	}, [zoomBy]);
-	const handleFit = useCallback(() => {
-		const { height, width } = viewRef.current;
-		animateTo(getFitView(width, height));
-	}, [animateTo, getFitView]);
+	const { fit, zoomIn, zoomOut } = useViewportNavigation({
+		config: resolvedNavigationConfig,
+		containerRef,
+		onAction: handleViewportNavigationAction,
+		onBackgroundPress,
+		onInteractionStart: cancelAnimation,
+		shouldIgnoreBackgroundPress,
+		viewRef,
+	});
 
 	return (
 		<div className={cn('relative overflow-hidden', className)}>
@@ -749,13 +505,6 @@ export default memo<IProps>(function MapViewport({
 				aria-roledescription="map"
 				role="application"
 				tabIndex={0}
-				onClick={handleClick}
-				onClickCapture={handleClickCapture}
-				onKeyDown={handleKeyDown}
-				onPointerCancel={handlePointerEnd}
-				onPointerDown={handlePointerDown}
-				onPointerMove={handlePointerMove}
-				onPointerUp={handlePointerEnd}
 				className="absolute inset-0 touch-none select-none outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus"
 			>
 				{view.width > 0 && fittedKey === resetKey && children(view)}
@@ -764,9 +513,9 @@ export default memo<IProps>(function MapViewport({
 			<div className="absolute bottom-3 right-3 flex flex-col gap-1.5">
 				{(
 					[
-						[faPlus, 'maps.zoom.in', handleZoomIn],
-						[faMinus, 'maps.zoom.out', handleZoomOut],
-						[faExpand, 'maps.zoom.fit', handleFit],
+						[faPlus, 'maps.zoom.in', zoomIn],
+						[faMinus, 'maps.zoom.out', zoomOut],
+						[faExpand, 'maps.zoom.fit', fit],
 					] as const
 				).map(([icon, label, onPress]) => (
 					<Tooltip
