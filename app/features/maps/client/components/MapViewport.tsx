@@ -138,6 +138,8 @@ export default memo<IProps>(function MapViewport({
 	} | null>(null);
 	const isClickSuppressedRef = useRef(false);
 	const isBackgroundPressIgnoredRef = useRef(false);
+	/** @description Allows one hint until the map returns to the preview resolution range. */
+	const isPreviewResolutionHintArmedRef = useRef(true);
 
 	/** @description Zoom limits for a viewport size; the content may shrink to 80% of the fitted size. */
 	const getZoomLimits = useCallback(
@@ -188,15 +190,26 @@ export default memo<IProps>(function MapViewport({
 
 	const notifyPreviewResolutionLimit = useCallback(
 		(nextZoom: number, currentZoom: number) => {
-			if (
-				previewResolutionZoomLimit !== undefined &&
-				!isPreviewAccessHintVisible &&
-				currentZoom > 0 &&
-				nextZoom > currentZoom &&
-				nextZoom > previewResolutionZoomLimit
-			) {
-				onPreviewResolutionLimitReached?.();
+			if (previewResolutionZoomLimit === undefined) {
+				return;
 			}
+			if (nextZoom <= previewResolutionZoomLimit) {
+				isPreviewResolutionHintArmedRef.current = true;
+				return;
+			}
+			if (isPreviewAccessHintVisible) {
+				isPreviewResolutionHintArmedRef.current = false;
+				return;
+			}
+			if (
+				!isPreviewResolutionHintArmedRef.current ||
+				currentZoom <= 0 ||
+				nextZoom <= currentZoom
+			) {
+				return;
+			}
+			isPreviewResolutionHintArmedRef.current = false;
+			onPreviewResolutionLimitReached?.();
 		},
 		[
 			isPreviewAccessHintVisible,
@@ -204,6 +217,20 @@ export default memo<IProps>(function MapViewport({
 			previewResolutionZoomLimit,
 		]
 	);
+
+	useEffect(() => {
+		isPreviewResolutionHintArmedRef.current = true;
+	}, [previewResolutionZoomLimit, resetKey]);
+
+	useEffect(() => {
+		if (
+			isPreviewAccessHintVisible &&
+			previewResolutionZoomLimit !== undefined &&
+			viewRef.current.zoom > previewResolutionZoomLimit
+		) {
+			isPreviewResolutionHintArmedRef.current = false;
+		}
+	}, [isPreviewAccessHintVisible, previewResolutionZoomLimit]);
 
 	const cancelAnimation = useCallback(() => {
 		if (animationFrameRef.current !== null) {
@@ -215,6 +242,12 @@ export default memo<IProps>(function MapViewport({
 	const animateTo = useCallback(
 		(target: Pick<IMapView, 'x' | 'y' | 'zoom'>) => {
 			cancelAnimation();
+			if (
+				previewResolutionZoomLimit !== undefined &&
+				target.zoom <= previewResolutionZoomLimit
+			) {
+				isPreviewResolutionHintArmedRef.current = true;
+			}
 			const { current: from } = viewRef;
 			if (isReducedMotion) {
 				commit({ ...from, ...target });
@@ -236,7 +269,7 @@ export default memo<IProps>(function MapViewport({
 			};
 			animationFrameRef.current = requestAnimationFrame(step);
 		},
-		[cancelAnimation, commit, isReducedMotion]
+		[cancelAnimation, commit, isReducedMotion, previewResolutionZoomLimit]
 	);
 
 	/** @description Zooms while the content point under the anchor stays under it. */
