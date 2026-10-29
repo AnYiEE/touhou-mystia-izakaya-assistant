@@ -12,6 +12,7 @@ import {
 	requireFeatureAccess,
 } from '@/features/featureAccess/server/requireFeatureAccess';
 import {
+	type IMapAssetAccess,
 	resolveMapAssetAccess,
 	resolveMapAssetFilePath,
 } from '@/features/maps/server/mapAssetAccess';
@@ -22,10 +23,7 @@ import {
 	applyServiceCorsHeaders,
 	createServiceCorsPreflightResponse,
 } from '@/infrastructure/http/server/cors';
-import {
-	NO_STORE_HEADERS,
-	createNoStoreErrorResponse,
-} from '@/infrastructure/http/server/responses';
+import { createNoStoreErrorResponse } from '@/infrastructure/http/server/responses';
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 export const runtime = 'nodejs';
@@ -40,6 +38,10 @@ const MAP_ASSET_CONTENT_TYPES = {
 interface IRouteContext {
 	params: Promise<{ path: string[] }>;
 }
+
+type TMapAssetAuthorizationResult =
+	| { access: IMapAssetAccess; status: 'ok' }
+	| { response: NextResponse; status: 'error' };
 
 function addCorsHeaders(response: NextResponse, request: NextRequest) {
 	applyServiceCorsHeaders(response.headers, request);
@@ -72,31 +74,46 @@ function getContentType(path: string) {
 			: null;
 }
 
-export function OPTIONS(request: NextRequest) {
-	return createServiceCorsPreflightResponse(request);
-}
-
-export async function GET(request: NextRequest, context: IRouteContext) {
+async function authorizeMapAssetRequest(
+	request: NextRequest,
+	context: IRouteContext
+): Promise<TMapAssetAuthorizationResult> {
 	const { path } = await context.params;
 	const access = resolveMapAssetAccess(path);
 	if (access === null) {
-		return createErrorResponse(request, MAP_ASSET_NOT_FOUND_MESSAGE, 404);
+		return {
+			response: createErrorResponse(
+				request,
+				MAP_ASSET_NOT_FOUND_MESSAGE,
+				404
+			),
+			status: 'error',
+		};
 	}
 
 	const featureResponse = await checkAccountFeatureRouteResponse();
 	if (featureResponse !== null) {
-		return addCorsHeaders(featureResponse, request);
+		return {
+			response: addCorsHeaders(featureResponse, request),
+			status: 'error',
+		};
 	}
 
 	const sameOriginResponse = checkSameOriginRouteResponse(request);
 	if (sameOriginResponse !== null) {
-		return addCorsHeaders(sameOriginResponse, request);
+		return {
+			response: addCorsHeaders(sameOriginResponse, request),
+			status: 'error',
+		};
 	}
 
 	const cookieSecurityResponse =
 		checkAccountCookieSecurityRouteResponse(request);
 	if (cookieSecurityResponse !== null) {
-		return addCorsHeaders(cookieSecurityResponse, request);
+		return {
+			response: addCorsHeaders(cookieSecurityResponse, request),
+			status: 'error',
+		};
 	}
 
 	const accessResult = await requireFeatureAccess(
@@ -104,11 +121,43 @@ export async function GET(request: NextRequest, context: IRouteContext) {
 		access.isPreview ? 'maps.preview' : 'maps.full'
 	);
 	if (accessResult.status === 'error') {
-		return addCorsHeaders(
-			createFeatureAccessGuardErrorResponse(accessResult),
-			request
-		);
+		return {
+			response: addCorsHeaders(
+				createFeatureAccessGuardErrorResponse(accessResult),
+				request
+			),
+			status: 'error',
+		};
 	}
+
+	return { access, status: 'ok' };
+}
+
+export function OPTIONS(request: NextRequest) {
+	return createServiceCorsPreflightResponse(request);
+}
+
+export async function HEAD(request: NextRequest, context: IRouteContext) {
+	const authorization = await authorizeMapAssetRequest(request, context);
+	if (authorization.status === 'error') {
+		return authorization.response;
+	}
+
+	return addCorsHeaders(
+		new NextResponse(null, {
+			headers: { 'Cache-Control': 'no-store' },
+			status: 200,
+		}),
+		request
+	);
+}
+
+export async function GET(request: NextRequest, context: IRouteContext) {
+	const authorization = await authorizeMapAssetRequest(request, context);
+	if (authorization.status === 'error') {
+		return authorization.response;
+	}
+	const { access } = authorization;
 
 	const mapAssetDirectory = getMapAssetDirectory();
 	const filePath =
@@ -144,7 +193,6 @@ export async function GET(request: NextRequest, context: IRouteContext) {
 
 	const response = new NextResponse(new Uint8Array(content), {
 		headers: {
-			...NO_STORE_HEADERS,
 			'Cache-Control': 'private, max-age=31536000, immutable',
 			'Content-Length': String(content.byteLength),
 			'Content-Type': contentType,
