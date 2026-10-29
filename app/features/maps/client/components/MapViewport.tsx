@@ -81,6 +81,8 @@ function easeOutCubic(progress: number) {
 	return 1 - (1 - progress) ** 3;
 }
 
+const PREVIEW_HINT_MIN_ZOOM_RATIO = 0.03;
+
 export default memo<IProps>(function MapViewport({
 	children,
 	className,
@@ -120,6 +122,8 @@ export default memo<IProps>(function MapViewport({
 	const animationFrameRef = useRef<number | null>(null);
 	/** @description Allows one hint until the map returns to the preview resolution range. */
 	const isPreviewResolutionHintArmedRef = useRef(true);
+	/** @description Zoom where the current preview-range increase began. */
+	const previewResolutionHintAnchorRef = useRef<number | null>(null);
 
 	/** @description Zoom limits for a viewport size; the content may shrink to 80% of the fitted size. */
 	const getZoomLimits = useCallback(
@@ -175,10 +179,12 @@ export default memo<IProps>(function MapViewport({
 			}
 			if (nextZoom <= previewResolutionZoomLimit) {
 				isPreviewResolutionHintArmedRef.current = true;
+				previewResolutionHintAnchorRef.current = null;
 				return;
 			}
 			if (isPreviewAccessHintVisible) {
 				isPreviewResolutionHintArmedRef.current = false;
+				previewResolutionHintAnchorRef.current = null;
 				return;
 			}
 			if (
@@ -188,7 +194,18 @@ export default memo<IProps>(function MapViewport({
 			) {
 				return;
 			}
+			if (nextZoom <= currentZoom) {
+				previewResolutionHintAnchorRef.current = null;
+				return;
+			}
+			const anchorZoom =
+				previewResolutionHintAnchorRef.current ?? currentZoom;
+			previewResolutionHintAnchorRef.current = anchorZoom;
+			if (nextZoom / anchorZoom < 1 + PREVIEW_HINT_MIN_ZOOM_RATIO) {
+				return;
+			}
 			isPreviewResolutionHintArmedRef.current = false;
+			previewResolutionHintAnchorRef.current = null;
 			onPreviewResolutionLimitReached?.();
 		},
 		[
@@ -200,6 +217,7 @@ export default memo<IProps>(function MapViewport({
 
 	useEffect(() => {
 		isPreviewResolutionHintArmedRef.current = true;
+		previewResolutionHintAnchorRef.current = null;
 	}, [previewResolutionZoomLimit, resetKey]);
 
 	useEffect(() => {
@@ -209,6 +227,7 @@ export default memo<IProps>(function MapViewport({
 			viewRef.current.zoom > previewResolutionZoomLimit
 		) {
 			isPreviewResolutionHintArmedRef.current = false;
+			previewResolutionHintAnchorRef.current = null;
 		}
 	}, [isPreviewAccessHintVisible, previewResolutionZoomLimit]);
 

@@ -91,14 +91,15 @@ export function useViewportNavigation<TView extends IViewportNavigationView>({
 		buttonZoomStep,
 		dragThresholdPx,
 		focusDurationMs,
-		gestureIdleMs,
 		keyboardPanPx,
 		lineHeightPx,
-		panProbeMs,
 		pinchExponent,
+		wheelAxisWindowMs,
 		wheelExponent,
-		wheelFallbackExponent,
-		wheelZoomDurationMs,
+		wheelGestureIdleMs,
+		wheelZoomEpsilon,
+		wheelZoomIntervalMs,
+		wheelZoomSmoothingMs,
 	} = { ...DEFAULT_VIEWPORT_NAVIGATION_CONFIG, ...config };
 
 	const callbacksRef = useRef({
@@ -160,8 +161,6 @@ export function useViewportNavigation<TView extends IViewportNavigationView>({
 		}
 		const pointers = new Map<number, { x: number; y: number }>();
 		let gestureStartZoom: number | null = null;
-		let gesturePreviousX = 0;
-		let gesturePreviousY = 0;
 		let isClickSuppressed = false;
 		let isBackgroundPressIgnored = false;
 		let pointerDrag: {
@@ -170,15 +169,19 @@ export function useViewportNavigation<TView extends IViewportNavigationView>({
 			startX: number;
 			startY: number;
 		} | null = null;
-		let wheelGestureMode: 'mouse' | 'pan' | null = null;
+		let pendingWheelZoomLog = 0;
+		let wheelZoomPoint: { x: number; y: number } | null = null;
+		let wheelZoomFrame: number | null = null;
+		let lastWheelZoomFrameAt: number | null = null;
 		let lastWheelEventAt = Number.NEGATIVE_INFINITY;
-		let pendingWheel: {
-			delta: { x: number; y: number };
+		let nextWheelZoomAt = Number.NEGATIVE_INFINITY;
+		let wheelAxisMode: 'horizontal' | 'vertical' | null = null;
+		let pendingWheelAxis: {
+			direction: -1 | 1;
 			x: number;
 			y: number;
-			timeStamp: number;
 		} | null = null;
-		let pendingWheelTimeout: ReturnType<typeof setTimeout> | null = null;
+		let wheelAxisTimeout: ReturnType<typeof setTimeout> | null = null;
 		let clickResetTimeout: ReturnType<typeof setTimeout> | null = null;
 
 		const getGesturePoint = (
@@ -197,135 +200,168 @@ export function useViewportNavigation<TView extends IViewportNavigationView>({
 					: rect.height / 2,
 		});
 
-		const clearPendingWheel = () => {
-			if (pendingWheelTimeout !== null) {
-				clearTimeout(pendingWheelTimeout);
-				pendingWheelTimeout = null;
-			}
-			pendingWheel = null;
-		};
-
 		const emitAction = (action: TViewportNavigationAction) => {
 			callbacksRef.current.onAction(action);
 		};
 
-		const emitWheelZoom = (
-			deltaY: number,
-			x: number,
-			y: number,
-			isFallback: boolean
-		) => {
-			const direction = Math.sign(deltaY);
-			if (direction === 0) {
-				return;
+		const clearWheelZoom = () => {
+			if (wheelZoomFrame !== null) {
+				cancelAnimationFrame(wheelZoomFrame);
 			}
-			const exponent = isFallback ? wheelFallbackExponent : wheelExponent;
-			emitAction({
-				durationMs: wheelZoomDurationMs,
-				factor: Math.exp(-direction * exponent),
-				source: 'wheel',
-				type: 'zoom-by',
-				x,
-				y,
-			});
+			wheelZoomFrame = null;
+			pendingWheelZoomLog = 0;
+			wheelZoomPoint = null;
+			lastWheelZoomFrameAt = null;
 		};
 
-		const emitWheelPan = (deltaX: number, deltaY: number) => {
-			emitAction({
-				deltaX: -deltaX,
-				deltaY: -deltaY,
-				source: 'wheel',
-				type: 'pan',
-			});
+		const clearWheelAxis = () => {
+			if (wheelAxisTimeout !== null) {
+				clearTimeout(wheelAxisTimeout);
+				wheelAxisTimeout = null;
+			}
+			pendingWheelAxis = null;
+			wheelAxisMode = null;
+			nextWheelZoomAt = Number.NEGATIVE_INFINITY;
+		};
+
+		const flushWheelZoom = (now: number) => {
+			wheelZoomFrame = null;
+			const point = wheelZoomPoint;
+			if (point === null || pendingWheelZoomLog === 0) {
+				clearWheelZoom();
+				return;
+			}
+			const elapsedMs =
+				lastWheelZoomFrameAt === null
+					? 0
+					: Math.max(0, now - lastWheelZoomFrameAt);
+			lastWheelZoomFrameAt = now;
+			const progress =
+				wheelZoomSmoothingMs <= 0
+					? 1
+					: 1 - Math.exp(-elapsedMs / wheelZoomSmoothingMs);
+			const appliedLog = pendingWheelZoomLog * progress;
+			pendingWheelZoomLog -= appliedLog;
+			if (appliedLog !== 0) {
+				emitAction({
+					durationMs: 0,
+					factor: Math.exp(appliedLog),
+					source: 'wheel',
+					type: 'zoom-by',
+					x: point.x,
+					y: point.y,
+				});
+			}
+			if (Math.abs(pendingWheelZoomLog) > wheelZoomEpsilon) {
+				wheelZoomFrame = requestAnimationFrame(flushWheelZoom);
+				return;
+			}
+			clearWheelZoom();
+		};
+
+		const queueWheelZoom = (
+			direction: -1 | 1,
+			x: number,
+			y: number,
+			now: number
+		) => {
+			if (now < nextWheelZoomAt) {
+				return;
+			}
+			nextWheelZoomAt = now + Math.max(0, wheelZoomIntervalMs);
+			pendingWheelZoomLog -= direction * wheelExponent;
+			wheelZoomPoint = { x, y };
+			lastWheelZoomFrameAt ??= now;
+			wheelZoomFrame ??= requestAnimationFrame(flushWheelZoom);
+		};
+
+		const handleVerticalWheel = (
+			direction: -1 | 1,
+			x: number,
+			y: number,
+			now: number
+		) => {
+			if (wheelAxisMode === 'horizontal') {
+				return;
+			}
+			if (wheelAxisMode === 'vertical') {
+				queueWheelZoom(direction, x, y, now);
+				return;
+			}
+			pendingWheelAxis ??= { direction, x, y };
+			wheelAxisTimeout ??= setTimeout(
+				() => {
+					wheelAxisTimeout = null;
+					const pending = pendingWheelAxis;
+					pendingWheelAxis = null;
+					if (pending === null) {
+						return;
+					}
+					wheelAxisMode = 'vertical';
+					queueWheelZoom(
+						pending.direction,
+						pending.x,
+						pending.y,
+						performance.now()
+					);
+				},
+				Math.max(0, wheelAxisWindowMs)
+			);
 		};
 
 		const handleWheel = (event: WheelEvent) => {
 			event.preventDefault();
 			callbacksRef.current.onInteractionStart?.();
 			const now = performance.now();
-			if (now - lastWheelEventAt > gestureIdleMs) {
-				wheelGestureMode = null;
+			if (now - lastWheelEventAt > wheelGestureIdleMs) {
+				clearWheelAxis();
 			}
 			lastWheelEventAt = now;
-			const rect = container.getBoundingClientRect();
 			const delta = getWheelDelta(
 				event,
 				viewRef.current.height,
 				lineHeightPx
 			);
-			const x = event.clientX - rect.left;
-			const y = event.clientY - rect.top;
 			if (delta.x === 0 && delta.y === 0) {
-				clearPendingWheel();
-				wheelGestureMode = 'mouse';
 				return;
 			}
 			if (event.ctrlKey || event.metaKey) {
-				clearPendingWheel();
-				wheelGestureMode = null;
+				clearWheelAxis();
+				clearWheelZoom();
+				const rect = container.getBoundingClientRect();
 				emitAction({
-					durationMs: wheelZoomDurationMs,
+					durationMs: 0,
 					factor:
 						delta.y === 0 ? 1 : Math.exp(-delta.y * pinchExponent),
 					source: 'pinch',
 					type: 'zoom-by',
-					x,
-					y,
+					x: event.clientX - rect.left,
+					y: event.clientY - rect.top,
 				});
 				return;
 			}
-			const isTrackpadPanSignal = event.deltaX !== 0;
-			if (wheelGestureMode === 'pan') {
-				emitWheelPan(delta.x, delta.y);
+			if (delta.x !== 0) {
+				clearWheelAxis();
+				wheelAxisMode = 'horizontal';
+				clearWheelZoom();
 				return;
 			}
-			if (wheelGestureMode === 'mouse') {
-				emitWheelZoom(delta.y, x, y, false);
-				return;
+			const rect = container.getBoundingClientRect();
+			const x = event.clientX - rect.left;
+			const y = event.clientY - rect.top;
+			if (delta.y < 0) {
+				handleVerticalWheel(-1, x, y, now);
+			} else if (delta.y > 0) {
+				handleVerticalWheel(1, x, y, now);
 			}
-			if (pendingWheel !== null) {
-				const pending = pendingWheel;
-				clearPendingWheel();
-				if (
-					isTrackpadPanSignal ||
-					event.timeStamp !== pending.timeStamp
-				) {
-					emitWheelPan(pending.delta.x, pending.delta.y);
-					emitWheelPan(delta.x, delta.y);
-					wheelGestureMode = 'pan';
-				} else {
-					wheelGestureMode = 'mouse';
-					emitWheelZoom(pending.delta.y, pending.x, pending.y, true);
-				}
-				return;
-			}
-			if (isTrackpadPanSignal) {
-				wheelGestureMode = 'pan';
-				emitWheelPan(delta.x, delta.y);
-				return;
-			}
-			pendingWheel = { delta, timeStamp: event.timeStamp, x, y };
-			pendingWheelTimeout = setTimeout(() => {
-				const pending = pendingWheel;
-				clearPendingWheel();
-				if (pending !== null) {
-					wheelGestureMode = 'mouse';
-					emitWheelZoom(pending.delta.y, pending.x, pending.y, true);
-				}
-			}, panProbeMs);
 		};
 
 		const handleGestureStart = (event: Event) => {
 			event.preventDefault();
+			clearWheelAxis();
+			clearWheelZoom();
 			callbacksRef.current.onInteractionStart?.();
-			const gesture = event as IWebKitGestureEvent;
-			const point = getGesturePoint(
-				gesture,
-				container.getBoundingClientRect()
-			);
 			gestureStartZoom = viewRef.current.zoom;
-			gesturePreviousX = point.x;
-			gesturePreviousY = point.y;
 		};
 
 		const handleGestureChange = (event: Event) => {
@@ -337,12 +373,6 @@ export function useViewportNavigation<TView extends IViewportNavigationView>({
 				container.getBoundingClientRect()
 			);
 			emitAction({
-				deltaX: point.x - gesturePreviousX,
-				deltaY: point.y - gesturePreviousY,
-				source: 'gesture',
-				type: 'pan',
-			});
-			emitAction({
 				durationMs: 0,
 				source: 'gesture',
 				type: 'zoom-to',
@@ -350,8 +380,6 @@ export function useViewportNavigation<TView extends IViewportNavigationView>({
 				y: point.y,
 				zoom: gestureStartZoom * gesture.scale,
 			});
-			gesturePreviousX = point.x;
-			gesturePreviousY = point.y;
 		};
 
 		const handleGestureEnd = (event: Event) => {
@@ -370,6 +398,8 @@ export function useViewportNavigation<TView extends IViewportNavigationView>({
 			if (event.pointerType === 'mouse' && event.button === 1) {
 				event.preventDefault();
 			}
+			clearWheelAxis();
+			clearWheelZoom();
 			callbacksRef.current.onInteractionStart?.();
 			if (pointers.size === 0) {
 				isBackgroundPressIgnored =
@@ -581,7 +611,8 @@ export function useViewportNavigation<TView extends IViewportNavigationView>({
 		container.addEventListener('keydown', handleKeyDown);
 
 		return () => {
-			clearPendingWheel();
+			clearWheelAxis();
+			clearWheelZoom();
 			if (clickResetTimeout !== null) {
 				clearTimeout(clickResetTimeout);
 			}
@@ -601,16 +632,16 @@ export function useViewportNavigation<TView extends IViewportNavigationView>({
 		buttonZoomStep,
 		containerRef,
 		dragThresholdPx,
-		focusDurationMs,
-		gestureIdleMs,
 		keyboardPanPx,
 		lineHeightPx,
-		panProbeMs,
 		pinchExponent,
 		viewRef,
+		wheelAxisWindowMs,
 		wheelExponent,
-		wheelFallbackExponent,
-		wheelZoomDurationMs,
+		wheelGestureIdleMs,
+		wheelZoomEpsilon,
+		wheelZoomIntervalMs,
+		wheelZoomSmoothingMs,
 	]);
 
 	return { fit, zoomIn, zoomOut };
