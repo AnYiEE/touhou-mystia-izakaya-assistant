@@ -1,9 +1,9 @@
 /* eslint-disable sort-keys */
-import type { IClothes, TClothesSource } from './schema';
+import type { IClothes } from './schema';
 
-type TClothesBuySource = Extract<TClothesSource, { buy: unknown }>;
+type TClothesBuySource = NonNullable<IClothes['from']['buy']>;
 
-function createKourindouPurchase(amount: number): TClothesBuySource {
+function createKourindouPurchase(amount: number): { buy: TClothesBuySource } {
 	return {
 		buy: {
 			merchant: { label: 'Rinnosuke', map: 'HumanVillage' },
@@ -20,7 +20,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [{ self: true }],
+		from: { self: true },
 	},
 	{
 		id: -2,
@@ -30,7 +30,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [{ self: true }],
+		from: { self: true },
 	},
 	{
 		id: 23,
@@ -40,7 +40,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: true,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 1 } }],
+		from: { bond: { level: 5, specialGuest: 1 } },
 	},
 	{
 		id: 24,
@@ -50,7 +50,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 4 } }],
+		from: { bond: { level: 5, specialGuest: 4 } },
 	},
 	{
 		id: 25,
@@ -60,7 +60,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 7 } }],
+		from: { bond: { level: 5, specialGuest: 7 } },
 	},
 	{
 		id: 26,
@@ -70,7 +70,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 27 } }],
+		from: { bond: { level: 5, specialGuest: 27 } },
 	},
 	{
 		id: 27,
@@ -80,7 +80,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 25 } }],
+		from: { bond: { level: 5, specialGuest: 25 } },
 	},
 	{
 		id: 31,
@@ -90,7 +90,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [{ holdingRequirement: { amount: 100, currencyItem: 29 } }],
+		from: { holdingRequirement: { amount: 100, currencyItem: 29 } },
 	},
 	{
 		id: 54,
@@ -100,7 +100,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: true,
-		from: [createKourindouPurchase(25)],
+		from: createKourindouPurchase(25),
 	},
 	{
 		id: 56,
@@ -110,9 +110,9 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [
-			{ eventReward: { eventLabel: 'Main_5_BambooForest_Concert_Post' } },
-		],
+		from: {
+			eventReward: { eventLabel: 'Main_5_BambooForest_Concert_Post' },
+		},
 	},
 	{
 		id: 57,
@@ -122,7 +122,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: true,
-		from: [createKourindouPurchase(25)],
+		from: createKourindouPurchase(25),
 	},
 	{
 		id: 58,
@@ -132,7 +132,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [createKourindouPurchase(15)],
+		from: createKourindouPurchase(15),
 	},
 	{
 		id: 59,
@@ -142,7 +142,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: true,
-		from: [createKourindouPurchase(25)],
+		from: createKourindouPurchase(25),
 	},
 	{
 		id: 60,
@@ -152,7 +152,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: false,
-		from: [createKourindouPurchase(15)],
+		from: createKourindouPurchase(15),
 	},
 	{
 		id: 61,
@@ -162,7 +162,7 @@ export const CLOTHES_LIST = [
 		dlc: 0,
 		gif: false,
 		izakaya: true,
-		from: [{ collaborationUnlock: { collaborationLabel: 'THYG' } }],
+		from: { collaboration: { collaborationLabel: 'THYG' } },
 	},
 	{
 		id: 1001,
@@ -172,7 +172,7 @@ export const CLOTHES_LIST = [
 		dlc: 1,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 1005 } }],
+		from: { bond: { level: 5, specialGuest: 1005 } },
 	},
 	{
 		id: 1002,
@@ -182,7 +182,7 @@ export const CLOTHES_LIST = [
 		dlc: 1,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 10 } }],
+		from: { bond: { level: 5, specialGuest: 10 } },
 	},
 	{
 		id: 2001,
@@ -192,7 +192,7 @@ export const CLOTHES_LIST = [
 		dlc: 2,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 2002 } }],
+		from: { bond: { level: 5, specialGuest: 2002 } },
 	},
 	{
 		id: 2002,
@@ -202,7 +202,7 @@ export const CLOTHES_LIST = [
 		dlc: 2,
 		gif: true,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 2005 } }],
+		from: { bond: { level: 5, specialGuest: 2005 } },
 	},
 	{
 		id: 2500,
@@ -212,10 +212,10 @@ export const CLOTHES_LIST = [
 		dlc: 2.5,
 		gif: false,
 		izakaya: false,
-		from: [
-			createKourindouPurchase(10),
-			{ taskReward: { task: 'DLCMusic_Main_AllPass_Event' } },
-		],
+		from: {
+			...createKourindouPurchase(10),
+			taskReward: { task: 'DLCMusic_Main_AllPass_Event' },
+		},
 	},
 	{
 		id: 3001,
@@ -225,7 +225,7 @@ export const CLOTHES_LIST = [
 		dlc: 3,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 3001 } }],
+		from: { bond: { level: 5, specialGuest: 3001 } },
 	},
 	{
 		id: 3002,
@@ -235,7 +235,7 @@ export const CLOTHES_LIST = [
 		dlc: 3,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 3004 } }],
+		from: { bond: { level: 5, specialGuest: 3004 } },
 	},
 	{
 		id: 4003,
@@ -245,7 +245,7 @@ export const CLOTHES_LIST = [
 		dlc: 4,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 4002 } }],
+		from: { bond: { level: 5, specialGuest: 4002 } },
 	},
 	{
 		id: 4004,
@@ -255,7 +255,7 @@ export const CLOTHES_LIST = [
 		dlc: 4,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 4003 } }],
+		from: { bond: { level: 5, specialGuest: 4003 } },
 	},
 	{
 		id: 5009,
@@ -265,7 +265,7 @@ export const CLOTHES_LIST = [
 		dlc: 5,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 5002 } }],
+		from: { bond: { level: 5, specialGuest: 5002 } },
 	},
 	{
 		id: 5010,
@@ -275,7 +275,7 @@ export const CLOTHES_LIST = [
 		dlc: 5,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 5005 } }],
+		from: { bond: { level: 5, specialGuest: 5005 } },
 	},
 	{
 		id: 9000,
@@ -285,7 +285,7 @@ export const CLOTHES_LIST = [
 		dlc: 9,
 		gif: false,
 		izakaya: false,
-		from: [{ bond: { level: 5, specialGuest: 9001 } }],
+		from: { bond: { level: 5, specialGuest: 9001 } },
 	},
 	{
 		id: 9003,
@@ -295,12 +295,8 @@ export const CLOTHES_LIST = [
 		dlc: 9,
 		gif: false,
 		izakaya: false,
-		from: [
-			{
-				collaborationUnlock: {
-					collaborationLabel: 'ResourceEx_GiftMailbox',
-				},
-			},
-		],
+		from: {
+			collaboration: { collaborationLabel: 'ResourceEx_GiftMailbox' },
+		},
 	},
 ] as const satisfies IClothes[];

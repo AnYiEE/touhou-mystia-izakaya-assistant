@@ -5,7 +5,9 @@ import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { FishingCollectibleCatalog } from '@/domain/catalog/items/FishingCollectibleCatalog';
 import type { IBeverage } from '@/domain/data/beverages/schema';
 import type { TBeverageId } from '@/domain/data/beverages/types';
+import type { ICooker } from '@/domain/data/cookers/schema';
 import type { TCookerId } from '@/domain/data/cookers/types';
+import type { IFood } from '@/domain/data/foods/schema';
 import type { TFoodId } from '@/domain/data/foods/types';
 import type { IIngredient } from '@/domain/data/ingredients/schema';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
@@ -35,6 +37,7 @@ import {
 	type ICollectionPointYieldProduct,
 } from '@/domain/data/places/collectionYieldFacts';
 import type { TMerchantReference } from '@/domain/data/places/types';
+import { getSourceEntries } from '@/domain/data/shared/sourceEntries';
 
 import { type TMapItemProduct } from '@/features/maps/client/model/mapsHistory';
 import {
@@ -444,7 +447,7 @@ export function getMerchantGoods(
 			.map(({ id }) => id),
 		cookers: CookerCatalog.getInstance()
 			.canonicalData.filter(({ from }) =>
-				from.some(
+				getSourceEntries<ICooker['from']>(from).some(
 					(source) =>
 						'buy' in source &&
 						checkMerchantReference(source.buy.merchant, merchant)
@@ -453,13 +456,20 @@ export function getMerchantGoods(
 			.map(({ id }) => id),
 		foods: FoodCatalog.getInstance()
 			.canonicalData.filter(({ from }) =>
-				'buy' in from
-					? checkMerchantReference(from.buy.merchant, merchant)
-					: 'collaboration' in from &&
-						from.collaboration.merchants.some(
-							({ merchant: reference }) =>
-								checkMerchantReference(reference, merchant)
-						)
+				getSourceEntries<IFood['from']>(from).some(
+					(source) =>
+						('buy' in source &&
+							checkMerchantReference(
+								source.buy.merchant,
+								merchant
+							)) ||
+						('collaboration' in source &&
+							'merchants' in source.collaboration &&
+							source.collaboration.merchants.some(
+								({ merchant: reference }) =>
+									checkMerchantReference(reference, merchant)
+							))
+				)
 			)
 			.map(({ id }) => id),
 		ingredients: IngredientCatalog.getInstance()

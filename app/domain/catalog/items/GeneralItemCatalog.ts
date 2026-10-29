@@ -1,11 +1,13 @@
 import { RecordCatalog } from '@/domain/catalog/shared/RecordCatalog';
 import { GENERAL_ITEM_LIST } from '@/domain/data/generalItems/records';
+import type { IGeneralItem } from '@/domain/data/generalItems/schema';
 import type {
 	TGeneralItemId,
 	TGeneralItems,
 } from '@/domain/data/generalItems/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import { SCHEDULER_FACTS } from '@/domain/data/labels/schedulerFacts';
+import { getSourceEntries } from '@/domain/data/shared/sourceEntries';
 
 import { numberSort } from '@/shared/utilities/sort/numberSort';
 
@@ -39,21 +41,24 @@ export class GeneralItemCatalog extends RecordCatalog<TGeneralItems> {
 				const bondGeneralItems: TBondGeneralItems = [];
 
 				this._data.forEach(({ from, id }) => {
-					from.forEach((source) => {
-						if (!('schedulerLabel' in source)) {
-							return;
+					getSourceEntries<IGeneralItem['from']>(from).forEach(
+						(source) => {
+							if (!('schedulerLabel' in source)) {
+								return;
+							}
+							const fact = SCHEDULER_FACTS[source.schedulerLabel];
+							if (
+								'specialGuestBond' in fact &&
+								fact.specialGuestBond.specialGuest ===
+									specialGuest
+							) {
+								bondGeneralItems.push({
+									id,
+									level: fact.specialGuestBond.level,
+								});
+							}
 						}
-						const fact = SCHEDULER_FACTS[source.schedulerLabel];
-						if (
-							'specialGuestBond' in fact &&
-							fact.specialGuestBond.specialGuest === specialGuest
-						) {
-							bondGeneralItems.push({
-								id,
-								level: fact.specialGuestBond.level,
-							});
-						}
-					});
+					);
 				});
 
 				bondGeneralItems.sort(({ level: a }, { level: b }) =>

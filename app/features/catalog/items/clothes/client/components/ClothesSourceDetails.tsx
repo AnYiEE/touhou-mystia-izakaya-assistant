@@ -3,8 +3,9 @@ import { Fragment } from 'react';
 import Tooltip from '@/design/ui/components/tooltip';
 
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
-import type { IClothes, TClothesSource } from '@/domain/data/clothes/schema';
+import type { IClothes } from '@/domain/data/clothes/schema';
 import { formatSchedulerLabels } from '@/domain/data/labels/schedulerFacts';
+import { getSourceEntries } from '@/domain/data/shared/sourceEntries';
 import { getCollaborationLabel } from '@/domain/labels/localizedCollaborationLabels';
 import { formatSchedulerTaskLabel } from '@/domain/labels/localizedSchedulerLabels';
 
@@ -40,6 +41,10 @@ interface IProps {
 		name: TShareableItemName
 	) => void;
 }
+
+type TClothesSource = ReturnType<
+	typeof getSourceEntries<IClothes['from']>
+>[number];
 
 function renderClothesSource(
 	item: TClothesSource,
@@ -105,6 +110,18 @@ function renderClothesSource(
 		);
 	}
 
+	if ('collaboration' in item) {
+		return t('items.source.collaborationTerminal', {
+			label: getCollaborationLabel(item.collaboration.collaborationLabel),
+		});
+	}
+
+	if ('eventReward' in item) {
+		return t('items.source.autoObtainedOnEvent', {
+			event: formatSchedulerLabels(item.eventReward.eventLabel),
+		});
+	}
+
 	if ('holdingRequirement' in item) {
 		const { amount, currencyItem } = item.holdingRequirement;
 		const currencyItemName =
@@ -115,20 +132,6 @@ function renderClothesSource(
 		return t('items.source.autoObtainedHolding', {
 			amount,
 			currency: currencyItemName,
-		});
-	}
-
-	if ('eventReward' in item) {
-		return t('items.source.autoObtainedOnEvent', {
-			event: formatSchedulerLabels(item.eventReward.eventLabel),
-		});
-	}
-
-	if ('collaborationUnlock' in item) {
-		return t('items.source.collaborationTerminal', {
-			label: getCollaborationLabel(
-				item.collaborationUnlock.collaborationLabel
-			),
 		});
 	}
 
@@ -149,7 +152,7 @@ export default function ClothesSourceDetails({ from, id, openWindow }: IProps) {
 	return (
 		<p className="text-cjk-flow">
 			<span className="font-semibold">{t('items.source.from')}</span>
-			{from.map((item, fromIndex) => (
+			{getSourceEntries<IClothes['from']>(from).map((item, fromIndex) => (
 				<Fragment key={fromIndex}>
 					{fromIndex > 0 && t('items.source.listSeparator')}
 					{renderClothesSource(item, openWindow, locale, t)}
@@ -159,7 +162,7 @@ export default function ClothesSourceDetails({ from, id, openWindow }: IProps) {
 							reference={item.buy.merchant}
 						/>
 					)}
-					{'collaborationUnlock' in item && (
+					{'collaboration' in item && (
 						<CollaborationMapLink itemId={id} />
 					)}
 					{'taskReward' in item && (

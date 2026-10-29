@@ -11,18 +11,28 @@ import { CLASSNAME_FOCUS_VISIBLE_OUTLINE } from '@/design/ui/components/constant
 import Tooltip from '@/design/ui/components/tooltip';
 import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 
+import { BeverageCatalog } from '@/domain/catalog/food/BeverageCatalog';
 import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
+import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { ClothesCatalog } from '@/domain/catalog/items/ClothesCatalog';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
+import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import { DecorationCatalog } from '@/domain/catalog/items/DecorationCatalog';
 import { GeneralItemCatalog } from '@/domain/catalog/items/GeneralItemCatalog';
 
+import BeverageSourceDetails from '@/features/catalog/items/beverages/client/components/BeverageSourceDetails';
 import ClothesSourceDetails from '@/features/catalog/items/clothes/client/components/ClothesSourceDetails';
 import CookerSourceDetails from '@/features/catalog/items/cookers/client/components/CookerSourceDetails';
+import CurrencyItemSourceDetails from '@/features/catalog/items/currencyItems/client/components/CurrencyItemSourceDetails';
 import FoodSourceDetails from '@/features/catalog/items/foods/client/components/FoodSourceDetails';
 import RecipesDetails from '@/features/catalog/items/foods/client/components/RecipesDetails';
 import GeneralItemSourceDetails from '@/features/catalog/items/generalItems/client/components/GeneralItemSourceDetails';
-import { FOOD_TAG_STYLE } from '@/features/catalog/presentation/tagStyles';
+import IngredientSourceDetails from '@/features/catalog/items/ingredients/client/components/IngredientSourceDetails';
+import {
+	BEVERAGE_TAG_STYLE,
+	FOOD_TAG_STYLE,
+	INGREDIENT_TAG_STYLE,
+} from '@/features/catalog/presentation/tagStyles';
 import {
 	ItemPopover,
 	ItemPopoverContent,
@@ -31,7 +41,10 @@ import {
 import ItemPopoverCard from '@/features/catalog/shared/client/components/ItemPopoverCard';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import { useCatalogLocalizationRevision } from '@/features/catalog/shared/client/localization/catalogLocalizationRevision';
-import { getFoodTagLabel } from '@/features/catalog/shared/client/localization/tagLabels';
+import {
+	getBeverageTagLabel,
+	getFoodTagLabel,
+} from '@/features/catalog/shared/client/localization/tagLabels';
 import FeatureAccessNotice from '@/features/featureAccess/client/components/FeatureAccessNotice';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import { mapsMessages } from '@/features/maps/client/messages';
@@ -58,10 +71,20 @@ interface IProps {
 
 function getCatalogName({ id, target }: TMapCatalogItem) {
 	switch (target) {
+		case 'beverage':
+			return BeverageCatalog.getInstance().getDisplayPropsById(
+				id,
+				'name'
+			);
 		case 'clothes':
 			return ClothesCatalog.getInstance().getDisplayPropsById(id, 'name');
 		case 'cooker':
 			return CookerCatalog.getInstance().getDisplayPropsById(id, 'name');
+		case 'currency_item':
+			return CurrencyItemCatalog.getInstance().getDisplayPropsById(
+				id,
+				'name'
+			);
 		case 'decoration':
 			return DecorationCatalog.getInstance().getDisplayPropsById(
 				id,
@@ -69,6 +92,11 @@ function getCatalogName({ id, target }: TMapCatalogItem) {
 			);
 		case 'food':
 			return FoodCatalog.getInstance().getDisplayPropsById(id, 'name');
+		case 'ingredient':
+			return IngredientCatalog.getInstance().getDisplayPropsById(
+				id,
+				'name'
+			);
 		case 'item':
 			return GeneralItemCatalog.getInstance().getDisplayPropsById(
 				id,
@@ -79,14 +107,20 @@ function getCatalogName({ id, target }: TMapCatalogItem) {
 
 function getCatalogPath({ target }: TMapCatalogItem) {
 	switch (target) {
+		case 'beverage':
+			return 'beverages' as const;
 		case 'clothes':
 			return 'clothes' as const;
 		case 'cooker':
 			return 'cookers' as const;
+		case 'currency_item':
+			return 'currencies' as const;
 		case 'decoration':
 			return 'decorations' as const;
 		case 'food':
 			return 'foods' as const;
+		case 'ingredient':
+			return 'ingredients' as const;
 		case 'item':
 			return 'items' as const;
 	}
@@ -123,6 +157,32 @@ const CatalogItemDetails = memo(function CatalogItemDetails({
 	openWindow: TOpenWindow;
 }) {
 	switch (item.target) {
+		case 'beverage': {
+			const record = BeverageCatalog.getInstance().getDisplayPropsById(
+				item.id
+			);
+			return (
+				<ItemPopoverCard
+					target="beverage"
+					id={item.id}
+					name={record.name}
+					description={{
+						description: record.description,
+						level: record.level,
+						price: record.price,
+					}}
+					dlc={record.dlc}
+					tags={{
+						beverage: record.tags.map((tag) =>
+							getBeverageTagLabel(tag)
+						),
+					}}
+					tagColors={BEVERAGE_TAG_STYLE}
+				>
+					<BeverageSourceDetails id={item.id} from={record.from} />
+				</ItemPopoverCard>
+			);
+		}
 		case 'clothes': {
 			const record = ClothesCatalog.getInstance().getDisplayPropsById(
 				item.id
@@ -156,6 +216,25 @@ const CatalogItemDetails = memo(function CatalogItemDetails({
 					dlc={record.dlc}
 				>
 					<CookerSourceDetails
+						id={item.id}
+						from={record.from}
+						openWindow={openWindow}
+					/>
+				</ItemPopoverCard>
+			);
+		}
+		case 'currency_item': {
+			const record =
+				CurrencyItemCatalog.getInstance().getDisplayPropsById(item.id);
+			return (
+				<ItemPopoverCard
+					target="currency_item"
+					id={item.id}
+					name={record.name}
+					description={{ description: record.description }}
+					dlc={record.dlc}
+				>
+					<CurrencyItemSourceDetails
 						id={item.id}
 						from={record.from}
 						openWindow={openWindow}
@@ -208,6 +287,32 @@ const CatalogItemDetails = memo(function CatalogItemDetails({
 						from={record.from}
 						openWindow={openWindow}
 					/>
+				</ItemPopoverCard>
+			);
+		}
+		case 'ingredient': {
+			const record = IngredientCatalog.getInstance().getDisplayPropsById(
+				item.id
+			);
+			return (
+				<ItemPopoverCard
+					target="ingredient"
+					id={item.id}
+					name={record.name}
+					description={{
+						description: record.description,
+						level: record.level,
+						price: record.price,
+					}}
+					dlc={record.dlc}
+					tags={{
+						positive: record.tags
+							.toSorted(numberSort)
+							.map((tag) => getFoodTagLabel(tag)),
+					}}
+					tagColors={INGREDIENT_TAG_STYLE}
+				>
+					<IngredientSourceDetails id={item.id} from={record.from} />
 				</ItemPopoverCard>
 			);
 		}

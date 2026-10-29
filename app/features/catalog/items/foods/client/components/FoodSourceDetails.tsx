@@ -8,6 +8,7 @@ import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog'
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
 import type { IFood } from '@/domain/data/foods/schema';
 import { formatSchedulerLabels } from '@/domain/data/labels/schedulerFacts';
+import { getSourceEntries } from '@/domain/data/shared/sourceEntries';
 import { getCollaborationLabel } from '@/domain/labels/localizedCollaborationLabels';
 import { formatSchedulerTaskLabel } from '@/domain/labels/localizedSchedulerLabels';
 import { getMapLabel } from '@/domain/places/localizedLabels';
@@ -26,6 +27,7 @@ import {
 	type TShareableItemName,
 } from '@/features/itemSharing/contracts';
 import {
+	CollaborationMapLink,
 	MerchantMapLink,
 	TaskMapLinks,
 } from '@/features/maps/client/components/MapLinks';
@@ -90,138 +92,206 @@ function CurrencyItemPrice({
 export default function FoodSourceDetails({ from, id, openWindow }: IProps) {
 	const { locale, t } = useI18n(catalogItemsMessages);
 
-	let details;
-
-	if ('self' in from) {
-		details = t('items.source.initialOwned');
-	} else if ('areaTask' in from) {
-		const { areaTask } = from;
-		const specialGuestSuffix =
-			'specialGuest' in areaTask
-				? t('items.source.guestSuffix', {
-						name: specialGuestCatalog.getDisplayPropsById(
-							areaTask.specialGuest,
-							'name'
-						),
-					})
-				: '';
-		details = `${t('items.source.areaTask', {
-			map: getMapLabel(areaTask.map),
-			task: areaTask.task,
-		})}${specialGuestSuffix}`;
-	} else if ('bond' in from) {
-		const { level, specialGuest } = from.bond;
-		details = (
-			<SpecialGuestBondReference
-				level={level}
-				specialGuest={specialGuest}
-			/>
-		);
-	} else if ('buy' in from) {
-		const { merchant, price } = from.buy;
-		const isNoPrice = price === null;
-		const merchantName = formatSourceReference(merchant, locale);
-		details = (
-			<>
-				{isNoPrice ? t('items.source.soldAt') : null}
-				{merchantName}
-				{isNoPrice ? null : t('items.source.parenthesisOpen')}
-				{isObject(price) ? (
-					<CurrencyItemPrice
-						amount={price.amount}
-						currencyItem={price.currencyItem}
-						openWindow={openWindow}
-					/>
-				) : isNoPrice ? null : (
-					<Price>{price}</Price>
-				)}
-				{isNoPrice ? null : t('items.source.parenthesisClose')}
-			</>
-		);
-	} else if ('collaboration' in from) {
-		const collaborationLabel = getCollaborationLabel(
-			from.collaboration.collaborationLabel
-		);
-		details = from.collaboration.merchants.map(
-			({ merchant, platformLabel }, index) => {
-				const merchantName =
-					index === 0 && 'map' in merchant
-						? t('items.source.collaborationSource', {
-								collaboration: collaborationLabel,
-								label: formatSourceReference(merchant, locale, {
-									omitMap: true,
-								}),
-								map: getMapLabel(merchant.map),
-							})
-						: formatSourceReference(merchant, locale);
-				return (
-					<Fragment key={index}>
-						{index > 0 && t('items.source.listSeparator')}
-						{merchantName}
-						<MerchantMapLink itemId={id} reference={merchant} />
-						{t('items.source.parenthesisOpen')}
-						{platformLabel}
-						{t('items.source.parenthesisClose')}
-					</Fragment>
-				);
-			}
-		);
-	} else if ('levelup' in from) {
-		const { level, map } = from.levelup;
-		details = (
-			<>
-				<span className="mr-1">{t('items.source.gameLevel')}</span>
-				Lv.{level - 1}
-				<span className="mx-0.5">➞</span>
-				Lv.{level}
-				{map !== null && (
-					<span className="ml-0.5">
-						{t('items.source.andUnlockedMap', {
-							map: getMapLabel(map),
-						})}
-					</span>
-				)}
-			</>
-		);
-	} else if ('taskReward' in from) {
-		details = t('items.source.task', {
-			label: formatSchedulerTaskLabel(
-				formatSchedulerLabels(from.taskReward.task)
-			),
-		});
-	} else {
-		details = [
-			...from.failedCooking.causeLabels.map((label) => {
-				const key = CATALOG_ITEMS_CAUSE_LABEL_MESSAGE_KEYS[label];
-				return key === undefined ? label : t(key);
-			}),
-			...from.failedCooking.punishmentSpellCardSpecialGuests.map(
-				(specialGuest) =>
-					t('items.source.punishmentSpellCard', {
-						name: specialGuestCatalog.getDisplayPropsById(
-							specialGuest,
-							'name'
-						),
-					})
-			),
-		].join(t('items.source.listSeparator'));
-	}
-
 	return (
 		<Fragment>
 			<p className="text-cjk-flow">
 				<span className="font-semibold">
 					{t('items.source.recipeFrom')}
 				</span>
-				{details}
-				{'taskReward' in from && (
-					<TaskMapLinks itemId={id} task={from.taskReward.task} />
-				)}
-				{'buy' in from && (
-					<MerchantMapLink
-						itemId={id}
-						reference={from.buy.merchant}
-					/>
+				{getSourceEntries<IFood['from']>(from).map(
+					(source, sourceIndex) => {
+						const from = source;
+						let details;
+
+						if ('self' in from) {
+							details = t('items.source.initialOwned');
+						} else if ('areaTask' in from) {
+							const { areaTask } = from;
+							const specialGuestSuffix =
+								'specialGuest' in areaTask
+									? t('items.source.guestSuffix', {
+											name: specialGuestCatalog.getDisplayPropsById(
+												areaTask.specialGuest,
+												'name'
+											),
+										})
+									: '';
+							details = `${t('items.source.areaTask', {
+								map: getMapLabel(areaTask.map),
+								task: areaTask.task,
+							})}${specialGuestSuffix}`;
+						} else if ('bond' in from) {
+							const { level, specialGuest } = from.bond;
+							details = (
+								<SpecialGuestBondReference
+									level={level}
+									specialGuest={specialGuest}
+								/>
+							);
+						} else if ('buy' in from) {
+							const { merchant, price } = from.buy;
+							const isNoPrice = price === null;
+							const merchantName = formatSourceReference(
+								merchant,
+								locale
+							);
+							details = (
+								<>
+									{isNoPrice
+										? t('items.source.soldAt')
+										: null}
+									{merchantName}
+									{isNoPrice
+										? null
+										: t('items.source.parenthesisOpen')}
+									{isObject(price) ? (
+										<CurrencyItemPrice
+											amount={price.amount}
+											currencyItem={price.currencyItem}
+											openWindow={openWindow}
+										/>
+									) : isNoPrice ? null : (
+										<Price>{price}</Price>
+									)}
+									{isNoPrice
+										? null
+										: t('items.source.parenthesisClose')}
+								</>
+							);
+						} else if ('collaboration' in from) {
+							const collaborationLabel = getCollaborationLabel(
+								from.collaboration.collaborationLabel
+							);
+							details =
+								'merchants' in from.collaboration
+									? from.collaboration.merchants.map(
+											(
+												{ merchant, platformLabel },
+												index
+											) => {
+												const merchantName =
+													index === 0 &&
+													'map' in merchant
+														? t(
+																'items.source.collaborationSource',
+																{
+																	collaboration:
+																		collaborationLabel,
+																	label: formatSourceReference(
+																		merchant,
+																		locale,
+																		{
+																			omitMap: true,
+																		}
+																	),
+																	map: getMapLabel(
+																		merchant.map
+																	),
+																}
+															)
+														: formatSourceReference(
+																merchant,
+																locale
+															);
+												return (
+													<Fragment key={index}>
+														{index > 0 &&
+															t(
+																'items.source.listSeparator'
+															)}
+														{merchantName}
+														<MerchantMapLink
+															itemId={id}
+															reference={merchant}
+														/>
+														{t(
+															'items.source.parenthesisOpen'
+														)}
+														{platformLabel}
+														{t(
+															'items.source.parenthesisClose'
+														)}
+													</Fragment>
+												);
+											}
+										)
+									: t('items.source.collaborationTerminal', {
+											label: collaborationLabel,
+										});
+						} else if ('levelup' in from) {
+							const { level, map } = from.levelup;
+							details = (
+								<>
+									<span className="mr-1">
+										{t('items.source.gameLevel')}
+									</span>
+									Lv.{level - 1}
+									<span className="mx-0.5">➞</span>
+									Lv.{level}
+									{map !== null && (
+										<span className="ml-0.5">
+											{t('items.source.andUnlockedMap', {
+												map: getMapLabel(map),
+											})}
+										</span>
+									)}
+								</>
+							);
+						} else if ('taskReward' in from) {
+							details = t('items.source.task', {
+								label: formatSchedulerTaskLabel(
+									formatSchedulerLabels(from.taskReward.task)
+								),
+							});
+						} else {
+							details = [
+								...from.failedCooking.causeLabels.map(
+									(label) => {
+										const key =
+											CATALOG_ITEMS_CAUSE_LABEL_MESSAGE_KEYS[
+												label
+											];
+										return key === undefined
+											? label
+											: t(key);
+									}
+								),
+								...from.failedCooking.punishmentSpellCardSpecialGuests.map(
+									(specialGuest) =>
+										t('items.source.punishmentSpellCard', {
+											name: specialGuestCatalog.getDisplayPropsById(
+												specialGuest,
+												'name'
+											),
+										})
+								),
+							].join(t('items.source.listSeparator'));
+						}
+
+						return (
+							<Fragment key={sourceIndex}>
+								{sourceIndex > 0 &&
+									t('items.source.listSeparator')}
+								{details}
+								{'taskReward' in from && (
+									<TaskMapLinks
+										itemId={id}
+										task={from.taskReward.task}
+									/>
+								)}
+								{'buy' in from && (
+									<MerchantMapLink
+										itemId={id}
+										reference={from.buy.merchant}
+									/>
+								)}
+								{'collaboration' in from &&
+									!('merchants' in from.collaboration) && (
+										<CollaborationMapLink itemId={id} />
+									)}
+							</Fragment>
+						);
+					}
 				)}
 			</p>
 		</Fragment>

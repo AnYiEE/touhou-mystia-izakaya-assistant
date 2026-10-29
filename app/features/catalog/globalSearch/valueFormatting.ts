@@ -8,7 +8,7 @@ import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import { getCookerTypeLabel } from '@/domain/catalog/localizedCategoryLabels';
 import { COOKER_TYPE_LABEL_MAP } from '@/domain/data/cookers/cookerFacts';
-import type { TGeneralItemSource } from '@/domain/data/generalItems/schema';
+import type { IGeneralItem } from '@/domain/data/generalItems/schema';
 import {
 	COLLABORATION_LABEL_MAP,
 	type TCollaborationLabel,
@@ -32,6 +32,7 @@ import {
 	PLACE_LABEL_MAP,
 } from '@/domain/data/places/placeFacts';
 import type { TMapLabel, TPlaceLabel } from '@/domain/data/places/types';
+import { type getSourceEntries } from '@/domain/data/shared/sourceEntries';
 import type { TDlc } from '@/domain/data/shared/types';
 import { GUEST_EVALUATION_MAP } from '@/domain/evaluation/labels';
 import { getEvaluationLabelByKey } from '@/domain/evaluation/localizedLabels';
@@ -768,16 +769,26 @@ function formatSourceRecord(value: Record<string, unknown>) {
 				})
 			: '';
 	}
-	if (
-		'collaborationUnlock' in value &&
-		checkIsRecord(value['collaborationUnlock'])
-	) {
-		const label = value['collaborationUnlock']['collaborationLabel'];
-		return typeof label === 'string' && label in COLLABORATION_LABEL_MAP
-			? tItems('items.source.collaborationTerminal', {
-					label: getCollaborationLabel(label as TCollaborationLabel),
-				})
-			: '';
+	if ('collaboration' in value) {
+		const collaborations = Array.isArray(value['collaboration'])
+			? value['collaboration']
+			: [value['collaboration']];
+		const sourceTexts = collaborations.flatMap((collaboration) => {
+			if (!checkIsRecord(collaboration)) {
+				return [];
+			}
+			const label = collaboration['collaborationLabel'];
+			return typeof label === 'string' && label in COLLABORATION_LABEL_MAP
+				? [
+						tItems('items.source.collaborationTerminal', {
+							label: getCollaborationLabel(
+								label as TCollaborationLabel
+							),
+						}),
+					]
+				: [];
+		});
+		return sourceTexts.join(tItems('items.source.listSeparator'));
 	}
 	if ('taskReward' in value) {
 		const { taskReward } = value;
@@ -931,38 +942,19 @@ function formatSourceValue(value: unknown): string[] {
 	if (!checkIsRecord(value)) {
 		return [];
 	}
-	if (
-		[
-			'bond',
-			'levelup',
-			'areaTask',
-			'collaboration',
-			'failedCooking',
-			'completion',
-			'mapMainTask',
-			'allMapSpecialGuestBondsMaxed',
-			'unlockedMapDialogue',
-			'datedMapTrial',
-			'storyDialogue',
-			'mapSideTask',
-			'mapPrayer',
-			'spellCardReward',
-		].some((key) => key in value)
-	) {
-		return [formatSourceRecord(value)].filter(Boolean);
-	}
-
-	const sourceParts = [
-		'self',
-		'bond',
-		'buy',
-		'collect',
-		'fishing',
-		'fishingAdvanced',
-		'task',
-	]
-		.filter((key) => key in value)
-		.map((key) => formatSourceRecord({ [key]: value[key] }))
+	const sourceParts = Object.entries(value)
+		.filter(
+			([key, sourceValue]) =>
+				sourceValue !== undefined &&
+				(key !== 'task' || !('bond' in value))
+		)
+		.map(([key, sourceValue]) =>
+			formatSourceRecord(
+				key === 'bond' && 'task' in value
+					? { bond: sourceValue, task: value['task'] }
+					: { [key]: sourceValue }
+			)
+		)
 		.filter(Boolean);
 
 	return sourceParts.length > 0
@@ -1174,18 +1166,18 @@ export function extractPlacesFromSource(
 				);
 			}
 		}
-		if (checkIsRecord(source['collaboration'])) {
+		if ('collaboration' in source) {
 			const { collaboration } = source;
-			if (Array.isArray(collaboration['merchants'])) {
+			if (
+				checkIsRecord(collaboration) &&
+				Array.isArray(collaboration['merchants'])
+			) {
 				collaboration['merchants'].forEach((item) => {
 					if (checkIsRecord(item)) {
 						addMerchant(item['merchant']);
 					}
 				});
 			}
-			places.add('联动');
-		}
-		if (checkIsRecord(source['collaborationUnlock'])) {
 			places.add('联动');
 		}
 		for (const key of [
@@ -1254,6 +1246,10 @@ function formatDlcValue(value: unknown): string[] {
 	});
 }
 
+type TGeneralItemSource = ReturnType<
+	typeof getSourceEntries<IGeneralItem['from']>
+>[number];
+
 export function formatGeneralItemSourceText(source: TGeneralItemSource) {
 	if ('areaTask' in source) {
 		return tItems('items.source.areaTask', {
@@ -1261,10 +1257,10 @@ export function formatGeneralItemSourceText(source: TGeneralItemSource) {
 			task: source.areaTask.task,
 		});
 	}
-	if ('collaborationUnlock' in source) {
+	if ('collaboration' in source) {
 		return tItems('items.source.collaborationTerminal', {
 			label: getCollaborationLabel(
-				source.collaborationUnlock.collaborationLabel
+				source.collaboration.collaborationLabel
 			),
 		});
 	}

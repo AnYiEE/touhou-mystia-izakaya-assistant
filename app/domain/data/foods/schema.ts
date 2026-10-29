@@ -10,7 +10,7 @@ import type { TFoodTagId } from '@/domain/data/tags/types';
 
 import type { TFoodId, TRecipeId } from './types';
 
-export interface IRecipeSchema {
+interface IRecipeSchema {
 	baseCookTime: number;
 	cookerType: TCookerTypeId;
 	/** @description If the value is `-1`, it means there is no corresponding recipe. */
@@ -41,34 +41,37 @@ interface IFoodCollaborationSource {
 	};
 }
 
-type TFoodFrom =
-	| { self: true }
-	| TFoodAreaTaskSource
-	| { bond: { level: number; specialGuest: TSpecialGuestId } }
-	| {
-			buy: {
-				merchant: TMerchantReference;
-				price:
-					| { amount: number; currencyItem: TCurrencyItemId }
-					| number
-					| null;
-			};
-	  }
-	| IFoodCollaborationSource
-	| {
-			failedCooking: {
-				causeLabels: ['料理制作失败'];
-				punishmentSpellCardSpecialGuests: [
-					TSpecialGuestId,
-					TSpecialGuestId,
-				];
-			};
-	  }
-	| { levelup: { level: number; map: TMapLabel | null } }
-	| { taskReward: { task: TSchedulerLabel } };
+interface IFoodCollaborationTerminalSource {
+	collaboration: {
+		collaborationLabel: Extract<
+			TCollaborationLabel,
+			'ResourceEx_GiftMailbox'
+		>;
+	};
+}
+
+interface IFoodFrom {
+	areaTask?: TFoodAreaTaskSource['areaTask'];
+	bond?: { level: number; specialGuest: TSpecialGuestId };
+	buy?: {
+		merchant: TMerchantReference;
+		price:
+			{ amount: number; currencyItem: TCurrencyItemId } | number | null;
+	};
+	collaboration?:
+		| IFoodCollaborationSource['collaboration']
+		| IFoodCollaborationTerminalSource['collaboration'];
+	failedCooking?: {
+		causeLabels: ['料理制作失败'];
+		punishmentSpellCardSpecialGuests: [TSpecialGuestId, TSpecialGuestId];
+	};
+	levelup?: { level: number; map: TMapLabel | null };
+	self?: true;
+	taskReward?: { task: TSchedulerLabel };
+}
 
 export interface IFoodSchema extends Omit<IFoodBase, 'from'> {
-	from: TFoodFrom;
+	from: IFoodFrom;
 	negativeTags: TFoodTagId[];
 	positiveTags: TFoodTagId[];
 	recipes: [IRecipeSchema, ...IRecipeSchema[]];

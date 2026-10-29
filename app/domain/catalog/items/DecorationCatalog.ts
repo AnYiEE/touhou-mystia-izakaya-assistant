@@ -1,5 +1,6 @@
 import { RecordCatalog } from '@/domain/catalog/shared/RecordCatalog';
 import { DECORATION_LIST } from '@/domain/data/decorations/records';
+import { getDecorationSources } from '@/domain/data/decorations/sources';
 import type {
 	TDecorationId,
 	TDecorations,
@@ -35,12 +36,17 @@ export class DecorationCatalog extends RecordCatalog<TDecorations> {
 				const bondDecorations: TBondDecorations = [];
 
 				this._data.forEach(({ from, id }) => {
-					if (
-						'bond' in from &&
-						from.bond.specialGuest === specialGuest
-					) {
-						bondDecorations.push({ id, level: from.bond.level });
-					}
+					getDecorationSources(from).forEach((source) => {
+						if (
+							'bond' in source &&
+							source.bond.specialGuest === specialGuest
+						) {
+							bondDecorations.push({
+								id,
+								level: source.bond.level,
+							});
+						}
+					});
 				});
 
 				bondDecorations.sort(({ level: a }, { level: b }) =>

@@ -1,8 +1,9 @@
 import { cn } from '@heroui/theme';
-import { memo, useMemo, useRef } from 'react';
+import { Fragment, memo, useMemo, useRef } from 'react';
 
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import { type DecorationCatalog as DecorationCatalogModel } from '@/domain/catalog/items/DecorationCatalog';
+import { getDecorationSources } from '@/domain/data/decorations/sources';
 import {
 	SCHEDULER_FACTS,
 	formatSchedulerLabels,
@@ -42,11 +43,9 @@ interface IProps {
 
 const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 
-function DecorationSource({
-	from,
-}: {
-	from: TItemData<DecorationCatalogModel>[number]['from'];
-}) {
+type TDecorationSource = ReturnType<typeof getDecorationSources>[number];
+
+function DecorationSource({ from }: { from: TDecorationSource }) {
 	const { t } = useI18n(catalogItemsMessages);
 
 	if ('bond' in from) {
@@ -169,18 +168,28 @@ export default memo<IProps>(function DecorationCatalog({ data }) {
 							<span className="font-semibold">
 								{t('items.source.from')}
 							</span>
-							<DecorationSource from={from} />
-							{'collaboration' in from && (
-								<CollaborationMapLink itemId={id} />
-							)}
-							{'completion' in from && (
-								<DecorationMapLink itemId={id} />
-							)}
-							{'task' in from && (
-								<TaskMapLinks
-									itemId={id}
-									task={from.task.startEventLabel}
-								/>
+							{getDecorationSources(from).map(
+								(source, sourceIndex) => (
+									<Fragment key={sourceIndex}>
+										{sourceIndex > 0 &&
+											t('items.source.listSeparator')}
+										<DecorationSource from={source} />
+										{'collaboration' in source && (
+											<CollaborationMapLink itemId={id} />
+										)}
+										{'completion' in source && (
+											<DecorationMapLink itemId={id} />
+										)}
+										{'task' in source && (
+											<TaskMapLinks
+												itemId={id}
+												task={
+													source.task.startEventLabel
+												}
+											/>
+										)}
+									</Fragment>
+								)
 							)}
 						</p>
 						<p className="text-cjk-flow">

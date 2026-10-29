@@ -1,12 +1,16 @@
 import type { IFood } from '@/domain/data/foods/schema';
 import type { TSpecialGuests } from '@/domain/data/guests/special/types';
+import { DAY_MAP_COLLABORATION_TERMINAL } from '@/domain/data/maps/dayMapFacilityFacts';
 import { ALL_MAP_LABELS } from '@/domain/data/places/placeFacts';
 import type { TMapLabel, TMerchantReference } from '@/domain/data/places/types';
+import { getSourceEntries } from '@/domain/data/shared/sourceEntries';
 
 export interface IFoodSourceMapMetadata {
 	isCollaborationSource: boolean;
 	maps: TMapLabel[];
 }
+
+type TFoodSource = ReturnType<typeof getSourceEntries<IFood['from']>>[number];
 
 function getSpecialGuestMainMap(
 	specialGuestId: TSpecialGuests[number]['id'],
@@ -39,10 +43,10 @@ function createMetadata(
 	return { isCollaborationSource, maps };
 }
 
-export function getFoodSourceMapMetadata(
-	from: IFood['from'],
+function getFoodSourceMapMetadataForSource(
+	from: TFoodSource,
 	specialGuests: ReadonlyArray<TSpecialGuests[number]>
-): IFoodSourceMapMetadata {
+) {
 	if ('self' in from) {
 		return createMetadata([...ALL_MAP_LABELS]);
 	}
@@ -60,16 +64,19 @@ export function getFoodSourceMapMetadata(
 		]);
 	}
 	if ('collaboration' in from) {
-		return createMetadata(
-			[
-				...new Set(
-					from.collaboration.merchants.map(({ merchant }) =>
-						getMerchantMap(merchant, specialGuests)
-					)
-				),
-			],
-			true
-		);
+		if ('merchants' in from.collaboration) {
+			return createMetadata(
+				[
+					...new Set(
+						from.collaboration.merchants.map(({ merchant }) =>
+							getMerchantMap(merchant, specialGuests)
+						)
+					),
+				],
+				true
+			);
+		}
+		return createMetadata([DAY_MAP_COLLABORATION_TERMINAL.map], true);
 	}
 	if ('levelup' in from) {
 		return createMetadata(
@@ -94,5 +101,20 @@ export function getFoodSourceMapMetadata(
 
 	return createMetadata(
 		punishmentSpecialGuests.map(({ maps: [map] }) => map)
+	);
+}
+
+export function getFoodSourceMapMetadata(
+	from: IFood['from'],
+	specialGuests: ReadonlyArray<TSpecialGuests[number]>
+) {
+	const sourceMetadata = getSourceEntries<IFood['from']>(from).map((source) =>
+		getFoodSourceMapMetadataForSource(source, specialGuests)
+	);
+	return createMetadata(
+		[...new Set(sourceMetadata.flatMap(({ maps }) => maps))],
+		sourceMetadata.some(
+			({ isCollaborationSource }) => isCollaborationSource
+		)
 	);
 }

@@ -3,17 +3,23 @@ import isObject from 'lodash/isObject.js';
 import { BADGE_LIST } from '@/domain/data/badges/records';
 import { BEVERAGE_LIST } from '@/domain/data/beverages/records';
 import { CLOTHES_LIST } from '@/domain/data/clothes/records';
+import type { IClothes } from '@/domain/data/clothes/schema';
 import { COOKER_LIST } from '@/domain/data/cookers/records';
+import type { ICooker } from '@/domain/data/cookers/schema';
 import { CURRENCY_ITEM_LIST } from '@/domain/data/currencyItems/records';
+import type { ICurrencyItem } from '@/domain/data/currencyItems/schema';
 import type { TCurrencyItemId } from '@/domain/data/currencyItems/types';
 import { DECORATION_LIST } from '@/domain/data/decorations/records';
+import { getDecorationSources } from '@/domain/data/decorations/sources';
 import { FISHING_COLLECTIBLE_LIST } from '@/domain/data/fishingCollectibles/records';
 import { FOOD_LIST } from '@/domain/data/foods/records';
+import type { IFood } from '@/domain/data/foods/schema';
 import { GENERAL_ITEM_LIST } from '@/domain/data/generalItems/records';
 import { NORMAL_GUEST_LIST } from '@/domain/data/guests/normal/records';
 import { SPECIAL_GUEST_LIST } from '@/domain/data/guests/special/records';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import { INGREDIENT_LIST } from '@/domain/data/ingredients/records';
+import { type TCollaborationLabel } from '@/domain/data/labels/collaborationFacts';
 import { PRAYER_LABEL_MAP } from '@/domain/data/labels/prayerFacts';
 import {
 	SCHEDULER_FACTS,
@@ -28,6 +34,7 @@ import type {
 } from '@/domain/data/places/types';
 import { RECORD_LIST } from '@/domain/data/records/records';
 import type { IFoodBase } from '@/domain/data/shared/foodSchema';
+import { getSourceEntries } from '@/domain/data/shared/sourceEntries';
 import type { TDlc } from '@/domain/data/shared/types';
 import { getCollaborationLabel } from '@/domain/labels/localizedCollaborationLabels';
 import { formatSchedulerTaskLabel } from '@/domain/labels/localizedSchedulerLabels';
@@ -62,6 +69,18 @@ interface IFoodAvailabilityItem {
 	from: IFoodBase['from'] & { self?: true };
 	name: string;
 }
+
+type TCurrencyItemSource = ReturnType<
+	typeof getSourceEntries<ICurrencyItem['from']>
+>[number];
+type TClothesSource = ReturnType<
+	typeof getSourceEntries<IClothes['from']>
+>[number];
+type TCookerSource = ReturnType<
+	typeof getSourceEntries<ICooker['from']>
+>[number];
+type TDecorationSource = ReturnType<typeof getDecorationSources>[number];
+type TFoodSource = ReturnType<typeof getSourceEntries<IFood['from']>>[number];
 
 let currencyItemAvailabilityResultMap:
 	ReadonlyMap<TCurrencyItemId, IAvailabilityResult> | undefined;
@@ -330,6 +349,16 @@ function formatPurchaseSource(merchant: TMerchantReference, price: unknown) {
 		: `购买：${merchantName}（${priceParts.join(' + ')}）`;
 }
 
+function formatCollaborationTerminalSource(label: TCollaborationLabel) {
+	return `通过联动终端【${getCollaborationLabel(label)}】选项领取`;
+}
+
+function hasCollaborationTerminal(
+	source: object
+): source is { collaboration: { collaborationLabel: TCollaborationLabel } } {
+	return 'collaboration' in source;
+}
+
 function combineMerchantAndCurrencyItemPaths(
 	merchant: TMerchantReference,
 	fallbackDlc: TDlc,
@@ -384,9 +413,12 @@ function combineMerchantAndCurrencyItemPaths(
 	return createResult(combinedPaths, diagnostics);
 }
 
-function formatCurrencyItemSource(
-	source: (typeof CURRENCY_ITEM_LIST)[number]['from'][number]
-) {
+function formatCurrencyItemSource(source: TCurrencyItemSource) {
+	if ('collaboration' in source) {
+		return formatCollaborationTerminalSource(
+			source.collaboration.collaborationLabel
+		);
+	}
 	if ('mapPrayer' in source) {
 		return `地区【${getMapLabel(source.mapPrayer.map)}】${PRAYER_LABEL_MAP[source.mapPrayer.label]}处祈愿`;
 	}
@@ -399,9 +431,7 @@ function formatCurrencyItemSource(
 	return formatPurchaseSource(source.buy.merchant, source.buy.price);
 }
 
-function projectCurrencyItemSource(
-	source: (typeof CURRENCY_ITEM_LIST)[number]['from'][number]
-) {
+function projectCurrencyItemSource(source: TCurrencyItemSource) {
 	if ('buy' in source) {
 		return {
 			buy: {
@@ -417,7 +447,7 @@ function projectCurrencyItemSource(
 }
 
 function resolveCurrencyItemNonBuySource(
-	source: (typeof CURRENCY_ITEM_LIST)[number]['from'][number],
+	source: TCurrencyItemSource,
 	contentDlc: TDlc
 ) {
 	if ('buy' in source) {
@@ -451,7 +481,7 @@ function buildCurrencyItemAvailabilityResultMap() {
 		resultMap.set(
 			currencyItem.id,
 			mergeResults(
-				currencyItem.from
+				getSourceEntries<ICurrencyItem['from']>(currencyItem.from)
 					.filter((source) => !('buy' in source))
 					.map((source) =>
 						resolveCurrencyItemNonBuySource(
@@ -473,7 +503,9 @@ function buildCurrencyItemAvailabilityResultMap() {
 				continue;
 			}
 
-			const buyResults = currencyItem.from.flatMap((source) => {
+			const buyResults = getSourceEntries<ICurrencyItem['from']>(
+				currencyItem.from
+			).flatMap((source) => {
 				if (!('buy' in source)) {
 					return [];
 				}
@@ -547,6 +579,12 @@ function projectFoodFrom(from: IFoodAvailabilityItem['from']) {
 			return formatMerchantReference(entry);
 		});
 	}
+	if (from.collaboration !== undefined) {
+		projectedFrom['collaboration'] = from.collaboration.map(
+			({ collaborationLabel }) =>
+				getCollaborationLabel(collaborationLabel)
+		);
+	}
 	if (from.collect !== undefined) {
 		projectedFrom['collect'] = from.collect.map((entry) => {
 			if (Array.isArray(entry)) {
@@ -616,6 +654,15 @@ function resolveFoodAvailabilityResult(item: IFoodAvailabilityItem) {
 				item.dlc,
 				`购买：${formatMerchantReference(merchant)}`,
 				probability
+			)
+		);
+	});
+
+	item.from.collaboration?.forEach(({ collaborationLabel }) => {
+		results.push(
+			createOpaqueSourceResult(
+				formatCollaborationTerminalSource(collaborationLabel),
+				item.dlc
 			)
 		);
 	});
@@ -739,7 +786,7 @@ function resolveBuyAvailabilityResult(
 	);
 }
 
-function formatFoodSource({ from, name }: (typeof FOOD_LIST)[number]) {
+function formatFoodSource(from: TFoodSource) {
 	if ('areaTask' in from) {
 		const specialGuestSuffix =
 			'specialGuest' in from.areaTask
@@ -748,18 +795,21 @@ function formatFoodSource({ from, name }: (typeof FOOD_LIST)[number]) {
 		return `地区【${getMapLabel(from.areaTask.map)}】${from.areaTask.task}${specialGuestSuffix}`;
 	}
 	if ('collaboration' in from) {
-		const collaborationLabel = getCollaborationLabel(
-			from.collaboration.collaborationLabel
-		);
-		return from.collaboration.merchants
-			.map(({ merchant, platformLabel }, index) => {
-				const merchantName =
-					index === 0 && 'map' in merchant
-						? `【${getMapLabel(merchant.map)}“${collaborationLabel}”联动】${formatMerchantReference(merchant).replace(/^【[^】]+】/u, '')}`
-						: formatMerchantReference(merchant);
-				return `${merchantName}（${platformLabel}）`;
-			})
-			.join('、');
+		const { collaboration } = from;
+		const { collaborationLabel: collaborationId } = collaboration;
+		const collaborationLabel = getCollaborationLabel(collaborationId);
+		if ('merchants' in collaboration) {
+			return collaboration.merchants
+				.map(({ merchant, platformLabel }, index) => {
+					const merchantName =
+						index === 0 && 'map' in merchant
+							? `【${getMapLabel(merchant.map)}“${collaborationLabel}”联动】${formatMerchantReference(merchant).replace(/^【[^】]+】/u, '')}`
+							: formatMerchantReference(merchant);
+					return `${merchantName}（${platformLabel}）`;
+				})
+				.join('、');
+		}
+		return formatCollaborationTerminalSource(collaborationId);
 	}
 	if ('failedCooking' in from) {
 		return [
@@ -773,106 +823,122 @@ function formatFoodSource({ from, name }: (typeof FOOD_LIST)[number]) {
 	if ('taskReward' in from) {
 		return `任务${formatSchedulerTaskLabel(formatSchedulerLabels(from.taskReward.task))}`;
 	}
-	throw new Error(`料理“${name}”没有文本来源`);
+	throw new Error('料理来源不是文本来源');
 }
 
 function projectFoodSource(item: (typeof FOOD_LIST)[number]) {
-	if ('self' in item.from) {
-		return { self: true };
-	}
-	if ('bond' in item.from) {
-		return {
-			bond: {
-				level: item.from.bond.level,
-				name: getSpecialGuest(item.from.bond.specialGuest).name,
-			},
-		};
-	}
-	if ('buy' in item.from) {
-		return {
-			buy: {
-				name: formatMerchantReference(item.from.buy.merchant),
-				price: projectPrice(item.from.buy.price),
-			},
-		};
-	}
-	if ('levelup' in item.from) {
-		return {
-			levelup: [
-				item.from.levelup.level,
-				item.from.levelup.map === null
-					? null
-					: getMapLabel(item.from.levelup.map),
-			],
-		};
-	}
-	return formatFoodSource(item);
+	return getSourceEntries<IFood['from']>(item.from).map((source) => {
+		if ('self' in source) {
+			return { self: true };
+		}
+		if ('bond' in source) {
+			return {
+				bond: {
+					level: source.bond.level,
+					name: getSpecialGuest(source.bond.specialGuest).name,
+				},
+			};
+		}
+		if ('buy' in source) {
+			return {
+				buy: {
+					name: formatMerchantReference(source.buy.merchant),
+					price: projectPrice(source.buy.price),
+				},
+			};
+		}
+		if ('levelup' in source) {
+			return {
+				levelup: [
+					source.levelup.level,
+					source.levelup.map === null
+						? null
+						: getMapLabel(source.levelup.map),
+				],
+			};
+		}
+		return formatFoodSource(source);
+	});
 }
 
 function resolveFoodItemAvailabilityResult(item: (typeof FOOD_LIST)[number]) {
-	if ('self' in item.from) {
-		return createResult([
-			createDlcPath(0, '初始食谱', {
-				acquisitionSources: [
+	const results = getSourceEntries<IFood['from']>(item.from).map(
+		(source): IAvailabilityResult => {
+			if ('self' in source) {
+				return createResult([
+					createDlcPath(0, '初始食谱', {
+						acquisitionSources: [
+							{
+								kind: 'self',
+								name: '初始食谱',
+								place: null,
+								probability: null,
+								timeWindow: null,
+							},
+						],
+					}),
+				]);
+			}
+			if ('bond' in source) {
+				const specialGuest = getSpecialGuest(source.bond.specialGuest);
+				return resolveSpecialGuestBondAvailabilityResult(
+					source.bond.specialGuest,
+					`【${specialGuest.name}】羁绊Lv.${source.bond.level - 1}➞Lv.${source.bond.level}`
+				);
+			}
+			if ('buy' in source) {
+				const { merchant, price } = source.buy;
+				return resolveBuyAvailabilityResult(merchant, price, item.dlc);
+			}
+			if ('levelup' in source) {
+				const { level, map } = source.levelup;
+				const acquisitionSources: IAvailabilityAcquisitionSource[] = [
 					{
-						kind: 'self',
-						name: '初始食谱',
-						place: null,
+						kind: 'levelup',
+						name: `Lv.${level}`,
+						place: map,
 						probability: null,
 						timeWindow: null,
 					},
-				],
-			}),
-		]);
-	}
-	if ('bond' in item.from) {
-		const specialGuest = getSpecialGuest(item.from.bond.specialGuest);
-		return resolveSpecialGuestBondAvailabilityResult(
-			item.from.bond.specialGuest,
-			`【${specialGuest.name}】羁绊Lv.${item.from.bond.level - 1}➞Lv.${item.from.bond.level}`
-		);
-	}
-	if ('buy' in item.from) {
-		const { merchant, price } = item.from.buy;
-		return resolveBuyAvailabilityResult(merchant, price, item.dlc);
-	}
-	if ('levelup' in item.from) {
-		const { level, map } = item.from.levelup;
-		const acquisitionSources: IAvailabilityAcquisitionSource[] = [
-			{
-				kind: 'levelup',
-				name: `Lv.${level}`,
-				place: map,
-				probability: null,
-				timeWindow: null,
-			},
-		];
-		return createResult([
-			map === null
-				? createDlcPath(0, `游戏等级Lv.${level - 1}➞Lv.${level}`, {
-						acquisitionSources,
-					})
-				: resolveMapAvailabilityPath(
-						map,
-						`游戏等级Lv.${level - 1}➞Lv.${level}且已解锁地区【${getMapLabel(map)}】`,
-						acquisitionSources
+				];
+				return createResult([
+					map === null
+						? createDlcPath(
+								0,
+								`游戏等级Lv.${level - 1}➞Lv.${level}`,
+								{ acquisitionSources }
+							)
+						: resolveMapAvailabilityPath(
+								map,
+								`游戏等级Lv.${level - 1}➞Lv.${level}且已解锁地区【${getMapLabel(map)}】`,
+								acquisitionSources
+							),
+				]);
+			}
+			if ('taskReward' in source) {
+				return createResult([
+					resolveFoodTaskAvailabilityPath(
+						source.taskReward,
+						`任务${formatSchedulerTaskLabel(formatSchedulerLabels(source.taskReward.task))}`
 					),
-		]);
-	}
-	if ('taskReward' in item.from) {
-		return createResult([
-			resolveFoodTaskAvailabilityPath(
-				item.from.taskReward,
-				`任务${formatSchedulerTaskLabel(formatSchedulerLabels(item.from.taskReward.task))}`
-			),
-		]);
-	}
-	return createOpaqueSourceResult(formatFoodSource(item), item.dlc);
+				]);
+			}
+			return createOpaqueSourceResult(formatFoodSource(source), item.dlc);
+		}
+	);
+	return ensureResultHasPath(
+		mergeResults(results),
+		item.dlc,
+		`料理“${item.name}”`
+	);
 }
 
-function formatCookerSource(
-	source: (typeof COOKER_LIST)[number]['from'][number]
-) {
+function formatCookerSource(source: TCookerSource) {
+	if (hasCollaborationTerminal(source)) {
+		return formatCollaborationTerminalSource(
+			source.collaboration.collaborationLabel
+		);
+	}
 	if ('competitionReward' in source) {
 		return `完成“${formatSchedulerLabels(source.competitionReward.competitionLabel)}”后自动获得`;
 	}
@@ -882,9 +948,7 @@ function formatCookerSource(
 	throw new Error('厨具来源不是文本来源');
 }
 
-function projectCookerSource(
-	source: (typeof COOKER_LIST)[number]['from'][number]
-) {
+function projectCookerSource(source: TCookerSource) {
 	if ('self' in source) {
 		return { self: true };
 	}
@@ -903,38 +967,43 @@ function projectCookerSource(
 }
 
 function resolveCookerAvailabilityResult(item: (typeof COOKER_LIST)[number]) {
-	const results = item.from.map((source): IAvailabilityResult => {
-		if ('self' in source) {
-			return createResult([
-				createDlcPath(0, '初始获得', {
-					acquisitionSources: [
-						{
-							kind: 'self',
-							name: '初始获得',
-							place: null,
-							probability: null,
-							timeWindow: null,
-						},
-					],
-				}),
-			]);
-		}
-		if ('bond' in source) {
-			const specialGuest = getSpecialGuest(source.bond.specialGuest);
-			return resolveSpecialGuestBondAvailabilityResult(
-				source.bond.specialGuest,
-				`羁绊：${specialGuest.name}`
-			);
-		}
-		if ('buy' in source) {
-			return resolveBuyAvailabilityResult(
-				source.buy.merchant,
-				source.buy.price,
+	const results = getSourceEntries<ICooker['from']>(item.from).map(
+		(source): IAvailabilityResult => {
+			if ('self' in source) {
+				return createResult([
+					createDlcPath(0, '初始获得', {
+						acquisitionSources: [
+							{
+								kind: 'self',
+								name: '初始获得',
+								place: null,
+								probability: null,
+								timeWindow: null,
+							},
+						],
+					}),
+				]);
+			}
+			if ('bond' in source) {
+				const specialGuest = getSpecialGuest(source.bond.specialGuest);
+				return resolveSpecialGuestBondAvailabilityResult(
+					source.bond.specialGuest,
+					`羁绊：${specialGuest.name}`
+				);
+			}
+			if ('buy' in source) {
+				return resolveBuyAvailabilityResult(
+					source.buy.merchant,
+					source.buy.price,
+					item.dlc
+				);
+			}
+			return createOpaqueSourceResult(
+				formatCookerSource(source),
 				item.dlc
 			);
 		}
-		return createOpaqueSourceResult(formatCookerSource(source), item.dlc);
-	});
+	);
 
 	return ensureResultHasPath(
 		mergeResults(results),
@@ -943,11 +1012,11 @@ function resolveCookerAvailabilityResult(item: (typeof COOKER_LIST)[number]) {
 	);
 }
 
-function formatClothesSource(
-	source: (typeof CLOTHES_LIST)[number]['from'][number]
-) {
-	if ('collaborationUnlock' in source) {
-		return `通过联动终端【${getCollaborationLabel(source.collaborationUnlock.collaborationLabel)}】选项领取`;
+function formatClothesSource(source: TClothesSource) {
+	if ('collaboration' in source) {
+		return formatCollaborationTerminalSource(
+			source.collaboration.collaborationLabel
+		);
 	}
 	if ('eventReward' in source) {
 		return `${formatSchedulerLabels(source.eventReward.eventLabel)}时自动获得`;
@@ -961,9 +1030,7 @@ function formatClothesSource(
 	throw new Error('服装来源不是文本来源');
 }
 
-function projectClothesSource(
-	source: (typeof CLOTHES_LIST)[number]['from'][number]
-) {
+function projectClothesSource(source: TClothesSource) {
 	if ('self' in source) {
 		return { self: true };
 	}
@@ -982,38 +1049,43 @@ function projectClothesSource(
 }
 
 function resolveClothesAvailabilityResult(item: (typeof CLOTHES_LIST)[number]) {
-	const results = item.from.map((source): IAvailabilityResult => {
-		if ('self' in source) {
-			return createResult([
-				createDlcPath(0, '初始获得', {
-					acquisitionSources: [
-						{
-							kind: 'self',
-							name: '初始获得',
-							place: null,
-							probability: null,
-							timeWindow: null,
-						},
-					],
-				}),
-			]);
-		}
-		if ('bond' in source) {
-			const specialGuest = getSpecialGuest(source.bond.specialGuest);
-			return resolveSpecialGuestBondAvailabilityResult(
-				source.bond.specialGuest,
-				`羁绊：${specialGuest.name}`
-			);
-		}
-		if ('buy' in source) {
-			return resolveBuyAvailabilityResult(
-				source.buy.merchant,
-				source.buy.price,
+	const results = getSourceEntries<IClothes['from']>(item.from).map(
+		(source): IAvailabilityResult => {
+			if ('self' in source) {
+				return createResult([
+					createDlcPath(0, '初始获得', {
+						acquisitionSources: [
+							{
+								kind: 'self',
+								name: '初始获得',
+								place: null,
+								probability: null,
+								timeWindow: null,
+							},
+						],
+					}),
+				]);
+			}
+			if ('bond' in source) {
+				const specialGuest = getSpecialGuest(source.bond.specialGuest);
+				return resolveSpecialGuestBondAvailabilityResult(
+					source.bond.specialGuest,
+					`羁绊：${specialGuest.name}`
+				);
+			}
+			if ('buy' in source) {
+				return resolveBuyAvailabilityResult(
+					source.buy.merchant,
+					source.buy.price,
+					item.dlc
+				);
+			}
+			return createOpaqueSourceResult(
+				formatClothesSource(source),
 				item.dlc
 			);
 		}
-		return createOpaqueSourceResult(formatClothesSource(source), item.dlc);
-	});
+	);
 
 	return ensureResultHasPath(
 		mergeResults(results),
@@ -1022,47 +1094,62 @@ function resolveClothesAvailabilityResult(item: (typeof CLOTHES_LIST)[number]) {
 	);
 }
 
-function formatDecorationSource(item: (typeof DECORATION_LIST)[number]) {
-	const { from, name } = item;
-	if ('collaboration' in from) {
-		return `通过联动终端【${getCollaborationLabel(from.collaboration.collaborationLabel)}】选项领取`;
+function formatDecorationSource(source: TDecorationSource) {
+	if ('collaboration' in source) {
+		return formatCollaborationTerminalSource(
+			source.collaboration.collaborationLabel
+		);
 	}
-	if ('completion' in from) {
-		const [firstMap, secondMap] = from.completion.maps;
-		return `地区【${getMapLabel(firstMap)}】和【${getMapLabel(secondMap)}】全部稀客羁绊满级，并完成【DLC${from.completion.story.dlc}】${from.completion.story.conditionLabel}后，和【${getSpecialGuest(from.completion.specialGuest).name}】对话领取。`;
+	if ('completion' in source) {
+		const [firstMap, secondMap] = source.completion.maps;
+		return `地区【${getMapLabel(firstMap)}】和【${getMapLabel(secondMap)}】全部稀客羁绊满级，并完成【DLC${source.completion.story.dlc}】${source.completion.story.conditionLabel}后，和【${getSpecialGuest(source.completion.specialGuest).name}】对话领取。`;
 	}
-	throw new Error(`摆件“${name}”没有文本来源`);
+	throw new Error('摆件来源不是文本来源');
 }
 
 function projectDecorationSource(item: (typeof DECORATION_LIST)[number]) {
-	if ('bond' in item.from) {
-		const taskFact =
-			'task' in item.from
-				? SCHEDULER_FACTS[item.from.task.startEventLabel]
-				: undefined;
-		return {
-			bond: getSpecialGuest(item.from.bond.specialGuest).name,
-			description:
-				'task' in item.from
-					? `并完成任务【${formatSchedulerLabels(item.from.task.missionLabel)}】（前往${getMapLabel(item.from.task.map)}的${taskFact?.locationLabel}与${taskFact?.dialogueGuestLabel}交谈）。`
-					: null,
-			level: item.from.bond.level,
-		};
-	}
-	return formatDecorationSource(item);
+	return getDecorationSources(item.from).map((source) => {
+		if ('bond' in source) {
+			const taskFact =
+				'task' in source
+					? SCHEDULER_FACTS[source.task.startEventLabel]
+					: undefined;
+			return {
+				bond: getSpecialGuest(source.bond.specialGuest).name,
+				description:
+					'task' in source
+						? `并完成任务【${formatSchedulerLabels(source.task.missionLabel)}】（前往${getMapLabel(source.task.map)}的${taskFact?.locationLabel}与${taskFact?.dialogueGuestLabel}交谈）。`
+						: null,
+				level: source.bond.level,
+			};
+		}
+		return formatDecorationSource(source);
+	});
 }
 
 function resolveDecorationAvailabilityResult(
 	item: (typeof DECORATION_LIST)[number]
 ) {
-	if ('bond' in item.from) {
-		const specialGuest = getSpecialGuest(item.from.bond.specialGuest);
-		return resolveSpecialGuestBondAvailabilityResult(
-			item.from.bond.specialGuest,
-			`【${specialGuest.name}】羁绊Lv.${item.from.bond.level - 1}➞Lv.${item.from.bond.level}`
-		);
-	}
-	return createOpaqueSourceResult(formatDecorationSource(item), item.dlc);
+	const results = getDecorationSources(item.from).map(
+		(source): IAvailabilityResult => {
+			if ('bond' in source) {
+				const specialGuest = getSpecialGuest(source.bond.specialGuest);
+				return resolveSpecialGuestBondAvailabilityResult(
+					source.bond.specialGuest,
+					`【${specialGuest.name}】羁绊Lv.${source.bond.level - 1}➞Lv.${source.bond.level}`
+				);
+			}
+			return createOpaqueSourceResult(
+				formatDecorationSource(source),
+				item.dlc
+			);
+		}
+	);
+	return ensureResultHasPath(
+		mergeResults(results),
+		item.dlc,
+		`摆件“${item.name}”`
+	);
 }
 
 function formatPartnerSource(item: (typeof PARTNER_LIST)[number]) {
@@ -1262,7 +1349,9 @@ export function deriveAllAvailabilityEntries() {
 			createAuditEntry(
 				'clothes',
 				item,
-				item.from.map(projectClothesSource),
+				getSourceEntries<IClothes['from']>(item.from).map(
+					projectClothesSource
+				),
 				resolveClothesAvailabilityResult(item)
 			)
 		);
@@ -1272,7 +1361,9 @@ export function deriveAllAvailabilityEntries() {
 			createAuditEntry(
 				'cooker',
 				item,
-				item.from.map(projectCookerSource),
+				getSourceEntries<ICooker['from']>(item.from).map(
+					projectCookerSource
+				),
 				resolveCookerAvailabilityResult(item)
 			)
 		);
@@ -1282,7 +1373,9 @@ export function deriveAllAvailabilityEntries() {
 			createAuditEntry(
 				'currencyItem',
 				item,
-				item.from.map(projectCurrencyItemSource),
+				getSourceEntries<ICurrencyItem['from']>(item.from).map(
+					projectCurrencyItemSource
+				),
 				deriveCurrencyItemAvailabilityResult(item.id)
 			)
 		);

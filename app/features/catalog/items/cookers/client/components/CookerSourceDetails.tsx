@@ -4,9 +4,11 @@ import Tooltip from '@/design/ui/components/tooltip';
 
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
-import type { ICooker, TCookerSource } from '@/domain/data/cookers/schema';
+import type { ICooker } from '@/domain/data/cookers/schema';
 import type { TCookerId } from '@/domain/data/cookers/types';
 import { formatSchedulerLabels } from '@/domain/data/labels/schedulerFacts';
+import { getSourceEntries } from '@/domain/data/shared/sourceEntries';
+import { getCollaborationLabel } from '@/domain/labels/localizedCollaborationLabels';
 
 import {
 	type TCatalogItemsTranslate,
@@ -21,7 +23,10 @@ import {
 	type TShareableItemId,
 	type TShareableItemName,
 } from '@/features/itemSharing/contracts';
-import { MerchantMapLink } from '@/features/maps/client/components/MapLinks';
+import {
+	CollaborationMapLink,
+	MerchantMapLink,
+} from '@/features/maps/client/components/MapLinks';
 
 import { type TLocale } from '@/shared/i18n/locale';
 import { useI18n } from '@/shared/i18n/useI18n';
@@ -36,6 +41,10 @@ interface IProps {
 		name: TShareableItemName
 	) => void;
 }
+
+type TCookerSource = ReturnType<
+	typeof getSourceEntries<ICooker['from']>
+>[number];
 
 type TCookerPricePart = Extract<
 	TCookerSource,
@@ -182,6 +191,12 @@ function renderCookerSource(
 		);
 	}
 
+	if ('collaboration' in item) {
+		return t('items.source.collaborationTerminal', {
+			label: getCollaborationLabel(item.collaboration.collaborationLabel),
+		});
+	}
+
 	if ('dlcSideTask' in item) {
 		return t('items.source.dlcSideTask', {
 			dlc: item.dlcSideTask.dlc,
@@ -204,7 +219,7 @@ export default function CookerSourceDetails({ from, id, openWindow }: IProps) {
 	return (
 		<p className="text-cjk-flow">
 			<span className="font-semibold">{t('items.source.from')}</span>
-			{from.map((item, fromIndex) => (
+			{getSourceEntries<ICooker['from']>(from).map((item, fromIndex) => (
 				<Fragment key={fromIndex}>
 					{fromIndex > 0 && t('items.source.listSeparator')}
 					{renderCookerSource(item, fromIndex, openWindow, locale, t)}
@@ -213,6 +228,9 @@ export default function CookerSourceDetails({ from, id, openWindow }: IProps) {
 							itemId={id}
 							reference={item.buy.merchant}
 						/>
+					)}
+					{'collaboration' in item && (
+						<CollaborationMapLink itemId={id} />
 					)}
 				</Fragment>
 			))}

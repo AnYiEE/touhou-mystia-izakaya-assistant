@@ -9,6 +9,7 @@ import {
 	SCHEDULER_FACTS,
 	formatSchedulerLabels,
 } from '@/domain/data/labels/schedulerFacts';
+import { getSourceEntries } from '@/domain/data/shared/sourceEntries';
 import { getCollaborationLabel } from '@/domain/labels/localizedCollaborationLabels';
 import { formatSchedulerTaskLabel } from '@/domain/labels/localizedSchedulerLabels';
 import { getMapLabel } from '@/domain/places/localizedLabels';
@@ -40,6 +41,10 @@ interface IProps {
 	) => void;
 }
 
+type TGeneralItemSource = ReturnType<
+	typeof getSourceEntries<IGeneralItem['from']>
+>[number];
+
 const currencyItemCatalog = CurrencyItemCatalog.getInstance();
 const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 
@@ -68,7 +73,7 @@ function renderSpecialGuest(
 
 const GeneralItemSource = memo<{
 	openWindow: IProps['openWindow'];
-	source: IGeneralItem['from'][number];
+	source: TGeneralItemSource;
 	tag: { close: string; open: string };
 }>(function GeneralItemSource({ openWindow, source, tag }) {
 	const { t } = useI18n(catalogItemsMessages);
@@ -80,10 +85,10 @@ const GeneralItemSource = memo<{
 		});
 	}
 
-	if ('collaborationUnlock' in source) {
+	if ('collaboration' in source) {
 		return t('items.source.collaborationTerminal', {
 			label: getCollaborationLabel(
-				source.collaborationUnlock.collaborationLabel
+				source.collaboration.collaborationLabel
 			),
 		});
 	}
@@ -178,28 +183,33 @@ export default function GeneralItemSourceDetails({
 	return (
 		<p>
 			<span className="font-semibold">{t('items.source.from')}</span>
-			{from.map((source, index) => (
-				<Fragment key={index}>
-					{index > 0 && t('items.source.listSeparator')}
-					<GeneralItemSource
-						source={source}
-						openWindow={openWindow}
-						tag={sourceTag}
-					/>
-					{'collaborationUnlock' in source && (
-						<CollaborationMapLink itemId={id} />
-					)}
-					{'schedulerLabel' in source && (
-						<TaskMapLinks
-							itemId={id}
-							task={source.schedulerLabel}
+			{getSourceEntries<IGeneralItem['from']>(from).map(
+				(source, index) => (
+					<Fragment key={index}>
+						{index > 0 && t('items.source.listSeparator')}
+						<GeneralItemSource
+							source={source}
+							openWindow={openWindow}
+							tag={sourceTag}
 						/>
-					)}
-					{'taskReward' in source && (
-						<TaskMapLinks itemId={id} task={source.taskReward} />
-					)}
-				</Fragment>
-			))}
+						{'collaboration' in source && (
+							<CollaborationMapLink itemId={id} />
+						)}
+						{'schedulerLabel' in source && (
+							<TaskMapLinks
+								itemId={id}
+								task={source.schedulerLabel}
+							/>
+						)}
+						{'taskReward' in source && (
+							<TaskMapLinks
+								itemId={id}
+								task={source.taskReward}
+							/>
+						)}
+					</Fragment>
+				)
+			)}
 		</p>
 	);
 }

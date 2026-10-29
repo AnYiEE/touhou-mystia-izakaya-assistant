@@ -7,25 +7,24 @@ import type { IItemBase } from '@/domain/data/shared/itemSchema';
 
 import type { TGeneralItemId } from './types';
 
-export type TGeneralItemSource =
-	| { areaTask: { map: TMapLabel; task: '主线任务' | '支线任务' } }
-	| {
-			collaborationUnlock: {
-				collaborationLabel: Extract<
-					TCollaborationLabel,
-					'ResourceEx_GiftMailbox'
-				>;
-			};
-	  }
-	| { holdingCurrencyItem: { amount: number; currencyItem: TCurrencyItemId } }
-	| { positiveSpellCard: TSpecialGuestId }
-	| { schedulerLabel: TSchedulerLabel }
-	| { taskReward: TSchedulerLabel };
+interface IGeneralItemFrom {
+	areaTask?: { map: TMapLabel; task: '主线任务' | '支线任务' };
+	collaboration?: {
+		collaborationLabel: Extract<
+			TCollaborationLabel,
+			'ResourceEx_GiftMailbox'
+		>;
+	};
+	holdingCurrencyItem?: { amount: number; currencyItem: TCurrencyItemId };
+	positiveSpellCard?: TSpecialGuestId;
+	schedulerLabel?: TSchedulerLabel;
+	taskReward?: TSchedulerLabel;
+}
 
 export interface IGeneralItem<
 	TId extends number = TGeneralItemId,
 > extends IItemBase {
 	effects: string[];
-	from: TGeneralItemSource[];
+	from: IGeneralItemFrom;
 	id: TId;
 }

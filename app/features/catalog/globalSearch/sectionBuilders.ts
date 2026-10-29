@@ -18,6 +18,8 @@ import {
 	getIngredientTypeLabel,
 } from '@/domain/catalog/localizedCategoryLabels';
 import { getBondFoods } from '@/domain/catalog/queries/getBondFoods';
+import type { IGeneralItem } from '@/domain/data/generalItems/schema';
+import { getSourceEntries } from '@/domain/data/shared/sourceEntries';
 import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
 import { getMapLabel, getMerchantLabel } from '@/domain/places/localizedLabels';
 
@@ -527,7 +529,7 @@ export function buildGeneralItemItems(
 				...createField(
 					'from',
 					'来源',
-					item.from
+					getSourceEntries<IGeneralItem['from']>(item.from)
 						.map(formatGeneralItemSourceText)
 						.join(tItems('items.source.listSeparator')),
 					CATALOG_SEARCH_FIELD_WEIGHT.context

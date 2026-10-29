@@ -8,7 +8,7 @@ export const CURRENCY_ITEM_RECORDS = [
 		description:
 			'兽道散落的奇形怪状的石头，还有点重。香霖堂的主人似乎对其很有兴趣。',
 		dlc: 0,
-		from: [{ mapSideTask: { map: 'BeastForest' } }],
+		from: { mapSideTask: { map: 'BeastForest' } },
 	},
 	{
 		id: 4,
@@ -16,7 +16,7 @@ export const CURRENCY_ITEM_RECORDS = [
 		description:
 			'人间之里散落的有些年代感的铜钱，似乎已经不再流通。香霖堂的主人似乎对其很有兴趣。',
 		dlc: 0,
-		from: [{ mapSideTask: { map: 'HumanVillage' } }],
+		from: { mapSideTask: { map: 'HumanVillage' } },
 	},
 	{
 		id: 5,
@@ -24,7 +24,7 @@ export const CURRENCY_ITEM_RECORDS = [
 		description:
 			'博丽神社散落的破损的符咒，拼拼凑凑似乎也能得到点信息。香霖堂的主人似乎对其很有兴趣。',
 		dlc: 0,
-		from: [{ mapSideTask: { map: 'HakureiShrine' } }],
+		from: { mapSideTask: { map: 'HakureiShrine' } },
 	},
 	{
 		id: 6,
@@ -32,7 +32,7 @@ export const CURRENCY_ITEM_RECORDS = [
 		description:
 			'红魔馆散落的红色的宝石，在幻想乡宝石和石头也没什么区别。香霖堂的主人似乎对其很有兴趣。',
 		dlc: 0,
-		from: [{ mapSideTask: { map: 'ScarletMansion' } }],
+		from: { mapSideTask: { map: 'ScarletMansion' } },
 	},
 	{
 		id: 7,
@@ -40,7 +40,7 @@ export const CURRENCY_ITEM_RECORDS = [
 		description:
 			'迷途竹林偶尔看到的发光的竹子，不知道里面有什么呢。香霖堂的主人似乎对其很有兴趣。',
 		dlc: 0,
-		from: [{ mapSideTask: { map: 'BambooForest' } }],
+		from: { mapSideTask: { map: 'BambooForest' } },
 	},
 	{
 		id: 29,
@@ -48,18 +48,16 @@ export const CURRENCY_ITEM_RECORDS = [
 		description:
 			'从守矢小神社中摇出的银色青蛙硬币。也许集齐一定数量会有什么好事发生？（持有一百枚时将自动获得衣服【水手服】和物品【金色的青蛙硬币】）',
 		dlc: 0,
-		from: [
-			{ mapPrayer: { label: 'MoriyaShrine', map: 'HakureiShrine' } },
-			{
-				buy: {
-					merchant: {
-						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
-						map: 'DLC5_Makai',
-					},
-					price: { amount: 4, currencyItem: 5011 },
+		from: {
+			mapPrayer: { label: 'MoriyaShrine', map: 'HakureiShrine' },
+			buy: {
+				merchant: {
+					label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+					map: 'DLC5_Makai',
 				},
+				price: { amount: 4, currencyItem: 5011 },
 			},
-		],
+		},
 	},
 	{
 		id: 5011,
@@ -67,18 +65,16 @@ export const CURRENCY_ITEM_RECORDS = [
 		description:
 			'蓬松松爱莲魔法店发行的糖果形货币，是爱莲分享给大家的甜蜜。可以在蓬松松爱莲魔法店里换购商品。',
 		dlc: 5,
-		from: [
-			{ spellCardReward: { specialGuest: 5003 } },
-			{
-				buy: {
-					merchant: {
-						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
-						map: 'DLC5_Makai',
-					},
-					price: { amount: 4, currencyItem: 29 },
+		from: {
+			spellCardReward: { specialGuest: 5003 },
+			buy: {
+				merchant: {
+					label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+					map: 'DLC5_Makai',
 				},
+				price: { amount: 4, currencyItem: 29 },
 			},
-		],
+		},
 	},
 ] as const satisfies Array<ICurrencyItem<number>>;
 /* eslint-enable sort-keys */

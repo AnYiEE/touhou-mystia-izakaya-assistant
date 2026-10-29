@@ -1,3 +1,4 @@
+import { type TCollaborationLabel } from '@/domain/data/labels/collaborationFacts';
 import type {
 	IPrayerReference,
 	ITaskReference,
@@ -12,6 +13,12 @@ import type { TLevel } from './types';
 export interface IFoodFrom {
 	/** @description If it is an array, the first element represents the merchant selling the item, and the second element represents the probability of sale. */
 	buy: Array<TMerchantReference | [TMerchantReference, boolean | number]>;
+	collaboration: Array<{
+		collaborationLabel: Extract<
+			TCollaborationLabel,
+			'ResourceEx_GiftMailbox'
+		>;
+	}>;
 	/** @description If it is an array, the first element represents the collection location, and the second element represents the probability of acquisition. If there are two additional elements, they represent the time points for the appearance and disappearance of the collection location. */
 	collect: Array<
 		| TCollectionPointReference

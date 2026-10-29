@@ -4,6 +4,7 @@ import {
 	COOKER_TYPE_LABEL_MAP,
 } from '@/domain/data/cookers/cookerFacts';
 import { COOKER_LIST } from '@/domain/data/cookers/records';
+import type { ICooker } from '@/domain/data/cookers/schema';
 import type {
 	TCookerId,
 	TCookerSeriesId,
@@ -11,6 +12,7 @@ import type {
 	TCookers,
 } from '@/domain/data/cookers/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import { getSourceEntries } from '@/domain/data/shared/sourceEntries';
 
 type TCookerSeriesLabel = (typeof COOKER_SERIES_LABEL_MAP)[TCookerSeriesId];
 
@@ -104,10 +106,10 @@ export class CookerCatalog extends RecordCatalog<TCookers> {
 				let bondCooker: TCookerId | null = null;
 
 				this._data.some(({ from, id }) =>
-					from.some((item) => {
+					getSourceEntries<ICooker['from']>(from).some((source) => {
 						if (
-							'bond' in item &&
-							item.bond.specialGuest === specialGuest
+							'bond' in source &&
+							source.bond.specialGuest === specialGuest
 						) {
 							bondCooker = id;
 							return true;

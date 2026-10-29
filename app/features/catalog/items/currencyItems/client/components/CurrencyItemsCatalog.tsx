@@ -1,19 +1,9 @@
 import { cn } from '@heroui/theme';
-import { Fragment, memo, useMemo, useRef } from 'react';
+import { memo, useMemo, useRef } from 'react';
 
-import Tooltip from '@/design/ui/components/tooltip';
-
-import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
-import {
-	CurrencyItemCatalog,
-	type CurrencyItemCatalog as CurrencyItemCatalogModel,
-} from '@/domain/catalog/items/CurrencyItemCatalog';
-import { PRAYER_LABEL_MAP } from '@/domain/data/labels/prayerFacts';
-import { getMapLabel } from '@/domain/places/localizedLabels';
+import { type CurrencyItemCatalog as CurrencyItemCatalogModel } from '@/domain/catalog/items/CurrencyItemCatalog';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
-import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
-import { formatSourceReference } from '@/features/catalog/items/shared/sourceReferenceFormatting';
 import ItemCard from '@/features/catalog/shared/client/components/ItemCard';
 import {
 	ItemPopover,
@@ -21,7 +11,6 @@ import {
 	ItemPopoverTrigger,
 } from '@/features/catalog/shared/client/components/ItemPopover';
 import ItemPopoverCard from '@/features/catalog/shared/client/components/ItemPopoverCard';
-import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import { useItemPopoverState } from '@/features/catalog/shared/client/hooks/useItemPopoverState';
 import { useOpenedItemPopover } from '@/features/catalog/shared/client/hooks/useOpenedItemPopover';
@@ -30,19 +19,12 @@ import type { TItemData } from '@/features/catalog/shared/contracts';
 import { ItemPopoverCloseButton } from '@/features/itemSharing/client/components/ItemPopoverCloseButton';
 import { ItemShareButton } from '@/features/itemSharing/client/components/ItemShareButton';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
-import {
-	MerchantMapLink,
-	PrayerMapLink,
-} from '@/features/maps/client/components/MapLinks';
 
-import { useI18n } from '@/shared/i18n/useI18n';
+import CurrencyItemSourceDetails from './CurrencyItemSourceDetails';
 
 interface IProps {
 	data: TItemData<CurrencyItemCatalogModel>;
 }
-
-const currencyItemCatalog = CurrencyItemCatalog.getInstance();
-const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 
 export default memo<IProps>(function CurrencyItemsCatalog({ data }) {
 	const popoverCardRef = useRef<HTMLDivElement | null>(null);
@@ -50,7 +32,6 @@ export default memo<IProps>(function CurrencyItemsCatalog({ data }) {
 		useOpenedItemPopover(popoverCardRef, data);
 	const { checkDefaultOpen, checkShouldEffect, getPopoverKey } =
 		useItemPopoverState(defaultOpenedPopover);
-	const { locale, t } = useI18n(catalogItemsMessages);
 	const openWindow = useViewInNewWindow();
 	const presentationData = useMemo(
 		() =>
@@ -109,119 +90,11 @@ export default memo<IProps>(function CurrencyItemsCatalog({ data }) {
 						dlc={dlc}
 						ref={popoverCardRef}
 					>
-						<p>
-							<span className="font-semibold">
-								{t('items.source.from')}
-							</span>
-							{from.map((source, fromIndex) => {
-								if ('mapSideTask' in source) {
-									return (
-										<Fragment key={fromIndex}>
-											{fromIndex > 0 &&
-												t('items.source.listSeparator')}
-											{t('items.source.mapSideTask', {
-												map: getMapLabel(
-													source.mapSideTask.map
-												),
-											})}
-										</Fragment>
-									);
-								}
-								if ('mapPrayer' in source) {
-									return (
-										<Fragment key={fromIndex}>
-											{fromIndex > 0 &&
-												t('items.source.listSeparator')}
-											{t('items.source.mapPrayer', {
-												map: getMapLabel(
-													source.mapPrayer.map
-												),
-												prayer: PRAYER_LABEL_MAP[
-													source.mapPrayer.label
-												],
-											})}
-											<PrayerMapLink
-												itemId={id}
-												reference={source.mapPrayer}
-											/>
-										</Fragment>
-									);
-								}
-								if ('spellCardReward' in source) {
-									return (
-										<Fragment key={fromIndex}>
-											{fromIndex > 0 &&
-												t('items.source.listSeparator')}
-											{t('items.source.rewardSpellCard', {
-												name: specialGuestCatalog.getDisplayPropsById(
-													source.spellCardReward
-														.specialGuest,
-													'name'
-												),
-											})}
-										</Fragment>
-									);
-								}
-
-								const { amount, currencyItem } =
-									source.buy.price;
-								const currencyItemName =
-									currencyItemCatalog.getDisplayPropsById(
-										currencyItem,
-										'name'
-									);
-								return (
-									<Fragment key={fromIndex}>
-										{fromIndex > 0 &&
-											t('items.source.listSeparator')}
-										{formatSourceReference(
-											source.buy.merchant,
-											locale
-										)}
-										<MerchantMapLink
-											itemId={id}
-											reference={source.buy.merchant}
-										/>
-										{t('items.source.parenthesisOpen')}
-										<span className="inline-flex items-center">
-											<Price showSymbol={false}>
-												{amount}×
-											</Price>
-											<Tooltip
-												showArrow
-												content={t(
-													'items.source.actionCurrency',
-													{ label: currencyItemName }
-												)}
-												offset={1}
-												size="sm"
-											>
-												<Sprite
-													target="currency_item"
-													recordId={currencyItem}
-													size={1.25}
-													onPress={() => {
-														openWindow(
-															'currencies',
-															currencyItem,
-															currencyItemName
-														);
-													}}
-													aria-label={t(
-														'items.source.actionCurrency',
-														{
-															label: currencyItemName,
-														}
-													)}
-													role="button"
-												/>
-											</Tooltip>
-										</span>
-										{t('items.source.parenthesisClose')}
-									</Fragment>
-								);
-							})}
-						</p>
+						<CurrencyItemSourceDetails
+							from={from}
+							id={id}
+							openWindow={openWindow}
+						/>
 					</ItemPopoverCard>
 				</ItemPopoverContent>
 			</ItemPopover>

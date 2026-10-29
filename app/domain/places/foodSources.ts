@@ -1,3 +1,4 @@
+import { DAY_MAP_COLLABORATION_TERMINAL } from '@/domain/data/maps/dayMapFacilityFacts';
 import { ALL_MAP_LABELS } from '@/domain/data/places/placeFacts';
 import type { TMapLabel } from '@/domain/data/places/types';
 import type { IFoodBase } from '@/domain/data/shared/foodSchema';
@@ -29,6 +30,10 @@ export function extractMapsFromFoodFrom(from: TFoodFrom) {
 			maps.add(map);
 		});
 	});
+
+	if (from.collaboration !== undefined) {
+		maps.add(DAY_MAP_COLLABORATION_TERMINAL.map);
+	}
 
 	from.fishing?.forEach((map) => maps.add(map));
 	from.fishingAdvanced?.forEach((map) => maps.add(map));

@@ -4,13 +4,13 @@ import {
 	DYNAMIC_TAG_MAP,
 } from '@/domain/data/tags/tagFacts';
 
-import type { ICooker, TCookerSource } from './schema';
+import type { ICooker } from './schema';
 
-type TCookerBuySource = Extract<TCookerSource, { buy: unknown }>;
+type TCookerBuySource = NonNullable<ICooker['from']['buy']>;
 
-function createKourindouPurchase(
-	price: TCookerBuySource['buy']['price']
-): TCookerBuySource {
+function createKourindouPurchase(price: TCookerBuySource['price']): {
+	buy: TCookerBuySource;
+} {
 	return {
 		buy: { merchant: { label: 'Rinnosuke', map: 'HumanVillage' }, price },
 	};
@@ -26,10 +26,10 @@ export const COOKER_LIST = [
 		series: 0,
 		dlc: 0,
 		effect: null,
-		from: [
-			{ self: true },
-			createKourindouPurchase([{ money: { amount: 500 } }]),
-		],
+		from: {
+			self: true,
+			...createKourindouPurchase([{ money: { amount: 500 } }]),
+		},
 	},
 	{
 		id: 1,
@@ -40,10 +40,10 @@ export const COOKER_LIST = [
 		series: 0,
 		dlc: 0,
 		effect: null,
-		from: [
-			{ self: true },
-			createKourindouPurchase([{ money: { amount: 500 } }]),
-		],
+		from: {
+			self: true,
+			...createKourindouPurchase([{ money: { amount: 500 } }]),
+		},
 	},
 	{
 		id: 2,
@@ -54,10 +54,10 @@ export const COOKER_LIST = [
 		series: 0,
 		dlc: 0,
 		effect: null,
-		from: [
-			{ self: true },
-			createKourindouPurchase([{ money: { amount: 500 } }]),
-		],
+		from: {
+			self: true,
+			...createKourindouPurchase([{ money: { amount: 500 } }]),
+		},
 	},
 	{
 		id: 3,
@@ -68,10 +68,10 @@ export const COOKER_LIST = [
 		series: 0,
 		dlc: 0,
 		effect: null,
-		from: [
-			{ self: true },
-			createKourindouPurchase([{ money: { amount: 500 } }]),
-		],
+		from: {
+			self: true,
+			...createKourindouPurchase([{ money: { amount: 500 } }]),
+		},
 	},
 	{
 		id: 4,
@@ -82,10 +82,10 @@ export const COOKER_LIST = [
 		series: 0,
 		dlc: 0,
 		effect: null,
-		from: [
-			{ self: true },
-			createKourindouPurchase([{ money: { amount: 500 } }]),
-		],
+		from: {
+			self: true,
+			...createKourindouPurchase([{ money: { amount: 500 } }]),
+		},
 	},
 	{
 		id: 5,
@@ -98,11 +98,11 @@ export const COOKER_LIST = [
 			'额外消耗25%料理时间。在完美完成「夜雀之歌」或在「热火朝天」下制作出的料理，可无视稀有客人本轮点单，只通过喜好标签评价。',
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 3 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 6,
@@ -115,11 +115,11 @@ export const COOKER_LIST = [
 			'额外消耗25%料理时间。在完美完成「夜雀之歌」或在「热火朝天」下制作出的料理，可无视稀有客人本轮点单，只通过喜好标签评价。',
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 3 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 7,
@@ -132,11 +132,11 @@ export const COOKER_LIST = [
 			'额外消耗25%料理时间。在完美完成「夜雀之歌」或在「热火朝天」下制作出的料理，可无视稀有客人本轮点单，只通过喜好标签评价。',
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 3 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 8,
@@ -149,11 +149,11 @@ export const COOKER_LIST = [
 			'额外消耗25%料理时间。在完美完成「夜雀之歌」或在「热火朝天」下制作出的料理，可无视稀有客人本轮点单，只通过喜好标签评价。',
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 3 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 9,
@@ -166,11 +166,11 @@ export const COOKER_LIST = [
 			'额外消耗25%料理时间。在完美完成「夜雀之歌」或在「热火朝天」下制作出的料理，可无视稀有客人本轮点单，只通过喜好标签评价。',
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 3 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 10,
@@ -180,12 +180,12 @@ export const COOKER_LIST = [
 		series: 2,
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ cooker: { amount: 1, cooker: 0 } },
 				{ money: { amount: 2000 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 11,
@@ -195,12 +195,12 @@ export const COOKER_LIST = [
 		series: 2,
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ cooker: { amount: 1, cooker: 1 } },
 				{ money: { amount: 2000 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 12,
@@ -210,12 +210,12 @@ export const COOKER_LIST = [
 		series: 2,
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ cooker: { amount: 1, cooker: 2 } },
 				{ money: { amount: 2000 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 13,
@@ -225,12 +225,12 @@ export const COOKER_LIST = [
 		series: 2,
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ cooker: { amount: 1, cooker: 3 } },
 				{ money: { amount: 2000 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 14,
@@ -240,12 +240,12 @@ export const COOKER_LIST = [
 		series: 2,
 		dlc: 0,
 		effect: '减少5%料理时间，增加3%续单概率。',
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ cooker: { amount: 1, cooker: 4 } },
 				{ money: { amount: 2000 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 15,
@@ -255,13 +255,13 @@ export const COOKER_LIST = [
 		series: 3,
 		dlc: 0,
 		effect: '减少10%料理时间，增加8%续单概率。',
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ cooker: { amount: 1, cooker: 10 } },
 				{ currencyItem: { amount: 7, currencyItem: 4 } },
 				{ money: { amount: 5000 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 16,
@@ -271,13 +271,13 @@ export const COOKER_LIST = [
 		series: 3,
 		dlc: 0,
 		effect: '减少10%料理时间，增加8%续单概率。',
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ cooker: { amount: 1, cooker: 11 } },
 				{ currencyItem: { amount: 7, currencyItem: 4 } },
 				{ money: { amount: 5000 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 17,
@@ -287,13 +287,13 @@ export const COOKER_LIST = [
 		series: 3,
 		dlc: 0,
 		effect: '减少10%料理时间，增加8%续单概率。',
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ cooker: { amount: 1, cooker: 12 } },
 				{ currencyItem: { amount: 7, currencyItem: 4 } },
 				{ money: { amount: 5000 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 18,
@@ -303,13 +303,13 @@ export const COOKER_LIST = [
 		series: 3,
 		dlc: 0,
 		effect: '减少10%料理时间，增加8%续单概率。',
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ cooker: { amount: 1, cooker: 13 } },
 				{ currencyItem: { amount: 7, currencyItem: 4 } },
 				{ money: { amount: 5000 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 19,
@@ -319,13 +319,13 @@ export const COOKER_LIST = [
 		series: 3,
 		dlc: 0,
 		effect: '减少10%料理时间，增加8%续单概率。',
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ cooker: { amount: 1, cooker: 14 } },
 				{ currencyItem: { amount: 7, currencyItem: 4 } },
 				{ money: { amount: 5000 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 20,
@@ -339,11 +339,11 @@ export const COOKER_LIST = [
 			`减少50%料理时间。有40%的概率制作出“${DARK_MATTER_META_MAP.name}”，但如果完美歌唱会使此概率降低至5%。`,
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 5 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 21,
@@ -357,11 +357,11 @@ export const COOKER_LIST = [
 			`减少50%料理时间。有40%的概率制作出“${DARK_MATTER_META_MAP.name}”，但如果完美歌唱会使此概率降低至5%。`,
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 5 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 22,
@@ -375,11 +375,11 @@ export const COOKER_LIST = [
 			`减少50%料理时间。有40%的概率制作出“${DARK_MATTER_META_MAP.name}”，但如果完美歌唱会使此概率降低至5%。`,
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 5 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 23,
@@ -393,11 +393,11 @@ export const COOKER_LIST = [
 			`减少50%料理时间。有40%的概率制作出“${DARK_MATTER_META_MAP.name}”，但如果完美歌唱会使此概率降低至5%。`,
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 5 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 24,
@@ -411,11 +411,11 @@ export const COOKER_LIST = [
 			`减少50%料理时间。有40%的概率制作出“${DARK_MATTER_META_MAP.name}”，但如果完美歌唱会使此概率降低至5%。`,
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 5 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 25,
@@ -426,11 +426,11 @@ export const COOKER_LIST = [
 		series: 5,
 		dlc: 0,
 		effect: ['额外消耗10%料理时间，增加30%续单概率。', true],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 6 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 26,
@@ -441,11 +441,11 @@ export const COOKER_LIST = [
 		series: 5,
 		dlc: 0,
 		effect: ['额外消耗10%料理时间，增加30%续单概率。', true],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 6 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 27,
@@ -456,11 +456,11 @@ export const COOKER_LIST = [
 		series: 5,
 		dlc: 0,
 		effect: ['额外消耗10%料理时间，增加30%续单概率。', true],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 6 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 28,
@@ -471,11 +471,11 @@ export const COOKER_LIST = [
 		series: 5,
 		dlc: 0,
 		effect: ['额外消耗10%料理时间，增加30%续单概率。', true],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 6 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 29,
@@ -486,11 +486,11 @@ export const COOKER_LIST = [
 		series: 5,
 		dlc: 0,
 		effect: ['额外消耗10%料理时间，增加30%续单概率。', true],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 6 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 30,
@@ -504,11 +504,11 @@ export const COOKER_LIST = [
 			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续时间20秒后离开。',
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 7 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 31,
@@ -522,11 +522,11 @@ export const COOKER_LIST = [
 			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续时间20秒后离开。',
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 7 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 32,
@@ -540,11 +540,11 @@ export const COOKER_LIST = [
 			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续时间20秒后离开。',
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 7 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 33,
@@ -558,11 +558,11 @@ export const COOKER_LIST = [
 			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续时间20秒后离开。',
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 7 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 34,
@@ -576,11 +576,11 @@ export const COOKER_LIST = [
 			'每次烹饪有40%的概率生成一只小兔子，每只小兔子额外提升5%的可叠加小费倍率，持续时间20秒后离开。',
 			true,
 		],
-		from: [
-			createKourindouPurchase([
+		from: {
+			...createKourindouPurchase([
 				{ currencyItem: { amount: 7, currencyItem: 7 } },
 			]),
-		],
+		},
 	},
 	{
 		id: 1000,
@@ -593,7 +593,7 @@ export const COOKER_LIST = [
 			'额外消耗40%料理时间。米斯蒂娅使用此厨具累计60秒后，改为减少80%料理时间，同时料理后可以生成1个以下食材之一：最贵的、最便宜的、最多的、最少的、蘑菇、松露。',
 			true,
 		],
-		from: [{ dlcSideTask: { dlc: 1, task: '支线任务' } }],
+		from: { dlcSideTask: { dlc: 1, task: '支线任务' } },
 	},
 	{
 		id: 2000,
@@ -606,14 +606,12 @@ export const COOKER_LIST = [
 			'减少20%料理时间。烹饪结束后，此厨具会自动开始制作上一次制作的料理（包含额外添加的食材），自动制作不消耗食材且可以随时打断。',
 			true,
 		],
-		from: [
-			{
-				competitionReward: {
-					competitionLabel:
-						'DLC2_Main_FormerHell_WeirdCooking_FirstChallengeSuccess_Event',
-				},
+		from: {
+			competitionReward: {
+				competitionLabel:
+					'DLC2_Main_FormerHell_WeirdCooking_FirstChallengeSuccess_Event',
 			},
-		],
+		},
 	},
 	{
 		id: 3000,
@@ -626,7 +624,7 @@ export const COOKER_LIST = [
 			'减少15%料理时间。瞬间完成带有「肉」Tag的料理，30%返还料理素材。',
 			true,
 		],
-		from: [{ bond: { level: 5, specialGuest: 3003 } }],
+		from: { bond: { level: 5, specialGuest: 3003 } },
 	},
 	{
 		id: 4000,
@@ -639,7 +637,7 @@ export const COOKER_LIST = [
 			`减少20%料理时间。烹饪时若没有添加任何额外素材则减少时间效果提高到70%，否则提高30%续单率。若料理带有「${DYNAMIC_TAG_MAP.popularPositive}」标签则两者同时触发。`,
 			true,
 		],
-		from: [{ bond: { level: 5, specialGuest: 4000 } }],
+		from: { bond: { level: 5, specialGuest: 4000 } },
 	},
 	{
 		id: 5000,
@@ -652,20 +650,18 @@ export const COOKER_LIST = [
 			'若制作的料理不带有「肉」标签，减少50%料理时间，否则增加30%料理时间。「魔神复诵」此厨具制作的料理被客人食用并给出评价后，接下来给任何客人该厨具制作的同样料理也必然得到该评价。',
 			true,
 		],
-		from: [
-			{
-				buy: {
-					merchant: {
-						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
-						map: 'DLC5_Makai',
-					},
-					price: [
-						{ currencyItem: { amount: 160, currencyItem: 5011 } },
-						{ money: { amount: 40000 } },
-					],
+		from: {
+			buy: {
+				merchant: {
+					label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+					map: 'DLC5_Makai',
 				},
+				price: [
+					{ currencyItem: { amount: 160, currencyItem: 5011 } },
+					{ money: { amount: 40000 } },
+				],
 			},
-		],
+		},
 	},
 	{
 		id: 5001,
@@ -675,19 +671,17 @@ export const COOKER_LIST = [
 		series: 5001,
 		dlc: 5,
 		effect: '减少33%料理时间。可同时作为蒸锅、油锅与煮锅类型的厨具使用。',
-		from: [
-			{
-				buy: {
-					merchant: {
-						label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
-						map: 'DLC5_Makai',
-					},
-					price: [
-						{ currencyItem: { amount: 33, currencyItem: 5011 } },
-						{ money: { amount: 33333 } },
-					],
+		from: {
+			buy: {
+				merchant: {
+					label: 'DLC5_Makai_Merchant_Ellen_MagicShop',
+					map: 'DLC5_Makai',
 				},
+				price: [
+					{ currencyItem: { amount: 33, currencyItem: 5011 } },
+					{ money: { amount: 33333 } },
+				],
 			},
-		],
+		},
 	},
 ] as const satisfies ICooker[];

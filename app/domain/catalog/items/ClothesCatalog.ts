@@ -1,7 +1,9 @@
 import { RecordCatalog } from '@/domain/catalog/shared/RecordCatalog';
 import { CLOTHES_LIST } from '@/domain/data/clothes/records';
+import type { IClothes } from '@/domain/data/clothes/schema';
 import type { TClothes, TClothesId } from '@/domain/data/clothes/types';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
+import { getSourceEntries } from '@/domain/data/shared/sourceEntries';
 
 export class ClothesCatalog extends RecordCatalog<TClothes> {
 	private static _instance: ClothesCatalog | undefined;
@@ -30,10 +32,10 @@ export class ClothesCatalog extends RecordCatalog<TClothes> {
 				let bondClothes: TClothesId | null = null;
 
 				this._data.some(({ from, id }) =>
-					from.some((item) => {
+					getSourceEntries<IClothes['from']>(from).some((source) => {
 						if (
-							'bond' in item &&
-							item.bond.specialGuest === specialGuest
+							'bond' in source &&
+							source.bond.specialGuest === specialGuest
 						) {
 							bondClothes = id;
 							return true;
