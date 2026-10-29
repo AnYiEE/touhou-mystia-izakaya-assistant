@@ -12,8 +12,8 @@ export const SPRITE_ASSET_HASHES = {
 	ingredient: 'd60786751915',
 	item: '24556269e0ca',
 	normal_guest: '8ef6c9ca69bf',
-	partner: 'b5d404982427',
+	partner: '1cb257ce00d6',
 	record: '2e4eb33e4a6b',
-	special_guest: '0770e80f2d46',
+	special_guest: '1b564bd04dab',
 	trophy: '2c3648d11aac',
 } as const satisfies Record<TSpriteTarget, string>;
