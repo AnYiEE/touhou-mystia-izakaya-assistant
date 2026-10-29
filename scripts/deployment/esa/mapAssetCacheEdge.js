@@ -1,11 +1,14 @@
+/* global cache */
+
 /**
  * 阿里云 ESA 边缘函数：地图图片 HEAD 鉴权 + 共享缓存。
  *
- * 函数必须在站点缓存之前执行。图片 GET 先向源站发送同路径 HEAD：
- * - HEAD 200：允许本次 GET 使用共享缓存。
- * - HEAD 非 200：不使用共享缓存，原始 GET 直接回源并原样返回错误。
+ * 地图 API 的常规 ESA 缓存必须关闭，确保每次请求都先执行本函数。图片 GET
+ * 先向源站发送同路径 HEAD；仅 HEAD 200 时读取函数内 Cache API，未命中再
+ * GET 源站。HEAD 非 200 时直接回源并返回真实错误。
  *
- * 缓存键必须配置为 host + pathname，并忽略 Cookie、query 和请求头。
+ * 地图图片 URL 不带 query，使用 ESA 默认 URL 缓存键即可；
+ * 不依赖自定义 Cache Key。客户端的 Cache-Control 和请求头不会进入默认 URL key。
  */
 
 const MAP_ASSET_API_PREFIX = '/api/v1/maps/assets/';
@@ -121,6 +124,7 @@ function checkSameOriginRequest(request, url) {
  */
 function createResponseWithCacheControl(response, cacheControl) {
 	const nextResponse = new Response(response.body, response);
+	nextResponse.headers.delete('alt-svc');
 	nextResponse.headers.set('Cache-Control', cacheControl);
 	return nextResponse;
 }
@@ -145,7 +149,12 @@ function checkCacheableImageResponse(response) {
  */
 function createImageResponse(response) {
 	if (!checkCacheableImageResponse(response)) {
-		return createResponseWithCacheControl(response, 'no-store');
+		const nextResponse = createResponseWithCacheControl(
+			response,
+			'no-store'
+		);
+		nextResponse.headers.set('X-Map-Cache-Status', 'BYPASS');
+		return nextResponse;
 	}
 
 	const nextResponse = createResponseWithCacheControl(
@@ -157,13 +166,24 @@ function createImageResponse(response) {
 }
 
 /**
+ * @param {URL} url
+ */
+function createEdgeCacheKey(url) {
+	// 使用同 host 的保留路径生成合成 key，避免 Cache API 对象被 ESA
+	// 常规缓存模块直接命中并绕过函数鉴权。该 URL 只作为 key，不会发起请求。
+	return `http://${url.host}/.map-asset-cache${url.pathname}`;
+}
+
+/**
  * @param {Request} request
  */
 async function fetchOriginWithoutCache(request) {
 	const response = await fetch(createUpstreamRequest(request, 'GET', false), {
 		cache: 'no-store',
 	});
-	return createResponseWithCacheControl(response, 'no-store');
+	const nextResponse = createResponseWithCacheControl(response, 'no-store');
+	nextResponse.headers.set('X-Map-Cache-Status', 'BYPASS');
+	return nextResponse;
 }
 
 /**
@@ -171,15 +191,19 @@ async function fetchOriginWithoutCache(request) {
  */
 function createBadGatewayResponse() {
 	return new Response(null, {
-		headers: { 'Cache-Control': 'no-store' },
+		headers: {
+			'Cache-Control': 'no-store',
+			'X-Map-Cache-Status': 'BYPASS',
+		},
 		status: 502,
 	});
 }
 
 /**
  * @param {Request} request
+ * @param {URL} url
  */
-async function handleMapAssetRequest(request) {
+async function handleMapAssetRequest(request, url) {
 	let authResponse;
 	try {
 		authResponse = await fetch(
@@ -193,8 +217,37 @@ async function handleMapAssetRequest(request) {
 		return fetchOriginWithoutCache(request);
 	}
 
+	const cacheKey = createEdgeCacheKey(url);
+	let cachedResponse;
+	try {
+		cachedResponse = await cache.get(cacheKey);
+	} catch {
+		cachedResponse = undefined;
+	}
+	if (cachedResponse && checkCacheableImageResponse(cachedResponse)) {
+		const nextResponse = createImageResponse(cachedResponse);
+		nextResponse.headers.set('X-Map-Cache-Status', 'HIT');
+		return nextResponse;
+	}
+	if (cachedResponse) {
+		void cache.delete(cacheKey).catch(() => {});
+	}
+
 	const response = await fetch(createUpstreamRequest(request, 'GET', false));
-	return createImageResponse(response);
+	const nextResponse = createImageResponse(response);
+	if (!checkCacheableImageResponse(response)) {
+		return nextResponse;
+	}
+
+	nextResponse.headers.set('X-Map-Cache-Status', 'MISS');
+	try {
+		await cache.put(cacheKey, nextResponse.clone());
+		nextResponse.headers.set('X-Map-Cache-Write', 'OK');
+	} catch {
+		// Cache quota/concurrency failure must not break the image response.
+		nextResponse.headers.set('X-Map-Cache-Write', 'FAILED');
+	}
+	return nextResponse;
 }
 
 /**
@@ -211,7 +264,7 @@ async function handleRequest(request) {
 			return await fetchOriginWithoutCache(request);
 		}
 
-		return await handleMapAssetRequest(request);
+		return await handleMapAssetRequest(request, url);
 	} catch {
 		return createBadGatewayResponse();
 	}
