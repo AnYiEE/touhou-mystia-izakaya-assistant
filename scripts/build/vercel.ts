@@ -65,7 +65,6 @@ async function main() {
 
 	const source = resolve(projectDirectory, 'app/assets/maps');
 	const destination = resolve(projectDirectory, 'public/assets/maps');
-	await runCommand('tsx', ['scripts/assets/maps/generatePreviewAssets.ts']);
 	await rm(destination, { force: true, recursive: true });
 	await cp(source, destination, { recursive: true });
 	await runCommand('tsx', ['scripts/build/serviceWorker/generate.ts']);

@@ -51,9 +51,6 @@ async function main() {
 			'scripts/build/offlinePackage/generate.ts',
 			'--prepare',
 		]);
-		await runCommand('tsx', [
-			'scripts/assets/maps/generatePreviewAssets.ts',
-		]);
 		await runCommand('next', ['build']);
 		await runCommand('tsx', ['scripts/build/babelTransform.ts']);
 		await runCommand('tsx', ['scripts/build/offlinePackage/generate.ts']);

@@ -32,8 +32,7 @@ import {
 	restoreStaticRouterReplacement,
 } from './offlinePackage/routerReplacement';
 
-export type TBuildStage =
-	'babel-transform' | 'map-assets' | 'next-build' | 'service-worker';
+export type TBuildStage = 'babel-transform' | 'next-build' | 'service-worker';
 
 interface IBuildCoordinatorOptions {
 	clearBuildIdentity: () => void;
@@ -51,7 +50,6 @@ interface IBuildCoordinatorOptions {
 }
 
 const BUILD_STAGES = [
-	'map-assets',
 	'service-worker',
 	'next-build',
 	'babel-transform',
@@ -251,7 +249,6 @@ async function main() {
 	let activeChild: ChildProcess | null = null;
 	const stageCommands = {
 		'babel-transform': ['tsx', ['scripts/build/babelTransform.ts']],
-		'map-assets': ['tsx', ['scripts/assets/maps/generatePreviewAssets.ts']],
 		'next-build': ['next', ['build']],
 		'service-worker': ['tsx', ['scripts/build/serviceWorker/generate.ts']],
 	} as const satisfies Record<
