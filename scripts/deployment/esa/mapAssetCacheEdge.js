@@ -9,12 +9,15 @@
  *
  * 地图图片 URL 不带 query，使用 ESA 默认 URL 缓存键即可；
  * 不依赖自定义 Cache Key。客户端的 Cache-Control 和请求头不会进入默认 URL key。
+ * fetch 模式会以函数运行环境回源，因此函数使用边缘节点提供的
+ * Ali-Cdn-Real-Ip 覆盖转发来源头，并修正最终响应中的 client-ip。
  */
 
 const MAP_ASSET_API_PREFIX = '/api/v1/maps/assets/';
 const MAP_IMAGE_PATH_REGEXP = /\.(?:png|webp)$/iu;
 const PUBLIC_IMAGE_CACHE_CONTROL =
 	'public, max-age=31536000, s-maxage=31536000, immutable';
+const TRUSTED_CLIENT_IP_HEADER = 'ali-cdn-real-ip';
 /** @type {ReadonlySet<string>} */
 const EMPTY_DROPPED_HEADERS = new Set();
 
@@ -47,6 +50,13 @@ const DROPPED_AUTH_HEADERS = new Set([
 
 /**
  * @param {Request} request
+ */
+function getTrustedClientIp(request) {
+	return request.headers.get(TRUSTED_CLIENT_IP_HEADER)?.trim() ?? '';
+}
+
+/**
+ * @param {Request} request
  * @param {ReadonlySet<string>} additionalDroppedHeaders
  */
 function createUpstreamHeaders(request, additionalDroppedHeaders) {
@@ -61,6 +71,14 @@ function createUpstreamHeaders(request, additionalDroppedHeaders) {
 			headers.set(name, value);
 		}
 	});
+
+	// fetch 模式回源的 TCP 来源是 ESA 内网地址，必须显式传递边缘节点
+	// 提供的真实客户端 IP；客户端自行提交的来源头已在上面丢弃。
+	const clientIp = getTrustedClientIp(request);
+	if (clientIp !== '') {
+		headers.set('x-forwarded-for', clientIp);
+		headers.set('x-real-ip', clientIp);
+	}
 
 	return headers;
 }
@@ -201,6 +219,23 @@ function createBadGatewayResponse() {
 
 /**
  * @param {Request} request
+ * @param {Response} response
+ */
+function createClientResponse(request, response) {
+	const nextResponse = new Response(response.body, response);
+	const clientIp = getTrustedClientIp(request);
+
+	if (clientIp === '') {
+		nextResponse.headers.delete('client-ip');
+	} else {
+		nextResponse.headers.set('client-ip', clientIp);
+	}
+
+	return nextResponse;
+}
+
+/**
+ * @param {Request} request
  * @param {URL} url
  */
 async function handleMapAssetRequest(request, url) {
@@ -261,12 +296,18 @@ async function handleRequest(request) {
 
 	try {
 		if (!checkSameOriginRequest(request, url)) {
-			return await fetchOriginWithoutCache(request);
+			return createClientResponse(
+				request,
+				await fetchOriginWithoutCache(request)
+			);
 		}
 
-		return await handleMapAssetRequest(request, url);
+		return createClientResponse(
+			request,
+			await handleMapAssetRequest(request, url)
+		);
 	} catch {
-		return createBadGatewayResponse();
+		return createClientResponse(request, createBadGatewayResponse());
 	}
 }
 
