@@ -1,4 +1,4 @@
-import { type NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 import { USER_STATUS_MAP } from '@/domain/account/contracts';
 
@@ -16,8 +16,6 @@ import {
 import { createAccountSessionForActiveUser } from '@/features/account/server/auth/sessionLifecycle';
 import {
 	getCredentialByUserId,
-	getCredentialLockState,
-	recordFailedCredentialAttempt,
 	resetFailedAttemptsForCredential,
 } from '@/features/account/server/persistence/repositories/credentials';
 import { findUserByUsernameNormalized } from '@/features/account/server/persistence/repositories/users';
@@ -29,7 +27,6 @@ export type TLoginWithPasswordResult =
 	| { message: 'invalid-credentials'; status: 'error' }
 	| { message: 'user-deleted'; status: 'error' }
 	| { message: 'user-disabled'; status: 'error' }
-	| { retryAfter: number; status: 'locked' }
 	| {
 			passwordMustChange: boolean;
 			session: Extract<
@@ -152,46 +149,7 @@ export async function loginWithPassword({
 	}
 
 	const now = Date.now();
-	const lockState = getCredentialLockState(credential, now);
-	if (lockState.status === 'locked') {
-		await writeLoginFailure({
-			metadata: { retry_after: lockState.retryAfter },
-			reason: 'credential-locked',
-			request,
-			targetId: user.id,
-			username,
-			usernameNormalized,
-		});
-		return lockState;
-	}
-
 	if (!(await verifyPassword(credential.password_hash, password))) {
-		const failureState = await recordFailedCredentialAttempt({
-			expectedPasswordHash: credential.password_hash,
-			now,
-			userId: user.id,
-		});
-		if (failureState.status === 'stale') {
-			await writeLoginFailure({
-				reason: 'credential-state-stale',
-				request,
-				targetId: user.id,
-				username,
-				usernameNormalized,
-			});
-			return { message: 'credential-state-stale', status: 'error' };
-		}
-		if (failureState.status === 'locked') {
-			await writeLoginFailure({
-				metadata: { retry_after: failureState.retryAfter },
-				reason: 'password-invalid-locked',
-				request,
-				targetId: user.id,
-				username,
-				usernameNormalized,
-			});
-			return failureState;
-		}
 		await writeLoginFailure({
 			reason: 'password-invalid',
 			request,
@@ -207,17 +165,6 @@ export async function loginWithPassword({
 		passwordHash: credential.password_hash,
 		userId: user.id,
 	});
-	if (resetState.status === 'locked') {
-		await writeLoginFailure({
-			metadata: { retry_after: resetState.retryAfter },
-			reason: 'credential-locked-after-verify',
-			request,
-			targetId: user.id,
-			username,
-			usernameNormalized,
-		});
-		return resetState;
-	}
 	if (resetState.status === 'stale') {
 		await writeLoginFailure({
 			reason: 'credential-state-stale-after-verify',

@@ -1,4 +1,4 @@
-import { type NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import type { IAuthLoginBody } from '@/features/account/contracts';
@@ -11,7 +11,6 @@ import {
 } from '@/features/account/server/http/routeGuards';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
-import { createRetryAfterHeaders } from '@/infrastructure/http/headers';
 import { createNoStoreErrorResponse } from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
@@ -21,15 +20,6 @@ const INVALID_LOGIN_MESSAGE = 'invalid-credentials';
 
 function createInvalidLoginResponse() {
 	return createNoStoreErrorResponse(INVALID_LOGIN_MESSAGE, 401);
-}
-
-function createCredentialLockedResponse(retryAfter: number) {
-	return createNoStoreErrorResponse(
-		HTTP_API_RESPONSE_CODE_MAP.tooManyRequests,
-		429,
-		{ retry_after: retryAfter },
-		{ headers: createRetryAfterHeaders(retryAfter) }
-	);
 }
 
 function createCredentialStateStaleResponse() {
@@ -92,8 +82,8 @@ export async function POST(request: NextRequest) {
 	const usernameNormalized = userModule.normalizeUsername(username);
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
-		'login',
-		usernameNormalized,
+		'login-request',
+		'',
 		{ noTrustedIpGate: true }
 	);
 	if (rateLimitResponse !== null) {
@@ -106,10 +96,17 @@ export async function POST(request: NextRequest) {
 		username,
 		usernameNormalized,
 	});
-	if (result.status === 'locked') {
-		return createCredentialLockedResponse(result.retryAfter);
-	}
 	if (result.status === 'error') {
+		const failureRateLimitResponse = checkAccountRateLimitRouteResponse(
+			request,
+			'login-failure',
+			usernameNormalized,
+			{ noTrustedIpGate: true }
+		);
+		if (failureRateLimitResponse !== null) {
+			return failureRateLimitResponse;
+		}
+
 		if (result.message === 'credential-state-stale') {
 			return createCredentialStateStaleResponse();
 		}

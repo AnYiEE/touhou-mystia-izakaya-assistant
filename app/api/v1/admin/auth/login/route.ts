@@ -1,4 +1,4 @@
-import { type NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 import { checkAdminCredentialLoginEnabled } from '@/features/account/admin/server/auth';
 import { checkAdminFeatureRouteResponse } from '@/features/account/admin/server/http/routeResponses';
@@ -77,8 +77,8 @@ export async function POST(request: NextRequest) {
 	const usernameRateLimitKey = username.toLowerCase();
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
 		request,
-		'admin-login',
-		usernameRateLimitKey,
+		'admin-login-request',
+		'',
 		{ noTrustedIpGate: true }
 	);
 	if (rateLimitResponse !== null) {
@@ -87,6 +87,16 @@ export async function POST(request: NextRequest) {
 
 	const adminModule = await import('@/features/account/admin/server/auth');
 	if (!adminModule.checkAdminCredentials(username, body.password)) {
+		const failureRateLimitResponse = checkAccountRateLimitRouteResponse(
+			request,
+			'admin-login-failure',
+			usernameRateLimitKey,
+			{ noTrustedIpGate: true }
+		);
+		if (failureRateLimitResponse !== null) {
+			return failureRateLimitResponse;
+		}
+
 		return createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
 			401

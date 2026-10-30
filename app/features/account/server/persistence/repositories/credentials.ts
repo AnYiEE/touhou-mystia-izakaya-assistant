@@ -490,21 +490,13 @@ export async function resetFailedAttemptsForCredential({
 	now?: number;
 	passwordHash: TUserCredential['password_hash'];
 	userId: TUser['id'];
-}): Promise<
-	Extract<TCredentialAttemptState, { status: 'locked' | 'ok' | 'stale' }>
-> {
+}): Promise<Extract<TCredentialAttemptState, { status: 'ok' | 'stale' }>> {
 	const db = await getAccountDatabase();
 	const record = await db
 		.updateTable(TABLE_NAME)
 		.set({ failed_attempts: 0, locked_until: null, updated_at: now })
 		.where('user_id', '=', userId)
 		.where('password_hash', '=', passwordHash)
-		.where((eb) =>
-			eb.or([
-				eb('locked_until', 'is', null),
-				eb('locked_until', '<=', now),
-			])
-		)
 		.returning('user_id')
 		.executeTakeFirst();
 
@@ -515,11 +507,6 @@ export async function resetFailedAttemptsForCredential({
 	const credential = await getCredentialByUserId(userId);
 	if (credential === null) {
 		throw new Error('credential-not-found');
-	}
-
-	const lockState = getCredentialLockState(credential, now);
-	if (lockState.status === 'locked') {
-		return lockState;
 	}
 
 	return { status: 'stale' };

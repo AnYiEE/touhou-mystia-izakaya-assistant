@@ -24,6 +24,33 @@ export const ARGON2_OPTIONS = {
 const DUMMY_PASSWORD_HASH =
 	'$argon2id$v=19$m=19456,t=2,p=1$6KmvqCVltIc8Fl1NcSZWJA$T+3fu6nQ45w3+SZzjQI5aWIN42dw9pU8K//r1DoiuOg';
 const DUMMY_PASSWORD = 'dummy-password';
+const MAX_CONCURRENT_PASSWORD_VERIFICATIONS = 2;
+
+let activePasswordVerifications = 0;
+const passwordVerificationWaiters: Array<() => void> = [];
+
+async function withPasswordVerificationSlot<T>(
+	operation: () => Promise<T>
+): Promise<T> {
+	if (activePasswordVerifications < MAX_CONCURRENT_PASSWORD_VERIFICATIONS) {
+		activePasswordVerifications += 1;
+	} else {
+		await new Promise<void>((resolvePromise) => {
+			passwordVerificationWaiters.push(resolvePromise);
+		});
+	}
+
+	try {
+		return await operation();
+	} finally {
+		const nextWaiter = passwordVerificationWaiters.shift();
+		if (nextWaiter === undefined) {
+			activePasswordVerifications -= 1;
+		} else {
+			nextWaiter();
+		}
+	}
+}
 
 export class PasswordPolicyError extends Error {
 	constructor() {
@@ -42,10 +69,15 @@ export async function hashPassword(password: string) {
 
 export async function consumePasswordVerificationCost(password: string) {
 	try {
-		await verify(
-			DUMMY_PASSWORD_HASH,
-			checkPasswordLengthPolicy(password) ? password : DUMMY_PASSWORD,
-			ARGON2_OPTIONS
+		await withPasswordVerificationSlot(
+			async () =>
+				await verify(
+					DUMMY_PASSWORD_HASH,
+					checkPasswordLengthPolicy(password)
+						? password
+						: DUMMY_PASSWORD,
+					ARGON2_OPTIONS
+				)
 		);
 	} catch (error) {
 		console.warn(
@@ -62,7 +94,9 @@ export async function verifyPassword(passwordHash: string, password: string) {
 	}
 
 	try {
-		return await verify(passwordHash, password, ARGON2_OPTIONS);
+		return await withPasswordVerificationSlot(
+			async () => await verify(passwordHash, password, ARGON2_OPTIONS)
+		);
 	} catch (error) {
 		console.warn(
 			'Account password verification failed with argon2 error:',
