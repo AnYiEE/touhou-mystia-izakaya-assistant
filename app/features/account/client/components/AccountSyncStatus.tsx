@@ -106,9 +106,6 @@ export default memo<IProps>(function AccountSyncStatus() {
 		),
 		conflict: t(ACCOUNT_SYNC_PAUSED_REASON_LABEL_KEYS.conflict),
 		'delete-data': t(ACCOUNT_SYNC_PAUSED_REASON_LABEL_KEYS['delete-data']),
-		'importing-backup': t(
-			ACCOUNT_SYNC_PAUSED_REASON_LABEL_KEYS['importing-backup']
-		),
 	};
 	const statusMessage = {
 		noPendingData: t(ACCOUNT_SYNC_STATUS_MESSAGE_KEYS.noPendingData),

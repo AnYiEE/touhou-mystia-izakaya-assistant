@@ -11,10 +11,8 @@ import type { TAuthenticatedSessionIdentity } from '@/features/account/server/pe
 import { getAccountDatabase } from '@/features/account/server/persistence/database';
 import { lockActiveUserSessionInTransaction } from '@/features/account/server/persistence/repositories/sessions';
 import { checkKnownSyncNamespace } from '@/features/account/sync/normalizeSyncStateData';
-import { maskBackupCode } from '@/features/legacyBackup/server/logging';
 
 import type {
-	TBackupImportRecord,
 	TDatabase,
 	TSession,
 	TUser,
@@ -30,7 +28,6 @@ import {
 	canIncrementNonNegativeSafeInteger,
 	isNonNegativeSafeInteger,
 } from '@/shared/utilities/numbers/check';
-import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 import {
 	calculateAccountSyncCapacity,
@@ -42,42 +39,11 @@ const TABLE_NAME = TABLE_NAME_MAP.userState;
 const USER_TABLE_NAME = TABLE_NAME_MAP.user;
 const USER_CREDENTIAL_TABLE_NAME = TABLE_NAME_MAP.userCredential;
 const SESSION_TABLE_NAME = TABLE_NAME_MAP.session;
-const BACKUP_IMPORT_TABLE_NAME = TABLE_NAME_MAP.backupImportRecord;
 const SQLITE_WRITE_RETRY_DELAYS_MS = [10, 50, 200] as const;
 
 interface IPutUserStateEntryIfRevisionChange {
 	entry: TUserStateNew;
 	expectedRevision: number;
-}
-
-function parseBackupImportResults(value: TBackupImportRecord['results']) {
-	let parsedValue: unknown;
-	try {
-		parsedValue = JSON.parse(value);
-	} catch {
-		return [];
-	}
-
-	if (!Array.isArray(parsedValue)) {
-		return [];
-	}
-
-	return parsedValue.flatMap((item) => {
-		if (!checkIsRecord(item)) {
-			return [];
-		}
-		const record = item;
-		const { namespace, revision, status } = record;
-		if (
-			status !== 'ok' ||
-			!checkKnownSyncNamespace(namespace) ||
-			!canIncrementNonNegativeSafeInteger(revision)
-		) {
-			return [];
-		}
-
-		return [{ namespace, revision, status: 'ok' as const }];
-	});
 }
 
 function canIncrementSyncRevision(value: unknown): value is number {
@@ -653,10 +619,6 @@ export async function clearUserStateIfStateEpochWithAudit(
 			.deleteFrom(TABLE_NAME)
 			.where('user_id', '=', userId)
 			.execute();
-		await trx
-			.deleteFrom(BACKUP_IMPORT_TABLE_NAME)
-			.where('user_id', '=', userId)
-			.execute();
 		const now = Date.now();
 		const record = await trx
 			.updateTable(USER_TABLE_NAME)
@@ -883,10 +845,6 @@ export async function clearUserDataAndDeleteSessionsAndIncrementStateEpochWithAu
 			.where('user_id', '=', userId)
 			.execute();
 		await trx
-			.deleteFrom(BACKUP_IMPORT_TABLE_NAME)
-			.where('user_id', '=', userId)
-			.execute();
-		await trx
 			.deleteFrom(SESSION_TABLE_NAME)
 			.where('user_id', '=', userId)
 			.execute();
@@ -909,28 +867,6 @@ export async function listUserNamespaces(userId: TUser['id']) {
 		.select(['namespace', 'revision', 'schema_version', 'updated_at'])
 		.where('user_id', '=', userId)
 		.execute();
-}
-
-export async function listRecentBackupImportRecordsByUserId(
-	userId: TUser['id'],
-	limit = 5
-) {
-	const db = await getAccountDatabase();
-	const rows = await db
-		.selectFrom(BACKUP_IMPORT_TABLE_NAME)
-		.select(['code', 'created_at', 'file_name', 'results', 'state_epoch'])
-		.where('user_id', '=', userId)
-		.orderBy('created_at', 'desc')
-		.limit(limit)
-		.execute();
-
-	return rows.map((row) => ({
-		code_hash: maskBackupCode(row.code),
-		created_at: row.created_at,
-		file_name: row.file_name,
-		results: parseBackupImportResults(row.results),
-		state_epoch: row.state_epoch,
-	}));
 }
 
 export async function listUserState(userId: TUser['id']) {

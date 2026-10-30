@@ -40,8 +40,3 @@ export function getAccountActionLabel(
 	}
 	return user.nickname ?? user.username;
 }
-
-export const LEGACY_BACKUP_IMPORT_MESSAGE_KEYS = {
-	failed: 'account.legacyImport.failed',
-	success: 'account.legacyImport.success',
-} as const satisfies Record<string, TAccountMessageKey>;

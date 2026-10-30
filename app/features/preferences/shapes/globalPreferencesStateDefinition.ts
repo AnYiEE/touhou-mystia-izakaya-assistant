@@ -25,7 +25,6 @@ import { numberSort } from '@/shared/utilities/sort/numberSort';
 import { pinyinSort } from '@/shared/utilities/sort/pinyinSort';
 
 interface IGlobalStorePersistence extends TGlobalPreferencesSnapshot {
-	cloudCode: string | null;
 	dirver: string[];
 	userId: string | null;
 	version: string | null;
@@ -34,7 +33,6 @@ interface IGlobalStorePersistence extends TGlobalPreferencesSnapshot {
 export function createDefaultGlobalStorePersistence(): IGlobalStorePersistence {
 	return {
 		...globalPreferencesShape.createDefault(),
-		cloudCode: null,
 		dirver: [],
 		userId: null,
 		version: null,
@@ -49,11 +47,6 @@ export function normalizeGlobalStorePersistence(
 
 	return {
 		...normalized,
-		cloudCode:
-			record['cloudCode'] === null ||
-			typeof record['cloudCode'] === 'string'
-				? record['cloudCode']
-				: null,
 		dirver: Array.isArray(record['dirver'])
 			? record['dirver'].filter(
 					(item): item is string => typeof item === 'string'

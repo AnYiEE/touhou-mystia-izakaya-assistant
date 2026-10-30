@@ -26,13 +26,11 @@ declare global {
 			SKIP_LINT?: string;
 			SQLITE_DATABASE_PATH?: string;
 			TRUST_PROXY?: string;
-			UPLOAD_DIR?: string;
 
 			VERCEL?: string;
 			VERCEL_ENV?: NodeJS.ProcessEnv['NODE_ENV'];
 			VERCEL_GIT_COMMIT_SHA?: string;
 
-			CLEANUP_SECRET?: string;
 			DISPATCH_SECRET?: string;
 
 			ACCOUNT_COOKIE_DOMAIN?: string;

@@ -24,7 +24,6 @@ const projectDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '..');
  *   releaseDirectory: string,
  *   serverPath: string,
  *   sqliteDatabasePath: string,
- *   uploadDirectoryPath: string,
  * }} ValidatedRuntime
  * @typedef {{ code: number | null, signal: NodeJS.Signals | null }} ChildResult
  */
@@ -212,11 +211,6 @@ export async function validateSelfHostedRuntime(
 		resolve(rootDirectory, 'sqlite.db'),
 		'sqlite-database-path-must-be-absolute'
 	);
-	const uploadDirectoryPath = getAbsoluteStoragePath(
-		environment.UPLOAD_DIR,
-		resolve(rootDirectory, 'upload'),
-		'upload-directory-path-must-be-absolute'
-	);
 	const { releasesDirectory } = getDeploymentPaths(rootDirectory);
 	await validateStoragePathOutsideReleases(
 		releasesDirectory,
@@ -234,23 +228,6 @@ export async function validateSelfHostedRuntime(
 		sqliteDatabasePath,
 		'sqlite-database-path-inside-release',
 		'sqlite-database-not-accessible'
-	);
-	await validateStoragePathOutsideReleases(
-		releasesDirectory,
-		uploadDirectoryPath,
-		'upload-directory-path-inside-release',
-		'upload-directory-not-accessible'
-	);
-	await validateStoragePath(
-		uploadDirectoryPath,
-		'isDirectory',
-		'upload-directory-not-accessible'
-	);
-	await validateStoragePathOutsideReleases(
-		releasesDirectory,
-		uploadDirectoryPath,
-		'upload-directory-path-inside-release',
-		'upload-directory-not-accessible'
 	);
 	const mapAssetDirectory = resolve(
 		releaseDirectory,
@@ -273,12 +250,7 @@ export async function validateSelfHostedRuntime(
 		'map-asset-directory-not-accessible',
 		fileSystemConstants.R_OK
 	);
-	return {
-		releaseDirectory,
-		serverPath,
-		sqliteDatabasePath,
-		uploadDirectoryPath,
-	};
+	return { releaseDirectory, serverPath, sqliteDatabasePath };
 }
 
 /**
@@ -346,7 +318,6 @@ export async function startSelfHosted(rootDirectory = projectDirectory) {
 		const result = await runChild(runtime.serverPath, {
 			...process.env,
 			SQLITE_DATABASE_PATH: runtime.sqliteDatabasePath,
-			UPLOAD_DIR: runtime.uploadDirectoryPath,
 		});
 		if (result.signal !== null) {
 			process.kill(process.pid, result.signal);

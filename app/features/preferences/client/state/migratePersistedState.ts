@@ -44,13 +44,14 @@ export const GLOBAL_PERSISTENCE_STORE_VERSION = {
 	recordIdentity: 19,
 	suggestMealsSortProfile: 20, // eslint-disable-next-line sort-keys
 	locale: 21,
+	removeLegacyBackupCode: 22,
 } as const;
 
 export function migrateGlobalPersistedState<T>(
 	persistedState: T,
 	version: number
 ): T {
-	if (version >= GLOBAL_PERSISTENCE_STORE_VERSION.locale) {
+	if (version >= GLOBAL_PERSISTENCE_STORE_VERSION.removeLegacyBackupCode) {
 		return persistedState;
 	}
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
@@ -201,6 +202,9 @@ export function migrateGlobalPersistedState<T>(
 	}
 	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.locale) {
 		oldState.persistence.locale = 'system';
+	}
+	if (version < GLOBAL_PERSISTENCE_STORE_VERSION.removeLegacyBackupCode) {
+		delete oldState.persistence.cloudCode;
 	}
 	return oldState as T;
 }

@@ -25,7 +25,6 @@ import {
 	createSyncProtocolRequestBody,
 } from '@/features/account/sync/protocol';
 import type {
-	ISyncImportBackupCodeResponse,
 	ISyncProtocolRequest,
 	ISyncStateGetResponse,
 	ISyncStatePingBody,
@@ -462,27 +461,6 @@ export async function rebuildSyncState(
 	try {
 		return await fetchServiceApi<ISyncStateRebuildResponse>(
 			'/api/v1/sync/rebuild',
-			{
-				body: JSON.stringify(requestBody),
-				headers: {
-					'Content-Type': FILE_TYPE_JSON,
-					'X-CSRF-Token': csrfToken,
-				},
-				method: 'POST',
-			}
-		);
-	} catch (error) {
-		mapServiceApiError(error);
-	}
-}
-
-export async function importBackupCode(code: string, csrfToken: string) {
-	const requestBody = createSyncProtocolRequestBody({
-		code,
-	}) satisfies ISyncProtocolRequest & { code: string };
-	try {
-		return await fetchServiceApi<ISyncImportBackupCodeResponse>(
-			'/api/v1/sync/import-backup-code',
 			{
 				body: JSON.stringify(requestBody),
 				headers: {

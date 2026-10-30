@@ -6,10 +6,6 @@ import { specialGuestPlansSerializer } from '@/features/account/sync/serializers
 import { validateSpecialGuestPlansData } from '@/features/account/sync/serializers/specialGuestPlansMerge';
 import { type TNormalGuestMealsPersistenceSnapshot } from '@/features/catalog/guests/normal/client/state/accountSync';
 import { type TSpecialGuestMealsPersistenceSnapshot } from '@/features/catalog/guests/special/client/state/accountSync';
-import {
-	compatibilitySpecialGuestData,
-	deleteIndexProperty,
-} from '@/features/legacyBackup/legacyPayload';
 import type { ISpecialGuestPlansState } from '@/features/specialGuestPlans/contracts';
 
 import { isObjectTagRecord } from '@/shared/utilities/objects/isObjectTagRecord';
@@ -47,6 +43,40 @@ function migrateCurrentRarePlans(data: unknown) {
 	}
 
 	throw new TypeError('invalid special guest plans');
+}
+
+function compatibilitySpecialGuestData(objects: Record<string, object[]>) {
+	Object.values(objects).forEach((data) => {
+		data.forEach((item, index) => {
+			const object = item as Record<string, unknown>;
+			if (!('price' in object || 'rating' in object)) {
+				return;
+			}
+
+			const beverage = object['beverage'] as string;
+			const hasMystiaCooker = object['hasMystiaCooker'] as boolean;
+			const order = (object['order'] as {
+				beverageTag: string | null;
+				recipeTag: string | null;
+			} | null) ?? { beverageTag: null, recipeTag: null };
+			const recipe = {
+				extraIngredients: object['extraIngredients'] as string[],
+				name: object['recipe'] as string,
+			};
+
+			data[index] = { beverage, hasMystiaCooker, order, recipe };
+		});
+	});
+}
+
+function deleteIndexProperty(objects: Record<string, object[]>) {
+	Object.values(objects).forEach((data) => {
+		data.forEach((object) => {
+			if ('index' in object) {
+				delete object.index;
+			}
+		});
+	});
 }
 
 export function parseGuestDataImport(json: unknown): IGuestDataImport {

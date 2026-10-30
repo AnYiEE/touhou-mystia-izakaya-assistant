@@ -18,7 +18,6 @@ export const SYNC_PAUSED_REASON_SET = new Set<TSyncPausedReason | null>([
 	'cloud-paused',
 	'conflict',
 	'delete-data',
-	'importing-backup',
 ]);
 
 export const MAX_LOCAL_COLLISION_STRING_LENGTH = 256;

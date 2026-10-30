@@ -17,7 +17,6 @@
 
 # server-side files
 /.site-status-build-operation-id
-/upload
 /sqlite.db*
 
 # local env files

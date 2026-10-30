@@ -142,7 +142,7 @@ Self-hosted `pnpm build` attempts to publish maintenance state through the confi
 
 External process managers may invoke `scripts/startSelfHosted.mjs` and other designated script entry points directly with plain `node`. Keep such entry points and their complete runtime import graph as JavaScript (`.mjs`/`.js`); do not convert them to TypeScript or require `tsx`, a custom loader, path aliases, or a precompile step.
 
-SQLite, uploads, backups, and environment files must use stable paths outside `.deploy/releases/`, shared by old and new processes. Defaults are project-root `sqlite.db` and `upload/`, with backups under `<UPLOAD_DIR>/backups/`; explicit persistence paths may be absolute locations elsewhere. This single-host SQLite design requires reliable local locking semantics.
+SQLite databases and environment files must use stable paths outside `.deploy/releases/`, shared by old and new processes. The default database is project-root `sqlite.db`; explicit database paths may be absolute locations elsewhere. This single-host SQLite design requires reliable local locking semantics.
 
 ### Browser compatibility
 
@@ -207,9 +207,9 @@ Use existing configuration and dependencies by default. If a new environment var
 
 Declare application environment variables in `app/declarations/environment.d.ts`; keep declarations, validation/defaults, and documentation aligned. Every value in `next.config.ts#env` is client-visible, so server secrets never belong there.
 
-`APP_SECRET` requires at least 32 UTF-8 bytes. Explicit `SQLITE_DATABASE_PATH` and `UPLOAD_DIR` values must be absolute. `TRUST_PROXY` is valid only behind a proxy that overwrites forwarded headers, and production account cookies require HTTPS unless the explicitly unsafe `ALLOW_INSECURE_COOKIES` override is enabled. `SKIP_LINT` is a production-only build escape hatch; offline builds manage their own skip mode.
+`APP_SECRET` requires at least 32 UTF-8 bytes. An explicit `SQLITE_DATABASE_PATH` must be absolute. `TRUST_PROXY` is valid only behind a proxy that overwrites forwarded headers, and production account cookies require HTTPS unless the explicitly unsafe `ALLOW_INSECURE_COOKIES` override is enabled. `SKIP_LINT` is a production-only build escape hatch; offline builds manage their own skip mode.
 
-Do not expose or commit local environment files, persistent databases/uploads, authentication material, backups, or user payloads. Log stable redacted codes through `getLogSafeErrorCode` rather than payload-bearing errors.
+Do not expose or commit local environment files, persistent databases, authentication material, or user payloads. Log stable redacted codes through `getLogSafeErrorCode` rather than payload-bearing errors.
 
 ## Change and verification requirements
 
@@ -236,7 +236,7 @@ For runtime-affecting code or configuration, exercise every affected area below.
 - Sync behavior: when changed code affects a synced store, serializer, validation, persistence, broadcast, locking, queue, or conflict semantics, verify local edit, upload, remote refresh, manual and automatic conflicts, failure/retry, page refresh, and simultaneously visible tabs.
 - Database transaction changes: exercise the affected success, validation-failure, and rollback paths.
 - Schema/migration changes: use an existing old database and a fresh database, and cover interruption plus old/new process overlap.
-- Build or offline behavior: run the affected build mode with development-only persistent paths. The SQLite path must be available during self-hosted build to exercise maintenance-state publication; the launcher separately validates SQLite and upload paths.
+- Build or offline behavior: run the affected build mode with a development-only persistent database path. The SQLite path must be available during self-hosted build to exercise maintenance-state publication; the launcher separately validates the SQLite path.
 - Recommendation bridge: exercise each affected protocol, scheduler, cancellation, generation-isolation, and recommendation-equivalence aspect. The reference Mod covers WS flows; retained fixtures cover parsing and request/response boundaries. Release acceptance separately covers trusted WSS/TLS, Origin, loopback/LNA, CSP, and affected account, ownership, reconnect, and privacy paths.
 - Self-hosted deployment: exercise affected publication, rollback, locking, launcher, persistent-path, and old/new-process behavior.
 - Environment changes: keep declarations, validation, defaults, exposure, and documentation aligned; exercise each affected runtime/build mode.

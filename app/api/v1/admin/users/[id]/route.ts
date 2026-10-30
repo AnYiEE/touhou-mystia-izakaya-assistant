@@ -1,4 +1,4 @@
-import { type NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 import { authenticateAdminFromRequest } from '@/features/account/admin/server/http/authentication';
 import {
@@ -91,17 +91,14 @@ export async function GET(
 		);
 	}
 
-	const [backupImports, credential, sessions, namespaces, passkeys] =
-		await Promise.all([
-			userStateModule.listRecentBackupImportRecordsByUserId(user.id),
-			credentialsModule.getCredentialByUserId(user.id),
-			sessionsModule.listSessionsByUserId(user.id),
-			userStateModule.listUserNamespaces(user.id),
-			webauthnCredentialsModule.listCredentialsByUserId(user.id),
-		]);
+	const [credential, sessions, namespaces, passkeys] = await Promise.all([
+		credentialsModule.getCredentialByUserId(user.id),
+		sessionsModule.listSessionsByUserId(user.id),
+		userStateModule.listUserNamespaces(user.id),
+		webauthnCredentialsModule.listCredentialsByUserId(user.id),
+	]);
 
 	return createNoStoreJsonResponse({
-		backup_imports: backupImports,
 		has_password: credential?.password_set === 1,
 		namespaces,
 		passkeys: passkeys.map((passkey) =>

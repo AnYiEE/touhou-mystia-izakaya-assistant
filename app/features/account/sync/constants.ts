@@ -5,7 +5,6 @@ import {
 
 export const ACCOUNT_SYNC_OPERATION_KIND_MAP = {
 	deleteData: 'delete-data',
-	importBackup: 'import-backup',
 	rebuildCloud: 'rebuild-cloud',
 } as const;
 

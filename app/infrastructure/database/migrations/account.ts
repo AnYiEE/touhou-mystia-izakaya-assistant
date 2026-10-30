@@ -100,14 +100,6 @@ const ACCOUNT_TABLE_COLUMNS_MAP = {
 		'created_at',
 		'expires_at',
 	],
-	[TABLE_NAME_MAP.backupImportRecord]: [
-		'code',
-		'user_id',
-		'file_name',
-		'results',
-		'state_epoch',
-		'created_at',
-	],
 } as const;
 
 const ACCOUNT_TABLE_COLUMN_DEFINITION_MAP = {
@@ -188,14 +180,6 @@ const ACCOUNT_TABLE_COLUMN_DEFINITION_MAP = {
 		expires_at: { dataType: 'integer', defaultTo: 0, notNull: true },
 		id: { dataType: 'text', structural: true },
 		purpose: { dataType: 'text', defaultTo: 'registration', notNull: true },
-		user_id: { dataType: 'text', structural: true },
-	},
-	[TABLE_NAME_MAP.backupImportRecord]: {
-		code: { dataType: 'text', structural: true },
-		created_at: { dataType: 'integer', defaultTo: 0, notNull: true },
-		file_name: { dataType: 'text' },
-		results: { dataType: 'text', defaultTo: '[]', notNull: true },
-		state_epoch: { dataType: 'integer', defaultTo: 0, notNull: true },
 		user_id: { dataType: 'text', structural: true },
 	},
 } as const satisfies Record<
@@ -377,11 +361,6 @@ async function ensureAccountTableStructure(database: Kysely<TDatabase>) {
 		['user_id', 'namespace']
 	);
 	assertPrimaryKeyColumns(
-		TABLE_NAME_MAP.backupImportRecord,
-		await getPrimaryKeyColumns(database, TABLE_NAME_MAP.backupImportRecord),
-		['code']
-	);
-	assertPrimaryKeyColumns(
 		TABLE_NAME_MAP.userWebauthnCredential,
 		await getPrimaryKeyColumns(
 			database,
@@ -399,7 +378,6 @@ async function ensureAccountTableStructure(database: Kysely<TDatabase>) {
 		assertForeignKeyToUsers(database, TABLE_NAME_MAP.userCredential),
 		assertForeignKeyToUsers(database, TABLE_NAME_MAP.session),
 		assertForeignKeyToUsers(database, TABLE_NAME_MAP.userState),
-		assertForeignKeyToUsers(database, TABLE_NAME_MAP.backupImportRecord),
 		assertForeignKeyToUsers(
 			database,
 			TABLE_NAME_MAP.userWebauthnCredential
@@ -467,22 +445,6 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.addColumn('updated_at', 'integer', (col) => col.notNull())
 		.addColumn('last_login_at', 'integer')
 		.addColumn('deleted_at', 'integer')
-		.execute();
-
-	await database.schema
-		.createTable(TABLE_NAME_MAP.backupImportRecord)
-		.ifNotExists()
-		.addColumn('code', 'text', (col) => col.notNull().primaryKey())
-		.addColumn('user_id', 'text', (col) =>
-			col
-				.notNull()
-				.references(`${TABLE_NAME_MAP.user}.id`)
-				.onDelete('cascade')
-		)
-		.addColumn('file_name', 'text')
-		.addColumn('results', 'text', (col) => col.notNull())
-		.addColumn('state_epoch', 'integer', (col) => col.notNull())
-		.addColumn('created_at', 'integer', (col) => col.notNull())
 		.execute();
 
 	await database.schema
@@ -616,21 +578,6 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 			tableName: TABLE_NAME_MAP.user,
 		},
 		{
-			columns: ['user_id'],
-			indexName: 'backup_imports_user_id_index',
-			tableName: TABLE_NAME_MAP.backupImportRecord,
-		},
-		{
-			columns: ['created_at'],
-			indexName: 'backup_imports_created_at_index',
-			tableName: TABLE_NAME_MAP.backupImportRecord,
-		},
-		{
-			columns: ['user_id', 'created_at'],
-			indexName: 'backup_imports_user_created_at_index',
-			tableName: TABLE_NAME_MAP.backupImportRecord,
-		},
-		{
 			columns: ['token_hash'],
 			indexName: 'sessions_token_hash_unique_index',
 			tableName: TABLE_NAME_MAP.session,
@@ -701,27 +648,6 @@ export async function migrateAccountTables(database: Kysely<TDatabase>) {
 		.ifNotExists()
 		.on(TABLE_NAME_MAP.user)
 		.columns(['status', 'updated_at', 'id'])
-		.execute();
-
-	await database.schema
-		.createIndex('backup_imports_user_id_index')
-		.ifNotExists()
-		.on(TABLE_NAME_MAP.backupImportRecord)
-		.column('user_id')
-		.execute();
-
-	await database.schema
-		.createIndex('backup_imports_created_at_index')
-		.ifNotExists()
-		.on(TABLE_NAME_MAP.backupImportRecord)
-		.column('created_at')
-		.execute();
-
-	await database.schema
-		.createIndex('backup_imports_user_created_at_index')
-		.ifNotExists()
-		.on(TABLE_NAME_MAP.backupImportRecord)
-		.columns(['user_id', 'created_at'])
 		.execute();
 
 	await database.schema

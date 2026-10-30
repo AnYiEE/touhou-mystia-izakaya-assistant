@@ -72,7 +72,6 @@ export const ACCOUNT_SYNC_PAUSED_REASON_LABEL_KEYS = {
 	'cloud-paused': 'account.sync.pausedReason.cloudPaused',
 	conflict: ACCOUNT_SYNC_NAMESPACE_STATUS_LABEL_KEYS.conflict,
 	'delete-data': 'account.sync.pausedReason.deleteData',
-	'importing-backup': 'account.sync.pausedReason.importingBackup',
 } as const satisfies Record<string, TAccountMessageKey>;
 
 export const ACCOUNT_SYNC_FAILED_ATTEMPTS_MESSAGE_KEY: TAccountMessageKey =

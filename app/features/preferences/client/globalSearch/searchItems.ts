@@ -115,20 +115,9 @@ const BASE_PREFERENCE_SEARCH_ITEMS = [
 		label: '显示料理标签描述',
 	},
 	{
-		description: '导入、导出、备份、还原或重置顾客套餐和营业预设数据',
+		description: '导入、导出或重置顾客套餐和营业预设数据',
 		key: 'data-manager',
-		keywords: [
-			'本地导入',
-			'本地导出',
-			'导入',
-			'导出',
-			'备份',
-			'还原',
-			'重置',
-			'旧备份码',
-			'云端备份',
-			'云端还原',
-		],
+		keywords: ['本地导入', '本地导出', '导入', '导出', '重置'],
 		label: '数据管理',
 	},
 ] as const;
@@ -267,17 +256,8 @@ const LOCALIZED_PREFERENCE_SEARCH_ITEM_TEXT: Record<
 		},
 		'data-manager': {
 			description:
-				'Import, export, back up, restore, or reset guest meals and business plans',
-			keywords: [
-				'import',
-				'export',
-				'backup',
-				'restore',
-				'reset',
-				'legacy backup code',
-				'cloud backup',
-				'cloud restore',
-			],
+				'Import, export, or reset guest meals and business plans',
+			keywords: ['import', 'export', 'reset'],
 			label: 'Data management',
 		},
 		'experience-tags-tooltip': {
@@ -408,17 +388,12 @@ const LOCALIZED_PREFERENCE_SEARCH_ITEM_TEXT: Record<
 		},
 		'data-manager': {
 			description:
-				'お客様のセットメニューと営業プリセットデータの入出力・バックアップ・復元・リセット',
+				'お客様のセットメニューと営業プリセットデータの入出力・リセット',
 			keywords: [
 				'ローカル入出力',
 				'インポート',
 				'エクスポート',
-				'バックアップ',
-				'復元',
 				'リセット',
-				'旧バックアップコード',
-				'クラウドバックアップ',
-				'クラウド復元',
 			],
 			label: 'データ管理',
 		},
@@ -549,17 +524,8 @@ const LOCALIZED_PREFERENCE_SEARCH_ITEM_TEXT: Record<
 		},
 		'data-manager': {
 			description:
-				'손님 세트 메뉴와 영업 프리셋 데이터 가져오기·내보내기·백업·복원·초기화',
-			keywords: [
-				'가져오기',
-				'내보내기',
-				'백업',
-				'복원',
-				'초기화',
-				'구 백업 코드',
-				'클라우드 백업',
-				'클라우드 복원',
-			],
+				'손님 세트 메뉴와 영업 프리셋 데이터 가져오기·내보내기·초기화',
+			keywords: ['가져오기', '내보내기', '초기화'],
 			label: '데이터 관리',
 		},
 		'experience-tags-tooltip': {
@@ -691,19 +657,8 @@ const LOCALIZED_PREFERENCE_SEARCH_ITEM_TEXT: Record<
 			label: '顧客頁面右下角的立繪',
 		},
 		'data-manager': {
-			description: '匯入、匯出、備份、還原或重設顧客套餐和營業預設資料',
-			keywords: [
-				'本地匯入',
-				'本地匯出',
-				'匯入',
-				'匯出',
-				'備份',
-				'還原',
-				'重設',
-				'舊備份碼',
-				'雲端備份',
-				'雲端還原',
-			],
+			description: '匯入、匯出或重設顧客套餐和營業預設資料',
+			keywords: ['本地匯入', '本地匯出', '匯入', '匯出', '重設'],
 			label: '資料管理',
 		},
 		'experience-tags-tooltip': {

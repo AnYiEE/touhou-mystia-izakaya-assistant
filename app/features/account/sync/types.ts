@@ -35,8 +35,7 @@ export type TSyncPausedReason =
 	| 'bootstrap'
 	| 'cloud-paused'
 	| 'conflict'
-	| 'delete-data'
-	| 'importing-backup';
+	| 'delete-data';
 
 export interface IDirtyQueueEntry {
 	attempts: number;
@@ -204,14 +203,6 @@ export interface ISyncStateRebuildResponse {
 	state_epoch: number;
 	sync_generation: number;
 	sync_status: 'active';
-}
-
-export interface ISyncImportBackupCodeResponse {
-	results: Array<{
-		namespace: TSyncNamespace;
-		revision: number;
-		status: 'ok';
-	}>;
 }
 
 export interface ISyncMergeParams<T> {

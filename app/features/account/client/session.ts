@@ -1,23 +1,18 @@
-import { ACCOUNT_SYNC_STATUS_MAP } from '@/domain/account/contracts';
-
 import type {
 	IAuthLoginSuccessResponse,
 	TAccountMeResponse,
 } from '@/features/account/contracts';
-import { isFeatureModuleAllowed } from '@/features/featureAccess/client/access';
-import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
 
 import { normalizeServiceRetryAfterSeconds } from '@/infrastructure/http/client/fetchServiceApi';
 
 import { publishAccountRuntimeInvalidation } from './accountRuntimeInvalidation';
-import { AccountApiError, fetchAccountMe, importBackupCode } from './api';
+import { AccountApiError, fetchAccountMe } from './api';
 import { accountStore } from './state/accountStore';
 import { readAccountSyncResetGeneration } from './sync/resetGeneration';
 import { registerAccountSessionRefreshPort } from './sync/sessionRefreshPort';
 import { readAccountSyncMeta } from './sync/snapshot';
 import { withAccountSyncPaused } from './sync/stateGuards';
 import { getAccountSyncLifecyclePort } from './sync/syncLifecyclePort';
-import { withAccountSyncOperationLease } from './sync/syncOperationLease';
 import { clearAccountSyncRuntimeConflicts } from './sync/syncRuntimeState';
 
 let accountStateRequestGeneration = 0;
@@ -250,66 +245,6 @@ export function applyAccountAuthSuccessResponse(
 	return true;
 }
 
-export async function importPendingLegacyBackupCode(
-	csrfToken: string,
-	checkCurrentRequest = () => true,
-	userId?: string
-) {
-	if (!isFeatureModuleAllowed('account.sync')) {
-		return false;
-	}
-	if (
-		accountStore.shared.user.get()?.sync_status ===
-		ACCOUNT_SYNC_STATUS_MAP.pausedEmpty
-	) {
-		accountStore.shared.sync.lastError.set('sync-paused');
-		return false;
-	}
-	const cloudCode = globalStore.persistence.cloudCode.get();
-	const normalizedCode = cloudCode?.trim() ?? '';
-
-	if (normalizedCode === '') {
-		if (cloudCode !== null && checkCurrentRequest()) {
-			globalStore.persistence.cloudCode.set(null);
-		}
-		return false;
-	}
-
-	try {
-		if (!checkCurrentRequest()) {
-			return false;
-		}
-
-		const result =
-			userId === undefined
-				? await importBackupCode(normalizedCode, csrfToken)
-				: await withAccountSyncOperationLease(
-						userId,
-						'import-backup',
-						() => importBackupCode(normalizedCode, csrfToken)
-					);
-		if (result === null) {
-			throw new Error('backup-code-lock-lost');
-		}
-		if (!checkCurrentRequest()) {
-			return false;
-		}
-
-		accountStore.shared.sync.lastError.set(null);
-	} catch (error) {
-		if (!checkCurrentRequest()) {
-			return false;
-		}
-
-		accountStore.shared.sync.lastError.set(
-			Error.isError(error) ? error.message : 'legacy-import-failed'
-		);
-		return false;
-	}
-
-	return true;
-}
-
 export async function completeAccountPostLoginBootstrap({
 	csrfToken,
 	generation,
@@ -331,7 +266,6 @@ export async function completeAccountPostLoginBootstrap({
 			expectedCsrfToken: csrfToken,
 			expectedUserId: userId,
 		});
-	let didImportPendingLegacyBackupCode = false;
 	let didTakeOverLocalAccountData = false;
 	const syncLifecyclePort = getAccountSyncLifecyclePort();
 	await withAccountSyncPaused(async () => {
@@ -340,27 +274,8 @@ export async function completeAccountPostLoginBootstrap({
 		}
 
 		try {
-			didImportPendingLegacyBackupCode =
-				await importPendingLegacyBackupCode(
-					csrfToken,
-					checkCurrentRequest,
-					userId
-				);
-		} catch (error) {
-			if (checkCurrentRequest()) {
-				accountStore.shared.sync.lastError.set(
-					Error.isError(error)
-						? error.message
-						: 'legacy-import-failed'
-				);
-			}
-		}
-		try {
 			if (!checkCurrentRequest()) {
 				return;
-			}
-			if (didImportPendingLegacyBackupCode && checkCurrentRequest()) {
-				globalStore.persistence.cloudCode.set(null);
 			}
 
 			didTakeOverLocalAccountData =

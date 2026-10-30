@@ -9,11 +9,6 @@ const ACCOUNT_ERROR_MESSAGES_ZH_CN = {
 		'云端数据已清空，请刷新页面后再恢复云同步',
 	'account.error.account-sync-reset-incomplete':
 		'本地同步重置尚未完成，系统会自动重试',
-	'account.error.backup-code-already-imported': '这个旧备份码已被导入',
-	'account.error.backup-code-lock-lost': '旧备份码正在被处理，请稍后重试',
-	'account.error.backup-code-lock-timeout': '旧备份码处理超时，请重试',
-	'account.error.backup-code-not-found':
-		'没有找到这个旧备份码，可能已过期、已导入或已被删除',
 	'account.error.bootstrap-failed': '账号初始化失败，请刷新页面重试',
 	'account.error.cannot-revoke-current-session':
 		'不能在这里撤销当前会话，请使用退出登录',
@@ -28,10 +23,6 @@ const ACCOUNT_ERROR_MESSAGES_ZH_CN = {
 	'account.error.fallback': '操作失败，请稍后重试',
 	'account.error.forbidden': '登录状态已变化，请刷新后重试',
 	'account.error.invalid-api-response': '服务器响应异常，请重试',
-	'account.error.invalid-backup-code':
-		'旧备份码格式不正确，请检查是否完整复制',
-	'account.error.invalid-backup-file':
-		'这个旧备份码中的数据无法读取，可能已经损坏',
 	'account.error.invalid-credentials': '用户名或密码不正确',
 	'account.error.invalid-nickname': '昵称格式不符合要求',
 	'account.error.invalid-object-structure': '提交内容格式异常',
@@ -39,12 +30,6 @@ const ACCOUNT_ERROR_MESSAGES_ZH_CN = {
 	'account.error.invalid-password': '当前密码不正确',
 	'account.error.invalid-user-status': '账号状态不允许执行此操作',
 	'account.error.invalid-username': '用户名格式不符合要求',
-	'account.error.legacy-backup-disabled-offline': '离线包不支持旧云备份功能',
-	'account.error.legacy-import-failed': '旧备份码导入失败，请重试',
-	'account.error.legacy-import-local-takeover-failed':
-		'本地数据接管失败，请刷新页面后重试',
-	'account.error.legacy-import-sync-pending':
-		'当前账号同步尚未完成，请稍后重试',
 	'account.error.local-takeover-failed': '本地数据接管失败，请刷新页面后重试',
 	'account.error.passkey-not-found': '通行密钥不存在',
 	'account.error.password-already-set': '已设置登录密码，请使用修改密码',
@@ -114,14 +99,6 @@ export const accountErrorMessages = {
 			'Cloud data has been cleared; refresh the page before resuming cloud sync',
 		'account.error.account-sync-reset-incomplete':
 			'Local sync reset has not finished; the system will retry automatically',
-		'account.error.backup-code-already-imported':
-			'This legacy backup code has already been imported',
-		'account.error.backup-code-lock-lost':
-			'This legacy backup code is being processed; try again later',
-		'account.error.backup-code-lock-timeout':
-			'Processing the legacy backup code timed out; try again',
-		'account.error.backup-code-not-found':
-			'This legacy backup code was not found; it may have expired, been imported, or been deleted',
 		'account.error.bootstrap-failed':
 			'Account initialization failed; refresh the page and try again',
 		'account.error.cannot-revoke-current-session':
@@ -143,10 +120,6 @@ export const accountErrorMessages = {
 			'The sign-in state has changed; refresh and try again',
 		'account.error.invalid-api-response':
 			'Unexpected server response; try again',
-		'account.error.invalid-backup-code':
-			'The legacy backup code is malformed; check that it was copied in full',
-		'account.error.invalid-backup-file':
-			'The data in this legacy backup code cannot be read; it may be corrupted',
 		'account.error.invalid-credentials': 'Incorrect username or password',
 		'account.error.invalid-nickname':
 			'The nickname format does not meet the requirements',
@@ -159,14 +132,6 @@ export const accountErrorMessages = {
 			'The account status does not allow this operation',
 		'account.error.invalid-username':
 			'The username format does not meet the requirements',
-		'account.error.legacy-backup-disabled-offline':
-			'The offline package does not support legacy cloud backup',
-		'account.error.legacy-import-failed':
-			'Legacy backup code import failed; try again',
-		'account.error.legacy-import-local-takeover-failed':
-			'Local data takeover failed; refresh the page and try again',
-		'account.error.legacy-import-sync-pending':
-			'Account sync has not finished yet; try again later',
 		'account.error.local-takeover-failed':
 			'Local data takeover failed; refresh the page and try again',
 		'account.error.passkey-not-found': 'The passkey does not exist',
@@ -244,14 +209,6 @@ export const accountErrorMessages = {
 			'クラウドデータを消去しました。ページを更新してからクラウド同期を再開してください',
 		'account.error.account-sync-reset-incomplete':
 			'ローカル同期のリセットが未完了です。システムが自動的に再試行します',
-		'account.error.backup-code-already-imported':
-			'この旧バックアップコードはすでにインポート済みです',
-		'account.error.backup-code-lock-lost':
-			'旧バックアップコードを処理中です。しばらくしてから再試行してください',
-		'account.error.backup-code-lock-timeout':
-			'旧バックアップコードの処理がタイムアウトしました。再試行してください',
-		'account.error.backup-code-not-found':
-			'この旧バックアップコードは見つかりません。期限切れ・インポート済み・削除済みの可能性があります',
 		'account.error.bootstrap-failed':
 			'アカウントの初期化に失敗しました。ページを更新して再試行してください',
 		'account.error.cannot-revoke-current-session':
@@ -274,10 +231,6 @@ export const accountErrorMessages = {
 			'ログイン状態が変化しました。更新して再試行してください',
 		'account.error.invalid-api-response':
 			'サーバー応答が異常です。再試行してください',
-		'account.error.invalid-backup-code':
-			'旧バックアップコードの形式が正しくありません。全体をコピーしたか確認してください',
-		'account.error.invalid-backup-file':
-			'この旧バックアップコードのデータを読み取れません。破損している可能性があります',
 		'account.error.invalid-credentials':
 			'ユーザー名またはパスワードが正しくありません',
 		'account.error.invalid-nickname':
@@ -290,14 +243,6 @@ export const accountErrorMessages = {
 			'アカウント状態ではこの操作を実行できません',
 		'account.error.invalid-username':
 			'ユーザー名の形式が要件を満たしていません',
-		'account.error.legacy-backup-disabled-offline':
-			'オフラインパッケージでは旧クラウドバックアップを利用できません',
-		'account.error.legacy-import-failed':
-			'旧バックアップコードのインポートに失敗しました。再試行してください',
-		'account.error.legacy-import-local-takeover-failed':
-			'ローカルデータの引き継ぎに失敗しました。ページを更新して再試行してください',
-		'account.error.legacy-import-sync-pending':
-			'アカウント同期がまだ完了していません。しばらくしてから再試行してください',
 		'account.error.local-takeover-failed':
 			'ローカルデータの引き継ぎに失敗しました。ページを更新して再試行してください',
 		'account.error.passkey-not-found': 'パスキーが存在しません',
@@ -379,14 +324,6 @@ export const accountErrorMessages = {
 			'클라우드 데이터가 비워졌습니다. 페이지를 새로고침한 뒤 클라우드 동기화를 재개하세요',
 		'account.error.account-sync-reset-incomplete':
 			'로컬 동기화 초기화가 아직 완료되지 않았습니다. 시스템이 자동으로 재시도합니다',
-		'account.error.backup-code-already-imported':
-			'이 구 백업 코드는 이미 가져왔습니다',
-		'account.error.backup-code-lock-lost':
-			'구 백업 코드를 처리 중입니다. 잠시 후 다시 시도하세요',
-		'account.error.backup-code-lock-timeout':
-			'구 백업 코드 처리 시간이 초과되었습니다. 다시 시도하세요',
-		'account.error.backup-code-not-found':
-			'이 구 백업 코드를 찾을 수 없습니다. 만료되었거나 이미 가져왔거나 삭제되었을 수 있습니다',
 		'account.error.bootstrap-failed':
 			'계정 초기화에 실패했습니다. 페이지를 새로고침한 뒤 다시 시도하세요',
 		'account.error.cannot-revoke-current-session':
@@ -409,10 +346,6 @@ export const accountErrorMessages = {
 			'로그인 상태가 변경되었습니다. 새로고침한 뒤 다시 시도하세요',
 		'account.error.invalid-api-response':
 			'서버 응답이 비정상입니다. 다시 시도하세요',
-		'account.error.invalid-backup-code':
-			'구 백업 코드 형식이 올바르지 않습니다. 전체를 복사했는지 확인하세요',
-		'account.error.invalid-backup-file':
-			'이 구 백업 코드의 데이터를 읽을 수 없습니다. 손상되었을 수 있습니다',
 		'account.error.invalid-credentials':
 			'사용자 이름 또는 비밀번호가 틀립니다',
 		'account.error.invalid-nickname':
@@ -426,14 +359,6 @@ export const accountErrorMessages = {
 			'계정 상태에서는 이 작업을 실행할 수 없습니다',
 		'account.error.invalid-username':
 			'사용자 이름 형식이 요구 사항을 충족하지 않습니다',
-		'account.error.legacy-backup-disabled-offline':
-			'오프라인 패키지에서는 구 클라우드 백업을 사용할 수 없습니다',
-		'account.error.legacy-import-failed':
-			'구 백업 코드 가져오기에 실패했습니다. 다시 시도하세요',
-		'account.error.legacy-import-local-takeover-failed':
-			'로컬 데이터 인수에 실패했습니다. 페이지를 새로고침한 뒤 다시 시도하세요',
-		'account.error.legacy-import-sync-pending':
-			'계정 동기화가 아직 완료되지 않았습니다. 잠시 후 다시 시도하세요',
 		'account.error.local-takeover-failed':
 			'로컬 데이터 인수에 실패했습니다. 페이지를 새로고침한 뒤 다시 시도하세요',
 		'account.error.passkey-not-found': '패스키가 존재하지 않습니다',
@@ -512,11 +437,6 @@ export const accountErrorMessages = {
 			'雲端資料已清空，請重新整理頁面後再恢復雲端同步',
 		'account.error.account-sync-reset-incomplete':
 			'本地同步重設尚未完成，系統會自動重試',
-		'account.error.backup-code-already-imported': '這個舊備份碼已被匯入',
-		'account.error.backup-code-lock-lost': '舊備份碼正在被處理，請稍後重試',
-		'account.error.backup-code-lock-timeout': '舊備份碼處理逾時，請重試',
-		'account.error.backup-code-not-found':
-			'沒有找到這個舊備份碼，可能已過期、已匯入或已被刪除',
 		'account.error.bootstrap-failed': '帳號初始化失敗，請重新整理頁面重試',
 		'account.error.cannot-revoke-current-session':
 			'不能在這裡撤銷目前工作階段，請使用登出',
@@ -532,10 +452,6 @@ export const accountErrorMessages = {
 		'account.error.fallback': '操作失敗，請稍後重試',
 		'account.error.forbidden': '登入狀態已變化，請重新整理後重試',
 		'account.error.invalid-api-response': '伺服器回應異常，請重試',
-		'account.error.invalid-backup-code':
-			'舊備份碼格式不正確，請檢查是否完整複製',
-		'account.error.invalid-backup-file':
-			'這個舊備份碼中的資料無法讀取，可能已經損壞',
 		'account.error.invalid-credentials': '使用者名稱或密碼不正確',
 		'account.error.invalid-nickname': '暱稱格式不符合要求',
 		'account.error.invalid-object-structure': '提交內容格式異常',
@@ -543,13 +459,6 @@ export const accountErrorMessages = {
 		'account.error.invalid-password': '目前密碼不正確',
 		'account.error.invalid-user-status': '帳號狀態不允許執行此操作',
 		'account.error.invalid-username': '使用者名稱格式不符合要求',
-		'account.error.legacy-backup-disabled-offline':
-			'離線包不支援舊雲端備份功能',
-		'account.error.legacy-import-failed': '舊備份碼匯入失敗，請重試',
-		'account.error.legacy-import-local-takeover-failed':
-			'本地資料接管失敗，請重新整理頁面後重試',
-		'account.error.legacy-import-sync-pending':
-			'目前帳號同步尚未完成，請稍後重試',
 		'account.error.local-takeover-failed':
 			'本地資料接管失敗，請重新整理頁面後重試',
 		'account.error.passkey-not-found': '通行密鑰不存在',

@@ -1,9 +1,4 @@
-import {
-	type Generated,
-	type Insertable,
-	type Selectable,
-	type Updateable,
-} from 'kysely';
+import type { Generated, Insertable, Selectable, Updateable } from 'kysely';
 
 import {
 	type TAccountSsoCallbackEvent,
@@ -63,31 +58,6 @@ interface ITableAnnouncementVersion {
 	id: Generated<number>;
 	revision: number;
 	snapshot_json: string;
-}
-
-interface ITableBackupFileRecord {
-	code: string;
-	created_at: number;
-	file_name: string | null;
-	ip_address: string;
-	last_accessed: number;
-	user_agent: string;
-	user_id: string;
-}
-
-interface ITableBackupCodeLock {
-	code: string;
-	expires_at: number;
-	owner_id: string;
-}
-
-interface ITableBackupImportRecord {
-	code: string;
-	created_at: number;
-	file_name: string | null;
-	results: string;
-	state_epoch: number;
-	user_id: string;
 }
 
 interface ITableFeatureAccessGroup {
@@ -311,18 +281,6 @@ interface ITableWebauthnChallenge {
 	user_id: string | null;
 }
 
-export type TBackupFileRecord = Selectable<ITableBackupFileRecord>;
-export type TBackupFileRecordNew = Insertable<ITableBackupFileRecord>;
-export type TBackupFileRecordUpdate = Updateable<ITableBackupFileRecord>;
-
-export type TBackupCodeLock = Selectable<ITableBackupCodeLock>;
-export type TBackupCodeLockNew = Insertable<ITableBackupCodeLock>;
-export type TBackupCodeLockUpdate = Updateable<ITableBackupCodeLock>;
-
-export type TBackupImportRecord = Selectable<ITableBackupImportRecord>;
-export type TBackupImportRecordNew = Insertable<ITableBackupImportRecord>;
-export type TBackupImportRecordUpdate = Updateable<ITableBackupImportRecord>;
-
 export type TFeatureAccessGroup = Selectable<ITableFeatureAccessGroup>;
 export type TFeatureAccessGroupNew = Insertable<ITableFeatureAccessGroup>;
 export type TFeatureAccessGroupUpdate = Updateable<ITableFeatureAccessGroup>;
@@ -430,9 +388,6 @@ export interface TDatabase {
 	announcement_dismissals: ITableAnnouncementDismissal;
 	announcement_versions: ITableAnnouncementVersion;
 	announcements: ITableAnnouncement;
-	backup_code_locks: ITableBackupCodeLock;
-	backup_files: ITableBackupFileRecord;
-	backup_imports: ITableBackupImportRecord;
 	feature_access_group_members: ITableFeatureAccessGroupMember;
 	feature_access_group_modules: ITableFeatureAccessGroupModule;
 	feature_access_groups: ITableFeatureAccessGroup;

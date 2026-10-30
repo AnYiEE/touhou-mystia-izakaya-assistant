@@ -144,19 +144,6 @@ const ACCOUNT_MESSAGES_ZH_CN = {
 	'account.conflict.value.suitability': '匹配度',
 	'account.conflict.value.time': '烹饪时间',
 	'account.conflict.value.unavailable': '无法显示',
-	'account.legacyImport.clearAction': '清空备份码',
-	'account.legacyImport.codeHint':
-		'备份码通常来自旧版云端备份功能，请完整复制后粘贴',
-	'account.legacyImport.codeLabel': '旧备份码',
-	'account.legacyImport.codePlaceholder': '粘贴旧备份码',
-	'account.legacyImport.description':
-		'输入旧版云端备份码并点击导入，其中保存的套餐数据将被合并到当前账号。导入成功后，该备份码将自动失效。',
-	'account.legacyImport.failed': '导入失败，请稍后重试',
-	'account.legacyImport.importAction': '导入到账号',
-	'account.legacyImport.signInAction': '登录或注册',
-	'account.legacyImport.signInRequired':
-		'旧备份码只能导入到已登录账号。请先登录或注册。',
-	'account.legacyImport.success': '导入成功，可继续导入下一个旧备份码',
 	'account.manager.accountDeleteFailed': '删除账号失败',
 	'account.manager.auth.loginAction': '登录账号',
 	'account.manager.auth.loginTab': '登录',
@@ -415,7 +402,6 @@ const ACCOUNT_MESSAGES_ZH_CN = {
 	'account.sync.pausedReason.bootstrap': '初始化中',
 	'account.sync.pausedReason.cloudPaused': '云同步已暂停',
 	'account.sync.pausedReason.deleteData': '清空数据中',
-	'account.sync.pausedReason.importingBackup': '导入旧备份中',
 	'account.sync.readiness.busy': '其他页面处理中',
 	'account.sync.readiness.ready': '冲突待处理',
 	'account.sync.readiness.recovering': '正在恢复',
@@ -633,20 +619,6 @@ export const accountMessages = {
 		'account.conflict.value.suitability': 'Match',
 		'account.conflict.value.time': 'Cook time',
 		'account.conflict.value.unavailable': 'Unable to display',
-		'account.legacyImport.clearAction': 'Clear backup code',
-		'account.legacyImport.codeHint':
-			'Backup codes usually come from the legacy cloud backup feature; copy the full code and paste it here',
-		'account.legacyImport.codeLabel': 'Legacy backup code',
-		'account.legacyImport.codePlaceholder': 'Paste the legacy backup code',
-		'account.legacyImport.description':
-			'Enter a legacy cloud backup code and click import; the saved meal data will be merged into the current account. After a successful import, the code expires automatically.',
-		'account.legacyImport.failed': 'Import failed; try again later',
-		'account.legacyImport.importAction': 'Import into account',
-		'account.legacyImport.signInAction': 'Sign in or register',
-		'account.legacyImport.signInRequired':
-			'Legacy backup codes can only be imported into a signed-in account. Please sign in or register first.',
-		'account.legacyImport.success':
-			'Imported; you can continue with the next legacy backup code',
 		'account.manager.accountDeleteFailed': 'Failed to delete the account',
 		'account.manager.auth.loginAction': 'Sign in',
 		'account.manager.auth.loginTab': 'Sign in',
@@ -952,7 +924,6 @@ export const accountMessages = {
 		'account.sync.pausedReason.bootstrap': 'Initializing',
 		'account.sync.pausedReason.cloudPaused': 'Cloud sync paused',
 		'account.sync.pausedReason.deleteData': 'Clearing data',
-		'account.sync.pausedReason.importingBackup': 'Importing legacy backup',
 		'account.sync.readiness.busy': 'Another page is handling it',
 		'account.sync.readiness.ready': 'Conflict pending',
 		'account.sync.readiness.recovering': 'Recovering',
@@ -1150,22 +1121,6 @@ export const accountMessages = {
 		'account.conflict.value.suitability': '相性',
 		'account.conflict.value.time': '調理時間',
 		'account.conflict.value.unavailable': '表示できません',
-		'account.legacyImport.clearAction': 'バックアップコードをクリア',
-		'account.legacyImport.codeHint':
-			'バックアップコードは通常、旧バージョンのクラウドバックアップ機能で発行されます。全体をコピーして貼り付けてください',
-		'account.legacyImport.codeLabel': '旧バックアップコード',
-		'account.legacyImport.codePlaceholder':
-			'旧バックアップコードを貼り付け',
-		'account.legacyImport.description':
-			'旧バージョンのクラウドバックアップコードを入力してインポートすると、保存されたセットメニューデータが現在のアカウントに統合されます。インポート成功後、そのコードは自動的に失効します。',
-		'account.legacyImport.failed':
-			'インポートに失敗しました。しばらくしてから再試行してください',
-		'account.legacyImport.importAction': 'アカウントにインポート',
-		'account.legacyImport.signInAction': 'ログイン/登録',
-		'account.legacyImport.signInRequired':
-			'旧バックアップコードはログイン済みアカウントにのみインポートできます。先にログインまたは登録してください。',
-		'account.legacyImport.success':
-			'インポートに成功しました。続けて次の旧バックアップコードをインポートできます',
 		'account.manager.accountDeleteFailed': 'アカウントの削除に失敗しました',
 		'account.manager.auth.loginAction': 'ログイン',
 		'account.manager.auth.loginTab': 'ログイン',
@@ -1474,8 +1429,6 @@ export const accountMessages = {
 		'account.sync.pausedReason.bootstrap': '初期化中',
 		'account.sync.pausedReason.cloudPaused': 'クラウド同期は一時停止中',
 		'account.sync.pausedReason.deleteData': 'データ消去中',
-		'account.sync.pausedReason.importingBackup':
-			'旧バックアップをインポート中',
 		'account.sync.readiness.busy': '他ページが処理中',
 		'account.sync.readiness.ready': '競合待ち',
 		'account.sync.readiness.recovering': '復元中',
@@ -1670,21 +1623,6 @@ export const accountMessages = {
 		'account.conflict.value.suitability': '궁합',
 		'account.conflict.value.time': '조리 시간',
 		'account.conflict.value.unavailable': '표시할 수 없음',
-		'account.legacyImport.clearAction': '백업 코드 지우기',
-		'account.legacyImport.codeHint':
-			'백업 코드는 보통 구 버전 클라우드 백업 기능에서 발급됩니다. 전체를 복사해 붙여 넣으세요',
-		'account.legacyImport.codeLabel': '구 백업 코드',
-		'account.legacyImport.codePlaceholder': '구 백업 코드 붙여넣기',
-		'account.legacyImport.description':
-			'구 버전 클라우드 백업 코드를 입력해 가져오면 저장된 세트 메뉴 데이터가 현재 계정에 병합됩니다. 가져오기가 완료되면 코드는 자동으로 만료됩니다.',
-		'account.legacyImport.failed':
-			'가져오기에 실패했습니다. 잠시 후 다시 시도하세요',
-		'account.legacyImport.importAction': '계정으로 가져오기',
-		'account.legacyImport.signInAction': '로그인 또는 가입',
-		'account.legacyImport.signInRequired':
-			'구 백업 코드는 로그인한 계정으로만 가져올 수 있습니다. 먼저 로그인하거나 가입하세요.',
-		'account.legacyImport.success':
-			'가져오기 완료. 다음 구 백업 코드를 계속 가져올 수 있습니다',
 		'account.manager.accountDeleteFailed': '계정 삭제 실패',
 		'account.manager.auth.loginAction': '로그인',
 		'account.manager.auth.loginTab': '로그인',
@@ -1985,7 +1923,6 @@ export const accountMessages = {
 		'account.sync.pausedReason.bootstrap': '초기화 중',
 		'account.sync.pausedReason.cloudPaused': '클라우드 동기화 일시 중지',
 		'account.sync.pausedReason.deleteData': '데이터 비우는 중',
-		'account.sync.pausedReason.importingBackup': '구 백업 가져오는 중',
 		'account.sync.readiness.busy': '다른 페이지에서 처리 중',
 		'account.sync.readiness.ready': '충돌 대기',
 		'account.sync.readiness.recovering': '복구 중',
@@ -2172,19 +2109,6 @@ export const accountMessages = {
 		'account.conflict.value.suitability': '匹配度',
 		'account.conflict.value.time': '烹飪時間',
 		'account.conflict.value.unavailable': '無法顯示',
-		'account.legacyImport.clearAction': '清空備份碼',
-		'account.legacyImport.codeHint':
-			'備份碼通常來自舊版雲端備份功能，請完整複製後貼上',
-		'account.legacyImport.codeLabel': '舊備份碼',
-		'account.legacyImport.codePlaceholder': '貼上舊備份碼',
-		'account.legacyImport.description':
-			'輸入舊版雲端備份碼並點擊匯入，其中儲存的套餐資料將被合併到目前帳號。匯入成功後，該備份碼將自動失效。',
-		'account.legacyImport.failed': '匯入失敗，請稍後重試',
-		'account.legacyImport.importAction': '匯入到帳號',
-		'account.legacyImport.signInAction': '登入或註冊',
-		'account.legacyImport.signInRequired':
-			'舊備份碼只能匯入到已登入帳號。請先登入或註冊。',
-		'account.legacyImport.success': '匯入成功，可繼續匯入下一個舊備份碼',
 		'account.manager.accountDeleteFailed': '刪除帳號失敗',
 		'account.manager.auth.loginAction': '登入帳號',
 		'account.manager.auth.loginTab': '登入',
@@ -2453,7 +2377,6 @@ export const accountMessages = {
 		'account.sync.pausedReason.bootstrap': '初始化中',
 		'account.sync.pausedReason.cloudPaused': '雲端同步已暫停',
 		'account.sync.pausedReason.deleteData': '清空資料中',
-		'account.sync.pausedReason.importingBackup': '匯入舊備份中',
 		'account.sync.readiness.busy': '其他頁面處理中',
 		'account.sync.readiness.ready': '衝突待處理',
 		'account.sync.readiness.recovering': '正在恢復',

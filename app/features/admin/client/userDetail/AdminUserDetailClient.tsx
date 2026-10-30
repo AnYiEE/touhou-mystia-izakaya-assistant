@@ -31,7 +31,6 @@ import {
 } from '@/features/admin/copy';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 
-import { BackupImportsPanel } from './BackupImportsPanel';
 import { PasskeysPanel } from './PasskeysPanel';
 import { SsoGrantCallbackNotice, SsoGrantsPanel } from './SsoGrantsPanel';
 import { SyncNamespacesPanel } from './SyncNamespacesPanel';
@@ -175,7 +174,6 @@ export default function AdminUserDetailClient({
 	}
 
 	const {
-		backup_imports: backupImports,
 		has_password: hasPassword,
 		namespaces,
 		passkeys,
@@ -314,11 +312,6 @@ export default function AdminUserDetailClient({
 				onQueryChange={handleSsoGrantQueryChange}
 				onRevokeAll={handleRevokeAllSsoGrants}
 				onRevokeOne={handleRevokeSsoGrant}
-			/>
-
-			<BackupImportsPanel
-				backupImports={backupImports}
-				initialNowTimestamp={initialNowTimestamp}
 			/>
 		</AdminShell>
 	);

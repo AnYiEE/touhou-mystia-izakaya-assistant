@@ -57,7 +57,7 @@ function checkExcludedStandaloneRootEntry(entryName) {
 	return (
 		normalizedEntryName.startsWith('.env') ||
 		normalizedEntryName.startsWith('sqlite.db') ||
-		['.deploy', '.git', 'upload'].includes(normalizedEntryName)
+		['.deploy', '.git'].includes(normalizedEntryName)
 	);
 }
 

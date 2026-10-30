@@ -25,11 +25,6 @@ const ACCOUNT_CLIENT_ERROR_MESSAGE_KEYS: Readonly<
 		'account.error.account-sync-pause-incomplete',
 	'account-sync-reset-incomplete':
 		'account.error.account-sync-reset-incomplete',
-	'backup-code-already-imported':
-		'account.error.backup-code-already-imported',
-	'backup-code-lock-lost': 'account.error.backup-code-lock-lost',
-	'backup-code-lock-timeout': 'account.error.backup-code-lock-timeout',
-	'backup-code-not-found': 'account.error.backup-code-not-found',
 	'bootstrap-failed': 'account.error.bootstrap-failed',
 	'cannot-revoke-current-session':
 		'account.error.cannot-revoke-current-session',
@@ -42,8 +37,6 @@ const ACCOUNT_CLIENT_ERROR_MESSAGE_KEYS: Readonly<
 	'credential-state-stale': 'account.error.credential-state-stale',
 	forbidden: 'account.error.forbidden',
 	'invalid-api-response': 'account.error.invalid-api-response',
-	'invalid-backup-code': 'account.error.invalid-backup-code',
-	'invalid-backup-file': 'account.error.invalid-backup-file',
 	'invalid-credentials': 'account.error.invalid-credentials',
 	'invalid-nickname': 'account.error.invalid-nickname',
 	'invalid-object-structure': 'account.error.invalid-object-structure',
@@ -51,12 +44,6 @@ const ACCOUNT_CLIENT_ERROR_MESSAGE_KEYS: Readonly<
 	'invalid-password': 'account.error.invalid-password',
 	'invalid-user-status': 'account.error.invalid-user-status',
 	'invalid-username': 'account.error.invalid-username',
-	'legacy-backup-disabled-offline':
-		'account.error.legacy-backup-disabled-offline',
-	'legacy-import-failed': 'account.error.legacy-import-failed',
-	'legacy-import-local-takeover-failed':
-		'account.error.legacy-import-local-takeover-failed',
-	'legacy-import-sync-pending': 'account.error.legacy-import-sync-pending',
 	'local-takeover-failed': 'account.error.local-takeover-failed',
 	'passkey-not-found': 'account.error.passkey-not-found',
 	'password-already-set': 'account.error.password-already-set',
@@ -99,25 +86,7 @@ const ACCOUNT_CLIENT_ERROR_MESSAGE_KEYS: Readonly<
 		'account.error.webauthn-verification-failed',
 };
 
-const LEGACY_BACKUP_IMPORT_ERROR_CODES = new Set<string>([
-	'backup-code-lock-lost',
-	'backup-code-lock-timeout',
-	'backup-code-already-imported',
-	'backup-code-not-found',
-	'invalid-backup-code',
-	'invalid-backup-file',
-	'legacy-import-failed',
-	'legacy-import-local-takeover-failed',
-	'legacy-import-sync-pending',
-	'sync-account-capacity-exceeded',
-	'sync-conflict',
-]);
-
 const USER_FACING_MESSAGE_REGEXP = /[\u4E00-\u9FFF]/u;
-
-export function isLegacyBackupImportErrorMessage(message: string) {
-	return LEGACY_BACKUP_IMPORT_ERROR_CODES.has(message);
-}
 
 /**
  * @description Resolves an account API/flow message code to localized copy.
