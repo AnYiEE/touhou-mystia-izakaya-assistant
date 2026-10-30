@@ -512,6 +512,19 @@ export async function deleteSsoUserClientGrantsByUser(
 	});
 }
 
+export async function deleteSsoUserClientGrantsForAccountDeletionInTransaction(
+	trx: Transaction<TDatabase>,
+	userId: TUser['id'],
+	timestamp: number
+) {
+	return deleteSsoUserClientGrantScopeInTransaction(
+		trx,
+		{ userId },
+		{ actorId: userId, actorType: 'user', reason: 'user-account-deleted' },
+		timestamp
+	);
+}
+
 export async function listSsoUserClientGrantsForClient(
 	clientId: TSsoClient['id'],
 	{ limit, offset, query: searchQuery }: ISsoGrantListOptions
