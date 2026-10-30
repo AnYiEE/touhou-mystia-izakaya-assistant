@@ -143,6 +143,9 @@ const CHANGELOG_EN: Readonly<Record<string, ReadonlyArray<string>>> = {
 		'Added: fishing spots on the map now show specific yields from the Normal Fishing Rod and Super Fishing Rod, along with the local Fishing Collectibles.',
 		'Improved: the map now supports mouse-wheel zooming, drag panning, and pinch zooming and two-finger panning on macOS trackpads.',
 	],
+	'v3.3': [
+		'Improved: removed the legacy anonymous cloud backup and backup-code import features.',
+	],
 };
 
 const CHANGELOG_JA: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -282,6 +285,9 @@ const CHANGELOG_JA: Readonly<Record<string, ReadonlyArray<string>>> = {
 		'追加：マップの釣り場で、普通の釣り竿とスーパー釣り竿の具体的な産出と、その地域の釣りコレクションを確認できます。',
 		'改善：マウスホイールでの拡大縮小、ドラッグでの移動、macOSトラックパッドでのピンチ操作による拡大縮小と2本指での移動に対応しました。',
 	],
+	'v3.3': [
+		'改善：旧版の匿名クラウドバックアップとバックアップコードの読み込み機能を廃止しました。',
+	],
 };
 
 const CHANGELOG_KO: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -417,6 +423,9 @@ const CHANGELOG_KO: Readonly<Record<string, ReadonlyArray<string>>> = {
 		'추가: 지도 낚시터에서 일반 낚싯대와 슈퍼 낚싯대로 얻을 수 있는 구체적인 산출물과 해당 지역의 낚시 컬렉션을 확인할 수 있습니다.',
 		'개선: 마우스 휠 확대/축소, 드래그 이동, macOS 트랙패드 핀치 확대/축소 및 두 손가락 이동을 지원합니다.',
 	],
+	'v3.3': [
+		'개선: 구 버전 익명 클라우드 백업과 백업 코드 가져오기 기능을 제거했습니다.',
+	],
 };
 
 const CHANGELOG_ZH_TW: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -544,6 +553,7 @@ const CHANGELOG_ZH_TW: Readonly<Record<string, ReadonlyArray<string>>> = {
 		'新增：地圖釣魚點可查看普通的釣魚竿、超級釣魚竿可獲得的具體產出，以及該地區的垂釣收藏。',
 		'改善：地圖支援滑鼠滾輪縮放、按住拖曳平移、macOS觸控板捏合縮放與雙指平移。',
 	],
+	'v3.3': ['改善：移除舊版匿名雲端備份與備份碼匯入功能。'],
 };
 
 export const CHANGELOG_LOCALIZED: Readonly<

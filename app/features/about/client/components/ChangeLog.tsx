@@ -233,6 +233,10 @@ const changelog = [
 			'改善：地图支持滚轮缩放、按住拖动平移、macOS触控板捏合缩放与双指平移。',
 		],
 	},
+	{
+		version: 'v3.3',
+		changes: ['改善：移除旧版匿名云备份和备份码导入功能。'],
+	},
 ] as const satisfies Array<{
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
 	version: `v${string}`;
