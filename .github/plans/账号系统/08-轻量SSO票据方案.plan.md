@@ -114,7 +114,7 @@ SSO 协议允许浏览器授权入口和服务端 API 使用不同公开 origin�
 | `state`          | 是   | 外部客户端生成的随机状态值，本项目原样带回           |
 | `code_challenge` | 是   | `code_verifier` 的挑战值，建议使用 SHA-256 Base64URL |
 
-其中 `redirect_uri` 为授权成功后的回调地址，必须匹配 client 白名单；`cancel_redirect_uri`（client 配置）为授权确认页点"取消"后的跳转地址，按同一 URI 格式与安全规则校验，但不要求同时出现在登录回调白名单中。未配置 `cancel_redirect_uri` 时，取消会回调本次 `redirect_uri` 并携带 `error=access_denied` 与原始 `state`，便于 loopback 客户端即时获知取消。
+其中 `redirect_uri` 为授权成功后的回调地址，必须匹配 client 白名单；`cancel_redirect_uri`（client 配置）为授权确认页点"取消"后的跳转地址，按同一 URI 格式与安全规则校验，但不要求同时出现在登录回调白名单中。取消回跳会保留目标 URI 已有 query，并追加或覆盖 `error=access_denied` 与原始 `state`。未配置 `cancel_redirect_uri` 时，取消会回调本次 `redirect_uri` 并携带相同字段，便于 loopback 客户端即时获知取消。
 
 #### 成功响应
 
@@ -138,7 +138,7 @@ SSO 授权上下文通过以下机制保持：authorize 路由在发起登录前
 - 简要说明：该外部服务将获取您的小助手账号身份。
 - "同意并继续"和"取消"两个按钮。
 
-点击"同意并继续"后本项目生成 ticket 并回调；"取消"或关闭页面则不生成 ticket，并按以下顺序回跳：client 配置了合法的 `cancel_redirect_uri` 时跳转该地址；否则在本次 `redirect_uri` 仍匹配白名单时回调该地址，并携带 `error=access_denied` 与原始 `state`；两者都不可用时展示取消提示页。
+点击"同意并继续"后本项目生成 ticket 并回调；"取消"或关闭页面则不生成 ticket，并按以下顺序回跳：client 配置了合法的 `cancel_redirect_uri` 时跳转该地址；否则在本次 `redirect_uri` 仍匹配白名单时回调该地址。两条路径都会携带 `error=access_denied` 与原始 `state`；两者都不可用时展示取消提示页。
 
 此设计确保用户明确知晓自己的账号身份正在被哪个外部服务使用。
 
@@ -562,7 +562,7 @@ CREATE UNIQUE INDEX sso_client_secrets_client_hash_unique_index
 - `disabled_at`：可选禁用时间戳。为 `NULL` 时 client 启用；非空时 client 保留配置和历史授权记录，但 `authorize`、`validate`、`status` 均返回 `client-disabled`；禁用动作本身仍会尽量投递 `client_disabled` callback。
 - `deleted_at` / `deleted_by_admin`：软删除标记。软删除后公开协议不可再使用该 client，但 `client_deleted` callback、审计和历史记录仍可追踪。
 - `status_callback_url`：可选，配置后授权撤销、用户状态、client 状态或 secret 变化时本项目主动回调。
-- `cancel_redirect_uri`：可选，用户在授权确认页点击取消后跳转的地址；未配置时取消回落到本次 `redirect_uri`（携带 `error=access_denied` 与 `state`），再回落到取消提示页。
+- `cancel_redirect_uri`：可选，用户在授权确认页点击取消后跳转的地址。回跳时保留原 query 并追加或覆盖 `error=access_denied` 与 `state`；未配置时取消回落到本次 `redirect_uri`，再回落到取消提示页。
 
 SSO 功能不设独立环境变量开关。SSO 跟随账号功能启用：当 `SELF_HOSTED` 满足且 `APP_SECRET` 有效时，SSO 接口即可用。SSO client 的创建、编辑、禁用、启用和删除均通过管理员页面操作，若无已注册 client 则 authorize 返回 `feature-disabled`。
 

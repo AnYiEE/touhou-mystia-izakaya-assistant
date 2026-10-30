@@ -1,4 +1,4 @@
-import { type NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 import { USER_STATUS_MAP } from '@/domain/account/contracts';
 
@@ -223,7 +223,10 @@ async function submitSsoAuthorizationCancel(
 			) {
 				return {
 					clearContext: true,
-					redirectUrl: client.cancel_redirect_uri,
+					redirectUrl: createSsoCancelRedirectUrl(
+						client.cancel_redirect_uri,
+						context.state
+					),
 					status: 'redirect',
 				};
 			}

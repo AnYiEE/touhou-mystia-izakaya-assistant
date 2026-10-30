@@ -9,7 +9,8 @@ import { hasAsciiControlCharacter } from '@/shared/utilities/strings/check';
 export const SSO_FIELD_MAX_LENGTH = 2048;
 export const SSO_CLIENT_ID_MAX_LENGTH = 128;
 export const SSO_STATE_MAX_LENGTH = 1024;
-export const SSO_CODE_VERIFIER_MAX_LENGTH = 256;
+export const SSO_CODE_VERIFIER_MIN_LENGTH = 43;
+export const SSO_CODE_VERIFIER_MAX_LENGTH = 128;
 export const SSO_CODE_CHALLENGE_LENGTH = 43;
 export const SSO_CONTEXT_TRANSACTION_ID_LENGTH = 22;
 export const SSO_TICKET_LENGTH = 43;
@@ -137,7 +138,7 @@ export function checkSsoCodeChallenge(value: string) {
 
 export function checkSsoCodeVerifier(value: string) {
 	return (
-		value.length > 0 &&
+		value.length >= SSO_CODE_VERIFIER_MIN_LENGTH &&
 		value.length <= SSO_CODE_VERIFIER_MAX_LENGTH &&
 		checkBase64Url(value)
 	);
