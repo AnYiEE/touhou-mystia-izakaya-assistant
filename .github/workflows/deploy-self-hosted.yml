@@ -1,0 +1,280 @@
+name: Deploy self-hosted
+
+on:
+    push:
+        tags:
+            - 'v*'
+    workflow_dispatch:
+        inputs:
+            tag:
+                description: '要部署的 Tag'
+                required: true
+                type: string
+            use_current_ref:
+                description: '使用当前 ref，不切换到 Tag，仅用于流程验证'
+                required: false
+                type: boolean
+                default: false
+
+permissions:
+    contents: read
+
+jobs:
+    deploy:
+        runs-on: ubuntu-26.04
+        timeout-minutes: 60
+        environment: Production
+        env:
+            CI_DEPLOY_URL: ${{ vars.ASSISTANT_CI_DEPLOY_URL }}
+            SELF_HOSTED: 'true'
+            SKIP_LINT: 'true'
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7.0.1
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
+
+            - name: Resolve tag
+              id: tag
+              shell: bash
+              env:
+                  TAG_INPUT: ${{ inputs.tag }}
+              run: |
+                  set -euo pipefail
+                  if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+                    tag="${TAG_INPUT}"
+                  else
+                    tag="${GITHUB_REF_NAME}"
+                  fi
+                  test -n "$tag"
+                  if [[ ! "${tag}" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+                    echo "无效的版本 Tag: ${tag}" >&2
+                    exit 1
+                  fi
+                  git fetch --tags --force
+                  tag_commit="$(git rev-parse --verify "refs/tags/${tag}^{commit}")"
+
+                  if [[ "${{ github.event_name }}" == "push" ]]; then
+                    if [[ "${tag_commit}" != "${GITHUB_SHA}" ]]; then
+                      echo "Tag ${tag} 已移动，拒绝构建非事件提交 ${GITHUB_SHA}" >&2
+                      exit 1
+                    fi
+                    commit="${GITHUB_SHA}"
+                  elif [[ "${{ inputs.use_current_ref }}" == "true" ]]; then
+                    commit="$(git rev-parse HEAD)"
+                  else
+                    commit="${tag_commit}"
+                  fi
+                  git cat-file -e "${commit}^{commit}"
+                  git checkout --force --detach "${commit}"
+
+                  echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+                  echo "commit=${commit}" >> "$GITHUB_OUTPUT"
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v6.1.0
+              with:
+                  run_install: false
+
+            - name: Check version consistency
+              id: version
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  package_version="$(jq -r '.version' package.json)"
+                  echo "version=${package_version}" >> "$GITHUB_OUTPUT"
+                  if [[ "${{ inputs.use_current_ref }}" == "true" ]]; then
+                    echo "use_current_ref 模式跳过 Tag 版本一致性检查"
+                    exit 0
+                  fi
+                  tag="${{ steps.tag.outputs.tag }}"
+                  if [[ "$tag" != "v${package_version}" ]]; then
+                    echo "Tag ${tag} 与 package.json 的 v${package_version} 不一致" >&2
+                    exit 1
+                  fi
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7.1.0
+              with:
+                  node-version: '26'
+                  cache: pnpm
+                  cache-dependency-path: pnpm-lock.yaml
+
+            - name: Show tool versions
+              run: |
+                  node --version
+                  pnpm --version
+                  pnpm store path
+
+            - name: Materialize CI environment
+              shell: bash
+              env:
+                  CI_ENV_FILE_B64: ${{ secrets.ASSISTANT_CI_ENV_FILE_B64 }}
+              run: |
+                  set -euo pipefail
+                  test -n "$CI_ENV_FILE_B64"
+                  umask 077
+                  printf '%s' "$CI_ENV_FILE_B64" | base64 --decode > .env.local
+
+            - name: Cache Next.js
+              uses: actions/cache@v6.1.0
+              with:
+                  path: .next/cache
+                  key: next-assistant-ubuntu-26.04-node26-pnpm10.34.7-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+                  restore-keys: |
+                      next-assistant-ubuntu-26.04-node26-pnpm10.34.7-${{ hashFiles('pnpm-lock.yaml') }}-
+
+            - name: Prepare temporary SQLite
+              shell: bash
+              env:
+                  SQLITE_DATABASE_PATH: ${{ runner.temp }}/assistant-build/sqlite.db
+              run: |
+                  set -euo pipefail
+                  mkdir -p "$(dirname "$SQLITE_DATABASE_PATH")"
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile --prefer-offline
+
+            - name: Build self-hosted release
+              env:
+                  SQLITE_DATABASE_PATH: ${{ runner.temp }}/assistant-build/sqlite.db
+              run: pnpm build
+
+            - name: Package deployment artifact
+              id: artifact
+              shell: bash
+              run: |
+                  set -euo pipefail
+
+                  release="$(jq -r '.release' .deploy/current.json)"
+                  build_id="$(jq -r '.buildId' .deploy/current.json)"
+                  operation_id="${release#*-}"
+                  package_version="${{ steps.version.outputs.version }}"
+                  commit="${{ steps.tag.outputs.commit }}"
+                  tag="${{ steps.tag.outputs.tag }}"
+                  map_tree_hash="$(git rev-parse "${commit}:app/assets/maps")"
+                  public_tree_hash="$(git rev-parse "${commit}:public")"
+
+                  payload="$RUNNER_TEMP/assistant-payload"
+                  artifact="$RUNNER_TEMP/assistant-selfhosted-${tag}.tar.gz"
+                  rm -rf "$payload"
+                  mkdir -p "$payload/release" "$payload/generated-public"
+
+                  if ! cp -al ".deploy/releases/${release}/." "$payload/release/"; then
+                    cp -a ".deploy/releases/${release}/." "$payload/release/"
+                  fi
+
+                  cp "$payload/release/public/serviceWorker.js" "$payload/generated-public/"
+                  cp "$payload/release/public/registerServiceWorker.js" "$payload/generated-public/"
+
+                  test -d "$payload/release/.next/static/media"
+                  font_file="$(find "$payload/release/.next/static/media" -type f \
+                    \( -name '*.woff' -o -name '*.woff2' -o -name '*.ttf' -o -name '*.otf' \) \
+                    -print -quit)"
+                  test -n "$font_file"
+
+                  rm -rf "$payload/release/public"
+                  rm -rf "$payload/release/app/assets/maps"
+                  rm -rf "$payload/release/app/assets/fonts"
+
+                  jq -n \
+                    --arg schemaVersion "1" \
+                    --arg buildId "$build_id" \
+                    --arg release "$release" \
+                    --arg operationId "$operation_id" \
+                    --arg commitSha "$commit" \
+                    --arg tag "$tag" \
+                    --arg version "$package_version" \
+                    --arg mapAssetsTreeHash "$map_tree_hash" \
+                    --arg publicAssetsTreeHash "$public_tree_hash" \
+                    '{
+                      schemaVersion: ($schemaVersion | tonumber),
+                      buildId: $buildId,
+                      release: $release,
+                      operationId: $operationId,
+                      commitSha: $commitSha,
+                      tag: $tag,
+                      version: $version,
+                      mapAssetsTreeHash: $mapAssetsTreeHash,
+                      publicAssetsTreeHash: $publicAssetsTreeHash
+                    }' > "$payload/manifest.json"
+
+                  tar -C "$payload" -czf "$artifact" .
+                  artifact_sha256="$(sha256sum "$artifact" | awk '{print $1}')"
+
+                  echo "release=${release}" >> "$GITHUB_OUTPUT"
+                  echo "artifact=${artifact}" >> "$GITHUB_OUTPUT"
+                  echo "artifact_sha256=${artifact_sha256}" >> "$GITHUB_OUTPUT"
+
+                  du -h "$artifact"
+                  sha256sum "$artifact"
+
+            - name: Remove CI environment file
+              if: always()
+              run: rm -f .env.local
+
+            - name: Upload artifact and wait for deployment
+              if: ${{ github.event_name == 'push' }}
+              shell: bash
+              env:
+                  CI_DEPLOY_TOKEN: ${{ secrets.ASSISTANT_CI_DEPLOY_TOKEN }}
+              run: |
+                  set -euo pipefail
+                  test -n "${CI_DEPLOY_URL}"
+                  test -n "${CI_DEPLOY_TOKEN}"
+                  request_id="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+                  curl --fail-with-body --http1.1 \
+                    --retry 3 --retry-delay 5 --retry-all-errors \
+                    --connect-timeout 30 --max-time 900 \
+                    -H "Authorization: Bearer ${CI_DEPLOY_TOKEN}" \
+                    -H "X-Deploy-Request-Id: ${request_id}" \
+                    -H "X-Deploy-Commit: ${{ steps.tag.outputs.commit }}" \
+                    -H "X-Deploy-Tag: ${{ steps.tag.outputs.tag }}" \
+                    -H "X-Deploy-Version: ${{ steps.version.outputs.version }}" \
+                    -H "X-Deploy-Artifact-Sha256: ${{ steps.artifact.outputs.artifact_sha256 }}" \
+                    -H "Content-Type: application/gzip" \
+                    --data-binary "@${{ steps.artifact.outputs.artifact }}" \
+                    "${CI_DEPLOY_URL}"
+
+                  status_url="${CI_DEPLOY_URL}/deployments/${request_id}"
+                  deadline=$((SECONDS + 1800))
+                  attempt=0
+                  while (( SECONDS < deadline )); do
+                    attempt=$((attempt + 1))
+                    body="$(curl -fsS --max-time 10 \
+                      -H "Authorization: Bearer ${CI_DEPLOY_TOKEN}" \
+                      "${status_url}")" || body=""
+                    status="$(jq -r '.status // empty' <<< "${body}" 2>/dev/null || true)"
+                    if [[ "${status}" == "succeeded" ]]; then
+                      echo "Deployment ${request_id} succeeded."
+                      exit 0
+                    fi
+                    if [[ "${status}" == "failed" ]]; then
+                      echo "Deployment ${request_id} failed." >&2
+                      printf '%s\n' "${body}" >&2
+                      exit 1
+                    fi
+                    if (( attempt % 30 == 0 )); then
+                      echo "Waiting for deployment ${request_id}; current status: ${status:-unavailable}"
+                    fi
+                    sleep 1
+                  done
+                  echo "Deployment ${request_id} timed out." >&2
+                  exit 1
+
+            - name: Summary
+              if: always()
+              shell: bash
+              run: |
+                  {
+                    echo "## Assistant self-hosted"
+                    echo
+                    echo "- Tag: \`${{ steps.tag.outputs.tag }}\`"
+                    echo "- Commit: \`${{ steps.tag.outputs.commit }}\`"
+                    echo "- Release: \`${{ steps.artifact.outputs.release }}\`"
+                    echo "- Request ID: \`${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}\`"
+                    echo "- SHA-256: \`${{ steps.artifact.outputs.artifact_sha256 }}\`"
+                    echo "- Trigger: \`${{ github.event_name }}\`"
+                  } >> "$GITHUB_STEP_SUMMARY"
