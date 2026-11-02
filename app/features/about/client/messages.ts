@@ -94,7 +94,7 @@ export const aboutMessages = {
 			'The following is a summary of updates; visit ',
 		'about.changelog.subTitle.suffix': ' to view the full commit history.',
 		'about.changelog.title': 'Changelog',
-		'about.introduction.donateLink': 'Donate via Alipay (mainland China)',
+		'about.introduction.donateLink': 'donate via Alipay (mainland China)',
 		'about.introduction.githubLink': 'GitHub repository',
 		'about.introduction.p1.prefix':
 			'The “{name}” website (hereafter “this website” or “{shortName}”) is an assistant tool developed by the owner of this ',

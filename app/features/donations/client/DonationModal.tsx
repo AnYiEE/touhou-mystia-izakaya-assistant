@@ -43,6 +43,10 @@ import {
 import { useDonationModalTrigger } from './useDonationModalTrigger';
 
 const links = SITE_LINKS;
+const QQ_GROUP_LINK_CLASS_NAMES = {
+	base: 'text-tiny text-foreground',
+	underline: 'bottom-0',
+} as const;
 const QQ_GROUP_POPOVER_CLASS_NAMES = { content: 'px-0 pb-1' } as const;
 
 export default function DonationModal() {
@@ -212,7 +216,9 @@ export default function DonationModal() {
 														'QQ Group 1'
 													);
 												}}
-												className="text-tiny text-foreground"
+												classNames={
+													QQ_GROUP_LINK_CLASS_NAMES
+												}
 											>
 												{tAppShell(
 													'appShell.home.joinGroup',
@@ -240,7 +246,9 @@ export default function DonationModal() {
 														'QQ Group 2'
 													);
 												}}
-												className="text-tiny text-foreground"
+												classNames={
+													QQ_GROUP_LINK_CLASS_NAMES
+												}
 											>
 												{tAppShell(
 													'appShell.home.joinGroup',

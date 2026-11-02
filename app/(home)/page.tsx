@@ -29,6 +29,10 @@ import { siteMessages } from '@/shared/site/messages';
 
 const links = SITE_LINKS;
 
+const QQ_GROUP_LINK_CLASS_NAMES = {
+	base: 'text-tiny text-foreground',
+	underline: 'bottom-0',
+} as const;
 const QQ_OVERLAY_CLASS_NAMES = { content: 'px-0 pb-1' } as const;
 const REDNOTE_TOOLTIP_CLASS_NAMES = { content: 'p-0 pb-1' } as const;
 
@@ -64,7 +68,7 @@ export default function Home() {
 									'index:QQ group 1'
 								);
 							}}
-							className="text-tiny text-foreground"
+							classNames={QQ_GROUP_LINK_CLASS_NAMES}
 						>
 							{t('appShell.home.joinGroup', {
 								label: t('appShell.links.qqGroup1'),
@@ -84,7 +88,7 @@ export default function Home() {
 									'index:QQ group 2'
 								);
 							}}
-							className="text-tiny text-foreground"
+							classNames={QQ_GROUP_LINK_CLASS_NAMES}
 						>
 							{t('appShell.home.joinGroup', {
 								label: t('appShell.links.qqGroup2'),

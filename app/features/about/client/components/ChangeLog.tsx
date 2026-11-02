@@ -251,8 +251,9 @@ export default function ChangeLog() {
 		locale === 'zh-CN' ? undefined : CHANGELOG_LOCALIZED[locale];
 
 	return (
-		<>
+		<section>
 			<Heading
+				isFirst
 				subTitle={
 					<>
 						{t('about.changelog.subTitle.prefix')}
@@ -298,6 +299,6 @@ export default function ChangeLog() {
 						</Fragment>
 					);
 				})}
-		</>
+		</section>
 	);
 }

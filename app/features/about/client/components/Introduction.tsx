@@ -33,7 +33,7 @@ export default function Introduction() {
 	};
 
 	return (
-		<>
+		<section>
 			<Heading isFirst>{t('about.introduction.title')}</Heading>
 			<div className="text-cjk-flow space-y-2 indent-8">
 				<p>
@@ -83,6 +83,6 @@ export default function Introduction() {
 					})}
 				</p>
 			</div>
-		</>
+		</section>
 	);
 }

@@ -24,8 +24,8 @@ export default function LegalStatement() {
 	const shortName = tSite('site.shortName');
 
 	return (
-		<>
-			<Heading>{t('about.legal.title')}</Heading>
+		<section>
+			<Heading isFirst>{t('about.legal.title')}</Heading>
 			<div className="text-cjk-flow space-y-4">
 				<Heading as="h2" isFirst>
 					{t('about.legal.general.title')}
@@ -195,6 +195,6 @@ export default function LegalStatement() {
 					{t('about.legal.license.derivative.suffix')}
 				</p>
 			</div>
-		</>
+		</section>
 	);
 }

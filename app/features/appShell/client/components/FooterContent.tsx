@@ -20,6 +20,10 @@ const { version } = SITE_METADATA;
 const FOOTER_CHINA_SERVER_EVENT = { click: 'China server' } as const;
 const FOOTER_CLASS_NAME =
 	"[&>*]:after:mx-1 [&>*]:after:-mb-0.5 [&>*]:after:inline-block [&>*]:after:h-3 [&>*]:after:w-px [&>*]:after:rounded-small [&>*]:after:bg-default-400 [&>*]:after:content-[''] last:[&>*]:after:hidden";
+const FOOTER_LINK_CLASS_NAMES = {
+	base: 'text-tiny text-primary',
+	underline: 'bottom-0',
+} as const;
 const FOOTER_GITHUB_COMMIT_EVENT = { click: 'GitHub commit' } as const;
 const FOOTER_ICP_FILING_EVENT = { click: 'ICP filing' } as const;
 const FOOTER_STEAM_EVENT = { click: 'footer:Steam' } as const;
@@ -91,9 +95,8 @@ export default function FooterContent({ sha }: IProps) {
 					</FooterLinkWithTooltip>
 				)}
 				<SupportActionButton
-					classNames={{ underline: 'bottom-0' }}
+					classNames={FOOTER_LINK_CLASS_NAMES}
 					eventLabel="footer:Donate"
-					className="text-tiny"
 				>
 					{t('appShell.footer.support', {
 						name: tSite('site.shortName'),

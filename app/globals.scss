@@ -55,6 +55,40 @@
 		}
 	}
 
+	.article-body {
+		a {
+			display: inline;
+			background-image: linear-gradient(currentcolor, currentcolor);
+			background-position: center calc(100% - 1px);
+			background-repeat: no-repeat;
+			background-size: 0 1px;
+			transition:
+				background-size 250ms ease,
+				opacity 150ms ease,
+				filter 150ms ease;
+
+			&:hover,
+			&:active {
+				background-size: 100% 1px;
+			}
+
+			> span.absolute {
+				display: none;
+			}
+
+			> svg {
+				display: inline;
+				margin-left: 0.25rem;
+				margin-right: 0;
+				vertical-align: -0.125em;
+			}
+
+			@media (prefers-reduced-motion: reduce) {
+				transition: none;
+			}
+		}
+	}
+
 	.text-cjk-justify {
 		&:lang(ja),
 		&:lang(ko),
