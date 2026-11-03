@@ -1,6 +1,6 @@
 'use client';
 
-import { type Selection } from '@heroui/table';
+import type { Selection } from '@heroui/table';
 import {
 	useCallback,
 	useEffect,
@@ -26,6 +26,8 @@ import type {
 } from '@/domain/data/ingredients/types';
 import type { TDlc } from '@/domain/data/shared/types';
 import { DARK_MATTER_META_MAP } from '@/domain/data/tags/tagFacts';
+import type { TBeverageTagId, TFoodTagId } from '@/domain/data/tags/types';
+import { evaluateSpecialGuestSavedMeal } from '@/domain/evaluation/evaluateSavedMeal';
 import { getRestExtraIngredients } from '@/domain/meals/getRestExtraIngredients';
 import type { IMealFood } from '@/domain/meals/types';
 import type { IGuestOrder } from '@/domain/orders/types';
@@ -169,9 +171,14 @@ interface ISuggestedMealRowViewModel {
 		ingredient: TIngredientId
 	) => ReadonlyArray<IIngredientView>;
 	hasAlternativesLoaded: boolean;
+	hasMystiaCooker: boolean;
 	ingredients: ReadonlyArray<IIngredientView>;
+	isDarkMatter: boolean;
 	key: string;
+	matchedBeverageTags: ReadonlyArray<TBeverageTagId>;
+	matchedFoodTags: ReadonlyArray<TFoodTagId>;
 	meal: IMealFood;
+	order: IGuestOrder;
 	price: TSuggestedMeal['price'];
 	ratingKey: TSuggestedMeal['rating'];
 	visibleExtraIngredients: IIngredientView[];
@@ -902,9 +909,16 @@ export function useSuggestedMealsViewModel() {
 				extraIngredients: [...mealFood.extraIngredients],
 				recipeId: mealFood.recipeId,
 			};
-			const isDarkMatter =
-				!checkLengthEmpty(mealFood.extraIngredients) &&
-				foodCatalog.checkDarkMatter(mealFood).isDarkMatter;
+			const { isDarkMatter, matchedBeverageTags, matchedFoodTags } =
+				evaluateSpecialGuestSavedMeal({
+					beverage,
+					hasMystiaCooker: resultContext.hasMystiaCooker,
+					isFamousShop: resultContext.isFamousShop,
+					mealFood,
+					popularTrend: resultContext.popularTrend,
+					specialGuest: resultContext.specialGuest,
+					specialGuestOrder: resultContext.guestOrder,
+				});
 			const cooker = cookerCatalog.getIdByTypeAndSeries(cookerType, 0);
 			const cookerView = {
 				id: cooker,
@@ -997,9 +1011,14 @@ export function useSuggestedMealsViewModel() {
 							),
 						})) ?? EMPTY_ALTERNATIVES,
 				hasAlternativesLoaded: alternativesStatus === 'success',
+				hasMystiaCooker: resultContext.hasMystiaCooker,
 				ingredients,
+				isDarkMatter,
 				key: mealKey,
+				matchedBeverageTags,
+				matchedFoodTags,
 				meal: currentMeal,
+				order: resultContext.guestOrder,
 				price,
 				ratingKey,
 				visibleExtraIngredients: visibleExtraIngredientViews,

@@ -25,9 +25,8 @@ import { checkCompatibility } from '@/infrastructure/browser/compatibility/check
 const tabOrder = ['guest', 'food', 'beverage', 'ingredient'] as const;
 const REDUCED_MOTION_TRANSITION = { duration: 0 } as const;
 const TAB_TRANSITION = {
-	bounce: 0.15,
 	duration: MOTION_DURATION_S.slow,
-	type: 'spring',
+	ease: MOTION_EASE.standard,
 } as const;
 const TAB_HEIGHT_TRANSITION = {
 	duration: MOTION_DURATION_S.slow,

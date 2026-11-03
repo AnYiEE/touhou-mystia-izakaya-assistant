@@ -19,6 +19,7 @@ import Popover, {
 	PopoverTrigger,
 } from '@/design/ui/components/popover';
 import Tooltip from '@/design/ui/components/tooltip';
+import { useBreakpoint } from '@/design/ui/hooks/useBreakpoint';
 import { useMotionProps } from '@/design/ui/hooks/useMotionProps';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
@@ -29,8 +30,10 @@ import { getRecommendationSortProfileLabel } from '@/domain/recommendations/loca
 import { type TRecommendationSortProfile } from '@/domain/recommendations/sortProfiles';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import RatingAvatarShell from '@/features/catalog/guests/shared/client/components/ratingAvatarShell';
 import { Plus } from '@/features/catalog/guests/shared/client/components/resultCardAtoms';
 import TagGroup from '@/features/catalog/guests/shared/client/components/tagGroup';
+import SavedMealRatingContent from '@/features/catalog/guests/shared/client/mealPlanning/savedMealRatingContent';
 import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { useSuggestedMealsViewModel } from '@/features/catalog/guests/special/client/useSuggestedMealsViewModel';
@@ -92,6 +95,10 @@ export default function SuggestedMealCard() {
 	const { t } = useI18n(catalogGuestsMessages);
 	const selectMotionProps = useMotionProps('select');
 	const isReducedMotion = useReducedMotion();
+	const { breakpoint: placement } = useBreakpoint(
+		{ left: 1280, top: -1 },
+		'top'
+	);
 	const {
 		availableFoodCookers,
 		currentBeverage,
@@ -615,9 +622,14 @@ export default function SuggestedMealCard() {
 									food,
 									getAlternatives,
 									hasAlternativesLoaded,
+									hasMystiaCooker: rowHasMystiaCooker,
 									ingredients,
+									isDarkMatter,
 									key,
+									matchedBeverageTags,
+									matchedFoodTags,
 									meal,
+									order,
 									price,
 									ratingKey,
 									visibleExtraIngredients,
@@ -646,18 +658,31 @@ export default function SuggestedMealCard() {
 									<Fragment key={key}>
 										<div className="relative flex flex-col items-center gap-4 md:static md:flex-row md:gap-3 lg:gap-4 xl:gap-3">
 											<div className="flex flex-1 flex-col flex-wrap items-center gap-3 md:flex-row md:flex-nowrap md:gap-2 lg:gap-3 xl:gap-2">
-												<Popover
-													showArrow
+												<RatingAvatarShell
 													color={ratingKey}
-													offset={12}
-													placement="left"
-												>
-													<Tooltip
-														showArrow
-														color={ratingKey}
-														content={rating}
-														placement="left"
-													>
+													containerPadding={24}
+													contentClassName="max-w-[calc(100vw-3rem)]"
+													content={
+														<SavedMealRatingContent
+															hasMystiaCooker={
+																rowHasMystiaCooker
+															}
+															isDarkMatter={
+																isDarkMatter
+															}
+															matchedBeverageTags={
+																matchedBeverageTags
+															}
+															matchedFoodTags={
+																matchedFoodTags
+															}
+															order={order}
+															rating={rating}
+														/>
+													}
+													placement={placement}
+													popoverOffset={12}
+													trigger={
 														<span className="cursor-pointer">
 															<PopoverTrigger>
 																<Avatar
@@ -681,30 +706,34 @@ export default function SuggestedMealCard() {
 																					className="p-0.5"
 																				/>
 																			)}
-																			{currentGuestOrder.foodTag !==
-																				null && (
-																				<Tags.Tag
-																					tag={getFoodTagLabel(
-																						currentGuestOrder.foodTag
-																					)}
-																					tagStyle={
-																						FOOD_TAG_STYLE.positive
-																					}
-																					className="p-0.5"
-																				/>
-																			)}
-																			{currentGuestOrder.beverageTag !==
-																				null && (
-																				<Tags.Tag
-																					tag={getBeverageTagLabel(
-																						currentGuestOrder.beverageTag
-																					)}
-																					tagStyle={
-																						BEVERAGE_TAG_STYLE.positive
-																					}
-																					className="p-0.5"
-																				/>
-																			)}
+																			{order.foodTag !==
+																				null &&
+																				(isDarkMatter ||
+																					!rowHasMystiaCooker) && (
+																					<Tags.Tag
+																						tag={getFoodTagLabel(
+																							order.foodTag
+																						)}
+																						tagStyle={
+																							FOOD_TAG_STYLE.positive
+																						}
+																						className="p-0.5"
+																					/>
+																				)}
+																			{order.beverageTag !==
+																				null &&
+																				(isDarkMatter ||
+																					!rowHasMystiaCooker) && (
+																					<Tags.Tag
+																						tag={getBeverageTagLabel(
+																							order.beverageTag
+																						)}
+																						tagStyle={
+																							BEVERAGE_TAG_STYLE.positive
+																						}
+																						className="p-0.5"
+																					/>
+																				)}
 																		</TagGroup>
 																	}
 																	radius="sm"
@@ -714,11 +743,8 @@ export default function SuggestedMealCard() {
 																/>
 															</PopoverTrigger>
 														</span>
-													</Tooltip>
-													<PopoverContent>
-														{rating}
-													</PopoverContent>
-												</Popover>
+													}
+												/>
 												<div className="flex items-center gap-2 xl:gap-1">
 													<Tooltip
 														showArrow
