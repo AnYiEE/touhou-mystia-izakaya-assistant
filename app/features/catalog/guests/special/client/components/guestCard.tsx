@@ -258,7 +258,8 @@ export default function GuestCard() {
 	);
 
 	const dlcLabel = getDlcLabel(currentGuestDlc);
-	const dlcShortLabel = DLC_LABEL_MAP[currentGuestDlc].shortLabel;
+	const dlcShortLabel =
+		currentGuestDlc === 0 ? '' : DLC_LABEL_MAP[currentGuestDlc].shortLabel;
 	const sourceLabel =
 		currentGuestCollaboration === undefined
 			? dlcLabel
@@ -361,50 +362,37 @@ export default function GuestCard() {
 					</div>
 					<div className="whitespace-nowrap text-tiny font-medium text-default-800">
 						<p className="flex justify-between gap-10">
-							<Popover
-								showArrow
-								isTriggerDisabled={!sourceShortLabel}
-								offset={4}
-							>
-								<Tooltip
-									showArrow
-									content={sourceLabel}
-									isDisabled={!sourceShortLabel}
-									offset={0}
-								>
-									<span
-										className={cn({
-											'cursor-text': !sourceShortLabel,
-										})}
+							{sourceShortLabel ? (
+								<Popover showArrow offset={4}>
+									<Tooltip
+										showArrow
+										content={sourceLabel}
+										offset={0}
 									>
-										<PopoverTrigger>
-											<span
-												role={
-													sourceShortLabel
-														? 'button'
-														: undefined
-												}
-												tabIndex={
-													sourceShortLabel
-														? 0
-														: undefined
-												}
-												title={sourceLabel}
-												className={cn('opacity-100', {
-													[CLASSNAME_FOCUS_VISIBLE_OUTLINE]:
-														sourceShortLabel,
-													'underline-dotted-linear':
-														sourceShortLabel,
-												})}
-											>
-												{sourceShortLabel ||
-													sourceLabel}
-											</span>
-										</PopoverTrigger>
-									</span>
-								</Tooltip>
-								<PopoverContent>{sourceLabel}</PopoverContent>
-							</Popover>
+										<span>
+											<PopoverTrigger>
+												<span
+													role="button"
+													tabIndex={0}
+													title={sourceLabel}
+													className={cn(
+														'opacity-100',
+														CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+														'underline-dotted-linear'
+													)}
+												>
+													{sourceShortLabel}
+												</span>
+											</PopoverTrigger>
+										</span>
+									</Tooltip>
+									<PopoverContent>
+										{sourceLabel}
+									</PopoverContent>
+								</Popover>
+							) : (
+								<span>{sourceLabel}</span>
+							)}
 							<Popover showArrow offset={hasOtherPlaces ? 6 : 4}>
 								<Tooltip
 									showArrow

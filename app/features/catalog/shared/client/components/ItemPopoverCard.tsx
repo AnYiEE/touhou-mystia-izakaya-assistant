@@ -93,7 +93,9 @@ function ItemPopoverCard<T extends TSpriteTarget>({
 
 	const dlcLabel = dlc === undefined ? '' : getDlcLabel(dlc as TDlc);
 	const dlcShortLabel =
-		dlc === undefined ? '' : DLC_LABEL_MAP[dlc as TDlc].shortLabel;
+		dlc === undefined || dlc === 0
+			? ''
+			: DLC_LABEL_MAP[dlc as TDlc].shortLabel;
 
 	return (
 		<div
@@ -111,60 +113,45 @@ function ItemPopoverCard<T extends TSpriteTarget>({
 					)}
 				/>
 				<p className="font-bold">
-					{dlc !== undefined && (
-						<Popover
-							showArrow
-							isTriggerDisabled={!dlcShortLabel}
-							offset={3}
-							size="sm"
-						>
-							<Tooltip
-								showArrow
-								content={dlcLabel}
-								isDisabled={!dlcShortLabel}
-								offset={1}
-								size="sm"
-							>
-								<span
-									className={cn({
-										'cursor-text': !dlcShortLabel,
-									})}
+					{dlc !== undefined &&
+						(dlcShortLabel ? (
+							<Popover showArrow offset={3} size="sm">
+								<Tooltip
+									showArrow
+									content={dlcLabel}
+									offset={1}
+									size="sm"
 								>
-									<PopoverTrigger
-										className={cn({
-											[CLASSNAME_FOCUS_VISIBLE_OUTLINE]:
-												dlcShortLabel,
-										})}
-									>
-										<span
-											role={
-												dlcShortLabel
-													? 'button'
-													: undefined
-											}
-											tabIndex={
-												dlcShortLabel ? 0 : undefined
-											}
-											title={dlcLabel}
-											className="opacity-100"
+									<span>
+										<PopoverTrigger
+											className={cn(
+												CLASSNAME_FOCUS_VISIBLE_OUTLINE
+											)}
 										>
-											{t('catalog.dlcTag.open')}
 											<span
-												className={cn({
-													'underline-dotted-linear':
-														dlcShortLabel,
-												})}
+												role="button"
+												tabIndex={0}
+												title={dlcLabel}
+												className="opacity-100"
 											>
-												{dlcShortLabel || dlcLabel}
+												{t('catalog.dlcTag.open')}
+												<span className="underline-dotted-linear">
+													{dlcShortLabel}
+												</span>
+												{t('catalog.dlcTag.close')}
 											</span>
-											{t('catalog.dlcTag.close')}
-										</span>
-									</PopoverTrigger>
-								</span>
-							</Tooltip>
-							<PopoverContent>{dlcLabel}</PopoverContent>
-						</Popover>
-					)}
+										</PopoverTrigger>
+									</span>
+								</Tooltip>
+								<PopoverContent>{dlcLabel}</PopoverContent>
+							</Popover>
+						) : (
+							<span className="opacity-100">
+								{t('catalog.dlcTag.open')}
+								{dlcLabel}
+								{t('catalog.dlcTag.close')}
+							</span>
+						))}
 					{displayName === undefined ? name : displayName}
 				</p>
 			</div>

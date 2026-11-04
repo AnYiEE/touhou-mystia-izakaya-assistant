@@ -201,7 +201,10 @@ export default function NormalGuestCard() {
 	);
 
 	const dlcLabel = getDlcLabel(currentNormalGuestDlc);
-	const dlcShortLabel = DLC_LABEL_MAP[currentNormalGuestDlc].shortLabel;
+	const dlcShortLabel =
+		currentNormalGuestDlc === 0
+			? ''
+			: DLC_LABEL_MAP[currentNormalGuestDlc].shortLabel;
 
 	return (
 		<Card fullWidth shadow="sm" classNames={cardClassNames}>
@@ -254,49 +257,35 @@ export default function NormalGuestCard() {
 					</div>
 					<div className="whitespace-nowrap text-tiny font-medium text-default-800">
 						<p className="flex justify-between gap-10">
-							<Popover
-								showArrow
-								isTriggerDisabled={!dlcShortLabel}
-								offset={4}
-							>
-								<Tooltip
-									showArrow
-									content={dlcLabel}
-									isDisabled={!dlcShortLabel}
-									offset={0}
-								>
-									<span
-										className={cn({
-											'cursor-text': !dlcShortLabel,
-										})}
+							{dlcShortLabel ? (
+								<Popover showArrow offset={4}>
+									<Tooltip
+										showArrow
+										content={dlcLabel}
+										offset={0}
 									>
-										<PopoverTrigger>
-											<span
-												role={
-													dlcShortLabel
-														? 'button'
-														: undefined
-												}
-												tabIndex={
-													dlcShortLabel
-														? 0
-														: undefined
-												}
-												title={dlcLabel}
-												className={cn('opacity-100', {
-													[CLASSNAME_FOCUS_VISIBLE_OUTLINE]:
-														dlcShortLabel,
-													'underline-dotted-linear':
-														dlcShortLabel,
-												})}
-											>
-												{dlcShortLabel || dlcLabel}
-											</span>
-										</PopoverTrigger>
-									</span>
-								</Tooltip>
-								<PopoverContent>{dlcLabel}</PopoverContent>
-							</Popover>
+										<span>
+											<PopoverTrigger>
+												<span
+													role="button"
+													tabIndex={0}
+													title={dlcLabel}
+													className={cn(
+														'opacity-100',
+														CLASSNAME_FOCUS_VISIBLE_OUTLINE,
+														'underline-dotted-linear'
+													)}
+												>
+													{dlcShortLabel}
+												</span>
+											</PopoverTrigger>
+										</span>
+									</Tooltip>
+									<PopoverContent>{dlcLabel}</PopoverContent>
+								</Popover>
+							) : (
+								<span>{dlcLabel}</span>
+							)}
 							{(() => {
 								const isGoblin =
 									currentNormalGuest === GOBLIN_ID;
