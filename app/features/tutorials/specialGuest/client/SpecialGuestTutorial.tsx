@@ -322,9 +322,7 @@ export default function SpecialGuestTutorial() {
 				{
 					element: () => {
 						const target = document.querySelector(
-							globalThis.matchMedia('(min-width: 768px)').matches
-								? '[data-customer-info-trigger="desktop"]'
-								: '[data-customer-info-trigger="mobile"]'
+							'[data-customer-info-entry]'
 						);
 						if (target === null) {
 							throw new Error(

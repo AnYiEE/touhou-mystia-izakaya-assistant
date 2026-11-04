@@ -60,7 +60,7 @@ export default function GuestCard() {
 	const { pushState } = usePathname();
 	const vibrate = useVibrate();
 
-	const [infoButtonAnchorElement, setInfoButtonAnchorElement] =
+	const [infoActionContainer, setInfoActionContainer] =
 		useState<HTMLDivElement | null>(null);
 
 	const currentSpecialGuest = specialGuestStore.shared.guest.id.use();
@@ -316,12 +316,9 @@ export default function GuestCard() {
 
 	return (
 		<Card fullWidth shadow="sm" classNames={cardClassNames}>
-			<div className="flex flex-col gap-3 p-4 md:flex-row">
+			<div className="relative flex flex-col gap-3 p-4 md:flex-row">
 				<div className="flex flex-col justify-evenly gap-2">
-					<div
-						ref={setInfoButtonAnchorElement}
-						className="relative self-center"
-					>
+					<div className="relative self-center">
 						<RatingAvatarShell
 							color={tooltipRatingColor}
 							content={avatarRatingContent}
@@ -467,9 +464,7 @@ export default function GuestCard() {
 								</Popover>
 							</p>
 							<InfoButton
-								desktopTriggerContainer={
-									infoButtonAnchorElement
-								}
+								cardInfoActionContainer={infoActionContainer}
 							/>
 						</div>
 					</div>
@@ -735,6 +730,7 @@ export default function GuestCard() {
 				)}
 				<GuestCardSiteInfo />
 			</div>
+			<div ref={setInfoActionContainer} />
 		</Card>
 	);
 }

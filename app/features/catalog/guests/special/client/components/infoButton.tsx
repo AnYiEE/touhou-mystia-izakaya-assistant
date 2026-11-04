@@ -48,7 +48,7 @@ interface ILevelLabelProps {
 }
 
 interface IProps {
-	desktopTriggerContainer: HTMLElement | null;
+	cardInfoActionContainer: HTMLElement | null;
 }
 
 const DEFAULT_EXPANDED_KEYS = ['description'] as const;
@@ -108,7 +108,7 @@ const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({ level }) {
 	);
 });
 
-export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
+export default memo<IProps>(function InfoButton({ cardInfoActionContainer }) {
 	const { breakpoint: placement } = useBreakpoint(
 		{ bottom: -1, 'right-start': 426 },
 		'bottom'
@@ -206,9 +206,8 @@ export default memo<IProps>(function InfoButton({ desktopTriggerContainer }) {
 
 	return (
 		<InfoButtonBase
-			showMobileTextTrigger
+			cardInfoActionContainer={cardInfoActionContainer}
 			defaultExpandedKeys={defaultExpandedKeys}
-			desktopTriggerContainer={desktopTriggerContainer}
 			overlayId="special-guest.info"
 			supportGuest={supportGuest}
 			onButtonPress={handleButtonPress}
