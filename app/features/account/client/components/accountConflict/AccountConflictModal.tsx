@@ -851,7 +851,6 @@ export default memo<IProps>(function AccountConflictModal() {
 							</div>
 							<div className="flex shrink-0 justify-end gap-2">
 								<Button
-									className="data-[hover=true]:backdrop-blur-none data-[pressed=true]:backdrop-blur-none"
 									isDisabled={isResolving}
 									variant="light"
 									onPress={handleCancelResolution}

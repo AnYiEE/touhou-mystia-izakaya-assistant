@@ -40,10 +40,14 @@ export default memo<IProps>(function Button({
 			'!transition motion-reduce:!transition-none',
 			disableAnimation && '!transition-none'
 		);
+		const colorTransition = cn(
+			'!transition-colors motion-reduce:!transition-none',
+			disableAnimation && '!transition-none'
+		);
 
 		switch (variant) {
 			case 'light':
-				return cn(transition);
+				return colorTransition;
 			default:
 				return cn(effect, transition);
 		}
@@ -66,10 +70,7 @@ export default memo<IProps>(function Button({
 			case 'ghost':
 				return cn('backdrop-blur');
 			case 'light':
-				return cn(
-					'data-[hover=true]:backdrop-blur',
-					'data-[pressed=true]:backdrop-blur'
-				);
+				return '';
 			default:
 				return cn('bg-opacity-80 backdrop-blur');
 		}
