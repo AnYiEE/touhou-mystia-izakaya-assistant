@@ -22,6 +22,7 @@ import type { TGeneralItemId } from '@/domain/data/generalItems/types';
 import type { TIngredientId } from '@/domain/data/ingredients/types';
 import { type TCollaborationLabel } from '@/domain/data/labels/collaborationFacts';
 import type { TDayMapInteractionKind } from '@/domain/data/maps/types';
+import type { TRecordId } from '@/domain/data/records/types';
 import { getSourceEntries } from '@/domain/data/shared/sourceEntries';
 import type { TDlc } from '@/domain/data/shared/types';
 
@@ -35,10 +36,16 @@ export type TMapCatalogItem =
 	| { id: TDecorationId; target: 'decoration' }
 	| { id: TFoodId; target: 'food' }
 	| { id: TIngredientId; target: 'ingredient' }
-	| { id: TGeneralItemId; target: 'item' };
+	| { id: TGeneralItemId; target: 'item' }
+	| { id: TRecordId; target: 'record' };
 
 export type TDayMapCatalogPath =
-	'/beverages' | '/clothes' | '/decorations' | '/foods' | '/ingredients';
+	| '/beverages'
+	| '/clothes'
+	| '/decorations'
+	| '/foods'
+	| '/ingredients'
+	| '/records';
 
 const INTERACTION_CATALOG_ITEMS: Partial<
 	Record<TDayMapInteractionKind, TMapCatalogItem>

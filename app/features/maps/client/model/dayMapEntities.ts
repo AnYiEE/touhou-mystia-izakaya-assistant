@@ -3,6 +3,7 @@ import { FoodCatalog } from '@/domain/catalog/food/FoodCatalog';
 import { IngredientCatalog } from '@/domain/catalog/food/IngredientCatalog';
 import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { FishingCollectibleCatalog } from '@/domain/catalog/items/FishingCollectibleCatalog';
+import { RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog';
 import type { IBeverage } from '@/domain/data/beverages/schema';
 import type { TBeverageId } from '@/domain/data/beverages/types';
 import type { ICooker } from '@/domain/data/cookers/schema';
@@ -37,6 +38,7 @@ import {
 	type ICollectionPointYieldProduct,
 } from '@/domain/data/places/collectionYieldFacts';
 import type { TMerchantReference } from '@/domain/data/places/types';
+import type { TRecordId } from '@/domain/data/records/types';
 import { getSourceEntries } from '@/domain/data/shared/sourceEntries';
 
 import { type TMapItemProduct } from '@/features/maps/client/model/mapsHistory';
@@ -402,6 +404,7 @@ export interface IMerchantGoods {
 	cookers: ReadonlyArray<TCookerId>;
 	foods: ReadonlyArray<TFoodId>;
 	ingredients: ReadonlyArray<TIngredientId>;
+	records: ReadonlyArray<TRecordId>;
 }
 
 function checkMerchantReference(
@@ -474,6 +477,11 @@ export function getMerchantGoods(
 			.map(({ id }) => id),
 		ingredients: IngredientCatalog.getInstance()
 			.canonicalData.filter(({ from }) => checkSoldBy(from, merchant))
+			.map(({ id }) => id),
+		records: RecordItemCatalog.getInstance()
+			.canonicalData.filter(({ buy }) =>
+				typeof merchant === 'string' ? buy.merchant === merchant : false
+			)
 			.map(({ id }) => id),
 	};
 	merchantGoodsCache.set(merchant, goods);

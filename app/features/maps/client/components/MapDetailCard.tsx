@@ -15,10 +15,10 @@ import { useDesignPreferences } from '@/design/preferences/DesignPreferencesCont
 import Button from '@/design/ui/components/button';
 import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
 import Link from '@/design/ui/components/link';
-import ScrollMask from '@/design/ui/components/scrollMask';
 
 import { SpecialGuestCatalog } from '@/domain/catalog/guests/SpecialGuestCatalog';
 import { PartnerCatalog } from '@/domain/catalog/items/PartnerCatalog';
+import { RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog';
 import type { TSpecialGuestId } from '@/domain/data/guests/special/types';
 import { PRAYER_REWARD_FACTS } from '@/domain/data/labels/prayerFacts';
 import type {
@@ -28,6 +28,7 @@ import type {
 } from '@/domain/data/maps/types';
 import type { TPartnerId } from '@/domain/data/partners/types';
 import { type ICollectionPointYieldProduct } from '@/domain/data/places/collectionYieldFacts';
+import { MERCHANT_STOCK_FACTS } from '@/domain/data/places/merchantStockFacts';
 import { DYNAMIC_FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
 import { getCollaborationLabel } from '@/domain/labels/localizedCollaborationLabels';
 
@@ -87,6 +88,10 @@ import DayMapEntityIcon from './DayMapEntityIcon';
 import MapCatalogItems from './MapCatalogItems';
 import MapFullAccessButton from './MapFullAccessButton';
 import MapItemPopover from './MapItemPopover';
+import MerchantStockDetail, {
+	formatStockPriceMultiplier,
+	getMerchantStockFoodIds,
+} from './MerchantStockDetail';
 import ProductSprite from './ProductSprite';
 
 interface IProps {
@@ -110,6 +115,7 @@ interface IProps {
 }
 
 const partnerCatalog = PartnerCatalog.getInstance();
+const recordItemCatalog = RecordItemCatalog.getInstance();
 const specialGuestCatalog = SpecialGuestCatalog.getInstance();
 
 /** @description `label：value`, as on the catalog item cards. */
@@ -726,12 +732,29 @@ const CharacterDetail = memo(function CharacterDetail({
 	useCatalogLocalizationRevision();
 
 	const { character, id, spots } = entity;
-	const { isCookerVisible, isFoodVisible, isMapVisible, isProductVisible } =
-		visibility;
+	const {
+		isCookerVisible,
+		isDlcVisible,
+		isFoodVisible,
+		isMapVisible,
+		isProductVisible,
+	} = visibility;
+	const stockMerchant =
+		typeof character.merchant === 'string' &&
+		Object.hasOwn(MERCHANT_STOCK_FACTS, character.merchant)
+			? character.merchant
+			: null;
 	const goods =
 		character.merchant === null
 			? null
 			: getMerchantGoods(character.merchant);
+	const stockedFoodIds = useMemo(
+		() =>
+			stockMerchant === null
+				? new Set()
+				: getMerchantStockFoodIds(stockMerchant),
+		[stockMerchant]
+	);
 	const goodsProducts = useMemo(
 		() =>
 			goods === null
@@ -751,9 +774,9 @@ const CharacterDetail = memo(function CharacterDetail({
 	const recipes = useMemo<ReadonlyArray<TMapCatalogItem>>(
 		() =>
 			goods?.foods
-				.filter(isFoodVisible)
+				.filter((id) => !stockedFoodIds.has(id) && isFoodVisible(id))
 				.map((id) => ({ id, target: 'food' })) ?? [],
-		[goods, isFoodVisible]
+		[goods, isFoodVisible, stockedFoodIds]
 	);
 	const cookers = useMemo<ReadonlyArray<TMapCatalogItem>>(
 		() =>
@@ -761,6 +784,15 @@ const CharacterDetail = memo(function CharacterDetail({
 				.filter(isCookerVisible)
 				.map((id) => ({ id, target: 'cooker' })) ?? [],
 		[goods, isCookerVisible]
+	);
+	const records = useMemo<ReadonlyArray<TMapCatalogItem>>(
+		() =>
+			goods?.records
+				.filter((id) =>
+					isDlcVisible(recordItemCatalog.getPropsById(id, 'dlc'))
+				)
+				.map((id) => ({ id, target: 'record' })) ?? [],
+		[goods, isDlcVisible]
 	);
 
 	const otherPlaces = useMemo(
@@ -810,7 +842,7 @@ const CharacterDetail = memo(function CharacterDetail({
 					</div>
 				</Section>
 			)}
-			{goodsProducts.length > 0 && (
+			{stockMerchant === null && goodsProducts.length > 0 && (
 				<Section label={t('maps.detail.goods')}>
 					<div className="-mx-0.5 flex flex-wrap">
 						{goodsProducts.map((product) => (
@@ -831,6 +863,13 @@ const CharacterDetail = memo(function CharacterDetail({
 					</div>
 				</Section>
 			)}
+			{stockMerchant !== null && (
+				<MerchantStockDetail
+					merchant={stockMerchant}
+					onPopoverOpenChange={onPopoverOpenChange}
+					visibility={visibility}
+				/>
+			)}
 			{recipes.length > 0 && (
 				<Section label={t('maps.detail.recipes')}>
 					<MapCatalogItems
@@ -847,9 +886,19 @@ const CharacterDetail = memo(function CharacterDetail({
 					/>
 				</Section>
 			)}
+			{records.length > 0 && (
+				<Section label={t('maps.detail.records')}>
+					<MapCatalogItems
+						items={records}
+						onPopoverOpenChange={onPopoverOpenChange}
+					/>
+				</Section>
+			)}
 			{(goodsProducts.length > 0 ||
 				recipes.length > 0 ||
-				cookers.length > 0) && <p>{t('maps.detail.itemHint')}</p>}
+				cookers.length > 0 ||
+				records.length > 0 ||
+				stockMerchant !== null) && <p>{t('maps.detail.itemHint')}</p>}
 			{character.specialGuest !== null && (
 				<SpecialGuestDetail guest={character.specialGuest} />
 			)}
@@ -1009,11 +1058,20 @@ const EntityFields = memo(function EntityFields({
 		case 'partner':
 		case 'resident':
 		case 'specialGuest': {
-			const { isOffByDefault, showTime } = entity.character;
+			const { isOffByDefault, merchant, showTime } = entity.character;
+			const stock =
+				typeof merchant === 'string'
+					? MERCHANT_STOCK_FACTS[merchant]
+					: undefined;
 			return (
 				<div className="flex flex-wrap gap-x-4 gap-y-1">
 					{kind}
 					<ShowTime showTime={showTime} />
+					{stock !== undefined && (
+						<Field label={t('maps.detail.stockPriceMultiplier')}>
+							{formatStockPriceMultiplier(stock.priceMultiplier)}
+						</Field>
+					)}
 					{isOffByDefault && (
 						<Field label={t('maps.detail.condition')}>
 							{t('maps.detail.offByDefault')}
@@ -1067,14 +1125,14 @@ export default memo<IProps>(function MapDetailCard({
 	}, [entity.id, entity.position, map, onFocusPoint]);
 
 	return (
-		<ScrollMask
-			containerClassName={cn(
-				'pointer-events-auto max-h-full rounded-large text-tiny text-default-800 shadow-medium',
+		<section
+			aria-label={name}
+			className={cn(
+				'pointer-events-auto flex max-h-full min-h-0 flex-col overflow-hidden rounded-large text-tiny text-default-800 shadow-medium',
 				getMapSurfaceClassName(isHighAppearance)
 			)}
-			className="max-h-full"
 		>
-			<section aria-label={name} className="space-y-2 p-3">
+			<div className="shrink-0 space-y-2 px-3 pb-2 pt-3">
 				<header className="flex items-center gap-2 text-small text-foreground">
 					<span className="shrink-0">
 						<DayMapEntityIcon
@@ -1105,86 +1163,90 @@ export default memo<IProps>(function MapDetailCard({
 					/>
 				</header>
 				<EntityFields entity={entity} />
-				{entity.layer === 'collectable' && (
-					<CollectableDetail
-						entity={entity}
-						onPopoverOpenChange={onPopoverOpenChange}
-						restoredItemKey={restoredItemKey}
-					/>
-				)}
-				{entity.layer === 'prayer' && (
-					<PrayerDetail
-						entity={entity}
-						onPopoverOpenChange={onPopoverOpenChange}
-						restoredItemKey={restoredItemKey}
-					/>
-				)}
-				{entity.layer === 'interaction' && (
-					<InteractionDetail
-						entity={entity}
-						onPopoverOpenChange={onPopoverOpenChange}
-					/>
-				)}
-				{entity.layer === 'task' && <TaskDetail entity={entity} />}
-				{'character' in entity && (
-					<CharacterDetail
-						entity={entity}
-						map={map}
-						onFocusPoint={onFocusPoint}
-						onPopoverOpenChange={onPopoverOpenChange}
-						onShowCharacter={onShowCharacter}
-						restoredItemKey={restoredItemKey}
-						visibility={visibility}
-					/>
-				)}
-				{entity.layer === 'transition' && (
-					<TransitionDetail
-						accessPromptRequest={accessPromptRequest ?? null}
-						entity={entity}
-						name={name}
-						onAccessPromptOpened={onAccessPromptOpened}
-						onGoTo={onGoTo}
-						onPopoverOpenChange={onPopoverOpenChange}
-					/>
-				)}
-				{entity.layer === 'teleport' && (
-					<>
-						<p>
-							{t('maps.detail.teleport', {
-								first: getDayMapLabel(
-									'DLC4_ShiningNeedleCastle'
-								),
-								second: getDayMapLabel('DLC5_LunarCapital'),
-							})}
-						</p>
-						<p>{t('maps.detail.doubleClickTeleport')}</p>
-						<Button
-							fullWidth
-							color="secondary"
-							size="sm"
-							startContent={
-								<FontAwesomeIcon icon={faEarthAsia} />
-							}
-							onPress={onOpenWorldMap}
-						>
-							{t('maps.detail.openWorldMap')}
-						</Button>
-					</>
-				)}
-				{entity.layer === 'fishing' && (
-					<FishingDetail
-						entity={entity}
-						onPopoverOpenChange={onPopoverOpenChange}
-						restoredItemKey={restoredItemKey}
-					/>
-				)}
-				{entity.layer === 'facility' && (
-					<CollaborationDetail
-						onPopoverOpenChange={onPopoverOpenChange}
-						visibility={visibility}
-					/>
-				)}
-			</section>
-		</ScrollMask>
+			</div>
+			<div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
+				<div className="space-y-2 px-3 pb-3 pt-2">
+					{entity.layer === 'collectable' && (
+						<CollectableDetail
+							entity={entity}
+							onPopoverOpenChange={onPopoverOpenChange}
+							restoredItemKey={restoredItemKey}
+						/>
+					)}
+					{entity.layer === 'prayer' && (
+						<PrayerDetail
+							entity={entity}
+							onPopoverOpenChange={onPopoverOpenChange}
+							restoredItemKey={restoredItemKey}
+						/>
+					)}
+					{entity.layer === 'interaction' && (
+						<InteractionDetail
+							entity={entity}
+							onPopoverOpenChange={onPopoverOpenChange}
+						/>
+					)}
+					{entity.layer === 'task' && <TaskDetail entity={entity} />}
+					{'character' in entity && (
+						<CharacterDetail
+							entity={entity}
+							map={map}
+							onFocusPoint={onFocusPoint}
+							onPopoverOpenChange={onPopoverOpenChange}
+							onShowCharacter={onShowCharacter}
+							restoredItemKey={restoredItemKey}
+							visibility={visibility}
+						/>
+					)}
+					{entity.layer === 'transition' && (
+						<TransitionDetail
+							accessPromptRequest={accessPromptRequest ?? null}
+							entity={entity}
+							name={name}
+							onAccessPromptOpened={onAccessPromptOpened}
+							onGoTo={onGoTo}
+							onPopoverOpenChange={onPopoverOpenChange}
+						/>
+					)}
+					{entity.layer === 'teleport' && (
+						<>
+							<p>
+								{t('maps.detail.teleport', {
+									first: getDayMapLabel(
+										'DLC4_ShiningNeedleCastle'
+									),
+									second: getDayMapLabel('DLC5_LunarCapital'),
+								})}
+							</p>
+							<p>{t('maps.detail.doubleClickTeleport')}</p>
+							<Button
+								fullWidth
+								color="secondary"
+								size="sm"
+								startContent={
+									<FontAwesomeIcon icon={faEarthAsia} />
+								}
+								onPress={onOpenWorldMap}
+							>
+								{t('maps.detail.openWorldMap')}
+							</Button>
+						</>
+					)}
+					{entity.layer === 'fishing' && (
+						<FishingDetail
+							entity={entity}
+							onPopoverOpenChange={onPopoverOpenChange}
+							restoredItemKey={restoredItemKey}
+						/>
+					)}
+					{entity.layer === 'facility' && (
+						<CollaborationDetail
+							onPopoverOpenChange={onPopoverOpenChange}
+							visibility={visibility}
+						/>
+					)}
+				</div>
+			</div>
+		</section>
 	);
 });

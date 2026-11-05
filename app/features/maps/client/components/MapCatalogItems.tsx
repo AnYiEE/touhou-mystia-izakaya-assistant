@@ -3,7 +3,15 @@
 import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+	type ReactNode,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Button from '@/design/ui/components/button';
@@ -19,6 +27,7 @@ import { CookerCatalog } from '@/domain/catalog/items/CookerCatalog';
 import { CurrencyItemCatalog } from '@/domain/catalog/items/CurrencyItemCatalog';
 import { DecorationCatalog } from '@/domain/catalog/items/DecorationCatalog';
 import { GeneralItemCatalog } from '@/domain/catalog/items/GeneralItemCatalog';
+import { RecordItemCatalog } from '@/domain/catalog/items/RecordItemCatalog';
 
 import BeverageSourceDetails from '@/features/catalog/items/beverages/client/components/BeverageSourceDetails';
 import ClothesSourceDetails from '@/features/catalog/items/clothes/client/components/ClothesSourceDetails';
@@ -28,6 +37,7 @@ import FoodSourceDetails from '@/features/catalog/items/foods/client/components/
 import RecipesDetails from '@/features/catalog/items/foods/client/components/RecipesDetails';
 import GeneralItemSourceDetails from '@/features/catalog/items/generalItems/client/components/GeneralItemSourceDetails';
 import IngredientSourceDetails from '@/features/catalog/items/ingredients/client/components/IngredientSourceDetails';
+import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import {
 	BEVERAGE_TAG_STYLE,
 	FOOD_TAG_STYLE,
@@ -65,9 +75,14 @@ import { useMapAccess } from './MapAccessContext';
 type TOpenWindow = ReturnType<typeof useViewInNewWindow>;
 
 interface IProps {
-	items: ReadonlyArray<TMapCatalogItem>;
+	items: ReadonlyArray<TMapCatalogItemWithMetadata>;
+	layout?: 'grid' | 'rows';
 	onPopoverOpenChange: (isOpen: boolean) => void;
 }
+
+export type TMapCatalogItemWithMetadata = TMapCatalogItem & {
+	metadata?: ReactNode;
+};
 
 function getCatalogName({ id, target }: TMapCatalogItem) {
 	switch (target) {
@@ -102,6 +117,11 @@ function getCatalogName({ id, target }: TMapCatalogItem) {
 				id,
 				'name'
 			);
+		case 'record':
+			return RecordItemCatalog.getInstance().getDisplayPropsById(
+				id,
+				'name'
+			);
 	}
 }
 
@@ -123,6 +143,8 @@ function getCatalogPath({ target }: TMapCatalogItem) {
 			return 'ingredients' as const;
 		case 'item':
 			return 'items' as const;
+		case 'record':
+			return 'records' as const;
 	}
 }
 
@@ -156,6 +178,8 @@ const CatalogItemDetails = memo(function CatalogItemDetails({
 	item: TMapCatalogItem;
 	openWindow: TOpenWindow;
 }) {
+	const { t } = useI18n(catalogItemsMessages);
+
 	switch (item.target) {
 		case 'beverage': {
 			const record = BeverageCatalog.getInstance().getDisplayPropsById(
@@ -336,16 +360,51 @@ const CatalogItemDetails = memo(function CatalogItemDetails({
 				</ItemPopoverCard>
 			);
 		}
+		case 'record': {
+			const record = RecordItemCatalog.getInstance().getDisplayPropsById(
+				item.id
+			);
+			return (
+				<ItemPopoverCard
+					target="record"
+					id={item.id}
+					name={record.name}
+					description={{ description: record.description }}
+					dlc={record.dlc}
+				>
+					<p>
+						<span className="font-semibold">
+							{t('items.source.trackName')}
+						</span>
+						{record.trackName}
+					</p>
+					<p>
+						<span className="font-semibold">
+							{t('items.source.originalTrack')}
+						</span>
+						{record.original}
+					</p>
+					<p>
+						<span className="font-semibold">
+							{t('items.source.arranger')}
+						</span>
+						{record.composer}
+					</p>
+				</ItemPopoverCard>
+			);
+		}
 	}
 });
 
 const CatalogItemPopover = memo(function CatalogItemPopover({
 	item,
+	layout,
 	onOpenChange,
 	openWindow,
 	placement,
 }: {
-	item: TMapCatalogItem;
+	item: TMapCatalogItemWithMetadata;
+	layout: 'grid' | 'rows';
 	onOpenChange: (isOpen: boolean) => void;
 	openWindow: TOpenWindow;
 	placement: 'right' | 'top';
@@ -441,25 +500,57 @@ const CatalogItemPopover = memo(function CatalogItemPopover({
 			>
 				<button
 					ref={triggerRef}
-					aria-label={name}
+					{...(layout === 'grid' ? { 'aria-label': name } : {})}
 					type="button"
 					className={cn(
-						'flex rounded-medium p-0.5 transition-colors hover:bg-default-100 motion-reduce:transition-none',
+						'transition-colors hover:bg-default-100 motion-reduce:transition-none',
+						{
+							'flex rounded-medium p-0.5': layout === 'grid',
+							'flex w-full min-w-0 items-center gap-2 rounded-none px-2 py-1 text-left':
+								layout === 'rows',
+						},
 						CLASSNAME_FOCUS_VISIBLE_OUTLINE
 					)}
 					{...(policy.canOpenSecondaryDetails
 						? {}
 						: { onClick: handleBlockedPress })}
 				>
-					<Tooltip showArrow content={name} offset={1} size="sm">
-						<Sprite
-							aria-hidden
-							target={item.target}
-							recordId={item.id}
-							size={1.75}
-							title=""
-						/>
-					</Tooltip>
+					{layout === 'rows' ? (
+						<>
+							<Tooltip
+								showArrow
+								content={name}
+								offset={1}
+								size="sm"
+							>
+								<Sprite
+									aria-hidden
+									target={item.target}
+									recordId={item.id}
+									size={1.25}
+									title=""
+								/>
+							</Tooltip>
+							<span className="min-w-0 flex-1 truncate">
+								{name}
+							</span>
+							{item.metadata !== undefined && (
+								<span className="shrink-0 whitespace-nowrap text-right text-tiny tabular-nums leading-4 text-default-700">
+									{item.metadata}
+								</span>
+							)}
+						</>
+					) : (
+						<Tooltip showArrow content={name} offset={1} size="sm">
+							<Sprite
+								aria-hidden
+								target={item.target}
+								recordId={item.id}
+								size={1.75}
+								title=""
+							/>
+						</Tooltip>
+					)}
 				</button>
 			</ItemPopoverTrigger>
 			<ItemPopoverContent>
@@ -508,6 +599,7 @@ const CatalogItemPopover = memo(function CatalogItemPopover({
 
 export default memo(function MapCatalogItems({
 	items,
+	layout = 'grid',
 	onPopoverOpenChange,
 }: IProps) {
 	const openWindow = useViewInNewWindow();
@@ -518,11 +610,18 @@ export default memo(function MapCatalogItems({
 	useCatalogLocalizationRevision();
 
 	return (
-		<div className="-mx-0.5 flex flex-wrap">
+		<div
+			className={cn({
+				'-mx-0.5 flex flex-wrap': layout === 'grid',
+				'divide-y divide-default-200/50 overflow-hidden rounded-medium border border-default-200/60 bg-default-50/30 dark:border-white/10 dark:bg-white/[0.04]':
+					layout === 'rows',
+			})}
+		>
 			{items.map((item) => (
 				<CatalogItemPopover
 					key={`${item.target}:${item.id}`}
 					item={item}
+					layout={layout}
 					onOpenChange={onPopoverOpenChange}
 					openWindow={openWindow}
 					placement={placement}

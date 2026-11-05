@@ -98,6 +98,8 @@ const CATALOG_ITEMS_MESSAGES_ZH_CN = {
 	'items.source.soldAt': '出售于',
 	'items.source.spotRefresh': '采集点刷新周期：{hours}小时',
 	'items.source.spotTime': '采集点出现时间：{start}-{end}点',
+	'items.source.stockSale': '{probability}%概率出售{amount}',
+	'items.source.stockSaleFixed': '必定出售{amount}',
 	'items.source.storyDialogue':
 		'{prerequisite}后，和地区【{place}】的【{guest}】对话，选择“{option}”。',
 	'items.source.task': '任务{label}',
@@ -258,6 +260,8 @@ export const catalogItemsMessages = {
 			'Gathering spot refresh: every {hours} hours',
 		'items.source.spotTime':
 			'Gathering spot appears at {start}:00-{end}:00',
+		'items.source.stockSale': '{probability}% chance to sell {amount}',
+		'items.source.stockSaleFixed': 'Always sells {amount}',
 		'items.source.storyDialogue':
 			'After {prerequisite}, talk to “{guest}” in the area “{place}” and choose “{option}”.',
 		'items.source.task': 'Task {label}',
@@ -391,6 +395,8 @@ export const catalogItemsMessages = {
 		'items.source.soldAt': '販売場所：',
 		'items.source.spotRefresh': '採取ポイントの更新周期：{hours}時間',
 		'items.source.spotTime': '採取ポイントの出現時間：{start}時-{end}時',
+		'items.source.stockSale': '{probability}%の確率で{amount}を販売',
+		'items.source.stockSaleFixed': '必ず{amount}を販売',
 		'items.source.storyDialogue':
 			'{prerequisite}後、地域【{place}】の【{guest}】と会話し、「{option}」を選択。',
 		'items.source.task': '任務{label}',
@@ -523,6 +529,8 @@ export const catalogItemsMessages = {
 		'items.source.soldAt': '판매처: ',
 		'items.source.spotRefresh': '채집 지점 갱신 주기: {hours}시간',
 		'items.source.spotTime': '채집 지점 등장 시간: {start}시-{end}시',
+		'items.source.stockSale': '{probability}% 확률로 {amount} 판매',
+		'items.source.stockSaleFixed': '항상 {amount} 판매',
 		'items.source.storyDialogue':
 			'{prerequisite} 후, 지역 “{place}”의 “{guest}”와 대화하고 “{option}” 선택.',
 		'items.source.task': '임무 {label}',
@@ -654,6 +662,8 @@ export const catalogItemsMessages = {
 		'items.source.soldAt': '出售於',
 		'items.source.spotRefresh': '採集點刷新週期：{hours}小時',
 		'items.source.spotTime': '採集點出現時間：{start}-{end}點',
+		'items.source.stockSale': '{probability}%機率出售{amount}',
+		'items.source.stockSaleFixed': '必定出售{amount}',
 		'items.source.storyDialogue':
 			'{prerequisite}後，和地區【{place}】的【{guest}】對話，選擇「{option}」。',
 		'items.source.task': '任務{label}',

@@ -14,6 +14,7 @@ import {
 	MERCHANT_LABEL_MAP,
 	type TMerchantLabel,
 } from '@/domain/data/places/merchantFacts';
+import { MERCHANT_STOCK_FACTS } from '@/domain/data/places/merchantStockFacts';
 import type {
 	IPrayerReference,
 	ITaskReference,
@@ -251,4 +252,33 @@ export function formatPrayerYield(
 				amount: reward.amount,
 				probability: reward.probability,
 			});
+}
+
+export function formatMerchantStockSale(
+	reference: TMerchantReference,
+	productType: TCollectionProductType,
+	productId: number,
+	locale: TLocale
+) {
+	if (!('label' in reference)) {
+		return null;
+	}
+	const stock = MERCHANT_STOCK_FACTS[reference.label];
+	const entry = stock?.stock.find(
+		(candidate) =>
+			candidate.productType === productType &&
+			candidate.productId === productId
+	);
+	if (entry === undefined) {
+		return null;
+	}
+	const [min, max] = entry.amount;
+	const amount = min === max ? String(min) : `${min}–${max}`;
+	if (entry.saleProbability === 100) {
+		return t(locale, 'items.source.stockSaleFixed', { amount });
+	}
+	return t(locale, 'items.source.stockSale', {
+		amount,
+		probability: entry.saleProbability,
+	});
 }

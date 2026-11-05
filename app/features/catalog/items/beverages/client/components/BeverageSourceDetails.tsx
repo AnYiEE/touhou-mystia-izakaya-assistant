@@ -26,6 +26,7 @@ import { catalogItemsMessages } from '@/features/catalog/items/shared/messages';
 import {
 	type TSourceReference,
 	formatCollectionPointYield,
+	formatMerchantStockSale,
 	formatPrayerYield,
 	formatSourceReference,
 	getCollectionPointRefreshTimeHours,
@@ -159,7 +160,8 @@ export default function BeverageSourceDetails({ from, id }: IProps) {
 								{Array.isArray(target) ? (
 									target.map((item, targetIndex) => (
 										<Ol.Li key={targetIndex}>
-											{isCollect ||
+											{isBuy ||
+											isCollect ||
 											isPrayer ||
 											Array.isArray(item)
 												? (() => {
@@ -170,8 +172,18 @@ export default function BeverageSourceDetails({ from, id }: IProps) {
 																? item[0]
 																: item
 														) as TSourceReference;
+														const merchantStockSale =
+															isBuy
+																? formatMerchantStockSale(
+																		reference as TMerchantReference,
+																		2,
+																		id,
+																		locale
+																	)
+																: null;
 														const itemProbability =
-															isArray
+															merchantStockSale ??
+															(isArray
 																? isCollect
 																	? null
 																	: typeof item[1] ===
@@ -187,7 +199,7 @@ export default function BeverageSourceDetails({ from, id }: IProps) {
 																		: item[1]
 																			? probability
 																			: null
-																: null;
+																: null);
 														const collectableTimeRange =
 															isCollect &&
 															isArray &&
