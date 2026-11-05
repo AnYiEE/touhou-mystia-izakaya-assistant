@@ -10,6 +10,7 @@ import {
 	useCallback,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from 'react';
 
@@ -19,6 +20,7 @@ import type { IDayMapArt, TDayMapLabel } from '@/domain/data/maps/types';
 
 import {
 	type TMapAssetPriority,
+	checkMapAssetsCached,
 	useMapAsset,
 	useMapAssetPreloader,
 } from '@/features/maps/client/assets/MapAssetContext';
@@ -27,6 +29,7 @@ import {
 	getDayMapPreviewUrl,
 	getDayMapTileUrl,
 } from '@/features/maps/client/model/assets';
+import { getDayMapTileLevelForZoom } from '@/features/maps/client/model/dayMapTileLevels';
 import { limitDayMapTileLevel } from '@/features/maps/client/model/mapAccessPolicy';
 
 import { useI18n } from '@/shared/i18n/useI18n';
@@ -49,49 +52,79 @@ interface IMapTileProps {
 	width: number;
 }
 
-/** @description Screen pixels kept loaded around the viewport to hide loading while panning. */
-const PRELOAD_MARGIN_PX = 128;
+const PRELOAD_MARGIN_MIN_PX = 64;
+const PRELOAD_MARGIN_MAX_PX = 128;
+const PRELOAD_MARGIN_RATIO = 0.16;
+/** Coalesces cache probes while a wheel or pinch gesture is still active. */
+const CACHE_PROBE_DELAY_MS = 40;
 /**
- * @description A sharper level is only fetched once the zoom has rested this
- * long, so zoom animations do not download every level they pass through.
+ * @description Sharper levels start loading after zooming rests this long, so
+ * animations do not download every level they pass through.
  */
-const SHARPER_LEVEL_DELAY_MS = 200;
+const ZOOM_SETTLE_DELAY_MS = 200;
 
-function selectLevel(art: IDayMapArt, zoom: number) {
-	// Use the smallest level whose pixels are still at least as dense as the screen.
-	const level = Math.floor(Math.log2(1 / zoom));
+function selectLevel(art: IDayMapArt, zoom: number, currentLevel?: number) {
+	return getDayMapTileLevelForZoom(art.levels.length, zoom, currentLevel);
+}
 
-	return Math.min(Math.max(level, 0), art.levels.length - 1);
+function getPreloadMarginPx(view: IMapView) {
+	return Math.round(
+		Math.min(
+			PRELOAD_MARGIN_MAX_PX,
+			Math.max(
+				PRELOAD_MARGIN_MIN_PX,
+				Math.min(view.width, view.height) * PRELOAD_MARGIN_RATIO
+			)
+		)
+	);
+}
+
+function getVisibleTileBounds(
+	art: IDayMapArt,
+	level: number,
+	view: IMapView,
+	marginPx: number
+) {
+	const levelInfo = art.levels[level];
+	if (levelInfo === undefined) {
+		return null;
+	}
+
+	const levelScale = 2 ** level;
+	const tileSize = art.tileSize * levelScale;
+	const margin = marginPx / view.zoom;
+	const contentLeft = -view.x / view.zoom;
+	const contentTop = -view.y / view.zoom;
+	const contentRight = (view.width - view.x) / view.zoom;
+	const contentBottom = (view.height - view.y) / view.zoom;
+	const firstColumn = Math.max(
+		0,
+		Math.floor((contentLeft - margin) / tileSize)
+	);
+	const lastColumn = Math.min(
+		levelInfo.columns - 1,
+		Math.floor((contentRight + margin) / tileSize)
+	);
+	const firstRow = Math.max(0, Math.floor((contentTop - margin) / tileSize));
+	const lastRow = Math.min(
+		levelInfo.rows - 1,
+		Math.floor((contentBottom + margin) / tileSize)
+	);
+	return { firstColumn, firstRow, lastColumn, lastRow, levelInfo, tileSize };
 }
 
 function getVisibleTileUrls(
 	art: IDayMapArt,
 	map: TDayMapLabel,
 	level: number,
-	view: IMapView
+	view: IMapView,
+	marginPx = 0
 ) {
-	const levelInfo = art.levels[level];
-	if (levelInfo === undefined) {
+	const bounds = getVisibleTileBounds(art, level, view, marginPx);
+	if (bounds === null) {
 		return [];
 	}
-
-	const tileScreenSize = art.tileSize * 2 ** level * view.zoom;
-	const firstColumn = Math.max(
-		0,
-		Math.floor((-view.x - PRELOAD_MARGIN_PX) / tileScreenSize)
-	);
-	const lastColumn = Math.min(
-		levelInfo.columns - 1,
-		Math.floor((view.width - view.x + PRELOAD_MARGIN_PX) / tileScreenSize)
-	);
-	const firstRow = Math.max(
-		0,
-		Math.floor((-view.y - PRELOAD_MARGIN_PX) / tileScreenSize)
-	);
-	const lastRow = Math.min(
-		levelInfo.rows - 1,
-		Math.floor((view.height - view.y + PRELOAD_MARGIN_PX) / tileScreenSize)
-	);
+	const { firstColumn, firstRow, lastColumn, lastRow, levelInfo } = bounds;
 	const tileSet = new Set(
 		levelInfo.tiles.map(([column, row]) => `${column}_${row}`)
 	);
@@ -178,7 +211,7 @@ const DayMapPreview = memo<{ map: TDayMapLabel }>(function DayMapPreview({
 	return (
 		<span
 			aria-hidden
-			className="image-rendering-pixelated pointer-events-none absolute left-0 top-0 block bg-cover bg-center bg-no-repeat blur-[1px]"
+			className="image-rendering-pixelated pointer-events-none absolute left-0 top-0 block bg-cover bg-center bg-no-repeat"
 			style={{
 				backgroundImage:
 					asset.objectUrl === null
@@ -197,43 +230,101 @@ export default memo<IProps>(function DayMapTiles({
 	view,
 }) {
 	const preloadAssets = useMapAssetPreloader();
+	const latestViewRef = useRef(view);
+	latestViewRef.current = view;
+	const [displayedLevel, setDisplayedLevel] = useState(() =>
+		limitDayMapTileLevel(selectLevel(art, view.zoom), maxTileLevel)
+	);
 	const targetLevel = limitDayMapTileLevel(
-		selectLevel(art, view.zoom),
+		selectLevel(art, view.zoom, displayedLevel),
 		maxTileLevel
 	);
-	const [displayedLevel, setDisplayedLevel] = useState(targetLevel);
+	const [settledZoom, setSettledZoom] = useState(view.zoom);
+	const isZoomSettled = settledZoom === view.zoom;
+
+	useEffect(() => {
+		if (isZoomSettled) {
+			return;
+		}
+		const controller = new AbortController();
+		const settleTimer = setTimeout(() => {
+			setSettledZoom(view.zoom);
+		}, ZOOM_SETTLE_DELAY_MS);
+		let cacheProbeTimer: ReturnType<typeof setTimeout> | undefined;
+		if (targetLevel < displayedLevel) {
+			cacheProbeTimer = setTimeout(() => {
+				const currentView = latestViewRef.current;
+				const urls = getVisibleTileUrls(
+					art,
+					map,
+					targetLevel,
+					currentView
+				);
+				void checkMapAssetsCached(urls, controller.signal).then(
+					(allCached) => {
+						if (!allCached || controller.signal.aborted) {
+							return;
+						}
+						clearTimeout(settleTimer);
+						setSettledZoom(currentView.zoom);
+					}
+				);
+			}, CACHE_PROBE_DELAY_MS);
+		}
+		return () => {
+			controller.abort();
+			clearTimeout(settleTimer);
+			if (cacheProbeTimer !== undefined) {
+				clearTimeout(cacheProbeTimer);
+			}
+		};
+	}, [art, displayedLevel, isZoomSettled, map, targetLevel, view.zoom]);
 
 	useEffect(() => {
 		if (targetLevel === displayedLevel) {
 			return;
 		}
+		if (targetLevel < displayedLevel && !isZoomSettled) {
+			return;
+		}
 
-		let timer: ReturnType<typeof setTimeout> | undefined;
 		const controller = new AbortController();
 		const switchLevel = () => {
-			const urls = getVisibleTileUrls(art, map, targetLevel, view);
-			void preloadAssets(urls, controller.signal, 'high').then(() => {
-				if (!controller.signal.aborted) {
+			const currentView = latestViewRef.current;
+			const visibleUrls = getVisibleTileUrls(
+				art,
+				map,
+				targetLevel,
+				currentView
+			);
+			const preloadUrls = getVisibleTileUrls(
+				art,
+				map,
+				targetLevel,
+				currentView,
+				getPreloadMarginPx(currentView)
+			);
+			const visibleUrlSet = new Set(visibleUrls);
+			const deferredUrls = preloadUrls.filter(
+				(url) => !visibleUrlSet.has(url)
+			);
+			void preloadAssets(visibleUrls, controller.signal, 'critical').then(
+				() => {
+					if (controller.signal.aborted) {
+						return;
+					}
+					void preloadAssets(deferredUrls, undefined, 'high');
 					setDisplayedLevel(targetLevel);
 				}
-			});
+			);
 		};
 
-		if (targetLevel < displayedLevel) {
-			// Readying a sharper level only after the zoom settles avoids fetching
-			// every intermediate level during a continuous gesture.
-			timer = setTimeout(switchLevel, SHARPER_LEVEL_DELAY_MS);
-		} else {
-			switchLevel();
-		}
+		switchLevel();
 
 		return () => {
 			controller.abort();
-			if (timer !== undefined) {
-				clearTimeout(timer);
-			}
 		};
-	}, [art, displayedLevel, map, preloadAssets, targetLevel, view]);
+	}, [art, displayedLevel, isZoomSettled, map, preloadAssets, targetLevel]);
 
 	const levelInfo = art.levels[displayedLevel];
 	const levelScale = 2 ** displayedLevel;
@@ -250,37 +341,19 @@ export default memo<IProps>(function DayMapTiles({
 		[levelInfo]
 	);
 
-	const tileScreenSize = art.tileSize * levelScale * view.zoom;
-	const firstColumn = Math.max(
-		0,
-		Math.floor((-view.x - PRELOAD_MARGIN_PX) / tileScreenSize)
+	const tileScreenSize = art.tileSize * levelScale;
+	const visibleTileBounds = getVisibleTileBounds(
+		art,
+		displayedLevel,
+		view,
+		getPreloadMarginPx(view)
 	);
-	const lastColumn =
-		levelInfo === undefined
-			? -1
-			: Math.min(
-					levelInfo.columns - 1,
-					Math.floor(
-						(view.width - view.x + PRELOAD_MARGIN_PX) /
-							tileScreenSize
-					)
-				);
-	const firstRow = Math.max(
-		0,
-		Math.floor((-view.y - PRELOAD_MARGIN_PX) / tileScreenSize)
-	);
-	const lastRow =
-		levelInfo === undefined
-			? -1
-			: Math.min(
-					levelInfo.rows - 1,
-					Math.floor(
-						(view.height - view.y + PRELOAD_MARGIN_PX) /
-							tileScreenSize
-					)
-				);
+	const firstColumn = visibleTileBounds?.firstColumn ?? 0;
+	const lastColumn = visibleTileBounds?.lastColumn ?? -1;
+	const firstRow = visibleTileBounds?.firstRow ?? 0;
+	const lastRow = visibleTileBounds?.lastRow ?? -1;
 
-	// Panning within the same tile bounds only moves the parent container.
+	// Tile geometry stays in level coordinates; the root transform applies zoom.
 	const tiles = useMemo(() => {
 		const tiles: ReactNode[] = [];
 		if (levelInfo === undefined) {
@@ -296,31 +369,20 @@ export default memo<IProps>(function DayMapTiles({
 					Math.min(
 						art.tileSize,
 						levelInfo.width - column * art.tileSize
-					) *
-					levelScale *
-					view.zoom;
+					) * levelScale;
 				const height =
 					Math.min(
 						art.tileSize,
 						levelInfo.height - row * art.tileSize
-					) *
-					levelScale *
-					view.zoom;
-				const left = Math.floor(column * tileScreenSize);
-				const top = Math.floor(row * tileScreenSize);
+					) * levelScale;
+				const left = column * tileScreenSize;
+				const top = row * tileScreenSize;
 				tiles.push(
 					<MapTile
 						key={`${displayedLevel}:${key}`}
 						height={Math.ceil(height) + 1}
 						left={left}
-						priority={
-							left < view.width &&
-							left + Math.ceil(width) + 1 > 0 &&
-							top < view.height &&
-							top + Math.ceil(height) + 1 > 0
-								? 'critical'
-								: 'high'
-						}
+						priority="critical"
 						top={top}
 						url={getDayMapTileUrl(map, displayedLevel, column, row)}
 						width={Math.ceil(width) + 1}
@@ -341,9 +403,6 @@ export default memo<IProps>(function DayMapTiles({
 		map,
 		tileScreenSize,
 		tileSet,
-		view.height,
-		view.width,
-		view.zoom,
 	]);
 
 	if (levelInfo === undefined) {
@@ -353,10 +412,7 @@ export default memo<IProps>(function DayMapTiles({
 	return (
 		<div
 			className="pointer-events-none absolute left-0 top-0"
-			style={{
-				height: art.height * view.zoom,
-				width: art.width * view.zoom,
-			}}
+			style={{ height: art.height, width: art.width }}
 		>
 			<DayMapPreview map={map} />
 			{tiles}

@@ -265,7 +265,7 @@ export const DAY_MAP_INTERACTION_SPRITES = {
 	showcase: {
 		Basement: {
 			file: 'sprite.png',
-			hash: 'd1932f69af19',
+			hash: 'a46871592cca',
 			height: 183,
 			offsetX: -2.791667,
 			offsetY: 4.520833,
@@ -322,7 +322,7 @@ export const DAY_MAP_TASK_SPRITES = {
 			hash: 'd106dc287449',
 			height: 33,
 			offsetX: -0.375,
-			offsetY: 0.354167,
+			offsetY: 0.333333,
 			pixelsPerUnit: 48,
 			width: 36,
 		},
@@ -339,7 +339,7 @@ export const DAY_MAP_TASK_SPRITES = {
 			file: 'sprite.png',
 			hash: 'aa80356f5f8d',
 			height: 16,
-			offsetX: -0.5,
+			offsetX: -0.520833,
 			offsetY: 0.166667,
 			pixelsPerUnit: 48,
 			width: 49,
@@ -364,7 +364,7 @@ export const DAY_MAP_TASK_SPRITES = {
 		},
 		Lantern_C: {
 			file: 'sprite.png',
-			hash: '181beed42946',
+			hash: '05059c84fe2c',
 			height: 217,
 			offsetX: -0.645833,
 			offsetY: 4.395833,
@@ -373,7 +373,7 @@ export const DAY_MAP_TASK_SPRITES = {
 		},
 		Lantern_D: {
 			file: 'sprite.png',
-			hash: '6de4bda4b902',
+			hash: 'bd65e61fb122',
 			height: 216,
 			offsetX: -0.645833,
 			offsetY: 4.520833,
@@ -382,7 +382,7 @@ export const DAY_MAP_TASK_SPRITES = {
 		},
 		Lantern_E: {
 			file: 'sprite.png',
-			hash: '6de4bda4b902',
+			hash: 'bd65e61fb122',
 			height: 216,
 			offsetX: -0.645833,
 			offsetY: 4.520833,
@@ -402,7 +402,7 @@ export const DAY_MAP_TASK_SPRITES = {
 		},
 		Jade_Clue: {
 			file: 'sprite.png',
-			hash: 'fc765786480e',
+			hash: '5e4f904829ae',
 			height: 40,
 			offsetX: -0.458333,
 			offsetY: 0.395833,
@@ -411,7 +411,7 @@ export const DAY_MAP_TASK_SPRITES = {
 		},
 		LostBook_Clue: {
 			file: 'sprite.png',
-			hash: 'a47680118274',
+			hash: 'f7dd53783117',
 			height: 41,
 			offsetX: -0.4375,
 			offsetY: 0.395833,
@@ -429,18 +429,18 @@ export const DAY_MAP_FISHING_SPRITES = {
 	BambooForest: [
 		{
 			file: 'sprite.png',
-			hash: '320f7794f855',
+			hash: '3fa7a6add3b1',
 			height: 152,
-			offsetX: -0.895833,
+			offsetX: -0.916667,
 			offsetY: 2.0625,
 			pixelsPerUnit: 48,
-			width: 188,
+			width: 189,
 		},
 	],
 	BeastForest: [
 		{
 			file: 'sprite.png',
-			hash: '511d8d0b5ffd',
+			hash: '8ff5edad0645',
 			height: 157,
 			offsetX: -3.520833,
 			offsetY: 2.291667,
@@ -451,8 +451,8 @@ export const DAY_MAP_FISHING_SPRITES = {
 	DLC1_MagicForest: [
 		{
 			file: 'sprite.png',
-			hash: 'a0595d0f23be',
-			height: 134,
+			hash: 'b1e05b6a2f09',
+			height: 152,
 			offsetX: -3.479167,
 			offsetY: 1.3125,
 			pixelsPerUnit: 48,
@@ -462,8 +462,8 @@ export const DAY_MAP_FISHING_SPRITES = {
 	DLC1_YoukaiMountain: [
 		{
 			file: 'sprite.png',
-			hash: '313efa16c1c8',
-			height: 134,
+			hash: '156c8194fee9',
+			height: 152,
 			offsetX: -4.041667,
 			offsetY: 2.083333,
 			pixelsPerUnit: 48,
@@ -473,7 +473,7 @@ export const DAY_MAP_FISHING_SPRITES = {
 	DLC2_EarthSpiritsPalace: [
 		{
 			file: 'sprite.png',
-			hash: '996fd2976450',
+			hash: '18230d9a2111',
 			height: 164,
 			offsetX: -3.666667,
 			offsetY: 2.770833,
@@ -484,7 +484,7 @@ export const DAY_MAP_FISHING_SPRITES = {
 	DLC2_FormerHell: [
 		{
 			file: 'sprite.png',
-			hash: '9ec3a48bad52',
+			hash: 'cc4d2e212f1e',
 			height: 216,
 			offsetX: -3.708333,
 			offsetY: 2.5,
@@ -495,8 +495,8 @@ export const DAY_MAP_FISHING_SPRITES = {
 	DLC3_DivineSpiritMausoleum: [
 		{
 			file: 'sprite.png',
-			hash: 'fa09aed37d14',
-			height: 139,
+			hash: '13d10c4c665e',
+			height: 151,
 			offsetX: -3.8125,
 			offsetY: 2.020833,
 			pixelsPerUnit: 48,
@@ -506,19 +506,19 @@ export const DAY_MAP_FISHING_SPRITES = {
 	DLC3_MyourenTemple: [
 		{
 			file: 'sprite.png',
-			hash: '8aab02ef29ed',
-			height: 143,
-			offsetX: -0.1875,
+			hash: '5c76aa849474',
+			height: 151,
+			offsetX: -0.208333,
 			offsetY: 2.625,
 			pixelsPerUnit: 48,
-			width: 188,
+			width: 189,
 		},
 	],
 	DLC4_GardenOfTheSun: [
 		{
 			file: 'sprite.png',
-			hash: '8ee05941f21a',
-			height: 135,
+			hash: '3a8ebb657699',
+			height: 152,
 			offsetX: -1.166667,
 			offsetY: 2.354167,
 			pixelsPerUnit: 48,
@@ -528,7 +528,7 @@ export const DAY_MAP_FISHING_SPRITES = {
 	DLC4_ShiningNeedleCastle: [
 		{
 			file: 'sprite.png',
-			hash: '1d0ce97e1248',
+			hash: 'c593392c89af',
 			height: 176,
 			offsetX: -3.520833,
 			offsetY: 2.520833,
@@ -539,8 +539,8 @@ export const DAY_MAP_FISHING_SPRITES = {
 	DLC5_LunarCapital: [
 		{
 			file: 'sprite.png',
-			hash: '66d7a2191385',
-			height: 134,
+			hash: 'e8e9046bbb77',
+			height: 152,
 			offsetX: -0.25,
 			offsetY: 2.291667,
 			pixelsPerUnit: 48,
@@ -550,7 +550,7 @@ export const DAY_MAP_FISHING_SPRITES = {
 	DLC5_Makai: [
 		{
 			file: 'sprite.png',
-			hash: '5b73f76cdfee',
+			hash: 'e9e985efa926',
 			height: 155,
 			offsetX: -3.729167,
 			offsetY: 1.625,
@@ -561,8 +561,8 @@ export const DAY_MAP_FISHING_SPRITES = {
 	HakureiShrine: [
 		{
 			file: 'sprite.png',
-			hash: '1ff54a6b086a',
-			height: 134,
+			hash: '8b5fad3e6261',
+			height: 152,
 			offsetX: -0.041667,
 			offsetY: 2.104167,
 			pixelsPerUnit: 48,
@@ -572,8 +572,8 @@ export const DAY_MAP_FISHING_SPRITES = {
 	HumanVillage: [
 		{
 			file: 'sprite.png',
-			hash: 'f9e8eacca47f',
-			height: 140,
+			hash: '8d0995bd5c16',
+			height: 152,
 			offsetX: -3.583333,
 			offsetY: 1.875,
 			pixelsPerUnit: 48,
@@ -583,8 +583,8 @@ export const DAY_MAP_FISHING_SPRITES = {
 	ScarletMansion: [
 		{
 			file: 'sprite.png',
-			hash: '257a9ffe6122',
-			height: 140,
+			hash: '9227619bf3f2',
+			height: 152,
 			offsetX: -4.5625,
 			offsetY: 1.958333,
 			pixelsPerUnit: 48,

@@ -4,6 +4,7 @@ import { faExpand, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@heroui/theme';
 import {
 	type ReactNode,
+	type RefObject,
 	memo,
 	useCallback,
 	useEffect,
@@ -52,6 +53,7 @@ interface IProps {
 	children: (view: IMapView) => ReactNode;
 	className?: string;
 	contentHeight: number;
+	contentRef?: RefObject<HTMLDivElement | null>;
 	contentWidth: number;
 	focusRequest: IMapFocusRequest | null;
 	isPreviewAccessHintVisible?: boolean;
@@ -82,11 +84,13 @@ function easeOutCubic(progress: number) {
 }
 
 const PREVIEW_HINT_MIN_ZOOM_RATIO = 0.03;
+const VIEW_STATE_UPDATE_INTERVAL_MS = 33;
 
 export default memo<IProps>(function MapViewport({
 	children,
 	className,
 	contentHeight,
+	contentRef,
 	contentWidth,
 	focusRequest,
 	isPreviewAccessHintVisible,
@@ -120,6 +124,9 @@ export default memo<IProps>(function MapViewport({
 	/** @description `resetKey` the current view was fitted for; children wait until it matches. */
 	const [fittedKey, setFittedKey] = useState<string | null>(null);
 	const animationFrameRef = useRef<number | null>(null);
+	const viewStateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+		null
+	);
 	/** @description Allows one hint until the map returns to the preview resolution range. */
 	const isPreviewResolutionHintArmedRef = useRef(true);
 	/** @description Zoom where the current preview-range increase began. */
@@ -138,8 +145,51 @@ export default memo<IProps>(function MapViewport({
 		[contentHeight, contentWidth, maxZoom, minZoomFitRatio]
 	);
 
-	const commit = useCallback(
+	const applyContentTransform = useCallback(
 		(next: IMapView) => {
+			const element = contentRef?.current;
+			if (element === null || element === undefined) {
+				return false;
+			}
+			element.style.setProperty('--map-zoom', String(next.zoom));
+			element.style.setProperty(
+				'--map-inverse-zoom',
+				String(1 / next.zoom)
+			);
+			element.style.setProperty('--map-x', `${next.x}px`);
+			element.style.setProperty('--map-y', `${next.y}px`);
+			return true;
+		},
+		[contentRef]
+	);
+
+	const updateViewState = useCallback(
+		(next: IMapView, immediately: boolean) => {
+			if (
+				immediately ||
+				contentRef?.current === null ||
+				contentRef?.current === undefined
+			) {
+				if (viewStateTimerRef.current !== null) {
+					clearTimeout(viewStateTimerRef.current);
+					viewStateTimerRef.current = null;
+				}
+				setView(next);
+				return;
+			}
+			if (viewStateTimerRef.current !== null) {
+				return;
+			}
+			viewStateTimerRef.current = setTimeout(() => {
+				viewStateTimerRef.current = null;
+				setView(viewRef.current);
+			}, VIEW_STATE_UPDATE_INTERVAL_MS);
+		},
+		[contentRef]
+	);
+
+	const commit = useCallback(
+		(next: IMapView, immediately = false) => {
 			const limits = getZoomLimits(next.width, next.height);
 			const zoom = clamp(next.zoom, limits.minZoom, limits.maxZoom);
 			const scaledWidth = contentWidth * zoom;
@@ -167,9 +217,16 @@ export default memo<IProps>(function MapViewport({
 			}
 			const clamped = { ...next, x, y, zoom };
 			viewRef.current = clamped;
-			setView(clamped);
+			const hasTransformedContent = applyContentTransform(clamped);
+			updateViewState(clamped, immediately || !hasTransformedContent);
 		},
-		[contentHeight, contentWidth, getZoomLimits]
+		[
+			applyContentTransform,
+			contentHeight,
+			contentWidth,
+			getZoomLimits,
+			updateViewState,
+		]
 	);
 
 	const notifyPreviewResolutionLimit = useCallback(
@@ -375,20 +432,23 @@ export default memo<IProps>(function MapViewport({
 			const { clientHeight: height, clientWidth: width } = container;
 			const { current } = viewRef;
 			if (current.width === 0 || current.height === 0) {
-				commit({ height, width, ...getFitView(width, height) });
+				commit({ height, width, ...getFitView(width, height) }, true);
 				setFittedKey(resetKey);
 				return;
 			}
 			if (current.width === width && current.height === height) {
 				return;
 			}
-			commit({
-				...current,
-				height,
-				width,
-				x: current.x + (width - current.width) / 2,
-				y: current.y + (height - current.height) / 2,
-			});
+			commit(
+				{
+					...current,
+					height,
+					width,
+					x: current.x + (width - current.width) / 2,
+					y: current.y + (height - current.height) / 2,
+				},
+				true
+			);
 		};
 
 		handleResize();
@@ -418,7 +478,7 @@ export default memo<IProps>(function MapViewport({
 		if (width === 0 || height === 0) {
 			return;
 		}
-		commit({ ...viewRef.current, ...getFitView(width, height) });
+		commit({ ...viewRef.current, ...getFitView(width, height) }, true);
 		setFittedKey(resetKey);
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- Only a new `resetKey` refits.
 	}, [resetKey]);
@@ -447,11 +507,24 @@ export default memo<IProps>(function MapViewport({
 	}, [fittedKey, focusRequest?.key, resetKey]);
 
 	useEffect(() => cancelAnimation, [cancelAnimation]);
+	useEffect(
+		() => () => {
+			if (viewStateTimerRef.current !== null) {
+				clearTimeout(viewStateTimerRef.current);
+				viewStateTimerRef.current = null;
+			}
+		},
+		[]
+	);
+
+	useLayoutEffect(() => {
+		applyContentTransform(viewRef.current);
+	}, [applyContentTransform, fittedKey, resetKey]);
 
 	useLayoutEffect(() => {
 		const { current } = viewRef;
 		if (current.width !== 0 && current.height !== 0) {
-			commit(current);
+			commit(current, true);
 		}
 	}, [commit]);
 

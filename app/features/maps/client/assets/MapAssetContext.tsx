@@ -53,6 +53,21 @@ const PRIORITY_VALUES = {
 	low: 0,
 	normal: 1,
 } as const satisfies Record<TMapAssetPriority, number>;
+const QUEUE_PRIORITIES = [
+	'critical',
+	'high',
+	'normal',
+	'low',
+] as const satisfies ReadonlyArray<TMapAssetPriority>;
+const QUEUE_PRIORITY_BY_VALUE = {
+	0: 'low',
+	1: 'normal',
+	2: 'high',
+	3: 'critical',
+} as const;
+const MAP_ASSET_CACHE_NAME = 'maps/assets';
+const CACHE_PROBE_MEMO_LIMIT = 4096;
+const cachedMapAssetUrls = new Set<string>();
 /** Keeps preloaded resources alive long enough for the replacing UI to subscribe. */
 const PRELOAD_RELEASE_DELAY_MS = 1000;
 const IDLE_SNAPSHOT: IMapAssetSnapshot = {
@@ -61,11 +76,74 @@ const IDLE_SNAPSHOT: IMapAssetSnapshot = {
 	status: 'idle',
 };
 
+export async function checkMapAssetsCached(
+	urls: ReadonlyArray<string>,
+	signal?: AbortSignal
+) {
+	if (urls.length === 0) {
+		return true;
+	}
+	const checkAborted = () => signal?.aborted === true;
+	if (!('caches' in globalThis) || checkAborted()) {
+		return false;
+	}
+
+	try {
+		const normalizedUrls = urls.map(
+			(url) => new URL(url, globalThis.location.href).href
+		);
+		if (normalizedUrls.every((url) => cachedMapAssetUrls.has(url))) {
+			return true;
+		}
+		const cache = await globalThis.caches.open(MAP_ASSET_CACHE_NAME);
+		const uncachedUrls = normalizedUrls.filter(
+			(url) => !cachedMapAssetUrls.has(url)
+		);
+		const matches = await Promise.all(
+			uncachedUrls.map((url) => cache.match(url))
+		);
+		for (const [index, response] of matches.entries()) {
+			if (response === undefined) {
+				continue;
+			}
+			const url = uncachedUrls[index];
+			if (url !== undefined) {
+				cachedMapAssetUrls.add(url);
+			}
+		}
+		while (cachedMapAssetUrls.size > CACHE_PROBE_MEMO_LIMIT) {
+			const firstUrl = cachedMapAssetUrls.values().next().value;
+			if (firstUrl === undefined) {
+				break;
+			}
+			cachedMapAssetUrls.delete(firstUrl);
+		}
+		return (
+			!checkAborted() &&
+			normalizedUrls.every((url) => cachedMapAssetUrls.has(url))
+		);
+	} catch {
+		return false;
+	}
+}
+
 class MapAssetManager {
 	private readonly activeUrls = new Set<string>();
 	private readonly entries = new Map<string, IMapAssetEntry>();
 	private readonly onAccessFailure: (error: MapAssetLoadError) => void;
-	private readonly queuedUrls: string[] = [];
+	private readonly queuedPriorities = new Map<string, TMapAssetPriority>();
+	private readonly queuedUrlIndexes: Record<TMapAssetPriority, number> = {
+		critical: 0,
+		high: 0,
+		low: 0,
+		normal: 0,
+	};
+	private readonly queuedUrls: Record<TMapAssetPriority, string[]> = {
+		critical: [],
+		high: [],
+		low: [],
+		normal: [],
+	};
 	private readonly queuedUrlSet = new Set<string>();
 	private deactivateTimer: ReturnType<typeof setTimeout> | null = null;
 	private isPumpScheduled = false;
@@ -132,6 +210,7 @@ class MapAssetManager {
 				? PRIORITY_VALUES[priority]
 				: Math.max(currentPriority, PRIORITY_VALUES[priority])
 		);
+		this.refreshQueuedPriority(url);
 		this.queueRequest(url);
 
 		return () => {
@@ -220,8 +299,12 @@ class MapAssetManager {
 			clearTimeout(this.deactivateTimer);
 			this.deactivateTimer = null;
 		}
-		this.queuedUrls.length = 0;
+		for (const priority of QUEUE_PRIORITIES) {
+			this.queuedUrls[priority].length = 0;
+			this.queuedUrlIndexes[priority] = 0;
+		}
 		this.queuedUrlSet.clear();
+		this.queuedPriorities.clear();
 		for (const entry of this.entries.values()) {
 			entry.controller?.abort();
 			if (entry.releaseTimer !== null) {
@@ -236,16 +319,41 @@ class MapAssetManager {
 		this.activeUrls.clear();
 	}
 
-	private getQueuedPriority(url: string) {
+	private getEntryPriority(url: string): TMapAssetPriority | null {
 		const entry = this.entries.get(url);
 		if (entry === undefined || entry.listeners.size === 0) {
-			return Number.NEGATIVE_INFINITY;
+			return null;
 		}
 		let priority = Number.NEGATIVE_INFINITY;
+		let result: TMapAssetPriority = 'low';
 		for (const listenerPriority of entry.listeners.values()) {
-			priority = Math.max(priority, listenerPriority);
+			if (listenerPriority <= priority) {
+				continue;
+			}
+			priority = listenerPriority;
+			result =
+				QUEUE_PRIORITY_BY_VALUE[
+					priority as keyof typeof QUEUE_PRIORITY_BY_VALUE
+				];
 		}
-		return priority;
+		return result;
+	}
+
+	private refreshQueuedPriority(url: string) {
+		if (!this.queuedUrlSet.has(url)) {
+			return;
+		}
+		const nextPriority = this.getEntryPriority(url);
+		if (nextPriority === null) {
+			this.queuedUrlSet.delete(url);
+			this.queuedPriorities.delete(url);
+			return;
+		}
+		if (this.queuedPriorities.get(url) === nextPriority) {
+			return;
+		}
+		this.queuedPriorities.set(url, nextPriority);
+		this.queuedUrls[nextPriority].push(url);
 	}
 
 	private queueRequest(url: string) {
@@ -263,13 +371,18 @@ class MapAssetManager {
 			return;
 		}
 
+		const priority = this.getEntryPriority(url);
+		if (priority === null) {
+			return;
+		}
 		this.updateSnapshot(entry, {
 			error: null,
 			objectUrl: null,
 			status: 'queued',
 		});
-		this.queuedUrls.push(url);
+		this.queuedUrls[priority].push(url);
 		this.queuedUrlSet.add(url);
+		this.queuedPriorities.set(url, priority);
 		this.schedulePump();
 	}
 
@@ -288,22 +401,42 @@ class MapAssetManager {
 		while (
 			!this.isDestroyed &&
 			this.activeUrls.size < MAX_CONCURRENT_REQUESTS &&
-			this.queuedUrls.length > 0
+			this.queuedUrlSet.size > 0
 		) {
-			let nextIndex = 0;
-			let nextPriority = Number.NEGATIVE_INFINITY;
-			for (const [index, queuedUrl] of this.queuedUrls.entries()) {
-				const priority = this.getQueuedPriority(queuedUrl);
-				if (priority > nextPriority) {
-					nextIndex = index;
-					nextPriority = priority;
+			let selectedUrl: string | undefined;
+			for (const priority of QUEUE_PRIORITIES) {
+				const urls = this.queuedUrls[priority];
+				let index = this.queuedUrlIndexes[priority];
+				while (index < urls.length) {
+					const candidate = urls[index];
+					index++;
+					if (candidate === undefined) {
+						continue;
+					}
+					if (
+						!this.queuedUrlSet.has(candidate) ||
+						this.queuedPriorities.get(candidate) !== priority
+					) {
+						continue;
+					}
+					selectedUrl = candidate;
+					break;
+				}
+				this.queuedUrlIndexes[priority] = index;
+				if (index >= urls.length) {
+					urls.length = 0;
+					this.queuedUrlIndexes[priority] = 0;
+				}
+				if (selectedUrl !== undefined) {
+					break;
 				}
 			}
-			const [url] = this.queuedUrls.splice(nextIndex, 1);
-			if (url === undefined) {
+			if (selectedUrl === undefined) {
 				return;
 			}
+			const url = selectedUrl;
 			this.queuedUrlSet.delete(url);
+			this.queuedPriorities.delete(url);
 			const entry = this.entries.get(url);
 			if (entry === undefined || entry.listeners.size === 0) {
 				continue;
@@ -377,7 +510,13 @@ class MapAssetManager {
 			return;
 		}
 		entry.listeners.delete(listener);
-		if (entry.listeners.size > 0 || entry.releaseTimer !== null) {
+		if (entry.listeners.size > 0) {
+			this.refreshQueuedPriority(url);
+			return;
+		}
+		this.queuedUrlSet.delete(url);
+		this.queuedPriorities.delete(url);
+		if (entry.releaseTimer !== null) {
 			return;
 		}
 
@@ -396,6 +535,7 @@ class MapAssetManager {
 			}
 			this.entries.delete(url);
 			this.queuedUrlSet.delete(url);
+			this.queuedPriorities.delete(url);
 		}, releaseDelay);
 	}
 

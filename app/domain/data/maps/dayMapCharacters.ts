@@ -3735,11 +3735,11 @@ export const DAY_MAP_CHARACTERS: ReadonlyArray<IDayMapCharacter> = [
 
 /** @description Content hashes for published standing character sprites, keyed by their source DLC. */
 export const DAY_MAP_CHARACTER_SPRITE_HASHES = {
-	0: 'de53a1b65ae4',
+	0: '50ab2cd0c009',
 	1: 'bc6183f34e8c',
 	2: '46c8e26f1a0a',
 	3: 'e639f18d1b61',
 	4: 'f5b26cc2e6a1',
-	5: '30b8242cebcd',
+	5: 'a40d1f7b387d',
 	9: '33a59504dc9d',
 } as const satisfies Partial<Record<TDlc, string>>;

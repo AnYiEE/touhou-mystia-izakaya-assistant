@@ -54,6 +54,7 @@ import {
 	checkDayMapLabel,
 	getDayMapLabel,
 } from '@/features/maps/client/model/dayMapLabels';
+import { getDayMapTileLevelMinZoom } from '@/features/maps/client/model/dayMapTileLevels';
 import { getMapSurfaceClassName } from '@/features/maps/client/model/mapStyles';
 import {
 	type IMapsVisit,
@@ -180,6 +181,7 @@ export default function MapsPage() {
 		: MAP_ENTER_TRANSITION;
 	const panelControls = useAnimationControls();
 	const isClosingRef = useRef(false);
+	const dayMapContentRef = useRef<HTMLDivElement>(null);
 	const [shouldAnimateEntrance] = useState(() => shouldAnimateMapsEntrance());
 	const [isEntranceSettled, setIsEntranceSettled] = useState(
 		!shouldAnimateEntrance || isReducedMotion
@@ -826,6 +828,14 @@ export default function MapsPage() {
 
 	const mapTransition = getMapTransition(isReducedMotion);
 	const maxMapZoom = map === null ? WORLD_MAP_MAX_ZOOM : DAY_MAP_MAX_ZOOM;
+	const previewDetailLevel =
+		policy.maxTileLevel === null ? null : policy.maxTileLevel - 1;
+	const previewResolutionZoomLimit =
+		map === null
+			? 0.5
+			: previewDetailLevel === null || previewDetailLevel < 0
+				? undefined
+				: getDayMapTileLevelMinZoom(previewDetailLevel);
 	const renderView = useCallback(
 		(view: IMapView) => (
 			// Zero-sized so empty map space still reaches the viewport's background press.
@@ -844,9 +854,12 @@ export default function MapsPage() {
 					/>
 				) : (
 					<div
+						ref={dayMapContentRef}
 						className="absolute left-0 top-0"
 						style={{
-							transform: `translate3d(${view.x}px, ${view.y}px, 0)`,
+							transform:
+								'translate3d(var(--map-x, 0px), var(--map-y, 0px), 0) scale(var(--map-zoom, 1))',
+							transformOrigin: '0 0',
 						}}
 					>
 						<DayMapTiles
@@ -1139,6 +1152,7 @@ export default function MapsPage() {
 										? WORLD_MAP_FACTS.height
 										: layout.art.height
 								}
+								contentRef={dayMapContentRef}
 								contentWidth={
 									layout === null
 										? WORLD_MAP_FACTS.width
@@ -1153,17 +1167,12 @@ export default function MapsPage() {
 									layout === null ? WORLD_MAP_MIN_FIT_ZOOM : 0
 								}
 								onBackgroundPress={handleBackgroundPress}
-								{...(policy.mode === 'preview'
+								{...(policy.mode === 'preview' &&
+								previewResolutionZoomLimit !== undefined
 									? {
 											onPreviewResolutionLimitReached:
 												handleShowPreviewAccessHint,
-											previewResolutionZoomLimit:
-												map === null
-													? 0.5
-													: 1 /
-														2 **
-															(policy.maxTileLevel ??
-																0),
+											previewResolutionZoomLimit,
 										}
 									: {})}
 								overlay={overlay}

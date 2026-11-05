@@ -523,7 +523,13 @@ function Anchor({ children, point, zIndex, zoom }: IAnchorProps) {
 	return (
 		<div
 			className="absolute h-0 w-0"
-			style={{ left: point[0] * zoom, top: point[1] * zoom, zIndex }}
+			style={{
+				left: point[0],
+				top: point[1],
+				transform: `scale(var(--map-inverse-zoom, ${1 / zoom}))`,
+				transformOrigin: '0 0',
+				zIndex,
+			}}
 		>
 			{children}
 		</div>
@@ -958,10 +964,12 @@ export default memo<IProps>(function DayMapMarkers({
 								: 'border-sky-400/70'
 						)}
 						style={{
-							height: rect.height * zoom,
-							left: rect.left * zoom,
-							top: rect.top * zoom,
-							width: rect.width * zoom,
+							borderRadius: 8 / zoom,
+							borderWidth: 2 / zoom,
+							height: rect.height,
+							left: rect.left,
+							top: rect.top,
+							width: rect.width,
 						}}
 					/>
 				);
@@ -1237,10 +1245,12 @@ export default memo<IProps>(function DayMapMarkers({
 									: 'border-indigo-300/70'
 							)}
 							style={{
-								height: rect.height * zoom,
-								left: rect.left * zoom,
-								top: rect.top * zoom,
-								width: rect.width * zoom,
+								borderRadius: 6 / zoom,
+								borderWidth: 2 / zoom,
+								height: rect.height,
+								left: rect.left,
+								top: rect.top,
+								width: rect.width,
 							}}
 						/>
 					);
