@@ -38,10 +38,11 @@ export function buildNormalTagTooltip(
 
 	const tagType = getTagTypeLabel(type, t);
 	const isTagExisted = selectedTags.has(tag);
-
-	return isTagExisted
+	const action = isTagExisted
 		? t('guests.tagTooltip.filterOff', { type: tagType })
 		: t('guests.tagTooltip.filterOn', { type: tagType });
+
+	return `${t('guests.tagTooltip.clickPrefix')}${action}`;
 }
 
 export function buildRareTagTooltip(
@@ -69,27 +70,37 @@ export function buildRareTagTooltip(
 	}
 
 	const tagType = getTagTypeLabel(type, t);
+	const clickPrefix = t('guests.tagTooltip.clickPrefix');
 	const isCurrentTag = currentOrderTag === tag;
 	const isNormalMeal = hasMystiaCooker && !isDarkMatter;
 
 	const cookerTip = t('guests.tagTooltip.cookerIgnores');
-	const orderTip = isNormalMeal
-		? isOrderLinkedFilter
-			? ''
-			: cookerTip
-		: t(
-				isCurrentTag
-					? 'guests.tagTooltip.orderOff'
-					: 'guests.tagTooltip.orderOn'
-			);
+	if (isNormalMeal) {
+		return isOrderLinkedFilter
+			? t('guests.tagTooltip.filterNormal', {
+					clickPrefix,
+					cookerTip,
+					filter: t(
+						isCurrentTag
+							? 'guests.tagTooltip.filterOff'
+							: 'guests.tagTooltip.filterOn',
+						{ type: tagType }
+					),
+				})
+			: cookerTip;
+	}
+
+	const order = t(
+		isCurrentTag
+			? 'guests.tagTooltip.orderOff'
+			: 'guests.tagTooltip.orderOn'
+	);
 	const filter = isCurrentTag
 		? t('guests.tagTooltip.filterOff', { type: tagType })
 		: t('guests.tagTooltip.filterOn', { type: tagType });
 	const filterTip = isOrderLinkedFilter
-		? isNormalMeal
-			? t('guests.tagTooltip.filterNormal', { cookerTip, filter })
-			: t('guests.tagTooltip.filterAnd', { filter })
+		? t('guests.tagTooltip.filterAnd', { filter })
 		: '';
 
-	return `${orderTip}${filterTip}`;
+	return `${clickPrefix}${order}${filterTip}`;
 }
