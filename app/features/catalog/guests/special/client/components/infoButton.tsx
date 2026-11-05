@@ -32,11 +32,21 @@ import InfoButtonBase, {
 	InfoSectionTitle,
 } from '@/features/catalog/guests/shared/client/components/infoButtonBase';
 import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
+import { isPopularTrendTag } from '@/features/catalog/guests/shared/presentation/buildTagTooltip';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { getSpecialGuestTachiePath } from '@/features/catalog/presentation/tachiePaths';
+import {
+	type ITagStyleConfig,
+	SPECIAL_GUEST_TAG_STYLE,
+} from '@/features/catalog/presentation/tagStyles';
 import Price from '@/features/catalog/shared/client/components/Price';
 import Sprite from '@/features/catalog/shared/client/components/Sprite';
 import Tachie from '@/features/catalog/shared/client/components/Tachie';
+import Tags from '@/features/catalog/shared/client/components/Tags';
+import {
+	getBeverageTagLabel,
+	getFoodTagLabel,
+} from '@/features/catalog/shared/client/localization/tagLabels';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
 import SpecialGuestMapLinks from '@/features/maps/client/components/SpecialGuestMapLinks';
 
@@ -49,6 +59,13 @@ interface ILevelLabelProps {
 
 interface IProps {
 	cardInfoActionContainer: HTMLElement | null;
+}
+
+interface IOrderTextGroupProps<TTagId extends number> {
+	getTagLabel: (tagId: TTagId) => string;
+	items: ReadonlyArray<{ readonly tagId: TTagId; readonly text: string }>;
+	label: string;
+	tagStyle: Partial<ITagStyleConfig>;
 }
 
 const DEFAULT_EXPANDED_KEYS = ['description'] as const;
@@ -73,6 +90,9 @@ const BOND_CLASS_NAMES = {
 const CHAT_CLASS_NAMES = {
 	content: 'pt-2 text-cjk-flow text-small text-default-900',
 } as const;
+const ORDER_TEXTS_CLASS_NAMES = {
+	content: 'space-y-2 pt-2 text-cjk-flow text-default-900',
+} as const;
 const RATING_CLASS_NAMES = {
 	content: 'space-y-1 pt-2 text-cjk-flow text-small text-default-900',
 } as const;
@@ -88,6 +108,52 @@ const REWARD_TYPE_MESSAGE_KEYS = {
 	衣服: 'appShell.nav.clothes',
 	道具: 'appShell.nav.items',
 } as const satisfies Record<TRewardLabelType, TAppShellMessageKey>;
+
+function resolveOrderTexts<TTagId extends number>(
+	dedicatedTexts: ReadonlyArray<{
+		readonly tagId: TTagId;
+		readonly text: string;
+	}>,
+	getFallbackText: (tagId: TTagId) => string,
+	tags: ReadonlyArray<TTagId>
+) {
+	const dedicatedTextByTagId = new Map(
+		dedicatedTexts.map(({ tagId, text }) => [tagId, text])
+	);
+
+	return [...new Set(tags)]
+		.map((tagId) => {
+			const dedicatedText = dedicatedTextByTagId.get(tagId);
+			return { tagId, text: dedicatedText ?? getFallbackText(tagId) };
+		})
+		.sort((left, right) => left.tagId - right.tagId);
+}
+
+function OrderTextGroup<TTagId extends number>({
+	getTagLabel,
+	items,
+	label,
+	tagStyle,
+}: IOrderTextGroupProps<TTagId>) {
+	return (
+		<section className="space-y-1">
+			<p className="font-semibold">{label}</p>
+			<div className="space-y-1.5">
+				{items.map(({ tagId, text }) => (
+					<p key={tagId} className="text-small leading-5">
+						<Tags.Tag
+							tag={getTagLabel(tagId)}
+							tagStyle={tagStyle}
+							tagType="positive"
+							className="me-2 p-1 text-small font-semibold leading-none"
+						/>
+						{text}
+					</p>
+				))}
+			</div>
+		</section>
+	);
+}
 
 const LevelLabel = memo<ILevelLabelProps>(function LevelLabel({ level }) {
 	const { t } = useI18n(catalogGuestsMessages);
@@ -154,6 +220,8 @@ export default memo<IProps>(function InfoButton({ cardInfoActionContainer }) {
 		evaluation: currentSpecialGuestEvaluationSeed,
 		maps: currentSpecialGuestMaps,
 		name: currentSpecialGuestName,
+		orderTexts: currentSpecialGuestOrderTexts,
+		positiveTags: currentSpecialGuestPositiveTags,
 		spellCards: currentSpecialGuestSpellCards,
 	} = currentSpecialGuestData;
 	const currentSpecialGuestDescription = Array.isArray(
@@ -188,6 +256,20 @@ export default memo<IProps>(function InfoButton({ cardInfoActionContainer }) {
 		hasSpellCards &&
 		'positive' in currentSpecialGuestSpellCards &&
 		!checkLengthEmpty<unknown>(currentSpecialGuestSpellCards.positive);
+	const currentSpecialGuestFoodOrderTexts = resolveOrderTexts(
+		currentSpecialGuestOrderTexts.food,
+		(tagId) =>
+			t('guests.info.orderTextFallback.food', {
+				tag: getFoodTagLabel(tagId),
+			}),
+		currentSpecialGuestPositiveTags.filter(
+			(tagId) => !isPopularTrendTag(tagId)
+		)
+	);
+	const hasFoodOrderTexts = currentSpecialGuestFoodOrderTexts.length > 0;
+	const hasBeverageOrderTexts =
+		currentSpecialGuestOrderTexts.beverage.length > 0;
+	const hasOrderTexts = hasFoodOrderTexts || hasBeverageOrderTexts;
 
 	const defaultExpandedKeys = hasBondRewards
 		? hasSpellCards
@@ -593,6 +675,33 @@ export default memo<IProps>(function InfoButton({ cardInfoActionContainer }) {
 								)}
 							</div>
 						</div>
+					)}
+				</AccordionItem>
+			) : null}
+			{hasOrderTexts ? (
+				<AccordionItem
+					key="orders"
+					aria-label={t('guests.info.orderTextsAria', {
+						name: currentSpecialGuestName,
+					})}
+					title={t('guests.info.orderTexts')}
+					classNames={ORDER_TEXTS_CLASS_NAMES}
+				>
+					{hasFoodOrderTexts && (
+						<OrderTextGroup
+							getTagLabel={getFoodTagLabel}
+							items={currentSpecialGuestFoodOrderTexts}
+							label={t('guests.tagType.food')}
+							tagStyle={SPECIAL_GUEST_TAG_STYLE.positive}
+						/>
+					)}
+					{hasBeverageOrderTexts && (
+						<OrderTextGroup
+							getTagLabel={getBeverageTagLabel}
+							items={currentSpecialGuestOrderTexts.beverage}
+							label={t('guests.tagType.beverage')}
+							tagStyle={SPECIAL_GUEST_TAG_STYLE.beverage}
+						/>
 					)}
 				</AccordionItem>
 			) : null}

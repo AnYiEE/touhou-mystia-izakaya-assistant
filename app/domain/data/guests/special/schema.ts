@@ -12,6 +12,16 @@ interface ISpellCards {
 	positive: ISpellCard[];
 }
 
+interface ISpecialGuestOrderText<TTagId> {
+	tagId: TTagId;
+	text: string;
+}
+
+interface ISpecialGuestOrderTexts {
+	food: Array<ISpecialGuestOrderText<TFoodTagId>>;
+	beverage: Array<ISpecialGuestOrderText<TBeverageTagId>>;
+}
+
 export type TSpecialGuestEvaluationKey =
 	| 'exbad'
 	| 'bad'
@@ -30,6 +40,7 @@ export interface ISpecialGuest extends IGuestBase {
 	enduranceLimit: number;
 	evaluation: Record<TSpecialGuestEvaluationKey, string | null>;
 	negativeTags: TFoodTagId[];
+	orderTexts: ISpecialGuestOrderTexts;
 	positiveTagMapping: Partial<Record<TFoodTagId, string>>;
 	price: [number, number];
 	spellCards: Partial<ISpellCards>;

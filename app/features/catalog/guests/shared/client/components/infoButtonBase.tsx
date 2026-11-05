@@ -122,19 +122,26 @@ const GuestCardInfoAction = memo<IGuestCardInfoActionProps>(
 						sectionKey={accordionKey}
 					/>
 				))}
-				<Button
-					isIconOnly
+				<Tooltip
+					showArrow
+					content={t('guests.infoButton.tooltip')}
+					offset={1}
 					size="sm"
-					variant="light"
-					onClick={onDefaultPress}
-					aria-label={t('guests.infoButton.label')}
-					className="h-auto min-h-7 w-full min-w-0 rounded-none px-0 py-0.5 text-default-500"
 				>
-					<FontAwesomeIcon
-						icon={faChevronRight}
-						className="text-[0.625rem]"
-					/>
-				</Button>
+					<Button
+						isIconOnly
+						size="sm"
+						variant="light"
+						onClick={onDefaultPress}
+						aria-label={t('guests.infoButton.label')}
+						className="h-auto min-h-7 w-full min-w-0 rounded-none px-0 py-0.5 text-default-500"
+					>
+						<FontAwesomeIcon
+							icon={faChevronRight}
+							className="text-[0.625rem]"
+						/>
+					</Button>
+				</Tooltip>
 			</div>
 		);
 	}

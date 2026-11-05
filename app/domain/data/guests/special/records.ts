@@ -54,6 +54,18 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 0, text: '其实虫子也是吃肉的！' },
+				{ tagId: 17, text: '如果点的菜带甜味就好了~' },
+				{
+					tagId: 18,
+					text: '生肉总比熟肉好吃吧！你难道是牛排吃十分熟的那种人?',
+				},
+				{ tagId: 24, text: '作为虫子奇奇怪怪的菜我来者不拒哦~' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 18: '生肉总比熟肉好吃' },
 		collection: true,
@@ -105,6 +117,16 @@ export const SPECIAL_GUEST_LIST = [
 						'在厨房里放出黑雾，让你无法辨识哪些是厨具，哪些是食柜，持续20秒消失。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 0, text: '肉肉肉~要吃肉~' },
+				{ tagId: 9, text: '吃不饱可不行哦~' },
+				{ tagId: 18, text: '最新鲜的吃法就是生吃？' },
+				{ tagId: 19, text: '你有没有什么拿手好菜呀？' },
+				{ tagId: 24, text: '人类觉得奇怪的料理说不定正适合我呢~' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 19: '拿手好菜' },
@@ -158,6 +180,16 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 0, text: '我还在长身体，不吃肉可不行！' },
+				{ tagId: 1, text: '猫当然是要吃鱼啦~' },
+				{ tagId: 6, text: '一点油水都没有的东西能有啥味道' },
+				{ tagId: 17, text: '甜的我也喜欢~' },
+				{ tagId: 33, text: '那种把肉串起来烧一烧的料理！' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 33: '把肉串起来' },
 		collection: false,
@@ -210,6 +242,29 @@ export const SPECIAL_GUEST_LIST = [
 						'被阿求曝光一件经营上的糗事，导致店内气氛一下掉落到冰点。店里的客人听到这个也会降低心情。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{
+					tagId: 4,
+					text: '作为稗田家主，时刻不可失了身份，所食之物也不能太失格',
+				},
+				{ tagId: 7, text: '清淡的饮食是长寿的秘诀……' },
+				{ tagId: 12, text: '稗田家的风格一直都以和风为主。' },
+				{
+					tagId: 17,
+					text: '甜食吃太多不健康……咳，但是偶尔尝尝也是不错的吧',
+				},
+				{
+					tagId: 25,
+					text: '将文化蕴藏于菜肴中，这和我所做之事本质是一样的',
+				},
+				{
+					tagId: 32,
+					text: '咳……身体不太好，有没有适合消化的汤汤水水呢？',
+				},
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 4: '作为稗田家主' },
@@ -274,6 +329,17 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 2, text: '偶尔吃点素菜，感觉身体会很舒服。' },
+				{ tagId: 3, text: '随便吃些家常菜就可以了。' },
+				{ tagId: 7, text: '最近吃得比较清淡……' },
+				{ tagId: 12, text: '不知道和风的菜肴会承载着怎样的历史呢。' },
+				{ tagId: 14, text: '不知道中华风的菜肴会承载着怎样的历史呢。' },
+				{ tagId: 25, text: '历史和文化是相辅相成的。' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 25: '历史和文化相辅相成' },
 		collection: false,
@@ -326,6 +392,15 @@ export const SPECIAL_GUEST_LIST = [
 						'客人们被仙人强行带去修行，没有了世俗的欲望，在30秒内，只会点最便宜的食物和绿茶。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 3, text: '仙人也非高高在上的……家常菜也别有韵味。' },
+				{ tagId: 8, text: '光喝酒可不行，下酒菜也是必不可少的。' },
+				{ tagId: 12, text: '和食很适合仙人。' },
+				{ tagId: 25, text: '仙人所求的不只是味道，还有其背后的文化。' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {},
@@ -386,6 +461,19 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: -2, text: '贵的我可买不起啊！' },
+				{ tagId: 4, text: '有没有什么不花大价钱的高级料理啊……' },
+				{ tagId: 9, text: '吃不饱的话就太不划算了…' },
+				{
+					tagId: 17,
+					text: '糖在以前是奢侈品呢，现在随便就能吃到真是太好了~',
+				},
+				{ tagId: 27, text: '有什么配得上我的称号的菜吗？' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { [-2]: '贵的买不起', 27: '配得上我的称号' },
 		collection: false,
@@ -440,6 +528,19 @@ export const SPECIAL_GUEST_LIST = [
 					description: `出现三只可爱的豆萃香，从你的酒柜里偷走三瓶最高级的酒。${LABEL_MAP.br}明明那么可爱，为什么做些可恨的事情呢！！？`,
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 0, text: '大口吃肉大口喝酒才叫爽快！' },
+				{ tagId: 8, text: '喝酒之余来点佐酒的小菜也不错~' },
+				{ tagId: 12, text: '说到鬼，就是和风了吧~' },
+				{ tagId: 23, text: '鬼族的力量可都是很夸张的哦' },
+				{
+					tagId: 28,
+					text: '我可以分散很多个小的自己，有什么合适的菜吗~',
+				},
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
@@ -503,6 +604,18 @@ export const SPECIAL_GUEST_LIST = [
 						'从天而降的要石破坏桌椅，吓走桌面上的客人，该桌椅在60s内需要修理，期间无法再使用，所以也无法再接待新的客人。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: -3, text: '我不缺钱，给我上最贵的！' },
+				{ tagId: 2, text: '荤腥的东西离我远点！' },
+				{ tagId: 5, text: '传说级别的菜品，这种小破店是不会有的吧？' },
+				{ tagId: 7, text: '只有你们这种下等人才喜欢口味重的东西！' },
+				{ tagId: 17, text: '不喜欢甜味的人是不存在的~' },
+				{ tagId: 20, text: '卖相不好的低贱品就别给本天人端过来了！' },
+				{ tagId: 31, text: '新鲜的水果，这种小店弄得到吗？' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
@@ -577,6 +690,16 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 5, text: '越是古老的东西越有价值~' },
+				{ tagId: 6, text: '高热量的油炸食品能让人更快乐~' },
+				{ tagId: 12, text: '我是和食主义者！' },
+				{ tagId: 22, text: '料理就和魔法一样，发光发热才叫好！' },
+				{ tagId: 26, text: '蘑菇是怎么吃也吃不腻的！' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 5: '古老的东西', 6: '油炸食品' },
 		collection: false,
@@ -631,6 +754,18 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 0, text: '肉是最实在的！' },
+				{ tagId: 9, text: '吃饱了才有力气干活啊。' },
+				{ tagId: 14, text: '就算身处异乡也不能忘了祖国的味道。' },
+				{
+					tagId: 23,
+					text: '有没有像漫画一样吃了就能让人涌现出力量的东西呢？',
+				},
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 14: '祖国的味道' },
 		collection: false,
@@ -683,6 +818,15 @@ export const SPECIAL_GUEST_LIST = [
 						'随机冻住3只厨具，如果厨具中有正在制作或完成但还未拿走的料理，则会直接被冻碎，持续30秒。——琪露诺大人是最强的！',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 17, text: '甜甜美美的东西吃了会让心情变好~' },
+				{ tagId: 20, text: '丑拒！' },
+				{ tagId: 21, text: '冰精当然要吃冰的啦！' },
+				{ tagId: 24, text: '真正的勇士，敢于尝试千奇百怪的东西！' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 20: '丑拒', 21: '要吃冰的' },
@@ -737,6 +881,25 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{
+					tagId: 4,
+					text: '若想使用高级的魔法，就需要拥有很高的熟练度。料理也是如此。',
+				},
+				{ tagId: 13, text: '饮食文化的差异，你这种鸟脑袋能够理解吗？' },
+				{ tagId: 17, text: '甜美是一种能沁入心田的滋味。' },
+				{
+					tagId: 20,
+					text: '品相好看的料理，仅在书里出现也能让人垂涎。',
+				},
+				{
+					tagId: 29,
+					text: '能将人带入宛如真实的梦幻中的料理，真想见识一下。',
+				},
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 13: '文化的差异', 20: '品相好看' },
 		collection: false,
@@ -790,6 +953,22 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{
+					tagId: 22,
+					text: '飘荡在妖怪山上的无尽之烟，即便没有火焰，也如梦似幻般灼热。',
+				},
+				{ tagId: 31, text: '果子既能解渴又能饱腹，是上天恩赐的食物。' },
+				{ tagId: 33, text: '我其实也挺擅长烤肉的。' },
+				{ tagId: 34, text: '辣味能够让我感受到活着的刺激。' },
+				{
+					tagId: 35,
+					text: '涅槃重生的不死鸟啊，复仇之火永扑不尽、永浇不灭！',
+				},
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 35: '复仇之火永扑不尽' },
 		collection: true,
@@ -841,6 +1020,27 @@ export const SPECIAL_GUEST_LIST = [
 						'减少相当于现实时间30秒的营业时间，到时间时会强行终止营业。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{
+					tagId: 5,
+					text: '地上流传的大多传说，其实都是月人创造和散播的哦。',
+				},
+				{
+					tagId: 12,
+					text: '地上有个叫大和抚子的和风美人，我对她挺感兴趣的。',
+				},
+				{
+					tagId: 25,
+					text: '虽然地上的历史对我而言转瞬即逝，但也是不可磨灭的过去。',
+				},
+				{
+					tagId: 27,
+					text: '这片污秽却自由的土地，总让我感到不可思议。',
+				},
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 25: '不可磨灭的过去' },
@@ -900,6 +1100,25 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{
+					tagId: 5,
+					text: '所有因幡都喜欢在捣年糕的时候歌唱那个传说中的男人。',
+				},
+				{
+					tagId: 17,
+					text: '一说到兔子，不就是甜蜜蜜的感觉吗？啊，我说的不是味道哦。',
+				},
+				{
+					tagId: 21,
+					text: '兔毛虽然短却厚，不做好降温工作的话会食欲不振呢。',
+				},
+				{ tagId: 28, text: '对兔子来说，三分饱就够了。' },
+				{ tagId: 29, text: '呵呵，现实的存在永远如梦幻般难以触及哦~' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 21: '降温工作', 28: '三分饱' },
 		collection: false,
@@ -953,6 +1172,26 @@ export const SPECIAL_GUEST_LIST = [
 						'引发水患，招来洪水，巨大的波浪将会冲走随机3~5名顾客。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{
+					tagId: 1,
+					text: '河童是妖怪中的驭水高手，食物也几乎都从水里获得。',
+				},
+				{
+					tagId: 4,
+					text: '招待我们河童，直接把最上品的菜端出来就好。',
+				},
+				{ tagId: 8, text: '只有酒没有菜，囫囵地喝也没什么意思——' },
+				{ tagId: 15, text: '得多吃点咸的才能补充体力啊。' },
+				{ tagId: 19, text: '只有口碑最好的菜才能成为招牌菜。' },
+				{
+					tagId: 24,
+					text: '人类绝对无法理解我们河童的口味……说不定有少部分人可以。',
+				},
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
@@ -1011,6 +1250,25 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{
+					tagId: -1,
+					text: '今天绕着山巡逻了几圈，不多吃点可补不回来。',
+				},
+				{ tagId: 0, text: '就算变成妖怪，狼爱吃肉的本性也不会改变。' },
+				{
+					tagId: 6,
+					text: '清淡的食物实在是吃不下啊，不健康的饮食对我来说刚刚好。',
+				},
+				{
+					tagId: 8,
+					text: '酒才是席上的主角啊，菜肴什么的要是不能给酒增色，那还不如不吃。',
+				},
+				{ tagId: 10, text: '俗话说，靠山吃山，靠海吃海。' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { [-1]: '不多吃点', 6: '不健康的饮食' },
 		collection: true,
@@ -1068,6 +1326,19 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 3, text: '那两位大人在的地方，就是我的家。' },
+				{ tagId: 12, text: '说到日本的传统，当然是大和风情啦！' },
+				{
+					tagId: 17,
+					text: '如果你从来没有尝过糖果的美味，就不会惦记它的味道~',
+				},
+				{ tagId: 20, text: '手机在幻想乡也不是完全无法使用哦~' },
+				{ tagId: 29, text: '女孩子是最不能抵抗梦幻般的东西了。' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 12: '大和风情', 20: '手机' },
 		collection: false,
@@ -1118,6 +1389,22 @@ export const SPECIAL_GUEST_LIST = [
 						'向厨房丢出一枚魔法瓶，炸飞一个厨具，持续60秒。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{
+					tagId: 3,
+					text: '就算知道魔法修行是孤独的，偶尔也还是会怀念家的味道。',
+				},
+				{ tagId: 4, text: '我真是受不了那些低级趣味。' },
+				{ tagId: 13, text: '魔法使当然是西式的。' },
+				{
+					tagId: 17,
+					text: '我偶尔会梦到自己在巧克力和糖果做的房子睡觉。',
+				},
+				{ tagId: 25, text: '食之道与魔法之道有着一样悠久的底蕴。' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 4: '低级趣味' },
@@ -1171,6 +1458,19 @@ export const SPECIAL_GUEST_LIST = [
 						'业火烧掉随机的三个Buff纸张，其带来的效果也会随之失效。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 7, text: '好歹也算是地藏，偶尔吃点清淡的吧。' },
+				{ tagId: 10, text: '山里的走地兽可不在我的救助范围。' },
+				{
+					tagId: 12,
+					text: '在我还是石像的时候，和风是这片土地的唯一。',
+				},
+				{ tagId: 25, text: '饮食文化的底蕴也未必比地藏的经书浅显呢。' },
+				{ tagId: 30, text: '我想尝尽不同地方的美食，但实在懒得走。' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 30: '不同地方的美食' },
@@ -1230,6 +1530,16 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 16, text: '无论什么食物当然都是新鲜的最好啦！' },
+				{ tagId: 17, text: '生活充满甜蜜和喜悦。' },
+				{ tagId: 18, text: '煮得太熟的食物总是吃不太习惯。' },
+				{ tagId: 20, text: '把好看的食物拍下来，回去和蜘蛛们分享吧~' },
+				{ tagId: 24, text: '一般人会觉得蜘蛛的口味很奇怪吗？' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 18: '太熟吃不惯', 24: '蜘蛛的口味' },
 		collection: true,
@@ -1281,6 +1591,17 @@ export const SPECIAL_GUEST_LIST = [
 						'符卡一旦发动，伙伴内心会对你赚钱却不分给她们强烈的嫉妒，当夜结算时收取翻倍佣金。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 0, text: '不给我吃肉的话就诅咒你。' },
+				{ tagId: 15, text: '眼泪的味道是咸的。' },
+				{ tagId: 16, text: '我不能忍受其他客人的食物比我的新鲜！' },
+				{ tagId: 31, text: '水果能让惆怅的情绪变的舒缓。' },
+				{ tagId: 34, text: '愤怒的味道是辣的。' },
+				{ tagId: 2000, text: '妒意的味道是酸的。' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {},
@@ -1337,6 +1658,18 @@ export const SPECIAL_GUEST_LIST = [
 					description: `勇仪生成三重警戒圈，限制你的移动，持续60秒。${LABEL_MAP.br}三步必杀 ⦁ 第一重：安全范围${LABEL_MAP.br}三步必杀 ⦁ 第二重 ⦁ 罪人之枷：移动速度下降50%，直到离开范围${LABEL_MAP.br}三步必杀 ⦁ 第三重 ⦁ 怪力乱神：进入该范围将被立即击晕30秒。`,
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: -1, text: '我已经准备好要饱餐一顿了！' },
+				{ tagId: 5, text: '如今的地上是怎么流传鬼的传说？' },
+				{ tagId: 8, text: '直接把佐酒的菜端上来吧！' },
+				{ tagId: 12, text: '不觉得和风和这个街道很配么~' },
+				{ tagId: 19, text: '试试小麻雀家的招牌菜吧~' },
+				{ tagId: 23, text: '没有力量的鬼只会被踩在脚下。' },
+				{ tagId: 35, text: '让我的血液沸腾起来吧！' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: { [-1]: '饱餐一顿', 35: '血液沸腾起来' },
@@ -1396,6 +1729,17 @@ export const SPECIAL_GUEST_LIST = [
 						'随机发动一名已解锁稀客（不包括觉自己）的惩罚符卡。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 3, text: '家常美味，也是人生百味。' },
+				{ tagId: 17, text: '生活需要加点甜。' },
+				{ tagId: 23, text: '希望这一顿可以给我带来继续工作的力量。' },
+				{ tagId: 28, text: '吃太饱不利于思考。' },
+				{ tagId: 29, text: '极致的美食宛如真实的梦幻。' },
+				{ tagId: 30, text: '食物能够缩短他乡与故乡的距离。' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
@@ -1460,6 +1804,17 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 1, text: '咱就是爱吃鱼才这么聪明呐。' },
+				{ tagId: 11, text: '地底和海底其实是相通的吧？' },
+				{ tagId: 16, text: '腐烂后会滋生大量细菌，还是新鲜的好。' },
+				{ tagId: 17, text: '甜食是最简单最初始的美食体验~' },
+				{ tagId: 24, text: '有时候一些奇怪的东西更能让猫咪兴奋！' },
+				{ tagId: 29, text: '真想再去一次梦境里的童话公园。' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 11: '地底海底相通' },
 		collection: true,
@@ -1511,6 +1866,17 @@ export const SPECIAL_GUEST_LIST = [
 						'下一次没有成功完美演唱的料理，会使该厨具将发生核燃炸毁，当晚无法使用，排队的一部分客人也会被吓得抱头鼠窜。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 0, text: '肉是力量的源泉，失去它生命就会枯竭。' },
+				{ tagId: 6, text: '加入多少油，火焰的燃烧就有多猛烈！' },
+				{ tagId: 15, text: '阿空盐分补充程序——启动！' },
+				{ tagId: 22, text: '就算比火焰还要炽热我也毫不畏惧！' },
+				{ tagId: 23, text: '我一直在感受体内的力量不断涌现。' },
+				{ tagId: 34, text: '火辣辣的感觉会让人心痒痒不是吗？' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
@@ -1568,6 +1934,18 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 3, text: '一家人围在一起吃饭的感觉很温馨。' },
+				{ tagId: 9, text: '吓不到人肚子总是空空的……' },
+				{ tagId: 17, text: '甜食可以促进人际交往哦！' },
+				{ tagId: 20, text: '好看的食物应该也会很好吃吧？' },
+				{ tagId: 23, text: '我需要更多的力量去吓唬人类！' },
+				{ tagId: 24, text: '能让人吓一跳的食物不是很有趣吗？' },
+				{ tagId: 27, text: '不可思议也是一种惊讶的情绪哦。' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
 			9: '肚子总是空空',
@@ -1624,6 +2002,24 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 0, text: '三净肉的话还是可以吃的。' },
+				{
+					tagId: 4,
+					text: '混到船长的地位就算开小灶吃高级料理也不过分吧？',
+				},
+				{ tagId: 9, text: '不吃饱连船舵都转不动。' },
+				{ tagId: 15, text: '海水的味道和眼泪的味道都是咸的呢。' },
+				{ tagId: 16, text: '食物的保质期不能超过一个小时。' },
+				{
+					tagId: 23,
+					text: '间歇泉喷发时涌出的的那种力量感真是太带劲了。',
+				},
+				{ tagId: 30, text: '正是人们的迁徙才促成了食物的相逢。' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 16: '食物的保质期', 30: '食物的相逢' },
 		collection: false,
@@ -1673,6 +2069,19 @@ export const SPECIAL_GUEST_LIST = [
 					description: `开动飞碟转盘，必然Miss，结果为以下四种情况的一个：${LABEL_MAP.br}红红绿：接下来的15秒，无论上什么菜都必然获得极度不满的评价。${LABEL_MAP.br}绿绿〇：接下来的15秒，食材与酒水消耗量提高到三倍。${LABEL_MAP.br}蓝蓝〇：接下来的15秒，收入减少66%。${LABEL_MAP.br}红红蓝：同时获得以上三种Buff。`,
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 0, text: '经文可以慢慢看，肉必须趁热吃。' },
+				{ tagId: 16, text: '腐肉我过去已经吃得够多了。' },
+				{ tagId: 18, text: '生食这种进食方式虽然原始但很方便呢。' },
+				{ tagId: 19, text: '就算是最拿手的招牌菜也要有点变化才好。' },
+				{ tagId: 20, text: '人类只要目睹到我的存在都会拍个不停。' },
+				{ tagId: 24, text: '其实人类才是最喜欢猎奇的动物。' },
+				{ tagId: 27, text: '不可思议正是我的本质。' },
+				{ tagId: 30, text: '每个地方都有各自独特的料理。' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 16: '腐肉', 20: '拍个不停' },
@@ -1725,6 +2134,23 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 4, text: '嗜好高级品或许是身为豪族时留下的习惯……' },
+				{
+					tagId: 5,
+					text: '吾所仰慕的太子大人是留下了许多传说的圣人。',
+				},
+				{ tagId: 7, text: '在吾之时代，贵族饮食皆以清淡为主。' },
+				{
+					tagId: 10,
+					text: '道家荤食原料多用山珍野味，调料则惯用药料。',
+				},
+				{ tagId: 12, text: '吾之时代的风格还能延续至今真乃幸事一桩。' },
+				{ tagId: 35, text: '既不能置身火海，是否能让内心燃烧起来？' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 12: '吾之时代' },
 		collection: false,
@@ -1776,6 +2202,18 @@ export const SPECIAL_GUEST_LIST = [
 						'接下来30秒，稀客进入走火入魔状态，每次结账，无论评价高低，都有30%概率放一次惩罚符卡。如果本来就放惩罚符卡的情况，则多放一次。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 2, text: '仙人要是满嘴荤腥就太难看了。' },
+				{ tagId: 5, text: '人类的传说中也记录着我的故事呢。' },
+				{ tagId: 14, text: '我的家乡是个遍地都是道士仙人的地方。' },
+				{ tagId: 17, text: '每一道甜品都有一个故事哟~' },
+				{ tagId: 27, text: '不可思议的人生才有趣~' },
+				{ tagId: 28, text: '宵夜的份量宜少不宜多。' },
+				{ tagId: 30, text: '小小的店就能吃遍各地美食真是太方便了。' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
@@ -1834,6 +2272,24 @@ export const SPECIAL_GUEST_LIST = [
 						'下一次没有成功完美演唱的料理，将会引来天雷，击晕一个伙伴30秒。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 3, text: '孤独守护的千年间 ，最怀念的却是家常。' },
+				{
+					tagId: 6,
+					text: '成为亡灵以后什么重油的不健康的通通都能吃诶~',
+				},
+				{ tagId: 9, text: '脑子装不下的东西，就用肚子来装。' },
+				{ tagId: 12, text: '偶尔也品尝一下过去吃过的东西吧。' },
+				{ tagId: 19, text: '从招牌菜就能看出一家店的风格。' },
+				{
+					tagId: 23,
+					text: '降雷的时候能感到力量一下子从身体里涌现出来。',
+				},
+				{ tagId: 33, text: '我想试试那种像被雷劈过一样的食物。' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
@@ -1910,6 +2366,17 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 0, text: '天狗的首选果然得是肉呢。' },
+				{ tagId: 3, text: '这里生意这么好皆因有家的味道~' },
+				{ tagId: 8, text: '有酒无菜偶尔也会觉得少点滋味~' },
+				{ tagId: 12, text: '天狗是和风妖怪中很强悍的一支哦。' },
+				{ tagId: 19, text: '招牌是经过大众检验的广告。' },
+				{ tagId: 20, text: '有没有值得入我相机的菜呢~' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 8: '有酒无菜', 20: '入我相机' },
 		collection: false,
@@ -1961,6 +2428,22 @@ export const SPECIAL_GUEST_LIST = [
 						'移除「剧毒中和」状态；制作料理时铃铃会额外为料理追加特殊的“忧郁之毒”标签，食用带有该标签的食物的客人不会续单，持续30秒。此效果可被酒水【牛奶】解除。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 17, text: '毒最基础的味道是甜哦。' },
+				{ tagId: 19, text: '我不太懂，能给我推荐一些招牌菜吗？' },
+				{ tagId: 20, text: '铃铃说漂亮的菜和我一样都很适合拍照。' },
+				{ tagId: 21, text: '人偶是不能受热的。' },
+				{
+					tagId: 26,
+					text: '一提到毒第一时间就会想起森林里疯长的那些吧。',
+				},
+				{ tagId: 28, text: '像铃铃一样小小的不是很可爱吗？' },
+				{ tagId: 29, text: '人类会为了追求奇妙的体验而故意中毒。' },
+				{ tagId: 4001, text: '毒药是最上乘的调味品。' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
@@ -2018,6 +2501,21 @@ export const SPECIAL_GUEST_LIST = [
 						'用微笑的表情走到自己所在座位那一排的最上方，然后一发魔炮将这排所有的桌子轰飞，当夜不可修复，并吓跑所有在这些位置用餐的客人。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 4, text: '花儿的语言比人类更含蓄，也更高级。' },
+				{ tagId: 5, text: '每个花语都有一个流传至今的过去。' },
+				{ tagId: 7, text: '不要用沾染油腻的手去触碰花儿。' },
+				{ tagId: 13, text: '我挺喜欢那种追崇绅士风度的社会风尚。' },
+				{ tagId: 27, text: '冬紫罗兰的花语是——。' },
+				{ tagId: 29, text: '蓝色满天星的花语是——' },
+				{
+					tagId: 30,
+					text: '无法离开出生地的花儿最终会成为当地的特色。',
+				},
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
@@ -2082,6 +2580,21 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{
+					tagId: 6,
+					text: '把那些脑满肠肥的欺压者煎一煎的话会出很多油吧。',
+				},
+				{ tagId: 8, text: '苦酒入喉心作痛，配点小菜吃一吃。' },
+				{ tagId: 22, text: '看着滋滋冒气的东西会让我心情大好。' },
+				{ tagId: 23, text: '为了达成我的伟业，我需要更多力量！' },
+				{ tagId: 24, text: '我钟意那些受人厌恶的怪诞之物！' },
+				{ tagId: 27, text: '你们怎么形容根本不可能实现的事物？' },
+				{ tagId: 35, text: '一想到弱者颠覆强者的未来我就澎湃不已！' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
 			22: '滋滋冒气',
@@ -2137,6 +2650,18 @@ export const SPECIAL_GUEST_LIST = [
 						'在万宝槌释放的魔力的影响下，身体将会被放大到原先的三倍，持续30秒。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 5, text: '我喜欢听那些充满勇气的伟大故事。' },
+				{ tagId: 12, text: '小人的祖先是日本神话中少彦名神的后裔。' },
+				{ tagId: 17, text: '甜品的力量是治愈的力量。' },
+				{ tagId: 20, text: '我想要很漂亮能跟别人分享的菜式！' },
+				{ tagId: 25, text: '这是一座充满底蕴却无人知晓的城……' },
+				{ tagId: 28, text: '看我的样子就知道我的食量了。' },
+				{ tagId: 35, text: '勇者的身份真是让人热血沸腾！' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
@@ -2196,6 +2721,17 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 0, text: '毕竟人家是狼嘛……' },
+				{ tagId: 3, text: '我也很喜欢有家庭气氛的小菜哦。' },
+				{ tagId: 10, text: '比起水里游的我更喜欢山上跑的。' },
+				{ tagId: 12, text: '本州狼自然喜欢本州风格的食谱哦。' },
+				{ tagId: 20, text: '漂亮的食物当然是先给相机吃！' },
+				{ tagId: 21, text: '毛发增长的时候就很需要从胃里降温……' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 0: '人家是狼', 12: '本州风格', 21: '从胃里降温' },
 		collection: false,
@@ -2247,6 +2783,18 @@ export const SPECIAL_GUEST_LIST = [
 						'铃仙向场上打出一颗狂气之弹，持续影响场上的客人，狂气持续30秒。受到狂气影响的客人食用高酒精以外的饮料必定给出最低评价。当场上有伙伴【铃仙】时，此效果仅持续15秒。批注：狂气与狂气之间会发生干涉…是什么意思？',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 3, text: '家的味道可以治愈一天的疲惫。' },
+				{ tagId: 10, text: '月之都如果有山，会有什么动物吗？' },
+				{ tagId: 11, text: '静海要是不那么死气沉沉就好了。' },
+				{ tagId: 14, text: '月兔也是仙子，这是什么地方的传说呀？' },
+				{ tagId: 17, text: '糖分是唯一的救赎。' },
+				{ tagId: 28, text: '兔子的胃是很小的。' },
+				{ tagId: 30, text: '想尝尝那些我无法抵达的地方的美食……' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
@@ -2306,6 +2854,18 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 2, text: '听说吃草能够帮助消化？' },
+				{ tagId: 4, text: '高级精致的品相更容易提起人的兴趣呢。' },
+				{ tagId: 12, text: '最近有点喜欢上和歌了。' },
+				{ tagId: 17, text: '我就算吃再多糖也不会蛀牙哟。' },
+				{ tagId: 21, text: '好热……可惜不能用这把扇子来扇风……' },
+				{ tagId: 25, text: '我喜欢听料理里的故事。' },
+				{ tagId: 31, text: '桃子就是最棒的哦！' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
 			2: '吃草帮助消化',
@@ -2362,6 +2922,19 @@ export const SPECIAL_GUEST_LIST = [
 						'依姬引发神迹将部分传说封印，接下来30秒内，带有“传说”标签的料理或使用带有“传说”标签的食材制作的料理无法被制作。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 4, text: '月之民不食糟糠。' },
+				{ tagId: 5, text: '我想留下令后人传颂的功绩。' },
+				{ tagId: 7, text: '淡以养生。' },
+				{ tagId: 14, text: '我对中华武术有点兴趣。' },
+				{ tagId: 22, text: '永远不要让血液冷下来。' },
+				{ tagId: 23, text: '我需要更多更多的力量。' },
+				{ tagId: 25, text: '一招一式皆是文化的传承。' },
+				{ tagId: 28, text: '锻炼不宜吃太多。' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
@@ -2420,6 +2993,17 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 3, text: '老板娘的店有着家一样的温馨。' },
+				{ tagId: 9, text: '请准备让我和苏格拉底都能吃饱的量哦～' },
+				{ tagId: 13, text: '魔界在西方传说中是恶魔的聚集地？' },
+				{ tagId: 17, text: '甜食可以让人获得力量哦！' },
+				{ tagId: 21, text: '苏格拉底很怕烫呢，毕竟是猫舌头嘛。' },
+				{ tagId: 29, text: '童话就是梦幻哦。' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 21: '毕竟是猫舌头' },
 		collection: true,
@@ -2475,6 +3059,24 @@ export const SPECIAL_GUEST_LIST = [
 						'受到恶灵缠怨：接下来30秒内无法获得夜雀之歌类Buff，且无法触发特殊厨具效果。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 1, text: '鱼类脂肪很低又富含营养，非常健康。' },
+				{ tagId: 10, text: '山珍是大自然的宝藏。' },
+				{ tagId: 16, text: '陈腐的东西当然不能入口。' },
+				{ tagId: 18, text: '最原始的味道就是最好的味道。' },
+				{
+					tagId: 23,
+					text: '有点累了，有什么可以激活身体和思维的料理吗？',
+				},
+				{ tagId: 24, text: '猎奇带来了有用的经验。' },
+				{
+					tagId: 26,
+					text: '蘑菇是变化万千、又难以理解的生物，十分有趣。',
+				},
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
@@ -2547,6 +3149,17 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 1, text: '水产食物是优质蛋白质的重要来源之一。' },
+				{ tagId: 13, text: '下次旅行就到西方去吧。' },
+				{ tagId: 17, text: '心情烦闷的时候音乐与甜品最治愈。' },
+				{ tagId: 20, text: '我想要适合发博客的料理。' },
+				{ tagId: 28, text: '晚上不适宜吃得太饱。' },
+				{ tagId: 30, text: '旅行的乐趣之一就是吃到各种各样的美食。' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
 			20: '适合发博客',
@@ -2603,6 +3216,20 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{
+					tagId: 3,
+					text: '看起来普普通通的家常菜其实一点也不普通，不是和我很像吗？',
+				},
+				{ tagId: 9, text: '男子汉可不能吃不饱啊——' },
+				{
+					tagId: 16,
+					text: '我的嘴可是很刁的，鲜度如何我一尝就知道了！',
+				},
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 9: '不能吃不饱' },
 		collection: false,
@@ -2653,6 +3280,16 @@ export const SPECIAL_GUEST_LIST = [
 						'蕾米莉亚展现自己的威严，释放血雾覆盖左下角的订单区域，持续60秒。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 4, text: '只有高级的料理才配得上我的身份。' },
+				{ tagId: 5, text: '吸血鬼留下的传说百年无人敢忘。' },
+				{ tagId: 13, text: '这里也能做出异国风味的料理吗？' },
+				{ tagId: 17, text: '在过去，糖可是贵族的专属消费品呢。' },
+				{ tagId: 18, text: '吸血鬼……当然是要吃生的。' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 13: '异国风味' },
@@ -2707,6 +3344,7 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: { food: [], beverage: [] },
 		beverageTagMapping: {},
 		positiveTagMapping: {},
 		collection: false,
@@ -2770,6 +3408,7 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: { food: [], beverage: [] },
 		beverageTagMapping: {},
 		positiveTagMapping: {},
 		collection: false,
@@ -2821,6 +3460,7 @@ export const SPECIAL_GUEST_LIST = [
 			seenRepell: '哇——这个世界的老板娘这么生猛的吗！',
 		},
 		spellCards: {},
+		orderTexts: { food: [], beverage: [] },
 		beverageTagMapping: {},
 		positiveTagMapping: {},
 		collection: false,
@@ -2868,6 +3508,7 @@ export const SPECIAL_GUEST_LIST = [
 			seenRepell: '什么叫黑心老板娘啊，我们算是见识了！',
 		},
 		spellCards: {},
+		orderTexts: { food: [], beverage: [] },
 		beverageTagMapping: {},
 		positiveTagMapping: {},
 		collection: false,
@@ -2928,6 +3569,7 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: { food: [], beverage: [] },
 		beverageTagMapping: {},
 		positiveTagMapping: {},
 		collection: false,
@@ -2988,6 +3630,7 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: { food: [], beverage: [] },
 		beverageTagMapping: {},
 		positiveTagMapping: {},
 		collection: false,
@@ -3042,6 +3685,7 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: { food: [], beverage: [] },
 		beverageTagMapping: {},
 		positiveTagMapping: {},
 		collection: false,
@@ -3121,6 +3765,20 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 5, text: '能乐的剧目库本身就是一部庞大的传说总集。' },
+				{ tagId: 12, text: '能乐是日本最古老的古典歌舞剧。' },
+				{ tagId: 19, text: '只要和大家点一样的就能理解大家的感情吗？' },
+				{ tagId: 20, text: '我的舞姿也能深深地拓印在大家的心里吗？' },
+				{ tagId: 21, text: '凉风与摇曳的篝火，是能乐幽玄美学的绝配。' },
+				{
+					tagId: 29,
+					text: '幻术的遗产仍残留在能乐的骨血里，脱骨为幽玄。',
+				},
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
 			12: '古典歌舞剧',
@@ -3193,6 +3851,35 @@ export const SPECIAL_GUEST_LIST = [
 						'暴走的尤魔将会吞噬掉随机3~5个食材、1~3个酒水，并吞噬1个厨具，使该厨具当晚无法使用。血池地狱挑战中，会额外恢复5%的HP。',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{
+					tagId: -1,
+					text: '指头缝都塞不满的东西，就别拿出来祭我的五脏庙了！',
+				},
+				{
+					tagId: 0,
+					text: '猛兽在撕咬肉的同时，也是在展示自己的獠牙。',
+				},
+				{
+					tagId: 4,
+					text: '好不容易才到地上来一趟，把最高级的料理端上来！',
+				},
+				{ tagId: 5, text: '地上的传说甚是有趣，就让我来尝一尝……' },
+				{ tagId: 9, text: '我的无限的胃袋已经快饿扁了！' },
+				{ tagId: 16, text: '那些馊掉的东西就别拿出来丢人现眼了。' },
+				{
+					tagId: 18,
+					text: '畜生对血淋淋的食物的迷恋，人类是不会明白的。',
+				},
+				{ tagId: 23, text: '我能将吞下的一切事物转化为自己的力量！' },
+				{
+					tagId: 27,
+					text: '我居然会遵守地上的规则坐在这里……光是这样就够不可思议了！',
+				},
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: {
@@ -3267,6 +3954,20 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{
+					tagId: 15,
+					text: '有一种兴奋剂是咸味的哦！好像叫做汗水来着。',
+				},
+				{ tagId: 17, text: '我有两个胃，一个吃饭一个吃甜点！' },
+				{ tagId: 18, text: '生吃还有什么讲究吗？' },
+				{ tagId: 24, text: '带着猎奇的心态去看待世界会更有趣哦~' },
+				{ tagId: 27, text: '你永远猜不到我想要的是什么啦~' },
+				{ tagId: 29, text: '梦幻就是永恒的意思吗？' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 27: '永远猜不到我想要的是什么' },
 		collection: false,
@@ -3324,6 +4025,21 @@ export const SPECIAL_GUEST_LIST = [
 						'接下来的30秒内，收到的都是叶子变成的钱币，晚间结算时才会发现，这期间获得的金钱全部不会成为收入。用叶子付钱的行为真是太可恶了！',
 				},
 			],
+		},
+		orderTexts: {
+			food: [
+				{ tagId: 0, text: '不吃肉怎么可能变得强大？' },
+				{ tagId: 1, text: '狸猫虽然不是猫，但也很爱吃鱼。' },
+				{
+					tagId: 3,
+					text: '在佐渡和人类共同生活的日常也很让人怀念呐。',
+				},
+				{ tagId: 5, text: '狸猫的传说要多少有多少，不是吗？' },
+				{ tagId: 8, text: '下酒的菜还没准备好吗——？' },
+				{ tagId: 12, text: '老朽还是喜欢佐渡老家的味道呐~' },
+				{ tagId: 31, text: '人类就喜欢看狸猫吃果子的样子。' },
+			],
+			beverage: [],
 		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 12: '佐渡老家' },
@@ -3393,6 +4109,18 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: 3, text: '家就是能让你睡个好觉的地方。' },
+				{ tagId: 4, text: '高级感是一种能让人感到极富品质感的体验。' },
+				{ tagId: 5, text: '“传说”催生了妖怪。' },
+				{ tagId: 20, text: '食之品相也十分重要。' },
+				{ tagId: 21, text: '呆在伞下很凉快哦～' },
+				{ tagId: 24, text: '我的隙间哪里猎奇了哟～' },
+				{ tagId: 32, text: '听说过“汤水养人”吗？' },
+			],
+			beverage: [],
+		},
 		beverageTagMapping: {},
 		positiveTagMapping: { 20: '食之品相' },
 		collection: false,
@@ -3430,6 +4158,29 @@ export const SPECIAL_GUEST_LIST = [
 			seenRepell: '还是去找朋友们要点果子吃吧……',
 		},
 		spellCards: {},
+		orderTexts: {
+			food: [
+				{ tagId: 7, text: '那些我最爱的东西——水和风都是没有味道的。' },
+				{ tagId: 17, text: '甜味是这个世界上最本质、最美好的味道。' },
+				{ tagId: 21, text: '我最喜欢湖面微凉的清风流过的感觉了。' },
+				{
+					tagId: 28,
+					text: '整个世界的话，大概……只会比雾之湖大一点吧？',
+				},
+				{ tagId: 31, text: '我们妖精偶尔会去湖畔果树林摘点果子吃。' },
+			],
+			beverage: [
+				{ tagId: -1, text: '老板娘，妖精大都是不喝酒的哦~' },
+				{ tagId: 0, text: '今天突然想微微沾点酒精呢~' },
+				{ tagId: 3, text: '和琪露诺玩得久了，连我也喜欢凉凉的东西呢~' },
+				{ tagId: 11, text: '对于妖精们来说，能直接喝就是最好的啦。' },
+				{ tagId: 13, text: '就像森林里的果子那样带点甜。' },
+				{
+					tagId: 16,
+					text: '汽水那种奇妙的口感不是和奇妙的妖精很配吗？',
+				},
+			],
+		},
 		beverageTagMapping: {
 			[-1]: '不喝酒',
 			0: '微微沾点酒精',
@@ -3472,6 +4223,38 @@ export const SPECIAL_GUEST_LIST = [
 			seenRepell: '诶诶？不至于吧！',
 		},
 		spellCards: {},
+		orderTexts: {
+			food: [
+				{ tagId: 0, text: '纯种恶魔自然是要吃肉的！' },
+				{
+					tagId: 5,
+					text: '高贵的，强大的恶魔血统自然需要最珍贵的料理！',
+				},
+				{
+					tagId: 8,
+					text: '带劲的酒精可以触动恶魔的内心……不过需要一道好菜配合。',
+				},
+				{
+					tagId: 13,
+					text: '帕秋莉她最喜欢的味道就是这种外国风味……这次让本姑娘也试试。',
+				},
+				{
+					tagId: 17,
+					text: '书上说糖分可以快速补充因施法损耗的体力……才不是嘴馋呢。',
+				},
+				{
+					tagId: 33,
+					text: '图书馆严禁烟火，好不容易有了机会，本姑娘可得尝尝烧烤的滋味。',
+				},
+				{ tagId: 34, text: '带点辣味的东西才能刺激本姑娘的味蕾！' },
+			],
+			beverage: [
+				{ tagId: 2, text: '只有最烈的酒才配得上本姑娘！' },
+				{ tagId: 4, text: '滚烫的饮品能激发恶魔内心的狂野！' },
+				{ tagId: 14, text: '不辛辣的烈酒哪有什么刺激可言？' },
+				{ tagId: 19, text: '为了重振精神，伟大的恶魔需要小酌一下。' },
+			],
+		},
 		beverageTagMapping: { 2: '最烈的酒' },
 		positiveTagMapping: { 5: '最珍贵的料理', 13: '外国风味' },
 		collection: false,
@@ -3518,6 +4301,33 @@ export const SPECIAL_GUEST_LIST = [
 			seenRepell: '不玩就不玩，那么大脾气做什么嘛。',
 		},
 		spellCards: {},
+		orderTexts: {
+			food: [
+				{ tagId: 18, text: '没有做熟的食物和血散发着同一种味道呢。' },
+				{
+					tagId: 19,
+					text: '世界肯定比我的房间大得多了！有什么有趣的东西吗？',
+				},
+				{ tagId: 20, text: '外面的世界好美……好想多记住一些。' },
+				{
+					tagId: 22,
+					text: '姐姐从来不让我见到热辣辣的太阳，真好奇，好好奇呀。',
+				},
+				{ tagId: 24, text: '可爱的玩偶总会玩腻的……想来点不一样的……' },
+				{ tagId: 27, text: '有什么东西能比带着魔法的女仆长更神奇吗？' },
+				{ tagId: 34, text: '辣味是一种痛觉哦，喜欢！' },
+			],
+			beverage: [
+				{ tagId: 1, text: '看来得多试试没那么刺激的酒水来适应一下……' },
+				{
+					tagId: 2,
+					text: '本吸血鬼生活这么长时间，当然要喝最烈的酒试试！',
+				},
+				{ tagId: 4, text: '一杯热饮能不能温暖我孤独的内心呢……' },
+				{ tagId: 12, text: '想要那种带着水果清香的神奇液体！' },
+				{ tagId: 14, text: '辣味的酒水对我来说是一种美妙的刺激哦。' },
+			],
+		},
 		beverageTagMapping: { 1: '没那么刺激', 2: '最烈的酒' },
 		positiveTagMapping: {
 			18: '没有做熟的食物',
@@ -3561,6 +4371,46 @@ export const SPECIAL_GUEST_LIST = [
 			seenRepell: '无妨。这只是永恒的生命中的一点波澜而已。',
 		},
 		spellCards: {},
+		orderTexts: {
+			food: [
+				{
+					tagId: 3,
+					text: '如果拒绝接触家常些的东西的话，生命就会与现实疏离开来。',
+				},
+				{
+					tagId: 5,
+					text: '传说中的那些故事，在遥远的过去可能真实存在过。',
+				},
+				{
+					tagId: 25,
+					text: '即使拥有无限的生命，人的阅历也短于文明的尺度。',
+				},
+				{ tagId: 29, text: '蝴蝶梦，梦蝴蝶……梦幻如现实，现实如梦幻。' },
+				{
+					tagId: 30,
+					text: '穷尽天文的脑力，也不可能明晰整个世界的变数。在某个角落，总会藏着独特的惊喜。',
+				},
+				{
+					tagId: 4001,
+					text: '很多微毒的食物可以入药，人们总是忘记这一点。',
+				},
+			],
+			beverage: [
+				{ tagId: 0, text: '一点酒不喝也不行呢……来一杯低浓度的酒吧。' },
+				{
+					tagId: 1,
+					text: '酒精浓度过高对身体有害……来一杯中等浓度的酒吧。',
+				},
+				{ tagId: 3, text: '冰镇的饮料口感甚好。' },
+				{ tagId: 6, text: '竹林里的麻雀偶尔也会酿造出可口的酒水。' },
+				{
+					tagId: 11,
+					text: '药物总是需要做好直接入口的准备，我希望酒水也如此。',
+				},
+				{ tagId: 13, text: '许多人喝甜的饮品心情都会变佳。' },
+				{ tagId: 17, text: '微醺时，我也偶会怀念旧时光景。' },
+			],
+		},
 		beverageTagMapping: {
 			0: '低浓度的酒',
 			1: '中等浓度的酒',
@@ -3604,6 +4454,30 @@ export const SPECIAL_GUEST_LIST = [
 				'人间界的待客之道真是让我大开眼界，我们恐怕要后会无期了。',
 		},
 		spellCards: {},
+		orderTexts: {
+			food: [
+				{
+					tagId: 3,
+					text: '平时梦子酱准备的料理都充满了家乡的味道呢。',
+				},
+				{ tagId: 4, text: '本魔神的用餐当然要高级感满满！' },
+				{ tagId: 5, text: '传说，曾有一位外界的高僧被封印在魔界……' },
+				{
+					tagId: 13,
+					text: '爱丽丝，露易兹……我引以为傲的作品们都充满了西方色彩呢。',
+				},
+				{ tagId: 17, text: '我的发圈看上去像樱桃一样甜，可惜不能吃。' },
+				{ tagId: 27, text: '我所在的魔界也被称作不可思议之国哦！' },
+				{ tagId: 29, text: '甜美梦幻的童话世界，说的就是魔界呢。' },
+			],
+			beverage: [
+				{ tagId: -1, text: '酒精什么的才不需要呢。' },
+				{ tagId: 11, text: '饮料不是直接喝就好了吗？' },
+				{ tagId: 12, text: '魔界的许多饮品里都有着水果的独特味道。' },
+				{ tagId: 13, text: '本魔神不需要先苦后甜，饮料就应该一直甜。' },
+				{ tagId: 17, text: '有哪种饮料可以让我回忆回忆以前的时光吗？' },
+			],
+		},
 		beverageTagMapping: { 17: '以前的时光' },
 		positiveTagMapping: { 5: '外界的高僧' },
 		collection: false,
@@ -3641,6 +4515,27 @@ export const SPECIAL_GUEST_LIST = [
 				'是我的存在使得大家变得忧愁了吗？那我还是去别的店家看看吧。',
 		},
 		spellCards: {},
+		orderTexts: {
+			food: [
+				{ tagId: -2, text: '需要节省一些钱用于牧场的经营呢……' },
+				{ tagId: 17, text: '甜美的味道，能让人忘却忧伤。' },
+				{
+					tagId: 21,
+					text: '像秋天一样凉爽的食物，也是一个不错的选择呢。',
+				},
+				{
+					tagId: 23,
+					text: '制造落叶可是很辛苦的……才不是因为踹不动树呢。',
+				},
+				{ tagId: 25, text: '自古逢秋悲寂寥……' },
+			],
+			beverage: [
+				{ tagId: 4, text: '凉爽的秋天需要配一杯饮品暖暖身子。' },
+				{ tagId: 6, text: '秋季正是窖藏陈酿的时节。' },
+				{ tagId: 14, text: '辛辣的刺激能够忘却忧伤……' },
+				{ tagId: 15, text: '秋天向来是最苦情的季节呢……' },
+			],
+		},
 		beverageTagMapping: { 4: '暖暖身子', 6: '窖藏陈酿' },
 		positiveTagMapping: {
 			[-2]: '牧场的经营',
@@ -3696,6 +4591,23 @@ export const SPECIAL_GUEST_LIST = [
 				},
 			],
 		},
+		orderTexts: {
+			food: [
+				{ tagId: -2, text: '有时候价格高昂的食品会让人望而止步哦。' },
+				{ tagId: 3, text: '家常菜也是很美味的。' },
+				{
+					tagId: 9,
+					text: '食物的存在，就是为了能够让人们填饱肚子啊。',
+				},
+				{ tagId: 17, text: '要是有能像烤红薯一样甜美的食物就好了。' },
+				{ tagId: 33, text: '用火烤制出来的食物，一般都不会难吃吧。' },
+			],
+			beverage: [
+				{ tagId: 0, text: '农家用粮食酿造的米酒就很对我胃口哦！' },
+				{ tagId: 12, text: '丰收的瓜果也可以用来酿酒呢。' },
+				{ tagId: 13, text: '从完美的饮料中能品尝出丰收的喜悦与甜蜜。' },
+			],
+		},
 		beverageTagMapping: { 0: '粮食酿造的米酒' },
 		positiveTagMapping: { [-2]: '价格高昂' },
 		collection: false,
@@ -3733,6 +4645,39 @@ export const SPECIAL_GUEST_LIST = [
 			seenRepell: '紫大人为什么要把希望寄托在这里呢……',
 		},
 		spellCards: {},
+		orderTexts: {
+			food: [
+				{
+					tagId: -1,
+					text: '请给足能让我为紫大人和橙各打包一份的分量。',
+				},
+				{ tagId: 4, text: '八云家吃的东西多少是要高级一些的。' },
+				{ tagId: 5, text: '狐妖在这片土地上可是创造了许多传说的。' },
+				{
+					tagId: 6,
+					text: '油炸豆腐虽然很好吃，但是偶尔也想吃点别的炸货。',
+				},
+				{ tagId: 10, text: '水会弄湿衣服和尾巴，还是山比较让人喜欢。' },
+				{ tagId: 12, text: '狐狸可是和风的重要组成部分哦。' },
+				{ tagId: 23, text: '侍奉紫大人真是累人呀……' },
+				{
+					tagId: 27,
+					text: '我的智慧，连三途川的宽度都能计算出来。是不是很不可思议？',
+				},
+			],
+			beverage: [
+				{ tagId: 1, text: '不能老喝度数太高的酒水，容易让头脑发昏。' },
+				{ tagId: 2, text: '也就浓烈的酒能让我暂时放下式神的烦恼了……' },
+				{ tagId: 4, text: '希望我带回家给橙喝的时候不会变凉……' },
+				{
+					tagId: 6,
+					text: '比起随意调配的饮品，我还是喜欢慢慢酿造出的清酒。',
+				},
+				{ tagId: 14, text: '辛辣的刺激能让我保持头脑运转。' },
+				{ tagId: 16, text: '感受气泡在舌尖跃动是一种不错的体验。' },
+				{ tagId: 19, text: '侍奉紫大人以及照顾小橙令我些许疲惫。' },
+			],
+		},
 		beverageTagMapping: {
 			1: '头脑发昏',
 			2: '浓烈的酒',
@@ -3784,6 +4729,44 @@ export const SPECIAL_GUEST_LIST = [
 				'为什么其他顾客都要重新排队？好哦，那我也去重新排队吧！',
 		},
 		spellCards: {},
+		orderTexts: {
+			food: [
+				{
+					tagId: -1,
+					text: '囤积的食材还有很多，不如全部拿来做成一道丰盛的大餐吧！',
+				},
+				{
+					tagId: 0,
+					text: '我还在长身体哦！神绮大人说过，多吃牛肉才能有力气！',
+				},
+				{ tagId: 9, text: '只有吃得饱饱的，才有力气继续收集食材！' },
+				{
+					tagId: 16,
+					text: '我还在长身体哦！神绮大人说过，多喝鲜牛奶才能变聪明！',
+				},
+				{
+					tagId: 17,
+					text: '芝士蛋糕、马卡龙、提拉米苏……有好多好多我想吃的甜点！',
+				},
+				{ tagId: 22, text: '神绮大人说过，吃饭要趁热全部吃完！' },
+				{
+					tagId: 31,
+					text: '蜜瓜芭菲、草莓慕斯、苹果派……这些我爱吃的糕点之间有什么共同点呢？',
+				},
+				{
+					tagId: 34,
+					text: '作为见习火系魔法使，忍耐辛辣的食物也是修行的一部分！',
+				},
+			],
+			beverage: [
+				{ tagId: 4, text: '火系魔法使当然要喝热饮！' },
+				{ tagId: 11, text: '喝饮料还要讲究这么多事情吗……我不明白啦！' },
+				{ tagId: 12, text: '我喜欢喝橙汁、西瓜汁、葡萄汁……' },
+				{ tagId: 13, text: '如果甜点能放进饮料里就好了……' },
+				{ tagId: 16, text: '好想喝入口时还带着“唰”的口感的饮料！' },
+				{ tagId: 18, text: '雪觉得现今的饮料就已经超级超级好喝了！' },
+			],
+		},
 		beverageTagMapping: { 11: '讲究这么多', 16: '“唰”', 18: '现今的饮料' },
 		positiveTagMapping: {
 			[-1]: '丰盛的大餐',
@@ -3842,6 +4825,57 @@ export const SPECIAL_GUEST_LIST = [
 					name: '霜符「冰川急冻」',
 					description:
 						'接下来30秒，所有顾客的点单料理必须额外包含「凉爽」tag，否则评价至多为「普通」',
+				},
+			],
+		},
+		orderTexts: {
+			food: [
+				{
+					tagId: 2,
+					text: '我喜欢吃蔬菜，就像鸽子都喜欢吃玉米一样……只是举个例子而已！我又不是鸽子！',
+				},
+				{
+					tagId: 7,
+					text: '多吃重油辛辣的烧烤料理会变成笨蛋，因此我一般都吃清淡的料理。',
+				},
+				{
+					tagId: 13,
+					text: '神绮大人的料理水平虽然让人不敢恭维，但制作的西式糕点都非常美味呢。',
+				},
+				{
+					tagId: 21,
+					text: '作为修行中的冰系魔法使，靠近我就会感受到刺骨的寒冷哦。',
+				},
+				{
+					tagId: 28,
+					text: '吃饭只需要三分饱就足够了……才不是害怕长胖什么的。',
+				},
+				{
+					tagId: 32,
+					text: '自从不小心品鉴了雪推荐的炸薯条之后，我就产生心理阴影了……再也不敢尝试浓汤以外的料理了。雪那家伙一点都不懂我呢。',
+				},
+			],
+			beverage: [
+				{
+					tagId: -1,
+					text: '酒喝多了反应会变慢呢，那样雪惹麻烦的时候就拉不住她了。',
+				},
+				{
+					tagId: 3,
+					text: '即使是加了冰块的饮料，对本魔法使来说也轻轻松松呢！',
+				},
+				{
+					tagId: 11,
+					text: '这种能够直接喝的饮料她似乎喜……我是说我喜欢！',
+				},
+				{
+					tagId: 12,
+					text: '魔界有许多特产水果，用它们做出的饮料味道也很好。',
+				},
+				{ tagId: 16, text: '咕！这是雪喜……学习如何优雅地喝气泡饮品。' },
+				{
+					tagId: 17,
+					text: '真怀念我们还在魔界的时候……只是有一点点怀念而已！',
 				},
 			],
 		},
