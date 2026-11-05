@@ -146,6 +146,10 @@ const CHANGELOG_EN: Readonly<Record<string, ReadonlyArray<string>>> = {
 	'v3.3': [
 		'Improved: removed the legacy anonymous cloud backup and backup-code import features.',
 	],
+	'v3.4': [
+		'Added: special guest details now support viewing order lines by food and beverage tags.',
+		'Added: merchant details on the map now show sale chances, quantity ranges, and price multipliers for goods.',
+	],
 };
 
 const CHANGELOG_JA: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -288,6 +292,10 @@ const CHANGELOG_JA: Readonly<Record<string, ReadonlyArray<string>>> = {
 	'v3.3': [
 		'改善：旧版の匿名クラウドバックアップとバックアップコードの読み込み機能を廃止しました。',
 	],
+	'v3.4': [
+		'追加：レア客の詳細で、料理・お酒のタグ別に注文セリフを確認できるようになりました。',
+		'追加：マップの商人詳細で、商品の販売確率、数量範囲、価格倍率を確認できるようになりました。',
+	],
 };
 
 const CHANGELOG_KO: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -426,6 +434,10 @@ const CHANGELOG_KO: Readonly<Record<string, ReadonlyArray<string>>> = {
 	'v3.3': [
 		'개선: 구 버전 익명 클라우드 백업과 백업 코드 가져오기 기능을 제거했습니다.',
 	],
+	'v3.4': [
+		'추가: 희귀 손님 상세에서 요리·음료 태그별로 주문 대사를 확인할 수 있습니다.',
+		'추가: 지도 상인 상세에서 상품의 판매 확률, 수량 범위, 가격 배율을 확인할 수 있습니다.',
+	],
 };
 
 const CHANGELOG_ZH_TW: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -554,6 +566,10 @@ const CHANGELOG_ZH_TW: Readonly<Record<string, ReadonlyArray<string>>> = {
 		'改善：地圖支援滑鼠滾輪縮放、按住拖曳平移、macOS觸控板捏合縮放與雙指平移。',
 	],
 	'v3.3': ['改善：移除舊版匿名雲端備份與備份碼匯入功能。'],
+	'v3.4': [
+		'新增：稀客詳情支援按料理和酒水標籤查看點單文案。',
+		'新增：地圖商人詳情新增商品的出售機率、數量範圍與價格倍率。',
+	],
 };
 
 export const CHANGELOG_LOCALIZED: Readonly<

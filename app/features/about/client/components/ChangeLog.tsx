@@ -237,6 +237,13 @@ const changelog = [
 		version: 'v3.3',
 		changes: ['改善：移除旧版匿名云备份和备份码导入功能。'],
 	},
+	{
+		version: 'v3.4',
+		changes: [
+			'新增：稀客详情支持按料理和酒水标签查看点单文案。',
+			'新增：地图商人详情新增商品的出售概率、数量范围与价格倍率。',
+		],
+	},
 ] as const satisfies Array<{
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
 	version: `v${string}`;
