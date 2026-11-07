@@ -24,6 +24,10 @@ const SITE_MESSAGES_ZH_CN = {
 		'本页面可以查询{items}等{name}的详情。{description}',
 	'site.seo.description.guestMeals':
 		'本页面可以为{items}等{name}搭配料理套餐。{description}',
+	'site.seo.description.normalGuestFacts':
+		'东方夜雀食堂普客图鉴「{name}」收录基础资料、闲聊和套餐搭配，并标注出现地图：{maps}。',
+	'site.seo.description.specialGuestFacts':
+		'东方夜雀食堂稀客图鉴「{name}」收录基础资料、闲聊、点单文案、羁绊奖励、评价对话、符卡效果和套餐搭配，并标注出现地图：{maps}。',
 	'site.seo.description.specialGuests':
 		'本页面可以为{items}等{name}搭配料理套餐或查询羁绊奖励和符卡效果。{description}',
 	'site.seo.itemSeparator': '、',
@@ -63,6 +67,10 @@ export const siteMessages = {
 			'Look up details of {name} such as {items}. {description}',
 		'site.seo.description.guestMeals':
 			'Pair meals for {name} such as {items}. {description}',
+		'site.seo.description.normalGuestFacts':
+			"Touhou Mystia's Izakaya Normal Guest Catalog entry for {name}, with core details, casual chat, meal pairings, and locations: {maps}.",
+		'site.seo.description.specialGuestFacts':
+			"Touhou Mystia's Izakaya Special Guest Catalog entry for {name}, with core details, casual chat, order lines, bond rewards, rating conversations, spell card effects, meal pairings, and locations: {maps}.",
 		'site.seo.description.specialGuests':
 			'Pair meals for {name} such as {items}, or look up bond rewards and spell card effects. {description}',
 		'site.seo.itemSeparator': ', ',
@@ -94,6 +102,10 @@ export const siteMessages = {
 			'このページでは{items}などの{name}の詳細を確認できます。{description}',
 		'site.seo.description.guestMeals':
 			'このページでは{items}などの{name}のセットメニューを組み立てられます。{description}',
+		'site.seo.description.normalGuestFacts':
+			'東方夜雀食堂 一般客図鑑「{name}」では、基本情報、雑談、セットメニュー構成を掲載しています。登場マップは{maps}です。',
+		'site.seo.description.specialGuestFacts':
+			'東方夜雀食堂 レア客図鑑「{name}」では、基本情報、雑談、注文セリフ、絆報酬、評価会話、スペルカード効果、セットメニュー構成を掲載しています。登場マップは{maps}です。',
 		'site.seo.description.specialGuests':
 			'このページでは{items}などの{name}のセットメニューを組み立てたり、絆報酬やスペルカード効果を確認できます。{description}',
 		'site.seo.itemSeparator': '、',
@@ -124,6 +136,10 @@ export const siteMessages = {
 			'이 페이지에서는 {items} 등 {name}의 상세 정보를 확인할 수 있습니다. {description}',
 		'site.seo.description.guestMeals':
 			'이 페이지에서는 {items} 등 {name}의 세트 메뉴를 구성할 수 있습니다. {description}',
+		'site.seo.description.normalGuestFacts':
+			'동방야작식당 일반 손님 도감 「{name}」에는 기본 정보, 잡담, 세트 메뉴 구성이 수록되어 있습니다. 등장 맵은 {maps}입니다.',
+		'site.seo.description.specialGuestFacts':
+			'동방야작식당 레어 손님 도감 「{name}」에는 기본 정보, 잡담, 주문 대사, 유대 보상, 평가 대화, 스펠 카드 효과, 세트 메뉴 구성이 수록되어 있습니다. 등장 맵은 {maps}입니다.',
 		'site.seo.description.specialGuests':
 			'이 페이지에서는 {items} 등 {name}의 세트 메뉴를 구성하거나 유대 보상과 스펠 카드 효과를 확인할 수 있습니다. {description}',
 		'site.seo.itemSeparator': ', ',
@@ -156,6 +172,10 @@ export const siteMessages = {
 			'本頁面可以查詢{items}等{name}的詳情。{description}',
 		'site.seo.description.guestMeals':
 			'本頁面可以為{items}等{name}搭配料理套餐。{description}',
+		'site.seo.description.normalGuestFacts':
+			'東方夜雀食堂普客圖鑑「{name}」收錄基礎資料、閒聊和套餐搭配，並標示出現地圖：{maps}。',
+		'site.seo.description.specialGuestFacts':
+			'東方夜雀食堂稀客圖鑑「{name}」收錄基礎資料、閒聊、點單文案、羈絆獎勵、評價對話、符卡效果和套餐搭配，並標示出現地圖：{maps}。',
 		'site.seo.description.specialGuests':
 			'本頁面可以為{items}等{name}搭配料理套餐或查詢羈絆獎勵和符卡效果。{description}',
 		'site.seo.itemSeparator': '、',

@@ -42,6 +42,7 @@ import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { checkCompatibility } from '@/infrastructure/browser/compatibility/checkCompatibility';
 
+import { getPathnameWithoutLocalePrefix } from '@/shared/i18n/routeLocales';
 import { useI18n } from '@/shared/i18n/useI18n';
 import { useDocumentTitle } from '@/shared/react/useDocumentTitle';
 import { useHydrated } from '@/shared/react/useHydrated';
@@ -144,7 +145,8 @@ export default function Content() {
 	const { pathname } = usePathname();
 	const router = useRouter();
 
-	const [, , routeGuestSegment] = pathname.split('/');
+	const [, , routeGuestSegment] =
+		getPathnameWithoutLocalePrefix(pathname).split('/');
 	const normalGuestCatalog = normalGuestStore.instances.guest.get();
 	const routeGuest = resolveGuestRouteSegment({
 		catalog: normalGuestCatalog,
@@ -164,7 +166,7 @@ export default function Content() {
 		routeGuestName === null ? '' : `${routeGuestName} | `
 	}${tAppShell('appShell.nav.normalGuests')} | ${siteTitle}`;
 
-	useDocumentTitle(title, '/normal-guests');
+	useDocumentTitle(title, '/normal-guests', isLocalizationReady);
 
 	useEffect(() => {
 		normalGuestStore.shared.guest.id.set(resolvedRouteGuest);

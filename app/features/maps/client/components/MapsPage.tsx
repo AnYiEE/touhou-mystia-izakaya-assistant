@@ -224,7 +224,7 @@ export default function MapsPage() {
 		map === null || !isLocalizationReady ? '' : `${getDayMapLabel(map)} | `
 	}${t('maps.world.title')} | ${siteTitle}`;
 
-	useDocumentTitle(title, MAPS_PAGE_PATH);
+	useDocumentTitle(title, MAPS_PAGE_PATH, isLocalizationReady);
 
 	const selectedId = routeEntity?.id ?? null;
 	const persistedHiddenLayerList =

@@ -11,6 +11,8 @@ import { AnalyticsClient } from './features/analytics/client';
 import AnnouncementBar from './features/announcements/server/AnnouncementBar';
 import ErrorBoundary from './features/appShell/client/components/ErrorBoundary';
 import Navbar from './features/appShell/client/components/navbar/Navbar';
+import JsonLdScript from './features/appShell/seo/JsonLdScript';
+import { buildRootStructuredData } from './features/appShell/seo/jsonLd';
 import {
 	buildRootMetadata,
 	readMetadataLocaleContext,
@@ -41,9 +43,9 @@ const {
 } = PUBLIC_RUNTIME_CONFIG;
 
 export async function generateMetadata(): Promise<Metadata> {
-	const { locale } = await readMetadataLocaleContext();
+	const { isPrefixed, locale } = await readMetadataLocaleContext();
 
-	return buildRootMetadata(locale);
+	return buildRootMetadata(locale, isPrefixed);
 }
 
 export const viewport: Viewport = { viewportFit: 'cover' };
@@ -116,6 +118,9 @@ export default async function RootLayout({
 				<ThemeScript />
 				<LocaleScript />
 				<InstallScript />
+				<JsonLdScript
+					data={buildRootStructuredData(locale, isPrefixed)}
+				/>
 				{
 					// Register service worker. The `sha` is the commit SHA of the current commit, used to bypass browser caching.
 					isProduction && !isOffline && (

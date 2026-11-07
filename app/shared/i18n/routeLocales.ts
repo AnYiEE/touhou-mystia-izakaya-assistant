@@ -34,6 +34,11 @@ export function resolveLocalePrefixSegment(segment: string): TLocale | null {
 		: null;
 }
 
+export function getPathnameWithoutLocalePrefix(pathname: string) {
+	const [, prefix = '', ...segments] = pathname.split('/');
+	return isLocalePrefixSegment(prefix) ? `/${segments.join('/')}` : pathname;
+}
+
 /**
  * @description Canonical URL prefix of a locale. Simplified Chinese keeps the
  * un-prefixed URL; `zh` and `zh-hans` stay equivalent entries and are never

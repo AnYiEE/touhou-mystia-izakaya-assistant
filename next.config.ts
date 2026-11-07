@@ -18,6 +18,7 @@ import {
 	IS_VERCEL,
 } from './scripts/shared/environment';
 import { getSha } from './scripts/shared/git';
+import { getSeoContentDates } from './scripts/shared/seoContentDates';
 
 interface IWebpackConfiguration {
 	plugins: unknown[];
@@ -35,6 +36,7 @@ const serverActionBodySizeLimit = getServerActionBodySizeLimit(
 const exportMode = IS_OFFLINE || (!IS_SELF_HOSTED && !IS_VERCEL);
 
 const siteStatusBuildOperationId = readSiteStatusBuildIdentity(process.cwd());
+const seoContentDates = getSeoContentDates(process.cwd());
 
 function configureWebpack(
 	config: IWebpackConfiguration,
@@ -48,13 +50,15 @@ function configureWebpack(
 
 const nextConfig: NextConfig = {
 	compiler: {
-		defineServer:
-			siteStatusBuildOperationId === null
+		defineServer: {
+			__SEO_CONTENT_DATES__: JSON.stringify(seoContentDates),
+			...(siteStatusBuildOperationId === null
 				? {}
 				: {
 						__SITE_STATUS_BUILD_OPERATION_ID__:
 							siteStatusBuildOperationId,
-					},
+					}),
+		},
 	},
 
 	env: {

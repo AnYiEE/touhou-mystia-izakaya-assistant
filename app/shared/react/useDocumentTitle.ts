@@ -2,8 +2,16 @@ import { useEffect } from 'react';
 
 import { isLocalePrefixSegment } from '@/shared/i18n/routeLocales';
 
-export function useDocumentTitle(title: string, pathnamePrefix?: string) {
+export function useDocumentTitle(
+	title: string,
+	pathnamePrefix?: string,
+	isEnabled = true
+) {
 	useEffect(() => {
+		if (!isEnabled) {
+			return;
+		}
+
 		const [, prefix = '', ...segments] = location.pathname.split('/');
 		const pathname = isLocalePrefixSegment(prefix)
 			? `/${segments.join('/')}`
@@ -34,5 +42,5 @@ export function useDocumentTitle(title: string, pathnamePrefix?: string) {
 		return () => {
 			observer.disconnect();
 		};
-	}, [pathnamePrefix, title]);
+	}, [isEnabled, pathnamePrefix, title]);
 }

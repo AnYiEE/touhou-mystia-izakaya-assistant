@@ -44,6 +44,7 @@ import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/stat
 
 import { checkCompatibility } from '@/infrastructure/browser/compatibility/checkCompatibility';
 
+import { getPathnameWithoutLocalePrefix } from '@/shared/i18n/routeLocales';
 import { useI18n } from '@/shared/i18n/useI18n';
 import { useDocumentTitle } from '@/shared/react/useDocumentTitle';
 import { useHydrated } from '@/shared/react/useHydrated';
@@ -150,7 +151,8 @@ export default function Content() {
 	const { pathname } = usePathname();
 	const router = useRouter();
 
-	const [, , routeGuestSegment] = pathname.split('/');
+	const [, , routeGuestSegment] =
+		getPathnameWithoutLocalePrefix(pathname).split('/');
 	const specialGuestCatalog = specialGuestStore.instances.guest.get();
 	const routeGuest = resolveGuestRouteSegment({
 		catalog: specialGuestCatalog,
@@ -173,7 +175,7 @@ export default function Content() {
 		routeGuestName === null ? '' : `${routeGuestName} | `
 	}${tAppShell('appShell.nav.specialGuests')} | ${siteTitle}`;
 
-	useDocumentTitle(title, '/special-guests');
+	useDocumentTitle(title, '/special-guests', isLocalizationReady);
 
 	useEffect(() => {
 		specialGuestStore.shared.guest.id.set(resolvedRouteGuest);

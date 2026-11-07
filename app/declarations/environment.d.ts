@@ -1,4 +1,5 @@
 declare global {
+	const __SEO_CONTENT_DATES__: string | undefined;
 	const __SITE_STATUS_BUILD_OPERATION_ID__: string | null | undefined;
 
 	namespace NodeJS {
