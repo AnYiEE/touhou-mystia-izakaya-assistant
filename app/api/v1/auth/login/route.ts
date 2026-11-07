@@ -1,4 +1,4 @@
-import type { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
 import { ACCOUNT_API_RESPONSE_CODE_MAP } from '@/features/account/apiResponseCodes';
 import type { IAuthLoginBody } from '@/features/account/contracts';

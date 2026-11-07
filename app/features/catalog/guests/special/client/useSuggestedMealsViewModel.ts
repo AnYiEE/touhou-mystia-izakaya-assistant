@@ -1,6 +1,6 @@
 'use client';
 
-import type { Selection } from '@heroui/table';
+import { type Selection } from '@heroui/table';
 import {
 	useCallback,
 	useEffect,

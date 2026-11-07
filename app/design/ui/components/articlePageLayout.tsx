@@ -1,5 +1,5 @@
 import { cn } from '@heroui/theme';
-import type { PropsWithChildren, ReactNode } from 'react';
+import { type PropsWithChildren, type ReactNode } from 'react';
 
 interface IProps {
 	className?: string;

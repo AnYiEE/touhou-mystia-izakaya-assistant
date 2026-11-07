@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@heroui/theme';
-import type { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import ArticlePageLayout from '@/design/ui/components/articlePageLayout';

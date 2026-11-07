@@ -1,4 +1,4 @@
-import type { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
 import { USER_STATUS_MAP } from '@/domain/account/contracts';
 

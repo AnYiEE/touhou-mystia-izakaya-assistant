@@ -1,4 +1,4 @@
-import type { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
 import { authenticateAdminFromRequest } from '@/features/account/admin/server/http/authentication';
 import {

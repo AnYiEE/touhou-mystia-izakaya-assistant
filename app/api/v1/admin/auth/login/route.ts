@@ -1,4 +1,4 @@
-import type { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
 import { checkAdminCredentialLoginEnabled } from '@/features/account/admin/server/auth';
 import { checkAdminFeatureRouteResponse } from '@/features/account/admin/server/http/routeResponses';
