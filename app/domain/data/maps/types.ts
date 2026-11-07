@@ -123,6 +123,10 @@ export interface IDayMapOverlaySprite {
 	file: string;
 	hash: string;
 	height: number;
+	/** @description Optional CSS-pixel correction applied during DOM composition. */
+	offsetXPx?: number;
+	/** @description Optional CSS-pixel correction applied during DOM composition. */
+	offsetYPx?: number;
 	/** @description World Y of the image's top edge, relative to the marker. */
 	offsetY: number;
 	/** @description World X of the image's left edge, relative to the marker. */

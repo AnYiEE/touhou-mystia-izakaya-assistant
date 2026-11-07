@@ -172,11 +172,13 @@ function getOverlayLabelOffset(
 	const scale = pxPerUnit / sprite.pixelsPerUnit;
 	return [
 		(sprite.offsetX + sprite.width / (2 * sprite.pixelsPerUnit)) *
-			pxPerUnit,
+			pxPerUnit +
+			(sprite.offsetXPx ?? 0),
 		-sprite.offsetY * pxPerUnit +
 			sprite.height * scale +
 			OVERLAY_LABEL_HEIGHT_PX / 2 +
-			OVERLAY_LABEL_GAP_PX,
+			OVERLAY_LABEL_GAP_PX +
+			(sprite.offsetYPx ?? 0),
 	];
 }
 
@@ -210,7 +212,7 @@ const OverlaySpriteVisual = memo(function OverlaySpriteVisual({
 	zoom: number;
 }) {
 	const { t } = useI18n(mapsMessages);
-	const pxPerUnit = art.pixelsPerUnit * zoom;
+	const pxPerUnit = art.pixelsPerUnit;
 	const scale = pxPerUnit / sprite.pixelsPerUnit;
 	const interaction = useOverlayMarkerInteraction();
 	const isHovered = interaction?.isHovered ?? false;
@@ -225,52 +227,65 @@ const OverlaySpriteVisual = memo(function OverlaySpriteVisual({
 	}, [asset, isError, onClick]);
 
 	return (
-		<button
-			aria-label={isError ? t('maps.asset.retry') : label}
-			aria-pressed={isSelected}
-			title={isError ? t('maps.asset.error') : label}
-			type="button"
-			onClick={handlePress}
-			onDoubleClick={onDoubleClick}
-			onBlur={interaction?.onBlur}
-			onFocus={interaction?.onFocus}
-			onPointerEnter={interaction?.onPointerEnter}
-			onPointerLeave={interaction?.onPointerLeave}
-			className={cn(
-				'absolute block cursor-pointer',
-				CLASSNAME_FOCUS_VISIBLE_OUTLINE
-			)}
+		<div
 			style={{
-				height: sprite.height * scale,
-				left: sprite.offsetX * pxPerUnit,
-				top: -sprite.offsetY * pxPerUnit,
-				width: sprite.width * scale,
+				height: 0,
+				left: 0,
+				position: 'absolute',
+				top: 0,
+				transform: `translate(${sprite.offsetXPx ?? 0}px, ${sprite.offsetYPx ?? 0}px) scale(var(--map-zoom, ${zoom}))`,
+				transformOrigin: '0 0',
+				width: 0,
+				willChange: 'transform',
 			}}
 		>
-			<span
-				aria-hidden
+			<button
+				aria-label={isError ? t('maps.asset.retry') : label}
+				aria-pressed={isSelected}
+				title={isError ? t('maps.asset.error') : label}
+				type="button"
+				onClick={handlePress}
+				onDoubleClick={onDoubleClick}
+				onBlur={interaction?.onBlur}
+				onFocus={interaction?.onFocus}
+				onPointerEnter={interaction?.onPointerEnter}
+				onPointerLeave={interaction?.onPointerLeave}
 				className={cn(
-					'image-rendering-pixelated flex h-full w-full items-center justify-center bg-[length:100%_100%] bg-no-repeat',
-					'transition-[filter,transform] duration-150 motion-reduce:transition-none',
-					isHovered && '-translate-y-0.5',
-					asset.objectUrl === null &&
-						'rounded-full bg-black/55 text-white shadow-md',
-					isSelected
-						? '[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_3px_#ffa800)]'
-						: isHovered
-							? '[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_2px_#ffa800)]'
-							: '[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.9))]'
+					'absolute block cursor-pointer',
+					CLASSNAME_FOCUS_VISIBLE_OUTLINE
 				)}
 				style={{
-					backgroundImage:
-						asset.objectUrl === null
-							? undefined
-							: `url('${asset.objectUrl}')`,
+					height: sprite.height * scale,
+					left: sprite.offsetX * pxPerUnit,
+					top: -sprite.offsetY * pxPerUnit,
+					width: sprite.width * scale,
 				}}
 			>
-				{isError && <FontAwesomeIcon icon={faRotate} />}
-			</span>
-		</button>
+				<span
+					aria-hidden
+					className={cn(
+						'image-rendering-pixelated flex h-full w-full items-center justify-center bg-[length:100%_100%] bg-no-repeat',
+						'transition-[filter,transform] duration-150 motion-reduce:transition-none',
+						isHovered && '-translate-y-0.5',
+						asset.objectUrl === null &&
+							'rounded-full bg-black/55 text-white shadow-md',
+						isSelected
+							? '[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_3px_#ffa800)]'
+							: isHovered
+								? '[filter:drop-shadow(0_0_1px_#fff)_drop-shadow(0_0_2px_#ffa800)]'
+								: '[filter:drop-shadow(0_0_1px_rgba(255,255,255,0.9))]'
+					)}
+					style={{
+						backgroundImage:
+							asset.objectUrl === null
+								? undefined
+								: `url('${asset.objectUrl}')`,
+					}}
+				>
+					{isError && <FontAwesomeIcon icon={faRotate} />}
+				</span>
+			</button>
+		</div>
 	);
 });
 

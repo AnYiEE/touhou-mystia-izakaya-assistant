@@ -317,7 +317,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	BeastForest: {
 		art: {
 			bounds: [-65, -45, 70, 25],
-			hash: 'ff71109ae25f',
+			hash: '4e4ee54afb1c',
 			height: 3360,
 			levels: [
 				{
@@ -1987,7 +1987,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	DLC3_HakureiFestival: {
 		art: {
 			bounds: [-27, -50, 67, 28],
-			hash: '88dc48d0194d',
+			hash: '0736a85b3201',
 			height: 3744,
 			levels: [
 				{
@@ -3360,7 +3360,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	HakureiShrine: {
 		art: {
 			bounds: [-27, -50, 62, 30],
-			hash: '6fcfd7cc961a',
+			hash: 'd5d4fb64f91c',
 			height: 3840,
 			levels: [
 				{
@@ -3650,7 +3650,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	HumanVillage: {
 		art: {
 			bounds: [-74, -64, 87, 15],
-			hash: '46916a6fa7e4',
+			hash: '139e0ae29dc3',
 			height: 3792,
 			levels: [
 				{
@@ -4026,7 +4026,7 @@ export const DAY_MAP_LAYOUTS: Readonly<Record<TDayMapLabel, IDayMapLayout>> = {
 	ScarletMansion: {
 		art: {
 			bounds: [-37, -75, 62, 21],
-			hash: '0c577d47bb53',
+			hash: 'becff59e6c69',
 			height: 4608,
 			levels: [
 				{
