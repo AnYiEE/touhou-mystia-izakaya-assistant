@@ -28,6 +28,8 @@ const script = (
 	lightPaletteThemeColorMap: typeof LIGHT_PALETTE_THEME_COLOR_MAP,
 	themeClassMap: typeof THEME_CLASS_MAP
 ) => {
+	document.documentElement.dataset['themeMode'] = themeMap.SYSTEM;
+
 	try {
 		const systemTheme = globalThis.matchMedia(media).matches
 			? themeMap.DARK
@@ -80,6 +82,7 @@ const script = (
 			...Object.values(themeClassMap)
 		);
 		document.documentElement.classList.add(currentTheme, heroUIThemeClass);
+		document.documentElement.dataset['themeMode'] = storedTheme;
 		document.documentElement.style.colorScheme = currentTheme;
 
 		const metaElement = document.createElement('meta');

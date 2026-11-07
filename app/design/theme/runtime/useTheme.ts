@@ -139,6 +139,7 @@ export function applyThemePreferences(
 		state.resolvedMode,
 		heroUIThemeClass
 	);
+	document.documentElement.dataset['themeMode'] = state.mode;
 	document.documentElement.style.colorScheme = state.resolvedMode;
 
 	document

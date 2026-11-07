@@ -6,10 +6,7 @@ import {
 	faSun,
 	faUser,
 } from '@fortawesome/free-solid-svg-icons';
-import {
-	FontAwesomeIcon,
-	type FontAwesomeIconProps,
-} from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { NavbarItem } from '@heroui/navbar';
 import { cn } from '@heroui/theme';
 import debounce from 'lodash/debounce.js';
@@ -30,7 +27,6 @@ import Dropdown, {
 	DropdownSection,
 	DropdownTrigger,
 } from '@/design/ui/components/dropdown';
-import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
 import { toSelectionKeySet } from '@/design/ui/components/selectionKeys';
 import Tooltip from '@/design/ui/components/tooltip';
 
@@ -96,14 +92,6 @@ const PANEL_SINGLE_SECTION_CLASS_NAMES = {
 const PANEL_PALETTE_SECTION_CLASS_NAMES = {
 	...PANEL_SECTION_CLASS_NAMES,
 	group: 'grid grid-cols-[repeat(2,minmax(0,1fr))] gap-1',
-};
-
-const THEME_TRIGGER_ICON_MAP: Readonly<
-	Record<string, FontAwesomeIconProps['icon']>
-> = {
-	'theme:dark': faMoon,
-	'theme:light': faSun,
-	'theme:system': faCircleHalfStroke,
 };
 
 interface IProps {
@@ -485,15 +473,26 @@ export default function AccountThemeMenu({
 					>
 						<span className="flex">
 							<DropdownTrigger>
-								<FontAwesomeIconButton
-									icon={
-										THEME_TRIGGER_ICON_MAP[
-											selectedThemeKeys[0] ?? ''
-										] ?? faCircleHalfStroke
-									}
+								<Button
+									isIconOnly
 									aria-label={tTheme('theme.switcher')}
-									className="h-5 w-5 min-w-min bg-transparent !text-medium text-primary-600 dark:text-default-foreground"
-								/>
+									className="h-5 w-5 min-w-min bg-transparent !text-medium"
+									size="sm"
+									variant="light"
+								>
+									<FontAwesomeIcon
+										icon={faSun}
+										className="!hidden [[data-theme-mode=light]_&]:!inline-block"
+									/>
+									<FontAwesomeIcon
+										icon={faMoon}
+										className="!hidden [[data-theme-mode=dark]_&]:!inline-block"
+									/>
+									<FontAwesomeIcon
+										icon={faCircleHalfStroke}
+										className="!hidden [[data-theme-mode=system]_&]:!inline-block"
+									/>
+								</Button>
 							</DropdownTrigger>
 						</span>
 					</Tooltip>
