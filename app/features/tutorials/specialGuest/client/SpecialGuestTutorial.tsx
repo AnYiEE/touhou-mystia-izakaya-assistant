@@ -3,13 +3,13 @@
 import { driver } from 'driver.js';
 import { useCallback, useEffect, useRef } from 'react';
 
-import type { TIngredientId } from '@/domain/data/ingredients/types';
-import { DYNAMIC_FOOD_TAG_MAP } from '@/domain/data/tags/tagFacts';
+import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 
 import { accountStore } from '@/features/account/client/state/accountStore';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { appShellMessages } from '@/features/appShell/client/messages';
 import { usePathname } from '@/features/appShell/client/navigation/usePathname';
+import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { GUEST_INFO_QUERY_PARAM } from '@/features/catalog/guests/shared/navigation';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import {
@@ -27,16 +27,19 @@ import {
 } from '@/features/overlays/client';
 import type { ITutorialLease } from '@/features/overlays/contracts';
 import { preferencesMessages } from '@/features/preferences/client/messages';
+import { suggestedMealsUiStore } from '@/features/recommendations/client/state/suggestedMealsUiStore';
 import { specialGuestTutorialMessages } from '@/features/tutorials/specialGuest/client/messages';
 import {
 	SPECIAL_GUEST_TUTORIAL_BEVERAGE_ID,
 	SPECIAL_GUEST_TUTORIAL_BEVERAGE_POSITION,
 	SPECIAL_GUEST_TUTORIAL_BEVERAGE_SORT_POSITION,
-	SPECIAL_GUEST_TUTORIAL_BEVERAGE_STEP_INDEX,
+	SPECIAL_GUEST_TUTORIAL_BEVERAGE_TAB_POSITION,
 	SPECIAL_GUEST_TUTORIAL_BEVERAGE_TAG_ID,
 	SPECIAL_GUEST_TUTORIAL_BEVERAGE_TAG_POSITION,
+	SPECIAL_GUEST_TUTORIAL_COOKER_POSITION,
 	SPECIAL_GUEST_TUTORIAL_EGG_ID,
 	SPECIAL_GUEST_TUTORIAL_EGG_POSITION,
+	SPECIAL_GUEST_TUTORIAL_FOOD_TAB_POSITION,
 	SPECIAL_GUEST_TUTORIAL_FOOD_TAG_ID,
 	SPECIAL_GUEST_TUTORIAL_FOOD_TAG_POSITION,
 	SPECIAL_GUEST_TUTORIAL_GUEST_ID,
@@ -44,29 +47,134 @@ import {
 	SPECIAL_GUEST_TUTORIAL_HONEY_ID,
 	SPECIAL_GUEST_TUTORIAL_HONEY_POSITION,
 	SPECIAL_GUEST_TUTORIAL_INGREDIENT_TAB_POSITION,
+	SPECIAL_GUEST_TUTORIAL_MORE_POSITION,
 	SPECIAL_GUEST_TUTORIAL_MOVE_DELAY_MS,
 	SPECIAL_GUEST_TUTORIAL_PATHNAME,
+	SPECIAL_GUEST_TUTORIAL_RATING_POSITION,
 	SPECIAL_GUEST_TUTORIAL_RECIPE_ID,
 	SPECIAL_GUEST_TUTORIAL_RECIPE_POSITION,
+	SPECIAL_GUEST_TUTORIAL_SAVE_POSITION,
 	SPECIAL_GUEST_TUTORIAL_SCROLL_MOVE_DELAY_MS,
 	SPECIAL_GUEST_TUTORIAL_START_DELAY_MS,
+	SPECIAL_GUEST_TUTORIAL_STEP_INDEX,
+	SPECIAL_GUEST_TUTORIAL_SUGGESTED_MEALS_POSITION,
 } from '@/features/tutorials/specialGuest/constants';
 
+import {
+	buildLocalePath,
+	getPathnameWithoutLocalePrefix,
+} from '@/shared/i18n/routeLocales';
 import { useI18n } from '@/shared/i18n/useI18n';
-import { checkLengthEmpty } from '@/shared/utilities/collections/check';
 
 import {
 	completeSpecialGuestTutorial,
 	useSpecialGuestTutorialCompleted,
 } from './tutorialProgress';
 
-const tutorialEgg: TIngredientId = 0;
-const tutorialHoney: TIngredientId = 24;
+type TSpecialGuestTutorialTransition =
+	| 'beverage'
+	| 'beverageTab'
+	| 'food'
+	| 'foodTab'
+	| 'foodTag'
+	| 'guest'
+	| 'ingredient1'
+	| 'ingredient2'
+	| 'ingredientTab'
+	| 'sort'
+	| 'suggestion';
+
+const TUTORIAL_VIEWPORT_PADDING_PX = 16;
+const TUTORIAL_CLIPPING_OVERFLOW_VALUES: ReadonlySet<string> = new Set([
+	'auto',
+	'clip',
+	'hidden',
+	'overlay',
+	'scroll',
+]);
+
+function getTutorialSafeViewport() {
+	const navbar = document.querySelector(
+		'[data-coordinated-overlay-id="navigation.mobile-menu"]'
+	);
+	const navbarRect = navbar?.getBoundingClientRect();
+	const navbarIsOverlapping =
+		navbarRect !== undefined &&
+		navbarRect.bottom > 0 &&
+		navbarRect.top < globalThis.innerHeight / 2;
+
+	return {
+		bottom: globalThis.innerHeight - TUTORIAL_VIEWPORT_PADDING_PX,
+		left: TUTORIAL_VIEWPORT_PADDING_PX,
+		right: globalThis.innerWidth - TUTORIAL_VIEWPORT_PADDING_PX,
+		top: navbarIsOverlapping
+			? navbarRect.bottom + TUTORIAL_VIEWPORT_PADDING_PX
+			: TUTORIAL_VIEWPORT_PADDING_PX,
+	};
+}
+
+function checkIsTutorialTargetVisible(element: Element) {
+	const rect = element.getBoundingClientRect();
+	const safeViewport = getTutorialSafeViewport();
+
+	const isInsideViewport =
+		rect.width > 0 &&
+		rect.height > 0 &&
+		rect.top >= safeViewport.top &&
+		rect.left >= safeViewport.left &&
+		rect.bottom <= safeViewport.bottom &&
+		rect.right <= safeViewport.right;
+	if (!isInsideViewport) {
+		return false;
+	}
+
+	let ancestor = element.parentElement;
+	while (ancestor !== null) {
+		const style = getComputedStyle(ancestor);
+		const ancestorRect = ancestor.getBoundingClientRect();
+
+		if (
+			TUTORIAL_CLIPPING_OVERFLOW_VALUES.has(style.overflowY) &&
+			(rect.top < ancestorRect.top || rect.bottom > ancestorRect.bottom)
+		) {
+			return false;
+		}
+		if (
+			TUTORIAL_CLIPPING_OVERFLOW_VALUES.has(style.overflowX) &&
+			(rect.left < ancestorRect.left || rect.right > ancestorRect.right)
+		) {
+			return false;
+		}
+
+		ancestor = ancestor.parentElement;
+	}
+
+	return true;
+}
+
+function alignTutorialTargetWithSafeViewport(element: Element) {
+	const rect = element.getBoundingClientRect();
+	const safeViewport = getTutorialSafeViewport();
+
+	if (rect.top < safeViewport.top) {
+		globalThis.scrollBy({
+			behavior: 'auto',
+			top: rect.top - safeViewport.top,
+		});
+	} else if (rect.bottom > safeViewport.bottom) {
+		globalThis.scrollBy({
+			behavior: 'auto',
+			top: rect.bottom - safeViewport.bottom,
+		});
+	}
+}
 
 export default function SpecialGuestTutorial() {
 	const isLocalizationReady = useCatalogLocalizationReady();
-	const { t } = useI18n(specialGuestTutorialMessages);
+	const isReducedMotion = useReducedMotion();
+	const { locale, t } = useI18n(specialGuestTutorialMessages);
 	const { t: tAppShell } = useI18n(appShellMessages);
+	const { t: tCatalog } = useI18n(catalogGuestsMessages);
 	const { t: tPreferences } = useI18n(preferencesMessages);
 	const isOverlayIdleForTutorial = useOverlayIdleForTutorial();
 	const accountBootstrapStatus = accountStore.shared.bootstrapStatus.use();
@@ -78,31 +186,38 @@ export default function SpecialGuestTutorial() {
 
 	const globalSearchSpecialGuestTutorialAllowedPathname =
 		useSpecialGuestTutorialAllowedPathname();
+	const normalizedGlobalSearchSpecialGuestTutorialAllowedPathname =
+		globalSearchSpecialGuestTutorialAllowedPathname === null
+			? null
+			: getPathnameWithoutLocalePrefix(
+					globalSearchSpecialGuestTutorialAllowedPathname
+				);
 
 	const { pathname: currentPathname } = usePathname();
-	const isTargetPage = currentPathname.startsWith(
+	const currentPathnameWithoutLocalePrefix =
+		getPathnameWithoutLocalePrefix(currentPathname);
+	const isTargetPage = currentPathnameWithoutLocalePrefix.startsWith(
 		SPECIAL_GUEST_TUTORIAL_PATHNAME
 	);
 
 	const currentSpecialGuest = specialGuestStore.shared.guest.id.use();
-	const currentGuestOrder = specialGuestStore.shared.guest.order.use();
-	const {
-		beverageTag: currentOrderedBeverageTag,
-		foodTag: currentOrderedFoodTag,
-	} = currentGuestOrder;
+	const currentOrderedFoodTag =
+		specialGuestStore.shared.guest.order.foodTag.use();
+	const currentOrderedBeverageTag =
+		specialGuestStore.shared.guest.order.beverageTag.use();
 
 	const currentBeverage = specialGuestStore.shared.beverage.id.use();
 	const currentBeverageTableSortDescriptor =
 		specialGuestStore.persistence.beverage.table.sortDescriptor.use();
-	const isBeverageTableSortedByPriceAscending =
+	const isBeverageTableSortedByPriceDescending =
 		currentBeverageTableSortDescriptor.column === 'price' &&
 		currentBeverageTableSortDescriptor.direction === 'descending';
 
 	const currentMealFood = specialGuestStore.shared.recipe.data.use();
-	const currentExtraIngredients = currentMealFood?.extraIngredients;
 
 	const selectedTabKey = specialGuestStore.shared.tab.use();
-	const isIngredientTabSelected = selectedTabKey === 'ingredient';
+	const suggestionStatus = suggestedMealsUiStore.status.use();
+	const suggestionResultCount = suggestedMealsUiStore.resultCount.use();
 
 	const isCompleted = useSpecialGuestTutorialCompleted();
 	const hasCurrentUserConflict = accountConflicts.some(
@@ -113,29 +228,112 @@ export default function SpecialGuestTutorial() {
 	const isAccountSyncReady =
 		!accountIsLoggedIn || accountLastSyncedAt !== null;
 
-	const delayedMoveNextHandler = useRef<
-		ReturnType<typeof setTimeout> | undefined
-	>(undefined);
-	const mobileScrollMoveHandlers = useRef(
+	const scheduledTutorialMovesRef = useRef(
 		new Set<ReturnType<typeof setTimeout>>()
 	);
-	const clearMobileScrollMoveHandlers = useCallback(() => {
-		mobileScrollMoveHandlers.current.forEach(clearTimeout);
-		mobileScrollMoveHandlers.current.clear();
-	}, []);
-	const scheduleMobileScrollMove = useCallback((callback: () => void) => {
-		const handler = setTimeout(() => {
-			mobileScrollMoveHandlers.current.delete(handler);
-			callback();
-		}, SPECIAL_GUEST_TUTORIAL_SCROLL_MOVE_DELAY_MS);
-		mobileScrollMoveHandlers.current.add(handler);
-	}, []);
-
 	const shouldSkipCompletionOnDestroy = useRef(false);
 	const allowedGlobalSearchPathname = useRef<null | string>(null);
 	const tutorialLeaseRef = useRef<ITutorialLease | null>(null);
-
 	const driverRef = useRef<ReturnType<typeof driver> | null>(null);
+	const completedTransitionsRef = useRef(
+		new Set<TSpecialGuestTutorialTransition>()
+	);
+
+	const clearScheduledTutorialMoves = useCallback(() => {
+		scheduledTutorialMovesRef.current.forEach(clearTimeout);
+		scheduledTutorialMovesRef.current.clear();
+	}, []);
+
+	const scheduleTutorialTask = useCallback(
+		(delayMs: number, callback: () => void) => {
+			const handler = setTimeout(() => {
+				scheduledTutorialMovesRef.current.delete(handler);
+				callback();
+			}, delayMs);
+			scheduledTutorialMovesRef.current.add(handler);
+		},
+		[]
+	);
+	const scheduleStepAfterLayoutChange = useCallback(
+		(callback: () => void) => {
+			scheduleTutorialTask(
+				isReducedMotion ? 0 : SPECIAL_GUEST_TUTORIAL_MOVE_DELAY_MS,
+				callback
+			);
+		},
+		[isReducedMotion, scheduleTutorialTask]
+	);
+	const scheduleTutorialMove = useCallback(
+		(callback: () => void) => {
+			scheduleTutorialTask(
+				SPECIAL_GUEST_TUTORIAL_SCROLL_MOVE_DELAY_MS,
+				callback
+			);
+		},
+		[scheduleTutorialTask]
+	);
+
+	const resetTutorialDriver = useCallback(() => {
+		clearScheduledTutorialMoves();
+		tutorialLeaseRef.current?.release();
+		tutorialLeaseRef.current = null;
+		specialGuestStore.shared.tutorial.isOrderLinkedNavigationSuspended.set(
+			false
+		);
+		completedTransitionsRef.current.clear();
+	}, [clearScheduledTutorialMoves]);
+
+	const moveToStep = useCallback(
+		(
+			index: number,
+			selector: string,
+			position: ScrollLogicalPosition = 'nearest'
+		) => {
+			const tutorialDriver = driverRef.current;
+			if (!tutorialDriver?.isActive()) {
+				return;
+			}
+
+			clearScheduledTutorialMoves();
+			const element = document.querySelector(selector);
+			if (element === null) {
+				tutorialDriver.moveTo(index);
+				return;
+			}
+
+			if (checkIsTutorialTargetVisible(element)) {
+				tutorialDriver.moveTo(index);
+				return;
+			}
+
+			try {
+				element.scrollIntoView({ behavior: 'smooth', block: position });
+			} catch {
+				element.scrollIntoView(true);
+			}
+
+			scheduleTutorialMove(() => {
+				if (!tutorialDriver.isActive()) {
+					return;
+				}
+				document.querySelector('main').scrollIntoView(true);
+				alignTutorialTargetWithSafeViewport(element);
+				tutorialDriver.moveTo(index);
+			});
+		},
+		[clearScheduledTutorialMoves, scheduleTutorialMove]
+	);
+
+	const enterManualChapter = useCallback(() => {
+		specialGuestStore.shared.tutorial.isOrderLinkedNavigationSuspended.set(
+			false
+		);
+		moveToStep(
+			SPECIAL_GUEST_TUTORIAL_STEP_INDEX.foodTab,
+			SPECIAL_GUEST_TUTORIAL_FOOD_TAB_POSITION
+		);
+		trackEvent(trackEvent.category.click, 'Tutorial Button', 'Next');
+	}, [moveToStep]);
 
 	const createDriver = useCallback(() => {
 		const guestCatalog = specialGuestStore.instances.guest.get();
@@ -166,28 +364,48 @@ export default function SpecialGuestTutorial() {
 			SPECIAL_GUEST_TUTORIAL_BEVERAGE_TAG_ID
 		);
 		const foodTagName = getFoodTagLabel(SPECIAL_GUEST_TUTORIAL_FOOD_TAG_ID);
-		const popularPositiveName = getFoodTagLabel(
-			DYNAMIC_FOOD_TAG_MAP.popularPositive
-		);
-		const popularNegativeName = getFoodTagLabel(
-			DYNAMIC_FOOD_TAG_MAP.popularNegative
-		);
 		const preferencesLabel = tAppShell('appShell.nav.preferences');
 		const resetLabel = tPreferences('preferences.reset.tutorial');
+		const foodTabLabel = tAppShell('appShell.nav.foods');
+		const beverageTabLabel = tAppShell('appShell.nav.beverages');
+		const ingredientTabLabel = tAppShell('appShell.nav.ingredients');
+		const recommendationSettingsLabel = tCatalog(
+			'guests.suggestedMeal.settingsTitle'
+		);
+		const recommendationSelectLabel = tCatalog('guests.savedMeal.select');
+		const popularTrendLabel = tPreferences(
+			'preferences.global.popularTrend.title'
+		);
+
+		const appendButton = (
+			footerButtons: HTMLElement,
+			label: string,
+			onPress: () => void
+		) => {
+			const button = document.createElement('button');
+			button.textContent = label;
+			button.addEventListener('click', onPress);
+			footerButtons.append(button);
+		};
+
+		const appendNextButton = (
+			footerButtons: HTMLElement,
+			onPress: () => void
+		) => {
+			appendButton(footerButtons, t('tutorial.next'), onPress);
+		};
 
 		return driver({
 			allowClose: false,
+			allowKeyboardControl: false,
 			popoverClass: '!bg-background dark:!bg-content1 !text-foreground',
 			progressText: t('tutorial.progress'),
 			showButtons: ['close'],
 			showProgress: true,
 
 			onDestroyed() {
-				clearTimeout(delayedMoveNextHandler.current);
-				delayedMoveNextHandler.current = undefined;
-				clearMobileScrollMoveHandlers();
-				tutorialLeaseRef.current?.release();
-				tutorialLeaseRef.current = null;
+				driverRef.current = null;
+				resetTutorialDriver();
 
 				if (shouldSkipCompletionOnDestroy.current) {
 					shouldSkipCompletionOnDestroy.current = false;
@@ -195,9 +413,9 @@ export default function SpecialGuestTutorial() {
 				}
 
 				if (
-					location.pathname.startsWith(
-						SPECIAL_GUEST_TUTORIAL_PATHNAME
-					)
+					getPathnameWithoutLocalePrefix(
+						location.pathname
+					).startsWith(SPECIAL_GUEST_TUTORIAL_PATHNAME)
 				) {
 					completeSpecialGuestTutorial();
 				}
@@ -208,30 +426,30 @@ export default function SpecialGuestTutorial() {
 					popover: {
 						description: `<div class="space-y-2"><p>${t('tutorial.intro.p1')}</p><p class="text-tiny text-foreground-500">${t('tutorial.intro.p2', { preferences: preferencesLabel, reset: resetLabel })}</p></div>`,
 						onPopoverRender(popover) {
-							const skipButton = document.createElement('button');
-							skipButton.textContent = t('tutorial.skip');
-							skipButton.addEventListener('click', () => {
-								driverRef.current?.destroy();
-								trackEvent(
-									trackEvent.category.click,
-									'Tutorial Button',
-									'Skip'
+							appendButton(
+								popover.footerButtons,
+								t('tutorial.skip'),
+								() => {
+									driverRef.current?.destroy();
+									trackEvent(
+										trackEvent.category.click,
+										'Tutorial Button',
+										'Skip'
+									);
+								}
+							);
+							appendNextButton(popover.footerButtons, () => {
+								moveToStep(
+									SPECIAL_GUEST_TUTORIAL_STEP_INDEX.guest,
+									SPECIAL_GUEST_TUTORIAL_GUEST_POSITION,
+									'center'
 								);
-							});
-							const nextButton = document.createElement('button');
-							nextButton.textContent = t('tutorial.next');
-							nextButton.addEventListener('click', () => {
-								driverRef.current?.moveNext();
 								trackEvent(
 									trackEvent.category.click,
 									'Tutorial Button',
 									'Next'
 								);
 							});
-							popover.footerButtons.append(
-								skipButton,
-								nextButton
-							);
 						},
 						title: t('tutorial.intro.title'),
 					},
@@ -246,6 +464,16 @@ export default function SpecialGuestTutorial() {
 					},
 				},
 				{
+					element: SPECIAL_GUEST_TUTORIAL_FOOD_TAG_POSITION,
+					popover: {
+						description: t('tutorial.step.foodTag.desc', {
+							guest: guestName,
+							tag: foodTagName,
+						}),
+						title: t('tutorial.step.foodTag.title'),
+					},
+				},
+				{
 					element: SPECIAL_GUEST_TUTORIAL_BEVERAGE_TAG_POSITION,
 					popover: {
 						description: t('tutorial.step.beverageTag.desc', {
@@ -253,6 +481,53 @@ export default function SpecialGuestTutorial() {
 							tag: beverageTagName,
 						}),
 						title: t('tutorial.step.beverageTag.title'),
+					},
+				},
+				{
+					disableActiveInteraction: true,
+					element: SPECIAL_GUEST_TUTORIAL_SUGGESTED_MEALS_POSITION,
+					popover: {
+						description: t(
+							'tutorial.step.autoRecommendation.desc',
+							{
+								select: recommendationSelectLabel,
+								settings: recommendationSettingsLabel,
+							}
+						),
+						onPopoverRender(popover) {
+							appendNextButton(
+								popover.footerButtons,
+								enterManualChapter
+							);
+						},
+						title: t('tutorial.step.autoRecommendation.title'),
+					},
+				},
+				{
+					element: SPECIAL_GUEST_TUTORIAL_FOOD_TAB_POSITION,
+					popover: {
+						description: t('tutorial.step.foodTab.desc', {
+							tab: foodTabLabel,
+						}),
+						title: t('tutorial.step.foodTab.title'),
+					},
+				},
+				{
+					element: SPECIAL_GUEST_TUTORIAL_RECIPE_POSITION,
+					popover: {
+						description: t('tutorial.step.food.desc', {
+							food: foodName,
+						}),
+						title: t('tutorial.step.food.title'),
+					},
+				},
+				{
+					element: SPECIAL_GUEST_TUTORIAL_BEVERAGE_TAB_POSITION,
+					popover: {
+						description: t('tutorial.step.beverageTab.desc', {
+							tab: beverageTabLabel,
+						}),
+						title: t('tutorial.step.beverageTab.title'),
 					},
 				},
 				{
@@ -272,28 +547,11 @@ export default function SpecialGuestTutorial() {
 					},
 				},
 				{
-					element: SPECIAL_GUEST_TUTORIAL_FOOD_TAG_POSITION,
-					popover: {
-						description: t('tutorial.step.foodTag.desc', {
-							guest: guestName,
-							tag: foodTagName,
-						}),
-						title: t('tutorial.step.foodTag.title'),
-					},
-				},
-				{
-					element: SPECIAL_GUEST_TUTORIAL_RECIPE_POSITION,
-					popover: {
-						description: t('tutorial.step.food.desc', {
-							food: foodName,
-						}),
-						title: t('tutorial.step.food.title'),
-					},
-				},
-				{
 					element: SPECIAL_GUEST_TUTORIAL_INGREDIENT_TAB_POSITION,
 					popover: {
-						description: t('tutorial.step.ingredient.desc'),
+						description: t('tutorial.step.ingredient.desc', {
+							tab: ingredientTabLabel,
+						}),
 						title: t('tutorial.step.ingredient.title'),
 					},
 				},
@@ -314,234 +572,255 @@ export default function SpecialGuestTutorial() {
 						description: t('tutorial.step.ingredient2.desc', {
 							name: honeyName,
 						}),
-						title: t('tutorial.step.ingredient1.title', {
+						title: t('tutorial.step.ingredient2.title', {
 							name: honeyName,
 						}),
 					},
 				},
 				{
-					element: () => {
-						const target = document.querySelector(
-							'[data-customer-info-entry]'
-						);
-						if (target === null) {
-							throw new Error(
-								'Guest info tutorial target is missing.'
-							);
-						}
-						return target;
-					},
+					disableActiveInteraction: true,
+					element: SPECIAL_GUEST_TUTORIAL_RATING_POSITION,
 					popover: {
-						description: t('tutorial.step.more.desc', {
-							popular: popularPositiveName,
-							preferences: preferencesLabel,
-							unpopular: popularNegativeName,
+						description: t('tutorial.step.rating.desc', {
+							trend: popularTrendLabel,
 						}),
 						onPopoverRender(popover) {
-							const completeButton =
-								document.createElement('button');
-							completeButton.textContent = t('tutorial.complete');
-							completeButton.addEventListener('click', () => {
-								driverRef.current?.destroy();
+							appendNextButton(popover.footerButtons, () => {
+								moveToStep(
+									SPECIAL_GUEST_TUTORIAL_STEP_INDEX.cooker,
+									SPECIAL_GUEST_TUTORIAL_COOKER_POSITION
+								);
 								trackEvent(
 									trackEvent.category.click,
 									'Tutorial Button',
-									'Complete'
+									'Next'
 								);
 							});
-							popover.footerButtons.append(completeButton);
+						},
+						title: t('tutorial.step.rating.title'),
+					},
+				},
+				{
+					disableActiveInteraction: true,
+					element: SPECIAL_GUEST_TUTORIAL_COOKER_POSITION,
+					popover: {
+						description: t('tutorial.step.cooker.desc'),
+						onPopoverRender(popover) {
+							appendNextButton(popover.footerButtons, () => {
+								moveToStep(
+									SPECIAL_GUEST_TUTORIAL_STEP_INDEX.save,
+									SPECIAL_GUEST_TUTORIAL_SAVE_POSITION
+								);
+								trackEvent(
+									trackEvent.category.click,
+									'Tutorial Button',
+									'Next'
+								);
+							});
+						},
+						title: t('tutorial.step.cooker.title'),
+					},
+				},
+				{
+					disableActiveInteraction: true,
+					element: SPECIAL_GUEST_TUTORIAL_SAVE_POSITION,
+					popover: {
+						description: t('tutorial.step.save.desc'),
+						onPopoverRender(popover) {
+							appendNextButton(popover.footerButtons, () => {
+								moveToStep(
+									SPECIAL_GUEST_TUTORIAL_STEP_INDEX.more,
+									SPECIAL_GUEST_TUTORIAL_MORE_POSITION
+								);
+								trackEvent(
+									trackEvent.category.click,
+									'Tutorial Button',
+									'Next'
+								);
+							});
+						},
+						title: t('tutorial.step.save.title'),
+					},
+				},
+				{
+					disableActiveInteraction: true,
+					element: SPECIAL_GUEST_TUTORIAL_MORE_POSITION,
+					popover: {
+						description: t('tutorial.step.more.desc'),
+						onPopoverRender(popover) {
+							appendButton(
+								popover.footerButtons,
+								t('tutorial.complete'),
+								() => {
+									driverRef.current?.destroy();
+									trackEvent(
+										trackEvent.category.click,
+										'Tutorial Button',
+										'Complete'
+									);
+								}
+							);
 						},
 						title: t('tutorial.step.more.title'),
 					},
 				},
 			],
 		});
-	}, [clearMobileScrollMoveHandlers, t, tAppShell, tPreferences]);
+	}, [
+		enterManualChapter,
+		moveToStep,
+		resetTutorialDriver,
+		t,
+		tAppShell,
+		tCatalog,
+		tPreferences,
+	]);
 
-	const isGuestSelected = useRef(false);
-
-	const isBeverageSelected = useRef(false);
-	const isBeverageTableSorted = useRef(false);
-	const hasOrderedBeverageTag = useRef(false);
-
-	const isFoodSelected = useRef(false);
-	const hasExtraEgg = useRef(false);
-	const hasExtraHoney = useRef(false);
-	const hasOrderedFoodTag = useRef(false);
-
-	const isInIngredientTab = useRef(false);
-
-	const delayedMoveNext = useCallback((callback: () => void) => {
-		clearTimeout(delayedMoveNextHandler.current);
-		delayedMoveNextHandler.current = setTimeout(() => {
-			delayedMoveNextHandler.current = undefined;
-
-			if (driverRef.current?.isActive()) {
-				callback();
+	const takeTransition = useCallback(
+		(transition: TSpecialGuestTutorialTransition) => {
+			if (completedTransitionsRef.current.has(transition)) {
+				return false;
 			}
-		}, SPECIAL_GUEST_TUTORIAL_MOVE_DELAY_MS);
-	}, []);
-
-	const moveNext = useCallback(
-		(selectors: string, position?: ScrollLogicalPosition) => {
-			const tutorialDriver = driverRef.current;
-			if (tutorialDriver === null) {
-				return;
-			}
-
-			// The `xl` breakpoint is 1280px.
-			if (globalThis.innerWidth >= 1280) {
-				tutorialDriver.moveNext();
-			} else {
-				const element = document.querySelector(selectors);
-				// Some browsers don't support scrollIntoViewOptions
-				try {
-					element?.scrollIntoView({
-						behavior: 'smooth',
-						block: position ?? 'start',
-					});
-				} catch {
-					element?.scrollIntoView(true);
-				}
-				// Delay focusing to allow time for scroll animation.
-				scheduleMobileScrollMove(() => {
-					document.querySelector('main').scrollIntoView(true);
-					tutorialDriver.moveNext();
-				});
-			}
+			completedTransitionsRef.current.add(transition);
+			return true;
 		},
-		[scheduleMobileScrollMove]
-	);
-
-	const moveTo = useCallback(
-		(
-			index: number,
-			selectors: string,
-			position?: ScrollLogicalPosition
-		) => {
-			const tutorialDriver = driverRef.current;
-			if (tutorialDriver === null) {
-				return;
-			}
-
-			// The `xl` breakpoint is 1280px.
-			if (globalThis.innerWidth >= 1280) {
-				tutorialDriver.moveTo(index);
-			} else {
-				const element = document.querySelector(selectors);
-				// Some browsers don't support scrollIntoViewOptions
-				try {
-					element?.scrollIntoView({
-						behavior: 'smooth',
-						block: position ?? 'start',
-					});
-				} catch {
-					element?.scrollIntoView(true);
-				}
-				// Delay focusing to allow time for scroll animation.
-				scheduleMobileScrollMove(() => {
-					document.querySelector('main').scrollIntoView(true);
-					tutorialDriver.moveTo(index);
-				});
-			}
-		},
-		[scheduleMobileScrollMove]
+		[]
 	);
 
 	useEffect(() => {
-		const tutorialDriver = driverRef.current;
-		if (!tutorialDriver?.isActive()) {
+		if (!driverRef.current?.isActive()) {
 			return;
 		}
 
-		if (currentSpecialGuest !== null && !isGuestSelected.current) {
-			isGuestSelected.current = true;
-			tutorialDriver.moveTo(2);
-		} else if (currentBeverage !== null && !isBeverageSelected.current) {
-			isBeverageSelected.current = true;
-			tutorialDriver.moveNext();
-		} else if (
-			currentOrderedBeverageTag !== null &&
-			!hasOrderedBeverageTag.current
-		) {
-			hasOrderedBeverageTag.current = true;
+		const extraIngredients = currentMealFood?.extraIngredients ?? [];
 
-			if (isBeverageTableSortedByPriceAscending) {
-				isBeverageTableSorted.current = true;
-				delayedMoveNext(() => {
-					moveTo(
-						SPECIAL_GUEST_TUTORIAL_BEVERAGE_STEP_INDEX,
-						SPECIAL_GUEST_TUTORIAL_BEVERAGE_POSITION,
-						'nearest'
-					);
-				});
-			} else {
-				delayedMoveNext(() => {
-					tutorialDriver.moveNext();
-				});
-			}
-		} else if (
-			isBeverageTableSortedByPriceAscending &&
-			!isBeverageTableSorted.current
-		) {
-			isBeverageTableSorted.current = true;
-			moveNext(SPECIAL_GUEST_TUTORIAL_BEVERAGE_POSITION, 'nearest');
-		} else if (currentMealFood !== null && !isFoodSelected.current) {
-			isFoodSelected.current = true;
-			tutorialDriver.moveNext();
-		} else if (
-			currentExtraIngredients !== undefined &&
-			!checkLengthEmpty(currentExtraIngredients)
-		) {
-			if (
-				currentExtraIngredients.includes(tutorialEgg) &&
-				!hasExtraEgg.current
-			) {
-				hasExtraEgg.current = true;
-				moveNext(SPECIAL_GUEST_TUTORIAL_HONEY_POSITION);
-			} else if (
-				currentExtraIngredients.includes(tutorialHoney) &&
-				!hasExtraHoney.current
-			) {
-				hasExtraHoney.current = true;
-				tutorialDriver.moveNext();
-			}
+		if (currentSpecialGuest !== null && takeTransition('guest')) {
+			moveToStep(
+				SPECIAL_GUEST_TUTORIAL_STEP_INDEX.foodTag,
+				SPECIAL_GUEST_TUTORIAL_FOOD_TAG_POSITION
+			);
 		} else if (
 			currentOrderedFoodTag !== null &&
-			!hasOrderedFoodTag.current
+			takeTransition('foodTag')
 		) {
-			hasOrderedFoodTag.current = true;
-			delayedMoveNext(() => {
-				moveNext(SPECIAL_GUEST_TUTORIAL_RECIPE_POSITION, 'nearest');
+			moveToStep(
+				SPECIAL_GUEST_TUTORIAL_STEP_INDEX.beverageTag,
+				SPECIAL_GUEST_TUTORIAL_BEVERAGE_TAG_POSITION
+			);
+		} else if (
+			currentOrderedFoodTag !== null &&
+			currentOrderedBeverageTag !== null &&
+			suggestionStatus === 'success' &&
+			suggestionResultCount > 0 &&
+			takeTransition('suggestion')
+		) {
+			moveToStep(
+				SPECIAL_GUEST_TUTORIAL_STEP_INDEX.autoRecommendation,
+				SPECIAL_GUEST_TUTORIAL_SUGGESTED_MEALS_POSITION
+			);
+		} else if (selectedTabKey === 'food' && takeTransition('foodTab')) {
+			scheduleStepAfterLayoutChange(() => {
+				moveToStep(
+					SPECIAL_GUEST_TUTORIAL_STEP_INDEX.food,
+					SPECIAL_GUEST_TUTORIAL_RECIPE_POSITION
+				);
 			});
-		} else if (isIngredientTabSelected && !isInIngredientTab.current) {
-			isInIngredientTab.current = true;
-			delayedMoveNext(() => {
-				moveNext(SPECIAL_GUEST_TUTORIAL_EGG_POSITION);
+		} else if (
+			currentMealFood?.recipeId === SPECIAL_GUEST_TUTORIAL_RECIPE_ID &&
+			takeTransition('food')
+		) {
+			moveToStep(
+				SPECIAL_GUEST_TUTORIAL_STEP_INDEX.beverageTab,
+				SPECIAL_GUEST_TUTORIAL_BEVERAGE_TAB_POSITION
+			);
+		} else if (
+			selectedTabKey === 'beverage' &&
+			takeTransition('beverageTab')
+		) {
+			scheduleStepAfterLayoutChange(() => {
+				if (isBeverageTableSortedByPriceDescending) {
+					takeTransition('sort');
+					moveToStep(
+						SPECIAL_GUEST_TUTORIAL_STEP_INDEX.beverage,
+						SPECIAL_GUEST_TUTORIAL_BEVERAGE_POSITION
+					);
+					return;
+				}
+				moveToStep(
+					SPECIAL_GUEST_TUTORIAL_STEP_INDEX.sort,
+					SPECIAL_GUEST_TUTORIAL_BEVERAGE_SORT_POSITION,
+					'start'
+				);
 			});
+		} else if (
+			isBeverageTableSortedByPriceDescending &&
+			takeTransition('sort')
+		) {
+			moveToStep(
+				SPECIAL_GUEST_TUTORIAL_STEP_INDEX.beverage,
+				SPECIAL_GUEST_TUTORIAL_BEVERAGE_POSITION
+			);
+		} else if (
+			currentBeverage === SPECIAL_GUEST_TUTORIAL_BEVERAGE_ID &&
+			takeTransition('beverage')
+		) {
+			moveToStep(
+				SPECIAL_GUEST_TUTORIAL_STEP_INDEX.ingredient,
+				SPECIAL_GUEST_TUTORIAL_INGREDIENT_TAB_POSITION
+			);
+		} else if (
+			selectedTabKey === 'ingredient' &&
+			takeTransition('ingredientTab')
+		) {
+			scheduleStepAfterLayoutChange(() => {
+				moveToStep(
+					SPECIAL_GUEST_TUTORIAL_STEP_INDEX.ingredient1,
+					SPECIAL_GUEST_TUTORIAL_EGG_POSITION
+				);
+			});
+		} else if (
+			extraIngredients.includes(SPECIAL_GUEST_TUTORIAL_EGG_ID) &&
+			takeTransition('ingredient1')
+		) {
+			moveToStep(
+				SPECIAL_GUEST_TUTORIAL_STEP_INDEX.ingredient2,
+				SPECIAL_GUEST_TUTORIAL_HONEY_POSITION
+			);
+		} else if (
+			extraIngredients.includes(SPECIAL_GUEST_TUTORIAL_HONEY_ID) &&
+			takeTransition('ingredient2')
+		) {
+			moveToStep(
+				SPECIAL_GUEST_TUTORIAL_STEP_INDEX.rating,
+				SPECIAL_GUEST_TUTORIAL_RATING_POSITION
+			);
 		}
 	}, [
 		currentBeverage,
-		currentSpecialGuest,
-		currentExtraIngredients,
+		currentMealFood,
 		currentOrderedBeverageTag,
 		currentOrderedFoodTag,
-		currentMealFood,
-		delayedMoveNext,
-		isBeverageTableSortedByPriceAscending,
-		isIngredientTabSelected,
-		moveNext,
-		moveTo,
+		currentSpecialGuest,
+		isBeverageTableSortedByPriceDescending,
+		moveToStep,
+		scheduleStepAfterLayoutChange,
+		selectedTabKey,
+		suggestionResultCount,
+		suggestionStatus,
+		takeTransition,
 	]);
 
 	useEffect(
 		() => () => {
-			clearTimeout(delayedMoveNextHandler.current);
-			clearMobileScrollMoveHandlers();
+			clearScheduledTutorialMoves();
 			tutorialLeaseRef.current?.release();
 			tutorialLeaseRef.current = null;
+			specialGuestStore.shared.tutorial.isOrderLinkedNavigationSuspended.set(
+				false
+			);
+			completedTransitionsRef.current.clear();
 		},
-		[clearMobileScrollMoveHandlers]
+		[clearScheduledTutorialMoves]
 	);
 
 	useEffect(() => {
@@ -560,15 +839,7 @@ export default function SpecialGuestTutorial() {
 				driverRef.current.destroy();
 			}
 
-			isGuestSelected.current = false;
-			isBeverageSelected.current = false;
-			isBeverageTableSorted.current = false;
-			hasOrderedBeverageTag.current = false;
-			isFoodSelected.current = false;
-			hasExtraEgg.current = false;
-			hasExtraHoney.current = false;
-			hasOrderedFoodTag.current = false;
-			isInIngredientTab.current = false;
+			completedTransitionsRef.current.clear();
 
 			return () => {
 				clearTimeout(handler);
@@ -576,15 +847,19 @@ export default function SpecialGuestTutorial() {
 		}
 
 		if (
-			globalSearchSpecialGuestTutorialAllowedPathname === currentPathname
+			normalizedGlobalSearchSpecialGuestTutorialAllowedPathname ===
+			currentPathnameWithoutLocalePrefix
 		) {
-			allowedGlobalSearchPathname.current = currentPathname;
+			allowedGlobalSearchPathname.current =
+				currentPathnameWithoutLocalePrefix;
 			consumeSpecialGuestTutorialAllowedPathname();
 		}
 
 		const isAllowedGlobalSearchPathname =
-			currentPathname !== SPECIAL_GUEST_TUTORIAL_PATHNAME &&
-			allowedGlobalSearchPathname.current === currentPathname;
+			currentPathnameWithoutLocalePrefix !==
+				SPECIAL_GUEST_TUTORIAL_PATHNAME &&
+			allowedGlobalSearchPathname.current ===
+				currentPathnameWithoutLocalePrefix;
 		const isAllowedSharedInfoPathname = new URLSearchParams(
 			location.search
 		).has(GUEST_INFO_QUERY_PARAM);
@@ -596,7 +871,10 @@ export default function SpecialGuestTutorial() {
 			!isCompleted &&
 			!driverRef.current?.isActive()
 		) {
-			if (currentPathname === SPECIAL_GUEST_TUTORIAL_PATHNAME) {
+			if (
+				currentPathnameWithoutLocalePrefix ===
+				SPECIAL_GUEST_TUTORIAL_PATHNAME
+			) {
 				handler = setTimeout(() => {
 					if (
 						!isOverlayIdleForTutorial ||
@@ -608,9 +886,7 @@ export default function SpecialGuestTutorial() {
 					const tutorialLease = tryAcquireTutorial({
 						onPreempt: () => {
 							shouldSkipCompletionOnDestroy.current = true;
-							clearTimeout(delayedMoveNextHandler.current);
-							delayedMoveNextHandler.current = undefined;
-							clearMobileScrollMoveHandlers();
+							clearScheduledTutorialMoves();
 							driverRef.current?.destroy();
 						},
 					});
@@ -619,13 +895,16 @@ export default function SpecialGuestTutorial() {
 					}
 
 					tutorialLeaseRef.current = tutorialLease;
+					specialGuestStore.shared.tutorial.isOrderLinkedNavigationSuspended.set(
+						true
+					);
+					completedTransitionsRef.current.clear();
 					const tutorialDriver = createDriver();
 					driverRef.current = tutorialDriver;
 					try {
 						tutorialDriver.drive();
 					} catch (error) {
-						tutorialLease.release();
-						tutorialLeaseRef.current = null;
+						resetTutorialDriver();
 						driverRef.current = null;
 						throw error;
 					}
@@ -639,15 +918,17 @@ export default function SpecialGuestTutorial() {
 				!isAllowedGlobalSearchPathname &&
 				!isAllowedSharedInfoPathname
 			) {
-				location.href = SPECIAL_GUEST_TUTORIAL_PATHNAME;
+				location.href = buildLocalePath(
+					locale,
+					SPECIAL_GUEST_TUTORIAL_PATHNAME
+				);
 			}
 		}
 		if (!isTargetPage) {
 			allowedGlobalSearchPathname.current = null;
 			driverRef.current?.destroy();
 			driverRef.current = null;
-			tutorialLeaseRef.current?.release();
-			tutorialLeaseRef.current = null;
+			resetTutorialDriver();
 		}
 
 		return () => {
@@ -655,16 +936,18 @@ export default function SpecialGuestTutorial() {
 		};
 	}, [
 		accountBootstrapStatus,
-		clearMobileScrollMoveHandlers,
+		clearScheduledTutorialMoves,
 		createDriver,
-		currentPathname,
-		globalSearchSpecialGuestTutorialAllowedPathname,
+		currentPathnameWithoutLocalePrefix,
 		hasBlockingAccountModal,
 		isAccountSyncReady,
 		isCompleted,
 		isLocalizationReady,
 		isOverlayIdleForTutorial,
 		isTargetPage,
+		locale,
+		normalizedGlobalSearchSpecialGuestTutorialAllowedPathname,
+		resetTutorialDriver,
 	]);
 
 	return null;

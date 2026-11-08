@@ -99,6 +99,7 @@ export const specialGuestInitialState = {
 			},
 		},
 		tab: 'guest' as TTab,
+		tutorial: { isOrderLinkedNavigationSuspended: false },
 	},
 };
 

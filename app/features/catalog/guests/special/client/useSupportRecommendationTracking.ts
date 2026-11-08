@@ -17,6 +17,7 @@ import {
 	useIsTutorialActive,
 	useOverlayIdleForTutorial,
 } from '@/features/overlays/client';
+import { type TSuggestedMealsUiStatus } from '@/features/recommendations/client/state/suggestedMealsUiStore';
 
 interface IOptions {
 	cardRef: RefObject<HTMLElement | null>;
@@ -25,7 +26,7 @@ interface IOptions {
 	hasMystiaCooker: boolean;
 	hasRows: boolean;
 	isVisible: boolean;
-	suggestionStatus: 'error' | 'idle' | 'pending' | 'refreshing' | 'success';
+	suggestionStatus: TSuggestedMealsUiStatus;
 }
 
 export function useSupportRecommendationTracking({

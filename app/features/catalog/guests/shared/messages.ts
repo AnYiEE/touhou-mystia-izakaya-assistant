@@ -133,7 +133,7 @@ const CATALOG_GUESTS_MESSAGES_ZH_CN = {
 	'guests.resultCard.optionalBeverage': '可选择酒水',
 	'guests.resultCard.pickOrderedFoodPrompt': '选择点单料理以继续',
 	'guests.resultCard.pickOrderedFoodToSave': '请选择点单料理以保存',
-	'guests.resultCard.pickPrompt': '选择一种料理或酒水以继续',
+	'guests.resultCard.pickPrompt': '选好点单需求，查看自动推荐或手动搭配',
 	'guests.resultCard.ratedAs': '评级为{rating}',
 	'guests.resultCard.saveMeal': '保存套餐',
 	'guests.resultCard.saveMealAria': '保存套餐，当前{status}',
@@ -424,7 +424,8 @@ export const catalogGuestsMessages = {
 			'Select the ordered food to continue',
 		'guests.resultCard.pickOrderedFoodToSave':
 			'Select the ordered food to save',
-		'guests.resultCard.pickPrompt': 'Select a food or beverage to continue',
+		'guests.resultCard.pickPrompt':
+			'Set order requirements to see auto recommendations or choose manually',
 		'guests.resultCard.ratedAs': 'rating {rating}',
 		'guests.resultCard.saveMeal': 'Save meal',
 		'guests.resultCard.saveMealAria': 'Save meal; {status}',
@@ -722,7 +723,7 @@ export const catalogGuestsMessages = {
 		'guests.resultCard.pickOrderedFoodToSave':
 			'保存するには注文料理を選択してください',
 		'guests.resultCard.pickPrompt':
-			'続けるには料理または飲み物を選択してください',
+			'注文条件を選ぶと自動推薦を確認できます。手動でも選べます',
 		'guests.resultCard.ratedAs': '評価は{rating}',
 		'guests.resultCard.saveMeal': '保存',
 		'guests.resultCard.saveMealAria': 'セットメニューを保存、現在{status}',
@@ -1014,7 +1015,8 @@ export const catalogGuestsMessages = {
 			'계속하려면 주문 요리를 선택하세요',
 		'guests.resultCard.pickOrderedFoodToSave':
 			'저장하려면 주문 요리를 선택하세요',
-		'guests.resultCard.pickPrompt': '계속하려면 요리나 음료를 선택하세요',
+		'guests.resultCard.pickPrompt':
+			'주문 조건을 선택하면 자동 추천이 표시됩니다. 직접 선택할 수도 있습니다',
 		'guests.resultCard.ratedAs': '평가 {rating}',
 		'guests.resultCard.saveMeal': '세트 메뉴 저장',
 		'guests.resultCard.saveMealAria': '세트 메뉴 저장, 현재 {status}',
@@ -1301,7 +1303,7 @@ export const catalogGuestsMessages = {
 		'guests.resultCard.optionalBeverage': '可選擇酒水',
 		'guests.resultCard.pickOrderedFoodPrompt': '選擇點單料理以繼續',
 		'guests.resultCard.pickOrderedFoodToSave': '請選擇點單料理以儲存',
-		'guests.resultCard.pickPrompt': '選擇一種料理或酒水以繼續',
+		'guests.resultCard.pickPrompt': '選好點單需求，查看自動推薦或手動搭配',
 		'guests.resultCard.ratedAs': '評級為{rating}',
 		'guests.resultCard.saveMeal': '儲存套餐',
 		'guests.resultCard.saveMealAria': '儲存套餐，目前{status}',

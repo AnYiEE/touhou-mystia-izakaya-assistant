@@ -75,6 +75,8 @@ export default function GuestCard() {
 	const isDarkMatter = specialGuestStore.shared.guest.isDarkMatter.use();
 	const isOrderLinkedFilter =
 		specialGuestStore.persistence.guest.orderLinkedFilter.use();
+	const isOrderLinkedNavigationSuspended =
+		specialGuestStore.shared.tutorial.isOrderLinkedNavigationSuspended.use();
 	const isShowTagDescription =
 		specialGuestStore.persistence.guest.showTagDescription.use() &&
 		isChineseLocale(locale);
@@ -109,11 +111,17 @@ export default function GuestCard() {
 			if (isOrderLinkedFilter) {
 				specialGuestStore.onGuestFilterBeverageTag(
 					tag,
-					hasMystiaCooker
+					hasMystiaCooker,
+					!isOrderLinkedNavigationSuspended
 				);
 			}
 		},
-		[hasMystiaCooker, isOrderLinkedFilter, vibrate]
+		[
+			hasMystiaCooker,
+			isOrderLinkedFilter,
+			isOrderLinkedNavigationSuspended,
+			vibrate,
+		]
 	);
 
 	const handleFoodTagPress = useCallback(
@@ -121,10 +129,19 @@ export default function GuestCard() {
 			vibrate();
 			specialGuestStore.onGuestOrderFoodTag(tag);
 			if (isOrderLinkedFilter) {
-				specialGuestStore.onGuestFilterFoodTag(tag, hasMystiaCooker);
+				specialGuestStore.onGuestFilterFoodTag(
+					tag,
+					hasMystiaCooker,
+					!isOrderLinkedNavigationSuspended
+				);
 			}
 		},
-		[hasMystiaCooker, isOrderLinkedFilter, vibrate]
+		[
+			hasMystiaCooker,
+			isOrderLinkedFilter,
+			isOrderLinkedNavigationSuspended,
+			vibrate,
+		]
 	);
 
 	const handleRefreshGuest = useCallback(() => {
@@ -319,7 +336,10 @@ export default function GuestCard() {
 		<Card fullWidth shadow="sm" classNames={cardClassNames}>
 			<div className="relative flex flex-col gap-3 p-4 md:flex-row">
 				<div className="flex flex-col justify-evenly gap-2">
-					<div className="relative self-center">
+					<div
+						data-tutorial-guest-rating
+						className="relative self-center"
+					>
 						<RatingAvatarShell
 							color={tooltipRatingColor}
 							content={avatarRatingContent}

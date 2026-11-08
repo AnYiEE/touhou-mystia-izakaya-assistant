@@ -494,7 +494,7 @@ export const preferencesMessages = {
 		'preferences.reset.meals': '저장된 손님 세트 메뉴 데이터 초기화',
 		'preferences.reset.plans': '저장된 영업 프리셋 데이터 초기화',
 		'preferences.reset.tutorial':
-			'레어 손님 세트 메뉴 구성 튜토리얼 다시 시작',
+			'희귀 손님 세트 메뉴 구성 튜토리얼 다시 시작',
 		'preferences.section.appearance': '외형',
 		'preferences.section.catalog': '손님 페이지',
 		'preferences.section.catalog.items': '음료·요리·재료',

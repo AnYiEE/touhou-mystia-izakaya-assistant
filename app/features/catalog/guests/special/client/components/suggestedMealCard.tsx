@@ -578,7 +578,10 @@ export default function SuggestedMealCard() {
 				shadow="sm"
 				classNames={cardClassNames}
 			>
-				<div className="space-y-3 p-4 xl:p-2 xl:pb-4">
+				<div
+					data-tutorial-suggested-meals
+					className="space-y-3 p-4 xl:p-2 xl:pb-4"
+				>
 					{cookerSelect}
 					<AnimatePresence initial={false}>
 						{statusNotice !== null && (

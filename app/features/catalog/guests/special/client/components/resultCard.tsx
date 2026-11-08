@@ -184,6 +184,7 @@ export default function ResultCard() {
 										<>
 											<Tooltip showArrow content={label}>
 												<SlidingSprite
+													data-tutorial-mystia-cooker
 													target="cooker"
 													recordId={cooker}
 													size={2}
@@ -322,6 +323,7 @@ export default function ResultCard() {
 						placement={placement}
 					>
 						<Button
+							data-tutorial-save-meal
 							color="primary"
 							disableAnimation={isSaveButtonDisabled}
 							size="sm"

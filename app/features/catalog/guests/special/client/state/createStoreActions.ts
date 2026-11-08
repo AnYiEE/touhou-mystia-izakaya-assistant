@@ -56,11 +56,17 @@ export const createSpecialGuestStoreActions = (
 	currentStore: TSpecialGuestStoreActionContext
 ) => ({
 	...createSpecialGuestPlansActionsDefinition(currentStore),
-	onGuestFilterBeverageTag(tag: TBeverageTagId, hasMystiaCooker: boolean) {
-		currentStore.shared.tab.set('beverage');
-		currentStore.shared.beverage.table.page.set(1);
-		currentStore.shared.guest.filterVisibility.set(false);
-		currentStore.shared.ingredient.filterVisibility.set(false);
+	onGuestFilterBeverageTag(
+		tag: TBeverageTagId,
+		hasMystiaCooker: boolean,
+		shouldActivateTab = true
+	) {
+		if (shouldActivateTab) {
+			currentStore.shared.tab.set('beverage');
+			currentStore.shared.beverage.table.page.set(1);
+			currentStore.shared.guest.filterVisibility.set(false);
+			currentStore.shared.ingredient.filterVisibility.set(false);
+		}
 		currentStore.shared.guest.select.beverageTag.set((prev) => {
 			keepLastTag(prev, tag, {
 				hasMystiaCooker,
@@ -68,11 +74,17 @@ export const createSpecialGuestStoreActions = (
 			});
 		});
 	},
-	onGuestFilterFoodTag(tag: TFoodTagId, hasMystiaCooker: boolean) {
-		currentStore.shared.tab.set('food');
-		currentStore.shared.recipe.table.page.set(1);
-		currentStore.shared.guest.filterVisibility.set(false);
-		currentStore.shared.ingredient.filterVisibility.set(false);
+	onGuestFilterFoodTag(
+		tag: TFoodTagId,
+		hasMystiaCooker: boolean,
+		shouldActivateTab = true
+	) {
+		if (shouldActivateTab) {
+			currentStore.shared.tab.set('food');
+			currentStore.shared.recipe.table.page.set(1);
+			currentStore.shared.guest.filterVisibility.set(false);
+			currentStore.shared.ingredient.filterVisibility.set(false);
+		}
 		currentStore.shared.guest.select.foodTag.set((prev) => {
 			keepLastTag(prev, tag, {
 				hasMystiaCooker,

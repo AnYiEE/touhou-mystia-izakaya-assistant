@@ -51,7 +51,10 @@ import {
 	writeSuggestedMealCardResult,
 } from '@/features/recommendations/client/cache/results';
 import { checkSuggestMealsAbortError } from '@/features/recommendations/client/scheduler';
-import { suggestedMealsUiStore } from '@/features/recommendations/client/state/suggestedMealsUiStore';
+import {
+	type TSuggestedMealsUiStatus,
+	suggestedMealsUiStore,
+} from '@/features/recommendations/client/state/suggestedMealsUiStore';
 import {
 	buildSuggestMealsCacheKey,
 	getScoreBasedAlternatives,
@@ -68,8 +71,6 @@ import { specialGuestStore } from './state/store';
 
 type TSuggestions = Awaited<ReturnType<typeof suggestMeals>> | null;
 type TSuggestedMeal = NonNullable<TSuggestions>[number];
-type TSuggestionStatus =
-	'error' | 'idle' | 'pending' | 'refreshing' | 'success';
 type TAlternativesStatus = 'error' | 'idle' | 'pending' | 'success';
 
 const EMPTY_ALTERNATIVES: IIngredientView[] = [];
@@ -123,7 +124,7 @@ interface ISuggestionsState {
 	activeRequestKey: string | null;
 	generation: number;
 	resultContext: ISuggestionResultContext | null;
-	status: TSuggestionStatus;
+	status: TSuggestedMealsUiStatus;
 	suggestions: TSuggestions;
 }
 
@@ -591,7 +592,7 @@ export function useSuggestedMealsViewModel() {
 		status: storedSuggestionStatus,
 		suggestions,
 	} = suggestionsState;
-	const suggestionStatus: TSuggestionStatus = isActive
+	const suggestionStatus: TSuggestedMealsUiStatus = isActive
 		? activeRequestKey === suggestionRequestKey
 			? storedSuggestionStatus
 			: suggestions === null
@@ -1039,6 +1040,11 @@ export function useSuggestedMealsViewModel() {
 		suggestionStatus,
 		suggestions,
 	]);
+
+	useLayoutEffect(() => {
+		suggestedMealsUiStore.resultCount.set(suggestedMealRows?.length ?? 0);
+		suggestedMealsUiStore.status.set(suggestionStatus);
+	}, [suggestedMealRows, suggestionStatus]);
 
 	return {
 		availableFoodCookers,

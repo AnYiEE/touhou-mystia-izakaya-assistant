@@ -14,7 +14,7 @@ import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { preferencesMessages } from '@/features/preferences/client/messages';
 import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/state/store';
-import { resetSpecialGuestTutorial } from '@/features/tutorials/specialGuest/client/tutorialProgress';
+import { resetSpecialGuestTutorialExperience } from '@/features/tutorials/specialGuest/client/resetTutorialExperience';
 import { SPECIAL_GUEST_TUTORIAL_PATHNAME } from '@/features/tutorials/specialGuest/constants';
 
 import { useI18n } from '@/shared/i18n/useI18n';
@@ -150,37 +150,7 @@ export default memo<IProps>(function ResetSavedDataPanel({
 				variant="flat"
 				onPress={() => {
 					showProgress(startProgress);
-					specialGuestStore.persistence.guest.filters.set((prev) => {
-						Object.keys(prev).forEach((key) => {
-							prev[key] = [];
-						});
-					});
-					specialGuestStore.persistence.guest.orderLinkedFilter.set(
-						true
-					);
-					specialGuestStore.persistence.recipe.table.cookerTypes.set(
-						[]
-					);
-					specialGuestStore.persistence.recipe.table.availabilityDlcs.set(
-						[]
-					);
-					specialGuestStore.persistence.recipe.table.sortDescriptor.set(
-						{}
-					);
-					specialGuestStore.persistence.beverage.table.availabilityDlcs.set(
-						[]
-					);
-					specialGuestStore.persistence.beverage.table.sortDescriptor.set(
-						{}
-					);
-					specialGuestStore.persistence.ingredient.filters.set(
-						(prev) => {
-							Object.keys(prev).forEach((key) => {
-								prev[key] = [];
-							});
-						}
-					);
-					resetSpecialGuestTutorial();
+					resetSpecialGuestTutorialExperience();
 					// Wait for the button animation to complete (the animate will take 800ms).
 					setTimeout(
 						() => {

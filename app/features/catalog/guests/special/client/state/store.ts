@@ -16,6 +16,7 @@ export const specialGuestStore = {
 		ingredient: specialGuestPersistenceStore.shared.ingredient,
 		recipe: specialGuestPersistenceStore.shared.recipe,
 		tab: specialGuestPersistenceStore.shared.tab,
+		tutorial: specialGuestPersistenceStore.shared.tutorial,
 	},
 
 	availableBeverageAvailabilityDlcs:
