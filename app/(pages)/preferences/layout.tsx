@@ -1,5 +1,5 @@
-import { type Metadata } from 'next';
-import { type PropsWithChildren } from 'react';
+import type { Metadata } from 'next';
+import type { PropsWithChildren } from 'react';
 
 import {
 	getLocalizedPageTitle,
@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 	return {
 		title: getLocalizedPageTitle(locale, '/preferences'),
 
-		robots: { index: false },
+		robots: { follow: false, index: false },
 	};
 }
 

@@ -1,4 +1,4 @@
-import { type Metadata } from 'next';
+import type { Metadata } from 'next';
 
 import { SITE_METADATA } from '@/shared/site/metadata';
 
@@ -9,6 +9,7 @@ const { enName, name } = SITE_METADATA;
  * the title template so localized root metadata does not leak into it.
  */
 export const metadata: Metadata = {
+	robots: { follow: false, index: false },
 	title: {
 		default: `${name} - ${enName}`,
 		template: `%s | ${name} - ${enName}`,
