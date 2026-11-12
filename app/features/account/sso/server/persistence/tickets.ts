@@ -282,6 +282,23 @@ export async function revokeUnusedSsoTicketsForClient(
 	});
 }
 
+export async function revokeUnusedSsoTicketsForUserInTransaction(
+	trx: Transaction<TDatabase>,
+	userId: TUser['id'],
+	reason: string,
+	now = Date.now()
+) {
+	const result = await trx
+		.updateTable(TICKET_TABLE_NAME)
+		.set({ revoked_at: now, revoked_reason: reason })
+		.where('user_id', '=', userId)
+		.where('used_at', 'is', null)
+		.where('revoked_at', 'is', null)
+		.executeTakeFirst();
+
+	return Number(result.numUpdatedRows);
+}
+
 export async function revokeUnusedSsoTicketsForUser(
 	userId: TUser['id'],
 	reason: string,
@@ -295,14 +312,12 @@ export async function revokeUnusedSsoTicketsForUser(
 	const db = await getAccountDatabase();
 
 	return db.transaction().execute(async (trx) => {
-		const result = await trx
-			.updateTable(TICKET_TABLE_NAME)
-			.set({ revoked_at: now, revoked_reason: reason })
-			.where('user_id', '=', userId)
-			.where('used_at', 'is', null)
-			.where('revoked_at', 'is', null)
-			.executeTakeFirst();
-		const revokedCount = Number(result.numUpdatedRows);
+		const revokedCount = await revokeUnusedSsoTicketsForUserInTransaction(
+			trx,
+			userId,
+			reason,
+			now
+		);
 		await writeAuditLog?.(trx, now, revokedCount);
 
 		return revokedCount;

@@ -5,6 +5,7 @@ import { type TUserStatus } from '@/domain/account/contracts';
 import { getAccountDatabase } from '@/features/account/server/persistence/database';
 import { enqueueSsoCallbacksForUserEventInTransaction } from '@/features/account/sso/server/persistence/callbackQueue';
 import { deleteSsoUserClientGrantsForAccountDeletionInTransaction } from '@/features/account/sso/server/persistence/grants';
+import { revokeUnusedSsoTicketsForUserInTransaction } from '@/features/account/sso/server/persistence/tickets';
 import { deleteCredentialsByUserIdInTransaction } from '@/features/account/webauthn/server';
 import { deleteFeatureAccessGroupMembersByUserIdInTransaction } from '@/features/featureAccess/server/groupRepository';
 import { deleteUserFeatureAccessOverridesByUserIdInTransaction } from '@/features/featureAccess/server/userAccessOverrideRepository';
@@ -670,6 +671,12 @@ export async function deleteActiveUserIfSessionCurrentWithAudit(
 		await deleteSsoUserClientGrantsForAccountDeletionInTransaction(
 			trx,
 			id,
+			now
+		);
+		await revokeUnusedSsoTicketsForUserInTransaction(
+			trx,
+			id,
+			'user-account-deleted',
 			now
 		);
 		await writeAuditLog(trx, now);
