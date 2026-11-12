@@ -122,9 +122,9 @@ jobs:
               uses: actions/cache@v6.1.0
               with:
                   path: .next/cache
-                  key: next-assistant-ubuntu-26.04-node26-pnpm10.34.7-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+                  key: next-assistant-ubuntu-26.04-node26-pnpm10.34.9-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
                   restore-keys: |
-                      next-assistant-ubuntu-26.04-node26-pnpm10.34.7-${{ hashFiles('pnpm-lock.yaml') }}-
+                      next-assistant-ubuntu-26.04-node26-pnpm10.34.9-${{ hashFiles('pnpm-lock.yaml') }}-
 
             - name: Prepare temporary SQLite
               shell: bash
