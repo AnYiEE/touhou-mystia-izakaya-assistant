@@ -7,6 +7,8 @@ import { memo } from 'react';
 
 import Button from '@/design/ui/components/button';
 
+import { type TSyncNamespace } from '@/domain/account/contracts';
+
 import { accountMessages } from '@/features/account/client/messages';
 
 import { useI18n } from '@/shared/i18n/useI18n';
@@ -24,6 +26,7 @@ interface IConflictVersionCardProps {
 	isDisabled: boolean;
 	isHighAppearance: boolean;
 	isLoading: boolean;
+	namespace: TSyncNamespace;
 	onSelect: () => void;
 	title: string;
 	valueKey: 'cloud' | 'local';
@@ -38,6 +41,7 @@ const ConflictVersionCard = memo<IConflictVersionCardProps>(
 		isDisabled,
 		isHighAppearance,
 		isLoading,
+		namespace,
 		onSelect,
 		title,
 		valueKey,
@@ -95,6 +99,7 @@ const ConflictVersionCard = memo<IConflictVersionCardProps>(
 								<span className="break-words text-right font-medium text-foreground-700">
 									{formatValue(
 										difference[valueKey],
+										namespace,
 										difference.path
 									)}
 								</span>

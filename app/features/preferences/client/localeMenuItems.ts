@@ -56,6 +56,10 @@ export function toLocaleMenuKey(preference: TLocalePreference): string {
 	return `locale:${preference}`;
 }
 
+export function getLocaleMenuLabel(preference: TLocalePreference) {
+	return localeMenuItemByKey.get(toLocaleMenuKey(preference))?.label ?? null;
+}
+
 export function resolveLocaleMenuPreference(
 	key: unknown
 ): TLocalePreference | null {

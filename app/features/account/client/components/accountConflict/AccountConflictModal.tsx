@@ -509,7 +509,7 @@ export default memo<IProps>(function AccountConflictModal() {
 	}
 
 	const { cloud, local, localCollision, merged, namespace } = visibleConflict;
-	const differences = getDifferences(cloud, local, merged);
+	const differences = getDifferences(cloud, local, merged, namespace);
 	const namespaceLabel = getNamespaceLabel(namespace);
 	const unresolvedConflictCount = conflicts.filter(
 		(item) => item.userId === user?.id
@@ -757,6 +757,7 @@ export default memo<IProps>(function AccountConflictModal() {
 										<span className="break-words text-right font-medium text-foreground-700">
 											{formatValue(
 												difference.merged,
+												namespace,
 												difference.path
 											)}
 										</span>
@@ -805,6 +806,7 @@ export default memo<IProps>(function AccountConflictModal() {
 							isDisabled={isResolving || !isResolutionReady}
 							isHighAppearance={isHighAppearance}
 							isLoading={resolvingResolution === 'cloud'}
+							namespace={namespace}
 							title={t('account.conflict.resolution.cloud.title')}
 							valueKey="cloud"
 							onSelect={handleUseCloud}
@@ -821,6 +823,7 @@ export default memo<IProps>(function AccountConflictModal() {
 							isDisabled={isResolving || !isResolutionReady}
 							isHighAppearance={isHighAppearance}
 							isLoading={resolvingResolution === 'local'}
+							namespace={namespace}
 							title={t('account.conflict.resolution.local.title')}
 							valueKey="local"
 							onSelect={handleUseLocal}

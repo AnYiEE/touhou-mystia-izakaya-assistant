@@ -26,7 +26,7 @@ const ABOUT_MESSAGES_ZH_CN = {
 		'以支持{shortName}的开发和维护。但请注意，该捐赠仅为您个人的自愿行为，并非面向公众的募捐，仅构成平等主体之间的民事赠与关系，不附带任何物质或其他回报。',
 	'about.introduction.title': '项目介绍',
 	'about.legal.account.cookie.p1':
-		'{shortName}使用必要的会话Cookie来维持您的登录状态和提供SSO授权流程中的安全上下文传递。会话Cookie在您退出登录或关闭浏览器后失效（受限于浏览器的实际行为）。SSO相关的临时上下文Cookie设置了较短的过期时间，并在授权完成后自动清除。',
+		'{shortName}使用必要的账号会话Cookie来维持您的登录状态和提供SSO授权流程中的安全上下文传递。登录状态可能在关闭浏览器后继续有效，请勿在共用设备上依赖关闭浏览器来退出账号。SSO相关的临时上下文Cookie会在授权完成后自动清除。',
 	'about.legal.account.cookie.title': 'Cookie与会话',
 	'about.legal.account.deletion.p1':
 		'您可以在登录后随时选择注销账号。注销后，您的用户名、密码哈希以及其他直接关联您个人身份的数据将被删除或不可逆地去标识化处理。您通过账号功能产生的套餐搭配数据等用户生成内容，如不涉及第三方权益或法定义务保留，也将在注销时一并清除。为履行网络安全法规定的日志留存义务以及防范安全事件的合理需要，部分服务器日志和经去标识化的安全记录可能会在法定期限内继续保留。',
@@ -114,7 +114,7 @@ export const aboutMessages = {
 			' to support the development and maintenance of {shortName}. Please note that this donation is a voluntary personal act, not a public fundraising campaign; it only constitutes a civil gift between equal parties and carries no material or other return.',
 		'about.introduction.title': 'About the project',
 		'about.legal.account.cookie.p1':
-			'{shortName} uses necessary session cookies to keep you signed in and to pass the security context during the SSO authorization flow. Session cookies expire after you sign out or close the browser (subject to the browser’s actual behavior). Temporary SSO context cookies have short expiration times and are cleared automatically once authorization completes.',
+			'{shortName} uses a necessary account session cookie to keep you signed in and to pass the security context during the SSO authorization flow. Your signed-in state may remain after you close the browser, so do not rely on closing the browser to sign out on a shared device. Temporary SSO context cookies are cleared automatically once authorization completes.',
 		'about.legal.account.cookie.title': 'Cookies and sessions',
 		'about.legal.account.deletion.p1':
 			'You may delete your account at any time after signing in. After deletion, your username, password hash, and other data directly linked to your personal identity will be deleted or irreversibly de-identified. User-generated content produced through account features, such as meal pairing data, will also be cleared upon deletion unless it involves third-party rights or a legal retention obligation. To fulfill log retention obligations under cybersecurity law and to reasonably prevent security incidents, some server logs and de-identified security records may be retained within the statutory period.',
@@ -204,7 +204,7 @@ export const aboutMessages = {
 			'ことで{shortName}の開発と保守を支援できます。ただし、この寄付はあなた個人の自発的な行為であり、公募ではなく、対等な当事者間の民事贈与にすぎず、いかなる物資やその他の見返りも伴いません。',
 		'about.introduction.title': 'プロジェクト紹介',
 		'about.legal.account.cookie.p1':
-			'{shortName}は、ログイン状態を維持し、SSO認可フローにおけるセキュリティコンテキストを受け渡すために、必要なセッションCookieを使用します。セッションCookieはログアウトまたはブラウザを閉じると失効します（ブラウザの実際の動作に依存します）。SSO関連の一時コンテキストCookieは有効期限を短く設定し、認可完了後に自動的に削除されます。',
+			'{shortName}は、ログイン状態を維持し、SSO認可フローにおけるセキュリティコンテキストを受け渡すために、必要なアカウントセッションCookieを使用します。ログイン状態はブラウザを閉じた後も続く場合があります。共用端末では、ブラウザを閉じるだけに頼らず、使用後に必ずログアウトしてください。SSO関連の一時コンテキストCookieは認可完了後に自動的に削除されます。',
 		'about.legal.account.cookie.title': 'Cookieとセッション',
 		'about.legal.account.deletion.p1':
 			'ログイン後はいつでもアカウントを削除できます。削除後、ユーザー名、パスワードハッシュ、その他あなたの個人身分に直接関連するデータは削除または不可逆的に匿名化されます。アカウント機能を通じて生成されたセットメニュー構成データなどのユーザー生成コンテンツも、第三者の権益や法的な保存義務に関係しない限り、削除時にあわせて消去されます。サイバーセキュリティ法に定められたログ保存義務の履行およびセキュリティインシデント防止の合理的な必要のため、一部のサーバーログと匿名化されたセキュリティ記録は法定期間内保持される場合があります。',
@@ -290,7 +290,7 @@ export const aboutMessages = {
 			'로 {shortName}의 개발과 유지보수를 후원할 수 있습니다. 다만 이 후원은 귀하 개인의 자발적 행위이며 대중 모금이 아니고, 대등한 당사자 간의 민사 증여에 불과하며 어떠한 물질적 대가나 보답도 따르지 않습니다.',
 		'about.introduction.title': '프로젝트 소개',
 		'about.legal.account.cookie.p1':
-			'{shortName}는 로그인 상태를 유지하고 SSO 권한 흐름에서 보안 컨텍스트를 전달하기 위해 필요한 세션 쿠키를 사용합니다. 세션 쿠키는 로그아웃하거나 브라우저를 닫으면 만료됩니다(브라우저의 실제 동작에 따름). SSO 관련 임시 컨텍스트 쿠키는 만료 시간이 짧게 설정되며 권한 부여가 완료되면 자동으로 삭제됩니다.',
+			'{shortName}는 로그인 상태를 유지하고 SSO 권한 흐름에서 보안 컨텍스트를 전달하기 위해 필요한 계정 세션 쿠키를 사용합니다. 로그인 상태는 브라우저를 닫은 후에도 유지될 수 있습니다. 공용 기기에서는 브라우저를 닫는 것에만 의존하지 말고 사용 후 반드시 로그아웃하세요. SSO 관련 임시 컨텍스트 쿠키는 권한 부여가 완료되면 자동으로 삭제됩니다.',
 		'about.legal.account.cookie.title': '쿠키와 세션',
 		'about.legal.account.deletion.p1':
 			'로그인 후 언제든지 계정을 삭제할 수 있습니다. 삭제 후에는 사용자 이름, 비밀번호 해시, 그 밖에 귀하의 개인 신원과 직접 연결된 데이터가 삭제되거나 되돌릴 수 없게 비식별화됩니다. 계정 기능을 통해 생성한 세트 메뉴 데이터 등 사용자 생성 콘텐츠도 제3자의 권익이나 법적 보존 의무와 관련되지 않는 한 삭제 시 함께 지워집니다. 사이버안전법이 정한 로그 보존 의무 이행과 보안 사고 방지를 위한 합리적 필요에 따라 일부 서버 로그와 비식별화된 보안 기록은 법정 기간 동안 보존될 수 있습니다.',
@@ -375,7 +375,7 @@ export const aboutMessages = {
 			'以支持{shortName}的開發和維護。但請注意，該捐贈僅為您個人的自願行為，並非面向公眾的募捐，僅構成平等主體之間的民事贈與關係，不附帶任何物質或其他回報。',
 		'about.introduction.title': '專案介紹',
 		'about.legal.account.cookie.p1':
-			'{shortName}使用必要的工作階段Cookie來維持您的登入狀態和提供SSO授權流程中的安全情境傳遞。工作階段Cookie在您登出或關閉瀏覽器後失效（受限於瀏覽器的實際行為）。SSO相關的臨時情境Cookie設定了較短的過期時間，並在授權完成後自動清除。',
+			'{shortName}使用必要的帳號工作階段Cookie來維持您的登入狀態和提供SSO授權流程中的安全情境傳遞。登入狀態可能在關閉瀏覽器後繼續有效，請勿在共用裝置上依賴關閉瀏覽器來登出帳號。SSO相關的臨時情境Cookie會在授權完成後自動清除。',
 		'about.legal.account.cookie.title': 'Cookie與工作階段',
 		'about.legal.account.deletion.p1':
 			'您可以在登入後隨時選擇註銷帳號。註銷後，您的使用者名稱、密碼雜湊以及其他直接關聯您個人身分的資料將被刪除或不可逆地去識別化處理。您透過帳號功能產生的套餐搭配資料等使用者生成內容，如不涉及第三方權益或法定義務保留，也將在註銷時一併清除。為履行網路安全法規定的日誌留存義務以及防範安全事件的合理需要，部分伺服器日誌和經去識別化的安全記錄可能會在法定期限內繼續保留。',

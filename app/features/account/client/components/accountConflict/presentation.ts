@@ -29,6 +29,7 @@ const CONFLICT_FIELD_LABEL_KEYS: Record<string, TAccountMessageKey> = {
 	highAppearance: 'account.conflict.field.highAppearance',
 	items: 'account.conflict.field.items',
 	lightPalette: 'account.conflict.field.lightPalette',
+	locale: 'account.conflict.field.locale',
 	maxExtraIngredients: 'account.conflict.field.maxExtraIngredients',
 	maxRating: 'account.conflict.field.maxRating',
 	maxResults: 'account.conflict.field.maxResults',
@@ -52,6 +53,7 @@ const CONFLICT_FIELD_LABEL_KEYS: Record<string, TAccountMessageKey> = {
 	'table.columns.recipe': 'account.conflict.field.tableColumnsRecipe',
 	'table.hiddenItems.beverages':
 		'account.conflict.field.tableHiddenItemsBeverages',
+	'table.hiddenItems.foods': 'account.conflict.field.tableHiddenItemsRecipes',
 	'table.hiddenItems.ingredients':
 		'account.conflict.field.tableHiddenItemsIngredients',
 	'table.hiddenItems.recipes':
@@ -80,6 +82,7 @@ export const CONFLICT_VALUE_LABEL_KEYS: Record<string, TAccountMessageKey> = {
 	beverage: 'account.conflict.value.beverage',
 	cooker: 'account.conflict.value.cooker',
 	cookerType: 'account.conflict.value.cookerType',
+	food: 'account.conflict.value.recipe',
 	ingredient: 'account.conflict.value.ingredient',
 	price: 'account.conflict.value.price',
 	recipe: 'account.conflict.value.recipe',
@@ -103,6 +106,10 @@ export interface IConflictDifferenceResult {
 	items: IConflictDifference[];
 }
 
+export interface IConflictDifferenceOptions {
+	ignoredPaths?: ReadonlyArray<string>;
+}
+
 function getConflictFieldLabel(path: string[]) {
 	const fullPath = path.join('.');
 	const fieldName = path.at(-1) ?? '';
@@ -116,7 +123,8 @@ function getConflictFieldLabel(path: string[]) {
 export function getConflictDifferences(
 	cloud: unknown,
 	local: unknown,
-	merged: unknown
+	merged: unknown,
+	{ ignoredPaths = [] }: IConflictDifferenceOptions = {}
 ): IConflictDifferenceResult {
 	const items: IConflictDifference[] = [];
 	let hasMore = false;
@@ -127,6 +135,16 @@ export function getConflictDifferences(
 		mergedValue: unknown,
 		path: string[]
 	) => {
+		const pathString = path.join('.');
+		if (
+			ignoredPaths.some(
+				(ignoredPath) =>
+					pathString === ignoredPath ||
+					pathString.startsWith(`${ignoredPath}.`)
+			)
+		) {
+			return;
+		}
 		if (createSnapshotHash(cloudValue) === createSnapshotHash(localValue)) {
 			return;
 		}
@@ -162,7 +180,7 @@ export function getConflictDifferences(
 			...getConflictFieldLabel(path),
 			local: localValue,
 			merged: mergedValue,
-			path: path.join('.'),
+			path: pathString,
 		});
 	};
 
