@@ -5,7 +5,6 @@ import type {
 
 import { normalizeServiceRetryAfterSeconds } from '@/infrastructure/http/client/fetchServiceApi';
 
-import { publishAccountRuntimeInvalidation } from './accountRuntimeInvalidation';
 import { AccountApiError, fetchAccountMe } from './api';
 import { accountStore } from './state/accountStore';
 import { readAccountSyncResetGeneration } from './sync/resetGeneration';
@@ -14,15 +13,14 @@ import { readAccountSyncMeta } from './sync/snapshot';
 import { withAccountSyncPaused } from './sync/stateGuards';
 import { getAccountSyncLifecyclePort } from './sync/syncLifecyclePort';
 import { clearAccountSyncRuntimeConflicts } from './sync/syncRuntimeState';
+import {
+	checkWorkspaceAccount,
+	workspaceStore,
+} from './workspace/workspaceStore';
 
 let accountStateRequestGeneration = 0;
 let activeAccountStateRefresh: Promise<TAccountMeResponse | null> | null = null;
 let accountStateRefreshPending = false;
-let activePostLoginBootstrap: {
-	promise: Promise<boolean>;
-	userId: string;
-} | null = null;
-let completedPostLoginBootstrapUserId: string | null = null;
 
 function requestAccountStateTrailingRefresh() {
 	accountStateRefreshPending = true;
@@ -37,8 +35,7 @@ function checkAccountStateTrailingRefreshRequested() {
 }
 
 function resetPostLoginBootstrapState() {
-	activePostLoginBootstrap = null;
-	completedPostLoginBootstrapUserId = null;
+	/* Reserved for lifecycle-owned bootstrap generation cleanup. */
 }
 
 export function advanceAccountStateRequestGeneration() {
@@ -116,6 +113,13 @@ export function checkCurrentAccountAuthContext({
 }: { expectedCsrfToken?: string | null; expectedUserId?: string | null } = {}) {
 	const currentUser = accountStore.shared.user.get();
 	const currentUserId = currentUser?.id ?? null;
+	if (
+		currentUser !== null &&
+		(workspaceStore.phase.get() !== 'ready' ||
+			!checkWorkspaceAccount(workspaceStore.owner.get(), currentUser.id))
+	) {
+		return false;
+	}
 	if (expectedUserId !== undefined && currentUserId !== expectedUserId) {
 		return false;
 	}
@@ -129,65 +133,6 @@ export function checkCurrentAccountAuthContext({
 	return true;
 }
 
-export function resetAccountStateIfCurrent(
-	options: Parameters<typeof checkCurrentAccountAuthContext>[0] = {}
-) {
-	if (!checkCurrentAccountAuthContext(options)) {
-		return false;
-	}
-
-	resetAccountState();
-
-	return true;
-}
-
-export function resetAccountStateAfterSessionExpired({
-	expectedCsrfToken,
-	expectedUserId,
-	stateEpoch,
-}: {
-	expectedCsrfToken: string | null;
-	expectedUserId: string;
-	stateEpoch: number;
-}) {
-	const expectedAuthContext = { expectedCsrfToken, expectedUserId };
-	if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
-		return false;
-	}
-
-	void publishAccountRuntimeInvalidation({
-		reason: 'session-expired',
-		stateEpoch,
-		userId: expectedUserId,
-	});
-
-	return resetAccountStateIfCurrent(expectedAuthContext);
-}
-
-export function resetAccountStateForUnauthorizedError(
-	error: unknown,
-	context: Parameters<typeof checkCurrentAccountAuthContext>[0] = {}
-) {
-	if (!(error instanceof AccountApiError) || error.status !== 401) {
-		return false;
-	}
-
-	const user = accountStore.shared.user.get();
-	if (user === null) {
-		resetAccountStateIfCurrent(context);
-		return true;
-	}
-
-	resetAccountStateAfterSessionExpired({
-		expectedCsrfToken:
-			context.expectedCsrfToken ?? accountStore.shared.csrfToken.get(),
-		expectedUserId: context.expectedUserId ?? user.id,
-		stateEpoch: user.state_epoch,
-	});
-
-	return true;
-}
-
 export function applyAccountAuthSuccessResponse(
 	data: IAuthLoginSuccessResponse,
 	options: {
@@ -197,6 +142,12 @@ export function applyAccountAuthSuccessResponse(
 ) {
 	const currentUser = accountStore.shared.user.get();
 	const currentCsrfToken = accountStore.shared.csrfToken.get();
+	if (
+		!checkWorkspaceAccount(workspaceStore.owner.get(), data.user.id) ||
+		(currentUser !== null && currentUser.id !== data.user.id)
+	) {
+		return false;
+	}
 	if (!checkCurrentAccountAuthContext(options)) {
 		return false;
 	}
@@ -303,53 +254,8 @@ export async function completeAccountPostLoginBootstrap({
 	return didTakeOverLocalAccountData;
 }
 
-function ensureAccountPostLoginBootstrap(options: {
-	csrfToken: string;
-	generation: number;
-	passwordMustChange: false;
-	userId: string;
-}) {
-	if (completedPostLoginBootstrapUserId === options.userId) {
-		return Promise.resolve(true);
-	}
-	if (activePostLoginBootstrap?.userId === options.userId) {
-		return activePostLoginBootstrap.promise;
-	}
-
-	const promise = completeAccountPostLoginBootstrap(options).then(
-		(didComplete) => {
-			if (
-				didComplete &&
-				checkCurrentAccountStateRequest(options.generation) &&
-				checkCurrentAccountAuthContext({
-					expectedCsrfToken: options.csrfToken,
-					expectedUserId: options.userId,
-				})
-			) {
-				completedPostLoginBootstrapUserId = options.userId;
-			}
-
-			return didComplete;
-		}
-	);
-
-	activePostLoginBootstrap = { promise, userId: options.userId };
-
-	const clearActiveBootstrap = () => {
-		if (activePostLoginBootstrap?.promise === promise) {
-			activePostLoginBootstrap = null;
-		}
-	};
-
-	void promise.then(clearActiveBootstrap, clearActiveBootstrap);
-
-	return promise;
-}
-
 async function runAccountStateRefresh() {
 	const generation = ++accountStateRequestGeneration;
-	const previousUser = accountStore.shared.user.get();
-	const previousCsrfToken = accountStore.shared.csrfToken.get();
 	let result: TAccountMeResponse;
 
 	try {
@@ -360,7 +266,8 @@ async function runAccountStateRefresh() {
 				accountMeResult.httpStatus,
 				normalizeServiceRetryAfterSeconds(
 					accountMeResult.data?.['retry_after']
-				)
+				),
+				accountMeResult.data
 			);
 		}
 
@@ -369,107 +276,47 @@ async function runAccountStateRefresh() {
 		if (!checkCurrentAccountStateRequest(generation)) {
 			return null;
 		}
-		throw error;
+		if (
+			error instanceof AccountApiError &&
+			(error.status === 404 || error.message === 'feature-disabled')
+		) {
+			throw error;
+		}
+		const [{ classifyAccountWorkspaceAuthOutcome }, lifecycle] =
+			await Promise.all([
+				import('./workspace/authOutcome'),
+				import('./workspace/lifecycle'),
+			]);
+		const reconcileResult = await lifecycle.reconcileAccountWorkspace({
+			authOutcome: classifyAccountWorkspaceAuthOutcome({
+				error,
+				source: 'me-refresh',
+			}),
+			source: 'me-refresh',
+		});
+		if (reconcileResult === 'adoption-required') {
+			await lifecycle.completeGuestAdoption();
+		}
+		return null;
 	}
 	if (!checkCurrentAccountStateRequest(generation)) {
 		return null;
 	}
 
-	const {
-		csrf_token: csrfToken,
-		feature_access: featureAccess,
-		has_password: hasPassword,
-		isLoggedIn: responseIsLoggedIn,
-		password_must_change: passwordMustChange,
-		syncMeta,
-		user,
-	} = result;
-	let accountUser: NonNullable<typeof result.user> | null = null;
-	let accountCsrfToken: string | null = null;
-	let accountPasswordMustChange = false;
-	let accountHasPassword = false;
-
-	if (responseIsLoggedIn) {
-		accountUser = user;
-		accountCsrfToken = csrfToken;
-		accountPasswordMustChange = passwordMustChange;
-		accountHasPassword = hasPassword;
-	}
-
-	const isLoggedIn = accountUser !== null;
-	const accountSyncMeta = syncMeta;
-	const isAccountSyncAllowed = featureAccess.modules['account.sync'].allowed;
-	const canBootstrapAccountSync =
-		accountUser !== null &&
-		isAccountSyncAllowed &&
-		checkRestoredAccountSyncCanBootstrap(accountUser);
-	const hasAuthContextChanged = hasAccountAuthContextChanged(
-		previousUser?.id ?? null,
-		previousCsrfToken,
-		accountUser?.id ?? null,
-		accountCsrfToken
-	);
-
-	if (hasAuthContextChanged) {
-		getAccountSyncLifecyclePort().invalidateRuns();
-	}
-	if (accountUser === null || hasAuthContextChanged) {
-		clearAccountSessionInitialData();
-	}
-
-	if (
-		previousUser?.id !== accountUser?.id ||
-		(previousUser !== null &&
-			accountUser !== null &&
-			previousUser.state_epoch !== accountUser.state_epoch)
-	) {
-		resetPostLoginBootstrapState();
-		resetAccountSyncRuntime();
-	}
-
-	accountStore.shared.bootstrapStatus.set(
-		isLoggedIn ? 'loggedIn' : 'anonymous'
-	);
-	accountStore.shared.csrfToken.set(accountCsrfToken);
-	accountStore.shared.featureAccess.set(featureAccess);
-	accountStore.shared.hasPassword.set(accountHasPassword);
-	accountStore.shared.isBootstrapped.set(true);
-	accountStore.shared.isLoggedIn.set(isLoggedIn);
-	accountStore.shared.sync.lastError.set(null);
-	accountStore.shared.sync.meta.set(
-		accountUser === null
-			? accountSyncMeta
-			: (readAccountSyncMeta(accountUser.id) ?? accountSyncMeta)
-	);
-	accountStore.shared.user.set(accountUser);
-	accountStore.setPasswordMustChange(accountPasswordMustChange);
-
-	if (accountUser !== null) {
-		getAccountSyncLifecyclePort().restoreRuntimeState(accountUser.id);
-	}
-	if (
-		accountUser !== null &&
-		isAccountSyncAllowed &&
-		!canBootstrapAccountSync
-	) {
-		accountStore.shared.sync.lastError.set(
-			'sync-account-restore-incomplete'
-		);
-		accountStore.shared.sync.lastResult.set('failed');
-	}
-
-	if (
-		accountUser !== null &&
-		accountCsrfToken !== null &&
-		!accountPasswordMustChange &&
-		canBootstrapAccountSync
-	) {
-		await ensureAccountPostLoginBootstrap({
-			csrfToken: accountCsrfToken,
-			generation,
-			passwordMustChange: false,
-			userId: accountUser.id,
-		});
+	const [{ classifyAccountWorkspaceAuthOutcome }, lifecycle] =
+		await Promise.all([
+			import('./workspace/authOutcome'),
+			import('./workspace/lifecycle'),
+		]);
+	const reconcileResult = await lifecycle.reconcileAccountWorkspace({
+		authOutcome: classifyAccountWorkspaceAuthOutcome({
+			response: result,
+			source: 'me-refresh',
+		}),
+		source: 'me-refresh',
+	});
+	if (reconcileResult === 'adoption-required') {
+		await lifecycle.completeGuestAdoption();
 	}
 
 	return result;

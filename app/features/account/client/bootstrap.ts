@@ -4,6 +4,8 @@ import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 import { AccountApiError } from './api';
 import { refreshAccountState, resetAccountState } from './session';
 import { accountStore } from './state/accountStore';
+import { migrateUnownedWorkspace } from './workspace/migration';
+import { workspaceStore } from './workspace/workspaceStore';
 
 function resetAccountBootstrapState(status: 'disabled' | 'error') {
 	resetAccountState();
@@ -11,13 +13,20 @@ function resetAccountBootstrapState(status: 'disabled' | 'error') {
 	accountStore.shared.isBootstrapped.set(true);
 }
 
-function disableAccountBootstrap() {
+async function disableAccountBootstrap() {
+	await migrateUnownedWorkspace({ mode: 'account-disabled' });
 	resetAccountBootstrapState('disabled');
 	accountStore.shared.adminCsrfToken.set(null);
 }
 
 function failAccountBootstrap(message: string) {
-	resetAccountBootstrapState('error');
+	workspaceStore.setError('network');
+	if (workspaceStore.owner.get() === null) {
+		resetAccountBootstrapState('error');
+	} else {
+		accountStore.shared.bootstrapStatus.set('error');
+		accountStore.shared.isBootstrapped.set(true);
+	}
 	accountStore.shared.sync.lastError.set(message);
 }
 
@@ -26,7 +35,7 @@ let bootstrapInFlight: Promise<void> | null = null;
 async function runBootstrapAccount() {
 	try {
 		if (!PUBLIC_RUNTIME_CONFIG.isAccountFeatureClientEnabled) {
-			disableAccountBootstrap();
+			await disableAccountBootstrap();
 			return;
 		}
 
@@ -34,7 +43,7 @@ async function runBootstrapAccount() {
 	} catch (error) {
 		if (error instanceof AccountApiError) {
 			if (error.status === 404 || error.message === 'feature-disabled') {
-				disableAccountBootstrap();
+				await disableAccountBootstrap();
 				return;
 			}
 

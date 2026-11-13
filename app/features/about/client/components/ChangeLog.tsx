@@ -244,6 +244,12 @@ const changelog = [
 			'新增：地图商人详情新增商品的出售概率、数量范围与价格倍率。',
 		],
 	},
+	{
+		version: 'v3.5',
+		changes: [
+			'新增：本设备保存的顾客套餐、营业预设和偏好设置等数据现在与当前账号或访客状态绑定，不同账号之间的数据不会混用。',
+		],
+	},
 ] as const satisfies Array<{
 	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
 	version: `v${string}`;

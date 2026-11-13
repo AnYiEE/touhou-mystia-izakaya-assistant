@@ -8,7 +8,7 @@ import {
 	writeAccountAuditLogInTransaction,
 } from '@/features/account/server/audit/service';
 import {
-	disableUserAndDeleteSessionsWithSsoCallbacksAndAudit,
+	disableUserWithSsoCallbacksAndAudit,
 	findUserById,
 	setUserStatusIfCurrentStatusWithAudit,
 } from '@/features/account/server/persistence/repositories/users';
@@ -94,15 +94,12 @@ export async function changeUserStatus({
 
 	const isUpdated =
 		operation === 'disable'
-			? await disableUserAndDeleteSessionsWithSsoCallbacksAndAudit(
-					userId,
-					writeAuditLog
-				)
+			? await disableUserWithSsoCallbacksAndAudit(userId, writeAuditLog)
 			: await setUserStatusIfCurrentStatusWithAudit(
 					userId,
 					policy.currentStatus,
 					policy.nextStatus,
-					operation === 'restore',
+					true,
 					writeAuditLog
 				);
 

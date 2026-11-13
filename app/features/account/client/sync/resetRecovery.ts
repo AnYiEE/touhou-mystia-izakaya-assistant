@@ -2,6 +2,10 @@ import { accountStore } from '@/features/account/client/state/accountStore';
 
 import { recordAccountSyncRefreshSuccess } from './queueRuntime';
 import { readAccountSyncResetGeneration } from './resetGeneration';
+import {
+	clearAccountSyncResetRecoveries,
+	registerAccountSyncResetRecoveryClearer,
+} from './resetRecoveryState';
 import { LEASE_BUSY_RETRY_DELAY } from './retryPolicy';
 import { checkCurrentAccountUser } from './sessionBoundary';
 import { getAccountSyncLifecyclePort } from './syncLifecyclePort';
@@ -35,13 +39,17 @@ function clearAccountSyncResetRecovery(recovery: IAccountSyncResetRecovery) {
 	}
 }
 
-export function clearAccountSyncResetRecoveries(userId?: string) {
+function clearRegisteredAccountSyncResetRecoveries(userId?: string) {
 	for (const recovery of resetRecoveries.values()) {
 		if (userId === undefined || recovery.userId === userId) {
 			clearAccountSyncResetRecovery(recovery);
 		}
 	}
 }
+
+registerAccountSyncResetRecoveryClearer(
+	clearRegisteredAccountSyncResetRecoveries
+);
 
 function recordAccountSyncResetRecoveryFailure(
 	recovery: IAccountSyncResetRecovery

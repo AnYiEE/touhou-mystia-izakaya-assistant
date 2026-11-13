@@ -15,6 +15,10 @@ import {
 
 import { createAccountClientId } from '@/features/account/client/clientId';
 import { accountStore } from '@/features/account/client/state/accountStore';
+import {
+	checkWorkspaceAccount,
+	workspaceStore,
+} from '@/features/account/client/workspace/workspaceStore';
 import { normalGuestStore } from '@/features/catalog/guests/normal/client/state/store';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import { globalStore } from '@/features/preferences/client/state/globalPersistenceStore';
@@ -58,7 +62,9 @@ function getLoggedInContext() {
 	if (
 		!accountStore.shared.isLoggedIn.get() ||
 		meta === null ||
-		user === null
+		user === null ||
+		workspaceStore.phase.get() !== 'ready' ||
+		!checkWorkspaceAccount(workspaceStore.owner.get(), user.id)
 	) {
 		return null;
 	}
@@ -126,8 +132,13 @@ async function reconcileNamespaceLocalSnapshot(
 	userId: string,
 	namespace: TSyncNamespace
 ) {
+	const workspaceGeneration = workspaceStore.owner.get()?.generation ?? null;
 	const context = getLoggedInContext();
-	if (generation !== watcherGeneration || context?.user.id !== userId) {
+	if (
+		generation !== watcherGeneration ||
+		context?.user.id !== userId ||
+		workspaceStore.owner.get()?.generation !== workspaceGeneration
+	) {
 		return;
 	}
 	if (
@@ -213,7 +224,8 @@ async function reconcileNamespaceLocalSnapshot(
 			const lockedContext = getLoggedInContext();
 			if (
 				generation !== watcherGeneration ||
-				lockedContext?.user.id !== userId
+				lockedContext?.user.id !== userId ||
+				workspaceStore.owner.get()?.generation !== workspaceGeneration
 			) {
 				return { kind: 'stale' as const };
 			}
@@ -320,6 +332,9 @@ async function reconcileNamespaceLocalSnapshot(
 		if (conflictResult === 'rebased' || conflictResult === 'resolved') {
 			scheduleAccountSyncFlush();
 		}
+		return;
+	}
+	if (workspaceStore.owner.get()?.generation !== workspaceGeneration) {
 		return;
 	}
 	if (result.kind === 'stale') {

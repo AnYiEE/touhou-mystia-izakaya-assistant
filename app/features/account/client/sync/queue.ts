@@ -1,6 +1,11 @@
 import { type TSyncNamespace } from '@/domain/account/contracts';
 
 import { createAccountClientId } from '@/features/account/client/clientId';
+import { accountStore } from '@/features/account/client/state/accountStore';
+import {
+	checkWorkspaceAccount,
+	workspaceStore,
+} from '@/features/account/client/workspace/workspaceStore';
 import { SYNC_SCHEMA_VERSION_MAP } from '@/features/account/sync/constants';
 import type {
 	IDirtyQueueEntry,
@@ -26,6 +31,7 @@ import {
 import { checkSyncRevision } from './dirtyQueue/validation';
 import { captureAccountSyncResetGeneration } from './resetGeneration';
 import { checkApplyingRemoteState } from './stateGuards';
+import { checkAccountSyncOperationOwnedByCurrentTab } from './syncOperationLease';
 
 export const TERMINAL_SYNC_ERROR_PRECEDENCE = [
 	'sync-schema-update-required',
@@ -84,6 +90,17 @@ export function markAccountSyncDirty({
 		throw new Error('invalid-base-revision');
 	}
 	if (checkApplyingRemoteState()) {
+		return null;
+	}
+	const currentUser = accountStore.shared.user.get();
+	const isReadyAccount =
+		currentUser?.id === userId &&
+		workspaceStore.phase.get() === 'ready' &&
+		checkWorkspaceAccount(workspaceStore.owner.get(), userId);
+	if (
+		!isReadyAccount &&
+		!checkAccountSyncOperationOwnedByCurrentTab(userId)
+	) {
 		return null;
 	}
 

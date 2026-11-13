@@ -226,7 +226,12 @@ export default function OverlayCoordinatorHost() {
 			<p aria-live="polite" role="status">
 				{preparationTimedOut
 					? t('overlays.preparing.accountBlockerUnavailable')
-					: blockerId === 'account.password-required'
+					: blockerId !== null &&
+						  [
+								'account.password-required',
+								'account.session-required',
+								'account.legal-required',
+						  ].includes(blockerId)
 						? t('overlays.preparing.accountSecurity')
 						: t('overlays.preparing.syncConflict')}
 			</p>

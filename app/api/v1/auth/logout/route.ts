@@ -8,6 +8,7 @@ import {
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
+import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
@@ -50,7 +51,9 @@ export async function POST(request: NextRequest) {
 	]);
 	const auth = await authModule.authenticateAccountFromRequest(request, true);
 	if (auth.status === 'error') {
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		return createAccountAuthErrorRouteResponse(auth, request, {
+			clearSessionCookie: true,
+		});
 	}
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
@@ -95,10 +98,12 @@ export async function POST(request: NextRequest) {
 			)
 	);
 	if (!didLogout) {
-		return createNoStoreErrorResponse(
+		const response = createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
 			401
 		);
+		sessionModule.clearAccountSessionCookie(response, request);
+		return response;
 	}
 
 	const response = createNoStoreJsonResponse({

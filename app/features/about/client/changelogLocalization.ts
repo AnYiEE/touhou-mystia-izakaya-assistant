@@ -150,6 +150,9 @@ const CHANGELOG_EN: Readonly<Record<string, ReadonlyArray<string>>> = {
 		'Added: special guest details now support viewing order lines by food and beverage tags.',
 		'Added: merchant details on the map now show sale chances, quantity ranges, and price multipliers for goods.',
 	],
+	'v3.5': [
+		'Added: data saved on this device, including saved guest meals, business plans, preferences, and other settings, is now tied to the current account or guest state, so data from different accounts will not be mixed.',
+	],
 };
 
 const CHANGELOG_JA: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -296,6 +299,9 @@ const CHANGELOG_JA: Readonly<Record<string, ReadonlyArray<string>>> = {
 		'追加：レア客の詳細で、料理・お酒のタグ別に注文セリフを確認できるようになりました。',
 		'追加：マップの商人詳細で、商品の販売確率、数量範囲、価格倍率を確認できるようになりました。',
 	],
+	'v3.5': [
+		'追加：この端末に保存されたセットメニュー、営業プリセット、環境設定などのデータが現在のアカウントまたはゲスト状態に紐づき、異なるアカウント間でデータが混在しないようになりました。',
+	],
 };
 
 const CHANGELOG_KO: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -438,6 +444,9 @@ const CHANGELOG_KO: Readonly<Record<string, ReadonlyArray<string>>> = {
 		'추가: 희귀 손님 상세에서 요리·음료 태그별로 주문 대사를 확인할 수 있습니다.',
 		'추가: 지도 상인 상세에서 상품의 판매 확률, 수량 범위, 가격 배율을 확인할 수 있습니다.',
 	],
+	'v3.5': [
+		'추가: 이 기기에 저장된 손님 세트 메뉴, 영업 프리셋, 환경 설정 등의 데이터가 현재 계정 또는 게스트 상태에 연결되어 서로 다른 계정의 데이터가 섞이지 않습니다.',
+	],
 };
 
 const CHANGELOG_ZH_TW: Readonly<Record<string, ReadonlyArray<string>>> = {
@@ -569,6 +578,9 @@ const CHANGELOG_ZH_TW: Readonly<Record<string, ReadonlyArray<string>>> = {
 	'v3.4': [
 		'新增：稀客詳情支援按料理和酒水標籤查看點單文案。',
 		'新增：地圖商人詳情新增商品的出售機率、數量範圍與價格倍率。',
+	],
+	'v3.5': [
+		'新增：本裝置儲存的顧客套餐、營業預設和偏好設定等資料現在與目前帳號或訪客狀態綁定，不同帳號之間的資料不會混用。',
 	],
 };
 

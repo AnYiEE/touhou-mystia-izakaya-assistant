@@ -70,6 +70,7 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 	const {
 		authMode,
 		authTermsCheckboxRef,
+		canRegister,
 		handleAuthCredentialInputFocus,
 		handleAuthPasswordChange,
 		handleAuthSubmit,
@@ -265,7 +266,8 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 							{authTermsConfirmation}
 							<div className="space-y-3">
 								<AccountCollapseMotion motionKey="passkey-registration-prompt">
-									{isPasskeyRegistrationPromptVisible ? (
+									{canRegister &&
+									isPasskeyRegistrationPromptVisible ? (
 										<Button
 											fullWidth
 											color="primary"
@@ -335,28 +337,32 @@ export default memo<IAccountAuthPanelProps>(function AccountAuthPanel({
 									>
 										{t('account.manager.auth.loginTab')}
 									</Button>
-									<Button
-										fullWidth
-										color={
-											authMode === 'register'
-												? 'primary'
-												: 'default'
-										}
-										startContent={
-											<FontAwesomeIcon
-												icon={faUserPlus}
-												className="w-4"
-											/>
-										}
-										variant={
-											authMode === 'register'
-												? 'flat'
-												: 'light'
-										}
-										onPress={handleRegisterModePress}
-									>
-										{t('account.manager.auth.registerTab')}
-									</Button>
+									{canRegister && (
+										<Button
+											fullWidth
+											color={
+												authMode === 'register'
+													? 'primary'
+													: 'default'
+											}
+											startContent={
+												<FontAwesomeIcon
+													icon={faUserPlus}
+													className="w-4"
+												/>
+											}
+											variant={
+												authMode === 'register'
+													? 'flat'
+													: 'light'
+											}
+											onPress={handleRegisterModePress}
+										>
+											{t(
+												'account.manager.auth.registerTab'
+											)}
+										</Button>
+									)}
 								</div>
 								<form
 									id={ACCOUNT_AUTH_PASSWORD_FORM_ID}

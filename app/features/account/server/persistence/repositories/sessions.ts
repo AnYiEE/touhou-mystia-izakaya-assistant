@@ -42,12 +42,9 @@ export interface IWebauthnSessionCredentialUse {
 export type TAuthenticateSessionSnapshotResult =
 	| {
 			cleanupFailed: boolean;
-			status:
-				| 'orphaned'
-				| 'session-expired'
-				| 'user-deleted'
-				| 'user-disabled';
+			status: 'orphaned' | 'session-expired' | 'user-deleted';
 	  }
+	| { status: 'user-disabled'; userId: TUser['id'] }
 	| {
 			status:
 				| 'password-must-change'
@@ -341,10 +338,7 @@ export async function authenticateSessionSnapshotInTransaction(
 		};
 	}
 	if (userStatus === USER_STATUS_MAP.disabled) {
-		return {
-			cleanupFailed: await deleteCurrentSessionBestEffort(),
-			status: 'user-disabled',
-		};
+		return { status: 'user-disabled', userId: user.id };
 	}
 	if (userStatus !== USER_STATUS_MAP.active) {
 		return { status: 'unexpected-user-status' };

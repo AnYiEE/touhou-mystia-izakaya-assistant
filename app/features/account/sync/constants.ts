@@ -5,7 +5,10 @@ import {
 
 export const ACCOUNT_SYNC_OPERATION_KIND_MAP = {
 	deleteData: 'delete-data',
+	guestAdoption: 'guest-adoption',
 	rebuildCloud: 'rebuild-cloud',
+	workspaceDelete: 'workspace-delete',
+	workspaceLogout: 'workspace-logout',
 } as const;
 
 export const SYNC_SCHEMA_VERSION_MAP = {

@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import { type TAccountAuthResult } from '@/features/account/server/auth/requestAuthentication';
+import { clearAccountSessionCookie } from '@/features/account/server/auth/sessionLifecycle';
 
 import { SERVER_MISCONFIGURED_MESSAGE } from '@/infrastructure/environment/serverValidation';
 import { createNoStoreErrorResponse } from '@/infrastructure/http/server/responses';
@@ -13,9 +14,17 @@ export function createServerMisconfiguredResponse() {
 
 export function createAccountAuthErrorRouteResponse(
 	auth: TAccountAuthError,
-	request: NextRequest
+	request: NextRequest,
+	options: { clearSessionCookie?: boolean } = {}
 ) {
-	void request;
+	const response = createNoStoreErrorResponse(
+		auth.message,
+		auth.httpStatus,
+		auth.data
+	);
+	if (options.clearSessionCookie === true) {
+		clearAccountSessionCookie(response, request);
+	}
 
-	return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+	return response;
 }

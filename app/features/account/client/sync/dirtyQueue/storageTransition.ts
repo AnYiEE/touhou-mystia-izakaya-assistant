@@ -47,6 +47,7 @@ function checkDirtyQueueEntriesSameGeneration(
 }
 
 function commitDirtyQueueStorageTransition({
+	deletedOperationId,
 	expectedEntry,
 	generationToken,
 	namespace,
@@ -55,6 +56,7 @@ function commitDirtyQueueStorageTransition({
 	resetOperationId,
 	userId,
 }: {
+	deletedOperationId?: string;
 	expectedEntry: IDirtyQueueEntry | null;
 	generationToken: string | null;
 	namespace: TSyncNamespace;
@@ -65,6 +67,7 @@ function commitDirtyQueueStorageTransition({
 }) {
 	const checkGeneration = () =>
 		checkAccountSyncResetWriteAllowed({
+			...(deletedOperationId === undefined ? {} : { deletedOperationId }),
 			expectedGeneration: generationToken,
 			...(resetOperationId === undefined ? {} : { resetOperationId }),
 			userId,
@@ -268,17 +271,20 @@ export function replaceDirtyQueueCollisionIfCurrent({
 }
 
 export function removeDirtyQueueEntryIfCurrent({
+	deletedOperationId,
 	expectedEntry,
 	generationToken,
 	resetOperationId,
 	userId,
 }: {
+	deletedOperationId?: string;
 	expectedEntry: IDirtyQueueEntry;
 	generationToken: string | null;
 	resetOperationId?: string;
 	userId: string;
 }) {
 	return commitDirtyQueueStorageTransition({
+		...(deletedOperationId === undefined ? {} : { deletedOperationId }),
 		expectedEntry,
 		generationToken,
 		namespace: expectedEntry.namespace,

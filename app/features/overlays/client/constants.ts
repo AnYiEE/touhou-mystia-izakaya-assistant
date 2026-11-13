@@ -21,11 +21,25 @@ export const OVERLAY_DEFINITION_MAP = {
 		exitDelayMs: MODAL_DEFAULT_EXIT_DELAY_MS,
 		priority: 'task',
 	},
+	'account.legal-required': {
+		blockingRank: 210,
+		exitDelayMs: MODAL_DEFAULT_EXIT_DELAY_MS,
+		priority: 'blocking',
+	},
+	'account.logout-recovery': {
+		exitDelayMs: MODAL_DEFAULT_EXIT_DELAY_MS,
+		priority: 'task',
+	},
 	'account.main': {
 		exitDelayMs: MODAL_DEFAULT_EXIT_DELAY_MS,
 		priority: 'task',
 	},
 	'account.password-required': {
+		blockingRank: 200,
+		exitDelayMs: MODAL_DEFAULT_EXIT_DELAY_MS,
+		priority: 'blocking',
+	},
+	'account.session-required': {
 		blockingRank: 200,
 		exitDelayMs: MODAL_DEFAULT_EXIT_DELAY_MS,
 		priority: 'blocking',

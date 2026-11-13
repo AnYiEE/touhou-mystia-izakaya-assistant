@@ -92,6 +92,7 @@ import { resetAccountSyncCloudStateAfterDelete } from './resetState';
 import {
 	checkCurrentAccountUser,
 	checkCurrentSyncRun,
+	getCurrentSyncAccountUser,
 	handleActiveForbiddenSyncError,
 	handleActiveSyncRefreshUnauthorized,
 	setCurrentAccountUserStateEpoch,
@@ -129,8 +130,12 @@ export function checkRemoteStateFresh(userId: string, stateEpoch: number) {
 		return false;
 	}
 
-	const currentUser = accountStore.shared.user.get();
-	if (currentUser?.id !== userId || stateEpoch < currentUser.state_epoch) {
+	const currentUser = getCurrentSyncAccountUser();
+	if (
+		currentUser?.id !== userId ||
+		!checkCurrentAccountUser(userId) ||
+		stateEpoch < currentUser.state_epoch
+	) {
 		return false;
 	}
 
@@ -668,9 +673,10 @@ async function pauseAccountSyncForEmptyCloudUnlocked({
 	syncGeneration,
 	userId,
 }: IPauseAccountSyncForEmptyCloudOptions) {
-	const user = accountStore.shared.user.get();
+	const user = getCurrentSyncAccountUser();
 	if (
 		user?.id !== userId ||
+		!checkCurrentAccountUser(userId) ||
 		!isNonNegativeSafeInteger(stateEpoch) ||
 		!isNonNegativeSafeInteger(syncGeneration)
 	) {

@@ -1,8 +1,11 @@
 export type TOverlayId =
 	| 'account.data-manager'
 	| 'account.legal'
+	| 'account.legal-required'
+	| 'account.logout-recovery'
 	| 'account.main'
 	| 'account.password-required'
+	| 'account.session-required'
 	| 'account.sync-conflict'
 	| 'donation'
 	| 'global.search'

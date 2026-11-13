@@ -17,7 +17,7 @@ const ACCOUNT_MESSAGES_ZH_CN = {
 	'account.client.passwordMustChangeAuthorizePaused':
 		'密码更新前无法完成SSO授权，也不会签发登录票据。',
 	'account.client.passwordMustChangeLogoutAccount':
-		'如果暂时不处理，可以退出当前账号；本设备未完成的同步队列会留在本地，之后重新登录再继续。',
+		'如果暂时不处理，可以退出当前账号。确认退出前，本设备上的账号数据会保留；确认后，将恢复默认。',
 	'account.client.passwordMustChangeLogoutAuthorize':
 		'如果暂时不处理，可以退出当前账号返回首页。',
 	'account.conflict.aria.crossTab': '云同步冲突待处理',
@@ -147,6 +147,26 @@ const ACCOUNT_MESSAGES_ZH_CN = {
 	'account.conflict.value.suitability': '匹配度',
 	'account.conflict.value.time': '烹饪时间',
 	'account.conflict.value.unavailable': '无法显示',
+	'account.logoutRecovery.cancel': '取消',
+	'account.logoutRecovery.confirmDiscard': '确认放弃并退出',
+	'account.logoutRecovery.description':
+		'部分更改尚未上传到云端。您可以重试同步，或先导出本设备保存的顾客套餐和营业预设数据。',
+	'account.logoutRecovery.descriptionUnavailable':
+		'暂时无法继续同步，但本设备上的更改仍会保留。您可以先导出本设备保存的顾客套餐和营业预设数据。',
+	'account.logoutRecovery.discard': '放弃更改并退出',
+	'account.logoutRecovery.discardConfirm':
+		'本设备上的账号数据将恢复默认，尚未上传的更改也会丢失，包括已保存的顾客套餐、营业预设和偏好设置等。',
+	'account.logoutRecovery.error': '暂时无法完成操作，请稍后重试。',
+	'account.logoutRecovery.export': '导出顾客套餐和营业预设',
+	'account.logoutRecovery.exportComplete':
+		'导出完成。您仍可以重试同步、取消或退出登录。',
+	'account.logoutRecovery.exportCompleteUnavailable':
+		'导出完成。您仍可以取消或退出登录。',
+	'account.logoutRecovery.exportScope':
+		'仅包含已保存的普客套餐、稀客套餐和稀客营业预设；不会上传到云端，也不包含语言、震动反馈、主题、稀客偏好设置或教程进度等其他设置。',
+	'account.logoutRecovery.recheck': '重新检查登录状态',
+	'account.logoutRecovery.retry': '重试同步',
+	'account.logoutRecovery.title': '同步尚未完成',
 	'account.manager.accountDeleteFailed': '删除账号失败',
 	'account.manager.auth.loginAction': '登录账号',
 	'account.manager.auth.loginTab': '登录',
@@ -442,6 +462,39 @@ const ACCOUNT_MESSAGES_ZH_CN = {
 	'account.syncUi.title': '同步状态',
 	'account.usernameRule':
 		'用户名{min}-{max}位，可使用中文、英文字母、数字、下划线、点、短横线和邮箱形式',
+	'account.workspace.adoption.cancel': '取消登录',
+	'account.workspace.adoption.description': '正在合并本设备上的数据…',
+	'account.workspace.adoption.failed':
+		'暂时无法合并本设备上的数据。您可以重试；取消登录后，登录前保存的数据仍会保留。',
+	'account.workspace.adoption.retry': '重试',
+	'account.workspace.logoutAllConfirm': '确认退出全部设备',
+	'account.workspace.logoutAllHint':
+		'退出后，本设备上的账号数据将恢复默认，包括已保存的顾客套餐、营业预设和偏好设置等。同时尝试结束其他设备上的登录。',
+	'account.workspace.logoutHint':
+		'退出后，本设备上的账号数据将恢复默认，包括已保存的顾客套餐、营业预设和偏好设置等。',
+	'account.workspace.readiness.future':
+		'本设备保存的账号状态来自较新版本。您可以更新应用后重试。',
+	'account.workspace.readiness.invalid':
+		'本设备保存的账号状态暂时无法读取。您可以刷新页面后重试。',
+	'account.workspace.readiness.network': '暂时无法确认账号状态，请重试。',
+	'account.workspace.readiness.preparing': '正在准备本设备的数据…',
+	'account.workspace.readiness.retry': '重试',
+	'account.workspace.readiness.transitioning': '正在更新账号状态…',
+	'account.workspace.session.back': '返回',
+	'account.workspace.session.confirmExit': '确认退出',
+	'account.workspace.session.exitAndReset': '退出并恢复默认',
+	'account.workspace.session.mismatchDescription':
+		'本设备保存的账号数据属于另一个账号。您可以重新登录原账号，或退出并恢复默认。',
+	'account.workspace.session.mismatchExitHint':
+		'退出会先结束当前登录，再将本设备上的账号数据恢复默认，包括已保存的顾客套餐、营业预设和偏好设置等；不会修改任何账号的云端数据。',
+	'account.workspace.session.mismatchTitle': '当前登录账号不匹配',
+	'account.workspace.session.relogin': '重新登录',
+	'account.workspace.session.reloginOriginal': '重新登录原账号',
+	'account.workspace.session.sessionDescription':
+		'您可以重新登录当前账号，或退出登录。',
+	'account.workspace.session.sessionExitHint':
+		'退出后，本设备上的账号数据将恢复默认，包括已保存的顾客套餐、营业预设和偏好设置等。',
+	'account.workspace.session.sessionTitle': '登录状态已失效',
 } as const;
 
 export type TAccountMessageKey = keyof typeof ACCOUNT_MESSAGES_ZH_CN;
@@ -471,7 +524,7 @@ export const accountMessages = {
 		'account.client.passwordMustChangeAuthorizePaused':
 			'Until the password is updated, SSO authorization cannot be completed and no sign-in ticket will be issued.',
 		'account.client.passwordMustChangeLogoutAccount':
-			'If you prefer not to handle this now, you can sign out; unfinished sync queues on this device stay local and resume after you sign in again.',
+			'If you prefer not to handle this now, you can sign out. Your account data will remain on this device until you confirm sign-out. After you sign out, it will be restored to defaults.',
 		'account.client.passwordMustChangeLogoutAuthorize':
 			'If you prefer not to handle this now, you can sign out and return to the home page.',
 		'account.conflict.aria.crossTab': 'Cloud sync conflict pending',
@@ -626,6 +679,28 @@ export const accountMessages = {
 		'account.conflict.value.suitability': 'Match',
 		'account.conflict.value.time': 'Cook time',
 		'account.conflict.value.unavailable': 'Unable to display',
+		'account.logoutRecovery.cancel': 'Cancel',
+		'account.logoutRecovery.confirmDiscard': 'Discard changes and sign out',
+		'account.logoutRecovery.description':
+			'Some changes have not been uploaded to the cloud. Try syncing again, or export the saved guest meals and business plans from this device first.',
+		'account.logoutRecovery.descriptionUnavailable':
+			'Sync cannot continue right now, but your changes on this device are still saved. You can export the saved guest meals and business plans from this device first.',
+		'account.logoutRecovery.discard': 'Discard changes and sign out',
+		'account.logoutRecovery.discardConfirm':
+			'The account data on this device will be restored to defaults, and changes that have not been uploaded will be lost, including saved guest meals, business plans, preferences, and other data.',
+		'account.logoutRecovery.error':
+			'We could not complete that action. Please try again later.',
+		'account.logoutRecovery.export':
+			'Export saved guest meals and business plans',
+		'account.logoutRecovery.exportComplete':
+			'The export is complete. You can still retry sync, cancel, or sign out.',
+		'account.logoutRecovery.exportCompleteUnavailable':
+			'The export is complete. You can still cancel or sign out.',
+		'account.logoutRecovery.exportScope':
+			'Only saved normal guest meals, special guest meals, and special guest business plans are included. Nothing is uploaded to the cloud. Language, vibration feedback, theme, special guest preferences, tutorial progress, and other settings are not included.',
+		'account.logoutRecovery.recheck': 'Check account status again',
+		'account.logoutRecovery.retry': 'Retry sync',
+		'account.logoutRecovery.title': 'Sync is incomplete',
 		'account.manager.accountDeleteFailed': 'Failed to delete the account',
 		'account.manager.auth.loginAction': 'Sign in',
 		'account.manager.auth.loginTab': 'Sign in',
@@ -968,6 +1043,46 @@ export const accountMessages = {
 		'account.syncUi.title': 'Sync status',
 		'account.usernameRule':
 			'Username must be {min}-{max} characters; Chinese characters, letters, digits, underscores, periods, hyphens and email-style names are allowed',
+		'account.workspace.adoption.cancel': 'Cancel sign-in',
+		'account.workspace.adoption.description':
+			'Merging data saved on this device…',
+		'account.workspace.adoption.failed':
+			'Data on this device could not be merged yet. Try again, or cancel sign-in; data saved before signing in will be kept.',
+		'account.workspace.adoption.retry': 'Try again',
+		'account.workspace.logoutAllConfirm':
+			'Confirm signing out of all devices',
+		'account.workspace.logoutAllHint':
+			'Signing out will restore the account data on this device to defaults, including saved guest meals, business plans, preferences, and other data. It will also try to sign out other devices.',
+		'account.workspace.logoutHint':
+			'Signing out will restore the account data on this device to defaults, including saved guest meals, business plans, preferences, and other data.',
+		'account.workspace.readiness.future':
+			'The account state saved on this device was created by a newer version. Update the app and try again.',
+		'account.workspace.readiness.invalid':
+			'The account state saved on this device could not be read. Refresh the page and try again.',
+		'account.workspace.readiness.network':
+			'Unable to confirm your account status right now. Please try again.',
+		'account.workspace.readiness.preparing':
+			'Preparing data on this device…',
+		'account.workspace.readiness.retry': 'Try again',
+		'account.workspace.readiness.transitioning': 'Updating account status…',
+		'account.workspace.session.back': 'Back',
+		'account.workspace.session.confirmExit': 'Sign out',
+		'account.workspace.session.exitAndReset':
+			'Sign out and restore defaults',
+		'account.workspace.session.mismatchDescription':
+			'The account data saved on this device belongs to another account. Sign in with the original account, or sign out and restore defaults.',
+		'account.workspace.session.mismatchExitHint':
+			'Signing out will first end the current session, then restore the account data on this device to defaults, including saved guest meals, business plans, preferences, and other data. No account’s cloud data will be changed.',
+		'account.workspace.session.mismatchTitle':
+			'Signed-in account does not match',
+		'account.workspace.session.relogin': 'Sign in again',
+		'account.workspace.session.reloginOriginal':
+			'Sign in with the original account',
+		'account.workspace.session.sessionDescription':
+			'Sign in to the current account again, or sign out.',
+		'account.workspace.session.sessionExitHint':
+			'Signing out will restore the account data on this device to defaults, including saved guest meals, business plans, preferences, and other data.',
+		'account.workspace.session.sessionTitle': 'Your sign-in has expired',
 	},
 	ja: {
 		'account.action.signedOut': '未ログイン',
@@ -984,7 +1099,7 @@ export const accountMessages = {
 		'account.client.passwordMustChangeAuthorizePaused':
 			'パスワード更新まで、SSO認可を完了できず、ログインチケットも発行されません。',
 		'account.client.passwordMustChangeLogoutAccount':
-			'今は対応しない場合、現在のアカウントからログアウトできます。この端末の未完了の同期キューはローカルに残り、再ログイン後に再開します。',
+			'今は対応しない場合、現在のアカウントからログアウトできます。ログアウトを確定するまでは、この端末のアカウントデータは保持されます。確定後は初期状態に戻ります。',
 		'account.client.passwordMustChangeLogoutAuthorize':
 			'今は対応しない場合、現在のアカウントからログアウトしてホームに戻れます。',
 		'account.conflict.aria.crossTab': 'クラウド同期の競合待ち',
@@ -1133,6 +1248,28 @@ export const accountMessages = {
 		'account.conflict.value.suitability': '相性',
 		'account.conflict.value.time': '調理時間',
 		'account.conflict.value.unavailable': '表示できません',
+		'account.logoutRecovery.cancel': 'キャンセル',
+		'account.logoutRecovery.confirmDiscard': '変更を破棄してログアウト',
+		'account.logoutRecovery.description':
+			'クラウドに未アップロードの変更があります。同期を再試行するか、この端末に保存されたセットメニューと営業プリセットを先にエクスポートしてください。',
+		'account.logoutRecovery.descriptionUnavailable':
+			'現在は同期を続行できませんが、この端末の変更は保持されます。保存済みのセットメニューと営業プリセットをエクスポートできます。',
+		'account.logoutRecovery.discard': '変更を破棄してログアウト',
+		'account.logoutRecovery.discardConfirm':
+			'この端末のアカウントデータは初期状態に戻り、未アップロードの変更も失われます。対象には保存済みのセットメニュー、営業プリセット、設定などのデータが含まれます。',
+		'account.logoutRecovery.error':
+			'操作を完了できませんでした。しばらくしてからもう一度お試しください。',
+		'account.logoutRecovery.export':
+			'保存済みのセットメニューと営業プリセットをエクスポート',
+		'account.logoutRecovery.exportComplete':
+			'エクスポートが完了しました。引き続き、同期の再試行、キャンセル、ログアウトから選択できます。',
+		'account.logoutRecovery.exportCompleteUnavailable':
+			'エクスポートが完了しました。引き続き、キャンセルまたはログアウトを選択できます。',
+		'account.logoutRecovery.exportScope':
+			'保存済みの一般客セットメニュー、レア客セットメニュー、レア客営業プリセットのみが含まれます。クラウドにはアップロードされず、言語、振動フィードバック、テーマ、レア客設定、レア客チュートリアルの進行状況などの設定は含まれません。',
+		'account.logoutRecovery.recheck': 'アカウント状態を再確認',
+		'account.logoutRecovery.retry': '同期を再試行',
+		'account.logoutRecovery.title': '同期が完了していません',
 		'account.manager.accountDeleteFailed': 'アカウントの削除に失敗しました',
 		'account.manager.auth.loginAction': 'ログイン',
 		'account.manager.auth.loginTab': 'ログイン',
@@ -1478,6 +1615,47 @@ export const accountMessages = {
 		'account.syncUi.title': '同期状態',
 		'account.usernameRule':
 			'ユーザー名は{min}～{max}文字で、中国語、英字、数字、アンダースコア、ピリオド、ハイフン、メールアドレス形式が使用できます',
+		'account.workspace.adoption.cancel': 'ログインをキャンセル',
+		'account.workspace.adoption.description':
+			'この端末に保存されたデータをマージしています…',
+		'account.workspace.adoption.failed':
+			'現時点では、この端末のデータをマージできません。再試行するか、ログインをキャンセルしてください。ログイン前に保存したデータは保持されます。',
+		'account.workspace.adoption.retry': '再試行',
+		'account.workspace.logoutAllConfirm': 'すべての端末からログアウト',
+		'account.workspace.logoutAllHint':
+			'ログアウトすると、この端末のアカウントデータは初期状態に戻ります。対象には保存済みのセットメニュー、営業プリセット、設定などのデータが含まれます。他の端末でもログアウトを試行します。',
+		'account.workspace.logoutHint':
+			'ログアウトすると、この端末のアカウントデータは初期状態に戻ります。対象には保存済みのセットメニュー、営業プリセット、設定などのデータが含まれます。',
+		'account.workspace.readiness.future':
+			'この端末に保存されたアカウント状態は、より新しいバージョンのアプリで作成されています。アプリを更新して再試行してください。',
+		'account.workspace.readiness.invalid':
+			'この端末に保存されたアカウント状態を読み取れません。ページを再読み込みして再試行してください。',
+		'account.workspace.readiness.network':
+			'現在、アカウント状態を確認できません。再試行してください。',
+		'account.workspace.readiness.preparing':
+			'この端末のデータを準備しています…',
+		'account.workspace.readiness.retry': '再試行',
+		'account.workspace.readiness.transitioning':
+			'アカウント状態を更新しています…',
+		'account.workspace.session.back': '戻る',
+		'account.workspace.session.confirmExit': 'ログアウト',
+		'account.workspace.session.exitAndReset':
+			'ログアウトして初期状態に戻す',
+		'account.workspace.session.mismatchDescription':
+			'この端末に保存されたアカウントデータは別のアカウントのものです。元のアカウントで再ログインするか、ログアウトして初期状態に戻してください。',
+		'account.workspace.session.mismatchExitHint':
+			'ログアウトすると、まず現在のログインを終了し、その後この端末のアカウントデータを初期状態に戻します。対象には保存済みのセットメニュー、営業プリセット、設定などのデータが含まれます。どのアカウントのクラウドデータも変更しません。',
+		'account.workspace.session.mismatchTitle':
+			'ログイン中のアカウントが一致しません',
+		'account.workspace.session.relogin': '再ログイン',
+		'account.workspace.session.reloginOriginal':
+			'元のアカウントで再ログイン',
+		'account.workspace.session.sessionDescription':
+			'現在のアカウントで再ログインするか、ログアウトしてください。',
+		'account.workspace.session.sessionExitHint':
+			'ログアウトすると、この端末のアカウントデータは初期状態に戻ります。対象には保存済みのセットメニュー、営業プリセット、設定などのデータが含まれます。',
+		'account.workspace.session.sessionTitle':
+			'ログイン状態の有効期限が切れました',
 	},
 	ko: {
 		'account.action.signedOut': '로그인 안 됨',
@@ -1494,7 +1672,7 @@ export const accountMessages = {
 		'account.client.passwordMustChangeAuthorizePaused':
 			'비밀번호를 갱신할 때까지 SSO 권한 부여를 완료할 수 없으며 로그인 티켓도 발급되지 않습니다.',
 		'account.client.passwordMustChangeLogoutAccount':
-			'지금 처리하지 않으려면 현재 계정에서 로그아웃할 수 있습니다. 이 기기의 미완료 동기화 큐는 로컬에 남고 다시 로그인하면 이어집니다.',
+			'지금 처리하지 않으려면 현재 계정에서 로그아웃할 수 있습니다. 로그아웃을 확인하기 전까지 이 기기의 계정 데이터는 유지되며, 확인 후에는 기본값으로 복원됩니다.',
 		'account.client.passwordMustChangeLogoutAuthorize':
 			'지금 처리하지 않으려면 로그아웃하고 홈으로 돌아갈 수 있습니다.',
 		'account.conflict.aria.crossTab': '클라우드 동기화 충돌 대기',
@@ -1639,6 +1817,29 @@ export const accountMessages = {
 		'account.conflict.value.suitability': '궁합',
 		'account.conflict.value.time': '조리 시간',
 		'account.conflict.value.unavailable': '표시할 수 없음',
+		'account.logoutRecovery.cancel': '취소',
+		'account.logoutRecovery.confirmDiscard':
+			'변경 사항을 포기하고 로그아웃',
+		'account.logoutRecovery.description':
+			'클라우드에 업로드되지 않은 변경 사항이 있습니다. 동기화를 다시 시도하거나 이 기기에 저장된 손님 세트 메뉴와 영업 프리셋을 먼저 내보내세요.',
+		'account.logoutRecovery.descriptionUnavailable':
+			'현재는 동기화를 계속할 수 없지만 이 기기의 변경 사항은 유지됩니다. 저장된 손님 세트 메뉴와 영업 프리셋을 내보낼 수 있습니다.',
+		'account.logoutRecovery.discard': '변경 사항을 포기하고 로그아웃',
+		'account.logoutRecovery.discardConfirm':
+			'이 기기의 계정 데이터가 기본값으로 복원되고 업로드되지 않은 변경 사항도 사라집니다. 대상에는 저장된 손님 세트 메뉴, 영업 프리셋, 환경 설정 등의 데이터가 포함됩니다.',
+		'account.logoutRecovery.error':
+			'작업을 완료하지 못했습니다. 잠시 후 다시 시도하세요.',
+		'account.logoutRecovery.export':
+			'저장된 손님 세트 메뉴와 영업 프리셋 내보내기',
+		'account.logoutRecovery.exportComplete':
+			'내보내기가 완료되었습니다. 계속해서 동기화 재시도, 취소 또는 로그아웃을 선택할 수 있습니다.',
+		'account.logoutRecovery.exportCompleteUnavailable':
+			'내보내기가 완료되었습니다. 계속해서 취소 또는 로그아웃을 선택할 수 있습니다.',
+		'account.logoutRecovery.exportScope':
+			'저장된 일반 손님 세트 메뉴, 레어 손님 세트 메뉴 및 레어 손님 영업 프리셋만 포함됩니다. 클라우드에는 업로드되지 않으며 언어, 진동 피드백, 테마, 레어 손님 설정, 튜토리얼 진행 상황 등 다른 설정은 포함되지 않습니다.',
+		'account.logoutRecovery.recheck': '계정 상태 다시 확인',
+		'account.logoutRecovery.retry': '동기화 다시 시도',
+		'account.logoutRecovery.title': '동기화가 완료되지 않았습니다',
 		'account.manager.accountDeleteFailed': '계정 삭제 실패',
 		'account.manager.auth.loginAction': '로그인',
 		'account.manager.auth.loginTab': '로그인',
@@ -1976,6 +2177,47 @@ export const accountMessages = {
 		'account.syncUi.title': '동기화 상태',
 		'account.usernameRule':
 			'사용자 이름은 {min}~{max}자이며 중국어, 영문, 숫자, 밑줄, 마침표, 하이픈, 이메일 형식을 사용할 수 있습니다',
+		'account.workspace.adoption.cancel': '로그인 취소',
+		'account.workspace.adoption.description':
+			'이 기기에 저장된 데이터를 병합하는 중…',
+		'account.workspace.adoption.failed':
+			'현재 이 기기의 데이터를 병합할 수 없습니다. 다시 시도하거나 로그인을 취소하세요. 로그인 전에 저장한 데이터는 유지됩니다.',
+		'account.workspace.adoption.retry': '다시 시도',
+		'account.workspace.logoutAllConfirm': '모든 기기에서 로그아웃',
+		'account.workspace.logoutAllHint':
+			'로그아웃하면 이 기기의 계정 데이터가 기본값으로 복원됩니다. 대상에는 저장된 손님 세트 메뉴, 영업 프리셋, 환경 설정 등의 데이터가 포함됩니다. 다른 기기에서도 로그아웃을 시도합니다.',
+		'account.workspace.logoutHint':
+			'로그아웃하면 이 기기의 계정 데이터가 기본값으로 복원됩니다. 대상에는 저장된 손님 세트 메뉴, 영업 프리셋, 환경 설정 등의 데이터가 포함됩니다.',
+		'account.workspace.readiness.future':
+			'이 기기에 저장된 계정 상태는 더 새로운 버전에서 만들어졌습니다. 앱을 업데이트한 후 다시 시도해 주세요.',
+		'account.workspace.readiness.invalid':
+			'이 기기에 저장된 계정 상태를 읽을 수 없습니다. 페이지를 새로 고친 후 다시 시도해 주세요.',
+		'account.workspace.readiness.network':
+			'현재 계정 상태를 확인할 수 없습니다. 다시 시도하세요.',
+		'account.workspace.readiness.preparing':
+			'이 기기의 데이터를 준비하는 중…',
+		'account.workspace.readiness.retry': '다시 시도',
+		'account.workspace.readiness.transitioning':
+			'계정 상태를 업데이트하는 중…',
+		'account.workspace.session.back': '뒤로',
+		'account.workspace.session.confirmExit': '로그아웃',
+		'account.workspace.session.exitAndReset':
+			'로그아웃하고 기본값으로 복원',
+		'account.workspace.session.mismatchDescription':
+			'이 기기에 저장된 계정 데이터는 다른 계정의 것입니다. 원래 계정으로 다시 로그인하거나 로그아웃하고 기본값으로 복원하세요.',
+		'account.workspace.session.mismatchExitHint':
+			'로그아웃하면 현재 로그인을 먼저 종료한 뒤 이 기기의 계정 데이터를 기본값으로 복원합니다. 대상에는 저장된 손님 세트 메뉴, 영업 프리셋, 환경 설정 등의 데이터가 포함됩니다. 어떤 계정의 클라우드 데이터도 변경하지 않습니다.',
+		'account.workspace.session.mismatchTitle':
+			'현재 로그인 계정이 일치하지 않습니다',
+		'account.workspace.session.relogin': '다시 로그인',
+		'account.workspace.session.reloginOriginal':
+			'원래 계정으로 다시 로그인',
+		'account.workspace.session.sessionDescription':
+			'현재 계정으로 다시 로그인하거나 로그아웃하세요.',
+		'account.workspace.session.sessionExitHint':
+			'로그아웃하면 이 기기의 계정 데이터가 기본값으로 복원됩니다. 대상에는 저장된 손님 세트 메뉴, 영업 프리셋, 환경 설정 등의 데이터가 포함됩니다.',
+		'account.workspace.session.sessionTitle':
+			'로그인 상태가 만료되었습니다',
 	},
 	'zh-CN': ACCOUNT_MESSAGES_ZH_CN,
 	'zh-TW': {
@@ -1993,7 +2235,7 @@ export const accountMessages = {
 		'account.client.passwordMustChangeAuthorizePaused':
 			'密碼更新前無法完成SSO授權，也不會簽發登入票據。',
 		'account.client.passwordMustChangeLogoutAccount':
-			'如果暫時不處理，可以登出目前帳號；本裝置未完成的同步佇列會留在本地，之後重新登入再繼續。',
+			'如果暫時不處理，可以登出目前帳號。確認登出前，本裝置上的帳號資料會保留；確認後，將恢復預設。',
 		'account.client.passwordMustChangeLogoutAuthorize':
 			'如果暫時不處理，可以登出目前帳號返回首頁。',
 		'account.conflict.aria.crossTab': '雲端同步衝突待處理',
@@ -2128,6 +2370,26 @@ export const accountMessages = {
 		'account.conflict.value.suitability': '匹配度',
 		'account.conflict.value.time': '烹飪時間',
 		'account.conflict.value.unavailable': '無法顯示',
+		'account.logoutRecovery.cancel': '取消',
+		'account.logoutRecovery.confirmDiscard': '確認放棄並登出',
+		'account.logoutRecovery.description':
+			'部分變更尚未上傳到雲端。您可以重試同步，或先匯出本裝置儲存的顧客套餐和營業預設資料。',
+		'account.logoutRecovery.descriptionUnavailable':
+			'暫時無法繼續同步，但本裝置上的變更仍會保留。您可以先匯出本裝置儲存的顧客套餐和營業預設資料。',
+		'account.logoutRecovery.discard': '放棄變更並登出',
+		'account.logoutRecovery.discardConfirm':
+			'本裝置上的帳號資料將恢復預設，尚未上傳的變更也會遺失，包括已儲存的顧客套餐、營業預設和偏好設定等。',
+		'account.logoutRecovery.error': '暫時無法完成操作，請稍後重試。',
+		'account.logoutRecovery.export': '匯出顧客套餐和營業預設',
+		'account.logoutRecovery.exportComplete':
+			'匯出完成。您仍可以重試同步、取消或登出。',
+		'account.logoutRecovery.exportCompleteUnavailable':
+			'匯出完成。您仍可以取消或登出。',
+		'account.logoutRecovery.exportScope':
+			'僅包含已儲存的普客套餐、稀客套餐和稀客營業預設；不會上傳到雲端，也不包含語言、震動回饋、主題、稀客偏好設定或教學進度等其他設定。',
+		'account.logoutRecovery.recheck': '重新檢查登入狀態',
+		'account.logoutRecovery.retry': '重試同步',
+		'account.logoutRecovery.title': '同步尚未完成',
 		'account.manager.accountDeleteFailed': '刪除帳號失敗',
 		'account.manager.auth.loginAction': '登入帳號',
 		'account.manager.auth.loginTab': '登入',
@@ -2433,5 +2695,38 @@ export const accountMessages = {
 		'account.syncUi.title': '同步狀態',
 		'account.usernameRule':
 			'使用者名稱{min}-{max}位，可使用中文、英文字母、數字、底線、點、連字號和電子郵件形式',
+		'account.workspace.adoption.cancel': '取消登入',
+		'account.workspace.adoption.description': '正在合併本裝置上的資料…',
+		'account.workspace.adoption.failed':
+			'暫時無法合併本裝置上的資料。您可以重試；取消登入後，登入前儲存的資料仍會保留。',
+		'account.workspace.adoption.retry': '重試',
+		'account.workspace.logoutAllConfirm': '確認登出全部裝置',
+		'account.workspace.logoutAllHint':
+			'登出後，本裝置上的帳號資料將恢復預設，包括已儲存的顧客套餐、營業預設和偏好設定等。同時會嘗試結束其他裝置上的登入。',
+		'account.workspace.logoutHint':
+			'登出後，本裝置上的帳號資料將恢復預設，包括已儲存的顧客套餐、營業預設和偏好設定等。',
+		'account.workspace.readiness.future':
+			'本裝置儲存的帳號狀態來自較新版本。您可以更新應用程式後重試。',
+		'account.workspace.readiness.invalid':
+			'本裝置儲存的帳號狀態暫時無法讀取。您可以重新整理頁面後重試。',
+		'account.workspace.readiness.network': '暫時無法確認帳號狀態，請重試。',
+		'account.workspace.readiness.preparing': '正在準備本裝置的資料…',
+		'account.workspace.readiness.retry': '重試',
+		'account.workspace.readiness.transitioning': '正在更新帳號狀態…',
+		'account.workspace.session.back': '返回',
+		'account.workspace.session.confirmExit': '確認登出',
+		'account.workspace.session.exitAndReset': '登出並恢復預設',
+		'account.workspace.session.mismatchDescription':
+			'本裝置儲存的帳號資料屬於另一個帳號。您可以重新登入原帳號，或登出並恢復預設。',
+		'account.workspace.session.mismatchExitHint':
+			'登出會先結束目前登入，再將本裝置上的帳號資料恢復預設，包括已儲存的顧客套餐、營業預設和偏好設定等；不會修改任何帳號的雲端資料。',
+		'account.workspace.session.mismatchTitle': '目前登入帳號不相符',
+		'account.workspace.session.relogin': '重新登入',
+		'account.workspace.session.reloginOriginal': '重新登入原帳號',
+		'account.workspace.session.sessionDescription':
+			'您可以重新登入目前帳號，或登出。',
+		'account.workspace.session.sessionExitHint':
+			'登出後，本裝置上的帳號資料將恢復預設，包括已儲存的顧客套餐、營業預設和偏好設定等。',
+		'account.workspace.session.sessionTitle': '登入狀態已失效',
 	},
 } as const satisfies TLocalizedMessageTable<TAccountMessageKey>;

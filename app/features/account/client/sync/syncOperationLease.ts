@@ -55,20 +55,12 @@ function createOperationKey(userId: string) {
 	);
 }
 
-/** Only call after the server has permanently deleted this account. */
-export function removeAccountSyncOperationForAccountDeletion(userId: string) {
-	localOperationInvalidators.get(userId)?.();
-	localOperationInvalidators.delete(userId);
-	localOperationIds.delete(userId);
-	remoteOperationLeases.delete(userId);
-	removeAccountStorage(createOperationKey(userId));
-}
-
 function checkOperationLease(
 	value: unknown
 ): value is IAccountSyncOperationLease {
 	return (
 		checkIsRecord(value) &&
+		(value['version'] === undefined || value['version'] === 1) &&
 		ACCOUNT_SYNC_OPERATION_KIND_SET.has(
 			value['kind'] as TAccountSyncOperationKind
 		) &&
@@ -94,6 +86,18 @@ function readOperationLeaseRaw(key: string) {
 		return { lease, raw };
 	} catch {
 		return { lease: null, raw };
+	}
+}
+
+export function removeAccountSyncOperation(userId: string) {
+	localOperationInvalidators.get(userId)?.();
+	localOperationInvalidators.delete(userId);
+	localOperationIds.delete(userId);
+	remoteOperationLeases.delete(userId);
+	const key = createOperationKey(userId);
+	const { lease, raw } = readOperationLeaseRaw(key);
+	if (raw === null || checkOperationLease(lease)) {
+		removeAccountStorage(key);
 	}
 }
 
@@ -214,7 +218,8 @@ export function withAccountSyncOperationLease<T>(
 			}
 			if (
 				inactiveLease.raw !== null &&
-				!removeOperationLeaseIfCurrent(key, inactiveLease.raw)
+				(!checkOperationLease(inactiveLease.lease) ||
+					!removeOperationLeaseIfCurrent(key, inactiveLease.raw))
 			) {
 				return null;
 			}

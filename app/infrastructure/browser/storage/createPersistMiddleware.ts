@@ -1,4 +1,4 @@
-import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
+import LZString from 'lz-string';
 import { type StateCreator } from 'zustand';
 import {
 	type PersistOptions,
@@ -21,7 +21,9 @@ const lZLocalStorage = {
 			return null;
 		}
 		if (value.startsWith(COMPRESS_PREFIX)) {
-			return decompressFromUTF16(value.slice(COMPRESS_PREFIX.length));
+			return LZString.decompressFromUTF16(
+				value.slice(COMPRESS_PREFIX.length)
+			);
 		}
 		return value;
 	},
@@ -29,7 +31,10 @@ const lZLocalStorage = {
 		safeStorage.removeItem(name);
 	},
 	setItem(name: string, value: string) {
-		safeStorage.setItem(name, COMPRESS_PREFIX + compressToUTF16(value));
+		safeStorage.setItem(
+			name,
+			COMPRESS_PREFIX + LZString.compressToUTF16(value)
+		);
 	},
 } satisfies StateStorage;
 

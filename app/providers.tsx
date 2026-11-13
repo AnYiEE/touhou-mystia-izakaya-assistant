@@ -15,6 +15,7 @@ import {
 	AccountFeatureModals,
 	startAccountFeatureClients,
 } from './features/account/client/featureClient';
+import { workspaceStore } from './features/account/client/workspace/workspaceStore';
 import type {
 	IAccountSessionInitialData,
 	IAccountSsoGrantInitialData,
@@ -111,6 +112,10 @@ export default function Providers({
 	locale,
 	routeLocale,
 }: PropsWithChildren<IProps>) {
+	const isWorkspaceReady = workspaceStore.isReady.use();
+	const isAuthReconciled = workspaceStore.isAuthReconciled.use();
+	const canShowWorkspace = isWorkspaceReady && isAuthReconciled;
+
 	const shouldSkipInitialAccountBootstrap = accountInitialData !== null;
 
 	useEffect(() => {
@@ -156,10 +161,14 @@ export default function Providers({
 			{children}
 			<ProgressBar className="fixed top-0 z-60 h-1 rounded-2xl bg-primary dark:lg:h-0.5" />
 			<AccountFeatureModals />
-			<SpecialGuestTutorial />
-			<DonationModal />
-			<DonationNudge />
-			<PwaInstallClient />
+			{canShowWorkspace && (
+				<>
+					<SpecialGuestTutorial />
+					<DonationModal />
+					<DonationNudge />
+					<PwaInstallClient />
+				</>
+			)}
 		</ProviderStack>
 	);
 }

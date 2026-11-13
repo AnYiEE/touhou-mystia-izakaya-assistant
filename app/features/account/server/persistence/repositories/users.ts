@@ -685,9 +685,7 @@ export async function deleteActiveUserIfSessionCurrentWithAudit(
 	});
 }
 
-export async function disableUserAndDeleteSessionsWithSsoCallbacks(
-	id: TUser['id']
-) {
+export async function disableUserWithSsoCallbacks(id: TUser['id']) {
 	const db = await getAccountDatabase();
 	const now = Date.now();
 	const userUpdate = {
@@ -707,10 +705,6 @@ export async function disableUserAndDeleteSessionsWithSsoCallbacks(
 			return false;
 		}
 
-		await trx
-			.deleteFrom(SESSION_TABLE_NAME)
-			.where('user_id', '=', id)
-			.execute();
 		await enqueueSsoCallbacksForUserEventInTransaction(
 			trx,
 			id,
@@ -722,7 +716,7 @@ export async function disableUserAndDeleteSessionsWithSsoCallbacks(
 	});
 }
 
-export async function disableUserAndDeleteSessionsWithSsoCallbacksAndAudit(
+export async function disableUserWithSsoCallbacksAndAudit(
 	id: TUser['id'],
 	writeAuditLog: (trx: Transaction<TDatabase>, now: number) => Promise<void>
 ) {
@@ -745,10 +739,6 @@ export async function disableUserAndDeleteSessionsWithSsoCallbacksAndAudit(
 			return false;
 		}
 
-		await trx
-			.deleteFrom(SESSION_TABLE_NAME)
-			.where('user_id', '=', id)
-			.execute();
 		await enqueueSsoCallbacksForUserEventInTransaction(
 			trx,
 			id,

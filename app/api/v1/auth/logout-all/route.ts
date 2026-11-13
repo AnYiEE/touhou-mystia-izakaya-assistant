@@ -8,6 +8,7 @@ import {
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
+import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 
 import { HTTP_API_RESPONSE_CODE_MAP } from '@/infrastructure/http/apiResponseCodes';
 import {
@@ -45,13 +46,16 @@ export async function POST(request: NextRequest) {
 		return preAuthRateLimitResponse;
 	}
 
-	const [authModule, csrfModule] = await Promise.all([
+	const [authModule, csrfModule, sessionModule] = await Promise.all([
 		import('@/features/account/server/auth/requestAuthentication'),
 		import('@/features/account/server/auth/accountCsrf'),
+		import('@/features/account/server/auth/sessionLifecycle'),
 	]);
 	const auth = await authModule.authenticateAccountFromRequest(request, true);
 	if (auth.status === 'error') {
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		return createAccountAuthErrorRouteResponse(auth, request, {
+			clearSessionCookie: true,
+		});
 	}
 
 	const rateLimitResponse = checkAccountRateLimitRouteResponse(
@@ -104,14 +108,18 @@ export async function POST(request: NextRequest) {
 			)
 	);
 	if (deleteResult.status === 'unauthorized') {
-		return createNoStoreErrorResponse(
+		const response = createNoStoreErrorResponse(
 			HTTP_API_RESPONSE_CODE_MAP.unauthorized,
 			401
 		);
+		sessionModule.clearAccountSessionCookie(response, request);
+		return response;
 	}
 
-	return createNoStoreJsonResponse({
+	const response = createNoStoreJsonResponse({
 		deleted_current_session: deleteResult.deletedSessionCount > 0,
 		message: ACCOUNT_API_RESPONSE_CODE_MAP.loggedOutAll,
 	});
+	sessionModule.clearAccountSessionCookie(response, request);
+	return response;
 }

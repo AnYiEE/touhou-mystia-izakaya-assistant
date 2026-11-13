@@ -9,10 +9,14 @@ import { accountStore } from '@/features/account/client/state/accountStore';
 import {
 	ACCOUNT_STORAGE_KEY_MAP,
 	createAccountStorageKey,
-	readAccountJsonStorage,
+	readAccountStorage,
 	removeAccountStorage,
 	writeAccountJsonStorage,
 } from '@/features/account/client/storage';
+import {
+	checkWorkspaceAccount,
+	workspaceStore,
+} from '@/features/account/client/workspace/workspaceStore';
 import type { IAccountSyncMeta } from '@/features/account/sync/contracts';
 import { globalPreferencesSerializer } from '@/features/account/sync/serializers/globalPreferences';
 import { normalGuestMealsSerializer } from '@/features/account/sync/serializers/normalGuestMeals';
@@ -91,11 +95,6 @@ export function createAccountSyncMetaStorageKey(userId: string) {
 	return createAccountStorageKey(ACCOUNT_STORAGE_KEY_MAP.syncMeta, userId);
 }
 
-/** Only call after the server has permanently deleted this account. */
-export function removeAccountSyncMetaForAccountDeletion(userId: string) {
-	removeAccountStorage(createAccountSyncMetaStorageKey(userId));
-}
-
 export function withAccountSyncMetaTransitionLock<T>(
 	userId: string,
 	generationToken: string | null,
@@ -147,13 +146,23 @@ function checkStoredSyncRevision(value: unknown): value is number {
 }
 
 export function readAccountSyncMeta(userId: string) {
-	const meta = readAccountJsonStorage<TStoredAccountSyncMeta | null>(
-		createAccountSyncMetaStorageKey(userId),
-		null
-	);
-	if (meta === null) {
+	const raw = readAccountStorage(createAccountSyncMetaStorageKey(userId));
+	if (raw === null) {
 		return null;
 	}
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(raw);
+	} catch {
+		return null;
+	}
+	if (
+		!checkIsRecord(parsed) ||
+		(typeof parsed['version'] === 'number' && parsed['version'] !== 1)
+	) {
+		return null;
+	}
+	const meta = parsed as TStoredAccountSyncMeta;
 
 	const stateEpoch = isNonNegativeSafeInteger(meta.state_epoch)
 		? meta.state_epoch
@@ -200,6 +209,23 @@ export function writeAccountSyncMeta(
 		suppressRuntime?: boolean;
 	}
 ) {
+	const key = createAccountSyncMetaStorageKey(userId);
+	const existingRaw = readAccountStorage(key);
+	if (existingRaw !== null) {
+		let existing: unknown;
+		try {
+			existing = JSON.parse(existingRaw);
+		} catch {
+			throw new Error('account-sync-meta-invalid');
+		}
+		if (
+			!checkIsRecord(existing) ||
+			(typeof existing['version'] === 'number' &&
+				existing['version'] !== 1)
+		) {
+			throw new Error('account-sync-meta-future');
+		}
+	}
 	const checkGeneration = () =>
 		checkAccountSyncResetWriteAllowed({
 			expectedGeneration: generationToken,
@@ -209,7 +235,7 @@ export function writeAccountSyncMeta(
 	if (!checkGeneration()) {
 		throw new Error('account-sync-reset-generation-changed');
 	}
-	writeAccountJsonStorage(createAccountSyncMetaStorageKey(userId), meta);
+	writeAccountJsonStorage(key, meta);
 	if (!checkGeneration()) {
 		throw new Error('account-sync-reset-generation-changed');
 	}
@@ -232,6 +258,49 @@ export function removeAccountSyncMetaIfCurrent(
 	}
 	removeAccountStorage(createAccountSyncMetaStorageKey(userId));
 	return checkGeneration();
+}
+
+export function removeAccountSyncMetaIfCurrentVersion(
+	userId: string,
+	generationToken: string | null,
+	deletedOperationId?: string
+) {
+	const checkGeneration = () =>
+		checkAccountSyncResetWriteAllowed({
+			...(deletedOperationId === undefined ? {} : { deletedOperationId }),
+			expectedGeneration: generationToken,
+			userId,
+		});
+	if (!checkGeneration()) {
+		return false;
+	}
+	const key = createAccountSyncMetaStorageKey(userId);
+	const raw = readAccountStorage(key);
+	if (raw === null) {
+		return true;
+	}
+	let value: unknown;
+	try {
+		value = JSON.parse(raw);
+	} catch {
+		return true;
+	}
+	if (
+		!checkIsRecord(value) ||
+		(typeof value['version'] === 'number' && value['version'] !== 1) ||
+		!isNonNegativeSafeInteger(value['state_epoch']) ||
+		!isNonNegativeSafeInteger(value['sync_generation']) ||
+		!checkAccountSyncStatus(value['sync_status']) ||
+		!checkIsRecord(value['lastAppliedRemoteHash']) ||
+		!checkIsRecord(value['revisions'])
+	) {
+		return true;
+	}
+	if (readAccountStorage(key) !== raw) {
+		return false;
+	}
+	removeAccountStorage(key);
+	return readAccountStorage(key) === null && checkGeneration();
 }
 
 export function applyRemoteAccountRecords({
@@ -258,6 +327,10 @@ export function applyRemoteAccountRecords({
 	}
 
 	const currentUser = accountStore.shared.user.get();
+	const checkCurrentUserAndWorkspace = () =>
+		accountStore.shared.user.get()?.id === userId &&
+		workspaceStore.phase.get() === 'ready' &&
+		checkWorkspaceAccount(workspaceStore.owner.get(), userId);
 	const previousMeta = readAccountSyncMeta(userId);
 	const previousStoredMeta = previousMeta as TStoredAccountSyncMeta | null;
 	const previousLastAppliedRemoteHash = readStoredSyncMetaMap<string>(
@@ -309,7 +382,11 @@ export function applyRemoteAccountRecords({
 		}
 	});
 
-	if (currentUser?.id !== userId) {
+	if (
+		currentUser?.id !== userId ||
+		workspaceStore.phase.get() !== 'ready' ||
+		!checkWorkspaceAccount(workspaceStore.owner.get(), userId)
+	) {
 		return meta;
 	}
 
@@ -329,7 +406,7 @@ export function applyRemoteAccountRecords({
 		};
 	});
 	let appliedRecordCount = 0;
-	if (accountStore.shared.user.get()?.id !== currentUser.id) {
+	if (!checkCurrentUserAndWorkspace()) {
 		return meta;
 	}
 
@@ -366,7 +443,7 @@ export function applyRemoteAccountRecords({
 		}
 	}
 
-	if (accountStore.shared.user.get()?.id !== currentUser.id) {
+	if (!checkCurrentUserAndWorkspace()) {
 		return meta;
 	}
 
@@ -381,7 +458,7 @@ export function applyRemoteAccountRecords({
 			});
 		});
 
-		if (accountStore.shared.user.get()?.id !== currentUser.id) {
+		if (!checkCurrentUserAndWorkspace()) {
 			if (appliedRecordCount > 0) {
 				rollbackAppliedRecords();
 			}

@@ -192,6 +192,7 @@ export default async function SsoAuthorizePageContent({
 					/>
 				</SsoAuthorizeDetailList>
 				<SsoAuthorizeControls
+					expectedUserId={initialData.account.user.id}
 					transactionId={initialData.transactionId}
 				/>
 			</SsoAuthorizePanel>

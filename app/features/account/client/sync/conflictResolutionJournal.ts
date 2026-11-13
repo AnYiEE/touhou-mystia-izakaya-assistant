@@ -1,5 +1,4 @@
 import {
-	SYNC_NAMESPACE_MAP,
 	SYNC_NAMESPACE_SET,
 	type TSyncNamespace,
 } from '@/domain/account/contracts';
@@ -450,12 +449,14 @@ export function advanceAccountSyncConflictResolutionJournal({
 }
 
 export function removeAccountSyncConflictResolutionJournal({
+	deletedOperationId,
 	generationToken,
 	namespace,
 	operationId,
 	resetOperationId,
 	userId,
 }: {
+	deletedOperationId?: string;
 	generationToken: string | null;
 	namespace: TSyncNamespace;
 	operationId: string;
@@ -464,6 +465,7 @@ export function removeAccountSyncConflictResolutionJournal({
 }) {
 	const checkGeneration = () =>
 		checkAccountSyncResetWriteAllowed({
+			...(deletedOperationId === undefined ? {} : { deletedOperationId }),
 			expectedGeneration: generationToken,
 			...(resetOperationId === undefined ? {} : { resetOperationId }),
 			userId,
@@ -474,7 +476,8 @@ export function removeAccountSyncConflictResolutionJournal({
 	const current = readAccountSyncConflictResolutionJournal(userId, namespace);
 	if (
 		current?.status !== 'current' ||
-		current.journal.generationToken !== generationToken ||
+		(deletedOperationId === undefined &&
+			current.journal.generationToken !== generationToken) ||
 		current.journal.operationId !== operationId
 	) {
 		return false;
@@ -485,14 +488,6 @@ export function removeAccountSyncConflictResolutionJournal({
 	);
 
 	return checkGeneration();
-}
-
-export function removeAccountSyncConflictResolutionJournals(userId: string) {
-	for (const namespace of Object.values(SYNC_NAMESPACE_MAP)) {
-		removeAccountStorage(
-			createAccountSyncConflictResolutionJournalKey(userId, namespace)
-		);
-	}
 }
 
 export async function runAccountSyncConflictResolutionJournalTransaction({

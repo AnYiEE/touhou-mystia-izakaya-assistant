@@ -5,6 +5,10 @@ import { memo, useEffect, useRef } from 'react';
 
 import { createAccountViewerSignatureFromClientState } from '@/features/account/client/accountViewerSignature';
 import { accountStore } from '@/features/account/client/state/accountStore';
+import {
+	checkWorkspaceAccount,
+	workspaceStore,
+} from '@/features/account/client/workspace/workspaceStore';
 import type { IAccountUserProfile } from '@/features/account/contracts';
 import { createAccountViewerSignatureFromAccountUser } from '@/features/account/viewerSignature';
 
@@ -18,6 +22,9 @@ export default memo<IProps>(function SsoAuthorizeAccountContextRefresh({
 	const router = useRouter();
 	const bootstrapStatus = accountStore.shared.bootstrapStatus.use();
 	const isLoggedIn = accountStore.shared.isLoggedIn.use();
+	const isAuthReconciled = workspaceStore.isAuthReconciled.use();
+	const owner = workspaceStore.owner.use();
+	const phase = workspaceStore.phase.use();
 	const user = accountStore.shared.user.use();
 	const {
 		id: initialUserId,
@@ -53,6 +60,9 @@ export default memo<IProps>(function SsoAuthorizeAccountContextRefresh({
 
 		if (
 			viewerSignature === null ||
+			!isAuthReconciled ||
+			phase !== 'ready' ||
+			!checkWorkspaceAccount(owner, initialUserId) ||
 			knownSignatures.includes(viewerSignature)
 		) {
 			return;
@@ -60,7 +70,14 @@ export default memo<IProps>(function SsoAuthorizeAccountContextRefresh({
 
 		pendingSignatureRef.current = viewerSignature;
 		router.refresh();
-	}, [router, viewerSignature]);
+	}, [
+		initialUserId,
+		isAuthReconciled,
+		owner,
+		phase,
+		router,
+		viewerSignature,
+	]);
 
 	return null;
 });

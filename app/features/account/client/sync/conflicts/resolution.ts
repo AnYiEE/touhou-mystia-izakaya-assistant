@@ -37,6 +37,10 @@ import {
 	writeAccountSyncMeta,
 } from '@/features/account/client/sync/snapshot';
 import { completeAccountSyncConflictResolutionRuntime } from '@/features/account/client/sync/syncRuntimeState';
+import {
+	checkWorkspaceAccount,
+	workspaceStore,
+} from '@/features/account/client/workspace/workspaceStore';
 import { SYNC_SCHEMA_VERSION_MAP } from '@/features/account/sync/constants';
 import type {
 	IDirtyQueueEntry,
@@ -102,7 +106,11 @@ function rollbackConflictSnapshot(
 }
 
 export function checkActiveConflictUser(userId: string) {
-	return accountStore.shared.user.get()?.id === userId;
+	return (
+		accountStore.shared.user.get()?.id === userId &&
+		workspaceStore.phase.get() === 'ready' &&
+		checkWorkspaceAccount(workspaceStore.owner.get(), userId)
+	);
 }
 
 export function resolveAccountSyncConflictUnlocked({

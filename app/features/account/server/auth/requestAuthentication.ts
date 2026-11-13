@@ -46,6 +46,7 @@ export interface IAuthenticatedAccount {
 export type TAccountAuthResult =
 	| { data: IAuthenticatedAccount; status: 'ok' }
 	| {
+			data?: Record<string, unknown>;
 			httpStatus: number;
 			message: TAccountAuthErrorMessage;
 			status: 'error';
@@ -106,10 +107,12 @@ function createAccountAuthResult(
 		return { httpStatus: 403, message: 'user-deleted', status: 'error' };
 	}
 	if (snapshot.status === 'user-disabled') {
-		if (snapshot.cleanupFailed) {
-			console.warn('Failed to delete disabled account session.');
-		}
-		return { httpStatus: 403, message: 'user-disabled', status: 'error' };
+		return {
+			data: { user_id: snapshot.userId },
+			httpStatus: 403,
+			message: 'user-disabled',
+			status: 'error',
+		};
 	}
 	if (snapshot.status !== 'ok') {
 		return {

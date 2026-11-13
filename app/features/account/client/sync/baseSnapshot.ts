@@ -1,9 +1,6 @@
-import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
+import LZString from 'lz-string';
 
-import {
-	SYNC_NAMESPACE_MAP,
-	type TSyncNamespace,
-} from '@/domain/account/contracts';
+import { type TSyncNamespace } from '@/domain/account/contracts';
 
 import {
 	ACCOUNT_STORAGE_KEY_MAP,
@@ -28,7 +25,6 @@ import { checkIsRecord } from '@/shared/utilities/objects/checkIsRecord';
 
 import { createSnapshotHash } from './dirtyQueue/snapshotHash';
 import {
-	captureAccountSyncResetGeneration,
 	checkAccountSyncResetWriteAllowed,
 	getAccountSyncResetGenerationId,
 	getAccountSyncResetGenerationIdFromToken,
@@ -77,7 +73,7 @@ function readAccountSyncBaseSnapshotContainer(
 
 	let parsed: unknown;
 	try {
-		const serialized = decompressFromUTF16(compressed);
+		const serialized = LZString.decompressFromUTF16(compressed);
 		parsed = JSON.parse(serialized);
 	} catch {
 		return null;
@@ -171,6 +167,24 @@ export function writeAccountSyncBaseSnapshot({
 	revision: number;
 	userId: string;
 }) {
+	const key = createAccountSyncBaseSnapshotKey(userId, namespace);
+	const existingCompressed = readOptionalLocalCache(key);
+	if (existingCompressed !== null) {
+		let existingValue: unknown;
+		try {
+			existingValue = JSON.parse(
+				LZString.decompressFromUTF16(existingCompressed)
+			);
+		} catch {
+			return false;
+		}
+		if (
+			!checkBaseSnapshotContainer(existingValue, namespace) ||
+			existingValue.schema_version > SYNC_SCHEMA_VERSION_MAP[namespace]
+		) {
+			return false;
+		}
+	}
 	const checkGeneration = () =>
 		checkAccountSyncResetWriteAllowed({
 			expectedGeneration: generationToken,
@@ -192,8 +206,8 @@ export function writeAccountSyncBaseSnapshot({
 
 	try {
 		const didWrite = writeOptionalLocalCache(
-			createAccountSyncBaseSnapshotKey(userId, namespace),
-			compressToUTF16(JSON.stringify(record))
+			key,
+			LZString.compressToUTF16(JSON.stringify(record))
 		);
 		return didWrite && checkGeneration();
 	} catch {
@@ -205,10 +219,12 @@ export function removeAccountSyncBaseSnapshot(
 	userId: string,
 	namespace: TSyncNamespace,
 	generationToken: string | null,
-	resetOperationId?: string
+	resetOperationId?: string,
+	deletedOperationId?: string
 ) {
 	const checkGeneration = () =>
 		checkAccountSyncResetWriteAllowed({
+			...(deletedOperationId === undefined ? {} : { deletedOperationId }),
 			expectedGeneration: generationToken,
 			...(resetOperationId === undefined ? {} : { resetOperationId }),
 			userId,
@@ -220,23 +236,4 @@ export function removeAccountSyncBaseSnapshot(
 		createAccountSyncBaseSnapshotKey(userId, namespace)
 	);
 	return checkGeneration();
-}
-
-export function removeAccountSyncBaseSnapshots(userId: string) {
-	// Synchronous lifecycle boundary: every guarded removal shares one token.
-	const generationToken = captureAccountSyncResetGeneration(userId);
-	for (const namespace of Object.values(SYNC_NAMESPACE_MAP)) {
-		removeAccountSyncBaseSnapshot(userId, namespace, generationToken);
-	}
-}
-
-/** Only call after the server has permanently deleted this account. */
-export function removeAccountSyncBaseSnapshotsForAccountDeletion(
-	userId: string
-) {
-	for (const namespace of Object.values(SYNC_NAMESPACE_MAP)) {
-		removeOptionalLocalCache(
-			createAccountSyncBaseSnapshotKey(userId, namespace)
-		);
-	}
 }

@@ -28,6 +28,7 @@ import Heading from '@/design/ui/components/heading';
 import { useReducedMotion } from '@/design/ui/hooks/useReducedMotion';
 import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
+import { ACCOUNT_MODAL_CLASS_NAMES } from '@/features/account/client/components/accountModalSpacing';
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
 import {
 	type TAccountMessageKey,
@@ -432,13 +433,14 @@ export default memo<IProps>(function AccountConflictModal() {
 			return (
 				<CoordinatedModal
 					aria-label={t('account.conflict.aria.pendingRemote')}
+					classNames={ACCOUNT_MODAL_CLASS_NAMES}
 					coordination={CONFLICT_MODAL_COORDINATION}
 					hideCloseButton
 					isDismissable={false}
 					isKeyboardDismissDisabled
 					isOpen={isModalOpen}
 				>
-					<div className="space-y-4 p-1.5">
+					<div className="space-y-4 px-1.5">
 						<Heading
 							as="h2"
 							isFirst
@@ -476,13 +478,14 @@ export default memo<IProps>(function AccountConflictModal() {
 			return (
 				<CoordinatedModal
 					aria-label={t(isolatedStateCopy.title)}
+					classNames={ACCOUNT_MODAL_CLASS_NAMES}
 					coordination={CONFLICT_MODAL_COORDINATION}
 					hideCloseButton
 					isDismissable={false}
 					isKeyboardDismissDisabled
 					isOpen={isModalOpen}
 				>
-					<div className="space-y-4 p-1.5">
+					<div className="space-y-4 px-1.5">
 						<Heading
 							as="h2"
 							isFirst
@@ -552,6 +555,7 @@ export default memo<IProps>(function AccountConflictModal() {
 		return (
 			<CoordinatedModal
 				aria-label={t('account.conflict.aria.crossTab')}
+				classNames={ACCOUNT_MODAL_CLASS_NAMES}
 				coordination={CONFLICT_MODAL_COORDINATION}
 				hideCloseButton
 				isDismissable={false}
@@ -560,7 +564,7 @@ export default memo<IProps>(function AccountConflictModal() {
 				scrollMode="mask"
 				size="5xl"
 			>
-				<div className="w-full space-y-4">
+				<div className="w-full space-y-4 px-1.5">
 					<Heading
 						as="h2"
 						classNames={CONFLICT_HEADING_CLASS_NAMES}
@@ -646,6 +650,7 @@ export default memo<IProps>(function AccountConflictModal() {
 	return (
 		<CoordinatedModal
 			aria-label={t('account.conflict.aria.sync')}
+			classNames={ACCOUNT_MODAL_CLASS_NAMES}
 			coordination={CONFLICT_MODAL_COORDINATION}
 			hideCloseButton
 			isDismissable={false}
@@ -655,7 +660,7 @@ export default memo<IProps>(function AccountConflictModal() {
 			size="5xl"
 		>
 			<FadeMotionDiv
-				className="w-full space-y-4"
+				className="w-full space-y-4 px-1.5"
 				target={visibleConflictKey ?? namespace}
 			>
 				<div className="flex items-start justify-between gap-4">

@@ -2,6 +2,7 @@ import { ACCOUNT_SYNC_STATUS_MAP } from '@/domain/account/contracts';
 
 import { sendSyncPing } from '@/features/account/client/api';
 import { createAccountClientId } from '@/features/account/client/clientId';
+import { workspaceStore } from '@/features/account/client/workspace/workspaceStore';
 import { SEND_BEACON_SYNC_BODY_BYTES } from '@/features/account/requestLimits';
 import type { IDirtyQueueEntry } from '@/features/account/sync/types';
 
@@ -41,6 +42,7 @@ export function flushAccountSyncQueueWithBeacon() {
 	}
 
 	const generationToken = captureAccountSyncResetGeneration(context.user.id);
+	const workspaceGeneration = workspaceStore.owner.get()?.generation ?? null;
 	if (
 		!checkAccountSyncResetWriteAllowed({
 			expectedGeneration: generationToken,
@@ -107,6 +109,8 @@ export function flushAccountSyncQueueWithBeacon() {
 	const finalPayload = JSON.stringify(finalBody);
 	const operationId = createAccountClientId();
 	if (
+		workspaceStore.owner.get()?.generation !== workspaceGeneration ||
+		workspaceStore.phase.get() !== 'ready' ||
 		checkAccountSyncOperationActive(context.user.id) ||
 		checkAccountSyncResetPrepared(context.user.id) ||
 		!checkAccountSyncResetWriteAllowed({

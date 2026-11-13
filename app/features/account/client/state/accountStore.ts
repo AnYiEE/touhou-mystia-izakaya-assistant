@@ -39,7 +39,11 @@ const ACCOUNT_STORE_VERSION = { initial: 0 } as const;
 const state = {
 	persistence: {},
 	shared: {
-		accountModal: { closeAfterAuthentication: false, isOpen: false },
+		accountModal: {
+			authPurpose: 'default' as 'default' | 'required-account',
+			closeAfterAuthentication: false,
+			isOpen: false,
+		},
 		adminCsrfToken: null as string | null,
 		bootstrapStatus: 'unknown' as TAccountBootstrapStatus,
 		csrfToken: null as string | null,
@@ -89,6 +93,7 @@ export const accountStore = store(state, {
 	closeAccountModal() {
 		currentStore.shared.accountModal.isOpen.set(false);
 		currentStore.shared.accountModal.closeAfterAuthentication.set(false);
+		currentStore.shared.accountModal.authPurpose.set('default');
 		requestOverlayClose('account.main');
 	},
 	closeAccountModalAfterAuthentication() {
@@ -97,11 +102,16 @@ export const accountStore = store(state, {
 		}
 		currentStore.shared.accountModal.isOpen.set(false);
 		currentStore.shared.accountModal.closeAfterAuthentication.set(false);
+		currentStore.shared.accountModal.authPurpose.set('default');
 		requestOverlayClose('account.main');
 		return true;
 	},
-	openAccountModal(parentId?: TOverlayId) {
+	openAccountModal(
+		parentId?: TOverlayId,
+		authPurpose: 'default' | 'required-account' = 'default'
+	) {
 		currentStore.shared.accountModal.closeAfterAuthentication.set(false);
+		currentStore.shared.accountModal.authPurpose.set(authPurpose);
 		const onActivate = () => {
 			currentStore.shared.accountModal.isOpen.set(true);
 		};

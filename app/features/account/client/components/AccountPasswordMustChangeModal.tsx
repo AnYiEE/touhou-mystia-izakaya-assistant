@@ -31,23 +31,30 @@ import Heading from '@/design/ui/components/heading';
 import Input from '@/design/ui/components/input';
 
 import { publishAccountRuntimeInvalidation } from '@/features/account/client/accountRuntimeInvalidation';
-import {
-	changeAccountPassword,
-	logoutAccount,
-} from '@/features/account/client/api';
+import { changeAccountPassword } from '@/features/account/client/api';
 import { ACCOUNT_CLIENT_MESSAGE_KEYS } from '@/features/account/client/copy';
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
 import { accountMessages } from '@/features/account/client/messages';
 import {
-	applyAccountAuthSuccessResponse,
 	checkCurrentAccountAuthContext,
 	refreshAccountState,
 	refreshAccountStateFromInvalidation,
-	resetAccountStateAfterSessionExpired,
-	resetAccountStateForUnauthorizedError,
-	resetAccountStateIfCurrent,
 } from '@/features/account/client/session';
 import { accountStore } from '@/features/account/client/state/accountStore';
+import {
+	accountWorkspacePendingAuthStore,
+	checkCurrentAccountWorkspacePendingAuth,
+} from '@/features/account/client/workspace/authRuntime';
+import {
+	cancelPasswordRequiredLogin,
+	completeAccountAuthenticationSuccess,
+	executeAccountLogoutWorkspace,
+	reconcileAccountWorkspace,
+} from '@/features/account/client/workspace/lifecycle';
+import {
+	captureAccountWorkspace,
+	workspaceStore,
+} from '@/features/account/client/workspace/workspaceStore';
 import {
 	PASSWORD_MAX_LENGTH,
 	PASSWORD_MIN_LENGTH,
@@ -63,9 +70,12 @@ import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 
-const ACCOUNT_PASSWORD_MODAL_CLASS_NAMES = {
-	body: 'px-[18px] py-0.5',
-} as const;
+import {
+	handleUnauthorizedAccountActionError,
+	handleUnauthorizedAccountError,
+} from './accountManager/controller';
+import { ACCOUNT_MODAL_CLASS_NAMES } from './accountModalSpacing';
+
 const ACCOUNT_PASSWORD_MODAL_COORDINATION = {
 	id: 'account.password-required',
 	requestOwnership: 'external',
@@ -144,6 +154,14 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 	const isLoggedIn = accountStore.shared.isLoggedIn.use();
 	const passwordMustChange = accountStore.shared.passwordMustChange.use();
 	const user = accountStore.shared.user.use();
+	const pendingAuth = accountWorkspacePendingAuthStore.value.use();
+	const workspacePhase = workspaceStore.phase.use();
+	const isStaging =
+		workspacePhase === 'password-required' &&
+		pendingAuth?.reason === 'password-required' &&
+		pendingAuth.passwordMustChange;
+	const effectiveCsrfToken = isStaging ? pendingAuth.csrfToken : csrfToken;
+	const effectiveUser = isStaging ? pendingAuth.user : user;
 
 	const [currentPassword, setCurrentPassword] = useState('');
 	const [message, setMessage] = useState<string | null>(null);
@@ -153,7 +171,32 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 	>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const isOpen = isLoggedIn && passwordMustChange;
+	const isOpen =
+		isStaging ||
+		((workspacePhase === 'ready' ||
+			workspacePhase === 'password-required') &&
+			isLoggedIn &&
+			passwordMustChange);
+	const checkCurrentAuthContext = useCallback(
+		(context: {
+			expectedCsrfToken?: string | null;
+			expectedUserId?: string | null;
+		}) => {
+			if (
+				isStaging &&
+				checkCurrentAccountWorkspacePendingAuth(pendingAuth)
+			) {
+				return (
+					(context.expectedCsrfToken === undefined ||
+						context.expectedCsrfToken === pendingAuth.csrfToken) &&
+					(context.expectedUserId === undefined ||
+						context.expectedUserId === pendingAuth.user.id)
+				);
+			}
+			return checkCurrentAccountAuthContext(context);
+		},
+		[isStaging, pendingAuth]
+	);
 	const isNewPasswordInvalid =
 		newPassword.length > 0 && !checkPasswordPolicy(newPassword);
 	const shouldResumeSso = pathname === '/sso/authorize';
@@ -180,7 +223,11 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 	}, []);
 
 	const handlePasswordChange = useCallback(() => {
-		if (isSubmitting || csrfToken === null || user === null) {
+		if (
+			isSubmitting ||
+			effectiveCsrfToken === null ||
+			effectiveUser === null
+		) {
 			return;
 		}
 
@@ -203,31 +250,31 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 		setPasswordChangeError(null);
 
 		const expectedAuthContext = {
-			expectedCsrfToken: csrfToken,
-			expectedUserId: user.id,
+			expectedCsrfToken: effectiveCsrfToken,
+			expectedUserId: effectiveUser.id,
 		};
 
 		void changeAccountPassword(
 			{ current_password: currentPassword, new_password: newPassword },
-			csrfToken
+			effectiveCsrfToken
 		)
-			.then((result) => {
+			.then(async (result) => {
 				if (result.status === 'error') {
 					if (result.message === 'credential-changed') {
 						setMessage(result.message);
 						void publishAccountRuntimeInvalidation({
 							reason: 'credential-changed',
-							stateEpoch: user.state_epoch,
-							userId: user.id,
+							stateEpoch: effectiveUser.state_epoch,
+							userId: effectiveUser.id,
 						});
 						void refreshAccountStateFromInvalidation().catch(
 							(error: unknown) => {
 								if (
-									resetAccountStateForUnauthorizedError(
+									handleUnauthorizedAccountError(
 										error,
 										expectedAuthContext
 									) ||
-									!checkCurrentAccountAuthContext(
+									!checkCurrentAuthContext(
 										expectedAuthContext
 									)
 								) {
@@ -252,17 +299,22 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 						result.httpStatus === 401 &&
 						result.message !== 'invalid-password'
 					) {
-						if (
-							resetAccountStateAfterSessionExpired({
-								...expectedAuthContext,
-								stateEpoch: user.state_epoch,
-							})
-						) {
-							clearPasswordFields();
-						}
+						await reconcileAccountWorkspace({
+							authOutcome: { kind: 'session-expired' },
+							source: 'runtime-invalidation',
+						});
+						clearPasswordFields();
 						return;
 					}
-					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
+					if (
+						handleUnauthorizedAccountActionError(
+							result,
+							expectedAuthContext
+						)
+					) {
+						return;
+					}
+					if (!checkCurrentAuthContext(expectedAuthContext)) {
 						return;
 					}
 					if (result.message === 'invalid-password') {
@@ -276,16 +328,19 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 				}
 
 				const { data } = result;
-				if (
-					!applyAccountAuthSuccessResponse(data, {
-						...expectedAuthContext,
-					})
-				) {
+				const completion = await completeAccountAuthenticationSuccess(
+					data,
+					expectedAuthContext
+				);
+				if (completion === 'stale') {
 					return;
 				}
 
 				clearPasswordFields();
 				setMessage(null);
+				if (completion !== 'ready') {
+					return;
+				}
 
 				void publishAccountRuntimeInvalidation({
 					reason: 'password-changed',
@@ -320,15 +375,16 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 				setIsSubmitting(false);
 			});
 	}, [
+		checkCurrentAuthContext,
 		clearPasswordFields,
-		csrfToken,
+		effectiveCsrfToken,
+		effectiveUser,
 		currentPassword,
 		isSubmitting,
 		locale,
 		newPassword,
 		shouldResumeSso,
 		t,
-		user,
 		vibrate,
 	]);
 
@@ -341,6 +397,27 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 	);
 
 	const handleLogout = useCallback(() => {
+		if (isStaging) {
+			if (isSubmitting) {
+				return;
+			}
+			setIsSubmitting(true);
+			setMessage(null);
+			void cancelPasswordRequiredLogin()
+				.then((result) => {
+					if (result !== 'guest' && result !== 'locked') {
+						setMessage('account-logout-failed');
+					}
+				})
+				.catch(() => {
+					setMessage('account-logout-failed');
+				})
+				.finally(() => {
+					setIsSubmitting(false);
+				});
+			return;
+		}
+
 		if (isSubmitting || user === null) {
 			return;
 		}
@@ -353,67 +430,28 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 			'Force Logout'
 		);
 
-		const expectedAuthContext = {
-			expectedCsrfToken: csrfToken,
-			expectedUserId: user.id,
-		};
-
-		if (csrfToken === null) {
-			setMessage(null);
-			if (resetAccountStateIfCurrent(expectedAuthContext)) {
-				clearPasswordFields();
-			}
-			return;
-		}
-
 		setIsSubmitting(true);
 		setMessage(null);
 
-		void logoutAccount(csrfToken)
-			.then((result) => {
-				if (result.status === 'error') {
-					if (result.httpStatus === 401) {
-						if (
-							resetAccountStateAfterSessionExpired({
-								...expectedAuthContext,
-								stateEpoch: user.state_epoch,
-							})
-						) {
-							clearPasswordFields();
-							if (shouldResumeSso) {
-								trackEvent(
-									trackEvent.category.show,
-									'Modal',
-									'Account From SSO Force Logout'
-								);
-								accountStore.openAccountModal();
-							}
-						}
-						return;
-					}
-					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
-						return;
-					}
-
-					setMessage(result.message);
+		void executeAccountLogoutWorkspace({
+			action: 'current',
+			discardUnsyncedChanges: true,
+			expected: captureAccountWorkspace(),
+		})
+			.then((completion) => {
+				if (completion === 'guest') {
+					clearPasswordFields();
 					return;
 				}
-
-				if (resetAccountStateIfCurrent(expectedAuthContext)) {
-					void publishAccountRuntimeInvalidation({
-						reason: 'logout',
-						stateEpoch: user.state_epoch,
-						userId: user.id,
-					});
-					clearPasswordFields();
-					if (shouldResumeSso) {
-						trackEvent(
-							trackEvent.category.show,
-							'Modal',
-							'Account From SSO Force Logout'
-						);
-						accountStore.openAccountModal();
-					}
+				if (typeof completion === 'object') {
+					setMessage(completion.message);
+					return;
+				}
+				if (
+					completion !== 'locked' &&
+					completion !== 'account-mismatch'
+				) {
+					setMessage('account-logout-failed');
 				}
 			})
 			.catch((error: unknown) => {
@@ -426,14 +464,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 			.finally(() => {
 				setIsSubmitting(false);
 			});
-	}, [
-		clearPasswordFields,
-		csrfToken,
-		isSubmitting,
-		shouldResumeSso,
-		user,
-		vibrate,
-	]);
+	}, [clearPasswordFields, isSubmitting, isStaging, user, vibrate]);
 
 	if (!isOpen) {
 		return (
@@ -454,7 +485,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 			? null
 			: getAccountClientErrorMessage(passwordChangeError, locale);
 	const isPasswordReady =
-		csrfToken !== null &&
+		effectiveCsrfToken !== null &&
 		currentPassword.length > 0 &&
 		newPassword.length > 0 &&
 		!isNewPasswordInvalid;
@@ -471,9 +502,9 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 			isKeyboardDismissDisabled
 			isOpen
 			isDismissable={false}
-			classNames={ACCOUNT_PASSWORD_MODAL_CLASS_NAMES}
+			classNames={ACCOUNT_MODAL_CLASS_NAMES}
 		>
-			<div className="space-y-4 p-1.5">
+			<div className="space-y-4 px-1.5">
 				<Heading
 					as="h2"
 					isFirst
@@ -508,7 +539,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 								</div>
 								<div className="min-w-0 space-y-1">
 									<p className="truncate text-base font-medium leading-none">
-										{user?.username ??
+										{effectiveUser?.username ??
 											t(
 												'account.manager.passwordChange.currentAccount'
 											)}
@@ -540,7 +571,7 @@ export default memo<IProps>(function AccountPasswordMustChangeModal() {
 									name="username"
 									tabIndex={-1}
 									type="text"
-									value={user?.username ?? ''}
+									value={effectiveUser?.username ?? ''}
 								/>
 								<Input
 									autoComplete="current-password"

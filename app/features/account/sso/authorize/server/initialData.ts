@@ -134,7 +134,8 @@ export async function readSsoAuthorizeInitialData(
 		const request = await createCurrentRequest('/sso/authorize');
 		const auth = await authenticateAccountFromRequest(request, true);
 		if (auth.status === 'error') {
-			return auth.message === 'unauthorized'
+			return auth.message === 'unauthorized' ||
+				auth.message === 'user-disabled'
 				? { kind: 'login-required' }
 				: { kind: 'message', status: 'invalid' };
 		}

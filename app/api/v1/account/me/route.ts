@@ -7,12 +7,10 @@ import {
 	checkAccountRateLimitRouteResponse,
 	checkSameOriginRouteResponse,
 } from '@/features/account/server/http/routeGuards';
+import { createAccountAuthErrorRouteResponse } from '@/features/account/server/http/routeResponses';
 import { readContentLocale } from '@/features/preferences/server/requestLocale';
 
-import {
-	createNoStoreErrorResponse,
-	createNoStoreJsonResponse,
-} from '@/infrastructure/http/server/responses';
+import { createNoStoreJsonResponse } from '@/infrastructure/http/server/responses';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -95,7 +93,7 @@ export async function GET(request: NextRequest) {
 			} satisfies TAccountMeResponse);
 		}
 
-		return createNoStoreErrorResponse(auth.message, auth.httpStatus);
+		return createAccountAuthErrorRouteResponse(auth, request);
 	}
 
 	const { featureAccess, stateSnapshot } = auth.result;

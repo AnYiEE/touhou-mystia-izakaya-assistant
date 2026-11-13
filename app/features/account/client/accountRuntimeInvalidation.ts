@@ -7,16 +7,19 @@ import {
 	writeAccountJsonStorage,
 } from './storage';
 import { postAccountSyncBroadcastMessage } from './sync/broadcast';
+import { getAccountSyncTabId } from './sync/clientRuntime';
 
 export type TAccountRuntimeInvalidationReason =
 	| 'account-deleted'
+	| 'account-disabled'
 	| 'credential-changed'
 	| 'login'
 	| 'logout'
 	| 'logout-all'
 	| 'password-changed'
 	| 'password-required'
-	| 'session-expired';
+	| 'session-expired'
+	| 'workspace-owner-changed';
 
 interface IAccountRuntimeSignalRecord {
 	createdAt: number;
@@ -35,6 +38,7 @@ const ACCOUNT_RUNTIME_SIGNAL_VERSION = 1;
 const ACCOUNT_RUNTIME_INVALIDATION_REASON_SET =
 	new Set<TAccountRuntimeInvalidationReason>([
 		'account-deleted',
+		'account-disabled',
 		'credential-changed',
 		'login',
 		'logout',
@@ -42,6 +46,7 @@ const ACCOUNT_RUNTIME_INVALIDATION_REASON_SET =
 		'password-changed',
 		'password-required',
 		'session-expired',
+		'workspace-owner-changed',
 	]);
 const processedAccountRuntimeOperations = new Map<string, number>();
 
@@ -218,7 +223,7 @@ export function publishAccountRuntimeInvalidation({
 		namespaces: [],
 		operationId: mutationId,
 		state_epoch: stateEpoch,
-		tabId: 'account-runtime',
+		tabId: getAccountSyncTabId(),
 		type: 'account-updated',
 		userId,
 	});

@@ -8,6 +8,10 @@ import {
 	type TAccountTranslate,
 	accountMessages,
 } from '@/features/account/client/messages';
+import {
+	checkWorkspaceAccount,
+	workspaceStore,
+} from '@/features/account/client/workspace/workspaceStore';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
@@ -24,6 +28,7 @@ interface ISsoAuthorizeSubmitResponse {
 }
 
 interface ISsoAuthorizeControlsProps {
+	expectedUserId: string;
 	transactionId: string;
 }
 
@@ -45,6 +50,7 @@ function createSubmitErrorMessage(error: unknown, t: TAccountTranslate) {
 }
 
 export default function SsoAuthorizeControls({
+	expectedUserId,
 	transactionId,
 }: ISsoAuthorizeControlsProps) {
 	const { t } = useI18n(accountMessages);
@@ -54,10 +60,19 @@ export default function SsoAuthorizeControls({
 	const [submittingIntent, setSubmittingIntent] =
 		useState<TSsoAuthorizeIntent | null>(null);
 	const submitInFlightRef = useRef(false);
+	const isAuthReconciled = workspaceStore.isAuthReconciled.use();
+	const isReady = workspaceStore.isReady.use();
+	const owner = workspaceStore.owner.use();
+	const phase = workspaceStore.phase.use();
+	const canSubmit =
+		isAuthReconciled &&
+		isReady &&
+		phase === 'ready' &&
+		checkWorkspaceAccount(owner, expectedUserId);
 
 	const submit = useCallback(
 		(intent: TSsoAuthorizeIntent) => {
-			if (submitInFlightRef.current) {
+			if (submitInFlightRef.current || !canSubmit) {
 				return;
 			}
 
@@ -77,6 +92,7 @@ export default function SsoAuthorizeControls({
 				'/api/v1/sso/authorize',
 				{
 					body: JSON.stringify({
+						expected_user_id: expectedUserId,
 						intent,
 						transaction_id: transactionId,
 					}),
@@ -103,7 +119,7 @@ export default function SsoAuthorizeControls({
 					setSubmittingIntent(null);
 				});
 		},
-		[t, transactionId, vibrate]
+		[canSubmit, expectedUserId, t, transactionId, vibrate]
 	);
 
 	return (
@@ -112,7 +128,7 @@ export default function SsoAuthorizeControls({
 				<Button
 					color="primary"
 					className="sm:min-w-32"
-					isDisabled={submittingIntent !== null}
+					isDisabled={submittingIntent !== null || !canSubmit}
 					isLoading={submittingIntent === 'agree'}
 					type="button"
 					variant="flat"
@@ -124,7 +140,7 @@ export default function SsoAuthorizeControls({
 				</Button>
 				<Button
 					className="sm:min-w-24"
-					isDisabled={submittingIntent !== null}
+					isDisabled={submittingIntent !== null || !canSubmit}
 					isLoading={submittingIntent === 'cancel'}
 					type="button"
 					variant="flat"

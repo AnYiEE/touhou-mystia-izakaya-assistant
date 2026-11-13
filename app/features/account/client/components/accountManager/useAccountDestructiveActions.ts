@@ -2,43 +2,33 @@
 
 import { useCallback, useState } from 'react';
 
-import { publishAccountRuntimeInvalidation } from '@/features/account/client/accountRuntimeInvalidation';
-import {
-	AccountApiError,
-	type TAccountApiResult,
-	deleteAccount,
-	deleteAccountData,
-	logoutAccount,
-	logoutAllAccount,
-} from '@/features/account/client/api';
-import { createAccountClientId } from '@/features/account/client/clientId';
+import { ACCOUNT_SYNC_STATUS_MAP } from '@/domain/account/contracts';
+
+import { deleteAccountData } from '@/features/account/client/api';
 import { ACCOUNT_CLIENT_MESSAGE_KEYS } from '@/features/account/client/copy';
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
 import { accountMessages } from '@/features/account/client/messages';
 import {
 	checkCurrentAccountAuthContext,
 	refreshAccountState,
-	resetAccountStateIfCurrent,
 } from '@/features/account/client/session';
 import { accountStore } from '@/features/account/client/state/accountStore';
-import { removeAccountSyncBaseSnapshotsForAccountDeletion } from '@/features/account/client/sync/baseSnapshot';
 import { postAccountSyncBroadcastMessage } from '@/features/account/client/sync/broadcast';
-import { removeAccountSyncConflictResolutionJournals } from '@/features/account/client/sync/conflictResolutionJournal';
-import { removeDirtyQueueEntries } from '@/features/account/client/sync/dirtyQueue/collisionEvidence';
+import {
+	readDirtyQueueEntries,
+	readIsolatedDirtyQueueNamespaces,
+} from '@/features/account/client/sync/dirtyQueue/collisionEvidence';
 import { flushAccountSyncQueueUntilIdle } from '@/features/account/client/sync/flush';
-import { removeAccountSyncLeaseForAccountDeletion } from '@/features/account/client/sync/lease';
 import { pauseAccountSyncForEmptyCloud } from '@/features/account/client/sync/remoteState';
+import { withAccountSyncOperationLease } from '@/features/account/client/sync/syncOperationLease';
 import {
-	markAccountSyncResetGenerationDeleted,
-	withAccountSyncResetGenerationLock,
-} from '@/features/account/client/sync/resetGeneration';
-import { removeAccountSyncMetaForAccountDeletion } from '@/features/account/client/sync/snapshot';
-import {
-	removeAccountSyncOperationForAccountDeletion,
-	withAccountSyncOperationLease,
-} from '@/features/account/client/sync/syncOperationLease';
+	executeAccountLogoutWorkspace,
+	executeActiveAccountDeletionWorkspace,
+} from '@/features/account/client/workspace/lifecycle';
+import { captureAccountWorkspace } from '@/features/account/client/workspace/workspaceStore';
 import type { IAccountUserProfile } from '@/features/account/contracts';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
+import { pushOverlayChild } from '@/features/overlays/client';
 
 import { getLogSafeErrorCode } from '@/infrastructure/logging/errorCode';
 
@@ -50,10 +40,7 @@ import {
 	handleUnauthorizedAccountError,
 } from './controller';
 import { ACCOUNT_MANAGER_MESSAGE_KEYS } from './copy';
-
-const LOGOUT_SKIPPED = Symbol('logout-skipped');
-type TLogoutAfterFlushResult =
-	TAccountApiResult<unknown> | typeof LOGOUT_SKIPPED;
+import { logoutRecoveryStore } from './logoutRecoveryStore';
 
 interface IUseAccountDestructiveActionsOptions {
 	controller: IAccountActionController;
@@ -95,10 +82,7 @@ export function useAccountDestructiveActions(
 		useState(false);
 
 	const logoutAfterFlush = useCallback(
-		(
-			action: (csrfToken: string) => Promise<TAccountApiResult<unknown>>,
-			trackName: string
-		) => {
+		(operation: 'all' | 'current', trackName: string) => {
 			if (csrfToken === null || isSubmitting || user === null) {
 				return;
 			}
@@ -119,78 +103,72 @@ export function useAccountDestructiveActions(
 				expectedUserId: user.id,
 			};
 
-			void flushAccountSyncQueueUntilIdle()
-				.then(async (isFlushed): Promise<TLogoutAfterFlushResult> => {
+			const openRecovery = (
+				reason: 'sync-failed' | 'sync-unavailable'
+			) => {
+				pushOverlayChild({
+					childId: 'account.logout-recovery',
+					onOpenChild: () => {
+						logoutRecoveryStore.set({ operation, reason });
+					},
+					parentId: 'account.main',
+				});
+			};
+			const runLogout = async (): Promise<void> => {
+				const canSync =
+					isAccountSyncAllowed &&
+					user.sync_status !== ACCOUNT_SYNC_STATUS_MAP.pausedEmpty;
+				if (canSync) {
+					const isFlushed = await flushAccountSyncQueueUntilIdle();
 					if (!isFlushed) {
 						if (
-							!checkCurrentAccountAuthContext(expectedAuthContext)
-						) {
-							return LOGOUT_SKIPPED;
-						}
-						if (accountStore.shared.user.get() === null) {
-							resetAccountStateIfCurrent(expectedAuthContext);
-							return LOGOUT_SKIPPED;
-						}
-
-						const syncLastError =
-							accountStore.shared.sync.lastError.get();
-						if (syncLastError === 'unauthorized') {
-							resetAccountStateIfCurrent(expectedAuthContext);
-							return LOGOUT_SKIPPED;
-						}
-
-						setMessage(
-							ACCOUNT_MANAGER_MESSAGE_KEYS.syncPendingBeforeLogout
-						);
-
-						return LOGOUT_SKIPPED;
-					}
-
-					return await action(csrfToken);
-				})
-				.then((result) => {
-					if (result === LOGOUT_SKIPPED) {
-						return;
-					}
-					if (result.status === 'error') {
-						if (
-							handleUnauthorizedAccountActionError(
-								result,
+							!checkCurrentAccountAuthContext(
 								expectedAuthContext
-							)
+							) ||
+							accountStore.shared.user.get() === null ||
+							accountStore.shared.sync.lastError.get() ===
+								'unauthorized'
 						) {
 							return;
 						}
-						setMessage(result.message);
+						openRecovery('sync-failed');
 						return;
 					}
-
-					if (resetAccountStateIfCurrent(expectedAuthContext)) {
-						void publishAccountRuntimeInvalidation({
-							reason:
-								trackName === 'Logout All'
-									? 'logout-all'
-									: 'logout',
-							stateEpoch: user.state_epoch,
-							userId: user.id,
-						});
+				} else {
+					const hasUnuploadedChanges =
+						readDirtyQueueEntries(user.id).length > 0 ||
+						readIsolatedDirtyQueueNamespaces(user.id).length > 0;
+					if (hasUnuploadedChanges) {
+						openRecovery('sync-unavailable');
+						return;
 					}
-				})
+				}
+
+				const completion = await executeAccountLogoutWorkspace({
+					action: operation,
+					expected: captureAccountWorkspace(),
+				});
+				if (completion === 'guest' || completion === 'ready') {
+					return;
+				}
+				if (typeof completion === 'object') {
+					setMessage(completion.message);
+					return;
+				}
+				if (completion === 'busy') {
+					setMessage(ACCOUNT_CLIENT_MESSAGE_KEYS.operationBusy);
+					return;
+				}
+				switch (completion) {
+					case 'account-mismatch':
+					case 'locked':
+					case 'pending-recovery':
+						return;
+				}
+				setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.logoutSyncFailed);
+			};
+			void runLogout()
 				.catch((error: unknown) => {
-					if (
-						error instanceof AccountApiError &&
-						error.status === 401
-					) {
-						if (resetAccountStateIfCurrent(expectedAuthContext)) {
-							void publishAccountRuntimeInvalidation({
-								reason: 'session-expired',
-								stateEpoch: user.state_epoch,
-								userId: user.id,
-							});
-						}
-						return;
-					}
-
 					setMessage(
 						Error.isError(error)
 							? error.message
@@ -201,15 +179,23 @@ export function useAccountDestructiveActions(
 					setIsSubmitting(false);
 				});
 		},
-		[csrfToken, isSubmitting, setIsSubmitting, setMessage, user, vibrate]
+		[
+			csrfToken,
+			isAccountSyncAllowed,
+			isSubmitting,
+			setIsSubmitting,
+			setMessage,
+			user,
+			vibrate,
+		]
 	);
 
 	const handleLogout = useCallback(() => {
-		logoutAfterFlush(logoutAccount, 'Logout');
+		logoutAfterFlush('current', 'Logout');
 	}, [logoutAfterFlush]);
 
 	const handleLogoutAll = useCallback(() => {
-		logoutAfterFlush(logoutAllAccount, 'Logout All');
+		logoutAfterFlush('all', 'Logout All');
 	}, [logoutAfterFlush]);
 
 	const handleDeleteData = useCallback(() => {
@@ -424,72 +410,29 @@ export function useAccountDestructiveActions(
 			expectedCsrfToken: csrfToken,
 			expectedUserId: user.id,
 		};
-		const expectedUserContext = { expectedUserId: user.id };
+		const expectedWorkspace = captureAccountWorkspace();
 
-		void deleteAccount(csrfToken)
-			.then(async (result) => {
-				if (result.status === 'error') {
-					if (
-						handleUnauthorizedAccountActionError(
-							result,
-							expectedSessionContext
-						)
-					) {
-						return;
-					}
-					if (
-						!checkCurrentAccountAuthContext(expectedSessionContext)
-					) {
-						return;
-					}
-
-					setMessage(result.message);
+		void executeActiveAccountDeletionWorkspace(expectedWorkspace)
+			.then((completion) => {
+				if (completion === 'guest') {
+					accountStore.closeAccountModal();
 					return;
 				}
-
-				void publishAccountRuntimeInvalidation({
-					reason: 'account-deleted',
-					stateEpoch: user.state_epoch,
-					userId: user.id,
-				});
-
-				try {
-					const didCleanUp = await withAccountSyncResetGenerationLock(
-						user.id,
-						() => {
-							const deletedMarker =
-								markAccountSyncResetGenerationDeleted({
-									operationId: createAccountClientId(),
-									stateEpoch: user.state_epoch,
-									userId: user.id,
-								});
-							if (deletedMarker === null) {
-								return false;
-							}
-							removeAccountSyncOperationForAccountDeletion(
-								user.id
-							);
-							removeDirtyQueueEntries(user.id);
-							removeAccountSyncBaseSnapshotsForAccountDeletion(
-								user.id
-							);
-							removeAccountSyncConflictResolutionJournals(
-								user.id
-							);
-							removeAccountSyncMetaForAccountDeletion(user.id);
-							removeAccountSyncLeaseForAccountDeletion(user.id);
-							return true;
-						},
-						{ ifAvailable: false }
-					);
-					if (didCleanUp !== true) {
-						throw new Error(
-							'account-deletion-local-cleanup-failed'
-						);
-					}
-				} finally {
-					resetAccountStateIfCurrent(expectedUserContext);
+				if (typeof completion === 'object') {
+					setMessage(completion.message);
+					return;
 				}
+				if (completion === 'busy') {
+					setMessage(ACCOUNT_CLIENT_MESSAGE_KEYS.operationBusy);
+					return;
+				}
+				switch (completion) {
+					case 'account-mismatch':
+					case 'locked':
+					case 'pending-recovery':
+						return;
+				}
+				setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.accountDeleteFailed);
 			})
 			.catch((error: unknown) => {
 				console.warn('Failed to delete or clean up account state.', {
@@ -498,7 +441,6 @@ export function useAccountDestructiveActions(
 				if (!checkCurrentAccountAuthContext(expectedSessionContext)) {
 					return;
 				}
-
 				setMessage(
 					Error.isError(error)
 						? error.message

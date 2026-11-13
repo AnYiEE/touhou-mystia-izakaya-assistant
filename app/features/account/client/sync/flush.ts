@@ -6,6 +6,10 @@ import {
 import { AccountApiError, putSyncState } from '@/features/account/client/api';
 import { createAccountClientId } from '@/features/account/client/clientId';
 import { accountStore } from '@/features/account/client/state/accountStore';
+import {
+	checkWorkspaceAccount,
+	workspaceStore,
+} from '@/features/account/client/workspace/workspaceStore';
 import type { IAccountSyncMeta } from '@/features/account/sync/contracts';
 import { checkSyncMergeCanApplyAutomatically } from '@/features/account/sync/serializers/utils';
 import type {
@@ -102,6 +106,7 @@ import {
 	withAccountSyncMetaTransitionLock,
 	writeAccountSyncMeta,
 } from './snapshot';
+import { recordPausedAccountSyncDirtyNamespace } from './stateGuards';
 import { getAccountSyncLifecyclePort } from './syncLifecyclePort';
 import { checkAccountSyncOperationActive } from './syncOperationLease';
 import { markAccountSyncUpdateRequired } from './syncRuntimeState';
@@ -533,6 +538,7 @@ export async function flushAccountSyncQueue() {
 	if (checkAccountSyncResetPrepared(context.user.id)) {
 		return false;
 	}
+	const workspaceGeneration = workspaceStore.owner.get()?.generation ?? null;
 	const entryGenerationToken = captureAccountSyncResetGeneration(
 		context.user.id
 	);
@@ -554,10 +560,13 @@ export async function flushAccountSyncQueue() {
 		clearSyncTimers();
 		return allEntries.length === 0;
 	}
-	if (
-		checkAccountSyncPaused() ||
-		checkAccountSyncOperationActive(context.user.id)
-	) {
+	if (checkAccountSyncPaused()) {
+		entries.forEach(({ namespace }) => {
+			recordPausedAccountSyncDirtyNamespace(namespace);
+		});
+		return false;
+	}
+	if (checkAccountSyncOperationActive(context.user.id)) {
 		return false;
 	}
 
@@ -633,6 +642,13 @@ export async function flushAccountSyncQueue() {
 				const lease = readAccountSyncLease(context.user.id);
 				return (
 					checkCurrentSyncRun(generation, context.user.id) &&
+					workspaceStore.phase.get() === 'ready' &&
+					checkWorkspaceAccount(
+						workspaceStore.owner.get(),
+						context.user.id
+					) &&
+					workspaceStore.owner.get()?.generation ===
+						workspaceGeneration &&
 					!checkAccountSyncOperationActive(context.user.id) &&
 					checkAccountSyncResetWriteAllowed({
 						expectedGeneration: operationGenerationToken,
@@ -669,6 +685,13 @@ export async function flushAccountSyncQueue() {
 				entries,
 				stateEpoch: context.user.state_epoch,
 			});
+			if (
+				workspaceStore.owner.get()?.generation !==
+					workspaceGeneration ||
+				workspaceStore.phase.get() !== 'ready'
+			) {
+				return false;
+			}
 			if (!checkFlushTerminalPreflight()) {
 				return false;
 			}
@@ -981,6 +1004,7 @@ export function scheduleAccountSyncFlush() {
 	if (context === null) {
 		return;
 	}
+	const workspaceGeneration = workspaceStore.owner.get()?.generation;
 
 	// Synchronous scheduler boundary; migrations use this one captured token.
 	const generationToken = captureAccountSyncResetGeneration(context.user.id);
@@ -999,6 +1023,9 @@ export function scheduleAccountSyncFlush() {
 		return;
 	}
 	if (checkAccountSyncPaused()) {
+		entries.forEach(({ namespace }) => {
+			recordPausedAccountSyncDirtyNamespace(namespace);
+		});
 		return;
 	}
 
@@ -1011,6 +1038,12 @@ export function scheduleAccountSyncFlush() {
 		setQuietFlushTimer(
 			setTimeout(() => {
 				setQuietFlushTimer(null);
+				if (
+					workspaceStore.owner.get()?.generation !==
+					workspaceGeneration
+				) {
+					return;
+				}
 				void flushAccountSyncQueue();
 			}, QUIET_FLUSH_DELAY)
 		);
@@ -1019,6 +1052,12 @@ export function scheduleAccountSyncFlush() {
 		setForceFlushTimer(
 			setTimeout(() => {
 				setForceFlushTimer(null);
+				if (
+					workspaceStore.owner.get()?.generation !==
+					workspaceGeneration
+				) {
+					return;
+				}
 				void flushAccountSyncQueue();
 			}, FORCE_FLUSH_DELAY)
 		);

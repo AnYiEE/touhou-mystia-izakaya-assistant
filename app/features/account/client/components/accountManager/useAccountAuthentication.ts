@@ -24,11 +24,12 @@ import {
 	startWebAuthnLogin,
 } from '@/features/account/client/api';
 import {
-	applyAccountAuthSuccessResponse,
 	checkCurrentAccountAuthContext,
 	refreshAccountState,
 } from '@/features/account/client/session';
 import { accountStore } from '@/features/account/client/state/accountStore';
+import { completeAccountAuthenticationSuccess } from '@/features/account/client/workspace/lifecycle';
+import { workspaceUiStore } from '@/features/account/client/workspace/workspaceUiStore';
 import {
 	WEBAUTHN_BROWSER_CEREMONY_TIMEOUT_MS,
 	checkNicknamePolicy,
@@ -53,8 +54,10 @@ import {
 import { type IUseAccountPasskeysResult } from './useAccountPasskeys';
 
 type TAuthMode = 'login' | 'register';
+export type TAccountAuthPurpose = 'default' | 'required-account';
 export type TAuthEntryMode = 'passkey' | 'password';
 interface IUseAccountAuthenticationOptions {
+	authPurpose: TAccountAuthPurpose;
 	bootstrapStatus: ReturnType<typeof accountStore.shared.bootstrapStatus.get>;
 	controller: IAccountActionController;
 	isAccountModalOpen: boolean;
@@ -68,6 +71,7 @@ interface IUseAccountAuthenticationOptions {
 
 export interface IUseAccountAuthenticationResult {
 	accountManagerRootRef: RefObject<HTMLElement | null>;
+	canRegister: boolean;
 	authEntryMode: TAuthEntryMode;
 	authMode: TAuthMode;
 	authTermsCheckboxRef: RefObject<HTMLInputElement | null>;
@@ -107,6 +111,7 @@ export interface IUseAccountAuthenticationResult {
 }
 
 export function useAccountAuthentication({
+	authPurpose,
 	bootstrapStatus,
 	controller: { isSubmitting, setIsSubmitting, setMessage },
 	isAccountModalOpen,
@@ -192,6 +197,7 @@ export function useAccountAuthentication({
 		normalizedRegistrationNickname !== null &&
 		!checkNicknamePolicy(normalizedRegistrationNickname);
 	const isSsoContext = pathname === '/sso/authorize';
+	const canRegister = authPurpose === 'default';
 	const isPasskeyPreferredAuthAvailable =
 		bootstrapStatus === 'anonymous' && isWebauthnSupported && user === null;
 	const shouldShowPasskeyPrimaryAuth =
@@ -229,6 +235,13 @@ export function useAccountAuthentication({
 		);
 		setIsPasskeyRegistrationPromptVisible(false);
 	}, [isAccountModalOpen, isPasskeyPreferredAuthAvailable, user]);
+
+	useEffect(() => {
+		if (authPurpose === 'required-account') {
+			setAuthMode('login');
+			setIsPasskeyRegistrationPromptVisible(false);
+		}
+	}, [authPurpose]);
 
 	useEffect(() => {
 		if (user?.id === undefined) {
@@ -285,6 +298,7 @@ export function useAccountAuthentication({
 
 		setIsSubmitting(true);
 		setMessage(null);
+		workspaceUiStore.isAuthRequestPending.set(true);
 
 		const expectedAuthContext = {
 			expectedCsrfToken: accountStore.shared.csrfToken.get(),
@@ -300,7 +314,7 @@ export function useAccountAuthentication({
 						username: normalizedUsername,
 					});
 		void request
-			.then((result) => {
+			.then(async (result) => {
 				if (result.status === 'error') {
 					setMessage(result.message);
 					return;
@@ -308,13 +322,18 @@ export function useAccountAuthentication({
 
 				const { redirect_to: redirectTo, ...data } = result.data;
 				stabilizeFocusBeforeAuthStateChange(expectedAuthContext);
-				if (
-					!applyAccountAuthSuccessResponse(data, expectedAuthContext)
-				) {
+				const completion = await completeAccountAuthenticationSuccess(
+					data,
+					expectedAuthContext
+				);
+				if (completion === 'stale') {
 					return;
 				}
-
 				setPassword('');
+				if (completion !== 'ready') {
+					setMessage(null);
+					return;
+				}
 				setMessage(
 					authMode === 'login'
 						? ACCOUNT_MANAGER_MESSAGE_KEYS.loginSuccess
@@ -365,6 +384,7 @@ export function useAccountAuthentication({
 			})
 			.finally(() => {
 				setIsSubmitting(false);
+				workspaceUiStore.isAuthRequestPending.set(false);
 			});
 	}, [
 		authMode,
@@ -408,6 +428,9 @@ export function useAccountAuthentication({
 	}, [setMessage, vibrate]);
 
 	const handleRegisterModePress = useCallback(() => {
+		if (!canRegister) {
+			return;
+		}
 		vibrate();
 		trackEvent(
 			trackEvent.category.click,
@@ -421,7 +444,7 @@ export function useAccountAuthentication({
 		setIsPasskeyRegistrationPromptVisible(false);
 		setMessage(null);
 		setShouldHighlightAuthTerms(false);
-	}, [setMessage, vibrate]);
+	}, [canRegister, setMessage, vibrate]);
 
 	const handlePasswordAuthEntryPress = useCallback(() => {
 		vibrate();
@@ -513,11 +536,12 @@ export function useAccountAuthentication({
 
 		webauthnAutofillRequestIdRef.current += 1;
 		isWebauthnAutofillRequestActiveRef.current = false;
+		workspaceUiStore.isAuthRequestPending.set(false);
 		WebAuthnAbortService.cancelCeremony();
 	}, []);
 
 	const handleWebAuthnLoginResult = useCallback(
-		(
+		async (
 			result: TAccountApiResult<TAuthLoginSuccessData>,
 			expectedAuthContext: TAccountAuthContext
 		) => {
@@ -533,10 +557,18 @@ export function useAccountAuthentication({
 
 			const { redirect_to: redirectTo, ...data } = result.data;
 			stabilizeFocusBeforeAuthStateChange(expectedAuthContext);
-			if (!applyAccountAuthSuccessResponse(data, expectedAuthContext)) {
+			const completion = await completeAccountAuthenticationSuccess(
+				data,
+				expectedAuthContext
+			);
+			if (completion === 'stale') {
 				return;
 			}
 
+			if (completion !== 'ready') {
+				setMessage(null);
+				return;
+			}
 			setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.loginSuccess);
 			accountStore.closeAccountModalAfterAuthentication();
 
@@ -588,6 +620,7 @@ export function useAccountAuthentication({
 		const requestId = webauthnAutofillRequestIdRef.current + 1;
 		webauthnAutofillRequestIdRef.current = requestId;
 		isWebauthnAutofillRequestActiveRef.current = true;
+		workspaceUiStore.isAuthRequestPending.set(true);
 
 		const expectedAuthContext = {
 			expectedCsrfToken: accountStore.shared.csrfToken.get(),
@@ -600,6 +633,7 @@ export function useAccountAuthentication({
 					return;
 				}
 				isWebauthnAutofillRequestActiveRef.current = false;
+				workspaceUiStore.isAuthRequestPending.set(false);
 
 				if (
 					result.status === 'error' &&
@@ -615,13 +649,14 @@ export function useAccountAuthentication({
 					);
 				}
 
-				handleWebAuthnLoginResult(result, expectedAuthContext);
+				void handleWebAuthnLoginResult(result, expectedAuthContext);
 			})
 			.catch((error: unknown) => {
 				if (webauthnAutofillRequestIdRef.current !== requestId) {
 					return;
 				}
 				isWebauthnAutofillRequestActiveRef.current = false;
+				workspaceUiStore.isAuthRequestPending.set(false);
 				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
 					return;
 				}
@@ -693,6 +728,7 @@ export function useAccountAuthentication({
 
 		cancelWebAuthnAutofillLogin();
 		setIsWebauthnLoginPending(true);
+		workspaceUiStore.isAuthRequestPending.set(true);
 		setIsWebauthnSlow(false);
 		setIsPasskeyRegistrationPromptVisible(false);
 		setMessage(null);
@@ -720,7 +756,7 @@ export function useAccountAuthentication({
 					return;
 				}
 
-				handleWebAuthnLoginResult(result, expectedAuthContext);
+				void handleWebAuthnLoginResult(result, expectedAuthContext);
 			})
 			.catch((error: unknown) => {
 				if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
@@ -737,6 +773,7 @@ export function useAccountAuthentication({
 				clearTimeout(slowTimerId);
 				setIsWebauthnLoginPending(false);
 				setIsWebauthnSlow(false);
+				workspaceUiStore.isAuthRequestPending.set(false);
 			});
 	}, [
 		cancelWebAuthnAutofillLogin,
@@ -748,7 +785,11 @@ export function useAccountAuthentication({
 	]);
 
 	const handleWebAuthnAccountRegistration = useCallback(() => {
-		if (isWebauthnAccountRegistrationPending || isWebauthnLoginPending) {
+		if (
+			!canRegister ||
+			isWebauthnAccountRegistrationPending ||
+			isWebauthnLoginPending
+		) {
 			return;
 		}
 
@@ -768,6 +809,7 @@ export function useAccountAuthentication({
 
 		cancelWebAuthnAutofillLogin();
 		setIsWebauthnAccountRegistrationPending(true);
+		workspaceUiStore.isAuthRequestPending.set(true);
 		setIsWebauthnSlow(false);
 		setMessage(null);
 
@@ -781,7 +823,7 @@ export function useAccountAuthentication({
 		};
 
 		void startWebAuthnAccountRegistration()
-			.then((result) => {
+			.then(async (result) => {
 				if (result.status === 'error') {
 					if (!checkCurrentAccountAuthContext(expectedAuthContext)) {
 						return;
@@ -795,14 +837,20 @@ export function useAccountAuthentication({
 
 				const { redirect_to: redirectTo, ...data } = result.data;
 				stabilizeFocusBeforeAuthStateChange(expectedAuthContext);
-				if (
-					!applyAccountAuthSuccessResponse(data, expectedAuthContext)
-				) {
+				const completion = await completeAccountAuthenticationSuccess(
+					data,
+					expectedAuthContext
+				);
+				if (completion === 'stale') {
 					return;
 				}
 
 				setPassword('');
 				setIsPasskeyRegistrationPromptVisible(false);
+				if (completion !== 'ready') {
+					setMessage(null);
+					return;
+				}
 				setMessage(ACCOUNT_MANAGER_MESSAGE_KEYS.registrationSuccess);
 				accountStore.closeAccountModalAfterAuthentication();
 
@@ -855,8 +903,10 @@ export function useAccountAuthentication({
 				clearTimeout(slowTimerId);
 				setIsWebauthnAccountRegistrationPending(false);
 				setIsWebauthnSlow(false);
+				workspaceUiStore.isAuthRequestPending.set(false);
 			});
 	}, [
+		canRegister,
 		cancelWebAuthnAutofillLogin,
 		hasAcceptedAuthTerms,
 		isSsoContext,
@@ -873,6 +923,7 @@ export function useAccountAuthentication({
 		authEntryMode,
 		authMode,
 		authTermsCheckboxRef,
+		canRegister,
 		handleAuthCredentialInputFocus,
 		handleAuthPasswordChange,
 		handleAuthSubmit,

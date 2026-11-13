@@ -7,6 +7,10 @@ import { execSync } from 'node:child_process';
 import { type PropsWithChildren } from 'react';
 
 import ThemeScript from './design/theme/runtime/themeScript';
+import AccountWorkspaceReadiness from './features/account/client/components/AccountWorkspaceReadiness';
+import WorkspaceOwnerGateScript, {
+	type TInitialWorkspaceAuth,
+} from './features/account/client/components/WorkspaceOwnerGateScript';
 import { AnalyticsClient } from './features/analytics/client';
 import AnnouncementBar from './features/announcements/server/AnnouncementBar';
 import ErrorBoundary from './features/appShell/client/components/ErrorBoundary';
@@ -102,6 +106,15 @@ export default async function RootLayout({
 					ssoGrants: accountFeatureInitialData.ssoGrants,
 					webauthn: accountFeatureInitialData.webauthn,
 				};
+	const initialWorkspaceAuth: TInitialWorkspaceAuth =
+		accountInitialData?.account.isLoggedIn === true
+			? {
+					kind: 'authenticated',
+					userId: accountInitialData.account.user.id,
+				}
+			: accountInitialData === null
+				? { kind: 'unknown' }
+				: { kind: 'anonymous' };
 
 	return (
 		<html
@@ -114,6 +127,12 @@ export default async function RootLayout({
 				<Polyfills
 					errorTemplate={runtimeErrorTemplate}
 					storageWarning={runtimeStorageWarning}
+				/>
+				<WorkspaceOwnerGateScript
+					initialAuth={initialWorkspaceAuth}
+					isAccountFeatureClientEnabled={
+						isAccountFeatureClientEnabled
+					}
 				/>
 				<ThemeScript />
 				<LocaleScript />
@@ -154,6 +173,9 @@ export default async function RootLayout({
 							<Navbar />
 							<main className="container mx-auto grid max-w-7xl grow grid-cols-1 px-6 py-8 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl max-[1300px]:[&:has([data-catalog-world-map-entry])]:px-7 [&>*]:min-w-0">
 								<div id="modal-portal-container" />
+								<AccountWorkspaceReadiness
+									initialAuth={initialWorkspaceAuth}
+								/>
 								{children}
 							</main>
 							<Footer />

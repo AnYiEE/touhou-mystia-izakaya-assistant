@@ -42,6 +42,7 @@ export const dynamic = 'force-dynamic';
 type TSsoAuthorizeSubmitIntent = 'agree' | 'cancel';
 
 interface ISsoAuthorizeSubmitBody {
+	expected_user_id?: string;
 	intent: TSsoAuthorizeSubmitIntent;
 	transaction_id?: string;
 }
@@ -245,7 +246,14 @@ export async function POST(request: NextRequest) {
 	}
 	const result = await authorizationFlowModule.submitSsoAuthorization(
 		request,
-		{ intent, transactionId: body?.transaction_id }
+		{
+			expectedUserId:
+				typeof body?.expected_user_id === 'string'
+					? body.expected_user_id
+					: null,
+			intent,
+			transactionId: body?.transaction_id,
+		}
 	);
 	const response =
 		result.status === 'redirect'

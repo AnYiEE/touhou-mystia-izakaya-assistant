@@ -101,7 +101,8 @@ export async function prepareSsoAuthorization(
 
 async function submitSsoAuthorizationAgree(
 	request: NextRequest,
-	transactionId: unknown
+	transactionId: unknown,
+	expectedUserId: string | null
 ): Promise<TSsoAuthorizationSubmitResult> {
 	const context = readSsoAuthorizationContext(request, transactionId);
 	if (context === null) {
@@ -125,6 +126,9 @@ async function submitSsoAuthorizationAgree(
 			ssoClientModule.getSsoClientById(context.client_id),
 		]);
 		if (auth.status === 'error') {
+			return { clearContext: false, status: 'resume' };
+		}
+		if (expectedUserId === null || auth.data.user.id !== expectedUserId) {
 			return { clearContext: false, status: 'resume' };
 		}
 		if (auth.data.credential.password_must_change === 1) {
@@ -258,11 +262,16 @@ async function submitSsoAuthorizationCancel(
 export async function submitSsoAuthorization(
 	request: NextRequest,
 	{
+		expectedUserId,
 		intent,
 		transactionId,
-	}: { intent: TSsoAuthorizationSubmitIntent; transactionId: unknown }
+	}: {
+		expectedUserId: string | null;
+		intent: TSsoAuthorizationSubmitIntent;
+		transactionId: unknown;
+	}
 ): Promise<TSsoAuthorizationSubmitResult> {
 	return intent === 'agree'
-		? submitSsoAuthorizationAgree(request, transactionId)
+		? submitSsoAuthorizationAgree(request, transactionId, expectedUserId)
 		: submitSsoAuthorizationCancel(request, transactionId);
 }

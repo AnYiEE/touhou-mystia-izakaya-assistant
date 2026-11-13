@@ -3,6 +3,8 @@
 import type { IStartAccountFeatureClientsOptions } from './featureClient.types';
 import { accountStore } from './state/accountStore';
 import { clearAccountSyncRuntimeConflicts } from './sync/syncRuntimeState';
+import { migrateUnownedWorkspace } from './workspace/migration';
+import { clearWorkspacePendingAttribute } from './workspace/readinessGate';
 
 export function startAccountFeatureClients(
 	options: IStartAccountFeatureClientsOptions = {}
@@ -29,6 +31,9 @@ export function startAccountFeatureClients(
 	accountStore.shared.sync.meta.set(null);
 	accountStore.shared.sync.pendingCount.set(0);
 	accountStore.shared.user.set(null);
+	void migrateUnownedWorkspace({ mode: 'account-disabled' })
+		.catch(() => {})
+		.finally(clearWorkspacePendingAttribute);
 
 	return () => {};
 }

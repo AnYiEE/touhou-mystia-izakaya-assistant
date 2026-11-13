@@ -14,9 +14,15 @@ import Heading from '@/design/ui/components/heading';
 import { ACCOUNT_SYNC_STATUS_MAP } from '@/domain/account/contracts';
 
 import LegalStatement from '@/features/about/client/components/LegalStatement';
+import AccountConfirmButton from '@/features/account/client/components/AccountConfirmButton';
+import AccountWorkspaceAdoptionPanel from '@/features/account/client/components/AccountWorkspaceAdoptionPanel';
+import { ACCOUNT_MODAL_CLASS_NAMES } from '@/features/account/client/components/accountModalSpacing';
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
 import { accountMessages } from '@/features/account/client/messages';
 import { accountStore } from '@/features/account/client/state/accountStore';
+import { accountWorkspacePendingAuthStore } from '@/features/account/client/workspace/authRuntime';
+import { workspaceStore } from '@/features/account/client/workspace/workspaceStore';
+import { workspaceUiStore } from '@/features/account/client/workspace/workspaceUiStore';
 import {
 	PASSWORD_MAX_LENGTH,
 	PASSWORD_MIN_LENGTH,
@@ -50,7 +56,10 @@ import {
 	getAccountBootstrapErrorMessage,
 	getAccountLoginSupportMessage,
 } from './copy';
-import { useAccountAuthentication } from './useAccountAuthentication';
+import {
+	type TAccountAuthPurpose,
+	useAccountAuthentication,
+} from './useAccountAuthentication';
 import { useAccountDestructiveActions } from './useAccountDestructiveActions';
 import { useAccountPasskeys } from './useAccountPasskeys';
 import { useAccountProfile } from './useAccountProfile';
@@ -63,9 +72,13 @@ const ACCOUNT_DATA_MANAGER_COORDINATION = {
 const ACCOUNT_HEADING_CLASS_NAMES = { subTitle: '!-mt-3' } as const;
 const ACCOUNT_LEGAL_COORDINATION = { id: 'account.legal' } as const;
 
-interface IProps {}
+interface IProps {
+	authPurpose?: TAccountAuthPurpose;
+}
 
-export default memo<IProps>(function AccountManager() {
+export default memo<IProps>(function AccountManager({
+	authPurpose = 'default',
+}) {
 	const { locale, t } = useI18n(accountMessages);
 	const { t: tFeatureAccess } = useI18n(featureAccessMessages);
 	const vibrate = useVibrate();
@@ -75,10 +88,13 @@ export default memo<IProps>(function AccountManager() {
 	const hasPassword = accountStore.shared.hasPassword.use();
 	const lastError = accountStore.shared.sync.lastError.use();
 	const passwordMustChange = accountStore.shared.passwordMustChange.use();
+	const pendingAuth = accountWorkspacePendingAuthStore.value.use();
 	const sessionInitialData = accountStore.shared.sessionInitialData.use();
 	const ssoGrantInitialData = accountStore.shared.ssoGrantInitialData.use();
 	const user = accountStore.shared.user.use();
 	const webauthnInitialData = accountStore.shared.webauthnInitialData.use();
+	const workspacePhase = workspaceStore.phase.use();
+	const workspaceError = workspaceStore.error.use();
 	const isAccountModalOpen = accountStore.shared.accountModal.isOpen.use();
 	const accountSyncAccess = useFeatureModuleAccess('account.sync');
 
@@ -87,6 +103,8 @@ export default memo<IProps>(function AccountManager() {
 	const [isDataManagerModalOpen, setIsDataManagerModalOpen] = useState(false);
 
 	const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+	const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+	const [isLogoutAllConfirmOpen, setIsLogoutAllConfirmOpen] = useState(false);
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -96,6 +114,10 @@ export default memo<IProps>(function AccountManager() {
 			'Account Auth Button',
 			'Open Legal Statement'
 		);
+		if (authPurpose === 'required-account') {
+			workspaceUiStore.isLegalRequiredOpen.set(true);
+			return;
+		}
 		pushOverlayChild({
 			childId: 'account.legal',
 			onOpenChild: () => {
@@ -103,7 +125,7 @@ export default memo<IProps>(function AccountManager() {
 			},
 			parentId: 'account.main',
 		});
-	}, []);
+	}, [authPurpose]);
 
 	const handleCloseLegalModal = useCallback(() => {
 		vibrate();
@@ -148,6 +170,7 @@ export default memo<IProps>(function AccountManager() {
 		webauthnInitialData,
 	});
 	const authentication = useAccountAuthentication({
+		authPurpose,
 		bootstrapStatus,
 		controller: actionController,
 		isAccountModalOpen,
@@ -204,6 +227,11 @@ export default memo<IProps>(function AccountManager() {
 	const { accountSessions, accountSessionsUserId } = sessionsController;
 	const { ssoGrants, ssoGrantsUserId } = ssoGrantsController;
 	const { handleLogout, handleLogoutAll } = destructiveActions;
+	const isGuestAdoptionPending =
+		workspacePhase === 'transitioning' &&
+		pendingAuth?.reason === 'guest-adoption';
+	const isGuestAdoptionRecovery =
+		isGuestAdoptionPending && workspaceError !== null;
 
 	const visibleSsoGrants = useMemo(
 		() => (user?.id === ssoGrantsUserId ? ssoGrants : []),
@@ -217,6 +245,13 @@ export default memo<IProps>(function AccountManager() {
 		() => (user?.id === passkeysUserId ? passkeys : []),
 		[passkeys, passkeysUserId, user?.id]
 	);
+
+	if (isGuestAdoptionRecovery) {
+		return <AccountWorkspaceAdoptionPanel />;
+	}
+	if (workspacePhase === 'transitioning' && !isGuestAdoptionPending) {
+		return null;
+	}
 
 	if (bootstrapStatus === 'error') {
 		return (
@@ -319,7 +354,7 @@ export default memo<IProps>(function AccountManager() {
 					: t('account.manager.ui.ariaManage')
 			}
 			tabIndex={-1}
-			className="space-y-4 rounded-small p-1.5 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+			className="space-y-4 rounded-small px-1.5 outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background"
 		>
 			<Heading
 				as="h2"
@@ -409,48 +444,66 @@ export default memo<IProps>(function AccountManager() {
 									>
 										{t('account.manager.ui.dataManagement')}
 									</Button>
-									<Button
-										fullWidth
-										className="justify-start"
+									<AccountConfirmButton
+										buttonLabel={t(
+											'account.manager.ui.logout'
+										)}
+										color="danger"
+										confirmLabel={t(
+											'account.workspace.session.confirmExit'
+										)}
+										icon={faArrowRightFromBracket}
 										isDisabled={
 											isSubmitting || csrfToken === null
 										}
+										isCancelDisabled={isSubmitting}
 										isLoading={isSubmitting}
-										startContent={
-											isSubmitting ? null : (
-												<FontAwesomeIcon
-													icon={
-														faArrowRightFromBracket
-													}
-													className="w-4"
-												/>
-											)
-										}
-										variant="flat"
-										onPress={handleLogout}
-									>
-										{t('account.manager.ui.logout')}
-									</Button>
-									<Button
-										fullWidth
-										className="justify-start"
+										isOpen={isLogoutConfirmOpen}
+										onCancel={() => {
+											if (!isSubmitting) {
+												setIsLogoutConfirmOpen(false);
+											}
+										}}
+										onConfirm={() => {
+											setIsLogoutConfirmOpen(false);
+											handleLogout();
+										}}
+										onOpenChange={setIsLogoutConfirmOpen}
+									/>
+									<p className="text-tiny leading-5 text-foreground-500">
+										{t('account.workspace.logoutHint')}
+									</p>
+									<AccountConfirmButton
+										buttonLabel={t(
+											'account.manager.ui.logoutAll'
+										)}
+										color="danger"
+										confirmLabel={t(
+											'account.workspace.logoutAllConfirm'
+										)}
+										icon={faPowerOff}
 										isDisabled={
 											isSubmitting || csrfToken === null
 										}
+										isCancelDisabled={isSubmitting}
 										isLoading={isSubmitting}
-										startContent={
-											isSubmitting ? null : (
-												<FontAwesomeIcon
-													icon={faPowerOff}
-													className="w-4"
-												/>
-											)
-										}
-										variant="flat"
-										onPress={handleLogoutAll}
-									>
-										{t('account.manager.ui.logoutAll')}
-									</Button>
+										isOpen={isLogoutAllConfirmOpen}
+										onCancel={() => {
+											if (!isSubmitting) {
+												setIsLogoutAllConfirmOpen(
+													false
+												);
+											}
+										}}
+										onConfirm={() => {
+											setIsLogoutAllConfirmOpen(false);
+											handleLogoutAll();
+										}}
+										onOpenChange={setIsLogoutAllConfirmOpen}
+									/>
+									<p className="text-tiny leading-5 text-foreground-500">
+										{t('account.workspace.logoutAllHint')}
+									</p>
 								</div>
 								<AccountSessionsPanel
 									{...sessionsController}
@@ -482,12 +535,13 @@ export default memo<IProps>(function AccountManager() {
 				</div>
 			)}
 			<CoordinatedModal
+				classNames={ACCOUNT_MODAL_CLASS_NAMES}
 				coordination={ACCOUNT_DATA_MANAGER_COORDINATION}
 				isOpen={isDataManagerModalOpen}
 				size="2xl"
 				onClose={handleCloseDataManagerModal}
 			>
-				<div className="space-y-4">
+				<div className="space-y-4 px-1.5">
 					<Heading as="h2" isFirst>
 						{t('account.manager.ui.dataManagement')}
 					</Heading>
@@ -495,12 +549,15 @@ export default memo<IProps>(function AccountManager() {
 				</div>
 			</CoordinatedModal>
 			<CoordinatedModal
+				classNames={ACCOUNT_MODAL_CLASS_NAMES}
 				coordination={ACCOUNT_LEGAL_COORDINATION}
 				isOpen={isLegalModalOpen}
 				size="2xl"
 				onClose={handleCloseLegalModal}
 			>
-				<LegalStatement />
+				<div className="px-1.5">
+					<LegalStatement />
+				</div>
 			</CoordinatedModal>
 		</section>
 	);

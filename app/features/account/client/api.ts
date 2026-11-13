@@ -73,16 +73,19 @@ export type TAuthLoginSuccessData = IAuthLoginSuccessResponse & {
 };
 
 export class AccountApiError extends Error {
+	readonly data: Record<string, unknown> | undefined;
 	readonly retryAfter: number | null;
 	readonly status: number;
 
 	constructor(
 		message: string,
 		status: number,
-		retryAfter: number | null = null
+		retryAfter: number | null = null,
+		data?: Record<string, unknown>
 	) {
 		super(message);
 		this.name = 'AccountApiError';
+		this.data = data;
 		this.retryAfter = retryAfter;
 		this.status = status;
 	}
@@ -93,7 +96,8 @@ function mapServiceApiError(error: unknown): never {
 		throw new AccountApiError(
 			error.message,
 			error.status,
-			error.retryAfter
+			error.retryAfter,
+			readServiceApiErrorData(error)
 		);
 	}
 
@@ -192,6 +196,21 @@ export function logoutAllAccount(csrfToken: string) {
 		deleted_current_session: boolean;
 		message: typeof ACCOUNT_API_RESPONSE_CODE_MAP.loggedOutAll;
 	}>('/api/v1/auth/logout-all', createCsrfRequestInit('POST', csrfToken));
+}
+
+export async function clearDisabledAccountSession() {
+	const result = await fetchAccountApiResult<unknown>('/api/v1/auth/logout', {
+		method: 'POST',
+	});
+	if (result.status === 'ok') {
+		return true;
+	}
+	return (
+		result.httpStatus === 401 ||
+		(result.httpStatus === 403 &&
+			(result.message === 'user-disabled' ||
+				result.message === 'user-deleted'))
+	);
 }
 
 export function refreshAccountSessions() {

@@ -2,6 +2,7 @@ import {
 	ACCOUNT_STORAGE_KEY_MAP,
 	createAccountStorageKey,
 	readAccountJsonStorage,
+	readAccountStorage,
 	removeAccountStorage,
 	writeAccountJsonStorage,
 } from '@/features/account/client/storage';
@@ -34,13 +35,10 @@ export function createAccountSyncLeaseKey(userId: string) {
 	return createAccountStorageKey(ACCOUNT_STORAGE_KEY_MAP.lease, userId);
 }
 
-export function removeAccountSyncLeaseForAccountDeletion(userId: string) {
-	removeAccountStorage(createAccountSyncLeaseKey(userId));
-}
-
 function checkAccountSyncLease(value: unknown): value is IAccountSyncLease {
 	return (
 		checkIsRecord(value) &&
+		(value['version'] === undefined || value['version'] === 1) &&
 		'expiresAt' in value &&
 		isNonNegativeSafeInteger(value['expiresAt']) &&
 		'renewedAt' in value &&
@@ -69,6 +67,21 @@ export function readAccountSyncLease(userId: string) {
 	return lease;
 }
 
+export function removeAccountSyncLease(userId: string) {
+	const key = createAccountSyncLeaseKey(userId);
+	const raw = readAccountStorage(key);
+	if (raw === null) {
+		return;
+	}
+	if (
+		readAccountJsonStorage<unknown>(key, null) !== null &&
+		readAccountSyncLease(userId) !== null &&
+		readAccountStorage(key) === raw
+	) {
+		removeAccountStorage(key);
+	}
+}
+
 function writeAccountSyncLease(
 	userId: string,
 	ownerTabId: string,
@@ -95,6 +108,12 @@ function tryAcquireAccountSyncLease(
 	now: number
 ) {
 	const lease = readAccountSyncLease(userId);
+	if (
+		readAccountStorage(createAccountSyncLeaseKey(userId)) !== null &&
+		lease === null
+	) {
+		return false;
+	}
 	if (
 		lease !== null &&
 		lease.expiresAt > now &&

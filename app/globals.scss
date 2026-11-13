@@ -383,10 +383,31 @@
 	}
 }
 
-// PWA: hide the install entry before hydration when the page is already installed.
+// Hide the PWA install entry before hydration when the page is already installed.
 html[data-pwa-mode='installed'] {
 	[data-pwa-install-entry] {
 		display: none;
+	}
+}
+
+// Hide the main content of the workspace before the workspace is ready, and only show the modal portal container and the workspace readiness indicator.
+html[data-workspace-pending='true'] {
+	main > * {
+		display: none !important;
+		visibility: hidden !important;
+		pointer-events: none !important;
+	}
+
+	main > #modal-portal-container {
+		display: block !important;
+		visibility: visible !important;
+		pointer-events: auto !important;
+	}
+
+	main > [data-workspace-readiness] {
+		display: flex !important;
+		visibility: visible !important;
+		pointer-events: auto !important;
 	}
 }
 

@@ -36,12 +36,13 @@ import { useI18n } from '@/shared/i18n/useI18n';
 import { useThrottle } from '@/shared/react/useThrottle';
 
 import { getClosestModalScrollContainer } from './dataManagerScroll';
+import { downloadGuestDataExport } from './guestDataTransfer';
 import {
 	GUEST_DATA_KEY_MAP,
 	type IGuestDataImport,
 	parseGuestDataImport,
 } from './parseGuestDataImport';
-import { downloadJson, parseJsonFromInput } from './processJsonFile';
+import { parseJsonFromInput } from './processJsonFile';
 
 const EXPORT_BUTTON_LABEL_KEYS = {
 	download: 'preferences.local.export',
@@ -148,15 +149,13 @@ export default memo<IProps>(function LocalDataManager({ isFullWidth = false }) {
 			);
 		}, 5000);
 		exportTimers.current.push(timerId);
-		const fileName = `customer_data-${Object.keys(currentNormalMealData).length}_${Object.keys(currentRareMealData).length}_${currentRarePlanData.items.length}-${Date.now()}`;
-		downloadJson(fileName, currentGuestDataString);
-		trackEvent(trackEvent.category.click, 'Export Button', fileName);
-	}, [
-		currentGuestDataString,
-		currentNormalMealData,
-		currentRareMealData,
-		currentRarePlanData,
-	]);
+		downloadGuestDataExport();
+		trackEvent(
+			trackEvent.category.click,
+			'Export Button',
+			'Customer Meals and Business Plans'
+		);
+	}, []);
 
 	const handleImportData = useCallback(() => {
 		toggleSavePopoverOpened();

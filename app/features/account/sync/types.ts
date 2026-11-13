@@ -57,13 +57,15 @@ export interface IAccountSyncBroadcastMessage {
 		createdAt: number;
 		reason:
 			| 'account-deleted'
+			| 'account-disabled'
 			| 'credential-changed'
 			| 'login'
 			| 'logout'
 			| 'logout-all'
 			| 'password-changed'
 			| 'password-required'
-			| 'session-expired';
+			| 'session-expired'
+			| 'workspace-owner-changed';
 		version: 1;
 	};
 	deleteStartedAt?: number;

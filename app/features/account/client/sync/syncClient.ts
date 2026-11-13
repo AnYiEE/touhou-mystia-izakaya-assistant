@@ -2,7 +2,6 @@ import { ACCOUNT_SYNC_STATUS_MAP } from '@/domain/account/contracts';
 
 import {
 	consumeAccountRuntimeInvalidationOperation,
-	createAccountRuntimeSignalKey,
 	parseAccountRuntimeSignal,
 } from '@/features/account/client/accountRuntimeInvalidation';
 import { createAccountClientId } from '@/features/account/client/clientId';
@@ -11,10 +10,14 @@ import {
 	ACCOUNT_STORAGE_KEY_MAP,
 	createAccountStorageKey,
 } from '@/features/account/client/storage';
+import { type IStoredAccountWorkspaceTransition } from '@/features/account/client/workspace/contracts';
+import {
+	readAccountWorkspaceTransition,
+	restoreWorkspaceRuntimeFromStorage,
+} from '@/features/account/client/workspace/transition';
+import { captureAccountWorkspace } from '@/features/account/client/workspace/workspaceStore';
 
 import { getSafeStorageMode } from '@/infrastructure/browser/storage/safeStorage';
-
-import { isNonNegativeSafeInteger } from '@/shared/utilities/numbers/check';
 
 import { flushAccountSyncQueueWithBeacon } from './beacon';
 import {
@@ -60,10 +63,8 @@ import {
 	captureAccountSyncResetGeneration,
 	checkAccountSyncResetPrepared,
 } from './resetGeneration';
-import {
-	clearAccountSyncResetRecoveries,
-	scheduleAccountSyncResetRecovery,
-} from './resetRecovery';
+import { scheduleAccountSyncResetRecovery } from './resetRecovery';
+import { clearAccountSyncResetRecoveries } from './resetRecoveryState';
 import { LEASE_BUSY_RETRY_DELAY } from './retryPolicy';
 import {
 	checkCurrentSyncRun,
@@ -89,6 +90,14 @@ import {
 } from './syncRuntimeState';
 
 const ACCOUNT_STATE_RESUME_REFRESH_DEDUPE_MS = 1000;
+let observedWorkspaceTransitionReason:
+	IStoredAccountWorkspaceTransition['reason'] | null = null;
+
+function getWorkspaceTransitionReason(
+	value: ReturnType<typeof readAccountWorkspaceTransition>
+) {
+	return 'marker' in value ? value.marker.reason : null;
+}
 
 function runAfterAccountSyncPromiseSettles(
 	promise: Promise<unknown>,
@@ -140,61 +149,10 @@ export function startAccountSyncClient() {
 			if (message.tabId === getAccountSyncTabId()) {
 				return;
 			}
-			if (message.type === 'account-updated') {
-				if (message.accountRuntime !== undefined) {
-					const signal = parseAccountRuntimeSignal({
-						key: createAccountRuntimeSignalKey(message.userId),
-						value: JSON.stringify({
-							...message.accountRuntime,
-							operationId: message.operationId,
-							state_epoch: message.state_epoch,
-							userId: message.userId,
-						}),
-					});
-					if (signal === null) {
-						return;
-					}
-				} else if (
-					typeof message.operationId !== 'string' ||
-					message.operationId === '' ||
-					typeof message.userId !== 'string' ||
-					message.userId === '' ||
-					!isNonNegativeSafeInteger(message.state_epoch)
-				) {
-					return;
-				}
-				if (
-					!consumeAccountRuntimeInvalidationOperation(
-						`${message.userId}:${message.operationId}`
-					)
-				) {
-					return;
-				}
-				const expectedUserId = context?.user.id ?? message.userId;
-				const generation = getSyncClientGeneration();
-				void getAccountSessionRefreshPort()
-					.refreshFromInvalidation()
-					.catch((error: unknown) => {
-						handlePassiveSyncRefreshError(
-							error,
-							expectedUserId,
-							generation
-						);
-					});
-				return;
-			}
-			if (message.type === 'profile-updated') {
-				const expectedUserId = context?.user.id ?? message.userId;
-				const generation = getSyncClientGeneration();
-				void getAccountSessionRefreshPort()
-					.refreshFromInvalidation()
-					.catch((error: unknown) => {
-						handlePassiveSyncRefreshError(
-							error,
-							expectedUserId,
-							generation
-						);
-					});
+			if (
+				message.type === 'account-updated' ||
+				message.type === 'profile-updated'
+			) {
 				return;
 			}
 			if (context?.user.id !== message.userId) {
@@ -570,6 +528,53 @@ export function startAccountSyncClient() {
 		scheduleAccountSyncFlush();
 	};
 	const onStorage = (event: StorageEvent) => {
+		if (
+			event.key === ACCOUNT_STORAGE_KEY_MAP.workspaceTransition ||
+			event.key === ACCOUNT_STORAGE_KEY_MAP.workspaceOwner ||
+			event.key?.startsWith(
+				`${ACCOUNT_STORAGE_KEY_MAP.runtimeSignal}:`
+			) === true
+		) {
+			return;
+		}
+		if (event.key === ACCOUNT_STORAGE_KEY_MAP.workspaceTransition) {
+			const transition = readAccountWorkspaceTransition();
+			observedWorkspaceTransitionReason =
+				getWorkspaceTransitionReason(transition);
+			restoreWorkspaceRuntimeFromStorage();
+			return;
+		}
+		if (event.key === ACCOUNT_STORAGE_KEY_MAP.workspaceOwner) {
+			const previous = captureAccountWorkspace();
+			restoreWorkspaceRuntimeFromStorage();
+			const next = captureAccountWorkspace();
+			if (
+				previous.owner?.generation === next.owner?.generation &&
+				previous.owner?.kind === next.owner?.kind &&
+				(previous.owner?.kind !== 'account' ||
+					next.owner?.kind !== 'account' ||
+					previous.owner.userId === next.owner.userId)
+			) {
+				return;
+			}
+			const reason = observedWorkspaceTransitionReason;
+			observedWorkspaceTransitionReason = null;
+			if (reason === 'account-disabled' || reason === 'active-delete') {
+				return;
+			}
+			const reloadKey = `account-workspace-reload:${next.generation}`;
+			try {
+				if (sessionStorage.getItem(reloadKey) === '1') {
+					return;
+				}
+				sessionStorage.setItem(reloadKey, '1');
+			} catch {
+				/* Reload remains safe even when dedupe storage is unavailable. */
+			}
+			location.reload();
+			return;
+		}
+
 		const context = getLoggedInAccountContext();
 		if (
 			context !== null &&

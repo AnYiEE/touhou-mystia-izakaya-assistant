@@ -134,10 +134,12 @@ export function getAccountSyncResetGenerationIdFromToken(
 }
 
 export function checkAccountSyncResetWriteAllowed({
+	deletedOperationId,
 	expectedGeneration,
 	resetOperationId,
 	userId,
 }: {
+	deletedOperationId?: string;
 	expectedGeneration: string | null;
 	resetOperationId?: string;
 	userId: string;
@@ -159,6 +161,13 @@ export function checkAccountSyncResetWriteAllowed({
 	}
 	if (!('marker' in current)) {
 		return false;
+	}
+	if (
+		current.marker.phase === 'deleted' &&
+		current.raw === expectedGeneration &&
+		current.marker.operationId === deletedOperationId
+	) {
+		return true;
 	}
 	return (
 		current.raw === expectedGeneration &&
