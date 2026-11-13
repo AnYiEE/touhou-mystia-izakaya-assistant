@@ -7,10 +7,12 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@heroui/theme';
-import { type CSSProperties, memo, useMemo } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { type CSSProperties, memo, useEffect, useMemo, useState } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Button from '@/design/ui/components/button';
+import { MOTION_DURATION_S, MOTION_EASE } from '@/design/ui/motion';
 
 import { announcementClientMessages } from '@/features/announcements/client/messages';
 import { ANNOUNCEMENT_LEVEL_PRESENTATION } from '@/features/announcements/client/presentation';
@@ -28,6 +30,15 @@ import {
 interface IAnnouncementProgressStyle extends CSSProperties {
 	'--announcement-progress-duration'?: string;
 }
+
+const ANNOUNCEMENT_BAR_HEIGHT_ANIMATE = { height: 'auto' } as const;
+const ANNOUNCEMENT_BAR_HEIGHT_HIDDEN = { height: 0 } as const;
+const ANNOUNCEMENT_BAR_MOTION_STYLE = { overflow: 'hidden' } as const;
+const ANNOUNCEMENT_BAR_MOTION_TRANSITION = {
+	duration: MOTION_DURATION_S.base,
+	ease: MOTION_EASE.standard,
+} as const;
+const ANNOUNCEMENT_BAR_REDUCED_MOTION_TRANSITION = { duration: 0 } as const;
 
 interface IAnnouncementContentProps {
 	className?: string;
@@ -156,11 +167,61 @@ export default memo<IProps>(function AnnouncementCarousel({
 	);
 	const { isHighAppearance } = useDesignPreferences();
 	const { t } = useI18n(announcementClientMessages);
-
+	const [contentHeight, setContentHeight] = useState<number | null>(null);
 	const levelMeta =
 		visualItem === null
 			? null
 			: ANNOUNCEMENT_LEVEL_PRESENTATION[visualItem.level];
+	const hasVisibleAnnouncement =
+		displayedItem !== null && visualItem !== null && levelMeta !== null;
+
+	useEffect(() => {
+		if (!hasVisibleAnnouncement) {
+			setContentHeight(null);
+			return;
+		}
+
+		const contentElement = rootRef.current;
+		if (contentElement === null) {
+			return;
+		}
+
+		const updateContentHeight = () => {
+			setContentHeight((currentHeight) => {
+				const nextHeight =
+					contentElement.getBoundingClientRect().height;
+
+				return currentHeight === nextHeight
+					? currentHeight
+					: nextHeight;
+			});
+		};
+
+		updateContentHeight();
+		globalThis.addEventListener('resize', updateContentHeight);
+
+		if (typeof ResizeObserver === 'undefined') {
+			return () => {
+				globalThis.removeEventListener('resize', updateContentHeight);
+			};
+		}
+
+		// eslint-disable-next-line compat/compat -- Progressive enhancement; resize still updates the measured height without ResizeObserver.
+		const resizeObserver = new ResizeObserver(updateContentHeight);
+		resizeObserver.observe(contentElement);
+
+		return () => {
+			globalThis.removeEventListener('resize', updateContentHeight);
+			resizeObserver.disconnect();
+		};
+	}, [
+		displayedItem?.dismissed_token,
+		hasVisibleAnnouncement,
+		rootRef,
+		transition?.toItem.dismissed_token,
+		visualItem?.dismissed_token,
+	]);
+
 	const progressStyle = useMemo<IAnnouncementProgressStyle>(
 		() => ({
 			'--announcement-progress-duration': `${playbackDurationMs}ms`,
@@ -168,10 +229,6 @@ export default memo<IProps>(function AnnouncementCarousel({
 		[playbackDurationMs]
 	);
 	const progressKey = `${displayedToken ?? 'empty'}:${playbackDurationMs}`;
-
-	if (displayedItem === null || visualItem === null || levelMeta === null) {
-		return null;
-	}
 
 	const shouldTransitionBackground =
 		transition !== null &&
@@ -187,152 +244,187 @@ export default memo<IProps>(function AnnouncementCarousel({
 	const displayedContentKey = displayedToken ?? 'empty';
 
 	return (
-		<section
-			ref={rootRef}
-			aria-label={t('announcements.bar.ariaLabel')}
-			role="region"
-			{...rootHandlers}
-			className={cn(
-				'relative overflow-hidden transition-colors duration-300 motion-reduce:transition-none',
-				levelMeta.rootClassName,
-				isHighAppearance && 'backdrop-saturate-125 backdrop-blur-sm'
-			)}
-		>
-			{shouldTransitionBackground ? (
-				<>
-					<AnnouncementBackgroundLayer
-						animation="out"
-						item={transition.fromItem}
-					/>
-					<AnnouncementBackgroundLayer
-						animation="in"
-						item={transition.toItem}
-					/>
-				</>
-			) : (
-				<AnnouncementBackgroundLayer item={visualItem} />
-			)}
-			<div className="relative z-10 mx-auto flex max-w-7xl items-center gap-2.5 py-1.5 pl-6 pr-4 sm:pr-6 md:pl-10 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
-				<div className="grid min-w-0 flex-1 overflow-hidden">
-					{transition === null ? (
-						<AnnouncementContent
-							key={displayedContentKey}
-							item={displayedItem}
-							className="col-start-1 row-start-1"
-							isMarqueeDisabled={isReducedMotion}
-							isMarqueeLooping
-							isPaused={isPaused}
-							onMarqueeComplete={handleDisplayedMarqueeComplete}
-							onMarqueeMetricsChange={
-								handleDisplayedMarqueeMetricsChange
-							}
-						/>
-					) : (
-						<>
-							<AnnouncementContent
-								item={transition.fromItem}
-								isMarqueeDisabled
-								className={cn(
-									slideOutClassName,
-									'col-start-1 row-start-1'
-								)}
-							/>
-							<AnnouncementContent
-								item={transition.toItem}
-								isMarqueeDisabled
-								className={cn(
-									slideInClassName,
-									'col-start-1 row-start-1'
-								)}
-							/>
-						</>
-					)}
-				</div>
-				{shouldShowControls && (
-					<div className="flex shrink-0 items-center gap-1">
-						<Button
-							isIconOnly
-							aria-label={t('announcements.bar.previous')}
-							className={cn(
-								'h-7 min-h-7 w-7 min-w-7',
-								levelMeta.buttonClassName
-							)}
-							radius="sm"
-							size="sm"
-							variant="light"
-							onPress={handlePrevious}
-						>
-							<FontAwesomeIcon
-								icon={faChevronLeft}
-								className="w-3"
-							/>
-						</Button>
-						<div
-							className={cn(
-								'relative flex h-7 min-w-9 items-center justify-center',
-								levelMeta.counterClassName
-							)}
-						>
-							<span className="text-center text-tiny tabular-nums">
-								{visualIndex + 1}/{itemCount}
-							</span>
-							<span
-								aria-hidden
-								className="absolute bottom-0 left-1/2 -translate-x-1/2"
-							>
-								<span className="announcement-progress-track">
-									{!isReducedMotion && !isTransitioning && (
-										<span
-											key={progressKey}
-											className={cn(
-												'announcement-progress-fill',
-												isPaused &&
-													'announcement-progress-paused'
-											)}
-											style={progressStyle}
-										/>
-									)}
-								</span>
-							</span>
-						</div>
-						<Button
-							isIconOnly
-							aria-label={t('announcements.bar.next')}
-							className={cn(
-								'h-7 min-h-7 w-7 min-w-7',
-								levelMeta.buttonClassName
-							)}
-							radius="sm"
-							size="sm"
-							variant="light"
-							onPress={handleNext}
-						>
-							<FontAwesomeIcon
-								icon={faChevronRight}
-								className="w-3"
-							/>
-						</Button>
-					</div>
-				)}
-				{visualItem.dismissible ? (
-					<Button
-						isIconOnly
-						aria-label={t('announcements.bar.close')}
+		<AnimatePresence initial={false}>
+			{hasVisibleAnnouncement ? (
+				<motion.div
+					key="announcement-bar"
+					animate={
+						contentHeight === null
+							? ANNOUNCEMENT_BAR_HEIGHT_ANIMATE
+							: { height: contentHeight }
+					}
+					exit={ANNOUNCEMENT_BAR_HEIGHT_HIDDEN}
+					initial={ANNOUNCEMENT_BAR_HEIGHT_HIDDEN}
+					style={ANNOUNCEMENT_BAR_MOTION_STYLE}
+					transition={
+						isReducedMotion
+							? ANNOUNCEMENT_BAR_REDUCED_MOTION_TRANSITION
+							: ANNOUNCEMENT_BAR_MOTION_TRANSITION
+					}
+				>
+					<section
+						ref={rootRef}
+						aria-label={t('announcements.bar.ariaLabel')}
+						role="region"
+						{...rootHandlers}
 						className={cn(
-							'h-7 min-h-7 w-7 min-w-7 shrink-0',
-							levelMeta.buttonClassName
+							'relative overflow-hidden transition-colors duration-300 motion-reduce:transition-none',
+							levelMeta.rootClassName,
+							isHighAppearance &&
+								'backdrop-saturate-125 backdrop-blur-sm'
 						)}
-						radius="sm"
-						size="sm"
-						variant="light"
-						onPress={handleDismiss}
 					>
-						<FontAwesomeIcon icon={faXmark} className="w-3.5" />
-					</Button>
-				) : (
-					<span aria-hidden className="h-7 w-7 shrink-0" />
-				)}
-			</div>
-		</section>
+						{shouldTransitionBackground ? (
+							<>
+								<AnnouncementBackgroundLayer
+									animation="out"
+									item={transition.fromItem}
+								/>
+								<AnnouncementBackgroundLayer
+									animation="in"
+									item={transition.toItem}
+								/>
+							</>
+						) : (
+							<AnnouncementBackgroundLayer item={visualItem} />
+						)}
+						<div className="relative z-10 mx-auto flex max-w-7xl items-center gap-2.5 py-1.5 pl-6 pr-4 sm:pr-6 md:pl-10 3xl:max-w-screen-2xl 4xl:max-w-screen-3xl">
+							<div className="grid min-w-0 flex-1 overflow-hidden">
+								{transition === null ? (
+									<AnnouncementContent
+										key={displayedContentKey}
+										item={displayedItem}
+										className="col-start-1 row-start-1"
+										isMarqueeDisabled={isReducedMotion}
+										isMarqueeLooping
+										isPaused={isPaused}
+										onMarqueeComplete={
+											handleDisplayedMarqueeComplete
+										}
+										onMarqueeMetricsChange={
+											handleDisplayedMarqueeMetricsChange
+										}
+									/>
+								) : (
+									<>
+										<AnnouncementContent
+											item={transition.fromItem}
+											isMarqueeDisabled
+											className={cn(
+												slideOutClassName,
+												'col-start-1 row-start-1'
+											)}
+										/>
+										<AnnouncementContent
+											item={transition.toItem}
+											isMarqueeDisabled
+											className={cn(
+												slideInClassName,
+												'col-start-1 row-start-1'
+											)}
+										/>
+									</>
+								)}
+							</div>
+							{shouldShowControls && (
+								<div className="flex shrink-0 items-center gap-1">
+									<Button
+										isIconOnly
+										aria-label={t(
+											'announcements.bar.previous'
+										)}
+										className={cn(
+											'h-7 min-h-7 w-7 min-w-7',
+											levelMeta.buttonClassName
+										)}
+										radius="sm"
+										size="sm"
+										variant="light"
+										onPress={handlePrevious}
+									>
+										<FontAwesomeIcon
+											icon={faChevronLeft}
+											className="w-3"
+										/>
+									</Button>
+									<div
+										className={cn(
+											'relative flex h-7 min-w-9 items-center justify-center',
+											levelMeta.counterClassName
+										)}
+									>
+										<span className="text-center text-tiny tabular-nums">
+											{visualIndex + 1}/{itemCount}
+										</span>
+										<span
+											aria-hidden
+											className="absolute bottom-0 left-1/2 -translate-x-1/2"
+										>
+											<span className="announcement-progress-track">
+												{!isReducedMotion &&
+													!isTransitioning && (
+														<span
+															key={progressKey}
+															className={cn(
+																'announcement-progress-fill',
+																isPaused &&
+																	'announcement-progress-paused'
+															)}
+															style={
+																progressStyle
+															}
+														/>
+													)}
+											</span>
+										</span>
+									</div>
+									<Button
+										isIconOnly
+										aria-label={t('announcements.bar.next')}
+										className={cn(
+											'h-7 min-h-7 w-7 min-w-7',
+											levelMeta.buttonClassName
+										)}
+										radius="sm"
+										size="sm"
+										variant="light"
+										onPress={handleNext}
+									>
+										<FontAwesomeIcon
+											icon={faChevronRight}
+											className="w-3"
+										/>
+									</Button>
+								</div>
+							)}
+							{visualItem.dismissible ? (
+								<Button
+									isIconOnly
+									aria-label={t('announcements.bar.close')}
+									className={cn(
+										'h-7 min-h-7 w-7 min-w-7 shrink-0',
+										levelMeta.buttonClassName
+									)}
+									radius="sm"
+									size="sm"
+									variant="light"
+									onPress={handleDismiss}
+								>
+									<FontAwesomeIcon
+										icon={faXmark}
+										className="w-3.5"
+									/>
+								</Button>
+							) : (
+								<span
+									aria-hidden
+									className="h-7 w-7 shrink-0"
+								/>
+							)}
+						</div>
+					</section>
+				</motion.div>
+			) : null}
+		</AnimatePresence>
 	);
 });
