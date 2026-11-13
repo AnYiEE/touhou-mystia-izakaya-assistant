@@ -67,7 +67,7 @@ export function createPersistMiddleware<T, TPersistedState = T>(
 		| ((
 				value: unknown,
 				version: number
-		  ) => TPersistedState | Promise<TPersistedState>)
+		  ) => TPersistedState | PromiseLike<TPersistedState>)
 		| undefined =
 		migrate === undefined
 			? undefined
