@@ -42,7 +42,7 @@ export const NAV_ITEMS = [
 				href: '/clothes',
 				label: '衣服',
 				sprite: 'clothes',
-				spriteRecordId: 23,
+				spriteRecordId: -1,
 			},
 			{
 				href: '/partners',

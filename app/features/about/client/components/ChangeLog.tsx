@@ -5,7 +5,11 @@ import { Fragment } from 'react';
 import Heading from '@/design/ui/components/heading';
 import Link from '@/design/ui/components/link';
 
-import { CHANGELOG_LOCALIZED } from '@/features/about/client/changelogLocalization';
+import {
+	BILIBILI_AUTHOR_LINK,
+	CHANGELOG_LOCALIZED,
+	type TChangelogChange,
+} from '@/features/about/client/changelogLocalization';
 import { aboutMessages } from '@/features/about/client/messages';
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { appShellMessages } from '@/features/appShell/client/messages';
@@ -14,6 +18,27 @@ import { SITE_LINKS } from '@/features/appShell/links';
 import { useI18n } from '@/shared/i18n/useI18n';
 
 const links = SITE_LINKS;
+
+function renderChangelogChange(change: TChangelogChange) {
+	if (typeof change === 'string') {
+		return change;
+	}
+
+	return (
+		<>
+			{change.prefix}
+			<Link
+				isExternal
+				showAnchorIcon
+				href={change.href}
+				className="rounded-small"
+			>
+				{change.label}
+			</Link>
+			{change.suffix}
+		</>
+	);
+}
 
 /* eslint-disable sort-keys -- Changelog entries keep version before changes for release-note readability. */
 const changelog = [
@@ -248,10 +273,15 @@ const changelog = [
 		version: 'v3.5',
 		changes: [
 			'新增：本设备保存的顾客套餐、营业预设和偏好设置等数据现在与当前账号或访客状态绑定，不同账号之间的数据不会混用。',
+			{
+				...BILIBILI_AUTHOR_LINK,
+				prefix: '改善：更新“夜雀服”和“雀酒屋工作装”的图标；图标为非官方自绘。作者：',
+				suffix: '（哔哩哔哩）。',
+			},
 		],
 	},
 ] as const satisfies Array<{
-	changes: Array<`${'新增' | '改善' | '修复'}：${string}。`>;
+	changes: TChangelogChange[];
 	version: `v${string}`;
 }>;
 /* eslint-enable sort-keys */
@@ -306,7 +336,9 @@ export default function ChangeLog() {
 							</Heading>
 							<ul className="text-cjk-flow list-inside list-decimal space-y-2">
 								{localizedChanges.map((change, changeIndex) => (
-									<li key={changeIndex}>{change}</li>
+									<li key={changeIndex}>
+										{renderChangelogChange(change)}
+									</li>
 								))}
 							</ul>
 						</Fragment>

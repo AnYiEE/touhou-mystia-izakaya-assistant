@@ -4,7 +4,7 @@ import type { TSpriteTarget } from './types';
 export const SPRITE_ASSET_HASHES = {
 	badge: 'b21cc31fc582',
 	beverage: 'ffed2d25621e',
-	clothes: '20f1168ea241',
+	clothes: '504e2626e224',
 	cooker: '3229187e0c0e',
 	currency_item: '1ca4d38a6b59',
 	decoration: 'fd3881785ae0',

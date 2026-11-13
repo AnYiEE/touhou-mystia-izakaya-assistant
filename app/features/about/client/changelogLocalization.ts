@@ -1,6 +1,23 @@
 import { type TLocale } from '@/shared/i18n/locale';
 
-const CHANGELOG_EN: Readonly<Record<string, ReadonlyArray<string>>> = {
+export interface IChangelogLink {
+	href: string;
+	label: string;
+}
+
+export type TChangelogChange =
+	string | (IChangelogLink & { prefix: string; suffix: string });
+
+type TLocalizedChangelog = Readonly<
+	Record<string, ReadonlyArray<TChangelogChange>>
+>;
+
+export const BILIBILI_AUTHOR_LINK = {
+	href: 'https://space.bilibili.com/253188217',
+	label: '河城绿茶',
+} as const satisfies IChangelogLink;
+
+const CHANGELOG_EN: TLocalizedChangelog = {
 	'v0.1': ['Added: food, beverage, and ingredient pages.'],
 	'v0.2': [
 		'Added: special guest meal pairing page.',
@@ -152,10 +169,15 @@ const CHANGELOG_EN: Readonly<Record<string, ReadonlyArray<string>>> = {
 	],
 	'v3.5': [
 		'Added: data saved on this device, including saved guest meals, business plans, preferences, and other settings, is now tied to the current account or guest state, so data from different accounts will not be mixed.',
+		{
+			...BILIBILI_AUTHOR_LINK,
+			prefix: 'Improved: updated the icons for “Night Sparrow Suit” and “Izakaya Suit”; the icons are unofficial, custom-drawn artwork. Creator: ',
+			suffix: ' on Bilibili.',
+		},
 	],
 };
 
-const CHANGELOG_JA: Readonly<Record<string, ReadonlyArray<string>>> = {
+const CHANGELOG_JA: TLocalizedChangelog = {
 	'v0.1': ['追加：料理・お酒・食材ページ。'],
 	'v0.2': [
 		'追加：レア客のセットメニュー構成ページ。',
@@ -301,10 +323,15 @@ const CHANGELOG_JA: Readonly<Record<string, ReadonlyArray<string>>> = {
 	],
 	'v3.5': [
 		'追加：この端末に保存されたセットメニュー、営業プリセット、環境設定などのデータが現在のアカウントまたはゲスト状態に紐づき、異なるアカウント間でデータが混在しないようになりました。',
+		{
+			...BILIBILI_AUTHOR_LINK,
+			prefix: '改善：「夜雀の服」と「雀酒屋の従業員制服」のアイコンを更新しました。これらのアイコンは非公式の自作イラストです。制作者：',
+			suffix: '（Bilibili）。',
+		},
 	],
 };
 
-const CHANGELOG_KO: Readonly<Record<string, ReadonlyArray<string>>> = {
+const CHANGELOG_KO: TLocalizedChangelog = {
 	'v0.1': ['추가: 요리·음료·재료 페이지.'],
 	'v0.2': [
 		'추가: 희귀 손님 세트 메뉴 구성 페이지.',
@@ -446,10 +473,15 @@ const CHANGELOG_KO: Readonly<Record<string, ReadonlyArray<string>>> = {
 	],
 	'v3.5': [
 		'추가: 이 기기에 저장된 손님 세트 메뉴, 영업 프리셋, 환경 설정 등의 데이터가 현재 계정 또는 게스트 상태에 연결되어 서로 다른 계정의 데이터가 섞이지 않습니다.',
+		{
+			...BILIBILI_AUTHOR_LINK,
+			prefix: '개선: “요스즈메복”과 “참새술 작업복”의 아이콘을 업데이트했습니다. 이 아이콘은 비공식 자체 제작 일러스트입니다. 제작자: ',
+			suffix: ' (빌리빌리).',
+		},
 	],
 };
 
-const CHANGELOG_ZH_TW: Readonly<Record<string, ReadonlyArray<string>>> = {
+const CHANGELOG_ZH_TW: TLocalizedChangelog = {
 	'v0.1': ['新增：料理、酒水和食材頁面。'],
 	'v0.2': [
 		'新增：稀客套餐搭配頁面。',
@@ -581,14 +613,16 @@ const CHANGELOG_ZH_TW: Readonly<Record<string, ReadonlyArray<string>>> = {
 	],
 	'v3.5': [
 		'新增：本裝置儲存的顧客套餐、營業預設和偏好設定等資料現在與目前帳號或訪客狀態綁定，不同帳號之間的資料不會混用。',
+		{
+			...BILIBILI_AUTHOR_LINK,
+			prefix: '改善：更新「夜雀服」和「雀酒屋工作裝」的圖示；圖示為非官方自繪。作者：',
+			suffix: '（嗶哩嗶哩）。',
+		},
 	],
 };
 
 export const CHANGELOG_LOCALIZED: Readonly<
-	Record<
-		Exclude<TLocale, 'zh-CN'>,
-		Readonly<Record<string, ReadonlyArray<string>>>
-	>
+	Record<Exclude<TLocale, 'zh-CN'>, TLocalizedChangelog>
 > = {
 	en: CHANGELOG_EN,
 	ja: CHANGELOG_JA,

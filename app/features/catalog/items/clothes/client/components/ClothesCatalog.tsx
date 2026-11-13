@@ -85,8 +85,6 @@ export default memo<IProps>(function ClothesCatalog({ data }) {
 								recordId={id}
 								size={3}
 								className={cn({
-									'-translate-x-0.5 scale-85': id === -1,
-									'scale-90': id === -2,
 									'translate-x-px': [
 										24, 57, 59, 1002, 3002,
 									].includes(id),
