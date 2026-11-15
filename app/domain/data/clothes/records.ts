@@ -299,4 +299,40 @@ export const CLOTHES_LIST = [
 			collaboration: { collaborationLabel: 'ResourceEx_GiftMailbox' },
 		},
 	},
+	{
+		id: 9005,
+		name: '茶会服',
+		description:
+			'帕秋莉师傅送给米斯蒂娅的礼物——“参加淑女的茶会，着装自然要优雅得体才行”。西式洋服风带来直观的悠闲惬意，高低袜设计侧添一丝古灵精怪。发丝虽稍显蓬乱却不失端庄，裙摆和袖口的蕾丝花边也俏皮可爱。不论是在茶歇上悠然自得，还是在平日里外出访友，这套衣服都是不二之选。',
+		dlc: 9,
+		gif: false,
+		izakaya: false,
+		from: {
+			collaboration: { collaborationLabel: 'ResourceEx_GiftMailbox' },
+		},
+	},
+	{
+		id: 9006,
+		name: '真夜白羽',
+		description:
+			'MetaMystia项目一周年纪念礼物，献给所有支持MetaMystia制作组走过这一年的玩家们。',
+		dlc: 9,
+		gif: false,
+		izakaya: false,
+		from: {
+			collaboration: { collaborationLabel: 'ResourceEx_GiftMailbox' },
+		},
+	},
+	{
+		id: 9007,
+		name: '风祝服',
+		description:
+			'八坂神奈子让早苗送给米斯蒂娅的风祝巫女服，面料崭新，质地柔顺。标签上写着由幻想乡最大服装行业八坂服饰生产，穿上之后似乎还能得到神明的祝福……顺带一提完全没有褪色。',
+		dlc: 9,
+		gif: false,
+		izakaya: false,
+		from: {
+			collaboration: { collaborationLabel: 'ResourceEx_GiftMailbox' },
+		},
+	},
 ] as const satisfies IClothes[];

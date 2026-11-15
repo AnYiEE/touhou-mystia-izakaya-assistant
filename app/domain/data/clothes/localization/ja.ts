@@ -123,6 +123,9 @@ export const CLOTHES_LOCALIZATION_JA = {
 	},
 	9000: { description: null, name: null },
 	9003: { description: null, name: null },
+	9005: { description: null, name: null },
+	9006: { description: null, name: null },
+	9007: { description: null, name: null },
 	[-1]: {
 		description:
 			'ミスティアがいつも着ている服。自宅のクローゼットで着替えることができる。',

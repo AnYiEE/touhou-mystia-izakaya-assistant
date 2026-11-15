@@ -123,6 +123,9 @@ export const CLOTHES_LOCALIZATION_KO = {
 	},
 	9000: { description: null, name: null },
 	9003: { description: null, name: null },
+	9005: { description: null, name: null },
+	9006: { description: null, name: null },
+	9007: { description: null, name: null },
 	[-1]: {
 		description:
 			'미스티아가 평소에 입는 옷입니다. 집의 옷장에서 의상을 변경할 수 있습니다.',

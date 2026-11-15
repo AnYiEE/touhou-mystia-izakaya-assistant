@@ -123,6 +123,9 @@ export const CLOTHES_LOCALIZATION_ZH_TW = {
 	},
 	9000: { description: null, name: null },
 	9003: { description: null, name: null },
+	9005: { description: null, name: null },
+	9006: { description: null, name: null },
+	9007: { description: null, name: null },
 	[-1]: {
 		description: '米斯蒂婭平常穿的衣服。可以在家裏的換衣間進行更換。',
 		name: '夜雀服',
