@@ -123,9 +123,6 @@ export const CLOTHES_LOCALIZATION_EN = {
 	},
 	9000: { description: null, name: null },
 	9003: { description: null, name: null },
-	9005: { description: null, name: null },
-	9006: { description: null, name: null },
-	9007: { description: null, name: null },
 	[-1]: {
 		description:
 			"Mystia's usual clothes. You can change into it from the closet at home.",
