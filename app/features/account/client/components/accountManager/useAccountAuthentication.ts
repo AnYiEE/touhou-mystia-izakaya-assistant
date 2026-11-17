@@ -28,6 +28,10 @@ import {
 	refreshAccountState,
 } from '@/features/account/client/session';
 import { accountStore } from '@/features/account/client/state/accountStore';
+import {
+	type TAccountAuthPurpose,
+	checkAccountAuthCanRegister,
+} from '@/features/account/client/workspace/authContracts';
 import { completeAccountAuthenticationSuccess } from '@/features/account/client/workspace/lifecycle';
 import { workspaceUiStore } from '@/features/account/client/workspace/workspaceUiStore';
 import {
@@ -54,7 +58,6 @@ import {
 import { type IUseAccountPasskeysResult } from './useAccountPasskeys';
 
 type TAuthMode = 'login' | 'register';
-export type TAccountAuthPurpose = 'default' | 'required-account';
 export type TAuthEntryMode = 'passkey' | 'password';
 interface IUseAccountAuthenticationOptions {
 	authPurpose: TAccountAuthPurpose;
@@ -197,7 +200,7 @@ export function useAccountAuthentication({
 		normalizedRegistrationNickname !== null &&
 		!checkNicknamePolicy(normalizedRegistrationNickname);
 	const isSsoContext = pathname === '/sso/authorize';
-	const canRegister = authPurpose === 'default';
+	const canRegister = checkAccountAuthCanRegister(authPurpose);
 	const isPasskeyPreferredAuthAvailable =
 		bootstrapStatus === 'anonymous' && isWebauthnSupported && user === null;
 	const shouldShowPasskeyPrimaryAuth =

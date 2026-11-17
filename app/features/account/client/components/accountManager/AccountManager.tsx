@@ -20,6 +20,7 @@ import { ACCOUNT_MODAL_CLASS_NAMES } from '@/features/account/client/components/
 import { getAccountClientErrorMessage } from '@/features/account/client/errorMessage';
 import { accountMessages } from '@/features/account/client/messages';
 import { accountStore } from '@/features/account/client/state/accountStore';
+import { type TAccountAuthPurpose } from '@/features/account/client/workspace/authContracts';
 import { accountWorkspacePendingAuthStore } from '@/features/account/client/workspace/authRuntime';
 import { workspaceStore } from '@/features/account/client/workspace/workspaceStore';
 import { workspaceUiStore } from '@/features/account/client/workspace/workspaceUiStore';
@@ -56,10 +57,7 @@ import {
 	getAccountBootstrapErrorMessage,
 	getAccountLoginSupportMessage,
 } from './copy';
-import {
-	type TAccountAuthPurpose,
-	useAccountAuthentication,
-} from './useAccountAuthentication';
+import { useAccountAuthentication } from './useAccountAuthentication';
 import { useAccountDestructiveActions } from './useAccountDestructiveActions';
 import { useAccountPasskeys } from './useAccountPasskeys';
 import { useAccountProfile } from './useAccountProfile';

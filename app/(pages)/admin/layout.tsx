@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import { type Metadata } from 'next';
 
 import { SITE_METADATA } from '@/shared/site/metadata';
 

@@ -1,6 +1,6 @@
 import { withCrossTabLock } from '@/infrastructure/browser/crossTab/withCrossTabLock';
 
-import type { TAccountWorkspaceAuthOutcome } from './authContracts';
+import { type TAccountWorkspaceAuthOutcome } from './authContracts';
 import { type TAccountWorkspaceOwner } from './contracts';
 import {
 	readStoredAccountWorkspace,

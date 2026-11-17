@@ -1,7 +1,7 @@
 import { AccountApiError } from '@/features/account/client/api';
 import type { TAccountMeResponse } from '@/features/account/contracts';
 
-import type { TAccountWorkspaceAuthOutcome } from './authContracts';
+import { type TAccountWorkspaceAuthOutcome } from './authContracts';
 import { checkAccountWorkspaceUserId } from './ownerStorage';
 
 export type { TAccountWorkspaceAuthOutcome } from './authContracts';

@@ -33,7 +33,7 @@ export default memo<IProps>(function SsoAuthorizeAccountGate() {
 		) {
 			const result = accountStore.openAccountModal(
 				undefined,
-				'required-account'
+				'sso-authorize'
 			);
 			if (result.status === 'activated') {
 				trackEvent(
@@ -72,7 +72,7 @@ export const SsoAuthorizeAccountGateButton = memo(
 				'Account Button',
 				'Open Modal From SSO Authorize'
 			);
-			accountStore.openAccountModal(undefined, 'required-account');
+			accountStore.openAccountModal(undefined, 'sso-authorize');
 		}, [canOpenAccountFlow, vibrate]);
 
 		return (

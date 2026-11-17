@@ -3,6 +3,7 @@ import { store } from '@davstack/store';
 import { type TSyncNamespace } from '@/domain/account/contracts';
 import { type IFeatureAccessResponse } from '@/domain/featureAccess/contracts';
 
+import { type TAccountAuthPurpose } from '@/features/account/client/workspace/authContracts';
 import type {
 	IAccountSessionInitialData,
 	IAccountSsoGrantInitialData,
@@ -40,7 +41,7 @@ const state = {
 	persistence: {},
 	shared: {
 		accountModal: {
-			authPurpose: 'default' as 'default' | 'required-account',
+			authPurpose: 'default' as TAccountAuthPurpose,
 			closeAfterAuthentication: false,
 			isOpen: false,
 		},
@@ -108,7 +109,7 @@ export const accountStore = store(state, {
 	},
 	openAccountModal(
 		parentId?: TOverlayId,
-		authPurpose: 'default' | 'required-account' = 'default'
+		authPurpose: TAccountAuthPurpose = 'default'
 	) {
 		currentStore.shared.accountModal.closeAfterAuthentication.set(false);
 		currentStore.shared.accountModal.authPurpose.set(authPurpose);
