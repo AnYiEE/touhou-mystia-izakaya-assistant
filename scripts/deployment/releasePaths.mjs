@@ -1,4 +1,3 @@
-import lodash from 'lodash';
 import { constants as fileSystemConstants, readFileSync } from 'node:fs';
 import { access, lstat, mkdir, stat } from 'node:fs/promises';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
@@ -10,6 +9,7 @@ import {
 	RELEASES_DIRECTORY_NAME,
 	STAGING_DIRECTORY_NAME,
 } from './constants.mjs';
+import { isObject } from './objectChecks.mjs';
 
 const BUILD_ID_PATTERN = /^[0-9a-f]{7}$/iu;
 const RELEASE_ID_PATTERN =
@@ -34,7 +34,7 @@ function createError(code, cause) {
 
 /** @param {unknown} error */
 function checkMissingPathError(error) {
-	return lodash.isObject(error) && 'code' in error && error.code === 'ENOENT';
+	return isObject(error) && 'code' in error && error.code === 'ENOENT';
 }
 
 /** @param {string} parentDirectory @param {string} candidatePath */
@@ -111,7 +111,7 @@ export function parseCurrentRelease(contents) {
 	try {
 		/** @type {unknown} */
 		const value = JSON.parse(contents);
-		if (!lodash.isObject(value) || Array.isArray(value)) {
+		if (!isObject(value) || Array.isArray(value)) {
 			throw createError('invalid-self-hosted-current');
 		}
 		const currentValue = /** @type {Record<string, unknown>} */ (value);

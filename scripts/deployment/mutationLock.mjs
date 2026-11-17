@@ -1,4 +1,3 @@
-import lodash from 'lodash';
 import { randomUUID } from 'node:crypto';
 import {
 	link,
@@ -15,6 +14,7 @@ import {
 	DEPLOYMENT_MUTATION_LOCK_NAME,
 	DEPLOYMENT_OPERATION_ID_PATTERN,
 } from './constants.mjs';
+import { isObject } from './objectChecks.mjs';
 import { ensureSafeDirectory, getDeploymentPaths } from './releasePaths.mjs';
 
 const LOCK_HEARTBEAT_INTERVAL_MS = 10_000;
@@ -35,18 +35,18 @@ function createError(code, cause) {
 
 /** @param {unknown} error */
 function checkMissingPathError(error) {
-	return lodash.isObject(error) && 'code' in error && error.code === 'ENOENT';
+	return isObject(error) && 'code' in error && error.code === 'ENOENT';
 }
 
 /** @param {unknown} error */
 function checkAlreadyExistsError(error) {
-	return lodash.isObject(error) && 'code' in error && error.code === 'EEXIST';
+	return isObject(error) && 'code' in error && error.code === 'EEXIST';
 }
 
 /** @param {unknown} value @returns {value is DeploymentLockOwner} */
 function checkDeploymentLockOwner(value) {
 	return (
-		lodash.isObject(value) &&
+		isObject(value) &&
 		'pid' in value &&
 		typeof value.pid === 'number' &&
 		Number.isSafeInteger(value.pid) &&
@@ -123,11 +123,7 @@ async function checkDeploymentLockOwnerActive(lockFile) {
 	} catch (error) {
 		return (
 			leaseActive &&
-			!(
-				lodash.isObject(error) &&
-				'code' in error &&
-				error.code === 'ESRCH'
-			)
+			!(isObject(error) && 'code' in error && error.code === 'ESRCH')
 		);
 	}
 }

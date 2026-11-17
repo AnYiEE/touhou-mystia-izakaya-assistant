@@ -1,4 +1,3 @@
-import lodash from 'lodash';
 import { spawn } from 'node:child_process';
 import { constants as fileSystemConstants } from 'node:fs';
 import { lstat, readFile, realpath } from 'node:fs/promises';
@@ -6,6 +5,7 @@ import { createRequire } from 'node:module';
 import { dirname, isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { isObject } from './deployment/objectChecks.mjs';
 import { cleanupObsoleteReleases } from './deployment/releaseCleanup.mjs';
 import {
 	checkPathInside,
@@ -64,11 +64,7 @@ async function validateStoragePath(path, expectedType, errorCode) {
 	try {
 		await lstat(path);
 	} catch (error) {
-		if (
-			lodash.isObject(error) &&
-			'code' in error &&
-			error.code === 'ENOENT'
-		) {
+		if (isObject(error) && 'code' in error && error.code === 'ENOENT') {
 			await validatePathAccess(dirname(path), 'isDirectory', errorCode);
 			return;
 		}
@@ -79,7 +75,7 @@ async function validateStoragePath(path, expectedType, errorCode) {
 
 /** @param {unknown} error */
 function checkMissingPathError(error) {
-	return lodash.isObject(error) && 'code' in error && error.code === 'ENOENT';
+	return isObject(error) && 'code' in error && error.code === 'ENOENT';
 }
 
 /** @param {string} path */

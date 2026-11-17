@@ -142,6 +142,8 @@ Self-hosted `pnpm build` attempts to publish maintenance state through the confi
 
 External process managers may invoke `scripts/startSelfHosted.mjs` and other designated script entry points directly with plain `node`. Keep such entry points and their complete runtime import graph as JavaScript (`.mjs`/`.js`); do not convert them to TypeScript or require `tsx`, a custom loader, path aliases, or a precompile step.
 
+The CI-deployed launcher must also run when project-root `node_modules` is absent. Keep `scripts/startSelfHosted.mjs` and its deployment helper graph on Node.js built-ins and repository-local files; do not add third-party bootstrap imports. Resolve Next.js runtime packages from the selected standalone release, where the artifact carries the dependencies it needs.
+
 SQLite databases and environment files must use stable paths outside `.deploy/releases/`, shared by old and new processes. The default database is project-root `sqlite.db`; explicit database paths may be absolute locations elsewhere. This single-host SQLite design requires reliable local locking semantics.
 
 ### Browser compatibility
