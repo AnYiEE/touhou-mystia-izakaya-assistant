@@ -29,6 +29,7 @@ import { donationMessages } from './messages';
 import {
 	DONATION_REMIND_LATER_DAYS,
 	checkDonationModalRequestValid,
+	getCurrentDonationMilestone,
 } from './milestones';
 import {
 	closeActiveDonationModal,
@@ -68,6 +69,7 @@ export default function DonationModal() {
 		lastMilestoneShown,
 		lastShown,
 	});
+	const milestone = getCurrentDonationMilestone(interactionCount);
 
 	const canActivate = useCallback(
 		() => source !== 'milestone' || isMilestoneRequestValid,
@@ -127,13 +129,18 @@ export default function DonationModal() {
 					{source === 'milestone' && (
 						<p>
 							{t('donation.intro', {
-								count: interactionCount,
+								count: milestone,
 								shortName: tSite('site.shortName'),
 							})}
 						</p>
 					)}
 					<p>
 						{t('donation.cost', {
+							shortName: tSite('site.shortName'),
+						})}
+					</p>
+					<p>
+						{t('donation.costDetails', {
 							shortName: tSite('site.shortName'),
 						})}
 					</p>
