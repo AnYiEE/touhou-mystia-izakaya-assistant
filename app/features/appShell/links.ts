@@ -6,9 +6,9 @@ function getShortUrl(key: string) {
 }
 
 export const SITE_LINKS = {
+	alipay: { href: getShortUrl('HI9lxP'), label: '支付宝收款链接' },
 	appQA: { href: getShortUrl('wb21Sv'), label: 'APP相关常见问题和说明' },
 	china: { href: getShortUrl('tiXDNm'), label: '国内线路' },
-	donate: { href: getShortUrl('HI9lxP'), label: '支付宝收款链接' },
 	github: { href: PACKAGE_METADATA.repositoryUrl, label: '本项目代码仓库' },
 	githubIssues: {
 		href: `${PACKAGE_METADATA.repositoryUrl}/issues`,
@@ -29,5 +29,9 @@ export const SITE_LINKS = {
 	steam: {
 		href: 'https://store.steampowered.com/app/1584090/__Touhou_Mystias_Izakaya',
 		label: "Steam上的东方夜雀食堂 - Touhou Mystia's Izakaya",
+	},
+	wechat: {
+		href: 'wxp://f2f0I5ERsQ_Lg-yfx3PlMq4WzqSuQ4jPxdSakANyyl60umE',
+		label: '微信收款码',
 	},
 } as const satisfies Record<string, ILink>;

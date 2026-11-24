@@ -151,9 +151,18 @@ export default function DonationModal() {
 					</p>
 					{source === 'milestone' && <p>{t('donation.apology')}</p>}
 				</div>
-				<QRCode text={links.donate.href} className="w-28">
-					{tAppShell('appShell.links.donateQrCode')}
-				</QRCode>
+				<div className="flex flex-wrap items-start justify-center gap-x-6 gap-y-3">
+					<div className="w-32">
+						<QRCode text={links.alipay.href} className="w-28">
+							{tAppShell('appShell.links.alipayQrCode')}
+						</QRCode>
+					</div>
+					<div className="w-32">
+						<QRCode text={links.wechat.href} className="w-28">
+							{tAppShell('appShell.links.wechatQrCode')}
+						</QRCode>
+					</div>
+				</div>
 				<div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
 					<Button
 						as={Link}
