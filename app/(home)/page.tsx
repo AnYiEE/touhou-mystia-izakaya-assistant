@@ -15,7 +15,6 @@ import Popover, {
 } from '@/design/ui/components/popover';
 import QRCode from '@/design/ui/components/qrCode';
 import Tooltip from '@/design/ui/components/tooltip';
-import Rednote from '@/design/ui/icons/Rednote';
 
 import { trackEvent } from '@/features/analytics/client/trackEvent';
 import { appShellMessages } from '@/features/appShell/client/messages';
@@ -34,7 +33,6 @@ const QQ_GROUP_LINK_CLASS_NAMES = {
 	underline: 'bottom-0',
 } as const;
 const QQ_OVERLAY_CLASS_NAMES = { content: 'px-0 pb-1' } as const;
-const REDNOTE_TOOLTIP_CLASS_NAMES = { content: 'p-0 pb-1' } as const;
 
 export default function Home() {
 	const { locale, t } = useI18n(appShellMessages);
@@ -212,53 +210,6 @@ export default function Home() {
 										{qqCodeContent}
 									</PopoverContent>
 								</Popover>
-								<Tooltip
-									showArrow
-									content={
-										<QRCode text={links.rednoteGroup.href}>
-											{t('appShell.home.scanGroup', {
-												label: t(
-													'appShell.links.rednoteGroup'
-												),
-											})}
-										</QRCode>
-									}
-									onOpenChange={(isOpen) => {
-										if (isOpen) {
-											trackEvent(
-												trackEvent.category.show,
-												'Tooltip',
-												'Rednote group'
-											);
-										}
-									}}
-									classNames={REDNOTE_TOOLTIP_CLASS_NAMES}
-								>
-									<Button
-										as={Link}
-										isExternal
-										isIconOnly
-										animationUnderline={false}
-										variant="light"
-										href={links.rednoteGroup.href}
-										role="link"
-										title={t('appShell.home.joinGroup', {
-											label: t(
-												'appShell.links.rednoteGroup'
-											),
-										})}
-										onPress={() => {
-											trackEvent(
-												trackEvent.category.click,
-												'Link',
-												'Rednote group'
-											);
-										}}
-										className="h-5 active:opacity-disabled data-[hover=true]:!opacity-hover data-[pressed=true]:!opacity-hover"
-									>
-										<Rednote />
-									</Button>
-								</Tooltip>
 							</div>
 						</div>
 					)}

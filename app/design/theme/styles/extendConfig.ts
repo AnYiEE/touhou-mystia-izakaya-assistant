@@ -9,7 +9,7 @@ export const getExtendConfig = (cdnUrl: string) =>
 			mystia: `url("${cdnUrl}/assets/mystia.png")`,
 		},
 		backgroundSize: { 'y-auto': 'auto 100%' },
-		colors: { ...ratingColors, 'qq-blue': '#1479d7', rednote: '#ff2741' },
+		colors: { ...ratingColors, 'qq-blue': '#1479d7' },
 		gridTemplateColumns: {
 			'fill-12': 'repeat(auto-fill,3rem)',
 			'fill-16': 'repeat(auto-fill,4rem)',

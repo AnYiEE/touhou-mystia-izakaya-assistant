@@ -25,7 +25,6 @@ export const SITE_LINKS = {
 	index: { href: '/', label: '首页' },
 	qqGroup1: { href: getShortUrl('l40oUu'), label: 'QQ一群' },
 	qqGroup2: { href: getShortUrl('KCo1fT'), label: 'QQ二群' },
-	rednoteGroup: { href: getShortUrl('Y9YVAt'), label: '小红书群' },
 	steam: {
 		href: 'https://store.steampowered.com/app/1584090/__Touhou_Mystias_Izakaya',
 		label: "Steam上的东方夜雀食堂 - Touhou Mystia's Izakaya",
