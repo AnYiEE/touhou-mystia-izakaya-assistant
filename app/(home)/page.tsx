@@ -6,7 +6,6 @@ import { cn } from '@heroui/theme';
 import { useMemo } from 'react';
 
 import Button from '@/design/ui/components/button';
-import FontAwesomeIconButton from '@/design/ui/components/fontAwesomeIconButton';
 import Link from '@/design/ui/components/link';
 import Placeholder from '@/design/ui/components/placeholder';
 import Popover, {
@@ -98,6 +97,23 @@ export default function Home() {
 		),
 		[t]
 	);
+	const githubLink = (
+		<Button
+			as={Link}
+			isExternal
+			animationUnderline={false}
+			variant="light"
+			href={links.github.href}
+			role="link"
+			startContent={<FontAwesomeIcon icon={faGithub} size="lg" />}
+			onPress={() => {
+				trackEvent(trackEvent.category.click, 'Link', 'GitHub');
+			}}
+			className="h-auto w-auto min-w-0 gap-0.5 px-0 text-base text-foreground-500 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
+		>
+			<span className="text-small">{t('appShell.home.githubStar')}</span>
+		</Button>
+	);
 
 	return (
 		<div className="grid min-h-main-content grid-cols-1 lg:grid-cols-2 xl:pt-8">
@@ -156,91 +172,70 @@ export default function Home() {
 						{isChinese && <InstallEntry />}
 					</div>
 					{shouldShowChinaSurfaces && (
-						<div className="mt-1 flex flex-wrap items-end leading-none">
-							<p className="text-foreground-500 lg:hidden">
-								{t('appShell.home.officialGroup')}
-							</p>
-							<div className="flex items-center gap-2 lg:gap-4">
-								<Popover
+						<div className="mt-2 flex flex-wrap items-center gap-4 lg:gap-6">
+							<Popover
+								showArrow
+								onOpenChange={(isOpen) => {
+									if (isOpen) {
+										trackEvent(
+											trackEvent.category.show,
+											'Popover',
+											'QQ groups'
+										);
+									}
+								}}
+								classNames={QQ_OVERLAY_CLASS_NAMES}
+							>
+								<Tooltip
 									showArrow
+									content={qqCodeContent}
 									onOpenChange={(isOpen) => {
 										if (isOpen) {
 											trackEvent(
 												trackEvent.category.show,
-												'Popover',
+												'Tooltip',
 												'QQ groups'
 											);
 										}
 									}}
 									classNames={QQ_OVERLAY_CLASS_NAMES}
 								>
-									<Tooltip
-										showArrow
-										content={qqCodeContent}
-										onOpenChange={(isOpen) => {
-											if (isOpen) {
-												trackEvent(
-													trackEvent.category.show,
-													'Tooltip',
-													'QQ groups'
-												);
-											}
-										}}
-										classNames={QQ_OVERLAY_CLASS_NAMES}
-									>
-										<span className="inline-flex">
-											<PopoverTrigger>
-												<FontAwesomeIconButton
-													icon={faQq}
-													variant="light"
-													aria-label={t(
-														'appShell.home.qqIconLabel',
-														{
-															name: tSite(
-																'site.shortName'
-															),
-														}
-													)}
-													className="h-auto w-auto min-w-0 rounded-small text-base text-qq-blue data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
-												/>
-											</PopoverTrigger>
-										</span>
-									</Tooltip>
-									<PopoverContent>
-										{qqCodeContent}
-									</PopoverContent>
-								</Popover>
-							</div>
+									<span className="inline-flex">
+										<PopoverTrigger>
+											<Button
+												variant="light"
+												aria-label={t(
+													'appShell.home.qqIconLabel',
+													{
+														name: tSite(
+															'site.shortName'
+														),
+													}
+												)}
+												startContent={
+													<FontAwesomeIcon
+														icon={faQq}
+														size="lg"
+														className="text-qq-blue"
+													/>
+												}
+												className="h-auto w-auto min-w-0 gap-0 px-0 text-base text-foreground-500 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
+											>
+												<span className="text-small">
+													{t('appShell.home.qqGroup')}
+												</span>
+											</Button>
+										</PopoverTrigger>
+									</span>
+								</Tooltip>
+								<PopoverContent>{qqCodeContent}</PopoverContent>
+							</Popover>
+							{githubLink}
 						</div>
 					)}
 					{!shouldShowChinaSurfaces && (
 						<div className="mt-2 flex flex-wrap items-center gap-2 leading-none">
-							<Button
-								as={Link}
-								isExternal
-								animationUnderline={false}
-								variant="light"
-								href={links.github.href}
-								role="link"
-								startContent={
-									<FontAwesomeIcon
-										icon={faGithub}
-										size="lg"
-									/>
-								}
-								onPress={() => {
-									trackEvent(
-										trackEvent.category.click,
-										'Link',
-										'GitHub'
-									);
-								}}
-								className="h-auto w-auto min-w-0 gap-1.5 px-0 text-base text-foreground-500 data-[hover=true]:bg-transparent data-[pressed=true]:bg-transparent data-[hover=true]:opacity-hover data-[pressed=true]:opacity-hover"
-							>
-								<span className="text-small">
-									{t('appShell.home.githubStar')}
-								</span>
-							</Button>
+							{githubLink}
 						</div>
 					)}
 				</div>
