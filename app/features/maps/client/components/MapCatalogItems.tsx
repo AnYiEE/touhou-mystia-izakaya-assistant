@@ -420,7 +420,7 @@ const CatalogItemPopover = memo(function CatalogItemPopover({
 	} = useMapAccess();
 
 	const triggerRef = useRef<HTMLButtonElement>(null);
-	const isOpeningAccountModalRef = useRef(false);
+	const isOpeningExternalModalRef = useRef(false);
 	const isOpenRef = useRef(false);
 	const onOpenChangeRef = useRef(onOpenChange);
 	onOpenChangeRef.current = onOpenChange;
@@ -449,23 +449,27 @@ const CatalogItemPopover = memo(function CatalogItemPopover({
 			isOpenRef.current = isOpen;
 			setIsOpen(isOpen);
 			onOpenChange(isOpen);
-			if (!isOpen && !isOpeningAccountModalRef.current) {
+			if (!isOpen && !isOpeningExternalModalRef.current) {
 				cancelAccessRequest();
 			}
 		},
 		[cancelAccessRequest, onOpenChange]
 	);
 
-	const handleAccessLogin = useCallback(() => {
-		markAccountModalOrigin();
-		isOpeningAccountModalRef.current = true;
+	const handleExternalModalOpen = useCallback(() => {
+		isOpeningExternalModalRef.current = true;
 		isOpenRef.current = false;
 		setIsOpen(false);
 		onOpenChange(false);
 		setTimeout(() => {
-			isOpeningAccountModalRef.current = false;
+			isOpeningExternalModalRef.current = false;
 		}, 250);
-	}, [markAccountModalOrigin, onOpenChange]);
+	}, [onOpenChange]);
+
+	const handleAccessLogin = useCallback(() => {
+		markAccountModalOrigin();
+		handleExternalModalOpen();
+	}, [handleExternalModalOpen, markAccountModalOrigin]);
 
 	useEffect(
 		() => () => {
@@ -585,6 +589,7 @@ const CatalogItemPopover = memo(function CatalogItemPopover({
 								className="rounded-small border border-default-200/60 bg-default-50/30 p-2 text-tiny dark:border-white/10 dark:bg-white/[0.07] dark:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.06),0_8px_20px_rgb(0_0_0_/_0.14)]"
 								isActionFullWidth
 								moduleKey="maps.full"
+								onDonatePress={handleExternalModalOpen}
 								onLoginPress={handleAccessLogin}
 								reasonOverride={fullReason ?? 'unavailable'}
 								showBody={fullReason !== 'login-required'}

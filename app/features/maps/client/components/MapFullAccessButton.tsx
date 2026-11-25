@@ -55,7 +55,7 @@ export default memo<IProps>(function MapFullAccessButton({
 	} = useMapAccess();
 
 	const isPopoverOpenRef = useRef(false);
-	const isOpeningAccountModalRef = useRef(false);
+	const isOpeningExternalModalRef = useRef(false);
 	const lastAutoOpenRequestRef = useRef<number | null>(null);
 	const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const onPopoverOpenChangeRef = useRef(onPopoverOpenChange);
@@ -90,7 +90,7 @@ export default memo<IProps>(function MapFullAccessButton({
 				return;
 			}
 
-			if (!isOpeningAccountModalRef.current) {
+			if (!isOpeningExternalModalRef.current) {
 				cancelAccessRequest();
 			}
 			closeTimerRef.current = setTimeout(() => {
@@ -103,15 +103,19 @@ export default memo<IProps>(function MapFullAccessButton({
 		[cancelAccessRequest, onPopoverOpenChange]
 	);
 
-	const handleAccessLogin = useCallback(() => {
-		markAccountModalOrigin();
-		isOpeningAccountModalRef.current = true;
+	const handleExternalModalOpen = useCallback(() => {
+		isOpeningExternalModalRef.current = true;
 		setIsOpen(false);
 		handlePopoverOpenChange(false);
 		setTimeout(() => {
-			isOpeningAccountModalRef.current = false;
+			isOpeningExternalModalRef.current = false;
 		}, 250);
-	}, [handlePopoverOpenChange, markAccountModalOrigin]);
+	}, [handlePopoverOpenChange]);
+
+	const handleAccessLogin = useCallback(() => {
+		markAccountModalOrigin();
+		handleExternalModalOpen();
+	}, [handleExternalModalOpen, markAccountModalOrigin]);
 
 	useEffect(() => {
 		if (
@@ -185,6 +189,7 @@ export default memo<IProps>(function MapFullAccessButton({
 								className="rounded-small border border-default-200/60 bg-default-50/30 p-2 text-tiny dark:border-white/10 dark:bg-white/[0.07] dark:shadow-[inset_0_1px_0_rgb(255_255_255_/_0.06),0_8px_20px_rgb(0_0_0_/_0.14)]"
 								isActionFullWidth
 								moduleKey="maps.full"
+								onDonatePress={handleExternalModalOpen}
 								onLoginPress={handleAccessLogin}
 								reasonOverride={fullReason ?? 'unavailable'}
 								showBody={fullReason !== 'login-required'}

@@ -58,6 +58,7 @@ interface IProps {
 	featureName?: string;
 	isActionFullWidth?: boolean;
 	moduleKey: TFeatureModuleKey;
+	onDonatePress?: () => void;
 	onLoginPress?: () => void;
 	onRetry?: () => void;
 	reasonOverride?: Exclude<TFeatureAccessReason, 'allowed'>;
@@ -70,6 +71,7 @@ export default memo<IProps>(function FeatureAccessNotice({
 	featureName,
 	isActionFullWidth,
 	moduleKey,
+	onDonatePress,
 	onLoginPress,
 	onRetry,
 	reasonOverride,
@@ -94,9 +96,10 @@ export default memo<IProps>(function FeatureAccessNotice({
 	}, [handleLogin, onLoginPress]);
 
 	const handleDonate = useCallback(() => {
+		onDonatePress?.();
 		vibrate();
 		void requestDonationModalOpen('manual');
-	}, [vibrate]);
+	}, [onDonatePress, vibrate]);
 
 	if (
 		(reasonOverride === undefined && (isLoading || allowed)) ||
