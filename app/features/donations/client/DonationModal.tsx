@@ -126,14 +126,12 @@ export default function DonationModal() {
 					{t('donation.heading', { name: tSite('site.name') })}
 				</Heading>
 				<div className="text-cjk-flow space-y-2 indent-8">
-					{source === 'milestone' && (
-						<p>
-							{t('donation.intro', {
-								count: milestone,
-								shortName: tSite('site.shortName'),
-							})}
-						</p>
-					)}
+					<p>
+						{t('donation.intro', {
+							count: milestone,
+							shortName: tSite('site.shortName'),
+						})}
+					</p>
 					<p>
 						{t('donation.cost', {
 							shortName: tSite('site.shortName'),
