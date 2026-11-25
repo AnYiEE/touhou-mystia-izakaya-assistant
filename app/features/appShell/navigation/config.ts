@@ -82,6 +82,7 @@ export const NAV_ITEMS = [
 			},
 		],
 	},
+	{ href: '/maps', label: '地图' },
 	{ href: '/preferences', label: '设置' },
 	{ href: '/about', label: '关于' },
 ] as const satisfies TNavItem[];

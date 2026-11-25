@@ -223,8 +223,10 @@ export default function DesktopNavigation({
 						if ('href' in navItem) {
 							const { href } = navItem;
 							const isActivated = href === basePathname;
-							return href === '/preferences' &&
-								!shouldShowPreferences ? null : (
+							return (href === '/preferences' &&
+								!shouldShowPreferences) ||
+								(href === '/maps' &&
+									shouldShowPreferences) ? null : (
 								<NavbarItem
 									key={navItemIndex}
 									isActive={isActivated}

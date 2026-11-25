@@ -13,7 +13,6 @@ import {
 } from './features/appShell/seo/pageMetadata';
 import { DERIVATIVE_PROJECTS_PAGE_PATH } from './features/derivativeProjects/links';
 import { ALL_DAY_MAP_LABELS } from './features/maps/client/model/dayMapLabels';
-import { MAPS_PAGE_PATH } from './features/maps/links';
 import { META_MYSTIA_PAGE_PATH } from './features/metaMystia/links';
 import { PUBLIC_RUNTIME_CONFIG } from './infrastructure/environment/publicRuntimeConfig';
 import { SUPPORTED_LOCALES } from './shared/i18n/locale';
@@ -27,7 +26,6 @@ export const dynamic = 'force-static';
 /** Public pages that are intentionally absent from the navigation menu. */
 const EXTRA_SITEMAP_PATHS = [
 	DERIVATIVE_PROJECTS_PAGE_PATH,
-	MAPS_PAGE_PATH,
 	META_MYSTIA_PAGE_PATH,
 ] as const;
 
