@@ -11,7 +11,9 @@ const DONATION_MESSAGES_ZH_CN = {
 	'donation.costDetails':
 		'即使不考虑我在改进{shortName}上投入的大量时间和精力，{shortName}的运行也离不开服务器、互联网带宽等基础设施，每年至少需要1500元。而这只是维持基本服务的最低成本。超出基本维护成本的支持，可以让我提升算力、接入CDN，带来更顺畅、更优质的使用体验，并确保未来的功能和数据能够及时更新。',
 	'donation.heading': '感谢您使用{name}！',
-	'donation.intro':
+	'donation.introEarly':
+		'您目前已经进行了{count}次互动。希望{shortName}所提供的顾客图鉴、料理搭配、食材查询等实用功能，能在您游玩《东方夜雀食堂》的过程中帮到您，让游玩过程更轻松、方便。',
+	'donation.introMilestone':
 		'您已经在{shortName}中进行了超过{count}次互动。经过一段时间的使用，我想您已经体会到{shortName}带来的便利——顾客图鉴、料理搭配、食材查询等实用功能。希望它在您游玩《东方夜雀食堂》的过程中真正帮到了您，让游玩过程更轻松、方便。',
 	'donation.mainlandNote': '',
 	'donation.nudge.body': '欢迎支持{shortName}日常运营',
@@ -37,7 +39,9 @@ export const donationMessages = {
 		'donation.costDetails':
 			'Even setting aside the time and effort I put into making {shortName} better, running {shortName} still requires servers, internet bandwidth, and other infrastructure, at a cost of at least 1,500 yuan per year. That is only the essential cost of continuing to provide players with basic services. Support beyond that can help me increase computing capacity, add a CDN, deliver a smoother and better experience, and keep future features and data updates on schedule.',
 		'donation.heading': 'Thank you for using {name}!',
-		'donation.intro':
+		'donation.introEarly':
+			'You have interacted with {shortName} {count} times so far. I hope the guest catalog, meal pairing, ingredient lookup, and other useful features provided by {shortName} can help you while you play Touhou Mystia’s Izakaya, making the game easier and more enjoyable.',
+		'donation.introMilestone':
 			'You have interacted with {shortName} more than {count} times. After using it for a while, I believe you have experienced the convenience of features such as the guest catalog, meal pairing, and ingredient lookup. I hope it has genuinely helped you while you play Touhou Mystia’s Izakaya, making the game easier and more enjoyable.',
 		'donation.mainlandNote': 'Alipay (mainland China only)',
 		'donation.nudge.body': 'Help cover {shortName}’s ongoing costs.',
@@ -59,7 +63,9 @@ export const donationMessages = {
 		'donation.costDetails':
 			'{shortName}を使いやすくするために費やした時間と労力を別にしても、サーバーや帯域などのインフラが欠かせず、年間で少なくとも1500元かかります。これはプレイヤーの皆様に基本サービスを届け続けるための必要最低限の費用です。これを上回るご支援は、計算資源の増強やCDNの導入、より快適で高品質な体験の提供、今後の機能・データの更新に役立ちます。',
 		'donation.heading': '{name}をご利用いただきありがとうございます！',
-		'donation.intro':
+		'donation.introEarly':
+			'これまでに{count}回操作していただきました。{shortName}が提供するお客様図鑑、セットメニュー構成、食材検索などの機能が、『東方夜雀食堂』を遊ぶ際にお役立ちし、より快適で楽しいプレイにつながれば幸いです。',
+		'donation.introMilestone':
 			'{shortName}では{count}回以上操作していただきました。しばらく使っていただければ、お客様図鑑、セットメニュー構成、食材検索などの便利な機能を実感していただけたことと思います。『東方夜雀食堂』をプレイする中で本当にお役に立てていれば幸いです。',
 		'donation.mainlandNote': 'Alipay（中国本土のみ）',
 		'donation.nudge.body': '{shortName}の運営へのご支援を歓迎します',
@@ -81,7 +87,9 @@ export const donationMessages = {
 		'donation.costDetails':
 			'{shortName}을(를) 더 유용하게 만들기 위해 쏟은 시간과 노력을 제외하더라도, 서버와 대역폭 같은 인프라가 필요해 매년 최소 1500위안이 듭니다. 이는 플레이어 여러분께 기본 서비스를 계속 제공하기 위한 최소한의 비용입니다. 그 이상의 후원을 받으면 컴퓨팅 자원을 확충하고 CDN을 도입해 더 원활한 경험을 제공할 수 있으며, 향후 기능과 데이터 업데이트도 이어 갈 수 있습니다.',
 		'donation.heading': '{name} 이용에 감사드립니다!',
-		'donation.intro':
+		'donation.introEarly':
+			'지금까지 {count}회 기능을 이용하셨습니다. {shortName}이(가) 제공하는 손님 도감, 세트 메뉴 구성, 재료 검색 등의 기능이 『동방야작식당』을 플레이하실 때 더 편리하고 즐거운 플레이에 도움이 되기를 바랍니다.',
+		'donation.introMilestone':
 			'{shortName}에서 {count}회 이상 기능을 이용하셨습니다. 어느 정도 사용해 보시면서 손님 도감, 세트 메뉴 구성, 재료 검색 등 편리한 기능을 경험하셨으리라 생각합니다. 『동방야작식당』을 플레이하시는 동안 실제로 도움이 되었기를 바랍니다.',
 		'donation.mainlandNote': 'Alipay(중국 본토 전용)',
 		'donation.nudge.body': '{shortName}의 운영을 위한 후원을 환영합니다.',
@@ -104,7 +112,9 @@ export const donationMessages = {
 		'donation.costDetails':
 			'即使不考慮我在改進{shortName}上投入的大量時間和精力，{shortName}的運作也離不開伺服器、網際網路頻寬等基礎設施，每年至少需要1500元。而這只是維持基本服務的最低成本。超出基本維護成本的支持，可以讓我提升算力、接入CDN，帶來更順暢、更優質的使用體驗，並確保未來的功能和資料能夠及時更新。',
 		'donation.heading': '感謝您使用{name}！',
-		'donation.intro':
+		'donation.introEarly':
+			'您目前已經進行了{count}次互動。希望{shortName}所提供的顧客圖鑑、套餐搭配、食材查詢等實用功能，能在您遊玩《東方夜雀食堂》的過程中幫到您，讓遊玩過程更輕鬆、方便。',
+		'donation.introMilestone':
 			'您已經在{shortName}中進行了超過{count}次互動。經過一段時間的使用，我想您已經體會到{shortName}帶來的便利——顧客圖鑑、套餐搭配、食材查詢等實用功能。希望它在您遊玩《東方夜雀食堂》的過程中真正幫到了您，讓遊玩過程更輕鬆、方便。',
 		'donation.mainlandNote': '（中國大陸的支付寶）',
 		'donation.nudge.body': '歡迎支持{shortName}日常營運',

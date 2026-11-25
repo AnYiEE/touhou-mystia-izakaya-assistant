@@ -70,6 +70,8 @@ export default function DonationModal() {
 		lastShown,
 	});
 	const milestone = getCurrentDonationMilestone(interactionCount);
+	const displayedInteractionCount =
+		milestone > 0 ? milestone : interactionCount;
 
 	const canActivate = useCallback(
 		() => source !== 'milestone' || isMilestoneRequestValid,
@@ -127,10 +129,15 @@ export default function DonationModal() {
 				</Heading>
 				<div className="text-cjk-flow space-y-2 indent-8">
 					<p>
-						{t('donation.intro', {
-							count: milestone,
-							shortName: tSite('site.shortName'),
-						})}
+						{t(
+							milestone > 0
+								? 'donation.introMilestone'
+								: 'donation.introEarly',
+							{
+								count: displayedInteractionCount,
+								shortName: tSite('site.shortName'),
+							}
+						)}
 					</p>
 					<p>
 						{t('donation.cost', {
