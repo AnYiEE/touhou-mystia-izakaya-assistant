@@ -39,6 +39,8 @@ import {
 	getBeverageTagLabel,
 	getFoodTagLabel,
 } from '@/features/catalog/shared/client/localization/tagLabels';
+import LoginGateList from '@/features/loginGate/client/components/LoginGateList';
+import LoginGatePrompt from '@/features/loginGate/client/components/LoginGatePrompt';
 import { recommendationPreferencesFacade } from '@/features/preferences/client/recommendationPreferencesFacade';
 import { specialGuestPlansMessages } from '@/features/specialGuestPlans/client/messages';
 import { specialGuestPlansStore } from '@/features/specialGuestPlans/client/state/store';
@@ -859,24 +861,47 @@ export default memo(function GuestGroup({
 											isControlsCollapsed,
 										})}
 									>
-										{renderedMeals.map((meal) => (
-											<MealRow
-												key={`${group.specialGuest}:${meal.source}:${meal.dataIndex ?? meal.visibleIndex}`}
-												meal={meal}
-												onOpenBeverage={onOpenBeverage}
-												onOpenCooker={onOpenCooker}
-												onOpenIngredient={
-													onOpenIngredient
-												}
-												onOpenFood={onOpenFood}
-												popoverPortalProps={
-													popoverPortalProps
-												}
-												specialGuest={
-													group.specialGuest
-												}
-											/>
-										))}
+										<LoginGateList
+											countKind="recommendations"
+											items={renderedMeals}
+											overlay={
+												<LoginGatePrompt
+													isCompact
+													count={{
+														kind: 'recommendations',
+														value:
+															renderedMeals.length -
+															1,
+													}}
+													moduleKey="recommendation.specialGuestPlans"
+													variant="card"
+												/>
+											}
+											veilClassName="col-span-full"
+											veilContentClassName={getDrawerMealGridClassName(
+												{ isControlsCollapsed }
+											)}
+											renderItem={(meal) => (
+												<MealRow
+													key={`${group.specialGuest}:${meal.source}:${meal.dataIndex ?? meal.visibleIndex}`}
+													meal={meal}
+													onOpenBeverage={
+														onOpenBeverage
+													}
+													onOpenCooker={onOpenCooker}
+													onOpenIngredient={
+														onOpenIngredient
+													}
+													onOpenFood={onOpenFood}
+													popoverPortalProps={
+														popoverPortalProps
+													}
+													specialGuest={
+														group.specialGuest
+													}
+												/>
+											)}
+										/>
 									</div>
 								</>
 							)}

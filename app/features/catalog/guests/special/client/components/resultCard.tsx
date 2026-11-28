@@ -1,5 +1,5 @@
 import { cn } from '@heroui/theme';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useDesignPreferences } from '@/design/preferences/DesignPreferencesContext';
 import Button from '@/design/ui/components/button';
@@ -26,6 +26,8 @@ import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages
 import { formatSelectionTip } from '@/features/catalog/guests/shared/presentation/buildSelectionTip';
 import { specialGuestStore } from '@/features/catalog/guests/special/client/state/store';
 import Price from '@/features/catalog/shared/client/components/Price';
+import { useLoginGate } from '@/features/loginGate/client/LoginGateContext';
+import LoginGateActionPopover from '@/features/loginGate/client/components/LoginGateActionPopover';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 import { suggestedMealsUiStore } from '@/features/recommendations/client/state/suggestedMealsUiStore';
 
@@ -108,14 +110,22 @@ export default function ResultCard() {
 		[vibrate]
 	);
 
+	const { mode: loginGateMode } = useLoginGate();
+	const [isSaveGateOpen, setIsSaveGateOpen] = useState(false);
+	if (loginGateMode === 'full' && isSaveGateOpen) {
+		setIsSaveGateOpen(false);
+	}
+
 	const handleSaveButtonPress = useCallback(() => {
 		if (isSaveButtonDisabled) {
 			showTooltip();
+		} else if (loginGateMode === 'preview') {
+			setIsSaveGateOpen(true);
 		} else {
 			vibrate();
 			specialGuestStore.saveMealResult();
 		}
-	}, [isSaveButtonDisabled, showTooltip, vibrate]);
+	}, [isSaveButtonDisabled, loginGateMode, showTooltip, vibrate]);
 
 	let content: IFadeMotionDivProps['children'];
 	let contentClassName: IFadeMotionDivProps['className'];
@@ -313,43 +323,55 @@ export default function ResultCard() {
 							originalIngredients={originalIngredients}
 						/>
 					</div>
-					<Tooltip
-						showArrow
-						content={formatSelectionTip(
-							unsatisfiedSelectionTip.save,
-							t
-						)}
-						isOpen={isShowSaveButtonTooltip}
-						placement={placement}
+					<LoginGateActionPopover
+						isOpen={isSaveGateOpen}
+						moduleKey="meal.save"
+						onOpenChange={setIsSaveGateOpen}
 					>
-						<Button
-							data-tutorial-save-meal
-							color="primary"
-							disableAnimation={isSaveButtonDisabled}
-							size="sm"
-							variant="flat"
-							onPress={handleSaveButtonPress}
-							aria-label={t('guests.resultCard.saveMealAria', {
-								status:
-									currentRating === null
-										? t('guests.resultCard.unrated')
-										: t('guests.resultCard.ratedAs', {
-												rating: getEvaluationLabelByKey(
-													currentRating
-												),
-											}),
-							})}
-							className={cn(
-								'flex-col gap-0 text-tiny leading-none !transition motion-reduce:!transition-none md:w-auto',
-								{ 'opacity-disabled': isSaveButtonDisabled }
+						<Tooltip
+							showArrow
+							content={formatSelectionTip(
+								unsatisfiedSelectionTip.save,
+								t
 							)}
+							isOpen={isShowSaveButtonTooltip}
+							placement={placement}
 						>
-							<span>{t('guests.resultCard.saveMeal')}</span>
-							<span>
-								<Price>{currentMealPrice}</Price>
-							</span>
-						</Button>
-					</Tooltip>
+							<Button
+								data-tutorial-save-meal
+								color="primary"
+								disableAnimation={isSaveButtonDisabled}
+								size="sm"
+								variant="flat"
+								onPress={handleSaveButtonPress}
+								aria-label={t(
+									'guests.resultCard.saveMealAria',
+									{
+										status:
+											currentRating === null
+												? t('guests.resultCard.unrated')
+												: t(
+														'guests.resultCard.ratedAs',
+														{
+															rating: getEvaluationLabelByKey(
+																currentRating
+															),
+														}
+													),
+									}
+								)}
+								className={cn(
+									'flex-col gap-0 text-tiny leading-none !transition motion-reduce:!transition-none md:w-auto',
+									{ 'opacity-disabled': isSaveButtonDisabled }
+								)}
+							>
+								<span>{t('guests.resultCard.saveMeal')}</span>
+								<span>
+									<Price>{currentMealPrice}</Price>
+								</span>
+							</Button>
+						</Tooltip>
+					</LoginGateActionPopover>
 				</div>
 			</Card>
 		);

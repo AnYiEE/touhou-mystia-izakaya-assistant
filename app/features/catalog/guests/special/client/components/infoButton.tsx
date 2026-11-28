@@ -48,6 +48,7 @@ import {
 	getFoodTagLabel,
 } from '@/features/catalog/shared/client/localization/tagLabels';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
+import LoginGateList from '@/features/loginGate/client/components/LoginGateList';
 import SpecialGuestMapLinks from '@/features/maps/client/components/SpecialGuestMapLinks';
 
 import { useI18n } from '@/shared/i18n/useI18n';
@@ -354,28 +355,25 @@ export default memo<IProps>(function InfoButton({ cardInfoActionContainer }) {
 					<SpecialGuestMapLinks guest={currentSpecialGuest} />
 				</div>
 				<div className="text-small">
-					<p>
-						<span className="font-semibold">
-							Lv.1{t('guests.info.levelSeparator')}
-						</span>
-						{currentSpecialGuestDescription[0]}
-					</p>
-					{currentSpecialGuestDescription[1] !== null && (
-						<p>
-							<span className="font-semibold">
-								Lv.3{t('guests.info.levelSeparator')}
-							</span>
-							{currentSpecialGuestDescription[1]}
-						</p>
-					)}
-					{currentSpecialGuestDescription[2] !== null && (
-						<p>
-							<span className="font-semibold">
-								Lv.5{t('guests.info.levelSeparator')}
-							</span>
-							{currentSpecialGuestDescription[2]}
-						</p>
-					)}
+					<LoginGateList
+						countKind="details"
+						items={[1, 3, 5].flatMap((level, index) => {
+							const text = currentSpecialGuestDescription[index];
+							return text === null || text === undefined
+								? []
+								: [{ level, text }];
+						})}
+						maxHeight="sm"
+						renderItem={({ level, text }) => (
+							<p key={level}>
+								<span className="font-semibold">
+									Lv.{level}
+									{t('guests.info.levelSeparator')}
+								</span>
+								{text}
+							</p>
+						)}
+					/>
 				</div>
 			</AccordionItem>
 			{hasBondRewards ? (
@@ -712,11 +710,14 @@ export default memo<IProps>(function InfoButton({ cardInfoActionContainer }) {
 					title={t('guests.info.chat')}
 					classNames={CHAT_CLASS_NAMES}
 				>
-					<Ol>
-						{currentSpecialGuestChat.map((chat, index) => (
+					<LoginGateList
+						countKind="dialogues"
+						items={currentSpecialGuestChat}
+						renderContainer={(rows) => <Ol>{rows}</Ol>}
+						renderItem={(chat, index) => (
 							<li key={index}>{chat}</li>
-						))}
-					</Ol>
+						)}
+					/>
 				</AccordionItem>
 			)}
 			<AccordionItem

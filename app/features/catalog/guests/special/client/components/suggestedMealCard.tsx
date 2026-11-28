@@ -51,6 +51,8 @@ import {
 	getFoodTagLabel,
 } from '@/features/catalog/shared/client/localization/tagLabels';
 import { useViewInNewWindow } from '@/features/itemSharing/client/hooks/useViewInNewWindow';
+import LoginGateList from '@/features/loginGate/client/components/LoginGateList';
+import LoginGatePrompt from '@/features/loginGate/client/components/LoginGatePrompt';
 import { useVibrate } from '@/features/preferences/client/useVibrate';
 
 import { useI18n } from '@/shared/i18n/useI18n';
@@ -611,8 +613,22 @@ export default function SuggestedMealCard() {
 							{t(SUGGESTED_MEAL_STATUS_MESSAGE_KEYS.loading)}
 						</Placeholder>
 					) : hasSuggestedMealRows ? (
-						suggestedMealRows.map(
-							(
+						<LoginGateList
+							countKind="recommendations"
+							items={suggestedMealRows}
+							maxHeight="lg"
+							overlay={
+								<LoginGatePrompt
+									count={{
+										kind: 'recommendations',
+										value: suggestedMealRows.length - 1,
+									}}
+									moduleKey="recommendation.suggestedMeals"
+									variant="card"
+								/>
+							}
+							veilContentClassName="space-y-3"
+							renderItem={(
 								{
 									alternativesStatus,
 									beverage,
@@ -1315,8 +1331,8 @@ export default function SuggestedMealCard() {
 										)}
 									</Fragment>
 								);
-							}
-						)
+							}}
+						/>
 					) : suggestionStatus === 'error' ? (
 						<Placeholder className="py-4">
 							{t(SUGGESTED_MEAL_STATUS_MESSAGE_KEYS.failed)}

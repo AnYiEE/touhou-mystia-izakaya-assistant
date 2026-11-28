@@ -249,6 +249,66 @@
 	.announcement-progress-paused {
 		animation-play-state: paused;
 	}
+
+	// Login gate veil: the real remainder seen through a paper screen (shoji).
+	.login-gate-veil-content {
+		filter: blur(3.5px) saturate(0.8);
+		user-select: none;
+		mask-image: linear-gradient(to bottom, #000 40%, rgb(0 0 0 / 20%));
+	}
+
+	.login-gate-veil-content-revealing {
+		filter: blur(0) saturate(1);
+		transition: filter 320ms ease-out;
+	}
+
+	.login-gate-shoji {
+		--login-gate-shoji-line: hsl(var(--heroui-foreground) / 8.5%);
+		--login-gate-shoji-rail: hsl(var(--heroui-foreground) / 18%);
+
+		background-color: hsl(var(--heroui-content1) / 36%);
+		background-image:
+			linear-gradient(
+				var(--login-gate-shoji-rail),
+				var(--login-gate-shoji-rail)
+			),
+			linear-gradient(
+				to right,
+				var(--login-gate-shoji-line) 1px,
+				transparent 1px
+			),
+			linear-gradient(
+				to bottom,
+				var(--login-gate-shoji-line) 1px,
+				transparent 1px
+			);
+		background-position:
+			top,
+			center top,
+			center top;
+		background-repeat: no-repeat, repeat, repeat;
+		background-size:
+			100% 1.5px,
+			2.5rem 100%,
+			100% 3.25rem;
+		mask-image: linear-gradient(to bottom, #000 55%, transparent);
+		transition: opacity 320ms ease-out;
+	}
+
+	.login-gate-shoji-revealing {
+		opacity: 0;
+	}
+
+	.login-gate-count-tag {
+		@apply whitespace-nowrap rounded-small border border-default-300/60 bg-content1/90 px-2.5 py-0.5 text-tiny font-medium text-default-600 dark:border-default-200/60;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.login-gate-veil-content-revealing,
+		.login-gate-shoji {
+			transition: none;
+		}
+	}
 }
 
 @keyframes announcement-marquee {
