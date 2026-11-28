@@ -31,6 +31,7 @@ import {
 	formatSourceReference,
 	getCollectionPointRefreshTimeHours,
 } from '@/features/catalog/items/shared/sourceReferenceFormatting';
+import LoginGateList from '@/features/loginGate/client/components/LoginGateList';
 import {
 	CollaborationMapLink,
 	CollectionPointMapLink,
@@ -56,8 +57,11 @@ export default function IngredientSourceDetails({ from, id }: IProps) {
 
 	return (
 		<ScrollShadow size={16} className="max-h-dvh-safe-half">
-			{getSourceEntries<IIngredient['from']>(from).map(
-				(source, fromIndex) => {
+			<LoginGateList
+				countKind="details"
+				items={getSourceEntries<IIngredient['from']>(from)}
+				maxHeight="sm"
+				renderItem={(source, fromIndex) => {
 					type TFrom = Exclude<IIngredient['from'], string>;
 					const [method, target] = Object.entries(source)[0] as [
 						keyof TFrom,
@@ -377,8 +381,8 @@ export default function IngredientSourceDetails({ from, id }: IProps) {
 							</Ol>
 						</Fragment>
 					);
-				}
-			)}
+				}}
+			/>
 		</ScrollShadow>
 	);
 }

@@ -18,6 +18,7 @@ import type { TItemName } from '@/domain/data/types';
 
 import { type ITagStyle } from '@/features/catalog/presentation/tagStyles';
 import { catalogSharedMessages } from '@/features/catalog/shared/client/messages';
+import LoginGatePrompt from '@/features/loginGate/client/components/LoginGatePrompt';
 
 import { useI18n } from '@/shared/i18n/useI18n';
 import { checkLengthEmpty } from '@/shared/utilities/collections/check';
@@ -223,6 +224,10 @@ function ItemPopoverCard<T extends TSpriteTarget>({
 			{children !== undefined && (
 				<div className="!mt-1 space-y-1">{children}</div>
 			)}
+			<LoginGatePrompt
+				moduleKey="catalog.itemDetails"
+				className="!mt-2"
+			/>
 		</div>
 	);
 }

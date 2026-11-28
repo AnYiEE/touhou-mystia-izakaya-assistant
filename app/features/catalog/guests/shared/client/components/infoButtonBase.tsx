@@ -20,6 +20,7 @@ import { useParams } from '@/features/appShell/client/navigation/useParams';
 import { catalogGuestsMessages } from '@/features/catalog/guests/shared/messages';
 import { GUEST_INFO_QUERY_PARAM } from '@/features/catalog/guests/shared/navigation';
 import { trackSupportGuestInfo } from '@/features/donations/client/state/supportNudgeStore';
+import LoginGatePrompt from '@/features/loginGate/client/components/LoginGatePrompt';
 import {
 	CoordinatedModal,
 	requestOverlayClose,
@@ -292,6 +293,11 @@ export default memo<IProps>(function InfoButtonBase({
 				>
 					{children}
 				</Accordion>
+				<LoginGatePrompt
+					moduleKey="guest.details"
+					variant="bar"
+					className="-mx-6 px-8"
+				/>
 			</CoordinatedModal>
 		</Fragment>
 	);
